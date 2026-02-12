@@ -12,6 +12,7 @@ Project-scoped skills for the Research flow (idea generation, code survey, imple
 | inno-code-survey | Phase A: acquire missing repos + merge into prepare_res; Phase B: comprehensive code survey. Both phases for Idea branch; Phase B only for Plan branch |
 | inno-experiment-dev | Implementation plan + ML code + Judge loop + experiment submission |
 | inno-experiment-analysis | Analyse experiment results, draw charts, suggest and implement refinements |
+| inno-paper-writing | Write publication-ready ML/AI papers with LaTeX templates, citation verification, and conference checklists |
 
 ## Script reuse (plan-scripts-reuse)
 
@@ -23,3 +24,4 @@ Project-scoped skills for the Research flow (idea generation, code survey, imple
 
 - **Phase 1**: Skills 1–3 (prepare, idea-generation, code-survey Phase A) for "idea-only" workflows.
 - **Phase 2**: Add remaining skills for full pipeline (code survey Phase B → experiment-dev → experiment-analysis).
+- **Phase 3**: Paper writing (inno-paper-writing) for generating publication-ready papers from experiment results.

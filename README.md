@@ -43,7 +43,7 @@ A desktop and mobile UI for [Claude Code](https://docs.anthropic.com/en/docs/cla
 ## Features
 
 - **Research Lab** - Structured dashboard for AI-driven research: view overview, source papers, generated ideas (rendered as Markdown with LaTeX math), pipeline status, and cache artifacts at a glance
-- **InnoFlow Skills** - Built-in modular research pipeline skills (orchestrator, resource preparation, idea generation, code survey, experiment development, experiment analysis) that guide agents step-by-step
+- **InnoFlow Skills** - Built-in modular research pipeline skills (orchestrator, resource preparation, idea generation, code survey, experiment development, experiment analysis, paper writing) that guide agents step-by-step
 - **Responsive Design** - Works seamlessly across desktop, tablet, and mobile so you can also use Claude Code, Cursor, or Codex from mobile
 - **Interactive Chat Interface** - Built-in chat interface for seamless communication with Claude Code, Cursor, or Codex
 - **Integrated Shell Terminal** - Direct access to Claude Code, Cursor CLI, or Codex through built-in shell functionality
@@ -146,7 +146,7 @@ Switch to the **Research Lab** tab to see:
 - **Pipeline Artifacts** — grouped by stage, with built-in viewer/editor
 - **Experiment Results** — training logs, metrics, analysis reports, charts
 
-All data lives in `instance.json`, `pipeline_config.json`, and `outputs/cache/` inside the project directory.
+All data lives in `instance.json`, `pipeline_config.json`, `Ideation/`, and `Experiment/` inside the project directory.
 
 > **Tip**: You can also provide a *full implementation plan* instead of a topic. The orchestrator will detect it as *plan-level* and skip idea generation, jumping straight to code survey and experiment development.
 
@@ -213,10 +213,10 @@ The **Research Lab** tab is designed for structured, multi-step AI research. It 
 - **Research Overview** — Target paper, task description, instance ID, category, pipeline mode (Plan vs. Idea)
 - **Source Papers** — All referenced papers with type badges
 - **Final Selected Idea** — Rich Markdown rendering with LaTeX math (KaTeX), GFM tables, code blocks. Copy-to-clipboard and collapsible view
-- **Pipeline Configuration** — Instance path, task level, category, dataset, workspace name
-- **Research Artifacts** — Cache files grouped by pipeline stage with expand/collapse navigation and built-in viewer/editor
+- **Pipeline Configuration** — Instance path, task level, category, dataset
+- **Research Artifacts** — Log files grouped by pipeline stage with expand/collapse navigation and built-in viewer/editor
 
-Data is loaded from `instance.json`, `pipeline_config.json`, and `outputs/cache/` within the project.
+Data is loaded from `instance.json`, `pipeline_config.json`, `Ideation/`, and `Experiment/` within the project.
 
 #### InnoFlow Research Pipeline
 
@@ -225,7 +225,7 @@ Vibe Lab ships with modular research skills under `skills/`. When a project is c
 **Pipeline overview** (Idea mode):
 
 ```
-Orchestrator → Prepare Resources → Idea Generation → Code Survey → Experiment Dev → Experiment Analysis
+Orchestrator → Prepare Resources → Idea Generation → Code Survey → Experiment Dev → Experiment Analysis → Paper Writing
 ```
 
 | Skill | Purpose |
@@ -236,6 +236,7 @@ Orchestrator → Prepare Resources → Idea Generation → Code Survey → Exper
 | **inno-code-survey** | Phase A: acquire extra repos for the chosen idea; Phase B: comprehensive code survey |
 | **inno-experiment-dev** | Creates implementation plan, writes project code with judge feedback loop, submits experiment |
 | **inno-experiment-analysis** | Analyzes results, draws charts, gives code suggestions, implements refinements |
+| **inno-paper-writing** | Write publication-ready ML/AI papers with LaTeX templates, citation verification, and conference checklists (NeurIPS, ICML, ICLR, ACL, AAAI, COLM) |
 
 To start a research run, open the **Chat** tab and describe your research task (e.g. *"I want to research biomedical question answering"*). The orchestrator skill will guide the agent through the full pipeline.
 

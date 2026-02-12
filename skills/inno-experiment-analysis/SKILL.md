@@ -16,7 +16,9 @@ Takes the refinement loop from the former `inno-experiment-submit-refine`. Mirro
 | `plan_res` | inno-experiment-dev Phase 1 | Detailed implementation plan |
 | `submit_res` | inno-experiment-dev Phase 3 | Submission result with statistical outputs |
 | `judge_messages` | inno-experiment-dev | Full conversation thread to continue |
-| `workplace_name` | pipeline config | Workspace directory name (typically `"workplace"`) |
+| `core_code_path` | pipeline config | Path to `Experiment/core_code/` |
+| `analysis_path` | pipeline config | Path to `Experiment/analysis/` |
+| `code_references_path` | pipeline config | Path to `Experiment/code_references/` |
 | `exp_iter_times` | pipeline config | Number of analysis-refinement iterations (default from `DEFAULT_EXP_ITER_TIMES`) |
 | `context_variables` | shared state | Mutable dict carrying state across agents |
 
@@ -34,8 +36,8 @@ Plan mode additionally uses `ideas` and plan-specific prompt variants (`build_ex
 
 | File | Agent | Content |
 |------|-------|---------|
-| `experiment_analysis_agent_iter_refine_{N}.json` | Experiment Analysis Agent | Analysis messages with `experiment_report` in context_variables |
-| `machine_learning_agent_iter_refine_{N}.json` | ML Agent | Refinement implementation messages |
+| `Experiment/analysis/logs/experiment_analysis_agent_iter_refine_{N}.json` | Experiment Analysis Agent | Analysis messages with `experiment_report` in context_variables |
+| `Experiment/analysis/logs/machine_learning_agent_iter_refine_{N}.json` | ML Agent | Refinement implementation messages |
 
 Where `{N}` is the iteration number (1, 2, ...).
 
@@ -50,7 +52,7 @@ For each iteration i in 1..`exp_iter_times`:
 2. **Call Experiment Analysis Agent**: Append `exp_planner_query` to `judge_messages` as user message. Call the agent with `iter_times="refine_{i}"`.
    - The agent reviews experiment outputs (logs, metrics, saved models, images)
    - Reviews reference codebases and papers for comparison
-   - Creates visualizations (loss curves, metric comparisons, confusion matrices, etc.)
+   - Creates visualizations (loss curves, metric comparisons, confusion matrices, etc.) saved to `Experiment/analysis/`
    - Calls `case_resolved(analysis_report=..., further_plan=...)` which appends to `context_variables["experiment_report"]`
    - See `references/exp_analyser_instructions.md` for agent details
 
@@ -59,10 +61,10 @@ For each iteration i in 1..`exp_iter_times`:
    - `further_plan`: dict mapping experiment names to descriptions (e.g., `{"A1_fix_embedding": "Fix embedding dimension mismatch", "A2_add_scheduler": "Add learning rate scheduler"}`)
    - If `experiment_report` is missing, the analysis agent failed to call `case_resolved` -- raise an error.
 
-4. **Build refine query**: `refine_query = build_refine_query(survey_res, prepare_res, plan_res, submit_res, analysis_report, workplace_name)` (see `prompts/build_refine_query.md`).
+4. **Build refine query**: `refine_query = build_refine_query(survey_res, prepare_res, plan_res, submit_res, analysis_report, core_code_path)` (see `prompts/build_refine_query.md`).
 
 5. **Call ML Agent for refinement**: Append `refine_query` to `judge_messages` as user message. Call **ML Agent** with `iter_times="refine_{i}"`.
-   - The agent modifies existing code in `/<workplace_name>/project/`
+   - The agent modifies existing code in `Experiment/core_code/`
    - Runs further experiments as specified in the further plan
    - Ensures all training scripts save model checkpoints
    - Calls `case_resolved` or `case_not_resolved`
@@ -107,7 +109,7 @@ The ML Agent (for refinements) can:
 - [ ] `analysis_report` and `further_plan` extracted from latest `experiment_report` entry.
 - [ ] `refine_query` built and ML Agent called for refinement.
 - [ ] Model checkpoints saved after each refinement training run.
-- [ ] Cache artifacts saved: `experiment_analysis_agent_iter_refine_{N}.json`, `machine_learning_agent_iter_refine_{N}.json`.
+- [ ] Cache artifacts saved to `Experiment/analysis/logs/`: `experiment_analysis_agent_iter_refine_{N}.json`, `machine_learning_agent_iter_refine_{N}.json`.
 - [ ] Results surfaced to user/UI.
 - [ ] Loop repeats for `exp_iter_times` iterations.
 

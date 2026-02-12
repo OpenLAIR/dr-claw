@@ -9,7 +9,7 @@ Constructs the prompt for the ML Agent to submit the final experiment run.
 | `survey_res`     | string | The finalized selected idea |
 | `ml_dev_res`     | string | The ML Agent's final implementation result |
 | `judge_res`      | string | The Judge Agent's last feedback |
-| `workplace_name` | string | Name of the workplace directory (default: `"workplace"`) |
+| `core_code_path` | string | Path to `Experiment/core_code/` |
 
 ## Template
 
@@ -36,7 +36,7 @@ in the script `run_training_testing.py` rather than use the 2 epochs.
 3. **CRITICAL**: Ensure that the training script saves the final model weights/checkpoint
    at the end of training. If the existing code does not save checkpoints, you MUST add
    checkpoint saving functionality before running the script. The final model should be
-   saved to `/<workplace_name>/project/checkpoints/model_final.pth`.
+   saved to `Experiment/core_code/checkpoints/model_final.pth`.
 
 Note that if your last implementation is not runnable, you should finalize the
 submission with `case_not_resolved` function. But you can temporarily ignore the

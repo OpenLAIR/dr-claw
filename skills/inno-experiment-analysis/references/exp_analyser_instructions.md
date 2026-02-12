@@ -12,8 +12,8 @@ Analyzes experimental results conducted by the ML Agent, reviews reference codeb
 
 The agent is given:
 - An innovative idea
-- Experimental results from `/<working_dir>/project/`
-- Reference codebases and papers in `/<working_dir>/`
+- Experimental results from `Experiment/core_code/`
+- Reference codebases and papers in `Experiment/code_references/` and `Ideation/references/`
 
 ### Tasks
 1. Analyze experimental results and produce a detailed analysis report

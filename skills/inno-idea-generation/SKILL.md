@@ -51,19 +51,19 @@ skills/inno-idea-generation/
 
 Each step produces **two kinds** of files:
 
-1. **`.txt` files** (primary) — the full markdown content of each idea, written directly to `<cache_path>/`
-2. **`.json` files** (derived) — structured metadata under `<cache_path>/agents/`, whose `content` fields **must be copied verbatim** from the corresponding `.txt` files (never summarized)
+1. **`.txt` files** (primary) — the full markdown content of each idea, written directly to `Ideation/ideas/`
+2. **`.json` files** (derived) — structured metadata under `Ideation/ideas/logs/`, whose `content` fields **must be copied verbatim** from the corresponding `.txt` files (never summarized)
 
 ### Full directory layout
 
 ```
-<cache_path>/
+Ideation/ideas/
 ├── idea_query_round_1.txt                    ← Step 1: the query prompt sent to the agent
 ├── raw_idea_1.txt                            ← Step 1: full markdown of first idea
 ├── raw_idea_2.txt                            ← Step 2: full markdown of second idea
 ├── raw_idea_3.txt                            ← Step 2: full markdown of third idea
 ├── selected_idea.txt                         ← Step 3: full markdown of final selected idea
-└── agents/
+└── logs/
     ├── idea_generation_agent.json            ← Step 1: metadata + full text from raw_idea_1.txt
     ├── idea_generation_agent_iter_1.json     ← Step 2: metadata + full text from raw_idea_2.txt
     ├── idea_generation_agent_iter_2.json     ← Step 2: metadata + full text from raw_idea_3.txt
@@ -107,10 +107,8 @@ Each file contains `context_variables` only (no messages). The `content` fields 
 ```json
 {
   "context_variables": {
-    "working_dir": "workplace",
-    "local_root": "<local_root>",
-    "workplace_name": "<workplace_name>",
-    "cache_path": "<cache_path>",
+    "ideas_path": "<ideas_path>",
+    "references_path": "<references_path>",
     "date_limit": "YYYY-MM-DD",
     "prepare_result": { ... },
     "idea_generation_history": [
@@ -161,13 +159,13 @@ Note that the math formula should be as complete as possible.
 Send this to the **Idea Agent**. Record the response as the first `raw_idea` and append to `raw_ideas`.
 
 **Save (txt first, then json)**:
-1. Write the query prompt → `<cache_path>/idea_query_round_1.txt`
-2. Write the agent's full response → `<cache_path>/raw_idea_1.txt`
+1. Write the query prompt → `Ideation/ideas/idea_query_round_1.txt`
+2. Write the agent's full response → `Ideation/ideas/raw_idea_1.txt`
 3. Initialize `context_variables["idea_generation_history"]` and append:
    ```json
    { "round": 1, "status": "raw", "content": "<FULL text from raw_idea_1.txt>" }
    ```
-4. Write → `<cache_path>/agents/idea_generation_agent.json`
+4. Write → `Ideation/ideas/logs/idea_generation_agent.json`
 
 ### Step 2 — Generate additional ideas (diversity loop)
 
@@ -196,12 +194,12 @@ ideas above. You MUST obey these hard constraints:
 Append the new idea prompt to the existing conversation and call the **Idea Agent** again. Record each new idea in `raw_ideas` and `idea_generation_history`.
 
 **Save (txt first, then json)** after each round:
-1. Write the agent's full response → `<cache_path>/raw_idea_{round}.txt` (e.g. `raw_idea_2.txt`, `raw_idea_3.txt`)
+1. Write the agent's full response → `Ideation/ideas/raw_idea_{round}.txt` (e.g. `raw_idea_2.txt`, `raw_idea_3.txt`)
 2. Append to `idea_generation_history`:
    ```json
    { "round": N, "status": "raw", "content": "<FULL text from raw_idea_{N}.txt>" }
    ```
-3. Write → `<cache_path>/agents/idea_generation_agent_iter_{N-1}.json` (iter_1 for round 2, iter_2 for round 3, etc.)
+3. Write → `Ideation/ideas/logs/idea_generation_agent_iter_{N-1}.json` (iter_1 for round 2, iter_2 for round 3, etc.)
 
 ### Step 3 — Select the best idea
 
@@ -230,7 +228,7 @@ Send this as a **new** conversation (not appended to the idea-generation thread)
 The agent's response is the `selected_idea`. To verify which raw idea was chosen, compare the response text against each entry in `raw_ideas` — if a raw idea's text appears as a substring (or the first 100 chars match), use the original raw idea as `best_candidate`. Otherwise use the agent's response as-is.
 
 **Save (txt first, then json)**:
-1. Write the agent's full selection response → `<cache_path>/selected_idea.txt`
+1. Write the agent's full selection response → `Ideation/ideas/selected_idea.txt`
 2. Copy that full text into the context:
    ```json
    context_variables["final_selected_idea_data"] = {
@@ -238,7 +236,7 @@ The agent's response is the `selected_idea`. To verify which raw idea was chosen
      "selected_idea_text": "<FULL text from selected_idea.txt>"
    }
    ```
-3. Write → `<cache_path>/agents/idea_generation_agent_iter_select.json`
+3. Write → `Ideation/ideas/logs/idea_generation_agent_iter_select.json`
 
 ## Configuration
 
@@ -249,9 +247,9 @@ The agent's response is the `selected_idea`. To verify which raw idea was chosen
 ## Checklist
 
 - [ ] Query prompt saved → `idea_query_round_1.txt`
-- [ ] First raw idea saved → `raw_idea_1.txt`, then full text copied into `agents/idea_generation_agent.json`
-- [ ] Additional raw ideas saved → `raw_idea_{N}.txt`, then full text copied into `agents/idea_generation_agent_iter_{N-1}.json`
+- [ ] First raw idea saved → `raw_idea_1.txt`, then full text copied into `logs/idea_generation_agent.json`
+- [ ] Additional raw ideas saved → `raw_idea_{N}.txt`, then full text copied into `logs/idea_generation_agent_iter_{N-1}.json`
 - [ ] `idea_generation_history` in `context_variables` contains **full text** (not summaries) for all rounds
-- [ ] Best idea selected and saved → `selected_idea.txt`, then full text copied into `agents/idea_generation_agent_iter_select.json`
+- [ ] Best idea selected and saved → `selected_idea.txt`, then full text copied into `logs/idea_generation_agent_iter_select.json`
 - [ ] `final_selected_idea_data.selected_idea_text` contains **full text** from `selected_idea.txt`
-- [ ] All `.txt` files written to `<cache_path>/`, all `.json` files written to `<cache_path>/agents/`
+- [ ] All `.txt` files written to `Ideation/ideas/`, all `.json` files written to `Ideation/ideas/logs/`

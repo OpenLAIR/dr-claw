@@ -24,18 +24,14 @@ skills/inno-code-survey/
 
 ## Path conventions
 
-All file paths use `<local_root>`, which resolves to:
-
-```
-<project_path>/outputs/workplace_paper/task_<instance_id>_<mode>/workplace/
-```
+All file paths use semantic directory names under the project root:
 
 | Path | Contents |
 |------|----------|
-| `<local_root>/papers/` | Downloaded arXiv LaTeX sources (`.tex`, `.txt`, `.md`) |
-| `<local_root>/<repo_name>/` | Cloned GitHub repositories |
-
-`<cache_path>` = `<project_path>/outputs/cache/cache_<instance_id>_<mode>/`
+| `Ideation/references/papers/` | Downloaded arXiv LaTeX sources (`.tex`, `.txt`, `.md`) |
+| `Experiment/code_references/<repo_name>/` | Cloned GitHub repositories |
+| `Experiment/code_references/model_survey.md` | Code survey implementation report |
+| `Experiment/code_references/logs/` | Phase A & B agent cache files |
 
 ## Inputs
 
@@ -43,11 +39,11 @@ These are aligned with outputs from **inno-idea-generation** and **inno-prepare-
 
 | Input | Source | Description |
 |-------|--------|-------------|
-| `selected_idea` | `<cache_path>/selected_idea.txt` or `final_selected_idea_data` | The finalized selected idea (full markdown) |
+| `selected_idea` | `Ideation/ideas/selected_idea.txt` or `final_selected_idea_data` | The finalized selected idea (full markdown) |
 | `download_res` | `inno-prepare-resources` output | Result log from downloading arXiv paper sources |
 | `prepare_res` | `inno-prepare-resources` output (JSON) | Contains `reference_codebases` and `reference_paths` |
 | `context_variables` | Shared context dict | Accumulated pipeline context |
-| `pipeline_config.json` | `<project_path>/outputs/cache/` | For `local_root`, `cache_path`, `workplace_name`, `date_limit` |
+| `pipeline_config.json` | `<project_path>/pipeline_config.json` | For `code_references_path`, `references_path`, `date_limit` |
 
 ## Outputs
 
@@ -56,7 +52,7 @@ These are aligned with outputs from **inno-idea-generation** and **inno-prepare-
 | `acquired_code_repos` | Dict of `{name: path}` for newly cloned repos | Phase B, cache |
 | `updated_prepare_res` | `prepare_res` JSON with new repos merged into `reference_codebases` / `reference_paths` | Downstream pipeline |
 | `extra_repo_info` | Formatted string listing acquired repos | Phase B query |
-| `model_survey` | Comprehensive code survey implementation report | `inno-implementation-plan` |
+| `model_survey` | Comprehensive code survey implementation report | `inno-experiment-dev` |
 
 ---
 
@@ -69,7 +65,7 @@ Maps to `_acquire_missing_repos` (lines 745–792) + `_update_prepare_res_with_n
 
 ### Step A1: Analyze the selected idea and identify gaps
 
-Read `selected_idea` and identify 2–3 **missing technical components** — novel or specialized parts that are likely NOT in the standard repos already present in `<local_root>/`.
+Read `selected_idea` and identify 2–3 **missing technical components** — novel or specialized parts that are likely NOT in the standard repos already present in `Experiment/code_references/`.
 
 ### Step A2: Search GitHub using the "Cascade" strategy
 
@@ -92,16 +88,16 @@ curl -s "https://api.github.com/search/repositories?q=sinkhorn+attention&per_pag
 
 ### Step A3: Clone selected repos
 
-Clone the best candidate for each gap into `<local_root>/`:
+Clone the best candidate for each gap into `Experiment/code_references/`:
 
 ```bash
-GIT_TERMINAL_PROMPT=0 git clone --depth 1 <clone_url> <local_root>/<repo_name>
+GIT_TERMINAL_PROMPT=0 git clone --depth 1 <clone_url> Experiment/code_references/<repo_name>
 ```
 
 ### Step A4: Verify each clone
 
 For each cloned repo:
-1. Read `README.md`: `cat <local_root>/<repo_name>/README.md`
+1. Read `README.md`: `cat Experiment/code_references/<repo_name>/README.md`
 2. Check language and domain relevance
 3. Reject repos that don't match (wrong domain, empty, HTML-only)
 
@@ -110,8 +106,8 @@ For each cloned repo:
 1. Build `acquired_code_repos` dict from verified clones:
    ```json
    {
-     "repo_name_1": "<local_root>/repo_name_1",
-     "repo_name_2": "<local_root>/repo_name_2"
+     "repo_name_1": "Experiment/code_references/repo_name_1",
+     "repo_name_2": "Experiment/code_references/repo_name_2"
    }
    ```
 2. Set `context_variables["acquired_code_repos"] = acquired_code_repos`
@@ -130,14 +126,12 @@ For each cloned repo:
    ```
    (Empty string if no repos acquired)
 
-2. Write `<cache_path>/agents/repo_acquisition_agent.json`:
+2. Write `Experiment/code_references/logs/repo_acquisition_agent.json`:
    ```json
    {
      "context_variables": {
-       "working_dir": "workplace",
-       "local_root": "<local_root>",
-       "workplace_name": "<workplace_name>",
-       "cache_path": "<cache_path>",
+       "code_references_path": "<code_references_path>",
+       "references_path": "<references_path>",
        "date_limit": "YYYY-MM-DD",
        "prepare_result": { ... },
        "acquired_code_repos": {
@@ -167,7 +161,7 @@ I have an innovative idea related to machine learning:
 {selected_idea}
 
 I have carefully gone through these papers' github repositories and found download
-some of them in my local machine, in the directory `<local_root>`, use `ls`, `tree`,
+some of them in my local machine, in the directory `Experiment/code_references/`, use `ls`, `tree`,
 and `find` to navigate the directory.
 And I have also downloaded the corresponding paper (LaTeX sources, markdown, txt),
 with the following information:
@@ -183,18 +177,18 @@ concepts in the innovative idea.
 Note that the code implementation should be as complete as possible.
 ```
 
-### Step B2: Survey all repos in `<local_root>/`
+### Step B2: Survey all repos in `Experiment/code_references/`
 
 Use Linux commands to navigate and read code:
 
 | Action | Command |
 |--------|---------|
-| List repos | `ls <local_root>/` or `tree <local_root>/ -L 1` |
-| View repo structure | `tree <local_root>/<repo>/ -L 3` |
-| Find Python files | `find <local_root>/<repo>/ -name "*.py" -type f` |
-| Read source file | `cat <local_root>/<repo>/model/attention.py` |
-| Search across repos | `rg "class.*Attention" <local_root>/` or `grep -rn "sinkhorn" <local_root>/` |
-| Read specific lines | `sed -n '100,200p' <local_root>/<repo>/file.py` |
+| List repos | `ls Experiment/code_references/` or `tree Experiment/code_references/ -L 1` |
+| View repo structure | `tree Experiment/code_references/<repo>/ -L 3` |
+| Find Python files | `find Experiment/code_references/<repo>/ -name "*.py" -type f` |
+| Read source file | `cat Experiment/code_references/<repo>/model/attention.py` |
+| Search across repos | `rg "class.*Attention" Experiment/code_references/` or `grep -rn "sinkhorn" Experiment/code_references/` |
+| Read specific lines | `sed -n '100,200p' Experiment/code_references/<repo>/file.py` |
 
 ### Step B3: Map each innovative module to code
 
@@ -218,15 +212,13 @@ Set `context_variables["model_survey"] = code_survey_response` (the full impleme
 
 ### Step B6: Save Phase B cache
 
-Write `<cache_path>/agents/code_survey_agent.json`:
+Write `Experiment/code_references/logs/code_survey_agent.json`:
 
 ```json
 {
   "context_variables": {
-    "working_dir": "workplace",
-    "local_root": "<local_root>",
-    "workplace_name": "<workplace_name>",
-    "cache_path": "<cache_path>",
+    "code_references_path": "<code_references_path>",
+    "references_path": "<references_path>",
     "date_limit": "YYYY-MM-DD",
     "prepare_result": { ... },
     "acquired_code_repos": { ... },
@@ -253,7 +245,7 @@ Write `<cache_path>/agents/code_survey_agent.json`:
 | Reference tool | Replacement |
 |---|---|
 | `search_github_repos_wrapper` | `python scripts/github_search_clone.py --query "..." --limit 5` or `curl` to GitHub API |
-| `tracked_execute_command` (git clone) | `GIT_TERMINAL_PROMPT=0 git clone --depth 1 <url> <local_root>/<name>` |
+| `tracked_execute_command` (git clone) | `GIT_TERMINAL_PROMPT=0 git clone --depth 1 <url> Experiment/code_references/<name>` |
 | `list_files` | `ls`, `find`, `tree` |
 | `read_file` | `cat`, `head`, `tail`, `sed -n` |
 | `gen_code_tree_structure` | `tree -L 3` |
@@ -267,20 +259,20 @@ Write `<cache_path>/agents/code_survey_agent.json`:
 ### Phase A (Repo Acquisition)
 - [ ] Selected idea analyzed; 2-3 missing components identified
 - [ ] Cascade search performed (6 queries per gap across 3 levels)
-- [ ] Best candidates cloned into `<local_root>/`
+- [ ] Best candidates cloned into `Experiment/code_references/`
 - [ ] Each clone verified (README.md read, domain/language checked)
 - [ ] `context_variables["acquired_code_repos"]` set as dict `{name: path}`
 - [ ] `prepare_res` updated with new `reference_codebases` / `reference_paths`
 - [ ] `extra_repo_info` string built for Phase B
-- [ ] `<cache_path>/agents/repo_acquisition_agent.json` written
+- [ ] `Experiment/code_references/logs/repo_acquisition_agent.json` written
 
 ### Phase B (Code Survey)
 - [ ] Code survey query built with `selected_idea` + `download_res` + `extra_repo_info`
-- [ ] All repos in `<local_root>/` surveyed using `tree`, `cat`, `grep`, `find`
+- [ ] All repos in `Experiment/code_references/` surveyed using `tree`, `cat`, `grep`, `find`
 - [ ] Every atomic academic concept in the idea has matching code identified
 - [ ] Implementation report includes: code snippets, file paths, function signatures, formula-to-code mappings
 - [ ] `context_variables["model_survey"]` set with full report text
-- [ ] `<cache_path>/agents/code_survey_agent.json` written with complete `model_survey`
+- [ ] `Experiment/code_references/logs/code_survey_agent.json` written with complete `model_survey`
 
 ---
 

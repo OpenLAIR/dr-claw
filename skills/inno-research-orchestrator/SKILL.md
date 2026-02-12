@@ -14,7 +14,7 @@ The user's entry point to the InnoFlow Research pipeline. Real users rarely prov
 
 ## Constraints
 
-- **Sandbox rule**: The agent must **only** read, write, and create files inside the current project directory (`<project_path>`). Never access, reference, or modify files outside this directory. All generated paths (`local_root`, `cache_path`, `instance_path`, symlinks, dataset copies, etc.) must be children of `<project_path>`. If the user mentions an external path (e.g. a dataset), copy or symlink it **into** the project directory rather than operating on it in-place.
+- **Sandbox rule**: The agent must **only** read, write, and create files inside the current project directory (`<project_path>`). Never access, reference, or modify files outside this directory. All generated paths (`instance_path`, `references_path`, `ideas_path`, `code_references_path`, `datasets_path`, `core_code_path`, `analysis_path`, symlinks, dataset copies, etc.) must be children of `<project_path>`. If the user mentions an external path (e.g. a dataset), copy or symlink it **into** the project directory rather than operating on it in-place.
 
 ---
 
@@ -55,14 +55,18 @@ Based on what the user provided, classify into **plan-level** or **idea-level**:
 `inno-prepare-resources` expects:
 
 ```
-instance_path      : str   — path to a JSON file with source_papers, task1/task2, etc.
-task_level         : str   — "task1" (plan) or "task2" (idea)
-category           : str   — research domain tag, agent-inferred (may match a built-in metaprompt or be "custom")
-local_root         : str   — working directory (will contain workplace/, cache/, etc.)
-workplace_name     : str   — typically "workplace"
-references         : str   — formatted string from source_papers (built by the pipeline)
-ideas              : str   — (optional, plan-mode only) the user's full plan text
-dataset_description: str   — (optional) pre-built by orchestrator when category is custom or data was user-provided
+instance_path       : str   — path to a JSON file with source_papers, task1/task2, etc.
+task_level          : str   — "task1" (plan) or "task2" (idea)
+category            : str   — research domain tag, agent-inferred (may match a built-in metaprompt or be "custom")
+references_path     : str   — <project_path>/Ideation/references/
+ideas_path          : str   — <project_path>/Ideation/ideas/
+code_references_path: str   — <project_path>/Experiment/code_references/
+datasets_path       : str   — <project_path>/Experiment/datasets/
+core_code_path      : str   — <project_path>/Experiment/core_code/
+analysis_path       : str   — <project_path>/Experiment/analysis/
+references          : str   — formatted string from source_papers (built by the pipeline)
+ideas               : str   — (optional, plan-mode only) the user's full plan text
+dataset_description : str   — (optional) pre-built by orchestrator when category is custom or data was user-provided
 ```
 
 ### 3a — Build or locate the instance JSON
@@ -135,17 +139,17 @@ videoflow, videorestoration, videoseg
 Users will **not** have the `dataset_candidate/{category}/` directory pre-populated. The agent must help acquire and set up the dataset. Handle each scenario:
 
 **Scenario 1 — Built-in category with pre-existing dataset**
-The `metaprompt.py` already describes where dataset files should be (e.g. `/workplace/dataset_candidate/bioasq/`). Check if these files already exist in the workspace. If yes, proceed. If not, the agent should either:
+The `metaprompt.py` already describes where dataset files should be (e.g. `Experiment/datasets/bioasq/`). Check if these files already exist in the workspace. If yes, proceed. If not, the agent should either:
 - Download them (if a public URL is known from the metaprompt), or
 - Ask the user where the data is (see Scenario 3/4).
 
 **Scenario 2 — Built-in category, but user has dataset elsewhere**
 User says "my BioASQ data is at `/home/dingjie/data/bioasq/`".
-→ Create a symlink or copy the data into `<local_root>/dataset_candidate/{category}/`, or instruct downstream skills to read from the user's path directly. Update the `dataset_description` accordingly.
+→ Create a symlink or copy the data into `Experiment/datasets/{category}/`, or instruct downstream skills to read from the user's path directly. Update the `dataset_description` accordingly.
 
 **Scenario 3 — User provides a dataset URL**
 User says "download the data from https://example.com/dataset.zip".
-→ The agent downloads it to `<local_root>/dataset_candidate/`, extracts if needed, and explores the contents to understand the data format. Then builds a `dataset_description` manually.
+→ The agent downloads it to `Experiment/datasets/`, extracts if needed, and explores the contents to understand the data format. Then builds a `dataset_description` manually.
 
 **Scenario 4 — User points to a local directory**
 User says "my dataset is at `/home/dingjie/workspace/my_data/`".
@@ -168,11 +172,16 @@ Compose these into a `dataset_description` string and pass it to `inno-prepare-r
 
 #### Path layout
 
+The pipeline outputs are organized into three semantic top-level folders:
+
 ```
-project_path    = <current VibeLab project path>
-local_root      = <project_path>/outputs/workplace_paper/task_<instance_id>_<mode>/workplace
-workplace_name  = "workplace"
-cache_path      = <project_path>/outputs/cache/cache_<instance_id>_<mode>/
+project_path         = <current VibeLab project path>
+references_path      = <project_path>/Ideation/references/
+ideas_path           = <project_path>/Ideation/ideas/
+code_references_path = <project_path>/Experiment/code_references/
+datasets_path        = <project_path>/Experiment/datasets/
+core_code_path       = <project_path>/Experiment/core_code/
+analysis_path        = <project_path>/Experiment/analysis/
 ```
 
 If the user has an existing workspace directory, use it. Otherwise, create the full directory tree:
@@ -181,18 +190,28 @@ If the user has an existing workspace directory, use it. Otherwise, create the f
 <project_path>/
 ├── instance.json                          ← project root (Research Lab UI reads this)
 ├── pipeline_config.json                   ← project root (Research Lab UI reads this)
-└── outputs/
-    ├── cache/
-    │   └── cache_<instance_id>_<mode>/    ← cache_path
-    │       ├── tools/                     ← tool call results
-    │       │   └── load_instance.json     ← written by orchestrator
-    │       └── agents/                    ← agent conversation logs
-    └── workplace_paper/
-        └── task_<instance_id>_<mode>/
-            └── workplace/                 ← local_root (cloned repos, papers, code)
+├── Ideation/
+│   ├── references/
+│   │   ├── papers/                        ← arXiv downloaded papers
+│   │   └── logs/                          ← prepare_agent.json, github_search.json,
+│   │                                         load_instance.json, download_arxiv*.json
+│   └── ideas/
+│       └── logs/                          ← idea_generation_agent*.json
+├── Experiment/
+│   ├── code_references/
+│   │   └── logs/                          ← repo_acquisition_agent.json, code_survey_agent.json
+│   ├── datasets/
+│   ├── core_code/
+│   │   └── logs/                          ← coding_plan_agent.json, machine_learning_agent*.json,
+│   │                                         judge_agent*.json
+│   └── analysis/
+│       └── logs/                          ← experiment_analysis_agent*.json
+└── Publication/                           ← placeholder for future paper generation
+    ├── paper/
+    └── materials/
 ```
 
-Create the directories `<cache_path>/tools/` and `<cache_path>/agents/` immediately.
+Create all directories and `logs/` subdirectories immediately.
 
 #### Required output files at project root
 
@@ -210,19 +229,21 @@ The **Research Lab** UI reads the following files from the project root. The orc
   "instance_path": "<project_path>/instance.json",
   "task_level": "task1 or task2",
   "category": "<inferred category>",
-  "local_root": "<local_root>",
-  "workplace_name": "workplace",
-  "cache_path": "<cache_path>",
-  "dataset_path": "<path to dataset if known, or empty string>",
+  "references_path": "<project_path>/Ideation/references/",
+  "ideas_path": "<project_path>/Ideation/ideas/",
+  "code_references_path": "<project_path>/Experiment/code_references/",
+  "datasets_path": "<project_path>/Experiment/datasets/",
+  "core_code_path": "<project_path>/Experiment/core_code/",
+  "analysis_path": "<project_path>/Experiment/analysis/",
   "references": "<empty string, filled later by prepare step>",
   "ideas": "<plan text if plan-mode, or empty string>",
   "dataset_description": "<pre-built description if custom, or empty string>"
 }
 ```
 
-#### Cache seed file: `tools/load_instance.json`
+#### Cache seed file: `load_instance.json`
 
-After constructing or locating the instance JSON, write the load result to cache so downstream skills can reference it. This file follows the standard tool cache format:
+After constructing or locating the instance JSON, write the load result so downstream skills can reference it. This file follows the standard tool cache format:
 
 ```json
 {
@@ -243,9 +264,9 @@ After constructing or locating the instance JSON, write the load result to cache
 - `result.task_instructions` — the text from the field indicated by `task_level` (`task1` or `task2`)
 - `result.date_limit` — publication date fetched from arXiv, or default `"2024-01-01"` if unavailable
 
-**Save** → `<cache_path>/tools/load_instance.json`
+**Save** → `Ideation/references/logs/load_instance.json`
 
-All files (`instance.json`, `pipeline_config.json`, `tools/load_instance.json`) must be written **before** the orchestrator presents the summary to the user.
+All files (`instance.json`, `pipeline_config.json`, `Ideation/references/logs/load_instance.json`) must be written **before** the orchestrator presents the summary to the user.
 
 ---
 
@@ -259,7 +280,7 @@ The summary should include:
 2. **Instance JSON**: file path and key contents (`source_papers` count, `task_level`, `instance_id`)
 3. **Category**: the inferred category and whether a built-in metaprompt is available
 4. **Dataset**: status (found / needs download / user-provided / custom description built)
-5. **Workspace paths**: `local_root`, `cache_path`
+5. **Workspace paths**: `Ideation/`, `Experiment/`, `Publication/`
 6. **Next step**: which skill to run next — **inno-prepare-resources** — and the arguments it will receive
 
 Also remind the user of the full pipeline that will follow:
@@ -269,6 +290,7 @@ Also remind the user of the full pipeline that will follow:
 2. inno-code-survey
 3. inno-experiment-dev (plan + implement + judge + submit)
 4. inno-experiment-analysis (analyse + refine)
+5. inno-paper-writing (draft publication-ready paper) — optional, user-triggered
 
 **Idea-level pipeline:**
 1. inno-prepare-resources
@@ -276,6 +298,7 @@ Also remind the user of the full pipeline that will follow:
 3. inno-code-survey (Phase A: repo acquisition + Phase B: code survey)
 4. inno-experiment-dev (plan + implement + judge + submit)
 5. inno-experiment-analysis (analyse + refine)
+6. inno-paper-writing (draft publication-ready paper) — optional, user-triggered
 
 The user may then say "proceed", "run prepare", or manually invoke `inno-prepare-resources`.
 
@@ -359,11 +382,11 @@ The user may then say "proceed", "run prepare", or manually invoke `inno-prepare
 - [ ] Maturity judgment completed → `task_level` set to `"task1"` (plan) or `"task2"` (idea).
 - [ ] Instance JSON located or constructed with at minimum `source_papers` and `task1`/`task2`.
 - [ ] `category` inferred by agent (from path, task keywords, or set to "custom").
-- [ ] Workspace paths (`local_root`, `cache_path`, `workplace_name`) set up — all within `<project_path>`.
-- [ ] Directories created: `<cache_path>/tools/`, `<cache_path>/agents/`, `<local_root>/`.
+- [ ] Workspace paths set up — `Ideation/`, `Experiment/`, `Publication/` — all within `<project_path>`.
+- [ ] Directories created: all folders and `logs/` subdirectories as per path layout.
 - [ ] `instance.json` written to `<project_path>/instance.json`.
-- [ ] `pipeline_config.json` written to `<project_path>/pipeline_config.json`.
-- [ ] `load_instance.json` written to `<cache_path>/tools/load_instance.json`.
+- [ ] `pipeline_config.json` written to `<project_path>/pipeline_config.json` with semantic path fields.
+- [ ] `load_instance.json` written to `Ideation/references/logs/load_instance.json`.
 - [ ] All generated/referenced paths are inside the project directory (sandbox rule).
 - [ ] All inputs aligned with `inno-prepare-resources` expected format.
 - [ ] Summary presented to user; **waiting for user confirmation** before invoking any downstream skill.
@@ -372,4 +395,4 @@ The user may then say "proceed", "run prepare", or manually invoke `inno-prepare
 
 - Instance JSON schema: `{"source_papers": [...], "task1": "...", "task2": "...", "instance_id": "...", "url": "..."}`
 - Category → dataset mapping: built-in categories ship with a `metaprompt.py` providing `TASK`, `DATASET`, `BASELINE`, `COMPARISON`, `EVALUATION`
-- Downstream skills: `inno-prepare-resources`, `inno-idea-generation`, `inno-code-survey` (Phase A: repo acquisition + Phase B: code survey), `inno-experiment-dev` (plan + implement + judge + submit), `inno-experiment-analysis` (analyse + refine)
+- Downstream skills: `inno-prepare-resources`, `inno-idea-generation`, `inno-code-survey` (Phase A: repo acquisition + Phase B: code survey), `inno-experiment-dev` (plan + implement + judge + submit), `inno-experiment-analysis` (analyse + refine), `inno-paper-writing` (draft publication-ready paper)

@@ -8,20 +8,12 @@ An agent specialized in analyzing academic papers and generating innovative rese
 
 ## Path conventions
 
-All file paths below use `<local_root>`, which resolves to:
-
-```
-<project_path>/outputs/workplace_paper/task_<instance_id>_<mode>/workplace/
-```
-
-Example: `outputs/workplace_paper/task_bioasq_neural_qa_idea/workplace/`
-
-Key sub-directories:
+The agent works within the project directory using the new semantic layout:
 
 | Path | Contents |
 |------|----------|
-| `<local_root>/papers/` | Downloaded arXiv LaTeX sources (`.tex`, `.txt`, `.md`) |
-| `<local_root>/<repo_name>/` | Cloned GitHub repositories |
+| `Ideation/references/papers/` | Downloaded arXiv LaTeX sources (`.tex`, `.txt`, `.md`) |
+| `Experiment/code_references/<repo_name>/` | Cloned GitHub repositories |
 
 ## Dual-mode Operation
 
@@ -34,7 +26,7 @@ The agent operates in one of two modes depending on the user message:
 
 ```
 You are an `Idea Generation Agent` specialized in analyzing academic papers
-located in `<local_root>/papers/` and generating innovative ideas. Your task
+located in `Ideation/references/papers/` and generating innovative ideas. Your task
 is to either:
 1. Thoroughly review research papers and generate comprehensive ideas for the
    given task, or
@@ -154,19 +146,17 @@ Linux commands available in the terminal to accomplish the same tasks:
 
 | Action | Command | Example |
 |--------|---------|---------|
-| List files in papers directory | `ls`, `find`, `tree` | `ls <local_root>/papers/` |
-| Read a paper file | `cat`, `less`, `head`, `tail` | `cat <local_root>/papers/paper1.tex` |
-| Search for text in a file | `grep`, `rg` (ripgrep) | `grep -n "attention" <local_root>/papers/paper1.tex` |
-| Search across all papers | `grep -r`, `rg` | `rg "transformer" <local_root>/papers/` |
-| View file structure | `tree`, `ls -R` | `tree <local_root>/ -L 2` |
-| Read specific line range | `sed -n` | `sed -n '100,200p' <local_root>/papers/paper1.tex` |
-| Count lines / get overview | `wc -l` | `wc -l <local_root>/papers/*.tex` |
-| View repository structure | `tree`, `find` | `tree <local_root>/repo_name/ -L 3` |
+| List files in papers directory | `ls`, `find`, `tree` | `ls Ideation/references/papers/` |
+| Read a paper file | `cat`, `less`, `head`, `tail` | `cat Ideation/references/papers/paper1.tex` |
+| Search for text in a file | `grep`, `rg` (ripgrep) | `grep -n "attention" Ideation/references/papers/paper1.tex` |
+| Search across all papers | `grep -r`, `rg` | `rg "transformer" Ideation/references/papers/` |
+| View file structure | `tree`, `ls -R` | `tree Ideation/ -L 2` |
+| Read specific line range | `sed -n` | `sed -n '100,200p' Ideation/references/papers/paper1.tex` |
+| Count lines / get overview | `wc -l` | `wc -l Ideation/references/papers/*.tex` |
+| View repository structure | `tree`, `find` | `tree Experiment/code_references/repo_name/ -L 3` |
 
 ## Notes
 
-- `<local_root>` = `<project_path>/outputs/workplace_paper/task_<instance_id>_<mode>/workplace/`
-  - Example: `outputs/workplace_paper/task_bioasq_neural_qa_idea/workplace/`
-- Paper files: `<local_root>/papers/*.tex` (LaTeX sources downloaded by inno-prepare-resources)
-- Cloned repositories: `<local_root>/<repo_name>/` (e.g. `<local_root>/BioASQ-QA/`)
+- Paper files: `Ideation/references/papers/*.tex` (LaTeX sources downloaded by inno-prepare-resources)
+- Cloned repositories: `Experiment/code_references/<repo_name>/` (e.g. `Experiment/code_references/BioASQ-QA/`)
 - All file operations use standard Linux commands — no custom tool binaries are required

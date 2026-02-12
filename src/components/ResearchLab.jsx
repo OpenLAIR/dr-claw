@@ -8,7 +8,7 @@ import {
   FlaskConical, RefreshCw, FileText, BookOpen, Settings2, Lightbulb,
   GitBranch, FolderOpen, ChevronDown, ChevronRight, ExternalLink,
   FileCode, Beaker, ClipboardList, Brain, Save, AlertCircle,
-  Sparkles, Copy, Check
+  Sparkles, Copy, Check, PenTool
 } from 'lucide-react';
 import { ScrollArea } from './ui/scroll-area';
 import { Button } from './ui/button';
@@ -56,15 +56,53 @@ function collectFiles(nodes, projectRoot, predicate) {
   return files;
 }
 
-/** Classify a cache JSON file into a pipeline stage based on its name and relative path */
+/** Classify a log JSON file into a pipeline stage based on its name and relative path.
+ *  Uses the new semantic directory layout (Ideation/, Experiment/) for primary
+ *  classification, with filename-based fallback for legacy cache/ layout. */
 function classifyArtifact(name, relativePath) {
-  // Tools
+  const rp = (relativePath || '').replace(/\\/g, '/');
+
+  // ---- Directory-based classification (new layout) ----
+  if (rp.startsWith('Ideation/references/')) {
+    if (name === 'load_instance.json') return { stage: 'Data Loading', icon: FolderOpen, color: 'blue' };
+    if (name === 'github_search.json') return { stage: 'Data Loading', icon: FolderOpen, color: 'blue' };
+    if (name.includes('download_arxiv')) return { stage: 'Data Loading', icon: FolderOpen, color: 'blue' };
+    if (name === 'prepare_agent.json') return { stage: 'Prepare', icon: Settings2, color: 'blue' };
+    return { stage: 'Prepare', icon: Settings2, color: 'blue' };
+  }
+  if (rp.startsWith('Ideation/ideas/')) {
+    if (name.startsWith('idea_generation')) return { stage: 'Idea Generation', icon: Lightbulb, color: 'amber' };
+    if (name.includes('medical_evidence') || name.includes('medical_expert'))
+      return { stage: 'Medical Expert', icon: Brain, color: 'rose' };
+    if (name.includes('engineering_evidence') || name.includes('engineering_expert'))
+      return { stage: 'Engineering Expert', icon: Brain, color: 'indigo' };
+    return { stage: 'Idea Generation', icon: Lightbulb, color: 'amber' };
+  }
+  if (rp.startsWith('Experiment/code_references/')) {
+    if (name === 'repo_acquisition_agent.json') return { stage: 'Repo Acquisition', icon: GitBranch, color: 'green' };
+    if (name === 'code_survey_agent.json') return { stage: 'Code Survey', icon: FileCode, color: 'cyan' };
+    return { stage: 'Code Survey', icon: FileCode, color: 'cyan' };
+  }
+  if (rp.startsWith('Experiment/core_code/')) {
+    if (name === 'coding_plan_agent.json') return { stage: 'Implementation Plan', icon: ClipboardList, color: 'purple' };
+    if (name.startsWith('machine_learning')) return { stage: 'ML Development', icon: Beaker, color: 'orange' };
+    if (name.startsWith('judge_agent')) return { stage: 'Judge', icon: AlertCircle, color: 'yellow' };
+    return { stage: 'ML Development', icon: Beaker, color: 'orange' };
+  }
+  if (rp.startsWith('Experiment/analysis/')) {
+    if (name.startsWith('experiment_analysis')) return { stage: 'Experiment Analysis', icon: Beaker, color: 'teal' };
+    if (name.startsWith('machine_learning')) return { stage: 'ML Development', icon: Beaker, color: 'orange' };
+    return { stage: 'Experiment Analysis', icon: Beaker, color: 'teal' };
+  }
+  if (rp.startsWith('Publication/')) {
+    return { stage: 'Paper Writing', icon: PenTool, color: 'purple' };
+  }
+
+  // ---- Filename-based fallback (legacy cache/ layout) ----
   if (relativePath?.includes('/tools/') || name === 'load_instance.json')
     return { stage: 'Data Loading', icon: FolderOpen, color: 'blue' };
   if (name === 'github_search.json') return { stage: 'Data Loading', icon: FolderOpen, color: 'blue' };
   if (name.includes('download_arxiv')) return { stage: 'Data Loading', icon: FolderOpen, color: 'blue' };
-
-  // Agents — ordered by pipeline stage
   if (name === 'prepare_agent.json') return { stage: 'Prepare', icon: Settings2, color: 'blue' };
   if (name.startsWith('idea_generation')) return { stage: 'Idea Generation', icon: Lightbulb, color: 'amber' };
   if (name.includes('medical_evidence') || name.includes('medical_expert'))
@@ -196,7 +234,6 @@ function PipelineCard({ config }) {
     { label: 'Task Level', value: config.task_level },
     { label: 'Category', value: config.category },
     { label: 'Dataset', value: config.dataset_path?.split('/').pop() || '—' },
-    { label: 'Workspace', value: config.workplace_name || 'workplace' },
   ].filter(e => e.value);
 
   return (
@@ -232,7 +269,7 @@ function ArtifactsCard({ artifacts, onSelect, selectedPath }) {
   const stageOrder = [
     'Data Loading', 'Prepare', 'Idea Generation', 'Medical Expert', 'Engineering Expert',
     'Repo Acquisition', 'Code Survey', 'Implementation Plan',
-    'ML Development', 'Judge', 'Experiment Analysis', 'Other'
+    'ML Development', 'Judge', 'Experiment Analysis', 'Paper Writing', 'Other'
   ];
   const sorted = stageOrder.filter(s => groups[s]).map(s => ({ stage: s, ...groups[s] }));
 
@@ -354,20 +391,17 @@ function IdeaCard({ projectName, config }) {
   const rehypePlugins = useMemo(() => [rehypeKatex], []);
 
   useEffect(() => {
-    if (!projectName || !config?.cache_path) { setLoading(false); return; }
+    if (!projectName) { setLoading(false); return; }
 
     setLoading(true);
 
     (async () => {
       try {
-        const cachePath = config.cache_path;
-        const relativeCacheBase = cachePath.includes('/outputs/')
-          ? 'outputs/' + cachePath.split('/outputs/')[1]
-          : cachePath;
-        const cacheDir = relativeCacheBase.replace(/\/+$/, '');
+        // --- New layout: Ideation/ideas/ ---
+        const ideasDir = 'Ideation/ideas';
 
-        // 1. Primary: read selected_idea.txt (full markdown)
-        const selectedTxt = await readProjectText(projectName, `${cacheDir}/selected_idea.txt`);
+        // 1. Primary: read selected_idea.txt from new path
+        const selectedTxt = await readProjectText(projectName, `${ideasDir}/selected_idea.txt`);
         if (selectedTxt) {
           setIdeaText(selectedTxt);
           setLoading(false);
@@ -376,7 +410,7 @@ function IdeaCard({ projectName, config }) {
 
         // 2. Fallback: read raw_idea_N.txt in reverse order (latest first)
         for (let i = 10; i >= 1; i--) {
-          const rawTxt = await readProjectText(projectName, `${cacheDir}/raw_idea_${i}.txt`);
+          const rawTxt = await readProjectText(projectName, `${ideasDir}/raw_idea_${i}.txt`);
           if (rawTxt) {
             setIdeaText(rawTxt);
             setLoading(false);
@@ -384,14 +418,46 @@ function IdeaCard({ projectName, config }) {
           }
         }
 
-        // 3. Last resort: read from JSON cache files
-        const selectFile = `${cacheDir}/agents/idea_generation_agent_iter_select.json`;
+        // 3. Fallback: read from logs JSON
+        const selectFile = `${ideasDir}/logs/idea_generation_agent_iter_select.json`;
         const selectData = await readProjectJson(projectName, selectFile);
         if (selectData?.context_variables?.final_selected_idea_data) {
           const data = selectData.context_variables.final_selected_idea_data;
           setIdeaText(data.selected_idea_text || data.raw_idea || null);
           setLoading(false);
           return;
+        }
+
+        // --- Legacy layout: cache_path based ---
+        if (config?.cache_path) {
+          const cachePath = config.cache_path;
+          const relativeCacheBase = cachePath.includes('/outputs/')
+            ? 'outputs/' + cachePath.split('/outputs/')[1]
+            : cachePath;
+          const cacheDir = relativeCacheBase.replace(/\/+$/, '');
+
+          const legacySelected = await readProjectText(projectName, `${cacheDir}/selected_idea.txt`);
+          if (legacySelected) {
+            setIdeaText(legacySelected);
+            setLoading(false);
+            return;
+          }
+          for (let i = 10; i >= 1; i--) {
+            const rawTxt = await readProjectText(projectName, `${cacheDir}/raw_idea_${i}.txt`);
+            if (rawTxt) {
+              setIdeaText(rawTxt);
+              setLoading(false);
+              return;
+            }
+          }
+          const legacySelectFile = `${cacheDir}/agents/idea_generation_agent_iter_select.json`;
+          const legacyData = await readProjectJson(projectName, legacySelectFile);
+          if (legacyData?.context_variables?.final_selected_idea_data) {
+            const data = legacyData.context_variables.final_selected_idea_data;
+            setIdeaText(data.selected_idea_text || data.raw_idea || null);
+            setLoading(false);
+            return;
+          }
         }
       } catch (e) {
         console.warn('IdeaCard: failed to load idea:', e.message);
@@ -548,14 +614,21 @@ function ResearchLab({ selectedProject }) {
       setInstance(inst);
       setConfig(conf);
 
-      // Load file tree and collect cache artifacts
+      // Load file tree and collect log artifacts from new layout + legacy cache
       const res = await api.getFiles(projectName);
       const data = await res.json();
       const tree = Array.isArray(data) ? data : [];
-      const cacheFiles = collectFiles(tree, projectRoot, (rel) =>
-        /(?:^|\/)cache\//.test(rel) && rel.endsWith('.json')
-      );
-      setArtifacts(cacheFiles);
+      const logFiles = collectFiles(tree, projectRoot, (rel) => {
+        if (!rel.endsWith('.json')) return false;
+        // New layout: JSON files inside logs/ dirs under Ideation/ or Experiment/
+        if (/^(Ideation|Experiment)\/.*\/logs\//.test(rel)) return true;
+        // Publication: any JSON files under Publication/
+        if (/^Publication\//.test(rel)) return true;
+        // Legacy layout: JSON files inside cache/ directories
+        if (/(?:^|\/)cache\//.test(rel)) return true;
+        return false;
+      });
+      setArtifacts(logFiles);
     } catch (e) {
       console.error('ResearchLab load:', e);
     } finally {

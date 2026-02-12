@@ -12,7 +12,8 @@ Constructs the prompt for the ML Agent to refine its implementation based on Jud
 | `plan_res`       | string | Detailed implementation plan |
 | `ml_dev_res`     | string | The ML Agent's last implementation result |
 | `judge_res`      | string | The Judge Agent's feedback / suggestions |
-| `workplace_name` | string | Name of the workplace directory |
+| `core_code_path` | string | Path to `Experiment/core_code/` |
+| `code_references_path` | string | Path to `Experiment/code_references/` |
 
 ## Template
 
@@ -33,19 +34,19 @@ Your task is to modify the project according to the suggestion. Note that you sh
 MODIFY rather than create a new project! Take full advantage of the existing resources!
 Still use the SAME DATASET!
 
-[IMPORTANT] You should modify the project in the directory `/<workplace_name>/project`,
+[IMPORTANT] You should modify the project in the directory `Experiment/core_code/`,
 rather than create a new project!
 
 [IMPORTANT] If you meet dataset missing problem, you should download the dataset from
-the reference codebases, and put the dataset in the directory
-`/<workplace_name>/project/data`.
+the reference codebases in `Experiment/code_references/`, and put the dataset in the
+directory `Experiment/core_code/data`.
 
 [IMPORTANT] You CANNOT stop until you 2 epochs of training and testing on your model
 with the ACTUAL dataset.
 
 [IMPORTANT] If you encounter ImportError while using `run_python()`, you should check
-whether every `__init__.py` file is correctly implemented in the directories in the
-`/<workplace_name>/project`!
+whether every `__init__.py` file is correctly implemented in the directories in
+`Experiment/core_code/`!
 
 [IMPORTANT] Carefully check whether model and its components are correctly implemented
 according to the model survey notes (code_survey_res) - every atomic academic concept

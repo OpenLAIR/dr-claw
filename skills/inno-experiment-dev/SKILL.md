@@ -16,7 +16,8 @@ Merges the former `inno-implementation-plan`, `inno-ml-dev-iteration`, and the s
 | `updated_prepare_res` | inno-prepare-resources | JSON with `reference_codebases` and `reference_paths` |
 | `code_survey_res` | inno-code-survey | Comprehensive implementation report / model survey notes |
 | `dataset_description` | pipeline config | Description of available datasets |
-| `workplace_name` | pipeline config | Workspace directory name (typically `"workplace"`) |
+| `core_code_path` | pipeline config | Path to `Experiment/core_code/` |
+| `code_references_path` | pipeline config | Path to `Experiment/code_references/` |
 | `max_iter_times` | pipeline config | Max judge-iteration rounds (default 2) |
 | `context_variables` | shared state | Mutable dict carrying state across agents |
 
@@ -37,10 +38,10 @@ Plan mode additionally uses `ideas` and survey-specific prompt variants (`build_
 
 | File | Agent | Content |
 |------|-------|---------|
-| `coding_plan_agent.json` | Coding Plan Agent | `context_variables` + `messages` from planning phase |
-| `machine_learning_agent.json` | ML Agent | Initial implementation messages (+ `_iter_{N}.json` for judge iterations) |
-| `judge_agent.json` | Judge Agent | Evaluation messages (+ `_iter_{N}.json` for iterations) |
-| `machine_learning_agent_iter_submit.json` | ML Agent | Submission run messages and results |
+| `Experiment/core_code/logs/coding_plan_agent.json` | Coding Plan Agent | `context_variables` + `messages` from planning phase |
+| `Experiment/core_code/logs/machine_learning_agent.json` | ML Agent | Initial implementation messages (+ `_iter_{N}.json` for judge iterations) |
+| `Experiment/core_code/logs/judge_agent.json` | Judge Agent | Evaluation messages (+ `_iter_{N}.json` for iterations) |
+| `Experiment/core_code/logs/machine_learning_agent_iter_submit.json` | ML Agent | Submission run messages and results |
 
 ## Instructions
 
@@ -66,14 +67,14 @@ Mirrors `_create_implementation_plan`.
 
 Mirrors `_implement_and_iterate`.
 
-5. **Initial implementation**: Build `ml_dev_query = build_ml_dev_query(survey_res, prepare_res, code_survey_res, plan_res, dataset_description, workplace_name)` (see `prompts/build_ml_dev_query.md`). Call **ML Agent** with `messages = [{"role": "user", "content": ml_dev_query}]`. Set `ml_dev_res = ml_messages[-1]["content"]`.
+5. **Initial implementation**: Build `ml_dev_query = build_ml_dev_query(survey_res, prepare_res, code_survey_res, plan_res, dataset_description, core_code_path, code_references_path)` (see `prompts/build_ml_dev_query.md`). Call **ML Agent** with `messages = [{"role": "user", "content": ml_dev_query}]`. Set `ml_dev_res = ml_messages[-1]["content"]`.
    - See `references/ml_agent_instructions.md` for agent details.
 
 6. **Initial judge evaluation**: Build `judge_query = build_judge_query(survey_res, prepare_res, plan_res, ml_dev_res)` (see `prompts/build_judge_query.md`). Call **Judge Agent** with `input_messages = [{"role": "user", "content": judge_query}]`. Set `judge_res = judge_messages[-1]["content"]`.
    - See `references/judge_agent_instructions.md` for agent details.
 
 7. **Iteration loop** (for i in 0..max_iter_times - 1):
-   a. Build `iteration_query = build_iteration_query(survey_res, prepare_res, code_survey_res, plan_res, ml_dev_res, judge_res, workplace_name)` (see `prompts/build_iteration_query.md`). Plan mode uses `build_iteration_query_for_plan`.
+   a. Build `iteration_query = build_iteration_query(survey_res, prepare_res, code_survey_res, plan_res, ml_dev_res, judge_res, core_code_path, code_references_path)` (see `prompts/build_iteration_query.md`). Plan mode uses `build_iteration_query_for_plan`.
    b. Append as user message to `judge_messages`. Call **ML Agent** with `iter_times=i+1`. Update `ml_dev_res`.
    c. Build `judge_simple_query = build_judge_simple_query(survey_res, prepare_res, plan_res, ml_dev_res)` (see `prompts/build_judge_simple_query.md`). Plan mode uses `build_judge_simple_query_for_plan`.
    d. Append as user message to `judge_messages`. Call **Judge Agent** with `iter_times=i+1`. Update `judge_res`.
@@ -85,7 +86,7 @@ Mirrors `_implement_and_iterate`.
 
 Mirrors the submit portion of `_submit_and_refine_experiments`.
 
-9. **Build submit query**: `submit_query = build_submit_query(survey_res, ml_dev_res, judge_res, workplace_name)` (see `prompts/build_submit_query.md`). Plan mode uses `build_submit_query_for_plan`.
+9. **Build submit query**: `submit_query = build_submit_query(survey_res, ml_dev_res, judge_res, core_code_path)` (see `prompts/build_submit_query.md`). Plan mode uses `build_submit_query_for_plan`.
 
 10. **Append** to `judge_messages` as user message. Call **ML Agent** with `iter_times="submit"`.
     - The agent adjusts epochs (3-10), runs `run_training_testing.py`, ensures checkpoints are saved.
@@ -122,8 +123,8 @@ All custom Python tools map to Claude Code built-in capabilities:
 - [ ] Iteration loop runs with correct prompt variants; early exit on `fully_correct`.
 - [ ] `judge_messages` preserved across all phases.
 - [ ] Submit query appended to `judge_messages`; ML Agent submission run completed.
-- [ ] Final model checkpoint saved to `/<workplace_name>/project/checkpoints/model_final.pth`.
-- [ ] Cache artifacts saved: `coding_plan_agent.json`, `machine_learning_agent.json`, `judge_agent.json`, `machine_learning_agent_iter_submit.json`.
+- [ ] Final model checkpoint saved to `Experiment/core_code/checkpoints/model_final.pth`.
+- [ ] Cache artifacts saved to `Experiment/core_code/logs/`: `coding_plan_agent.json`, `machine_learning_agent.json`, `judge_agent.json`, `machine_learning_agent_iter_submit.json`.
 
 ## References
 

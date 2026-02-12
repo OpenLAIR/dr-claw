@@ -43,7 +43,7 @@
 ## 功能特性
 
 - **Research Lab（研究实验室）** - 结构化的研究仪表盘：一览研究概况、参考论文、生成的 Idea（支持 LaTeX 数学公式的 Markdown 渲染）、流水线状态和缓存产物
-- **InnoFlow Skills（研究流水线技能）** - 内置模块化研究流水线技能（编排器、资源准备、Idea 生成、代码调研、实验开发、实验分析），逐步引导 Agent 执行
+- **InnoFlow Skills（研究流水线技能）** - 内置模块化研究流水线技能（编排器、资源准备、Idea 生成、代码调研、实验开发、实验分析、论文撰写），逐步引导 Agent 执行
 - **响应式设计** - 在桌面、平板和移动设备上无缝运行,您也可以在移动端使用 Claude Code、Cursor 或 Codex
 - **交互式聊天界面** - 内置聊天界面,与 Claude Code、Cursor 或 Codex 无缝通信
 - **集成 Shell 终端** - 通过内置 shell 功能直接访问 Claude Code、Cursor CLI 或 Codex
@@ -146,7 +146,7 @@ Idea 生成 (Idea Generation)  →  生成 5 个多样化 Idea，选择并精炼
 - **流水线产物** — 按阶段分组，内置查看/编辑器
 - **实验结果** — 训练日志、评估指标、分析报告、图表
 
-所有数据存储在项目目录的 `instance.json`、`pipeline_config.json` 和 `outputs/cache/` 中。
+所有数据存储在项目目录的 `instance.json`、`pipeline_config.json`、`Ideation/` 和 `Experiment/` 中。
 
 > **提示**：您也可以直接提供一份 *完整的实现计划* 而不是研究主题。编排器会将其识别为 *plan 级别*，跳过 Idea 生成，直接进入代码调研和实验开发阶段。
 
@@ -213,10 +213,10 @@ Idea 生成 (Idea Generation)  →  生成 5 个多样化 Idea，选择并精炼
 - **研究概览** — 目标论文、任务描述、实例 ID、类别、流水线模式（Plan / Idea）
 - **参考论文** — 所有参考论文，附带类型标签
 - **最终选定 Idea** — 富 Markdown 渲染，支持 LaTeX 数学公式（KaTeX）、GFM 表格、代码块。支持一键复制和折叠展开
-- **流水线配置** — 实例路径、任务级别、类别、数据集、工作区名称
-- **研究产物** — 缓存文件按流水线阶段分组，支持展开/折叠导航和内置查看/编辑器
+- **流水线配置** — 实例路径、任务级别、类别、数据集
+- **研究产物** — 日志文件按流水线阶段分组，支持展开/折叠导航和内置查看/编辑器
 
-数据从项目内的 `instance.json`、`pipeline_config.json` 和 `outputs/cache/` 目录加载。
+数据从项目内的 `instance.json`、`pipeline_config.json`、`Ideation/` 和 `Experiment/` 目录加载。
 
 #### InnoFlow 研究流水线
 
@@ -225,7 +225,7 @@ Vibe Lab 在 `skills/` 目录下内置了模块化研究技能。创建项目时
 **流水线概览**（Idea 模式）：
 
 ```
-编排器 → 资源准备 → Idea 生成 → 代码调研 → 实验开发 → 实验分析
+编排器 → 资源准备 → Idea 生成 → 代码调研 → 实验开发 → 实验分析 → 论文撰写
 ```
 
 | 技能 | 用途 |
@@ -236,6 +236,7 @@ Vibe Lab 在 `skills/` 目录下内置了模块化研究技能。创建项目时
 | **inno-code-survey** | Phase A: 为选中 Idea 获取额外仓库；Phase B: 全面的代码调研 |
 | **inno-experiment-dev** | 创建实现计划、编写项目代码（含 Judge 反馈循环）、提交实验 |
 | **inno-experiment-analysis** | 分析实验结果、绘制图表、给出代码建议、实现改进 |
+| **inno-paper-writing** | 撰写可投稿的 ML/AI 论文，含 LaTeX 模板、引用验证和会议审查清单（NeurIPS、ICML、ICLR、ACL、AAAI、COLM） |
 
 要启动研究流程，打开 **Chat** 标签页并描述您的研究任务（例如 *"我想研究生物医学问答"*）。编排器技能会引导 Agent 完成整个流水线。
 

@@ -6,18 +6,10 @@ You are the **Code Survey Agent** specialized in analyzing code implementations 
 
 ## Path conventions
 
-All file paths below use `<local_root>`, which resolves to:
-
-```
-<project_path>/outputs/workplace_paper/task_<instance_id>_<mode>/workplace/
-```
-
-Key sub-directories:
-
 | Path | Contents |
 |------|----------|
-| `<local_root>/papers/` | Downloaded arXiv LaTeX sources (`.tex`, `.txt`, `.md`) |
-| `<local_root>/<repo_name>/` | Cloned GitHub repositories |
+| `Ideation/references/papers/` | Downloaded arXiv LaTeX sources (`.tex`, `.txt`, `.md`) |
+| `Experiment/code_references/<repo_name>/` | Cloned GitHub repositories |
 
 ## System Prompt
 
@@ -27,7 +19,7 @@ academic concepts. Your task is to examine codebases and match theoretical conce
 with their practical implementations.
 
 OBJECTIVE:
-- Analyze codebases from reference papers in `<local_root>/`
+- Analyze codebases from reference papers in `Experiment/code_references/`
 - Map academic definitions and mathematical formulas to their code implementations
 - Create comprehensive implementation notes
 
@@ -88,14 +80,14 @@ Linux commands available in the terminal:
 
 | Action | Command | Example |
 |--------|---------|---------|
-| Generate repo structure | `tree` | `tree <local_root>/repo/ -L 3` |
-| List files | `ls`, `find` | `find <local_root>/repo/ -name "*.py" -type f` |
-| Read a file | `cat`, `head`, `tail` | `cat <local_root>/repo/model/attention.py` |
-| Read specific line range | `sed -n` | `sed -n '100,200p' <local_root>/repo/model/attention.py` |
-| Search for text in files | `grep`, `rg` (ripgrep) | `rg "class.*Attention" <local_root>/repo/` |
-| Search across all repos | `grep -r`, `rg` | `rg "sinkhorn" <local_root>/` |
-| Count lines / get overview | `wc -l` | `wc -l <local_root>/repo/model/*.py` |
-| Read paper files | `cat`, `less` | `cat <local_root>/papers/paper1.tex` |
+| Generate repo structure | `tree` | `tree Experiment/code_references/repo/ -L 3` |
+| List files | `ls`, `find` | `find Experiment/code_references/repo/ -name "*.py" -type f` |
+| Read a file | `cat`, `head`, `tail` | `cat Experiment/code_references/repo/model/attention.py` |
+| Read specific line range | `sed -n` | `sed -n '100,200p' Experiment/code_references/repo/model/attention.py` |
+| Search for text in files | `grep`, `rg` (ripgrep) | `rg "class.*Attention" Experiment/code_references/repo/` |
+| Search across all repos | `grep -r`, `rg` | `rg "sinkhorn" Experiment/code_references/` |
+| Count lines / get overview | `wc -l` | `wc -l Experiment/code_references/repo/model/*.py` |
+| Read paper files | `cat`, `less` | `cat Ideation/references/papers/paper1.tex` |
 
 ## Output Format
 
@@ -120,7 +112,7 @@ The agent should produce a comprehensive implementation report structured as:
 - <paper 2>
 
 ### Reference Codebases
-- <repo_name>: <local_root>/<repo_name>/
+- <repo_name>: Experiment/code_references/<repo_name>/
 
 ---
 
@@ -135,5 +127,5 @@ The agent should produce a comprehensive implementation report structured as:
   "not found in available repos")
 - Code snippets should be **real code** from the repos, not pseudocode
 - When multiple repos implement the same concept, document all variations
-- The output (`model_survey`) is consumed by `inno-implementation-plan`, so it
+- The output (`model_survey`) is consumed by `inno-experiment-dev`, so it
   must be detailed enough for an implementation agent to work from

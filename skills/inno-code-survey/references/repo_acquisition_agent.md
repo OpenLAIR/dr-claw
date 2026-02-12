@@ -7,18 +7,10 @@ Your GOAL: Aggressively search for and download GitHub repositories that impleme
 
 ## Path conventions
 
-All file paths below use `<local_root>`, which resolves to:
-
-```
-<project_path>/outputs/workplace_paper/task_<instance_id>_<mode>/workplace/
-```
-
-Key sub-directories:
-
 | Path | Contents |
 |------|----------|
-| `<local_root>/papers/` | Downloaded arXiv LaTeX sources (`.tex`, `.txt`, `.md`) |
-| `<local_root>/<repo_name>/` | Cloned GitHub repositories |
+| `Ideation/references/papers/` | Downloaded arXiv LaTeX sources (`.tex`, `.txt`, `.md`) |
+| `Experiment/code_references/<repo_name>/` | Cloned GitHub repositories |
 
 ## System Prompt
 
@@ -29,7 +21,7 @@ the **specific missing components** of the Refined Research Idea.
 
 ### INPUT ANALYSIS
 1. **Refined Idea**: Analyze the specific technical modules proposed.
-2. **Current Workspace**: Check `<local_root>/`. Do NOT assume standard libraries
+2. **Current Workspace**: Check `Experiment/code_references/`. Do NOT assume standard libraries
    contain the *novel* or *specific* adaptations described in the Idea.
 
 ### SEARCH STRATEGY: THE "CASCADE" METHOD (CRITICAL)
@@ -112,11 +104,11 @@ Linux commands available in the terminal to accomplish the same tasks:
 |--------|---------|---------|
 | Search GitHub repos | `python scripts/github_search_clone.py` | `python scripts/github_search_clone.py --query "sinkhorn attention pytorch" --limit 5` |
 | Search GitHub repos (alt) | `curl` to GitHub API | `curl -s "https://api.github.com/search/repositories?q=sinkhorn+attention&per_page=5"` |
-| Clone a repository | `git clone --depth 1` | `git clone --depth 1 https://github.com/user/repo.git <local_root>/repo` |
-| List files in a directory | `ls`, `find`, `tree` | `ls <local_root>/` |
-| Read a file | `cat`, `head`, `tail` | `cat <local_root>/repo/README.md` |
-| View repository structure | `tree` | `tree <local_root>/repo/ -L 3` |
-| Search for text in files | `grep`, `rg` (ripgrep) | `grep -rn "attention" <local_root>/repo/` |
+| Clone a repository | `git clone --depth 1` | `git clone --depth 1 https://github.com/user/repo.git Experiment/code_references/repo` |
+| List files in a directory | `ls`, `find`, `tree` | `ls Experiment/code_references/` |
+| Read a file | `cat`, `head`, `tail` | `cat Experiment/code_references/repo/README.md` |
+| View repository structure | `tree` | `tree Experiment/code_references/repo/ -L 3` |
+| Search for text in files | `grep`, `rg` (ripgrep) | `grep -rn "attention" Experiment/code_references/repo/` |
 
 ## Notes
 

@@ -15,7 +15,7 @@ Constructs the prompt for the Repo Acquisition Agent to find and clone missing c
 We have a finalized refined idea that requires implementation:
 {survey_res}
 
-Current resources in <local_root>:
+Current resources in Experiment/code_references/:
 {download_res}
 
 ### MISSION
@@ -33,19 +33,17 @@ Do not be lazy. If you don't find exact matches, find the closest alternatives t
 ## Usage
 
 This is sent as the **first message** to the Repo Acquisition Agent. The agent will:
-1. Analyze the selected idea to identify technical components not yet available in `<local_root>/`
+1. Analyze the selected idea to identify technical components not yet available in `Experiment/code_references/`
 2. Use the "Cascade" search strategy (Level 1: Specific -> Level 2: Broad -> Level 3: Atomic) with 6 queries per gap
-3. Clone candidate repos into `<local_root>/`
+3. Clone candidate repos into `Experiment/code_references/`
 4. Verify each clone by reading its README.md
-
-> `<local_root>` = `<project_path>/outputs/workplace_paper/task_<instance_id>_<mode>/workplace/`
 
 ## Post-processing
 
 After the agent completes, extract all repo acquisition markers from the conversation:
 
 1. Parse `[REPO_ACQUIRED] name=<name>; path=<path>` patterns from agent messages
-2. Filter: only keep entries where `path` contains `workplace`
+2. Filter: only keep entries where `path` contains `code_references`
 3. Merge with any `context_variables["acquired_code_repos"]` entries
 4. Build `acquired_repos_dict = { name: path }` for each verified repo
 5. Set `context_variables["acquired_code_repos"] = acquired_repos_dict`

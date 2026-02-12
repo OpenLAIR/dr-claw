@@ -11,7 +11,8 @@ Constructs the prompt for the ML Agent to implement the project code.
 | `code_survey_res`     | string | Comprehensive code survey / model survey notes |
 | `plan_res`            | string | Detailed implementation plan from the Coding Plan Agent |
 | `dataset_description` | string | Description of available datasets |
-| `workplace_name`      | string | Name of the workplace directory (typically `"workplace"`) |
+| `core_code_path`      | string | Path to `Experiment/core_code/` |
+| `code_references_path`| string | Path to `Experiment/code_references/` |
 
 ## Template (abbreviated — full template is extensive)
 
@@ -29,19 +30,19 @@ You should carefully go through the math formula and the code implementation, an
 
 We have already selected the following datasets as experimental datasets:
 {dataset_description}
-Your task is to implement the innovative idea ... in the directory `/<workplace_name>`.
+Your task is to implement the innovative idea ... in the directory `Experiment/core_code/`.
 You should select ONE most appropriate and lightweight dataset ... and EXACTLY run TWO epochs of training and testing on the ACTUAL dataset on the GPU device.
 Note that EVERY atomic academic concept in model survey notes should be implemented in the project.
 
 PROJECT STRUCTURE REQUIREMENTS:
 1. Directory Organization
-   - Data: /<workplace_name>/project/data/
-   - Model Components: /<workplace_name>/project/model/
-   - Training: /<workplace_name>/project/training/
-   - Testing: /<workplace_name>/project/testing/
-   - Data processing: /<workplace_name>/project/data_processing/
-   - Checkpoints: /<workplace_name>/project/checkpoints/
-   - Main Script: /<workplace_name>/project/run_training_testing.py
+   - Data: Experiment/core_code/data/
+   - Model Components: Experiment/core_code/model/
+   - Training: Experiment/core_code/training/
+   - Testing: Experiment/core_code/testing/
+   - Data processing: Experiment/core_code/data_processing/
+   - Checkpoints: Experiment/core_code/checkpoints/
+   - Main Script: Experiment/core_code/run_training_testing.py
 
 2. Complete Implementation Requirements (no placeholders)
 3. Dataset and Training Requirements (actual dataset, 2 epochs, save checkpoints)
@@ -50,11 +51,12 @@ PROJECT STRUCTURE REQUIREMENTS:
 
 ## Key constraints
 
-- `/{workplace_name}/project/` is the project root
+- `Experiment/core_code/` is the project root
+- Reference codebases are in `Experiment/code_references/`
 - MUST use actual dataset (no toy/random data)
 - MUST implement EVERY atomic academic concept from survey notes
 - MUST run exactly 2 epochs of training + testing
-- MUST save final model to `/{workplace_name}/project/checkpoints/model_final.pth`
+- MUST save final model to `Experiment/core_code/checkpoints/model_final.pth`
 - NO placeholder code (`pass`, `...`, `raise NotImplementedError`)
 
 ## Usage

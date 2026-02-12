@@ -10,9 +10,9 @@ Machine Learning Expert that creates a detailed, actionable implementation plan 
 
 ## System Prompt (summarized)
 
-The agent operates in `/<working_dir>` and has access to:
+The agent operates in the project workspace and has access to:
 1. The user's innovative idea
-2. Reference codebases (downloaded by Prepare Agent)
+2. Reference codebases in `Experiment/code_references/` (downloaded by Prepare Agent)
 3. Comprehensive notes from the Survey Agent (used as model plan)
 
 ### Workflow

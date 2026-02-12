@@ -18,7 +18,7 @@ Judge Agent (coordinator)
 ```
 
 ### Code Review Agent
-- Reviews code in `/<working_dir>/project`
+- Reviews code in `Experiment/core_code/`
 - Compares implementation against the innovative idea
 - Uses `read_file`, `gen_code_tree_structure`, terminal scrolling
 - Returns code review report via `transfer_to_judge_agent`
@@ -30,8 +30,8 @@ Judge Agent (coordinator)
 ## System Prompt (summarized)
 
 The Judge Agent:
-1. Goes through the implementation in `/<working_dir>/project`
-2. Reviews reference codebases in `/<working_dir>/`
+1. Goes through the implementation in `Experiment/core_code/`
+2. Reviews reference codebases in `Experiment/code_references/`
 3. Carefully checks each atomic academic concept from the innovative idea and survey notes
 4. After thorough checking, calls `case_resolved` with the final suggestion
 

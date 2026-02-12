@@ -18,7 +18,7 @@ The UI should send the chosen input (and type hint if available) to the backend 
 - **Request body** (example):
   - `inputType`: `"plan"` | `"idea"` | `"instance"`
   - `payload`: string (plan text, idea/background text) or object (instance JSON with `source_papers`, `task1`, `task2`, `url`, etc.)
-  - Optional: `category`, `workplace_name`, `max_iter_times`, `instance_path` (if payload is a path).
+  - Optional: `category`, `max_iter_times`, `instance_path` (if payload is a path).
 - **Response**: e.g. `{ runId, status, branch: "plan"|"idea" }` and/or streamed progress (prepare → … → submit/refine).
 - **Behavior**: Backend receives payload → runs **maturity judgment** (see below) → runs **plan branch** or **idea branch** (by invoking the Python pipeline or by orchestrating the seven stage skills). Canonical implementation: call `run_infer.py` with `--mode plan` and `ideas=task1`, or `run_infer_idea_ours.py` for idea mode; or replicate the flow in-process using the same prompt/agent calls referenced in the skills.
 
@@ -32,7 +32,7 @@ The UI should send the chosen input (and type hint if available) to the backend 
 
 ## Flow after judgment
 
-- **Plan**: prepare (with ideas) → inno-code-survey (Plan mode: survey on ideas/papers) → inno-experiment-dev (plan + implement + judge + submit) → inno-experiment-analysis (analyse + refine). Use `run_infer.py` with `mode=plan` and `ideas=task1` or equivalent.
-- **Idea**: prepare → idea-generation → code-survey (Phase A: repo acquisition + Phase B: code survey) → inno-experiment-dev (plan + implement + judge + submit) → inno-experiment-analysis (analyse + refine). Use `run_infer_idea_ours.py` or equivalent.
+- **Plan**: prepare (with ideas) → inno-code-survey (Plan mode: survey on ideas/papers) → inno-experiment-dev (plan + implement + judge + submit) → inno-experiment-analysis (analyse + refine) → inno-paper-writing (optional). Use `run_infer.py` with `mode=plan` and `ideas=task1` or equivalent.
+- **Idea**: prepare → idea-generation → code-survey (Phase A: repo acquisition + Phase B: code survey) → inno-experiment-dev (plan + implement + judge + submit) → inno-experiment-analysis (analyse + refine) → inno-paper-writing (optional). Use `run_infer_idea_ours.py` or equivalent.
 
 Skills in `skills/` (VibeLab repo root) document inputs, outputs, and Python references for each step; the backend can call the existing Python entry points or re-use the same prompt/agent logic in another runtime. When a project is created, VibeLab symlinks these into the project's `.claude/skills/` so Claude can discover them.

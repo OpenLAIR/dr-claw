@@ -16,11 +16,12 @@ description: >
 |------------------------|----------|-------------|
 | `instance_path`        | Yes      | Path to the evaluation instance JSON file (contains `source_papers`, `task1`/`task2`, `url`, etc.) |
 | `task_level`           | Yes      | Which task field to read from the instance — `"task1"` (Plan) or `"task2"` (Idea) |
-| `local_root`           | Yes      | Root directory for local file storage (downloaded papers, cloned repos) |
-| `workplace_name`       | Yes      | Sub-directory name inside `local_root` (typically `"workplace"`) |
+| `references_path`      | Yes      | Path to `Ideation/references/` — for downloaded papers and prepare logs |
+| `code_references_path` | Yes      | Path to `Experiment/code_references/` — for cloned repos |
+| `datasets_path`        | Yes      | Path to `Experiment/datasets/` — for dataset files |
 | `category`             | Yes      | Research category tag (e.g. `nlp_qa`, `gnn`, `recommendation`). Used to locate the built-in dataset metaprompt |
 | `references`           | Yes      | A pre-formatted string listing all source papers from the instance |
-| `context_variables`    | Yes      | Shared context dictionary; this step will write `cache_path` and `date_limit` into it |
+| `context_variables`    | Yes      | Shared context dictionary; this step will write `date_limit` into it |
 | `ideas`                | No       | Full innovative-idea / plan text. **Provide only in Plan mode** — when present the Prepare Agent query includes the ideas for more targeted repo selection |
 | `dataset_description`  | No       | Pre-built dataset description from the orchestrator (for custom / user-provided datasets). When provided, skip the metaprompt import in Step 3 |
 
@@ -32,22 +33,21 @@ description: >
 | `download_res`         | Result log from downloading arXiv paper sources to local disk |
 | `dataset_description`  | Composed prompt string describing the datasets, baselines, comparisons, and evaluation metrics |
 | `data_module`          | The imported metaprompt module object (Idea mode). In Plan mode this is not returned |
-| `context_variables`    | Updated with `cache_path` (str) and `date_limit` (str, YYYY-MM-DD) |
+| `context_variables`    | Updated with `date_limit` (str, YYYY-MM-DD) |
 
 ## Cache file outputs
 
-Every intermediate result must be persisted as a JSON file under `<cache_path>`. The directory layout follows:
+Every intermediate result must be persisted as a JSON file under `Ideation/references/logs/`. The directory layout follows:
 
 ```
-<cache_path>/
-├── tools/
-│   ├── github_search.json
-│   └── download_arxiv_source_by_title.json
-└── agents/
-    └── prepare_agent.json
+Ideation/references/logs/
+├── load_instance.json                  ← written by orchestrator
+├── github_search.json
+├── download_arxiv_source_by_title.json
+└── prepare_agent.json
 ```
 
-> `<cache_path>/tools/load_instance.json` is written by the **orchestrator** before this skill runs — do not overwrite it.
+> `Ideation/references/logs/load_instance.json` is written by the **orchestrator** before this skill runs — do not overwrite it.
 
 ### Tool cache format (`tools/*.json`)
 
@@ -61,7 +61,7 @@ Each tool output file records the function call arguments and result:
 }
 ```
 
-**`tools/github_search.json`** — written after Step 2:
+**`github_search.json`** — written after Step 2:
 
 ```json
 {
@@ -77,15 +77,14 @@ Each tool output file records the function call arguments and result:
 }
 ```
 
-**`tools/download_arxiv_source_by_title.json`** — written after Step 6:
+**`download_arxiv_source_by_title.json`** — written after Step 6:
 
 ```json
 {
   "name": "download_arxiv_source_by_title",
   "args": {
     "paper_list": ["paper title 1", "paper title 2"],
-    "local_root": "<local_root>",
-    "workplace_name": "<workplace_name>"
+    "references_path": "<references_path>"
   },
   "result": "<download result log string>"
 }
@@ -98,21 +97,20 @@ Each agent output file records the final context variables (no conversation mess
 ```json
 {
   "context_variables": {
-    "working_dir": "workplace",
-    "local_root": "<local_root>",
-    "workplace_name": "<workplace_name>",
-    "cache_path": "<cache_path>",
+    "references_path": "<references_path>",
+    "code_references_path": "<code_references_path>",
+    "datasets_path": "<datasets_path>",
     "date_limit": "YYYY-MM-DD",
     "prepare_result": {
       "reference_codebases": ["repo1", "repo2"],
-      "reference_paths": ["/workplace/repo1", "/workplace/repo2"],
+      "reference_paths": ["Experiment/code_references/repo1", "Experiment/code_references/repo2"],
       "reference_papers": ["paper title 1", "paper title 2"]
     }
   }
 }
 ```
 
-**`agents/prepare_agent.json`** — written after Step 4–5. Contains the final `context_variables` with `prepare_result` holding `reference_codebases`, `reference_paths`, and `reference_papers`.
+**`prepare_agent.json`** — written after Step 4–5. Contains the final `context_variables` with `prepare_result` holding `reference_codebases`, `reference_paths`, and `reference_papers`.
 
 ## Step-by-step Instructions
 
@@ -128,7 +126,7 @@ This reads the instance JSON and returns an **EvalMetadata** object containing:
 
 Write `date_limit` into `context_variables["date_limit"]`.
 
-> **Note**: `tools/load_instance.json` should already exist — it was written by the orchestrator. If not, write it now following the tool cache format.
+> **Note**: `Ideation/references/logs/load_instance.json` should already exist — it was written by the orchestrator. If not, write it now following the tool cache format.
 
 > **Graceful handling**: If the instance JSON was constructed by the orchestrator and has no `url` or an empty `source_papers` list, use a sensible default `date_limit` and continue — do not raise an error.
 
@@ -162,7 +160,7 @@ Concatenate all papers' results into a single `github_result` string, using a `*
 
 > **Fallback when `source_papers` is empty**: use keywords extracted from `task_instructions` as the search query instead, and perform a single GitHub search call to find relevant repositories.
 
-**Save** → `<cache_path>/tools/github_search.json`
+**Save** → `Ideation/references/logs/github_search.json`
 
 ### Step 3 — Build the dataset description
 
@@ -237,7 +235,7 @@ Build the query depending on mode:
 
 Send the query to the **Prepare Agent** and record the full response as `prepare_res`.
 
-**Save** → `<cache_path>/agents/prepare_agent.json` (final context_variables only, no messages)
+**Save** → `Ideation/references/logs/prepare_agent.json` (final context_variables only, no messages)
 
 ### Step 5 — Extract reference paper list
 
@@ -249,18 +247,18 @@ Use bracket-matching JSON extraction — find the first complete `{…}` in the 
 
 ### Step 6 — Download arXiv paper sources
 
-Call `download_arxiv_source_by_title(paper_list, local_root, workplace_name)`.
+Call `download_arxiv_source_by_title(paper_list, references_path)`.
 
-This searches arXiv for each paper title, downloads the LaTeX / source archive, and extracts it into `{local_root}/{workplace_name}/papers/`. Record the result log as `download_res`.
+This searches arXiv for each paper title, downloads the LaTeX / source archive, and extracts it into `Ideation/references/papers/`. Record the result log as `download_res`.
 
-**Save** → `<cache_path>/tools/download_arxiv_source_by_title.json`
+**Save** → `Ideation/references/logs/download_arxiv_source_by_title.json`
 
 ## Checklist
 
 - [ ] `load_instance` called; `date_limit` written to `context_variables` (default used if unavailable)
-- [ ] `github_search` completed; result saved → `tools/github_search.json`
+- [ ] `github_search` completed; result saved → `Ideation/references/logs/github_search.json`
 - [ ] `dataset_description` built (from orchestrator override, built-in metaprompt, or manual construction)
-- [ ] Prepare Agent queried; conversation saved → `agents/prepare_agent.json`
+- [ ] Prepare Agent queried; conversation saved → `Ideation/references/logs/prepare_agent.json`
 - [ ] `reference_papers` extracted from Prepare Agent output; fallback to source papers if empty
-- [ ] arXiv paper sources downloaded; result saved → `tools/download_arxiv_source_by_title.json`
-- [ ] All cache files written under `<cache_path>/tools/` and `<cache_path>/agents/`
+- [ ] arXiv paper sources downloaded to `Ideation/references/papers/`; result saved → `Ideation/references/logs/download_arxiv_source_by_title.json`
+- [ ] All cache files written under `Ideation/references/logs/`
