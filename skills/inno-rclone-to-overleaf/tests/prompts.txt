@@ -1,0 +1,5 @@
+sync my paper to overleaf
+push the updated figures to overleaf
+rclone my latex project to the overleaf dropbox
+upload main.tex and figures to overleaf
+update overleaf with the latest paper changes
