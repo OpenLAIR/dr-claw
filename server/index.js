@@ -1880,13 +1880,21 @@ async function startServer() {
 
         server.listen(PORT, '0.0.0.0', async () => {
             const appInstallPath = path.join(__dirname, '..');
+            const vitePort = process.env.VITE_PORT || 5173;
 
             console.log('');
             console.log(c.dim('═'.repeat(63)));
             console.log(`  ${c.bright('Vibe Lab Server - Ready')}`);
             console.log(c.dim('═'.repeat(63)));
             console.log('');
-            console.log(`${c.info('[INFO]')} Server URL:  ${c.bright('http://0.0.0.0:' + PORT)}`);
+
+            if (isProduction) {
+                console.log(`${c.info('[INFO]')} Server URL:  ${c.bright('http://localhost:' + PORT)}`);
+            } else {
+                console.log(`${c.info('[INFO]')} Backend URL: ${c.dim('http://localhost:' + PORT)}`);
+                console.log(`${c.ok('[OK]')}   Frontend URL: ${c.bright('http://localhost:' + vitePort)} (Use this for development)`);
+            }
+
             console.log(`${c.info('[INFO]')} Installed at: ${c.dim(appInstallPath)}`);
             console.log(`${c.tip('[TIP]')}  Run "cloudcli status" for full configuration details`);
             console.log('');
