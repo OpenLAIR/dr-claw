@@ -1,0 +1,148 @@
+\vspace{-0.5em}
+\section{\method{}}
+\label{sec:method}
+
+In this section, as illustrated in \Cref{fig:overview}, we propose \method{}, a framework designed to bridge the gap between raw interaction experience and policy improvement through automatic skill discovery and recursive evolution. \method{} consists of three core components. First, we develop an experience-based skill distillation mechanism to transform redundant trajectories into concise, actionable knowledge. Second, we organize these distilled experiences into a hierarchical skill library $\mathcal{S}$, enabling efficient retrieval of general and task-specific expertise. Lastly, we introduce a recursive skill evolution mechanism that leverages RL to dynamically refine the skill library in tandem with the agent’s policy. We detail these components as follows:
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.95\textwidth]{asset/method.pdf}
+    \caption{Overview of the \method{} framework. We collect trajectories using a base model, distill them into a hierarchical skill library, perform cold-start SFT to enable skill utilization, and then conduct RL training with dynamic skill evolution based on validation failures.}
+    \label{fig:overview}
+    \vspace{-1.5em}
+\end{figure*}
+
+\vspace{-0.5em}
+\subsection{Experience-based Skill Distillation}
+% The primary challenge in learning from experience is the inherent noise and redundancy in raw interaction trajectories $\tau$. To address this, we introduce a differential processing mechanism that distills \emph{demonstrations} from success and \emph{lessons} from failure. We first deploy a base LLM agent $\pi_{\text{base}}$ in the target environment to collect a diverse set of trajectories. Unlike approaches that only retain successful episodes, we maintain both successful trajectories $\mathcal{T}^+ = \{\tau_i^+ : r(\tau_i^+) = 1\}$ and failed trajectories $\mathcal{T}^- = \{\tau_i^- : r(\tau_i^-) < 1\}$.
+% For each task type $k$ in the environment, we organize collected trajectories by category:
+% \begin{equation}
+%     \mathcal{T}_k = \mathcal{T}_k^+ \cup \mathcal{T}_k^-.
+% \end{equation}
+% This balanced task-specific organization ensures that the subsequent extraction stage can learn both what to do and what to avoid.
+
+Raw trajectories $\tau$ collected from environment interactions are verbose, containing exploratory actions, backtracking, and redundant steps that obscure the critical decisions leading to success or failure. To transform these experiences into actionable knowledge, we employ a teacher model $\mathcal{M}_T$ to distill trajectories into compact, reusable skills.
+
+Specifically, we first deploy a base LLM agent $\pi_{\text{base}}$ in the target environment $\mathcal{E}$ to collect diverse trajectories. Unlike prior approaches that retain only successful episodes, we deliberately preserve both successful trajectories $\mathcal{T}^+ = \{\tau_i : r(\tau_i) = 1\}$ and failed trajectories $\mathcal{T}^- = \{\tau_i : r(\tau_i) = 0\}$, where $r(\tau)$ denotes the binary task success indicator. Failed trajectories reveal failure modes and boundary conditions, i.e., information difficult to infer from successes alone.
+
+We apply differential processing based on trajectory outcomes. For \emph{successful trajectories} $\tau^+ \in \mathcal{T}^+$, we extract the strategic patterns that led to task completion:
+\begin{equation} \small
+    s^+ = \mathcal{M}_T(\tau^+, d).
+\end{equation}
+The teacher model identifies critical decision points, the reasoning behind correct actions, and generalizable patterns that transfer beyond the specific task instance.
+
+For \emph{failed trajectories} $\tau^- \in \mathcal{T}^-$, direct inclusion in context is infeasible due to their length and noise. Instead, we synthesize concise failure lessons:
+\begin{equation}
+    s^- = \mathcal{M}_T(\tau^-, d).
+\end{equation}
+The analysis identifies: (1) the point of failure, (2) the flawed reasoning or action, (3) what should have been done, and (4) general principles to prevent similar failures. This transforms verbose failed episodes into counterfactuals.
+
+
+\subsection{Hierarchical Skill Library (\skillbank) Construction}
+Following the design principles of Agent Skills~\cite{authropic3}, we organize the distilled knowledge into a hierarchical skill library \skillbank{} that enables efficient retrieval of relevant expertise during decision-making.
+
+\paragraph{Skill Organization.}
+We structure \skillbank{} into two levels:
+1) \emph{General Skills} $\mathcal{S}_g$ capture universal strategic principles applicable across all task types within an environment. These typically include exploration strategies (e.g., systematic search patterns, prioritizing unvisited locations), state management principles (e.g., verifying preconditions before actions), and goal-tracking heuristics (e.g., maintaining progress counters, terminating only upon verified completion). General skills provide foundational guidance that transfers across different task categories.
+2) \emph{Task-Specific Skills} $\mathcal{S}_k$ encode specialized knowledge for task category $k$. These capture domain-specific action sequences, task-particular preconditions and constraints, common failure modes unique to the task type, and optimized procedures that exploit task structure. By organizing trajectories by task type during collection, we enable extraction of fine-grained, category-specific strategies that complement the broader general skills.
+
+The complete skill library \skillbank\ is $\mathcal{S}_g \cup \bigcup_{k=1}^{K} \mathcal{S}_k$.
+Each skill $s \in \skillbank{}$ is structured with: a concise name (e.g., systematic exploration), a principle describing the strategy, and when\_to\_apply conditions specifying applicability. This format enables efficient retrieval while providing clear guidance for application.
+
+
+
+\paragraph{Skill Retrieval.}
+At inference, given a task description $d$, the agent retrieves relevant skills to augment its context. General skills $\mathcal{S}_g$ are always included as foundational guidance. Task-specific skills are retrieved via semantic similarity:
+\begin{equation}
+    \mathcal{S}_{\text{ret}} = \text{TopK}\left(\{s \in \mathcal{S}_k : \text{sim}(e_d, e_s) > \delta\}, K\right),
+\end{equation}
+where $e_d, e_s$ are embeddings of the task description and skill respectively, $\delta$ is a similarity threshold, and $K$ controls the number of retrieved skills. The policy then conditions on the retrieved skills:
+\begin{equation}
+    a_t \sim \pi_\theta(a_t | o_{\leq t}, d, \mathcal{S}_g, \mathcal{S}_{\text{ret}}).
+\end{equation}
+Notably, skill distillation achieves 10--20$\times$ token compression compared to raw trajectories while enhancing rather than degrading the utility of the original experience. This compression allows the agent to leverage rich experiential knowledge within limited context windows.
+
+
+\begin{algorithm}[t]
+\small
+\caption{\method{}: Recursive Skill-Augmented RL}
+\label{alg:skillrl}
+\begin{algorithmic}[1]
+    \REQUIRE Base model $\pi_{\text{base}}$, teacher $\mathcal{M}_T$, environment $\mathcal{E}$
+    \ENSURE Trained policy $\pi_{\theta^*}$, evolved skill library $\skillbank{}^*$
+    
+    \STATE \textcolor{blue}{$\triangleright$ Experience-based Skill Distillation}
+    \STATE $\mathcal{T}^+, \mathcal{T}^- \leftarrow \text{Rollout}(\pi_{\text{base}}, \mathcal{E})$
+    \FORALL{$\tau^+ \in \mathcal{T}^+$}
+        \STATE $s^+ \leftarrow \mathcal{M}_T(\tau^+)$
+    \ENDFOR
+    \FORALL{$\tau^- \in \mathcal{T}^-$}
+        \STATE $s^- \leftarrow \mathcal{M}_T(\tau^-)$
+    \ENDFOR
+    
+    \STATE \textcolor{blue}{$\triangleright$ Hierarchical Skill Library Construction}
+    \STATE $\mathcal{S}_g \leftarrow$ general skills from distilled experiences
+    \FORALL{task type $k$}
+        \STATE $\mathcal{S}_k \leftarrow$ task-specific skills for category $k$
+    \ENDFOR
+    \STATE $\skillbank{} \leftarrow \mathcal{S}_g \cup \bigcup_k \mathcal{S}_k$
+    
+    \STATE \textcolor{blue}{$\triangleright$ Recursive Skill Evolution via RL}
+    \STATE \textcolor{gray}{\textit{// Cold-start initialization}}
+    \STATE $\mathcal{D}_{\text{SFT}} \leftarrow \mathcal{M}_T(\mathcal{E}, \skillbank{})$
+    \STATE $\theta \leftarrow \text{SFT}(\pi_{\text{base}}, \mathcal{D}_{\text{SFT}})$; \quad $\pi_{\text{ref}} \leftarrow \pi_\theta$
+    \STATE \textcolor{gray}{\textit{// RL with recursive evolution}}
+    \FOR{epoch $= 1$ to $N$}
+        \FORALL{task $d$}
+            \STATE $\mathcal{S}_{\text{ret}} \leftarrow \text{Retrieve}(d, \skillbank{})$
+            \STATE Sample $\{\tau^{(i)}\}_{i=1}^G \sim \pi_\theta(\cdot | d, \mathcal{S}_g, \mathcal{S}_{\text{ret}})$
+            \STATE Compute $\{R_i\}_{i=1}^G$ and update $\theta$ via GRPO
+        \ENDFOR
+        \IF{validation epoch}
+            \STATE $\mathcal{T}_{\text{val}}^- \leftarrow$ failed validation trajectories
+            \STATE $\mathcal{S}_{\text{new}} \leftarrow \mathcal{M}_T(\mathcal{T}_{\text{val}}^-, \skillbank{})$
+            \STATE $\skillbank{} \leftarrow \skillbank{} \cup \mathcal{S}_{\text{new}}$
+        \ENDIF
+    \ENDFOR
+    \STATE \textbf{return} $\pi_\theta$, $\skillbank{}$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Recursive Skill Evolution}
+A static skill library cannot anticipate all scenarios the agent will encounter. As the policy improves and explores new state regions, it faces situations where existing skills provide insufficient guidance. We introduce recursive skill evolution during reinforcement learning to address this limitation, enabling the skill library and agent policy to co-evolve.
+
+\noindent \textbf{Cold-Start Initialization.}
+Before RL training, we address a critical challenge: the base agent has not learned how to effectively utilize skills. Simply providing skills to an unchanged model yields limited benefit~\cite{guo2025deepseek}. We therefore perform a cold-start supervised fine-tuning (SFT) stage~\cite{ouyang2022training}, where the teacher model $\mathcal{M}_T$ generates $N$ skill-augmented reasoning traces $\mathcal{D}_{\text{SFT}} = \{(d_i, \mathcal{S}_i, \tau_i^*)\}_{i=1}^N$ demonstrating how to retrieve, interpret, and apply skills during decision-making. The base model is then fine-tuned on these demonstrations:
+\begin{equation}
+    \theta_{\text{sft}} = \arg\min_\theta \mathcal{L}_{\text{CE}}(\mathcal{D}_{\text{SFT}}; \theta),
+\end{equation}
+where $\mathcal{L}_{\text{CE}}$ denotes the cross-entropy loss. The resulting model $\pi_{\theta_{\text{sft}}}$ serves as both the starting point for RL training and the reference policy $\pi_{\text{ref}}$ for KL regularization.
+
+\noindent \textbf{Recursive Skill Evolution.}
+A static skill library cannot anticipate all scenarios the agent will encounter. As the policy improves and explores new state regions, it faces situations where existing skills provide insufficient guidance. We introduce recursive skill evolution to address this limitation. The process begins with an initial skill library containing baseline task-action principles.
+
+After each validation epoch, we monitor the success rate $Acc(C)$ for each task category $C$. To ensure targeted growth, the evolution is triggered only for categories where $Acc(C) < \delta$. We then collect failed trajectories $\mathcal{T}_{\text{val}}^- = \{\tau_j : r(\tau_j) = 0\}_{j=1}^{M}$ using a diversity-aware stratified sampling strategy: trajectories are grouped by category, prioritized by the severity of failure (negative rewards), and selected via round-robin sampling to maintain categorical entropy. Then we will analyze these samples to identify gaps:
+\begin{equation}
+    \mathcal{S}_{\text{new}} = \mathcal{M}_T(\mathcal{T}_{\text{val}}^-, \skillbank{}).
+\end{equation}
+The teacher model is prompted to: (1) identify failure patterns not addressed by current skills, (2) propose new skills to cover these gaps, and (3) suggest refinements to existing skills that proved ineffective. The library is then updated: $\skillbank{} \leftarrow \skillbank{} \cup \mathcal{S}_{\text{new}}$.
+
+This creates a virtuous cycle: as the agent improves, it encounters new challenges, which drive skill library expansion, which enables further improvement. 
+
+\noindent \textbf{RL-based Policy Optimization.}
+We optimize the skill-augmented policy using GRPO. For each task with description $d$, the agent first retrieves relevant skills and then samples $G$ complete trajectories $\{\tau^{(1)}, \ldots, \tau^{(G)}\}$ from the current policy $\pi_\theta$. Each trajectory $\tau^{(i)}$ receives a binary reward $R_i = r(\tau^{(i)}) \in \{0, 1\}$ indicating task successfulness. The normalized advantage for each trajectory is computed as:
+\begin{equation}
+    A_i = \frac{R_i - \text{mean}(\{R_j\}_{j=1}^G)}{\text{std}(\{R_j\}_{j=1}^G)}.
+\end{equation}
+
+The policy is updated according to:
+\begin{equation}
+\begin{aligned}
+\footnotesize
+    \mathcal{J}(\theta) = \mathbb{E}_{d, \{\tau^{(i)}\}} \Bigg[ \frac{1}{G} \sum_{i=1}^{G} \min \Big( \rho_i A_i, \\
+    \text{clip}(\rho_i, 1-\epsilon, 1+\epsilon) A_i \Big) - \beta D_{\text{KL}}(\pi_\theta \| \pi_{\text{ref}}) \Bigg],
+\end{aligned}
+\end{equation}
+where $\rho_i = \frac{\pi_\theta(\tau^{(i)} | d, \mathcal{S}_g, \mathcal{S}_{\text{ret}})}{\pi_{\text{old}}(\tau^{(i)} | d, \mathcal{S}_g, \mathcal{S}_{\text{ret}})}$ is the importance ratio computed over the skill-augmented context. The KL penalty anchored to $\pi_{\text{ref}} = \pi_{\theta_{\text{sft}}}$ ensures that RL optimization preserves the learned skill utilization capabilities while improving task performance.
+The complete training procedure is summarized in Algorithm~\ref{alg:skillrl}.
+

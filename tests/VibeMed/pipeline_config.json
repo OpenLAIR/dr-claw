@@ -1,0 +1,14 @@
+{
+  "instance_path": "/home/dingjie/workspace/ai-scientist/workspace/VibeMed/instance.json",
+  "task_level": "task2",
+  "category": "custom",
+  "references_path": "/home/dingjie/workspace/ai-scientist/workspace/VibeMed/Ideation/references/",
+  "ideas_path": "/home/dingjie/workspace/ai-scientist/workspace/VibeMed/Ideation/ideas/",
+  "code_references_path": "/home/dingjie/workspace/ai-scientist/workspace/VibeMed/Experiment/code_references/",
+  "datasets_path": "/home/dingjie/workspace/ai-scientist/workspace/VibeMed/Experiment/datasets/",
+  "core_code_path": "/home/dingjie/workspace/ai-scientist/workspace/VibeMed/Experiment/core_code/",
+  "analysis_path": "/home/dingjie/workspace/ai-scientist/workspace/VibeMed/Experiment/analysis/",
+  "references": "1. Vibe AIGC: A New Paradigm for Content Generation via Agentic Orchestration (https://arxiv.org/abs/2602.04575)\n   - Type: methodological_inspiration\n   - Justification: Core inspiration paper proposing the Vibe paradigm — agentic orchestration with Meta-Planner to bridge the intent-execution gap in generative AI. VibeMed adapts this framework to the medical and healthcare domain.\n   - Usage: Adapt the hierarchical multi-agent orchestration architecture (Meta-Planner, decomposition of user intent into executable agent workflows) from content generation to medical image computing and clinical decision support.",
+  "ideas": "",
+  "dataset_description": "Dataset to be determined during idea generation. Potential datasets for medical agentic orchestration evaluation include: (1) Medical image benchmarks (e.g., BTCV for multi-organ segmentation, BraTS for brain tumor analysis, CheXpert/MIMIC-CXR for chest X-ray interpretation), (2) Clinical workflow datasets with multi-step annotations, (3) Radiology report generation benchmarks. The specific dataset will depend on which clinical workflow domain is selected during the idea generation phase. Since VibeMed is a framework/systems paper, evaluation may involve multiple datasets to demonstrate generalizability across clinical tasks."
+}

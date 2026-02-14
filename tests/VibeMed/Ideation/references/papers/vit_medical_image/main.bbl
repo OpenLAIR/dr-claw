@@ -1,0 +1,2787 @@
+\begin{thebibliography}{100}
+
+\bibitem{goodfellow2016deep}
+Ian Goodfellow, Yoshua Bengio, and Aaron Courville.
+\newblock {\em Deep learning}.
+\newblock MIT press, 2016.
+
+\bibitem{lecun1989backpropagation}
+Yann LeCun, Bernhard Boser, John~S Denker, Donnie Henderson, Richard~E Howard,
+  Wayne Hubbard, and Lawrence~D Jackel.
+\newblock Backpropagation applied to handwritten zip code recognition.
+\newblock {\em Neural computation}, 1(4):541--551, 1989.
+
+\bibitem{krizhevsky2012imagenet}
+Alex Krizhevsky, Ilya Sutskever, and Geoffrey~E Hinton.
+\newblock Imagenet classification with deep convolutional neural networks.
+\newblock {\em Advances in neural information processing systems},
+  25:1097--1105, 2012.
+
+\bibitem{liu2022convnet}
+Zhuang Liu, Hanzi Mao, Chao-Yuan Wu, Christoph Feichtenhofer, Trevor Darrell,
+  and Saining Xie.
+\newblock A convnet for the 2020s.
+\newblock {\em arXiv preprint arXiv:2201.03545}, 2022.
+
+\bibitem{lakhani2017deep}
+Paras Lakhani and Baskaran Sundaram.
+\newblock Deep learning at chest radiography: automated classification of
+  pulmonary tuberculosis by using convolutional neural networks.
+\newblock {\em Radiology}, 284(2):574--582, 2017.
+
+\bibitem{min2019overview}
+Jun~Ki Min, Min~Seob Kwak, and Jae~Myung Cha.
+\newblock Overview of deep learning in gastrointestinal endoscopy.
+\newblock {\em Gut and liver}, 13(4):388, 2019.
+
+\bibitem{wurfl2016deep}
+Tobias W{\"u}rfl, Florin~C Ghesu, Vincent Christlein, and Andreas Maier.
+\newblock Deep learning computed tomography.
+\newblock In {\em International conference on medical image computing and
+  computer-assisted intervention}, pages 432--440. Springer, 2016.
+
+\bibitem{lell2020recent}
+Michael~M Lell and Marc Kachelrie{\ss}.
+\newblock Recent and upcoming technological developments in computed
+  tomography: high speed, low dose, deep learning, multienergy.
+\newblock {\em Investigative radiology}, 55(1):8--19, 2020.
+
+\bibitem{hamidinekoo2018deep}
+Azam Hamidinekoo, Erika Denton, Andrik Rampun, Kate Honnor, and Reyer
+  Zwiggelaar.
+\newblock Deep learning in mammography and breast histology, an overview and
+  future trends.
+\newblock {\em Medical image analysis}, 47:45--67, 2018.
+
+\bibitem{liu2019deep}
+Shengfeng Liu, Yi~Wang, Xin Yang, Baiying Lei, Li~Liu, Shawn~Xiang Li, Dong Ni,
+  and Tianfu Wang.
+\newblock Deep learning in medical ultrasound analysis: a review.
+\newblock {\em Engineering}, 5(2):261--275, 2019.
+
+\bibitem{lundervold2019overview}
+Alexander~Selvikv{\aa}g Lundervold and Arvid Lundervold.
+\newblock An overview of deep learning in medical imaging focusing on mri.
+\newblock {\em Zeitschrift f{\"u}r Medizinische Physik}, 29(2):102--127, 2019.
+
+\bibitem{akkus2017deep}
+Zeynettin Akkus, Alfiia Galimzianova, Assaf Hoogi, Daniel~L Rubin, and
+  Bradley~J Erickson.
+\newblock Deep learning for brain mri segmentation: state of the art and future
+  directions.
+\newblock {\em Journal of digital imaging}, 30(4):449--459, 2017.
+
+\bibitem{reader2020deep}
+Andrew~J Reader, Guillaume Corda, Abolfazl Mehranian, Casper da~Costa-Luis, Sam
+  Ellis, and Julia~A Schnabel.
+\newblock Deep learning for pet image reconstruction.
+\newblock {\em IEEE Transactions on Radiation and Plasma Medical Sciences},
+  5(1):1--25, 2020.
+
+\bibitem{vaswani2017attention}
+Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones,
+  Aidan~N Gomez, {\L}ukasz Kaiser, and Illia Polosukhin.
+\newblock Attention is all you need.
+\newblock In {\em Advances in neural information processing systems}, pages
+  5998--6008, 2017.
+
+\bibitem{devlin2018bert}
+Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova.
+\newblock Bert: Pre-training of deep bidirectional transformers for language
+  understanding.
+\newblock {\em arXiv preprint arXiv:1810.04805}, 2018.
+
+\bibitem{fedus2021switch}
+William Fedus, Barret Zoph, and Noam Shazeer.
+\newblock Switch transformers: Scaling to trillion parameter models with simple
+  and efficient sparsity.
+\newblock {\em arXiv preprint arXiv:2101.03961}, 2021.
+
+\bibitem{wang2018non}
+Xiaolong Wang, Ross Girshick, Abhinav Gupta, and Kaiming He.
+\newblock Non-local neural networks.
+\newblock In {\em Proceedings of the IEEE conference on computer vision and
+  pattern recognition}, pages 7794--7803, 2018.
+
+\bibitem{yin2020disentangled}
+Minghao Yin, Zhuliang Yao, Yue Cao, Xiu Li, Zheng Zhang, Stephen Lin, and Han
+  Hu.
+\newblock Disentangled non-local neural networks.
+\newblock In {\em European Conference on Computer Vision}, pages 191--207.
+  Springer, 2020.
+
+\bibitem{ramachandran2019stand}
+Prajit Ramachandran, Niki Parmar, Ashish Vaswani, Irwan Bello, Anselm Levskaya,
+  and Jonathon Shlens.
+\newblock Stand-alone self-attention in vision models.
+\newblock {\em arXiv preprint arXiv:1906.05909}, 2019.
+
+\bibitem{bello2019attention}
+Irwan Bello, Barret Zoph, Ashish Vaswani, Jonathon Shlens, and Quoc~V Le.
+\newblock Attention augmented convolutional networks.
+\newblock In {\em Proceedings of the IEEE/CVF international conference on
+  computer vision}, pages 3286--3295, 2019.
+
+\bibitem{vaswani2021scaling}
+Ashish Vaswani, Prajit Ramachandran, Aravind Srinivas, Niki Parmar, Blake
+  Hechtman, and Jonathon Shlens.
+\newblock Scaling local self-attention for parameter efficient visual
+  backbones.
+\newblock In {\em Proceedings of the IEEE/CVF Conference on Computer Vision and
+  Pattern Recognition}, pages 12894--12904, 2021.
+
+\bibitem{dosovitskiy2020image}
+Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov, Dirk Weissenborn,
+  Xiaohua Zhai, Thomas Unterthiner, Mostafa Dehghani, Matthias Minderer, Georg
+  Heigold, Sylvain Gelly, et~al.
+\newblock An image is worth 16x16 words: Transformers for image recognition at
+  scale.
+\newblock {\em arXiv preprint arXiv:2010.11929}, 2020.
+
+\bibitem{chaudhari2019attentive}
+Sneha Chaudhari, Varun Mithal, Gungor Polatkan, and Rohan Ramanath.
+\newblock An attentive survey of attention models.
+\newblock {\em arXiv preprint arXiv:1904.02874}, 2019.
+
+\bibitem{zhu2020deformable}
+Xizhou Zhu, Weijie Su, Lewei Lu, Bin Li, Xiaogang Wang, and Jifeng Dai.
+\newblock Deformable detr: Deformable transformers for end-to-end object
+  detection.
+\newblock {\em arXiv preprint arXiv:2010.04159}, 2020.
+
+\bibitem{zheng2021rethinking}
+Sixiao Zheng, Jiachen Lu, Hengshuang Zhao, Xiatian Zhu, Zekun Luo, Yabiao Wang,
+  Yanwei Fu, Jianfeng Feng, Tao Xiang, Philip~HS Torr, et~al.
+\newblock Rethinking semantic segmentation from a sequence-to-sequence
+  perspective with transformers.
+\newblock In {\em Proceedings of the IEEE/CVF Conference on Computer Vision and
+  Pattern Recognition}, pages 6881--6890, 2021.
+
+\bibitem{kumar2021colorization}
+Manoj Kumar, Dirk Weissenborn, and Nal Kalchbrenner.
+\newblock Colorization transformer.
+\newblock {\em arXiv preprint arXiv:2102.04432}, 2021.
+
+\bibitem{chen2021pre}
+Hanting Chen, Yunhe Wang, Tianyu Guo, Chang Xu, Yiping Deng, Zhenhua Liu, Siwei
+  Ma, Chunjing Xu, Chao Xu, and Wen Gao.
+\newblock Pre-trained image processing transformer.
+\newblock In {\em Proceedings of the IEEE/CVF Conference on Computer Vision and
+  Pattern Recognition}, pages 12299--12310, 2021.
+
+\bibitem{arnab2021vivit}
+Anurag Arnab, Mostafa Dehghani, Georg Heigold, Chen Sun, Mario Lu{\v{c}}i{\'c},
+  and Cordelia Schmid.
+\newblock Vivit: A video vision transformer.
+\newblock {\em arXiv preprint arXiv:2103.15691}, 2021.
+
+\bibitem{naseer2021intriguing}
+Muzammal Naseer, Kanchana Ranasinghe, Salman Khan, Munawar Hayat, Fahad~Shahbaz
+  Khan, and Ming-Hsuan Yang.
+\newblock Intriguing properties of vision transformers.
+\newblock {\em arXiv preprint arXiv:2105.10497}, 2021.
+
+\bibitem{portelance2021emergence}
+Eva Portelance, Michael~C Frank, Dan Jurafsky, Alessandro Sordoni, and Romain
+  Laroche.
+\newblock The emergence of the shape bias results from communicative
+  efficiency.
+\newblock {\em arXiv preprint arXiv:2109.06232}, 2021.
+
+\bibitem{geirhos2021partial}
+Robert Geirhos, Kantharaju Narayanappa, Benjamin Mitzkus, Tizian Thieringer,
+  Matthias Bethge, Felix~A Wichmann, and Wieland Brendel.
+\newblock Partial success in closing the gap between human and machine vision.
+\newblock {\em arXiv preprint arXiv:2106.07411}, 2021.
+
+\bibitem{tuli2021convolutional}
+Shikhar Tuli, Ishita Dasgupta, Erin Grant, and Thomas~L Griffiths.
+\newblock Are convolutional neural networks or transformers more like human
+  vision?
+\newblock {\em arXiv preprint arXiv:2105.07197}, 2021.
+
+\bibitem{matsoukas2021time}
+Christos Matsoukas, Johan~Fredin Haslum, Magnus S{\"o}derberg, and Kevin Smith.
+\newblock Is it time to replace cnns with transformers for medical images?
+\newblock {\em arXiv preprint arXiv:2108.09038}, 2021.
+
+\bibitem{gao2021utnet}
+Yunhe Gao, Mu~Zhou, and Dimitris~N Metaxas.
+\newblock Utnet: a hybrid transformer architecture for medical image
+  segmentation.
+\newblock In {\em International Conference on Medical Image Computing and
+  Computer-Assisted Intervention}, pages 61--71. Springer, 2021.
+
+\bibitem{hatamizadeh2021unetr}
+Ali Hatamizadeh, Dong Yang, Holger Roth, and Daguang Xu.
+\newblock Unetr: Transformers for 3d medical image segmentation.
+\newblock {\em arXiv preprint arXiv:2103.10504}, 2021.
+
+\bibitem{wu2021hepatic}
+Mian Wu, Yinling Qian, Xiangyun Liao, Qiong Wang, and Pheng-Ann Heng.
+\newblock Hepatic vessel segmentation based on 3dswin-transformer with
+  inductive biased multi-head self-attention.
+\newblock {\em arXiv preprint arXiv:2111.03368}, 2021.
+
+\bibitem{zhang2021transct}
+Zhicheng Zhang, Lequan Yu, Xiaokun Liang, Wei Zhao, and Lei Xing.
+\newblock Transct: Dual-path transformer for low dose computed tomography.
+\newblock {\em arXiv preprint arXiv:2103.00634}, 2021.
+
+\bibitem{korkmaz2021unsupervised}
+Yilmaz Korkmaz, Salman~UH Dar, Mahmut Yurt, Muzaffer {\"O}zbey, and Tolga
+  {\c{C}}ukur.
+\newblock Unsupervised mri reconstruction via zero-shot learned adversarial
+  transformers.
+\newblock {\em arXiv preprint arXiv:2105.08059}, 2021.
+
+\bibitem{ji2021multi}
+Yuanfeng Ji, Ruimao Zhang, Huijie Wang, Zhen Li, Lingyun Wu, Shaoting Zhang,
+  and Ping Luo.
+\newblock Multi-compound transformer for accurate biomedical image
+  segmentation.
+\newblock In {\em International Conference on Medical Image Computing and
+  Computer-Assisted Intervention}, pages 326--336. Springer, 2021.
+
+\bibitem{suetens2017fundamentals}
+Paul Suetens.
+\newblock {\em Fundamentals of medical imaging}.
+\newblock Cambridge university press, 2017.
+
+\bibitem{zhang2008medical}
+Xiaofeng Zhang, Nadine Smith, and Andrew Webb.
+\newblock Medical imaging.
+\newblock In {\em Biomedical Information Technology}, pages 3--27. Elsevier,
+  2008.
+
+\bibitem{rudin1992nonlinear}
+Leonid~I Rudin, Stanley Osher, and Emad Fatemi.
+\newblock Nonlinear total variation based noise removal algorithms.
+\newblock {\em Physica D: nonlinear phenomena}, 60(1-4):259--268, 1992.
+
+\bibitem{xu2015patch}
+Jun Xu, Lei Zhang, Wangmeng Zuo, David Zhang, and Xiangchu Feng.
+\newblock Patch group based nonlocal self-similarity prior learning for image
+  denoising.
+\newblock In {\em Proceedings of the IEEE international conference on computer
+  vision}, pages 244--252, 2015.
+
+\bibitem{eldar2012compressed}
+Yonina~C Eldar and Gitta Kutyniok.
+\newblock {\em Compressed sensing: theory and applications}.
+\newblock Cambridge university press, 2012.
+
+\bibitem{choi2000hidden}
+Hyeokho Choi, Justin Romberg, Richard Baraniuk, and Nick Kingsbury.
+\newblock Hidden markov tree modeling of complex wavelet transforms.
+\newblock In {\em 2000 IEEE International Conference on Acoustics, Speech, and
+  Signal Processing. Proceedings (Cat. No. 00CH37100)}, volume~1, pages
+  133--136. IEEE, 2000.
+
+\bibitem{ulyanov2018deep}
+Dmitry Ulyanov, Andrea Vedaldi, and Victor Lempitsky.
+\newblock Deep image prior.
+\newblock In {\em Proceedings of the IEEE conference on computer vision and
+  pattern recognition}, pages 9446--9454, 2018.
+
+\bibitem{qayyum2021untrained}
+Adnan Qayyum, Inaam Ilahi, Fahad Shamshad, Farid Boussaid, Mohammed Bennamoun,
+  and Junaid Qadir.
+\newblock Untrained neural network priors for inverse imaging problems: A
+  survey.
+\newblock 2021.
+
+\bibitem{qayyum2020single}
+Adnan Qayyum, Waqas Sultani, Fahad Shamshad, Junaid Qadir, and Rashid Tufail.
+\newblock Single-shot retinal image enhancement using deep image priors.
+\newblock In {\em International Conference on Medical Image Computing and
+  Computer-Assisted Intervention}, pages 636--646. Springer, 2020.
+
+\bibitem{ramesh2021review}
+KKD Ramesh, G~Kiran Kumar, K~Swapna, Debabrata Datta, and S~Suman Rajest.
+\newblock A review of medical image segmentation algorithms.
+\newblock {\em EAI Endorsed Transactions on Pervasive Health and Technology},
+  2021.
+
+\bibitem{ravishankar2019image}
+Saiprasad Ravishankar, Jong~Chul Ye, and Jeffrey~A Fessler.
+\newblock Image reconstruction: From sparsity to data-adaptive methods and
+  machine learning.
+\newblock {\em Proceedings of the IEEE}, 108(1):86--109, 2019.
+
+\bibitem{miranda2016survey}
+Eka Miranda, Mediana Aryuni, and E~Irwansyah.
+\newblock A survey of medical image classification techniques.
+\newblock In {\em 2016 International Conference on Information Management and
+  Technology (ICIMTech)}, pages 56--61. IEEE, 2016.
+
+\bibitem{jawdekar2021review}
+Anand Jawdekar and Manish Dixit.
+\newblock A review of image enhancement techniques in medical imaging.
+\newblock {\em Machine Intelligence and Smart Systems}, pages 25--33, 2021.
+
+\bibitem{tschuchnig2021anomaly}
+Maximilian~E Tschuchnig and Michael Gadermayr.
+\newblock Anomaly detection in medical imaging--a mini review.
+\newblock {\em arXiv preprint arXiv:2108.11986}, 2021.
+
+\bibitem{ruping2006learning}
+Stefan R{\"u}ping et~al.
+\newblock Learning interpretable models.
+\newblock 2006.
+
+\bibitem{ahmad2018interpretable}
+Muhammad~Aurangzeb Ahmad, Carly Eckert, and Ankur Teredesai.
+\newblock Interpretable machine learning in healthcare.
+\newblock In {\em Proceedings of the 2018 ACM international conference on
+  bioinformatics, computational biology, and health informatics}, pages
+  559--560, 2018.
+
+\bibitem{zhou2021review}
+S~Kevin Zhou, Hayit Greenspan, Christos Davatzikos, James~S Duncan, Bram
+  Van~Ginneken, Anant Madabhushi, Jerry~L Prince, Daniel Rueckert, and Ronald~M
+  Summers.
+\newblock A review of deep learning in medical imaging: Imaging traits,
+  technology trends, case studies with progress highlights, and future
+  promises.
+\newblock {\em Proceedings of the IEEE}, 2021.
+
+\bibitem{hegde2018algorithmic}
+Chinmay Hegde.
+\newblock Algorithmic aspects of inverse problems using generative models.
+\newblock In {\em 2018 56th Annual Allerton Conference on Communication,
+  Control, and Computing (Allerton)}, pages 166--172. IEEE, 2018.
+
+\bibitem{lin2020comparison}
+Wenyi Lin, Kyle Hasenstab, Guilherme~Moura Cunha, and Armin Schwartzman.
+\newblock Comparison of handcrafted features and convolutional neural networks
+  for liver mr image adequacy assessment.
+\newblock {\em Scientific Reports}, 10(1):1--11, 2020.
+
+\bibitem{engan1999method}
+Kjersti Engan, Sven~Ole Aase, and J~Hakon Husoy.
+\newblock Method of optimal directions for frame design.
+\newblock In {\em 1999 IEEE International Conference on Acoustics, Speech, and
+  Signal Processing. Proceedings. ICASSP99 (Cat. No. 99CH36258)}, volume~5,
+  pages 2443--2446. IEEE, 1999.
+
+\bibitem{aharon2006k}
+Michal Aharon, Michael Elad, and Alfred Bruckstein.
+\newblock K-svd: An algorithm for designing overcomplete dictionaries for
+  sparse representation.
+\newblock {\em IEEE Transactions on signal processing}, 54(11):4311--4322,
+  2006.
+
+\bibitem{cai2014data}
+Jian-Feng Cai, Hui Ji, Zuowei Shen, and Gui-Bo Ye.
+\newblock Data-driven tight frame construction and image denoising.
+\newblock {\em Applied and Computational Harmonic Analysis}, 37(1):89--105,
+  2014.
+
+\bibitem{zhou2014low}
+Xiaowei Zhou, Can Yang, Hongyu Zhao, and Weichuan Yu.
+\newblock Low-rank modeling and its applications in image analysis.
+\newblock {\em ACM Computing Surveys (CSUR)}, 47(2):1--33, 2014.
+
+\bibitem{an2007gamma}
+Jungha An, Mikael Rousson, and Chenyang Xu.
+\newblock $\gamma$-convergence approximation to piecewise smooth medical image
+  segmentation.
+\newblock In {\em International Conference on Medical Image Computing and
+  Computer-Assisted Intervention}, pages 495--502. Springer, 2007.
+
+\bibitem{gibson2018niftynet}
+Eli Gibson, Wenqi Li, Carole Sudre, Lucas Fidon, Dzhoshkun~I Shakir, Guotai
+  Wang, Zach Eaton-Rosen, Robert Gray, Tom Doel, Yipeng Hu, et~al.
+\newblock Niftynet: a deep-learning platform for medical imaging.
+\newblock {\em Computer methods and programs in biomedicine}, 158:113--122,
+  2018.
+
+\bibitem{perez2021torchio}
+Fernando P{\'e}rez-Garc{\'\i}a, Rachel Sparks, and Sebastien Ourselin.
+\newblock Torchio: a python library for efficient loading, preprocessing,
+  augmentation and patch-based sampling of medical images in deep learning.
+\newblock {\em Computer Methods and Programs in Biomedicine}, page 106236,
+  2021.
+
+\bibitem{beers2021deepneuro}
+Andrew Beers, James Brown, Ken Chang, Katharina Hoebel, Jay Patel, K~Ina Ly,
+  Sara~M Tolaney, Priscilla Brastianos, Bruce Rosen, Elizabeth~R Gerstner,
+  et~al.
+\newblock Deepneuro: an open-source deep learning toolbox for neuroimaging.
+\newblock {\em Neuroinformatics}, 19(1):127--140, 2021.
+
+\bibitem{yi2019generative}
+Xin Yi, Ekta Walia, and Paul Babyn.
+\newblock Generative adversarial network in medical imaging: A review.
+\newblock {\em Medical image analysis}, 58:101552, 2019.
+
+\bibitem{litjens2017survey}
+Geert Litjens, Thijs Kooi, Babak~Ehteshami Bejnordi, Arnaud Arindra~Adiyoso
+  Setio, Francesco Ciompi, Mohsen Ghafoorian, Jeroen~Awm Van Der~Laak, Bram
+  Van~Ginneken, and Clara~I S{\'a}nchez.
+\newblock A survey on deep learning in medical image analysis.
+\newblock {\em Medical image analysis}, 42:60--88, 2017.
+
+\bibitem{greenspan2016guest}
+Hayit Greenspan, Bram Van~Ginneken, and Ronald~M Summers.
+\newblock Guest editorial deep learning in medical imaging: Overview and future
+  promise of an exciting new technique.
+\newblock {\em IEEE transactions on medical imaging}, 35(5):1153--1159, 2016.
+
+\bibitem{zhou2017deep}
+S~Kevin Zhou, Hayit Greenspan, and Dinggang Shen.
+\newblock {\em Deep learning for medical image analysis}.
+\newblock Academic Press, 2017.
+
+\bibitem{shen2017deep}
+Dinggang Shen, Guorong Wu, and Heung-Il Suk.
+\newblock Deep learning in medical image analysis.
+\newblock {\em Annual review of biomedical engineering}, 19:221--248, 2017.
+
+\bibitem{cheplygina2019not}
+Veronika Cheplygina, Marleen de~Bruijne, and Josien~PW Pluim.
+\newblock Not-so-supervised: a survey of semi-supervised, multi-instance, and
+  transfer learning in medical image analysis.
+\newblock {\em Medical image analysis}, 54:280--296, 2019.
+
+\bibitem{hesamian2019deep}
+Mohammad~Hesam Hesamian, Wenjing Jia, Xiangjian He, and Paul Kennedy.
+\newblock Deep learning techniques for medical image segmentation: achievements
+  and challenges.
+\newblock {\em Journal of digital imaging}, 32(4):582--596, 2019.
+
+\bibitem{duncan2019biomedical}
+James~S Duncan, Michael~F Insana, and Nicholas Ayache.
+\newblock Biomedical imaging and analysis in the age of big data and deep
+  learning [scanning the issue].
+\newblock {\em Proceedings of the IEEE}, 108(1):3--10, 2019.
+
+\bibitem{haskins2020deep}
+Grant Haskins, Uwe Kruger, and Pingkun Yan.
+\newblock Deep learning in medical image registration: a survey.
+\newblock {\em Machine Vision and Applications}, 31(1):1--18, 2020.
+
+\bibitem{shlezinger2020model}
+Nir Shlezinger, Jay Whang, Yonina~C Eldar, and Alexandros~G Dimakis.
+\newblock Model-based deep learning.
+\newblock {\em arXiv preprint arXiv:2012.08405}, 2020.
+
+\bibitem{monga2021algorithm}
+Vishal Monga, Yuelong Li, and Yonina~C Eldar.
+\newblock Algorithm unrolling: Interpretable, efficient deep learning for
+  signal and image processing.
+\newblock {\em IEEE Signal Processing Magazine}, 38(2):18--44, 2021.
+
+\bibitem{ongie2020deep}
+Gregory Ongie, Ajil Jalal, Christopher~A Metzler, Richard~G Baraniuk,
+  Alexandros~G Dimakis, and Rebecca Willett.
+\newblock Deep learning techniques for inverse problems in imaging.
+\newblock {\em IEEE Journal on Selected Areas in Information Theory},
+  1(1):39--56, 2020.
+
+\bibitem{ahmad2020plug}
+Rizwan Ahmad, Charles~A Bouman, Gregery~T Buzzard, Stanley Chan, Sizhuo Liu,
+  Edward~T Reehorst, and Philip Schniter.
+\newblock Plug-and-play methods for magnetic resonance imaging: Using denoisers
+  for image recovery.
+\newblock {\em IEEE signal processing magazine}, 37(1):105--116, 2020.
+
+\bibitem{bahdanau2014neural}
+Dzmitry Bahdanau, Kyunghyun Cho, and Yoshua Bengio.
+\newblock Neural machine translation by jointly learning to align and
+  translate.
+\newblock {\em arXiv preprint arXiv:1409.0473}, 2014.
+
+\bibitem{han2020survey}
+Kai Han, Yunhe Wang, Hanting Chen, Xinghao Chen, Jianyuan Guo, Zhenhua Liu,
+  Yehui Tang, An~Xiao, Chunjing Xu, Yixing Xu, et~al.
+\newblock A survey on visual transformer.
+\newblock {\em arXiv preprint arXiv:2012.12556}, 2020.
+
+\bibitem{khan2021transformers}
+Salman Khan, Muzammal Naseer, Munawar Hayat, Syed~Waqas Zamir, Fahad~Shahbaz
+  Khan, and Mubarak Shah.
+\newblock Transformers in vision: A survey.
+\newblock {\em arXiv preprint arXiv:2101.01169}, 2021.
+
+\bibitem{tay2020efficient}
+Yi~Tay, Mostafa Dehghani, Dara Bahri, and Donald Metzler.
+\newblock Efficient transformers: A survey.
+\newblock {\em arXiv preprint arXiv:2009.06732}, 2020.
+
+\bibitem{lin2021survey}
+Tianyang Lin, Yuxin Wang, Xiangyang Liu, and Xipeng Qiu.
+\newblock A survey of transformers.
+\newblock {\em arXiv preprint arXiv:2106.04554}, 2021.
+
+\bibitem{rao2021dynamicvit}
+Yongming Rao, Wenliang Zhao, Benlin Liu, Jiwen Lu, Jie Zhou, and Cho-Jui Hsieh.
+\newblock Dynamicvit: Efficient vision transformers with dynamic token
+  sparsification.
+\newblock {\em arXiv preprint arXiv:2106.02034}, 2021.
+
+\bibitem{katharopoulos2020transformers}
+Angelos Katharopoulos, Apoorv Vyas, Nikolaos Pappas, and Fran{\c{c}}ois
+  Fleuret.
+\newblock Transformers are rnns: Fast autoregressive transformers with linear
+  attention.
+\newblock In {\em International Conference on Machine Learning}, pages
+  5156--5165. PMLR, 2020.
+
+\bibitem{xiong2021nystr}
+Yunyang Xiong, Zhanpeng Zeng, Rudrasis Chakraborty, Mingxing Tan, Glenn Fung,
+  Yin Li, and Vikas Singh.
+\newblock Nystr$\backslash$" omformer: A nystr$\backslash$" om-based algorithm
+  for approximating self-attention.
+\newblock {\em arXiv preprint arXiv:2102.03902}, 2021.
+
+\bibitem{choromanski2020rethinking}
+Krzysztof Choromanski, Valerii Likhosherstov, David Dohan, Xingyou Song,
+  Andreea Gane, Tamas Sarlos, Peter Hawkins, Jared Davis, Afroz Mohiuddin,
+  Lukasz Kaiser, et~al.
+\newblock Rethinking attention with performers.
+\newblock {\em arXiv preprint arXiv:2009.14794}, 2020.
+
+\bibitem{shazeer2020talking}
+Noam Shazeer, Zhenzhong Lan, Youlong Cheng, Nan Ding, and Le~Hou.
+\newblock Talking-heads attention.
+\newblock {\em arXiv preprint arXiv:2003.02436}, 2020.
+
+\bibitem{jin2020ra}
+Qiangguo Jin, Zhaopeng Meng, Changming Sun, Hui Cui, and Ran Su.
+\newblock Ra-unet: A hybrid deep attention-aware network to extract liver and
+  tumor in ct scans.
+\newblock {\em Frontiers in Bioengineering and Biotechnology}, 8:1471, 2020.
+
+\bibitem{schlemper2019attention}
+Jo~Schlemper, Ozan Oktay, Michiel Schaap, Mattias Heinrich, Bernhard Kainz, Ben
+  Glocker, and Daniel Rueckert.
+\newblock Attention gated networks: Learning to leverage salient regions in
+  medical images.
+\newblock {\em Medical image analysis}, 53:197--207, 2019.
+
+\bibitem{maji2022attention}
+Dhiraj Maji, Prarthana Sigedar, and Munendra Singh.
+\newblock Attention res-unet with guided decoder for semantic segmentation of
+  brain tumors.
+\newblock {\em Biomedical Signal Processing and Control}, 71:103077, 2022.
+
+\bibitem{guo2021attention}
+Meng-Hao Guo, Tian-Xing Xu, Jiang-Jiang Liu, Zheng-Ning Liu, Peng-Tao Jiang,
+  Tai-Jiang Mu, Song-Hai Zhang, Ralph~R Martin, Ming-Ming Cheng, and Shi-Min
+  Hu.
+\newblock Attention mechanisms in computer vision: A survey.
+\newblock {\em arXiv preprint arXiv:2111.07624}, 2021.
+
+\bibitem{avola2021ultrasound}
+Danilo Avola, Luigi Cinque, Alessio Fagioli, Gianluca Foresti, and Alessio
+  Mecca.
+\newblock Ultrasound medical imaging techniques: A survey.
+\newblock {\em ACM Computing Surveys (CSUR)}, 54(3):1--38, 2021.
+
+\bibitem{zhou2019unet++}
+Zongwei Zhou, Md~Mahfuzur~Rahman Siddiquee, Nima Tajbakhsh, and Jianming Liang.
+\newblock Unet++: Redesigning skip connections to exploit multiscale features
+  in image segmentation.
+\newblock {\em IEEE transactions on medical imaging}, 39(6):1856--1867, 2019.
+
+\bibitem{chen2021transunet}
+Jieneng Chen, Yongyi Lu, Qihang Yu, Xiangde Luo, Ehsan Adeli, Yan Wang, Le~Lu,
+  Alan~L Yuille, and Yuyin Zhou.
+\newblock Transunet: Transformers make strong encoders for medical image
+  segmentation.
+\newblock {\em arXiv preprint arXiv:2102.04306}, 2021.
+
+\bibitem{wang2021boundary}
+Jiacheng Wang, Lan Wei, Liansheng Wang, Qichao Zhou, Lei Zhu, and Jing Qin.
+\newblock Boundary-aware transformers for skin lesion segmentation.
+\newblock In {\em International Conference on Medical Image Computing and
+  Computer-Assisted Intervention}, pages 206--216. Springer, 2021.
+
+\bibitem{yuan2017automatic}
+Yading Yuan.
+\newblock Automatic skin lesion segmentation with fully
+  convolutional-deconvolutional networks.
+\newblock {\em arXiv preprint arXiv:1703.05165}, 2017.
+
+\bibitem{gutman2016skin}
+David Gutman, Noel~CF Codella, Emre Celebi, Brian Helba, Michael Marchetti,
+  Nabin Mishra, and Allan Halpern.
+\newblock Skin lesion analysis toward melanoma detection: A challenge at the
+  international symposium on biomedical imaging (isbi) 2016, hosted by the
+  international skin imaging collaboration (isic).
+\newblock {\em arXiv preprint arXiv:1605.01397}, 2016.
+
+\bibitem{mendoncca2013ph}
+Teresa Mendon{\c{c}}a, Pedro~M Ferreira, Jorge~S Marques, Andr{\'e}~RS Marcal,
+  and Jorge Rozeira.
+\newblock Ph 2-a dermoscopic image database for research and benchmarking.
+\newblock In {\em 2013 35th annual international conference of the IEEE
+  engineering in medicine and biology society (EMBC)}, pages 5437--5440. IEEE,
+  2013.
+
+\bibitem{codella2019skin}
+Noel Codella, Veronica Rotemberg, Philipp Tschandl, M~Emre Celebi, Stephen
+  Dusza, David Gutman, Brian Helba, Aadi Kalloo, Konstantinos Liopyris, Michael
+  Marchetti, et~al.
+\newblock Skin lesion analysis toward melanoma detection 2018: A challenge
+  hosted by the international skin imaging collaboration (isic).
+\newblock {\em arXiv preprint arXiv:1902.03368}, 2019.
+
+\bibitem{wu2021fat}
+Huisi Wu, Shihuai Chen, Guilian Chen, Wei Wang, Baiying Lei, and Zhenkun Wen.
+\newblock Fat-net: Feature adaptive transformers for automated skin lesion
+  segmentation.
+\newblock {\em Medical Image Analysis}, page 102327, 2021.
+
+\bibitem{berseth2017isic}
+Matt Berseth.
+\newblock Isic 2017-skin lesion analysis towards melanoma detection.
+\newblock {\em arXiv preprint arXiv:1703.00523}, 2017.
+
+\bibitem{gao2010individual}
+Hui Gao and Oksam Chae.
+\newblock Individual tooth segmentation from ct images using level set method
+  with shape and intensity prior.
+\newblock {\em Pattern Recognition}, 43(7):2406--2417, 2010.
+
+\bibitem{li2021gt}
+Yunxiang Li, Shuai Wang, Jun Wang, Guodong Zeng, Wenjun Liu, Qianni Zhang, Qun
+  Jin, and Yaqi Wang.
+\newblock Gt u-net: A u-net like group transformer network for tooth root
+  segmentation.
+\newblock In {\em International Workshop on Machine Learning in Medical
+  Imaging}, pages 386--395. Springer, 2021.
+
+\bibitem{zahn1972fourier}
+Charles~T Zahn and Ralph~Z Roskies.
+\newblock Fourier descriptors for plane closed curves.
+\newblock {\em IEEE Transactions on computers}, 100(3):269--281, 1972.
+
+\bibitem{li2021agmb}
+Yunxiang Li, Guodong Zeng, Yifan Zhang, Jun Wang, Qun Jin, Lingling Sun, Qianni
+  Zhang, Qisi Lian, Guiping Qian, Neng Xia, et~al.
+\newblock Agmb-transformer: Anatomy-guided multi-branch transformer network for
+  automated evaluation of root canal therapy.
+\newblock {\em IEEE Journal of Biomedical and Health Informatics}, 2021.
+
+\bibitem{chollet2017xception}
+Fran{\c{c}}ois Chollet.
+\newblock Xception: Deep learning with depthwise separable convolutions.
+\newblock In {\em Proceedings of the IEEE conference on computer vision and
+  pattern recognition}, pages 1251--1258, 2017.
+
+\bibitem{deng2021transbridge}
+Kaizhong Deng, Yanda Meng, Dongxu Gao, Joshua Bridge, Yaochun Shen, Gregory
+  Lip, Yitian Zhao, and Yalin Zheng.
+\newblock Transbridge: A lightweight transformer for left ventricle
+  segmentation in echocardiography.
+\newblock In {\em International Workshop on Advances in Simplifying Medical
+  Ultrasound}, pages 63--72. Springer, 2021.
+
+\bibitem{zhang2021sa}
+Qing-Long Zhang and Yu-Bin Yang.
+\newblock Sa-net: Shuffle attention for deep convolutional neural networks.
+\newblock In {\em ICASSP 2021-2021 IEEE International Conference on Acoustics,
+  Speech and Signal Processing (ICASSP)}, pages 2235--2239. IEEE, 2021.
+
+\bibitem{ouyang2020video}
+David Ouyang, Bryan He, Amirata Ghorbani, Neal Yuan, Joseph Ebinger, Curtis~P
+  Langlotz, Paul~A Heidenreich, Robert~A Harrington, David~H Liang, Euan~A
+  Ashley, et~al.
+\newblock Video-based ai for beat-to-beat assessment of cardiac function.
+\newblock {\em Nature}, 580(7802):252--256, 2020.
+
+\bibitem{xie2021cotr}
+Yutong Xie, Jianpeng Zhang, Chunhua Shen, and Yong Xia.
+\newblock Cotr: Efficiently bridging cnn and transformer for 3d medical image
+  segmentation.
+\newblock {\em arXiv preprint arXiv:2103.03024}, 2021.
+
+\bibitem{wang2020identification}
+Qian Wang, Li~Sun, Yan Wang, Mei Zhou, Menghan Hu, Jiangang Chen, Ying Wen, and
+  Qingli Li.
+\newblock Identification of melanoma from hyperspectral pathology image using
+  3d convolutional networks.
+\newblock {\em IEEE Transactions on Medical Imaging}, 40(1):218--227, 2020.
+
+\bibitem{ronneberger2015u}
+Olaf Ronneberger, Philipp Fischer, and Thomas Brox.
+\newblock U-net: Convolutional networks for biomedical image segmentation.
+\newblock In {\em International Conference on Medical image computing and
+  computer-assisted intervention}, pages 234--241. Springer, 2015.
+
+\bibitem{oktay2018attention}
+Ozan Oktay, Jo~Schlemper, Loic~Le Folgoc, Matthew Lee, Mattias Heinrich,
+  Kazunari Misawa, Kensaku Mori, Steven McDonagh, Nils~Y Hammerla, Bernhard
+  Kainz, et~al.
+\newblock Attention u-net: Learning where to look for the pancreas.
+\newblock {\em arXiv preprint arXiv:1804.03999}, 2018.
+
+\bibitem{yun2021spectr}
+Boxiang Yun, Yan Wang, Jieneng Chen, Huiyu Wang, Wei Shen, and Qingli Li.
+\newblock Spectr: Spectral transformer for hyperspectral pathology image
+  segmentation.
+\newblock {\em arXiv preprint arXiv:2103.03604}, 2021.
+
+\bibitem{shen2021automated}
+Zhiqiang Shen, Hua Yang, Zhen Zhang, and Shaohua Zheng.
+\newblock Automated kidney tumor segmentation with convolution and transformer
+  network.
+\newblock 2021.
+
+\bibitem{he2016deep}
+Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun.
+\newblock Deep residual learning for image recognition.
+\newblock In {\em Proceedings of the IEEE conference on computer vision and
+  pattern recognition}, pages 770--778, 2016.
+
+\bibitem{kits2021}
+The 2021 kidney and kidney tumor segmentation challenge.
+\newblock \url{https://kits21.kits-challenge.org/}.
+\newblock Accessed: 2022-01-20.
+
+\bibitem{zhao2017pyramid}
+Hengshuang Zhao, Jianping Shi, Xiaojuan Qi, Xiaogang Wang, and Jiaya Jia.
+\newblock Pyramid scene parsing network.
+\newblock In {\em Proceedings of the IEEE conference on computer vision and
+  pattern recognition}, pages 2881--2890, 2017.
+
+\bibitem{chen2017deeplab}
+Liang-Chieh Chen, George Papandreou, Iasonas Kokkinos, Kevin Murphy, and Alan~L
+  Yuille.
+\newblock Deeplab: Semantic image segmentation with deep convolutional nets,
+  atrous convolution, and fully connected crfs.
+\newblock {\em IEEE transactions on pattern analysis and machine intelligence},
+  40(4):834--848, 2017.
+
+\bibitem{lin2017feature}
+Tsung-Yi Lin, Piotr Doll{\'a}r, Ross Girshick, Kaiming He, Bharath Hariharan,
+  and Serge Belongie.
+\newblock Feature pyramid networks for object detection.
+\newblock In {\em Proceedings of the IEEE conference on computer vision and
+  pattern recognition}, pages 2117--2125, 2017.
+
+\bibitem{li2018pyramid}
+Hanchao Li, Pengfei Xiong, Jie An, and Lingxue Wang.
+\newblock Pyramid attention network for semantic segmentation.
+\newblock {\em arXiv preprint arXiv:1805.10180}, 2018.
+
+\bibitem{chaurasia2017linknet}
+Abhishek Chaurasia and Eugenio Culurciello.
+\newblock Linknet: Exploiting encoder representations for efficient semantic
+  segmentation.
+\newblock In {\em 2017 IEEE Visual Communications and Image Processing (VCIP)},
+  pages 1--4. IEEE, 2017.
+
+\bibitem{cao2021swin}
+Hu~Cao, Yueyue Wang, Joy Chen, Dongsheng Jiang, Xiaopeng Zhang, Qi~Tian, and
+  Manning Wang.
+\newblock Swin-unet: Unet-like pure transformer for medical image segmentation.
+\newblock {\em arXiv preprint arXiv:2105.05537}, 2021.
+
+\bibitem{liu2021swin}
+Ze~Liu, Yutong Lin, Yue Cao, Han Hu, Yixuan Wei, Zheng Zhang, Stephen Lin, and
+  Baining Guo.
+\newblock Swin transformer: Hierarchical vision transformer using shifted
+  windows.
+\newblock In {\em ICCV}, 2021.
+
+\bibitem{strudel2021segmenter}
+Robin Strudel, Ricardo Garcia, Ivan Laptev, and Cordelia Schmid.
+\newblock Segmenter: Transformer for semantic segmentation.
+\newblock {\em arXiv preprint arXiv:2105.05633}, 2021.
+
+\bibitem{valanarasu2021medical}
+Jeya Maria~Jose Valanarasu, Poojan Oza, Ilker Hacihaliloglu, and Vishal~M
+  Patel.
+\newblock Medical transformer: Gated axial-attention for medical image
+  segmentation.
+\newblock {\em arXiv preprint arXiv:2102.10662}, 2021.
+
+\bibitem{bao2021beit}
+Hangbo Bao, Li~Dong, and Furu Wei.
+\newblock Beit: Bert pre-training of image transformers.
+\newblock {\em arXiv preprint arXiv:2106.08254}, 2021.
+
+\bibitem{kim2021paip}
+Yoo~Jung Kim, Hyungjoon Jang, Kyoungbun Lee, Seongkeun Park, Sung-Gyu Min,
+  Choyeon Hong, Jeong~Hwan Park, Kanggeun Lee, Jisoo Kim, Wonjae Hong, et~al.
+\newblock Paip 2019: Liver cancer segmentation challenge.
+\newblock {\em Medical Image Analysis}, 67:101854, 2021.
+
+\bibitem{nguyen2021evaluating}
+Cam Nguyen, Zuhayr Asad, and Yuankai Huo.
+\newblock Evaluating transformer based semantic segmentation networks for
+  pathological image segmentation.
+\newblock {\em arXiv preprint arXiv:2108.11993}, 2021.
+
+\bibitem{carion2020end}
+Nicolas Carion, Francisco Massa, Gabriel Synnaeve, Nicolas Usunier, Alexander
+  Kirillov, and Sergey Zagoruyko.
+\newblock End-to-end object detection with transformers.
+\newblock In {\em European Conference on Computer Vision}, pages 213--229.
+  Springer, 2020.
+
+\bibitem{prangemeier2020attention}
+Tim Prangemeier, Christoph Reich, and Heinz Koeppl.
+\newblock Attention-based transformers for instance segmentation of cells in
+  microstructures.
+\newblock In {\em 2020 IEEE International Conference on Bioinformatics and
+  Biomedicine (BIBM)}, pages 700--707. IEEE, 2020.
+
+\bibitem{lin2017focal}
+Tsung-Yi Lin, Priya Goyal, Ross Girshick, Kaiming He, and Piotr Doll{\'a}r.
+\newblock Focal loss for dense object detection.
+\newblock In {\em Proceedings of the IEEE international conference on computer
+  vision}, pages 2980--2988, 2017.
+
+\bibitem{van2019corneal}
+Bert Van~den Bogerd, Nadia Zakaria, Bianca Adam, Steffi Matthyssen, Carina
+  Koppen, and Sorcha~N{\'\i} Dhubhghaill.
+\newblock Corneal endothelial cells over the past decade: are we missing the
+  mark (er)?
+\newblock {\em Translational vision science \& technology}, 8(6):13--13, 2019.
+
+\bibitem{zhang2021multi}
+Yinglin Zhang, Risa Higashita, Huazhu Fu, Yanwu Xu, Yang Zhang, Haofeng Liu,
+  Jian Zhang, and Jiang Liu.
+\newblock A multi-branch hybrid transformer networkfor corneal endothelial cell
+  segmentation.
+\newblock {\em arXiv preprint arXiv:2106.07557}, 2021.
+
+\bibitem{ruggeri2010system}
+Alfredo Ruggeri, Fabio Scarpa, Massimo De~Luca, Christian Meltendorf, and Jan
+  Schroeter.
+\newblock A system for the automatic estimation of morphometric parameters of
+  corneal endothelium in alizarine red-stained images.
+\newblock {\em British Journal of Ophthalmology}, 94(5):643--647, 2010.
+
+\bibitem{wang2021transbts}
+Wenxuan Wang, Chen Chen, Meng Ding, Hong Yu, Sen Zha, and Jiangyun Li.
+\newblock Transbts: Multimodal brain tumor segmentation using transformer.
+\newblock In {\em International Conference on Medical Image Computing and
+  Computer-Assisted Intervention}, pages 109--119. Springer, 2021.
+
+\bibitem{jia2021bitr}
+Qiran Jia and Hai Shu.
+\newblock Bitr-unet: a cnn-transformer combined network for mri brain tumor
+  segmentation.
+\newblock {\em arXiv preprint arXiv:2109.12271}, 2021.
+
+\bibitem{baid2021rsna}
+Ujjwal Baid, Satyam Ghodasara, Suyash Mohan, Michel Bilello, Evan Calabrese,
+  Errol Colak, Keyvan Farahani, Jayashree Kalpathy-Cramer, Felipe~C Kitamura,
+  Sarthak Pati, et~al.
+\newblock The rsna-asnr-miccai brats 2021 benchmark on brain tumor segmentation
+  and radiogenomic classification.
+\newblock {\em arXiv preprint arXiv:2107.02314}, 2021.
+
+\bibitem{isensee2018nnu}
+Fabian Isensee, Jens Petersen, Andre Klein, David Zimmerer, Paul~F Jaeger,
+  Simon Kohl, Jakob Wasserthal, Gregor Koehler, Tobias Norajitra, Sebastian
+  Wirkert, et~al.
+\newblock nnu-net: Self-adapting framework for u-net-based medical image
+  segmentation.
+\newblock {\em arXiv preprint arXiv:1809.10486}, 2018.
+
+\bibitem{lam1997application}
+Louisa Lam and SY~Suen.
+\newblock Application of majority voting to pattern recognition: an analysis of
+  its behavior and performance.
+\newblock {\em IEEE Transactions on Systems, Man, and Cybernetics-Part A:
+  Systems and Humans}, 27(5):553--568, 1997.
+
+\bibitem{peiris2021volumetric}
+Himashi Peiris, Munawar Hayat, Zhaolin Chen, Gary Egan, and Mehrtash Harandi.
+\newblock A volumetric transformer for accurate 3d tumor segmentation.
+\newblock {\em arXiv preprint arXiv:2111.13300}, 2021.
+
+\bibitem{zhou2021nnformer}
+Hong-Yu Zhou, Jiansen Guo, Yinghao Zhang, Lequan Yu, Liansheng Wang, and Yizhou
+  Yu.
+\newblock nnformer: Interleaved transformer for volumetric segmentation.
+\newblock {\em arXiv preprint arXiv:2109.03201}, 2021.
+
+\bibitem{hatamizadeh2022swin}
+Ali Hatamizadeh, Vishwesh Nath, Yucheng Tang, Dong Yang, Holger Roth, and
+  Daguang Xu.
+\newblock Swin unetr: Swin transformers for semantic segmentation of brain
+  tumors in mri images.
+\newblock {\em arXiv preprint arXiv:2201.01266}, 2022.
+
+\bibitem{correia2019adaptively}
+Gon{\c{c}}alo~M Correia, Vlad Niculae, and Andr{\'e}~FT Martins.
+\newblock Adaptively sparse transformers.
+\newblock {\em arXiv preprint arXiv:1909.00015}, 2019.
+
+\bibitem{zhang2019multidimensional}
+Qing Zhang, Qingli Li, Guanzhen Yu, Li~Sun, Mei Zhou, and Junhao Chu.
+\newblock A multidimensional choledoch database and benchmarks for
+  cholangiocarcinoma diagnosis.
+\newblock {\em IEEE access}, 7:149414--149421, 2019.
+
+\bibitem{huang2017breast}
+Qinghua Huang, Yaozhong Luo, and Qiangzhi Zhang.
+\newblock Breast ultrasound image segmentation: a survey.
+\newblock {\em International journal of computer assisted radiology and
+  surgery}, 12(3):493--507, 2017.
+
+\bibitem{zhu2021region}
+Xiner Zhu, Haoji Hu, Hualiang Wang, Jincao Yao, Di~Ou, Dong Xu, et~al.
+\newblock Region aware transformer for automatic breast ultrasound tumor
+  segmentation.
+\newblock 2021.
+
+\bibitem{liu20213d}
+Yiyao Liu, Yi~Yang, Wei Jiang, Tianfu Wang, and Baiying Lei.
+\newblock 3d deep attentive u-net with transformer for breast tumor
+  segmentation from automated breast volume scanner.
+\newblock In {\em 2021 43rd Annual International Conference of the IEEE
+  Engineering in Medicine \& Biology Society (EMBC)}, pages 4011--4014. IEEE,
+  2021.
+
+\bibitem{cciccek20163d}
+{\"O}zg{\"u}n {\c{C}}i{\c{c}}ek, Ahmed Abdulkadir, Soeren~S Lienkamp, Thomas
+  Brox, and Olaf Ronneberger.
+\newblock 3d u-net: learning dense volumetric segmentation from sparse
+  annotation.
+\newblock In {\em International conference on medical image computing and
+  computer-assisted intervention}, pages 424--432. Springer, 2016.
+
+\bibitem{lei2020deep}
+Yang Lei, Yabo Fu, Tonghe Wang, Richard~LJ Qiu, Walter~J Curran, Tian Liu, and
+  Xiaofeng Yang.
+\newblock Deep learning in multi-organ segmentation.
+\newblock {\em arXiv preprint arXiv:2001.10619}, 2020.
+
+\bibitem{karimi2021convolution}
+Davood Karimi, Serge Vasylechko, and Ali Gholipour.
+\newblock Convolution-free medical image segmentation using transformers.
+\newblock {\em arXiv preprint arXiv:2102.13645}, 2021.
+
+\bibitem{dou2020deep}
+Haoran Dou, Davood Karimi, Caitlin~K Rollins, Cynthia~M Ortinau, Lana Vasung,
+  Clemente Velasco-Annis, Abdelhakim Ouaalam, Xin Yang, Dong Ni, and Ali
+  Gholipour.
+\newblock A deep attentive convolutional neural network for automatic cortical
+  plate segmentation in fetal mri.
+\newblock {\em IEEE transactions on medical imaging}, 40(4):1123--1133, 2020.
+
+\bibitem{bernard2018deep}
+Olivier Bernard, Alain Lalande, Clement Zotti, Frederick Cervenansky, Xin Yang,
+  Pheng-Ann Heng, Irem Cetin, Karim Lekadir, Oscar Camara, Miguel
+  Angel~Gonzalez Ballester, et~al.
+\newblock Deep learning techniques for automatic mri cardiac multi-structures
+  segmentation and diagnosis: Is the problem solved?
+\newblock {\em IEEE transactions on medical imaging}, 37(11):2514--2525, 2018.
+
+\bibitem{synapse}
+Synapse multi-organ segmentation dataset.
+\newblock \url{https://www.synapse.org/#!Synapse:syn3193805/wiki/217789}.
+\newblock Accessed: 2022-01-20.
+
+\bibitem{zhang2021transfuse}
+Yundong Zhang, Huiye Liu, and Qiang Hu.
+\newblock Transfuse: Fusing transformers and cnns for medical image
+  segmentation.
+\newblock {\em arXiv preprint arXiv:2102.08005}, 2021.
+
+\bibitem{deng2009imagenet}
+Jia Deng, Wei Dong, Richard Socher, Li-Jia Li, Kai Li, and Li~Fei-Fei.
+\newblock Imagenet: A large-scale hierarchical image database.
+\newblock In {\em 2009 IEEE conference on computer vision and pattern
+  recognition}, pages 248--255. Ieee, 2009.
+
+\bibitem{wang2020axial}
+Huiyu Wang, Yukun Zhu, Bradley Green, Hartwig Adam, Alan Yuille, and
+  Liang-Chieh Chen.
+\newblock Axial-deeplab: Stand-alone axial-attention for panoptic segmentation.
+\newblock In {\em European Conference on Computer Vision}, pages 108--126.
+  Springer, 2020.
+
+\bibitem{wang2018automatic}
+Puyang Wang, Nick~G Cuccolo, Rachana Tyagi, Ilker Hacihaliloglu, and Vishal~M
+  Patel.
+\newblock Automatic real-time cnn-based neonatal brain ventricles segmentation.
+\newblock In {\em 2018 IEEE 15th International Symposium on Biomedical Imaging
+  (ISBI 2018)}, pages 716--719. IEEE, 2018.
+
+\bibitem{sirinukunwattana2017gland}
+Korsuk Sirinukunwattana, Josien~PW Pluim, Hao Chen, Xiaojuan Qi, Pheng-Ann
+  Heng, Yun~Bo Guo, Li~Yang Wang, Bogdan~J Matuszewski, Elia Bruni, Urko
+  Sanchez, et~al.
+\newblock Gland segmentation in colon histology images: The glas challenge
+  contest.
+\newblock {\em Medical image analysis}, 35:489--502, 2017.
+
+\bibitem{kumar2019multi}
+Neeraj Kumar, Ruchika Verma, Deepak Anand, Yanning Zhou, Omer~Fahri Onder,
+  Efstratios Tsougenis, Hao Chen, Pheng-Ann Heng, Jiahui Li, Zhiqiang Hu,
+  et~al.
+\newblock A multi-organ nucleus segmentation challenge.
+\newblock {\em IEEE transactions on medical imaging}, 39(5):1380--1391, 2019.
+
+\bibitem{tang2021self}
+Yucheng Tang, Dong Yang, Wenqi Li, Holger Roth, Bennett Landman, Daguang Xu,
+  Vishwesh Nath, and Ali Hatamizadeh.
+\newblock Self-supervised pre-training of swin transformers for 3d medical
+  image analysis.
+\newblock {\em arXiv preprint arXiv:2111.14791}, 2021.
+
+\bibitem{sobirov2022automatic}
+Ikboljon Sobirov, Otabek Nazarov, Hussain Alasmawi, and Mohammad Yaqub.
+\newblock Automatic segmentation of head and neck tumor: How powerful
+  transformers are?
+\newblock {\em arXiv preprint arXiv:2201.06251}, 2022.
+
+\bibitem{chang2021transclaw}
+Yao Chang, Hu~Menghan, Zhai Guangtao, and Zhang Xiao-Ping.
+\newblock Transclaw u-net: Claw u-net with transformers for medical image
+  segmentation.
+\newblock {\em arXiv preprint arXiv:2107.05188}, 2021.
+
+\bibitem{yao2020claw}
+Chang Yao, Jingyu Tang, Menghan Hu, Yue Wu, Wenyi Guo, Qingli Li, and Xiao-Ping
+  Zhang.
+\newblock Claw u-net: A unet-based network with deep feature concatenation for
+  scleral blood vessel segmentation.
+\newblock {\em arXiv preprint arXiv:2010.10163}, 2020.
+
+\bibitem{graham2021levit}
+Ben Graham, Alaaeldin El-Nouby, Hugo Touvron, Pierre Stock, Armand Joulin,
+  Herv{\'e} J{\'e}gou, and Matthijs Douze.
+\newblock Levit: a vision transformer in convnet's clothing for faster
+  inference.
+\newblock {\em arXiv preprint arXiv:2104.01136}, 2021.
+
+\bibitem{xu2021levit}
+Guoping Xu, Xingrong Wu, Xuan Zhang, and Xinwei He.
+\newblock {LeViT-UNet:} make faster encoders with transformer for medical image
+  segmentation.
+\newblock {\em arXiv preprint arXiv:2107.08623}, 2021.
+
+\bibitem{chen2021transattunet}
+Bingzhi Chen, Yishu Liu, Zheng Zhang, Guangming Lu, and David Zhang.
+\newblock Transattunet: Multi-level attention-guided u-net with transformer for
+  medical image segmentation.
+\newblock {\em arXiv preprint arXiv:2107.05274}, 2021.
+
+\bibitem{yan2021after}
+Xiangyi Yan, Hao Tang, Shanlin Sun, Haoyu Ma, Deying Kong, and Xiaohui Xie.
+\newblock After-unet: Axial fusion transformer unet for medical image
+  segmentation.
+\newblock {\em arXiv preprint arXiv:2110.10403}, 2021.
+
+\bibitem{simpson2019large}
+Amber~L Simpson, Michela Antonelli, Spyridon Bakas, Michel Bilello, Keyvan
+  Farahani, Bram Van~Ginneken, Annette Kopp-Schneider, Bennett~A Landman, Geert
+  Litjens, Bjoern Menze, et~al.
+\newblock A large annotated medical image dataset for the development and
+  evaluation of segmentation algorithms.
+\newblock {\em arXiv preprint arXiv:1902.09063}, 2019.
+
+\bibitem{chen2021deep}
+Xuming Chen, Shanlin Sun, Narisu Bai, Kun Han, Qianqian Liu, Shengyu Yao, Hao
+  Tang, Chupeng Zhang, Zhipeng Lu, Qian Huang, et~al.
+\newblock A deep learning-based auto-segmentation system for organs-at-risk on
+  whole-body computed tomography images for radiation therapy.
+\newblock {\em Radiotherapy and Oncology}, 160:175--184, 2021.
+
+\bibitem{lambert2020segthor}
+Zo{\'e} Lambert, Caroline Petitjean, Bernard Dubray, and Su~Kuan.
+\newblock Segthor: Segmentation of thoracic organs at risk in ct images.
+\newblock In {\em 2020 Tenth International Conference on Image Processing
+  Theory, Tools and Applications (IPTA)}, pages 1--6. IEEE, 2020.
+
+\bibitem{wang2020linformer}
+Sinong Wang, Belinda~Z Li, Madian Khabsa, Han Fang, and Hao Ma.
+\newblock Linformer: Self-attention with linear complexity.
+\newblock {\em arXiv preprint arXiv:2006.04768}, 2020.
+
+\bibitem{campello2021multi}
+V{\'\i}ctor~M Campello, Polyxeni Gkontra, Cristian Izquierdo, Carlos
+  Mart{\'\i}n-Isla, Alireza Sojoudi, Peter~M Full, Klaus Maier-Hein, Yao Zhang,
+  Zhiqiang He, Jun Ma, et~al.
+\newblock Multi-centre, multi-vendor and multi-disease cardiac segmentation:
+  the m\&ms challenge.
+\newblock {\em IEEE Transactions on Medical Imaging}, 40(12):3543--3554, 2021.
+
+\bibitem{lin2021ds}
+Ailiang Lin, Bingzhi Chen, Jiayu Xu, Zheng Zhang, and Guangming Lu.
+\newblock Ds-transunet: Dual swin transformer u-net for medical image
+  segmentation.
+\newblock {\em arXiv preprint arXiv:2106.06716}, 2021.
+
+\bibitem{li2021more}
+Yijiang Li, Wentian Cai, Ying Gao, and Xiping Hu.
+\newblock More than encoder: Introducing transformer decoder to upsample.
+\newblock {\em arXiv preprint arXiv:2106.10637}, 2021.
+
+\bibitem{jha2020kvasir}
+Debesh Jha, Pia~H Smedsrud, Michael~A Riegler, P{\aa}l Halvorsen, Thomas
+  de~Lange, Dag Johansen, and H{\aa}vard~D Johansen.
+\newblock Kvasir-seg: A segmented polyp dataset.
+\newblock In {\em International Conference on Multimedia Modeling}, pages
+  451--462. Springer, 2020.
+
+\bibitem{bernal2015wm}
+Jorge Bernal, F~Javier S{\'a}nchez, Gloria Fern{\'a}ndez-Esparrach, Debora Gil,
+  Cristina Rodr{\'\i}guez, and Fernando Vilari{\~n}o.
+\newblock Wm-dova maps for accurate polyp highlighting in colonoscopy:
+  Validation vs. saliency maps from physicians.
+\newblock {\em Computerized Medical Imaging and Graphics}, 43:99--111, 2015.
+
+\bibitem{tajbakhsh2015automated}
+Nima Tajbakhsh, Suryakanth~R Gurudu, and Jianming Liang.
+\newblock Automated polyp detection in colonoscopy videos using shape and
+  context information.
+\newblock {\em IEEE transactions on medical imaging}, 35(2):630--644, 2015.
+
+\bibitem{vazquez2017benchmark}
+David V{\'a}zquez, Jorge Bernal, F~Javier S{\'a}nchez, Gloria
+  Fern{\'a}ndez-Esparrach, Antonio~M L{\'o}pez, Adriana Romero, Michal
+  Drozdzal, and Aaron Courville.
+\newblock A benchmark for endoluminal scene segmentation of colonoscopy images.
+\newblock {\em Journal of healthcare engineering}, 2017, 2017.
+
+\bibitem{silva2014toward}
+Juan Silva, Aymeric Histace, Olivier Romain, Xavier Dray, and Bertrand Granado.
+\newblock Toward embedded detection of polyps in wce images for early diagnosis
+  of colorectal cancer.
+\newblock {\em International journal of computer assisted radiology and
+  surgery}, 9(2):283--293, 2014.
+
+\bibitem{zhang2021pyramid}
+Zhuangzhuang Zhang, Baozhou Sun, and Weixiong Zhang.
+\newblock Pyramid medical transformer for medical image segmentation.
+\newblock {\em arXiv preprint arXiv:2104.14702}, 2021.
+
+\bibitem{kumar2017dataset}
+Neeraj Kumar, Ruchika Verma, Sanuj Sharma, Surabhi Bhargava, Abhishek Vahadane,
+  and Amit Sethi.
+\newblock A dataset and a technique for generalized nuclear segmentation for
+  computational pathology.
+\newblock {\em IEEE transactions on medical imaging}, 36(7):1550--1560, 2017.
+
+\bibitem{brats19}
+Multimodal brain tumor segmentation challenge 2019.
+\newblock \url{https://www.med.upenn.edu/cbica/brats-2019/}.
+\newblock Accessed: 2022-01-20.
+
+\bibitem{brats20}
+Multimodal brain tumor segmentation challenge 2020.
+\newblock \url{https://www.med.upenn.edu/cbica/brats-2020/}.
+\newblock Accessed: 2022-01-20.
+
+\bibitem{petit2021u}
+Olivier Petit, Nicolas Thome, Clement Rambour, Loic Themyr, Toby Collins, and
+  Luc Soler.
+\newblock U-net transformer: self and cross attention for medical image
+  segmentation.
+\newblock In {\em International Workshop on Machine Learning in Medical
+  Imaging}, pages 267--276. Springer, 2021.
+
+\bibitem{clark2013cancer}
+Kenneth Clark, Bruce Vendt, Kirk Smith, John Freymann, Justin Kirby, Paul
+  Koppel, Stephen Moore, Stanley Phillips, David Maffitt, Michael Pringle,
+  et~al.
+\newblock The cancer imaging archive (tcia): maintaining and operating a public
+  information repository.
+\newblock {\em Journal of digital imaging}, 26(6):1045--1057, 2013.
+
+\bibitem{andrearczyk2020overview}
+Vincent Andrearczyk, Valentin Oreiller, Mario Jreige, Martin Valli{\`e}res,
+  Joel Castelli, Hesham Elhalawani, Sarah Boughdad, John~O Prior, and Adrien
+  Depeursinge.
+\newblock Overview of the hecktor challenge at miccai 2020: automatic head and
+  neck tumor segmentation in pet/ct.
+\newblock In {\em 3D Head and Neck Tumor Segmentation in PET/CT Challenge},
+  pages 1--21. Springer, 2020.
+
+\bibitem{li2021medical}
+Shaohua Li, Xiuchao Sui, Xiangde Luo, Xinxing Xu, Yong Liu, and Rick Siow~Mong
+  Goh.
+\newblock Medical image segmentation using squeeze-and-expansion transformers.
+\newblock {\em arXiv preprint arXiv:2105.09511}, 2021.
+
+\bibitem{orlando2020refuge}
+Jos{\'e}~Ignacio Orlando, Huazhu Fu, Jo{\~a}o~Barbosa Breda, Karel van Keer,
+  Deepti~R Bathula, Andr{\'e}s Diaz-Pinto, Ruogu Fang, Pheng-Ann Heng, Jeyoung
+  Kim, JoonHo Lee, et~al.
+\newblock Refuge challenge: A unified framework for evaluating automated
+  methods for glaucoma assessment from fundus photographs.
+\newblock {\em Medical image analysis}, 59:101570, 2020.
+
+\bibitem{fan2020pranet}
+Deng-Ping Fan, Ge-Peng Ji, Tao Zhou, Geng Chen, Huazhu Fu, Jianbing Shen, and
+  Ling Shao.
+\newblock Pranet: Parallel reverse attention network for polyp segmentation.
+\newblock In {\em International Conference on Medical Image Computing and
+  Computer-Assisted Intervention}, pages 263--273. Springer, 2020.
+
+\bibitem{caicedo2019nucleus}
+Juan~C Caicedo, Allen Goodman, Kyle~W Karhohs, Beth~A Cimini, Jeanelle
+  Ackerman, Marzieh Haghighi, CherKeng Heng, Tim Becker, Minh Doan, Claire
+  McQuin, et~al.
+\newblock Nucleus segmentation across imaging experiments: the 2018 data
+  science bowl.
+\newblock {\em Nature methods}, 16(12):1247--1253, 2019.
+
+\bibitem{shiraishi2000development}
+Junji Shiraishi, Shigehiko Katsuragawa, Junpei Ikezoe, Tsuneo Matsumoto,
+  Takeshi Kobayashi, Ken-ichi Komatsu, Mitate Matsui, Hiroshi Fujita, Yoshie
+  Kodera, and Kunio Doi.
+\newblock Development of a digital image database for chest radiographs with
+  and without a lung nodule: receiver operating characteristic analysis of
+  radiologists' detection of pulmonary nodules.
+\newblock {\em American Journal of Roentgenology}, 174(1):71--74, 2000.
+
+\bibitem{jaeger2014two}
+Stefan Jaeger, Sema Candemir, Sameer Antani, Y{\`\i}-Xi{\'a}ng~J W{\'a}ng,
+  Pu-Xuan Lu, and George Thoma.
+\newblock Two public chest x-ray datasets for computer-aided screening of
+  pulmonary diseases.
+\newblock {\em Quantitative imaging in medicine and surgery}, 4(6):475, 2014.
+
+\bibitem{tang2019xlsor}
+You-Bao Tang, Yu-Xing Tang, Jing Xiao, and Ronald~M Summers.
+\newblock Xlsor: A robust and accurate lung segmentor on chest x-rays using
+  criss-cross attention and customized radiorealistic abnormalities generation.
+\newblock In {\em International Conference on Medical Imaging with Deep
+  Learning}, pages 457--467. PMLR, 2019.
+
+\bibitem{he2020benchmarking}
+Xin He, Shihao Wang, Shaohuai Shi, Xiaowen Chu, Jiangping Tang, Xin Liu,
+  Chenggang Yan, Jiyong Zhang, and Guiguang Ding.
+\newblock Benchmarking deep learning models and automated model design for
+  covid-19 detection with chest ct scans.
+\newblock {\em medRxiv}, 2020.
+
+\bibitem{dong2021polyp}
+Bo~Dong, Wenhai Wang, Deng-Ping Fan, Jinpeng Li, Huazhu Fu, and Ling Shao.
+\newblock Polyp-pvt: Polyp segmentation with pyramid vision transformers.
+\newblock {\em arXiv preprint arXiv:2108.06932}, 2021.
+
+\bibitem{huang2021missformer}
+Xiaohong Huang, Zhifang Deng, Dandan Li, and Xueguang Yuan.
+\newblock Missformer: An effective medical image segmentation transformer.
+\newblock {\em arXiv preprint arXiv:2109.07162}, 2021.
+
+\bibitem{shen2021cotr}
+Zhiqiang Shen, Chaonan Lin, and Shaohua Zheng.
+\newblock Cotr: Convolution in transformer network for end to end polyp
+  detection.
+\newblock {\em arXiv preprint arXiv:2105.10925}, 2021.
+
+\bibitem{ghiasi2016laplacian}
+Golnaz Ghiasi and Charless~C Fowlkes.
+\newblock Laplacian pyramid reconstruction and refinement for semantic
+  segmentation.
+\newblock In {\em European conference on computer vision}, pages 519--534.
+  Springer, 2016.
+
+\bibitem{yu2020context}
+Changqian Yu, Jingbo Wang, Changxin Gao, Gang Yu, Chunhua Shen, and Nong Sang.
+\newblock Context prior for scene segmentation.
+\newblock In {\em Proceedings of the IEEE/CVF Conference on Computer Vision and
+  Pattern Recognition}, pages 12416--12425, 2020.
+
+\bibitem{landman2015miccai}
+B~Landman, Z~Xu, J~Eugenio Igelsias, M~Styner, T~Langerak, and A~Klein.
+\newblock Miccai multi-atlas labeling beyond the cranial vault--workshop and
+  challenge.
+\newblock In {\em Proc. MICCAI: Multi-Atlas Labeling Beyond Cranial
+  Vault-Workshop Challenge}, 2015.
+
+\bibitem{dai2017deformable}
+Jifeng Dai, Haozhi Qi, Yuwen Xiong, Yi~Li, Guodong Zhang, Han Hu, and Yichen
+  Wei.
+\newblock Deformable convolutional networks.
+\newblock In {\em Proceedings of the IEEE international conference on computer
+  vision}, pages 764--773, 2017.
+
+\bibitem{ai2020correlation}
+Tao Ai, Zhenlu Yang, Hongyan Hou, Chenao Zhan, Chong Chen, Wenzhi Lv, Qian Tao,
+  Ziyong Sun, and Liming Xia.
+\newblock Correlation of chest ct and rt-pcr testing for coronavirus disease
+  2019 (covid-19) in china: a report of 1014 cases.
+\newblock {\em Radiology}, 296(2):E32--E40, 2020.
+
+\bibitem{fang2020sensitivity}
+Yicheng Fang, Huangqi Zhang, Jicheng Xie, Minjie Lin, Lingjun Ying, Peipei
+  Pang, and Wenbin Ji.
+\newblock Sensitivity of chest ct for covid-19: comparison to rt-pcr.
+\newblock {\em Radiology}, 296(2):E115--E117, 2020.
+
+\bibitem{chen2021can}
+Dandan Chen, Xinqing Jiang, Yong Hong, Zhihui Wen, Shuquan Wei, Guangming Peng,
+  and Xinhua Wei.
+\newblock Can chest ct features distinguish patients with negative from those
+  with positive initial rt-pcr results for coronavirus disease (covid-19)?
+\newblock {\em American Journal of Roentgenology}, 216(1):66--70, 2021.
+
+\bibitem{perera2021pocformer}
+Shehan Perera, Srikar Adhikari, and Alper Yilmaz.
+\newblock Pocformer: A lightweight transformer architecture for detection of
+  covid-19 using point of care ultrasound.
+\newblock {\em arXiv preprint arXiv:2105.09913}, 2021.
+
+\bibitem{sandler2018mobilenetv2}
+Mark Sandler, Andrew Howard, Menglong Zhu, Andrey Zhmoginov, and Liang-Chieh
+  Chen.
+\newblock Mobilenetv2: Inverted residuals and linear bottlenecks.
+\newblock In {\em Proceedings of the IEEE conference on computer vision and
+  pattern recognition}, pages 4510--4520, 2018.
+
+\bibitem{born2020pocovid}
+Jannis Born, Gabriel Br{\"a}ndle, Manuel Cossio, Marion Disdier, Julie Goulet,
+  J{\'e}r{\'e}mie Roulin, and Nina Wiedemann.
+\newblock Pocovid-net: automatic detection of covid-19 from a new lung
+  ultrasound imaging dataset (pocus).
+\newblock {\em arXiv preprint arXiv:2004.12084}, 2020.
+
+\bibitem{cohen2020covid}
+Joseph~Paul Cohen, Paul Morrison, Lan Dao, Karsten Roth, Tim~Q Duong, and
+  Marzyeh Ghassemi.
+\newblock Covid-19 image data collection: Prospective predictions are the
+  future.
+\newblock {\em arXiv preprint arXiv:2006.11988}, 2020.
+
+\bibitem{liu2021automatic}
+Chengeng Liu and Qingshan Yin.
+\newblock Automatic diagnosis of covid-19 using a tailored transformer-like
+  network.
+\newblock In {\em Journal of Physics: Conference Series}, volume 2010, page
+  012175. IOP Publishing, 2021.
+
+\bibitem{yuan2021volo}
+Li~Yuan, Qibin Hou, Zihang Jiang, Jiashi Feng, and Shuicheng Yan.
+\newblock Volo: Vision outlooker for visual recognition.
+\newblock {\em arXiv preprint arXiv:2106.13112}, 2021.
+
+\bibitem{chowdhury2020can}
+Muhammad~EH Chowdhury, Tawsifur Rahman, Amith Khandakar, Rashid Mazhar,
+  Muhammad~Abdul Kadir, Zaid~Bin Mahbub, Khandakar~Reajul Islam,
+  Muhammad~Salman Khan, Atif Iqbal, Nasser Al~Emadi, et~al.
+\newblock Can ai help in screening viral and covid-19 pneumonia?
+\newblock {\em IEEE Access}, 8:132665--132676, 2020.
+
+\bibitem{jiang2021covid}
+Juntao Jiang and Shuyi Lin.
+\newblock Covid-19 detection in chest x-ray images using swin-transformer and
+  transformer in transformer.
+\newblock {\em arXiv preprint arXiv:2110.08427}, 2021.
+
+\bibitem{han2021transformer}
+Kai Han, An~Xiao, Enhua Wu, Jianyuan Guo, Chunjing Xu, and Yunhe Wang.
+\newblock Transformer in transformer.
+\newblock {\em arXiv preprint arXiv:2103.00112}, 2021.
+
+\bibitem{dou2021federated}
+Qi~Dou, Tiffany~Y So, Meirui Jiang, Quande Liu, Varut Vardhanabhuti, Georgios
+  Kaissis, Zeju Li, Weixin Si, Heather~HC Lee, Kevin Yu, et~al.
+\newblock Federated deep learning for detecting covid-19 lung abnormalities in
+  ct: a privacy-preserving multinational validation study.
+\newblock {\em NPJ digital medicine}, 4(1):1--11, 2021.
+
+\bibitem{park2021federated}
+Sangjoon Park, Gwanghyun Kim, Jeongsol Kim, Boah Kim, and Jong~Chul Ye.
+\newblock Federated split vision transformer for covid-19cxr diagnosis using
+  task-agnostic training.
+\newblock {\em arXiv preprint arXiv:2111.01338}, 2021.
+
+\bibitem{yang2019federated}
+Qiang Yang, Yang Liu, Tianjian Chen, and Yongxin Tong.
+\newblock Federated machine learning: Concept and applications.
+\newblock {\em ACM Transactions on Intelligent Systems and Technology (TIST)},
+  10(2):1--19, 2019.
+
+\bibitem{vepakomma2018split}
+Praneeth Vepakomma, Otkrist Gupta, Tristan Swedish, and Ramesh Raskar.
+\newblock Split learning for health: Distributed deep learning without sharing
+  raw patient data.
+\newblock {\em arXiv preprint arXiv:1812.00564}, 2018.
+
+\bibitem{caruana1997multitask}
+Rich Caruana.
+\newblock Multitask learning.
+\newblock {\em Machine learning}, 28(1):41--75, 1997.
+
+\bibitem{kwee2020chest}
+Thomas~C Kwee and Robert~M Kwee.
+\newblock Chest ct in covid-19: what the radiologist needs to know.
+\newblock {\em RadioGraphics}, 40(7):1848--1865, 2020.
+
+\bibitem{hsu2021visual}
+Chih-Chung Hsu, Guan-Lin Chen, and Mei-Hsuan Wu.
+\newblock Visual transformer with statistical test for covid-19 classification.
+\newblock {\em arXiv preprint arXiv:2107.05334}, 2021.
+
+\bibitem{woolson2007wilcoxon}
+Robert~F Woolson.
+\newblock Wilcoxon signed-rank test.
+\newblock {\em Wiley encyclopedia of clinical trials}, pages 1--3, 2007.
+
+\bibitem{zhang2021transformer}
+Lei Zhang and Yan Wen.
+\newblock A transformer-based framework for automatic covid19 diagnosis in
+  chest cts.
+\newblock In {\em Proceedings of the IEEE/CVF International Conference on
+  Computer Vision}, pages 513--518, 2021.
+
+\bibitem{zhangmia}
+Lei Zhang and Yan Wen.
+\newblock Mia-cov19d: A transformer-based framework for covid19 classification
+  in chest cts.
+
+\bibitem{kollias2021mia}
+Dimitrios Kollias, Anastasios Arsenos, Levon Soukissian, and Stefanos Kollias.
+\newblock Mia-cov19d: Covid-19 detection through 3-d chest ct image analysis.
+\newblock {\em arXiv preprint arXiv:2106.07524}, 2021.
+
+\bibitem{cong2018review}
+Runmin Cong, Jianjun Lei, Huazhu Fu, Ming-Ming Cheng, Weisi Lin, and Qingming
+  Huang.
+\newblock Review of visual saliency detection with comprehensive information.
+\newblock {\em IEEE Transactions on circuits and Systems for Video Technology},
+  29(10):2941--2959, 2018.
+
+\bibitem{selvaraju2017grad}
+Ramprasaath~R Selvaraju, Michael Cogswell, Abhishek Das, Ramakrishna Vedantam,
+  Devi Parikh, and Dhruv Batra.
+\newblock Grad-cam: Visual explanations from deep networks via gradient-based
+  localization.
+\newblock In {\em Proceedings of the IEEE international conference on computer
+  vision}, pages 618--626, 2017.
+
+\bibitem{mondal2021xvitcos}
+Arnab~Kumar Mondal, Arnab Bhattacharjee, Parag Singla, and Prathosh AP.
+\newblock xvitcos: Explainable vision transformer based covid-19 screening
+  using radiography.
+\newblock 2021.
+
+\bibitem{park2021vision}
+Sangjoon Park, Gwanghyun Kim, Yujin Oh, Joon~Beom Seo, Sang~Min Lee, Jin~Hwan
+  Kim, Sungjun Moon, Jae-Kwang Lim, and Jong~Chul Ye.
+\newblock Vision transformer for covid-19 cxr diagnosis using chest x-ray
+  feature corpus.
+\newblock {\em arXiv preprint arXiv:2103.07055}, 2021.
+
+\bibitem{chen2020simple}
+Ting Chen, Simon Kornblith, Mohammad Norouzi, and Geoffrey Hinton.
+\newblock A simple framework for contrastive learning of visual
+  representations.
+\newblock In {\em International conference on machine learning}, pages
+  1597--1607. PMLR, 2020.
+
+\bibitem{irvin2019chexpert}
+Jeremy Irvin, Pranav Rajpurkar, Michael Ko, Yifan Yu, Silviana Ciurea-Ilcus,
+  Chris Chute, Henrik Marklund, Behzad Haghgoo, Robyn Ball, Katie Shpanskaya,
+  et~al.
+\newblock Chexpert: A large chest radiograph dataset with uncertainty labels
+  and expert comparison.
+\newblock In {\em Proceedings of the AAAI conference on artificial
+  intelligence}, volume~33, pages 590--597, 2019.
+
+\bibitem{chefer2021transformer}
+Hila Chefer, Shir Gur, and Lior Wolf.
+\newblock Transformer interpretability beyond attention visualization.
+\newblock In {\em Proceedings of the IEEE/CVF Conference on Computer Vision and
+  Pattern Recognition}, pages 782--791, 2021.
+
+\bibitem{gao2021covid}
+Xiaohong Gao, Yu~Qian, and Alice Gao.
+\newblock Covid-vit: Classification of covid-19 from ct chest images based on
+  vision transformer models.
+\newblock {\em arXiv preprint arXiv:2107.01682}, 2021.
+
+\bibitem{huang2017densely}
+Gao Huang, Zhuang Liu, Laurens Van Der~Maaten, and Kilian~Q Weinberger.
+\newblock Densely connected convolutional networks.
+\newblock In {\em Proceedings of the IEEE conference on computer vision and
+  pattern recognition}, pages 4700--4708, 2017.
+
+\bibitem{gunraj2021covid}
+Hayden Gunraj, Ali Sabri, David Koff, and Alexander Wong.
+\newblock Covid-net ct-2: Enhanced deep neural networks for detection of
+  covid-19 from chest ct images through bigger, more diverse learning.
+\newblock {\em arXiv preprint arXiv:2101.07433}, 2021.
+
+\bibitem{shome2021covid}
+Debaditya Shome, T~Kar, Sachi~Nandan Mohanty, Prayag Tiwari, Khan Muhammad,
+  Abdullah AlTameem, Yazhou Zhang, and Abdul Khader~Jilani Saudagar.
+\newblock Covid-transformer: Interpretable covid-19 detection using vision
+  transformer for healthcare.
+\newblock {\em International Journal of Environmental Research and Public
+  Health}, 18(21):11086, 2021.
+
+\bibitem{shao2021transmil}
+Zhuchen Shao, Hao Bian, Yang Chen, Yifeng Wang, Jian Zhang, Xiangyang Ji, and
+  Yongbing Zhang.
+\newblock Transmil: Transformer based correlated multiple instance learning for
+  whole slide image classication.
+\newblock {\em arXiv preprint arXiv:2106.00908}, 2021.
+
+\bibitem{dai2021transmed}
+Yin Dai, Yifan Gao, and Fayu Liu.
+\newblock Transmed: Transformers advance multi-modal medical image
+  classification.
+\newblock {\em Diagnostics}, 11(8):1384, 2021.
+
+\bibitem{lu2021smile}
+Mengkang Lu, Yongsheng Pan, Dong Nie, Feihong Liu, Feng Shi, Yong Xia, and
+  Dinggang Shen.
+\newblock Smile: Sparse-attention based multiple instance contrastive learning
+  for glioma sub-type classification using pathological images.
+\newblock In {\em MICCAI Workshop on Computational Pathology}, pages 159--169.
+  PMLR, 2021.
+
+\bibitem{napel2014nsclc}
+Sandy Napel and Sylvia~K Plevritis.
+\newblock Nsclc radiogenomics: initial stanford study of 26 cases.
+\newblock {\em Cancer Imaging Arch}, 2014.
+
+\bibitem{gheflati2021vision}
+Behnaz Gheflati and Hassan Rivaz.
+\newblock Vision transformers for classification of breast ultrasound images.
+\newblock {\em arXiv preprint arXiv:2110.14731}, 2021.
+
+\bibitem{al2020dataset}
+Walid Al-Dhabyani, Mohammed Gomaa, Hussien Khaled, and Aly Fahmy.
+\newblock Dataset of breast ultrasound images.
+\newblock {\em Data in brief}, 28:104863, 2020.
+
+\bibitem{yap2017automated}
+Moi~Hoon Yap, Gerard Pons, Joan Mart{\'\i}, Sergi Ganau, Melcior Sent{\'\i}s,
+  Reyer Zwiggelaar, Adrian~K Davison, and Robert Marti.
+\newblock Automated breast ultrasound lesions detection using convolutional
+  neural networks.
+\newblock {\em IEEE journal of biomedical and health informatics},
+  22(4):1218--1226, 2017.
+
+\bibitem{khan2021gene}
+Anwar Khan and Boreom Lee.
+\newblock Gene transformer: Transformers for the gene expression-based
+  classification of lung cancer subtypes.
+\newblock {\em arXiv preprint arXiv:2108.11833}, 2021.
+
+\bibitem{chen2021gashis}
+Haoyuan Chen, Chen Li, Xiaoyan Li, Ge~Wang, Weiming Hu, Yixin Li, Wanli Liu,
+  Changhao Sun, Yudong Yao, Yueyang Teng, et~al.
+\newblock Gashis-transformer: A multi-scale visual transformer approach for
+  gastric histopathology image classification.
+\newblock {\em arXiv preprint arXiv:2104.14528}, 2021.
+
+\bibitem{jiang2021method}
+Zhencun Jiang, Zhengxin Dong, Lingyang Wang, and Wenping Jiang.
+\newblock Method for diagnosis of acute lymphoblastic leukemia based on vit-cnn
+  ensemble model.
+\newblock {\em Computational Intelligence and Neuroscience}, 2021, 2021.
+
+\bibitem{fung2007multiple}
+Glenn Fung, Murat Dundar, Balaji Krishnapuram, and R~Bharat Rao.
+\newblock Multiple instance learning for computer aided diagnosis.
+\newblock {\em Advances in neural information processing systems}, 19:425,
+  2007.
+
+\bibitem{bejnordi2017diagnostic}
+Babak~Ehteshami Bejnordi, Mitko Veta, Paul~Johannes Van~Diest, Bram
+  Van~Ginneken, Nico Karssemeijer, Geert Litjens, Jeroen~AWM Van Der~Laak,
+  Meyke Hermsen, Quirine~F Manson, Maschenka Balkenhol, et~al.
+\newblock Diagnostic assessment of deep learning algorithms for detection of
+  lymph node metastases in women with breast cancer.
+\newblock {\em Jama}, 318(22):2199--2210, 2017.
+
+\bibitem{tcga}
+The cancer genome atlas program.
+\newblock
+  \url{https://www.cancer.gov/about-nci/organization/ccg/research/structural-genomics/tcga}.
+\newblock Accessed: 2022-01-20.
+
+\bibitem{zheng2021deep}
+Yi~Zheng, Rushin Gindra, Margrit Betke, Jennifer Beane, and Vijaya~B
+  Kolachalama.
+\newblock A deep learning based graph-transformer for whole slide image
+  classification.
+\newblock {\em medRxiv}, 2021.
+
+\bibitem{kipf2016semi}
+Thomas~N Kipf and Max Welling.
+\newblock Semi-supervised classification with graph convolutional networks.
+\newblock {\em arXiv preprint arXiv:1609.02907}, 2016.
+
+\bibitem{bakr2018radiogenomic}
+Shaimaa Bakr, Olivier Gevaert, Sebastian Echegaray, Kelsey Ayers, Mu~Zhou,
+  Majid Shafiq, Hong Zheng, Jalen~Anthony Benson, Weiruo Zhang, Ann~NC Leung,
+  et~al.
+\newblock A radiogenomic dataset of non-small cell lung cancer.
+\newblock {\em Scientific data}, 5(1):1--9, 2018.
+
+\bibitem{aptos19}
+Aptos 2019 blindness detection: Detect diabetic retinopathy to stop blindness
+  before it's too late.
+\newblock \url{https://www.kaggle.com/c/aptos2019-blindness-detection}.
+\newblock Accessed: 2022-01-20.
+
+\bibitem{isic19}
+Skin lesion analysis towards melanoma detection, 2019.
+\newblock \url{https://challenge2018.isic-archive.com/}.
+\newblock Accessed: 2022-01-20.
+
+\bibitem{lee2017curated}
+Rebecca~Sawyer Lee, Francisco Gimenez, Assaf Hoogi, Kanae~Kawai Miyake, Mia
+  Gorovoy, and Daniel~L Rubin.
+\newblock A curated mammography data set for use in computer-aided detection
+  and diagnosis research.
+\newblock {\em Scientific data}, 4(1):1--9, 2017.
+
+\bibitem{yu2021mil}
+Shuang Yu, Kai Ma, Qi~Bi, Cheng Bian, Munan Ning, Nanjun He, Yuexiang Li,
+  Hanruo Liu, and Yefeng Zheng.
+\newblock Mil-vt: Multiple instance learning enhanced vision transformer for
+  fundus image classification.
+\newblock In {\em International Conference on Medical Image Computing and
+  Computer-Assisted Intervention}, pages 45--54. Springer, 2021.
+
+\bibitem{quellec2020automatic}
+Gwenol{\'e} Quellec, Mathieu Lamard, Pierre-Henri Conze, Pascale Massin, and
+  B{\'e}atrice Cochener.
+\newblock Automatic detection of rare pathologies in fundus photographs using
+  few-shot learning.
+\newblock {\em Medical image analysis}, 61:101660, 2020.
+
+\bibitem{sun2021lesion}
+Rui Sun, Yihao Li, Tianzhu Zhang, Zhendong Mao, Feng Wu, and Yongdong Zhang.
+\newblock Lesion-aware transformers for diabetic retinopathy grading.
+\newblock In {\em Proceedings of the IEEE/CVF Conference on Computer Vision and
+  Pattern Recognition}, pages 10938--10947, 2021.
+
+\bibitem{decenciere2014feedback}
+Etienne Decenci{\`e}re, Xiwei Zhang, Guy Cazuguel, Bruno Lay, B{\'e}atrice
+  Cochener, Caroline Trone, Philippe Gain, Richard Ordonez, Pascale Massin, Ali
+  Erginay, et~al.
+\newblock Feedback on a publicly distributed image database: the messidor
+  database.
+\newblock {\em Image Analysis \& Stereology}, 33(3):231--234, 2014.
+
+\bibitem{cuadros2009eyepacs}
+Jorge Cuadros and George Bresnick.
+\newblock Eyepacs: an adaptable telemedicine system for diabetic retinopathy
+  screening.
+\newblock {\em Journal of diabetes science and technology}, 3(3):509--516,
+  2009.
+
+\bibitem{siimacr}
+Siim-acr pneumothorax segmentation.
+\newblock \url{https://www.kaggle.com/c/siim-acr-pneumothorax-segmentation}.
+\newblock Accessed: 2022-01-20.
+
+\bibitem{rsna}
+Rsna pneumonia detection challenge (2018).
+\newblock \url{https://www.kaggle.com/c/rsna-pneumonia-detection-challenge}.
+\newblock Accessed: 2022-01-20.
+
+\bibitem{wang2020covid}
+Linda Wang, Zhong~Qiu Lin, and Alexander Wong.
+\newblock Covid-net: A tailored deep convolutional neural network design for
+  detection of covid-19 cases from chest x-ray images.
+\newblock {\em Scientific Reports}, 10(1):1--12, 2020.
+
+\bibitem{ambita2021covit}
+Ara Abigail~E Ambita, Eujene Nikka~V Boquio, and Prospero~C Naval.
+\newblock Covit-gan: Vision transformer forcovid-19 detection in ct scan
+  imageswith self-attention gan fordataaugmentation.
+\newblock In {\em International Conference on Artificial Neural Networks},
+  pages 587--598. Springer, 2021.
+
+\bibitem{angelov2020sars}
+Plamen Angelov and Eduardo Almeida~Soares.
+\newblock Sars-cov-2 ct-scan dataset: A large dataset of real patients ct scans
+  for sars-cov-2 identification.
+\newblock {\em MedRxiv}, 2020.
+
+\bibitem{el2020extensive}
+Walid El-Shafai and Fathi Abd El-Samie.
+\newblock Extensive covid-19 x-ray and ct chest images dataset. mendeley data,
+  v3, 2020.
+
+\bibitem{sait2020curated}
+Unais Sait, KG~Lal, S~Prajapati, R~Bhaumik, T~Kumar, S~Sanjana, and K~Bhalla.
+\newblock Curated dataset for covid-19 posterior-anterior chest radiography
+  images (x-rays).
+\newblock {\em Mendeley Data}, 1, 2020.
+
+\bibitem{qi2021chest}
+Xiao Qi, Lloyd~G Brown, David~J Foran, John Nosher, and Ilker Hacihaliloglu.
+\newblock Chest x-ray image phase features for improved diagnosis of covid-19
+  using convolutional neural network.
+\newblock {\em International journal of computer assisted radiology and
+  surgery}, 16(2):197--206, 2021.
+
+\bibitem{caron2021emerging}
+Mathilde Caron, Hugo Touvron, Ishan Misra, Herv{\'e} J{\'e}gou, Julien Mairal,
+  Piotr Bojanowski, and Armand Joulin.
+\newblock Emerging properties in self-supervised vision transformers.
+\newblock {\em arXiv preprint arXiv:2104.14294}, 2021.
+
+\bibitem{tschandl2018ham10000}
+Philipp Tschandl, Cliff Rosendahl, and Harald Kittler.
+\newblock The ham10000 dataset, a large collection of multi-source
+  dermatoscopic images of common pigmented skin lesions.
+\newblock {\em Scientific data}, 5(1):1--9, 2018.
+
+\bibitem{yang2021fundus}
+Honggang Yang, Jiejie Chen, and Mengfei Xu.
+\newblock Fundus disease image classification based on improved transformer.
+\newblock In {\em 2021 International Conference on Neuromorphic Computing
+  (ICNC)}, pages 207--214. IEEE, 2021.
+
+\bibitem{nankaioia}
+Ophthalmic image analysis dataset.
+\newblock \url{https://github.com/nkicsl/OIA}.
+\newblock Accessed: 2022-01-20.
+
+\bibitem{wu2021vision}
+Jianfang Wu, Ruo Hu, Zhenghong Xiao, Jiaxu Chen, and Jingwei Liu.
+\newblock Vision transformer-based recognition of diabetic retinopathy grade.
+\newblock {\em Medical Physics}, 2021.
+
+\bibitem{aldahoul2021encoding}
+Nouar AlDahoul, Hezerul Abdul~Karim, Myles Joshua Toledo~Tan, Mhd~Adel Momo,
+  and Jamie Ledesma~Fermin.
+\newblock Encoding retina image to words using ensemble of vision transformers
+  for diabetic retinopathy grading.
+\newblock {\em F1000Research}, 10:948, 2021.
+
+\bibitem{xie2021unified}
+Yutong Xie, Jianpeng Zhang, Yong Xia, and Qi~Wu.
+\newblock Unified 2d and 3d pre-training for medical image classification and
+  segmentation.
+\newblock {\em arXiv preprint arXiv:2112.09356}, 2021.
+
+\bibitem{liao2019evaluate}
+Fangzhou Liao, Ming Liang, Zhe Li, Xiaolin Hu, and Sen Song.
+\newblock Evaluate the malignancy of pulmonary nodules using the 3-d deep leaky
+  noisy-or network.
+\newblock {\em IEEE transactions on neural networks and learning systems},
+  30(11):3484--3495, 2019.
+
+\bibitem{ganatra2021comprehensive}
+Nilay Ganatra.
+\newblock A comprehensive study of applying object detection methods for
+  medical image analysis.
+\newblock In {\em 2021 8th International Conference on Computing for
+  Sustainable Global Development (INDIACom)}, pages 821--826. IEEE, 2021.
+
+\bibitem{liu2021transformer}
+Shijie Liu, Hongyu Zhou, Xiaozhou Shi, and Junwen Pan.
+\newblock Transformer for polyp detection.
+\newblock {\em arXiv preprint arXiv:2111.07918}, 2021.
+
+\bibitem{mathai2021lymph}
+Tejas~Sudharshan Mathai, Sungwon Lee, Daniel~C Elton, Thomas~C Shen, Yifan
+  Peng, Zhiyong Lu, and Ronald~M Summers.
+\newblock Lymph node detection in t2 mri with transformers.
+\newblock {\em arXiv preprint arXiv:2111.04885}, 2021.
+
+\bibitem{maaz2021multi}
+Muhammad Maaz, Hanoona Rasheed, Salman Khan, Fahad~Shahbaz Khan, Rao~Muhammad
+  Anwer, and Ming-Hsuan Yang.
+\newblock Multi-modal transformers excel at class-agnostic object detection.
+\newblock {\em arXiv preprint arXiv:2111.11430}, 2021.
+
+\bibitem{kamath2021mdetr}
+Aishwarya Kamath, Mannat Singh, Yann LeCun, Gabriel Synnaeve, Ishan Misra, and
+  Nicolas Carion.
+\newblock Mdetr-modulated detection for end-to-end multi-modal understanding.
+\newblock In {\em Proceedings of the IEEE/CVF International Conference on
+  Computer Vision}, pages 1780--1790, 2021.
+
+\bibitem{gopal2010screening}
+Muralikrishna Gopal, Shaad~E Abdullah, James~J Grady, and James~S Goodwin.
+\newblock Screening for lung cancer with low-dose computed tomography: a
+  systematic review and meta-analysis of the baseline findings of randomized
+  controlled trials.
+\newblock {\em Journal of thoracic oncology}, 5(8):1233--1239, 2010.
+
+\bibitem{sadate2020systematic}
+Alexandre Sadate, Bob~V Occean, Jean-Paul Beregi, Aymeric Hamard, Takieddine
+  Addala, H{\'e}l{\`e}ne de~Forges, Pascale Fabbro-Peray, and Julien Frandon.
+\newblock Systematic review and meta-analysis on the impact of lung cancer
+  screening by low-dose computed tomography.
+\newblock {\em European Journal of Cancer}, 134:107--114, 2020.
+
+\bibitem{mccollough2017low}
+Cynthia~H McCollough, Adam~C Bartley, Rickey~E Carter, Baiyu Chen, Tammy~A
+  Drees, Phillip Edwards, David~R Holmes~III, Alice~E Huang, Farhana Khan,
+  Shuai Leng, et~al.
+\newblock Low-dose ct for the detection and classification of metastatic liver
+  lesions: results of the 2016 low dose ct grand challenge.
+\newblock {\em Medical physics}, 44(10):e339--e352, 2017.
+
+\bibitem{fessler2010model}
+Jeffrey~A Fessler.
+\newblock Model-based image reconstruction for mri.
+\newblock {\em IEEE signal processing magazine}, 27(4):81--89, 2010.
+
+\bibitem{narnhofer2019inverse}
+Dominik Narnhofer, Kerstin Hammernik, Florian Knoll, and Thomas Pock.
+\newblock Inverse gans for accelerated mri reconstruction.
+\newblock In {\em Wavelets and Sparsity XVIII}, volume 11138, page 111381A.
+  International Society for Optics and Photonics, 2019.
+
+\bibitem{wang2021ted}
+Dayang Wang, Zhan Wu, and Hengyong Yu.
+\newblock Ted-net: Convolution-free t2t vision transformer-based
+  encoder-decoder dilation network for low-dose ct denoising.
+\newblock {\em arXiv preprint arXiv:2106.04650}, 2021.
+
+\bibitem{yuan2021tokens}
+Li~Yuan, Yunpeng Chen, Tao Wang, Weihao Yu, Yujun Shi, Zihang Jiang, Francis~EH
+  Tay, Jiashi Feng, and Shuicheng Yan.
+\newblock Tokens-to-token vit: Training vision transformers from scratch on
+  imagenet.
+\newblock {\em arXiv preprint arXiv:2101.11986}, 2021.
+
+\bibitem{luthra2021eformer}
+Achleshwar Luthra, Harsh Sulakhe, Tanish Mittal, Abhishek Iyer, and Santosh
+  Yadav.
+\newblock Eformer: Edge enhancement based transformer for medical image
+  denoising.
+\newblock {\em arXiv preprint arXiv:2109.08044}, 2021.
+
+\bibitem{liang2020edcnn}
+Tengfei Liang, Yi~Jin, Yidong Li, and Tao Wang.
+\newblock Edcnn: Edge enhancement-based densely connected network with compound
+  loss for low-dose ct denoising.
+\newblock In {\em 2020 15th IEEE International Conference on Signal Processing
+  (ICSP)}, volume~1, pages 193--198. IEEE, 2020.
+
+\bibitem{irwin1968isotropic}
+FG~Irwin et~al.
+\newblock An isotropic 3x3 image gradient operator.
+\newblock {\em Presentation at Stanford AI Project}, 2014(02), 1968.
+
+\bibitem{luo20213d}
+Yanmei Luo, Yan Wang, Chen Zu, Bo~Zhan, Xi~Wu, Jiliu Zhou, Dinggang Shen, and
+  Luping Zhou.
+\newblock 3d transformer-gan for high-quality pet reconstruction.
+\newblock In {\em International Conference on Medical Image Computing and
+  Computer-Assisted Intervention}, pages 276--285. Springer, 2021.
+
+\bibitem{hyun2018deep}
+Chang~Min Hyun, Hwa~Pyung Kim, Sung~Min Lee, Sungchul Lee, and Jin~Keun Seo.
+\newblock Deep learning for undersampled mri reconstruction.
+\newblock {\em Physics in Medicine \& Biology}, 63(13):135007, 2018.
+
+\bibitem{feng2021accelerated}
+Chun-Mei Feng, Yunlu Yan, Geng Chen, Huazhu Fu, Yong Xu, and Ling Shao.
+\newblock Accelerated multi-modal mr imaging with transformers.
+\newblock {\em arXiv preprint arXiv:2106.14248}, 2021.
+
+\bibitem{feng2021task}
+Chun-Mei Feng, Yunlu Yan, Huazhu Fu, Li~Chen, and Yong Xu.
+\newblock Task transformer network for joint mri reconstruction and
+  super-resolution.
+\newblock {\em arXiv preprint arXiv:2106.06742}, 2021.
+
+\bibitem{mahapatra2021mr}
+Dwarikanath Mahapatra and Zongyuan Ge.
+\newblock Mr image super resolution by combining feature disentanglement cnns
+  and vision transformers.
+\newblock 2021.
+
+\bibitem{park2020swapping}
+Taesung Park, Jun-Yan Zhu, Oliver Wang, Jingwan Lu, Eli Shechtman, Alexei~A
+  Efros, and Richard Zhang.
+\newblock Swapping autoencoder for deep image manipulation.
+\newblock {\em arXiv preprint arXiv:2007.00653}, 2020.
+
+\bibitem{korkmaz2021deep}
+Yilmaz Korkmaz, Mahmut Yurt, Salman Ul~Hassan Dar, Muzaffer {\"O}zbey, and
+  Tolga Cukur.
+\newblock Deep mri reconstruction with generative vision transformers.
+\newblock In {\em International Workshop on Machine Learning for Medical Image
+  Reconstruction}, pages 54--64. Springer, 2021.
+
+\bibitem{lin2021vision}
+Kang Lin and Reinhard Heckel.
+\newblock Vision transformers enable fast and robust accelerated mri.
+\newblock 2021.
+
+\bibitem{sheikh2006image}
+Hamid~R Sheikh and Alan~C Bovik.
+\newblock Image information and visual quality.
+\newblock {\em IEEE Transactions on image processing}, 15(2):430--444, 2006.
+
+\bibitem{ixi}
+Information extraction from images (ixi).
+\newblock \url{http://brain-development.org/ixi-dataset/}.
+\newblock Accessed: 2022-01-20.
+
+\bibitem{zbontar2018fastmri}
+Jure Zbontar, Florian Knoll, Anuroop Sriram, Tullie Murrell, Zhengnan Huang,
+  Matthew~J Muckley, Aaron Defazio, Ruben Stern, Patricia Johnson, Mary Bruno,
+  et~al.
+\newblock fastmri: An open dataset and benchmarks for accelerated mri.
+\newblock {\em arXiv preprint arXiv:1811.08839}, 2018.
+
+\bibitem{wang2021dudotrans}
+Ce~Wang, Kun Shang, Haimiao Zhang, Qian Li, Yuan Hui, and S~Kevin Zhou.
+\newblock Dudotrans: Dual-domain transformer provides more attention for
+  sinogram restoration in sparse-view ct reconstruction.
+\newblock {\em arXiv preprint arXiv:2111.10790}, 2021.
+
+\bibitem{pan3991087multi}
+Jiayi Pan, Weiwen Wu, Zhifan Gao, and Heye Zhang.
+\newblock Multi-domain integrative swin transformer network for sparse-view
+  tomographic reconstruction.
+\newblock {\em Available at SSRN 3991087}.
+
+\bibitem{long2021dssr}
+Yonghao Long, Zhaoshuo Li, Chi~Hang Yee, Chi~Fai Ng, Russell~H Taylor, Mathias
+  Unberath, and Qi~Dou.
+\newblock E-dssr: Efficient dynamic surgical scene reconstruction with
+  transformer-based stereoscopic depth perception.
+\newblock In {\em International Conference on Medical Image Computing and
+  Computer-Assisted Intervention}, pages 415--425. Springer, 2021.
+
+\bibitem{ye2017self}
+Menglong Ye, Edward Johns, Ankur Handa, Lin Zhang, Philip Pratt, and
+  Guang-Zhong Yang.
+\newblock Self-supervised siamese learning on stereo image pairs for depth
+  estimation in robotic surgery.
+\newblock {\em arXiv preprint arXiv:1705.08260}, 2017.
+
+\bibitem{gungor2021transms}
+Alper G{\"u}ng{\"o}r, Baris Askin, Damla~Alptekin Soydan, Emine~Ulku Saritas,
+  Can~Bar{\i}{\c{s}} Top, and Tolga {\c{C}}ukur.
+\newblock Transms: Transformers for super-resolution calibration in magnetic
+  particle imaging.
+\newblock {\em arXiv preprint arXiv:2111.02163}, 2021.
+
+\bibitem{knopp2020openmpidata}
+Tobias Knopp, Patryk Szwargulski, Florian Griese, and Matthias Gr{\"a}ser.
+\newblock Openmpidata: An initiative for freely accessible magnetic particle
+  imaging data.
+\newblock {\em Data in brief}, 28:104971, 2020.
+
+\bibitem{sriram2020end}
+Anuroop Sriram, Jure Zbontar, Tullie Murrell, Aaron Defazio, C~Lawrence
+  Zitnick, Nafissa Yakubova, Florian Knoll, and Patricia Johnson.
+\newblock End-to-end variational networks for accelerated mri reconstruction.
+\newblock In {\em International Conference on Medical Image Computing and
+  Computer-Assisted Intervention}, pages 64--73. Springer, 2020.
+
+\bibitem{han2018framing}
+Yoseob Han and Jong~Chul Ye.
+\newblock Framing u-net via deep convolutional framelets: Application to
+  sparse-view ct.
+\newblock {\em IEEE transactions on medical imaging}, 37(6):1418--1429, 2018.
+
+\bibitem{kudo2013image}
+Hiroyuki Kudo, Taizo Suzuki, and Essam~A Rashed.
+\newblock Image reconstruction for sparse-view ct and interior
+  ct—introduction to compressed sensing and differentiated backprojection.
+\newblock {\em Quantitative imaging in medicine and surgery}, 3(3):147, 2013.
+
+\bibitem{liu2020loss}
+Chen Liu, Mathieu Salzmann, Tao Lin, Ryota Tomioka, and Sabine S{\"u}sstrunk.
+\newblock On the loss landscape of adversarial training: Identifying challenges
+  and how to overcome them.
+\newblock {\em arXiv preprint arXiv:2006.08403}, 2020.
+
+\bibitem{zhang2021ptnet}
+Xuzhe Zhang, Xinzi He, Jia Guo, Nabil Ettehadi, Natalie Aw, David Semanek,
+  Jonathan Posner, Andrew Laine, and Yun Wang.
+\newblock Ptnet: A high-resolution infant mri synthesizer based on transformer.
+\newblock {\em arXiv preprint arXiv:2105.13993}, 2021.
+
+\bibitem{isola2017image}
+Phillip Isola, Jun-Yan Zhu, Tinghui Zhou, and Alexei~A Efros.
+\newblock Image-to-image translation with conditional adversarial networks.
+\newblock In {\em Proceedings of the IEEE conference on computer vision and
+  pattern recognition}, pages 1125--1134, 2017.
+
+\bibitem{wang2018high}
+Ting-Chun Wang, Ming-Yu Liu, Jun-Yan Zhu, Andrew Tao, Jan Kautz, and Bryan
+  Catanzaro.
+\newblock High-resolution image synthesis and semantic manipulation with
+  conditional gans.
+\newblock In {\em Proceedings of the IEEE conference on computer vision and
+  pattern recognition}, pages 8798--8807, 2018.
+
+\bibitem{makropoulos2018developing}
+Antonios Makropoulos, Emma~C Robinson, Andreas Schuh, Robert Wright, Sean
+  Fitzgibbon, Jelena Bozek, Serena~J Counsell, Johannes Steinweg, Katy
+  Vecchiato, Jonathan Passerat-Palmbach, et~al.
+\newblock The developing human connectome project: A minimal processing
+  pipeline for neonatal cortical surface reconstruction.
+\newblock {\em Neuroimage}, 173:88--112, 2018.
+
+\bibitem{kamran2021vtgan}
+Sharif~Amit Kamran, Khondker~Fariha Hossain, Alireza Tavakkoli, Stewart~Lee
+  Zuckerbrod, Kenton~M Sanders, and Salah~A Baker.
+\newblock Vtgan: Semi-supervised retinal image synthesis and disease prediction
+  using vision transformers.
+\newblock {\em arXiv preprint arXiv:2104.06757}, 2021.
+
+\bibitem{heusel2017gans}
+Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, and Sepp
+  Hochreiter.
+\newblock Gans trained by a two time-scale update rule converge to a local nash
+  equilibrium.
+\newblock {\em Advances in neural information processing systems}, 30, 2017.
+
+\bibitem{binkowski2018demystifying}
+Miko{\l}aj Bi{\'n}kowski, Danica~J Sutherland, Michael Arbel, and Arthur
+  Gretton.
+\newblock Demystifying mmd gans.
+\newblock {\em arXiv preprint arXiv:1801.01401}, 2018.
+
+\bibitem{hajeb2012diabetic}
+Shirin Hajeb Mohammad~Alipour, Hossein Rabbani, and Mohammad~Reza Akhlaghi.
+\newblock Diabetic retinopathy grading by digital curvelet transform.
+\newblock {\em Computational and mathematical methods in medicine}, 2012, 2012.
+
+\bibitem{ristea2021cytran}
+Nicolae-Catalin Ristea, Andreea-Iuliana Miron, Olivian Savencu, Mariana-Iuliana
+  Georgescu, Nicolae Verga, Fahad~Shahbaz Khan, and Radu~Tudor Ionescu.
+\newblock Cytran: Cycle-consistent transformers for non-contrast to contrast ct
+  translation.
+\newblock {\em arXiv preprint arXiv:2110.06400}, 2021.
+
+\bibitem{wolterink2017deep}
+Jelmer~M Wolterink, Anna~M Dinkla, Mark~HF Savenije, Peter~R Seevinck,
+  Cornelis~AT van~den Berg, and Ivana I{\v{s}}gum.
+\newblock Deep mr to ct synthesis using unpaired data.
+\newblock In {\em International workshop on simulation and synthesis in medical
+  imaging}, pages 14--23. Springer, 2017.
+
+\bibitem{dalmaz2021resvit}
+Onat Dalmaz, Mahmut Yurt, and Tolga {\c{C}}ukur.
+\newblock Resvit: Residual vision transformers for multi-modal medical image
+  synthesis.
+\newblock {\em arXiv preprint arXiv:2106.16031}, 2021.
+
+\bibitem{menze2014multimodal}
+Bjoern~H Menze, Andras Jakab, Stefan Bauer, Jayashree Kalpathy-Cramer, Keyvan
+  Farahani, Justin Kirby, Yuliya Burren, Nicole Porz, Johannes Slotboom, Roland
+  Wiest, et~al.
+\newblock The multimodal brain tumor image segmentation benchmark (brats).
+\newblock {\em IEEE transactions on medical imaging}, 34(10):1993--2024, 2014.
+
+\bibitem{nyholm2018mr}
+Tufve Nyholm, Stina Svensson, Sebastian Andersson, Joakim Jonsson, Maja Sohlin,
+  Christian Gustafsson, Elisabeth Kjell{\'e}n, Karin S{\"o}derstr{\"o}m, Per
+  Albertsson, Lennart Blomqvist, et~al.
+\newblock Mr and ct data with multiobserver delineations of organs in the
+  pelvic area—part of the gold atlas project.
+\newblock {\em Medical physics}, 45(3):1295--1300, 2018.
+
+\bibitem{wang2021generative}
+Zhengwei Wang, Qi~She, and Tomas~E Ward.
+\newblock Generative adversarial networks in computer vision: A survey and
+  taxonomy.
+\newblock {\em ACM Computing Surveys (CSUR)}, 54(2):1--38, 2021.
+
+\bibitem{alam2018medical}
+Fakhre Alam, Sami~Ur Rahman, Sehat Ullah, and Kamal Gulati.
+\newblock Medical image registration in image guided surgery: Issues,
+  challenges and research opportunities.
+\newblock {\em Biocybernetics and Biomedical Engineering}, 38(1):71--89, 2018.
+
+\bibitem{chen2021vit}
+Junyu Chen, Yufan He, Eric~C Frey, Ye~Li, and Yong Du.
+\newblock Vit-v-net: Vision transformer for unsupervised volumetric medical
+  image registration.
+\newblock {\em arXiv preprint arXiv:2104.06468}, 2021.
+
+\bibitem{milletari2018v}
+F~Milletari, N~Navab, and SA~Ahmadi.
+\newblock V-net: Fully convolutional neural networks for volumetric medical
+  image segmentation. june 2016, 2018.
+
+\bibitem{chen2021transmorph}
+Junyu Chen, Yong Du, Yufan He, William~P Segars, Ye~Li, and Eirc~C Frey.
+\newblock Transmorph: Transformer for unsupervised medical image registration.
+\newblock {\em arXiv preprint arXiv:2111.10480}, 2021.
+
+\bibitem{zhang2021learning}
+Yungeng Zhang, Yuru Pei, and Hongbin Zha.
+\newblock Learning dual transformer network for diffeomorphic registration.
+\newblock In {\em International Conference on Medical Image Computing and
+  Computer-Assisted Intervention}, pages 129--138. Springer, 2021.
+
+\bibitem{marcus2007open}
+Daniel~S Marcus, Tracy~H Wang, Jamie Parker, John~G Csernansky, John~C Morris,
+  and Randy~L Buckner.
+\newblock Open access series of imaging studies (oasis): cross-sectional mri
+  data in young, middle aged, nondemented, and demented older adults.
+\newblock {\em Journal of cognitive neuroscience}, 19(9):1498--1507, 2007.
+
+\bibitem{pavlopoulos2021diagnostic}
+John Pavlopoulos, Vasiliki Kougia, Ion Androutsopoulos, and Dimitris
+  Papamichail.
+\newblock Diagnostic captioning: a survey.
+\newblock {\em arXiv preprint arXiv:2101.07299}, 2021.
+
+\bibitem{monshi2020deep}
+Maram Mahmoud~A Monshi, Josiah Poon, and Vera Chung.
+\newblock Deep learning in generating radiology reports: A survey.
+\newblock {\em Artificial Intelligence in Medicine}, 106:101878, 2020.
+
+\bibitem{kougia2019survey}
+Vasiliki Kougia, John Pavlopoulos, and Ion Androutsopoulos.
+\newblock A survey on biomedical image captioning.
+\newblock {\em arXiv preprint arXiv:1905.13302}, 2019.
+
+\bibitem{messina2020survey}
+Pablo Messina, Pablo Pino, Denis Parra, Alvaro Soto, Cecilia Besa, Sergio
+  Uribe, Cristian Tejos, Claudia Prieto, Daniel Capurro, et~al.
+\newblock A survey on deep learning and explainability for automatic
+  image-based medical report generation.
+\newblock {\em arXiv preprint arXiv:2010.10563}, 2020.
+
+\bibitem{rennie2017self}
+Steven~J Rennie, Etienne Marcheret, Youssef Mroueh, Jerret Ross, and Vaibhava
+  Goel.
+\newblock Self-critical sequence training for image captioning.
+\newblock In {\em Proceedings of the IEEE conference on computer vision and
+  pattern recognition}, pages 7008--7024, 2017.
+
+\bibitem{xiong2019reinforced}
+Yuxuan Xiong, Bo~Du, and Pingkun Yan.
+\newblock Reinforced transformer for medical image captioning.
+\newblock In {\em International Workshop on Machine Learning in Medical
+  Imaging}, pages 673--680. Springer, 2019.
+
+\bibitem{demner2016preparing}
+Dina Demner-Fushman, Marc~D Kohli, Marc~B Rosenman, Sonya~E Shooshan, Laritza
+  Rodriguez, Sameer Antani, George~R Thoma, and Clement~J McDonald.
+\newblock Preparing a collection of radiology examinations for distribution and
+  retrieval.
+\newblock {\em Journal of the American Medical Informatics Association}, 2016.
+
+\bibitem{miura2020improving}
+Yasuhide Miura, Yuhao Zhang, Emily~Bao Tsai, Curtis~P Langlotz, and Dan
+  Jurafsky.
+\newblock Improving factual completeness and consistency of image-to-text
+  radiology report generation.
+\newblock {\em arXiv preprint arXiv:2010.10042}, 2020.
+
+\bibitem{papineni2002bleu}
+Kishore Papineni, Salim Roukos, Todd Ward, and Wei-Jing Zhu.
+\newblock Bleu: a method for automatic evaluation of machine translation.
+\newblock In {\em Proceedings of the 40th annual meeting of the Association for
+  Computational Linguistics}, pages 311--318, 2002.
+
+\bibitem{vedantam2015cider}
+Ramakrishna Vedantam, C~Lawrence~Zitnick, and Devi Parikh.
+\newblock Cider: Consensus-based image description evaluation.
+\newblock In {\em Proceedings of the IEEE conference on computer vision and
+  pattern recognition}, pages 4566--4575, 2015.
+
+\bibitem{zhang2019bertscore}
+Tianyi Zhang, Varsha Kishore, Felix Wu, Kilian~Q Weinberger, and Yoav Artzi.
+\newblock Bertscore: Evaluating text generation with bert.
+\newblock {\em arXiv preprint arXiv:1904.09675}, 2019.
+
+\bibitem{zhang2021surgical}
+Jinglu Zhang, Yinyu Nie, Jian Chang, and Jian~Jun Zhang.
+\newblock Surgical instruction generation with transformers.
+\newblock In {\em International Conference on Medical Image Computing and
+  Computer-Assisted Intervention}, pages 290--299. Springer, 2021.
+
+\bibitem{rojas2020daisi}
+Edgar Rojas-Mu{\~n}oz, Kyle Couperus, and Juan Wachs.
+\newblock Daisi: Database for ai surgical instruction.
+\newblock {\em arXiv preprint arXiv:2004.02809}, 2020.
+
+\bibitem{srinivasan2020hierarchical}
+Preethi Srinivasan, Daksh Thapar, Arnav Bhavsar, and Aditya Nigam.
+\newblock Hierarchical x-ray report generation via pathology tags and multi
+  head attention.
+\newblock In {\em Proceedings of the Asian Conference on Computer Vision},
+  2020.
+
+\bibitem{liu2021exploring}
+Fenglin Liu, Xian Wu, Shen Ge, Wei Fan, and Yuexian Zou.
+\newblock Exploring and distilling posterior and prior knowledge for radiology
+  report generation.
+\newblock In {\em Proceedings of the IEEE/CVF Conference on Computer Vision and
+  Pattern Recognition}, pages 13753--13762, 2021.
+
+\bibitem{you2021aligntransformer}
+Di~You, Fenglin Liu, Shen Ge, Xiaoxia Xie, Jing Zhang, and Xian Wu.
+\newblock Aligntransformer: Hierarchical alignment of visual regions and
+  disease tags for medical report generation.
+\newblock In {\em International Conference on Medical Image Computing and
+  Computer-Assisted Intervention}, pages 72--82. Springer, 2021.
+
+\bibitem{cornia2020meshed}
+Marcella Cornia, Matteo Stefanini, Lorenzo Baraldi, and Rita Cucchiara.
+\newblock Meshed-memory transformer for image captioning.
+\newblock In {\em Proceedings of the IEEE/CVF Conference on Computer Vision and
+  Pattern Recognition}, pages 10578--10587, 2020.
+
+\bibitem{johnson2019mimic}
+Alistair~EW Johnson, Tom~J Pollard, Nathaniel~R Greenbaum, Matthew~P Lungren,
+  Chih-ying Deng, Yifan Peng, Zhiyong Lu, Roger~G Mark, Seth~J Berkowitz, and
+  Steven Horng.
+\newblock Mimic-cxr-jpg, a large publicly available database of labeled chest
+  radiographs.
+\newblock {\em arXiv preprint arXiv:1901.07042}, 2019.
+
+\bibitem{chen2021cross}
+Zhihong Chen, Yaling Shen, Yan Song, and Xiang Wan.
+\newblock Cross-modal memory networks for radiology report generation.
+\newblock In {\em Proceedings of the 59th Annual Meeting of the Association for
+  Computational Linguistics and the 11th International Joint Conference on
+  Natural Language Processing (Volume 1: Long Papers)}, pages 5904--5914, 2021.
+
+\bibitem{li2021ffa}
+Mingjie Li, Wenjia Cai, Rui Liu, Yuetian Weng, Xiaoyun Zhao, Cong Wang, Xin
+  Chen, Zhong Liu, Caineng Pan, Mengke Li, et~al.
+\newblock Ffa-ir: Towards an explainable and reliable medical report generation
+  benchmark.
+\newblock In {\em Thirty-fifth Conference on Neural Information Processing
+  Systems Datasets and Benchmarks Track (Round 2)}, 2021.
+
+\bibitem{bustos2020padchest}
+Aurelia Bustos, Antonio Pertusa, Jose-Maria Salinas, and Maria de~la
+  Iglesia-Vay{\'a}.
+\newblock Padchest: A large chest x-ray image dataset with multi-label
+  annotated reports.
+\newblock {\em Medical image analysis}, 66:101797, 2020.
+
+\bibitem{li2019knowledge}
+Christy~Y Li, Xiaodan Liang, Zhiting Hu, and Eric~P Xing.
+\newblock Knowledge-driven encode, retrieve, paraphrase for medical image
+  report generation.
+\newblock In {\em Proceedings of the AAAI Conference on Artificial
+  Intelligence}, volume~33, pages 6666--6673, 2019.
+
+\bibitem{kalviainen2007diaretdb1}
+RVJPH K{\"a}lvi{\"a}inen and H~Uusitalo.
+\newblock Diaretdb1 diabetic retinopathy database and evaluation protocol.
+\newblock In {\em Medical Image Understanding and Analysis}, volume 2007,
+  page~61. Citeseer, 2007.
+
+\bibitem{li2020auxiliary}
+Mingjie Li, Fuyu Wang, Xiaojun Chang, and Xiaodan Liang.
+\newblock Auxiliary signal-guided knowledge encoder-decoder for medical report
+  generation.
+\newblock {\em arXiv preprint arXiv:2006.03744}, 2020.
+
+\bibitem{huang2021deepopht}
+Jia-Hong Huang, C-H~Huck Yang, Fangyu Liu, Meng Tian, Yi-Chieh Liu, Ting-Wei
+  Wu, I~Lin, Kang Wang, Hiromasa Morikawa, Hernghua Chang, et~al.
+\newblock Deepopht: medical report generation for retinal images via deep
+  models and visual explanation.
+\newblock In {\em Proceedings of the IEEE/CVF winter conference on applications
+  of computer vision}, pages 2442--2452, 2021.
+
+\bibitem{hoover2000locating}
+AD~Hoover, Valentina Kouznetsova, and Michael Goldbaum.
+\newblock Locating blood vessels in retinal images by piecewise threshold
+  probing of a matched filter response.
+\newblock {\em IEEE Transactions on Medical imaging}, 19(3):203--210, 2000.
+
+\bibitem{yan2021weakly}
+An~Yan, Zexue He, Xing Lu, Jiang Du, Eric Chang, Amilcare Gentili, Julian
+  McAuley, and Chun-Nan Hsu.
+\newblock Weakly supervised contrastive learning for chest x-ray report
+  generation.
+\newblock {\em arXiv preprint arXiv:2109.12242}, 2021.
+
+\bibitem{amjoud2021automatic}
+Ayoub~Benali Amjoud and Mustapha Amrouch.
+\newblock Automatic generation of chest x-ray reports using a transformer-based
+  deep learning model.
+\newblock In {\em 2021 Fifth International Conference On Intelligent Computing
+  in Data Sciences (ICDS)}, pages 1--5. IEEE, 2021.
+
+\bibitem{hou2021ratchet}
+Benjamin Hou, Georgios Kaissis, Ronald~M Summers, and Bernhard Kainz.
+\newblock Ratchet: Medical transformer for chest x-ray diagnosis and reporting.
+\newblock In {\em International Conference on Medical Image Computing and
+  Computer-Assisted Intervention}, pages 293--303. Springer, 2021.
+
+\bibitem{chen2020generating}
+Zhihong Chen, Yan Song, Tsung-Hui Chang, and Xiang Wan.
+\newblock Generating radiology reports via memory-driven transformer.
+\newblock {\em arXiv preprint arXiv:2010.16056}, 2020.
+
+\bibitem{nooralahzadeh2021progressive}
+Farhad Nooralahzadeh, Nicolas~Perez Gonzalez, Thomas Frauenfelder, Koji
+  Fujimoto, and Michael Krauthammer.
+\newblock Progressive transformer-based generation of radiology reports.
+\newblock {\em arXiv preprint arXiv:2102.09777}, 2021.
+
+\bibitem{wang2021confidence}
+Yixin Wang, Zihao Lin, Jiang Tian, Zhongchao Shi, Yang Zhang, Jianping Fan, and
+  Zhiqiang He.
+\newblock Confidence-guided radiology report generation.
+\newblock {\em arXiv preprint arXiv:2106.10887}, 2021.
+
+\bibitem{nguyen2021automated}
+Hoang~TN Nguyen, Dong Nie, Taivanbat Badamdorj, Yujie Liu, Yingying Zhu, Jason
+  Truong, and Li~Cheng.
+\newblock Automated generation of accurate$\backslash$\& fluent medical x-ray
+  reports.
+\newblock {\em arXiv preprint arXiv:2108.12126}, 2021.
+
+\bibitem{liu2021auto}
+Fenglin Liu, Chenyu You, Xian Wu, Shen Ge, Xu~Sun, et~al.
+\newblock Auto-encoding knowledge graph for unsupervised medical report
+  generation.
+\newblock {\em Advances in Neural Information Processing Systems}, 34, 2021.
+
+\bibitem{lovelace2020learning}
+Justin Lovelace and Bobak Mortazavi.
+\newblock Learning to generate clinically coherent chest x-ray reports.
+\newblock In {\em Proceedings of the 2020 Conference on Empirical Methods in
+  Natural Language Processing: Findings}, pages 1235--1243, 2020.
+
+\bibitem{denkowski2011meteor}
+Michael Denkowski and Alon Lavie.
+\newblock Meteor 1.3: Automatic metric for reliable optimization and evaluation
+  of machine translation systems.
+\newblock In {\em Proceedings of the sixth workshop on statistical machine
+  translation}, pages 85--91, 2011.
+
+\bibitem{rouge2004package}
+Lin~CY ROUGE.
+\newblock A package for automatic evaluation of summaries.
+\newblock In {\em Proceedings of Workshop on Text Summarization of ACL, Spain},
+  2004.
+
+\bibitem{alfarghaly2021automated}
+Omar Alfarghaly, Rana Khaled, Abeer Elkorany, Maha Helal, and Aly Fahmy.
+\newblock Automated radiology report generation using conditioned transformers.
+\newblock {\em Informatics in Medicine Unlocked}, 24:100557, 2021.
+
+\bibitem{ziegler2019encoder}
+Zachary~M Ziegler, Luke Melas-Kyriazi, Sebastian Gehrmann, and Alexander~M
+  Rush.
+\newblock Encoder-agnostic adaptation for conditional language generation.
+\newblock {\em arXiv preprint arXiv:1908.06938}, 2019.
+
+\bibitem{radford2019language}
+Alec Radford, Jeffrey Wu, Rewon Child, David Luan, Dario Amodei, Ilya
+  Sutskever, et~al.
+\newblock Language models are unsupervised multitask learners.
+\newblock {\em OpenAI blog}, 1(8):9, 2019.
+
+\bibitem{bengio2009curriculum}
+Yoshua Bengio, J{\'e}r{\^o}me Louradour, Ronan Collobert, and Jason Weston.
+\newblock Curriculum learning.
+\newblock In {\em Proceedings of the 26th annual international conference on
+  machine learning}, pages 41--48, 2009.
+
+\bibitem{pahwa2021medskip}
+Esha Pahwa, Dwij Mehta, Sanjeet Kapadia, Devansh Jain, and Achleshwar Luthra.
+\newblock Medskip: Medical report generation using skip connections and
+  integrated attention.
+\newblock In {\em Proceedings of the IEEE/CVF International Conference on
+  Computer Vision}, pages 3409--3415, 2021.
+
+\bibitem{sun2019deep}
+Ke~Sun, Bin Xiao, Dong Liu, and Jingdong Wang.
+\newblock Deep high-resolution representation learning for human pose
+  estimation.
+\newblock In {\em Proceedings of the IEEE/CVF Conference on Computer Vision and
+  Pattern Recognition}, pages 5693--5703, 2019.
+
+\bibitem{park2021medical}
+Hyeryun Park, Kyungmo Kim, Seongkeun Park, and Jinwook Choi.
+\newblock Medical image captioning model to convey more details: Methodological
+  comparison of feature difference generation.
+\newblock {\em IEEE Access}, 9:150560--150568, 2021.
+
+\bibitem{pelka2018radiology}
+Obioma Pelka, Sven Koitka, Johannes R{\"u}ckert, Felix Nensa, and Christoph~M
+  Friedrich.
+\newblock Radiology objects in context (roco): a multimodal image dataset.
+\newblock In {\em Intravascular Imaging and Computer Assisted Stenting and
+  Large-Scale Annotation of Biomedical Data and Expert Label Synthesis}, pages
+  180--189. Springer, 2018.
+
+\bibitem{jing2017automatic}
+Baoyu Jing, Pengtao Xie, and Eric Xing.
+\newblock On the automatic generation of medical imaging reports.
+\newblock {\em arXiv preprint arXiv:1711.08195}, 2017.
+
+\bibitem{garcia2018overview}
+Alba Garcia Seco De~Herrera, Carstern Eickhof, Vincent Andrearczyk, and Henning
+  M{\"u}ller.
+\newblock Overview of the imageclef 2018 caption prediction tasks.
+\newblock CEUR Workshop Proceedings, 2018.
+
+\bibitem{chen2021multimodal}
+Richard~J Chen, Ming~Y Lu, Wei-Hung Weng, Tiffany~Y Chen, Drew~FK Williamson,
+  Trevor Manz, Maha Shady, and Faisal Mahmood.
+\newblock Multimodal co-attention transformer for survival prediction in
+  gigapixel whole slide images.
+\newblock In {\em Proceedings of the IEEE/CVF International Conference on
+  Computer Vision}, pages 4015--4025, 2021.
+
+\bibitem{kipkogei2021explainable}
+Elly Kipkogei, Arango~Argoty GA, Ioannis Kagiampakis, Arijit Patra, and Etai
+  Jacob.
+\newblock Explainable transformer-based neural network for the prediction of
+  survival outcomes in non-small cell lung cancer (nsclc).
+\newblock 2021.
+
+\bibitem{samstein2019tumor}
+Robert~M Samstein, Chung-Han Lee, Alexander~N Shoushtari, Matthew~D Hellmann,
+  Ronglai Shen, Yelena~Y Janjigian, David~A Barron, Ahmet Zehir, Emmet~J
+  Jordan, Antonio Omuro, et~al.
+\newblock Tumor mutational load predicts survival after immunotherapy across
+  multiple cancer types.
+\newblock {\em Nature genetics}, 51(2):202--206, 2019.
+
+\bibitem{eslami2021does}
+Sedigheh Eslami, de~Gerard Melo, and Christoph Meinel.
+\newblock Does clip benefit visual question answering in the medical domain as
+  much as it does in the general domain?
+\newblock {\em arXiv preprint arXiv:2112.13906}, 2021.
+
+\bibitem{radford2021learning}
+Alec Radford, Jong~Wook Kim, Chris Hallacy, Aditya Ramesh, Gabriel Goh,
+  Sandhini Agarwal, Girish Sastry, Amanda Askell, Pamela Mishkin, Jack Clark,
+  et~al.
+\newblock Learning transferable visual models from natural language
+  supervision.
+\newblock {\em arXiv preprint arXiv:2103.00020}, 2021.
+
+\bibitem{malkiel2021pre}
+Itzik Malkiel, Gony Rosenman, Lior Wolf, and Talma Hendler.
+\newblock Pre-training and fine-tuning transformers for fmri prediction tasks.
+\newblock {\em arXiv preprint arXiv:2112.05761}, 2021.
+
+\bibitem{grill2020bootstrap}
+Jean-Bastien Grill, Florian Strub, Florent Altch{\'e}, Corentin Tallec,
+  Pierre~H Richemond, Elena Buchatskaya, Carl Doersch, Bernardo~Avila Pires,
+  Zhaohan~Daniel Guo, Mohammad~Gheshlaghi Azar, et~al.
+\newblock Bootstrap your own latent: A new approach to self-supervised
+  learning.
+\newblock {\em arXiv preprint arXiv:2006.07733}, 2020.
+
+\bibitem{touvron2021training}
+Hugo Touvron, Matthieu Cord, Matthijs Douze, Francisco Massa, Alexandre
+  Sablayrolles, and Herv{\'e} J{\'e}gou.
+\newblock Training data-efficient image transformers \& distillation through
+  attention.
+\newblock In {\em International Conference on Machine Learning}, pages
+  10347--10357. PMLR, 2021.
+
+\bibitem{azizi2021big}
+Shekoofeh Azizi, Basil Mustafa, Fiona Ryan, Zachary Beaver, Jan Freyberg,
+  Jonathan Deaton, Aaron Loh, Alan Karthikesalingam, Simon Kornblith, Ting
+  Chen, et~al.
+\newblock Big self-supervised models advance medical image classification.
+\newblock {\em arXiv preprint arXiv:2101.05224}, 2021.
+
+\bibitem{vu2021medaug}
+Yen Nhi~Truong Vu, Richard Wang, Niranjan Balachandar, Can Liu, Andrew~Y Ng,
+  and Pranav Rajpurkar.
+\newblock Medaug: Contrastive learning leveraging patient metadata improves
+  representations for chest x-ray interpretation.
+\newblock {\em arXiv preprint arXiv:2102.10663}, 2021.
+
+\bibitem{chen2020big}
+Ting Chen, Simon Kornblith, Kevin Swersky, Mohammad Norouzi, and Geoffrey
+  Hinton.
+\newblock Big self-supervised models are strong semi-supervised learners.
+\newblock {\em arXiv preprint arXiv:2006.10029}, 2020.
+
+\bibitem{reyes2020interpretability}
+Mauricio Reyes, Raphael Meier, S{\'e}rgio Pereira, Carlos~A Silva,
+  Fried-Michael Dahlweid, Hendrik~von Tengg-Kobligk, Ronald~M Summers, and
+  Roland Wiest.
+\newblock On the interpretability of artificial intelligence in radiology:
+  challenges and opportunities.
+\newblock {\em Radiology: Artificial Intelligence}, 2(3):e190043, 2020.
+
+\bibitem{singh2020explainable}
+Amitojdeep Singh, Sourya Sengupta, and Vasudevan Lakshminarayanan.
+\newblock Explainable deep learning models in medical image analysis.
+\newblock {\em Journal of Imaging}, 6(6):52, 2020.
+
+\bibitem{yan2021interpretable}
+Ke~Yan, Youbao Tang, Adam~P Harrison, Jinzheng Cai, Le~Lu, and Jingjing Lu.
+\newblock Interpretable medical image classification with self-supervised
+  anatomical embedding and prior knowledge.
+\newblock 2021.
+
+\bibitem{ghoshal2020estimating}
+Biraja Ghoshal and Allan Tucker.
+\newblock Estimating uncertainty and interpretability in deep learning for
+  coronavirus (covid-19) detection.
+\newblock {\em arXiv preprint arXiv:2003.10769}, 2020.
+
+\bibitem{chaudhari2021attentive}
+Sneha Chaudhari, Varun Mithal, Gungor Polatkan, and Rohan Ramanath.
+\newblock An attentive survey of attention models.
+\newblock {\em ACM Transactions on Intelligent Systems and Technology (TIST)},
+  12(5):1--32, 2021.
+
+\bibitem{bakas2018identifying}
+Spyridon Bakas, Mauricio Reyes, Andras Jakab, Stefan Bauer, Markus Rempfler,
+  Alessandro Crimi, Russell~Takeshi Shinohara, Christoph Berger, Sung~Min Ha,
+  Martin Rozycki, et~al.
+\newblock Identifying the best machine learning algorithms for brain tumor
+  segmentation, progression assessment, and overall survival prediction in the
+  brats challenge.
+\newblock {\em arXiv preprint arXiv:1811.02629}, 2018.
+
+\bibitem{oasis}
+Open access series of imaging studies.
+\newblock \url{https://www.oasis-brains.org/}.
+\newblock Accessed: 2022-01-20.
+
+\bibitem{luna16}
+Lung nodule analysis, 2016.
+\newblock \url{https://luna16.grand-challenge.org/Data/}.
+\newblock Accessed: 2022-01-20.
+
+\bibitem{kermany2018identifying}
+Daniel~S Kermany, Michael Goldbaum, Wenjia Cai, Carolina~CS Valentim, Huiying
+  Liang, Sally~L Baxter, Alex McKeown, Ge~Yang, Xiaokang Wu, Fangbing Yan,
+  et~al.
+\newblock Identifying medical diagnoses and treatable diseases by image-based
+  deep learning.
+\newblock {\em Cell}, 172(5):1122--1131, 2018.
+
+\bibitem{nlst}
+National lung screening trial - the cancer data assess system.
+\newblock \url{https://cdas.cancer.gov/nlst/}.
+\newblock Accessed: 2022-01-20.
+
+\bibitem{diabeticretino}
+Diabetic retinopathy challenge.
+\newblock \url{https://www.kaggle.com/c/diabetic-retinopathy-detection}.
+\newblock Accessed: 2022-01-20.
+
+\bibitem{ma2021understanding}
+Xingjun Ma, Yuhao Niu, Lin Gu, Yisen Wang, Yitian Zhao, James Bailey, and Feng
+  Lu.
+\newblock Understanding adversarial attacks on deep learning based medical
+  image analysis systems.
+\newblock {\em Pattern Recognition}, 110:107332, 2021.
+
+\bibitem{papangelou2018toward}
+Konstantinos Papangelou, Konstantinos Sechidis, James Weatherall, and Gavin
+  Brown.
+\newblock Toward an understanding of adversarial examples in clinical trials.
+\newblock In {\em Joint European Conference on Machine Learning and Knowledge
+  Discovery in Databases}, pages 35--51. Springer, 2018.
+
+\bibitem{finlayson2019adversarial}
+Samuel~G Finlayson, John~D Bowers, Joichi Ito, Jonathan~L Zittrain, Andrew~L
+  Beam, and Isaac~S Kohane.
+\newblock Adversarial attacks on medical machine learning.
+\newblock {\em Science}, 363(6433):1287--1289, 2019.
+
+\bibitem{benz2021adversarial}
+Philipp Benz, Soomin Ham, Chaoning Zhang, Adil Karjauv, and In~So Kweon.
+\newblock Adversarial robustness comparison of vision transformer and mlp-mixer
+  to cnns.
+\newblock {\em arXiv preprint arXiv:2110.02797}, 2021.
+
+\bibitem{bhojanapalli2021understanding}
+Srinadh Bhojanapalli, Ayan Chakrabarti, Daniel Glasner, Daliang Li, Thomas
+  Unterthiner, and Andreas Veit.
+\newblock Understanding robustness of transformers for image classification.
+\newblock {\em arXiv preprint arXiv:2103.14586}, 2021.
+
+\bibitem{wei2021towards}
+Zhipeng Wei, Jingjing Chen, Micah Goldblum, Zuxuan Wu, Tom Goldstein, and
+  Yu-Gang Jiang.
+\newblock Towards transferable adversarial attacks on vision transformers.
+\newblock {\em arXiv preprint arXiv:2109.04176}, 2021.
+
+\bibitem{shao2021adversarial}
+Rulin Shao, Zhouxing Shi, Jinfeng Yi, Pin-Yu Chen, and Cho-Jui Hsieh.
+\newblock On the adversarial robustness of visual transformers.
+\newblock {\em arXiv preprint arXiv:2103.15670}, 2021.
+
+\bibitem{paul2021vision}
+Sayak Paul and Pin-Yu Chen.
+\newblock Vision transformers are robust learners.
+\newblock {\em arXiv preprint arXiv:2105.07581}, 2021.
+
+\bibitem{naseer2021improving}
+Muzammal Naseer, Kanchana Ranasinghe, Salman Khan, Fahad~Shahbaz Khan, and
+  Fatih Porikli.
+\newblock On improving adversarial transferability of vision transformers.
+\newblock {\em arXiv preprint arXiv:2106.04169}, 2021.
+
+\bibitem{mao2021rethinking}
+Xiaofeng Mao, Gege Qi, Yuefeng Chen, Xiaodan Li, Shaokai Ye, Yuan He, and Hui
+  Xue.
+\newblock Rethinking the design principles of robust vision transformer.
+\newblock {\em arXiv preprint arXiv:2105.07926}, 2021.
+
+\bibitem{mahmood2021robustness}
+Kaleel Mahmood, Rigel Mahmood, and Marten Van~Dijk.
+\newblock On the robustness of vision transformers to adversarial examples.
+\newblock {\em arXiv preprint arXiv:2104.02610}, 2021.
+
+\bibitem{joshi2021adversarial}
+Ameya Joshi, Gauri Jagatap, and Chinmay Hegde.
+\newblock Adversarial token attacks on vision transformers.
+\newblock {\em arXiv preprint arXiv:2110.04337}, 2021.
+
+\bibitem{aldahdooh2021reveal}
+Ahmed Aldahdooh, Wassim Hamidouche, and Olivier Deforges.
+\newblock Reveal of vision transformers robustness against adversarial attacks.
+\newblock {\em arXiv preprint arXiv:2106.03734}, 2021.
+
+\bibitem{katz2017towards}
+Guy Katz, Clark Barrett, David~L Dill, Kyle Julian, and Mykel~J Kochenderfer.
+\newblock Towards proving the adversarial robustness of deep neural networks.
+\newblock {\em arXiv preprint arXiv:1709.02802}, 2017.
+
+\bibitem{bonawitztensorflow}
+K~Bonawitz, H~Eichner, W~Grieskamp, et~al.
+\newblock Tensorflow federated: Machine learning on decentralized data. 2020.
+\newblock \url{https://www.tensorflow.org/federated}.
+
+\bibitem{knott2021crypten}
+Brian Knott, Shobha Venkataraman, Awni Hannun, Shubho Sengupta, Mark Ibrahim,
+  and Laurens van~der Maaten.
+\newblock Crypten: Secure multi-party computation meets machine learning.
+\newblock {\em Advances in Neural Information Processing Systems}, 34, 2021.
+
+\bibitem{2017openmined}
+To lower the barrier to entry to privacy preserving technology.
+\newblock \url{https://github.com/OpenMined}.
+\newblock Accessed: 2022-01-20.
+
+\bibitem{yousefpour2021opacus}
+Ashkan Yousefpour, Igor Shilov, Alexandre Sablayrolles, Davide Testuggine,
+  Karthik Prasad, Mani Malek, John Nguyen, Sayan Ghosh, Akash Bharadwaj,
+  Jessica Zhao, et~al.
+\newblock Opacus: User-friendly differential privacy library in pytorch.
+\newblock {\em arXiv preprint arXiv:2109.12298}, 2021.
+
+\bibitem{kaissis2021end}
+Georgios Kaissis, Alexander Ziller, Jonathan Passerat-Palmbach, Th{\'e}o
+  Ryffel, Dmitrii Usynin, Andrew Trask, Ion{\'e}sio Lima, Jason Mancuso,
+  Friederike Jungmann, Marc-Matthias Steinborn, et~al.
+\newblock End-to-end privacy preserving deep learning on multi-institutional
+  medical imaging.
+\newblock {\em Nature Machine Intelligence}, 3(6):473--484, 2021.
+
+\bibitem{zhai2021scaling}
+Xiaohua Zhai, Alexander Kolesnikov, Neil Houlsby, and Lucas Beyer.
+\newblock Scaling vision transformers.
+\newblock {\em arXiv preprint arXiv:2106.04560}, 2021.
+
+\bibitem{tabani2021improving}
+Hamid Tabani, Ajay Balasubramaniam, Shabbir Marzban, Elahe Arani, and Bahram
+  Zonooz.
+\newblock Improving the efficiency of transformers for resource-constrained
+  devices.
+\newblock In {\em 2021 24th Euromicro Conference on Digital System Design
+  (DSD)}, pages 449--456. IEEE, 2021.
+
+\bibitem{li2020ftrans}
+Bingbing Li, Santosh Pandey, Haowen Fang, Yanjun Lyv, Ji~Li, Jieyang Chen, Mimi
+  Xie, Lipeng Wan, Hang Liu, and Caiwen Ding.
+\newblock Ftrans: energy-efficient acceleration of transformers using fpga.
+\newblock In {\em Proceedings of the ACM/IEEE International Symposium on Low
+  Power Electronics and Design}, pages 175--180, 2020.
+
+\bibitem{wang2020hat}
+Hanrui Wang, Zhanghao Wu, Zhijian Liu, Han Cai, Ligeng Zhu, Chuang Gan, and
+  Song Han.
+\newblock Hat: Hardware-aware transformers for efficient natural language
+  processing.
+\newblock {\em arXiv preprint arXiv:2005.14187}, 2020.
+
+\bibitem{abadi2016deep}
+Martin Abadi, Andy Chu, Ian Goodfellow, H~Brendan McMahan, Ilya Mironov, Kunal
+  Talwar, and Li~Zhang.
+\newblock Deep learning with differential privacy.
+\newblock In {\em Proceedings of the 2016 ACM SIGSAC conference on computer and
+  communications security}, pages 308--318, 2016.
+
+\bibitem{huang2021evaluating}
+Yangsibo Huang, Samyak Gupta, Zhao Song, Kai Li, and Sanjeev Arora.
+\newblock Evaluating gradient inversion attacks and defenses in federated
+  learning.
+\newblock {\em Advances in Neural Information Processing Systems}, 34, 2021.
+
+\bibitem{lee2018simple}
+Kimin Lee, Kibok Lee, Honglak Lee, and Jinwoo Shin.
+\newblock A simple unified framework for detecting out-of-distribution samples
+  and adversarial attacks.
+\newblock {\em Advances in neural information processing systems}, 31, 2018.
+
+\bibitem{fort2021exploring}
+Stanislav Fort, Jie Ren, and Balaji Lakshminarayanan.
+\newblock Exploring the limits of out-of-distribution detection.
+\newblock {\em arXiv preprint arXiv:2106.03004}, 2021.
+
+\bibitem{yang2021generalized}
+Jingkang Yang, Kaiyang Zhou, Yixuan Li, and Ziwei Liu.
+\newblock Generalized out-of-distribution detection: A survey.
+\newblock {\em arXiv preprint arXiv:2110.11334}, 2021.
+
+\bibitem{zhang2021out}
+Oliver Zhang, Jean-Benoit Delbrouck, and Daniel~L Rubin.
+\newblock Out of distribution detection for medical images.
+\newblock In {\em Uncertainty for Safe Utilization of Machine Learning in
+  Medical Imaging, and Perinatal Imaging, Placental and Preterm Image
+  Analysis}, pages 102--111. Springer, 2021.
+
+\bibitem{zhang2021delving}
+Chongzhi Zhang, Mingyuan Zhang, Shanghang Zhang, Daisheng Jin, Qiang Zhou,
+  Zhongang Cai, Haiyu Zhao, Shuai Yi, Xianglong Liu, and Ziwei Liu.
+\newblock Delving deep into the generalization of vision transformers under
+  distribution shifts.
+\newblock {\em arXiv preprint arXiv:2106.07617}, 2021.
+
+\bibitem{linmans2020efficient}
+Jasper Linmans, Jeroen van~der Laak, and Geert Litjens.
+\newblock Efficient out-of-distribution detection in digital pathology using
+  multi-head convolutional neural networks.
+\newblock In {\em MIDL}, pages 465--478, 2020.
+
+\bibitem{hendrycks2016baseline}
+Dan Hendrycks and Kevin Gimpel.
+\newblock A baseline for detecting misclassified and out-of-distribution
+  examples in neural networks.
+\newblock {\em arXiv preprint arXiv:1610.02136}, 2016.
+
+\bibitem{koner2021oodformer}
+Rajat Koner, Poulami Sinhamahapatra, Karsten Roscher, Stephan G{\"u}nnemann,
+  and Volker Tresp.
+\newblock Oodformer: Out-of-distribution detection transformer.
+\newblock {\em arXiv preprint arXiv:2107.08976}, 2021.
+
+\bibitem{qu2021recent}
+Haoxuan Qu, Hossein Rahmani, Li~Xu, Bryan Williams, and Jun Liu.
+\newblock Recent advances of continual learning in computer vision: An
+  overview.
+\newblock {\em arXiv preprint arXiv:2109.11369}, 2021.
+
+\bibitem{lenga2020continual}
+Matthias Lenga, Heinrich Schulz, and Axel Saalbach.
+\newblock Continual learning for domain adaptation in chest x-ray
+  classification.
+\newblock In {\em Medical Imaging with Deep Learning}, pages 413--423. PMLR,
+  2020.
+
+\bibitem{gulrajani2020search}
+Ishaan Gulrajani and David Lopez-Paz.
+\newblock In search of lost domain generalization.
+\newblock {\em arXiv preprint arXiv:2007.01434}, 2020.
+
+\end{thebibliography}

@@ -1,0 +1,194 @@
+\section{Experiments}
+\label{sec:experiments}
+
+\begin{table*}[ht]
+\centering
+\caption{Performance on ALFWorld and WebShop. For ALFWorld, we report the average success rate (\%) for each subtask as well as the overall result. For WebShop, we report both the average score and the average success rate (\%). $^*$ denotes the results replicated from~\citep{feng2025group}. The best results and second best results are highlighted in \colorbox{red!25}{red} and \colorbox{blue!15}{blue}, respectively.}
+\label{tab:performance}
+% \resizebox{\textwidth}{!}{
+\begin{tabular}{lccccccc|cc}
+\toprule
+\multirow{2}{*}{\textbf{Method}} & \multicolumn{7}{c|}{\textbf{ALFWorld}} & \multicolumn{2}{c}{\textbf{WebShop}} \\
+ & Pick & Look & Clean & Heat & Cool & Pick2 & All & Score & Succ. \\
+\midrule
+% \textit{Closed-Source Model} & & & & & & & & & \\
+\rowcolor{gray!15} \multicolumn{10}{l}{\textit{Closed-source LLMs}} \\
+GPT-4o & 75.3 & 60.8 & 31.2 & 56.7 & 21.6 & 49.8 & 48.0 & 31.8 & 23.7 \\
+ Gemini-2.5-Pro & 92.8 & 63.3 & 62.1 & 69.0 & 26.6 & 58.7 & 60.3 & 42.5 & 35.9 \\
+\midrule
+\textit{Qwen2.5-7B-Instruct} & & & & & & & & & \\
+ Qwen2.5 & 33.4 & 21.6 & 19.3 & 6.90 & 2.80 & 3.20 & 14.8 & 26.4 & 7.80 \\
+ \rowcolor{gray!15} \multicolumn{10}{l}{\textit{Prompt-based Agentic or Memory-based Methods}} \\
+ ReAct$^*$ & 48.5 & 35.4 & 34.3 & 13.2 & 18.2 & 17.6 & 31.2 & 46.2 & 19.5 \\
+ Reflexion$^*$ & 62.0 & 41.6 & 44.9 & 30.9 & 36.3 & 23.8 & 42.7 & 58.1 & 28.8 \\
+ Mem0 & 54.0 & 55.0 & 26.9 & 36.4 & 20.8 & 7.69 & 33.6 & 23.9 & 2.00 \\ 
+ ExpeL & 21.0 & 67.0 & 55.0 & 52.0 & 71.0 & 6.00 & 46.3 & 30.9 & 11.2 \\ 
+ MemP & 54.3 & 38.5 & 48.1 & 56.2 & 32.0 & 16.7 & 41.4 & 25.3 & 6.40  \\
+ SimpleMem & 64.5 & 33.3 & 20.0 & 12.5 & 33.3 & 3.84 & 29.7 & 33.2 & 8.59 \\
+ \hdashline
+ \rowcolor{gray!15} \multicolumn{10}{l}{\textit{RL-based Methods}} \\
+ % PPO$^*$ & 92.3 & 64.0 & \cellcolor{red!25}{92.5} & \cellcolor{blue!15}{89.5} & \cellcolor{blue!15}{80.3} & \cellcolor{blue!15}{68.8} & \cellcolor{blue!15}{80.4} & \cellcolor{blue!15}{81.4} & \cellcolor{blue!15}{68.7} \\
+ RLOO$^*$ & 87.6 & \cellcolor{red!25}{78.2} & 87.3 & \cellcolor{blue!15}{81.3} & 71.9 & 48.9 & 75.5 & \cellcolor{blue!15}{80.3} & 65.7 \\
+ GRPO$^*$ & \cellcolor{blue!15}{90.8} & 66.1 & \cellcolor{blue!15}{89.3} & 74.7 & \cellcolor{blue!15}{72.5} & \cellcolor{blue!15}{64.7} & \cellcolor{blue!15}{77.6} & 79.3 & \cellcolor{blue!15}{66.1} \\
+ \hdashline
+  \rowcolor{gray!15} \multicolumn{10}{l}{\textit{Memory-Augmented RL-based Methods}} \\
+  MemRL & 62.8 & 38.5 & 22.2 & 12.5 & 8.00 & 0.00 & 21.4 & 29.5 & 9.20 \\
+ EvolveR & 64.9 & 33.3 & 46.4 & 13.3 & 33.3 & 33.3 & 43.8 & 42.5 & 17.6 \\
+ Mem0+GRPO & 78.1 & 54.8 & 56.1 & 31.0 & 65.0 & 26.9 & 54.7 & 58.1 & 37.5 \\
+ SimpleMem+GRPO & 89.5 & 36.3 & 60.0 &50.0& 64.9 & 26.3 & 62.5 & 67.8& 46.9 \\
+ \method{} & \cellcolor{red!25}{97.9} & \cellcolor{blue!15}{71.4} & \cellcolor{red!25}{90.0} & \cellcolor{red!25}{90.0} & \cellcolor{red!25}{95.5} & \cellcolor{red!25}{87.5} & \cellcolor{red!25}{89.9} & \cellcolor{red!25}{85.2} & \cellcolor{red!25}{72.7} \\
+\bottomrule
+\end{tabular}
+% }
+\end{table*}
+
+\begin{table*}[htbp]
+\centering
+\caption{Performance on search-augmented QA tasks. \method{} is trained on NQ and HotpotQA. $^\dagger$ and $^\star$ indicate in-domain and out-of-domain datasets, respectively. $^*$ denotes the results replicated from~\citep{sun2025zerosearch}.}
+\label{tab:performance_search}
+\footnotesize
+\setlength{\tabcolsep}{4.5pt} 
+\begin{tabular}{l ccc | cccc | c}
+\toprule
+\multirow{2}{*}{\textbf{Method}} & \multicolumn{3}{c|}{\textbf{Single-Hop QA}} & \multicolumn{4}{c|}{\textbf{Multi-Hop QA}} & \multirow{2}{*}{\textbf{Avg.}} \\
+& NQ$^\dagger$ & TriviaQA$^\star$ & PopQA$^\star$ & HotpotQA$^\dagger$ & 2Wiki$^\star$ & MuSiQue$^\star$ & Bamboogle$^\star$ & \\
+\midrule
+\multicolumn{9}{l}{\textit{Qwen2.5-7B-Instruct}} \\
+Qwen2.5$^*$ & 11.6 & 35.6 & 1.20 & 16.4 & 22.2 & 4.80 & 14.4 & 15.2 \\
+CoT$^*$ & 12.8 & 35.6 & 3.80 & 16.2 & 22.6 & 6.60 & 24.0 & 17.4 \\
+RAG$^*$ & 27.4 & 58.2 & 17.8 & 25.8 & 23.2 & 9.40 & 16.8 & 25.5 \\
+Search-o1$^*$ & 19.4 & 40.6 & 11.4 & 17.0 & 27.0 & 8.60 & 30.4 & 22.1 \\ 
+R1-Instruct & 21.0 & 44.9 & 17.1 & 20.8 & 27.5 & 6.00 & 19.2 & 22.4 \\
+Search-R1 & 39.3 & 61.0 & 39.7 & 37.0 & 40.1 & 14.6 & 36.8 & 38.5 \\
+ZeroSearch & \colorbox{blue!15}{43.6} & 61.8 & 51.5 & 34.6 & 35.2 & 18.4 & 27.8 & 39.1 \\
+StepSearch & - & - & - & \colorbox{blue!15}{38.6} & 36.6 & \colorbox{red!25}{22.6} & 40.0 & - \\
+EvolveR & 43.5 & \colorbox{red!25}{63.4} & \colorbox{blue!15}{44.6} & 38.2 & \colorbox{red!25}{42.0} & 15.6 & \colorbox{blue!15}{54.4} & \colorbox{blue!15}{43.1} \\\midrule
+\method{} & \colorbox{red!25}{45.9} & \colorbox{blue!15}{63.3} & \colorbox{red!25}{45.9} & \colorbox{red!25}{43.2} & \colorbox{blue!15}{40.3} & \colorbox{blue!15}{20.2} & \colorbox{red!25}{73.8} & \colorbox{red!25}{47.1} \\
+\bottomrule
+\end{tabular}
+\vspace{-1.5em}
+\end{table*}
+
+We evaluate \method{} on nine challenging benchmarks for LLM agents: ALFWorld, WebShop, and seven search-augmented QA tasks. Our experiments address the following questions: 1) How does \method{} compare to state-of-the-art methods? 2) What is the contribution of each component? 3) How does the skill library evolve during training? 4) Does skills accelerate model convergence?
+
+\subsection{Experimental Setup}
+
+\noindent \textbf{Environments.}
+ALFWorld \cite{shridharalfworld} is a text-based game aligned with the ALFRED embodied AI benchmark. Agents must complete household tasks by navigating and interacting with objects through text commands. 
+WebShop \cite{yao2022webshop} simulates web shopping. Agents navigate a realistic web interface to find and purchase products matching user specifications.  In addition, we also evaluate the performance of \method{} on search-augmented QA tasks, including single-hop QA datasets (NQ~\cite{kwiatkowski2019natural}, TriviaQA~\cite{joshi2017triviaqa}, and PopQA~\cite{mallen2023not}) and multi-hop QA datasets (HotpotQA~\cite{yang2018hotpotqa}, 2Wiki~\cite{ho2020constructing}, MuSiQue~\cite{trivedi2022musique}, and Bamboogle~\cite{press2023measuring}).
+
+% \paragraph{Baselines.} We compare \method{} against three types of methods. 1) (1) Closed-source LLMs: GPT-4o~\cite{openai2024gpt4o} and Gemini-2.5-Pro~\cite{comanici2025gemini}. 2) Prompt-based agentic or memory-based methods, including ReAct \cite{yao2022react}, Reflexion \cite{shinn2023reflexion}, Mem0~\cite{chhikara2025mem0}, ExpeL~\cite{zhao2024expel}, MemP~\cite{fang2025memp}. 3) RL-based methods, including PPO~\cite{schulman2017proximal}, RLOO~\cite{ahmadian2024back} and GRPO~\cite{shao2024deepseekmath}. 4) Memory-augmented RL-based methods, including EvolveR~\cite{wu2025evolver}, MemRL~\cite{zhang2026memrl} and Mem0+GRPO.
+\noindent \textbf{Baselines.} We compare \method{} against four categories of competitive methods. First, we include closed-source LLMs, specifically GPT-4o~\cite{openai2024gpt4o} and Gemini-2.5-Pro~\cite{comanici2025gemini}, which represent the state-of-the-art in general-purpose reasoning and instruction following. Second, we evaluate prompt-based agentic or memory-based methods, including ReAct~\cite{yao2022react} and Reflexion~\cite{shinn2023reflexion}, which rely on in-context prompting for multi-step reasoning, as well as Mem0~\cite{chhikara2025mem0}, ExpeL~\cite{zhao2024expel}, and MemP~\cite{fang2025memp}, which utilize external memory or experience pools to guide behavior without parameter updates. Third, we consider RL-based methods, including group-based online RL algorithms such as RLOO~\cite{ahmadian2024back} and GRPO~\cite{shao2024deepseekmath} that optimize policies via advantage estimation over trajectory groups. Finally, we compare against memory-augmented RL-based methods, such as EvolveR~\cite{wu2025evolver}, MemRL~\cite{zhang2026memrl}, and the combination of Mem0+GRPO and SimpleMem~\cite{liu2026simplemem}+GRPO, which integrate persistent memory mechanisms directly into the reinforcement learning optimization process to handle long-term dependencies.
+For search-augmented QA, we compare \method{} with R1-Instruct, Search-o1~\cite{li2025search}, Search-R1~\cite{jin2025search}, ZeroSearch~\cite{sun2025zerosearch}, and StepSearch~\cite{zheng2025stepsearch}.
+% PPO~\cite{schulman2017proximal}, a standard actor-critic framework, and 
+
+
+\noindent \textbf{Implementation Details.} We use Qwen2.5-7B-Instruct~\cite{bai2023qwen} as our base model and OpenAI o3~\cite{openai2025o3} as the teacher model for skill distillation and SFT data generation. For RL training, we use GRPO with learning rate $1 \times 10^{-6}$, batch size 16, group size 8, and 4 gradient accumulation steps. We set $K=6$ for task-specific skill retrieval and $\delta=0.4$ for the collection of failed trajectories. For more detailed information on training hyperparameters, please see Appendix~\ref{app:hyp}.
+
+\subsection{Main Results}
+
+\noindent \textbf{Comparison with Baselines.} 
+We compare \method{} with baseline methods across two benchmarks as shown in Table~\ref{tab:performance}. Our method consistently outperforms all baselines, with key observations as follows:
+
+1) \emph{Significant Gains over Prompt-based Methods}. \method{} achieves a 89.9\% success rate on ALFWorld and 72.7\% on WebShop, outperforming the best prompt-based baselines by a large margin. This gap suggests that while in-context learning can leverage past experiences, it often fails to distill actionable knowledge from verbose trajectories or fundamentally adapt the agent's policy.
+
+2) \emph{Superiority over Vanilla RL}. RL training brings substantial gains, yet \method{} consistently surpasses standard RL baselines. Compared to PPO, RLOO, and GRPO, \method{} achieves the best overall performance. Notably, since \method{} utilizes GRPO as its base optimizer, the 12.3\% absolute improvement over GRPO on ALFWorld (from 77.6\% to 89.9\%) is directly attributable to our skill-augmentation mechanism rather than algorithmic variance. In complex subtasks like \textit{Cool} and \textit{Pick2}, \method{} outperforms GRPO by 23.0\% and 22.8\% respectively, proving that structured skill priors effectively accelerate and enhance policy learning in sparse-reward environments.
+
+3) \emph{Advantage over Memory-Augmented RL.} \method{} substantially outperforms existing memory-augmented RL frameworks, which differ in how they manage and update experience. MemRL, which uses RL solely to update its memory bank while keeping the policy frozen, fails to adapt to complex environments, yielding only 21.4\% on ALFWorld. EvolveR, which jointly updates the policy and memory bank, shows improvement (43.8\%) but remains limited by its reliance on rough trajectory storage. To provide a more competitive baseline, we implemented Mem0+GRPO, which combines a state-of-the-art prompt-based memory mechanism with an optimized policy model. While this hybrid approach improves performance to 54.7\% on ALFWorld and 37.5\% on WebShop, it still trails \method{} by a wide margin (about 35.2\% absolute success rate gap). These results validate our core hypothesis: effective experience transfer requires high-level skill abstraction and a co-evolving library rather than simple trajectory compression or prompt-based memory retrieval.
+
+\textbf{Comparison with Closed-Source Models.} Remarkably, \method{} with Qwen2.5-7B-Instruct significantly outperforms much larger closed-source models, as shown in Table~\ref{tab:performance}. On ALFWorld, our method exceeds GPT-4o~\cite{openai2024gpt4o} by 41.9\% and Gemini-2.5-Pro~\cite{comanici2025gemini} by 29.6\%. This demonstrates that effective skill learning can compensate for model scale, enabling smaller open-source models to achieve superior task performance through structured experiential knowledge.
+
+\textbf{Performance on Search-Augmented QA.} As shown in Table~\ref{tab:performance_search}, \method{} achieves a state-of-the-art average score of 47.1\%, significantly outperforming Search-R1 (38.5\%) abd EvolveR (43.1\%). Key observations include: 1) Superior multi-hop Reasoning: \method{} excels in complex tasks like Bamboogle, surpassing EvolveR by 19.4\%. This demonstrates that hierarchical skills effectively guide multi-step information synthesis. 2) Strong generalization: Despite being trained on limited datasets (NQ, HotpotQA), \method{} maintains competitive performance on OOD tasks like TriviaQA and 2Wiki, confirming that distilled search strategies are task-agnostic.
+
+\subsection{Analysis}
+In this section, we provide detailed analysis of each module's effectiveness and the skill evolution dynamics. 
+
+\textbf{Ablation Studies.} We conduct ablation experiments to evaluate each component's contribution, with results in Table~\ref{tab:ablation}. According to the results: (1) Removing hierarchical structure (i.e., task-specific skills only) decreases performance by 13.1\% on ALFWorld and 11.3\% on WebShop, indicating universal strategic principles provide essential foundational guidance. (2) Replacing the skill library with raw trajectories causes the largest degradation (up to 25\%), which directly supports our motivation that abstraction is superior to memorization. Raw experiences introduce significant redundancy and noise that hinder effective knowledge transfer. (3) Cold-start SFT proves critical (20\% drop without it), confirming that the base model requires an initial explicit demonstration phase to learn how to adaptively retrieve and utilize the abstracted skills before entering the RL stage. (4) Dynamic evolution contributes a 5.5\% improvement by ensuring the skill library is a dynamic component rather than a static database. This co-evolution allows the agent to iteratively refine its internal policy by addressing emergent failure modes that were not covered by the initial skill set.
+
+\begin{table}[t]
+\centering
+\footnotesize
+\caption{Ablation study results. We report average success rate (\%) on ALFWorld and WebShop.}
+\label{tab:ablation}
+\resizebox{0.45\textwidth}{!}{
+\begin{tabular}{lcc}
+\toprule
+\textbf{Method} & \textbf{ALFWorld} & \textbf{WebShop} \\
+\midrule
+\method{}  & \textbf{89.9} & \textbf{72.7} \\
+\midrule
+\multicolumn{3}{l}{\textit{Skill Library Ablations}} \\
+\quad w/o Hierarchical Structure & 76.8 & 61.4 \\
+\quad w/o Skill Library (Raw Trajectories) & 61.7 & 50.2 \\
+\midrule
+\multicolumn{3}{l}{\textit{Training Pipeline Ablations}} \\
+\quad w/o Cold-Start SFT & 65.2 & 46.5 \\
+\quad w/o Dynamic Evolution & 84.4 & 70.3 \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+
+
+\noindent \textbf{Per-Task Analysis on ALFWorld.} \Cref{tab:performance} breaks down ALFWorld performance by task type. The largest gains are on PickTwo (+23\%), Cool (+22\%) and Heat (+15\%), which are among the most challenging tasks requiring multi-step planning and state tracking. Task-specific skills are particularly valuable here, capturing strategies like ``when picking two objects, verify the first is secured before searching for the second'' that address common failure modes.
+
+\noindent \textbf{Skill Library Growth.} \Cref{fig:skill_evolution} shows how the skill library evolves during training. The initial skill library contains 55 skills (12 general, 43 task-specific). Through dynamic evolution, this grows to 100 skills by the end of training (Step 150). The growth is predominantly driven by task-specific skills (increasing from 43 to 80), while general skills show a steadier increase (from 12 to 20). Notably, we observe a balanced expansion across various task categories, ensuring the agent develops specialized expertise for each environment rollout. This overall expansion reflects the agent's increasing ability to refine its repertoire and tackle diverse scenarios within specific task types.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.45\textwidth]{asset/skill_mixed_chart.pdf}
+    \caption{Evolution of skill library size during RL training. Dynamic skill evolution adds skills at validation checkpoints.}
+    \label{fig:skill_evolution}
+    \vspace{-1em}
+\end{figure}
+\begin{figure*}[t] 
+    \centering
+    \begin{minipage}{0.49\linewidth}
+        \centering
+        \includegraphics[width=\textwidth]{asset/prompt_length_comparison.png}
+        \vspace{-1.5em}
+        \caption{Comparison of prompt length (tokens) between raw memory retrieval and our distilled skill abstraction. \method{} consistently reduces context overhead while maintaining reasoning utility.}
+        \label{fig:prompt_len}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.49\linewidth}
+        \centering
+        \includegraphics[width=\textwidth]{asset/success_rate_curve.png}
+        \vspace{-1em}
+        \caption{Success rate on ALFWorld validation set. The recursive skill evolution significantly accelerates convergence and enhances the overall performance ceiling.}
+        \label{fig:sucess_rate}
+    \end{minipage}
+    \vspace{-1.5em}
+\end{figure*}
+
+
+\noindent \textbf{Context Efficiency.} 
+To evaluate the impact of skill abstraction on inference overhead, we compare the average prompt length of \method{} with a memory-augmented baseline using raw trajectories (Qwen2.5-7B with Raw Memory) in Figure~\ref{fig:prompt_len}. 
+The results reveal that while the raw memory approach suffers from a high and fluctuating token footprint (averaging $\sim$1,450 tokens), \method{} maintains a significantly leaner prompt (averaging $<$1,300 tokens), achieving approximately a 10.3\% reduction in context length. 
+This efficiency stems from our distillation mechanism, which compresses verbose environment interactions into high-density, actionable skills. 
+Notably, \method{} requires less context than the memory-based baseline to achieve superior performance, demonstrating that skill abstraction effectively mitigates the context-bloat problem common in traditional memory-based agents.
+
+\noindent \textbf{Evolution Dynamics.} 
+Figure~\ref{fig:sucess_rate} illustrates the reinforcement learning training curves with and without the recursive skill evolution mechanism. 
+We observe that while \method{} without evolution shows steady improvement, \method{} with skill evolution exhibits a notably higher learning rate and superior asymptotic performance. 
+Specifically, \method{} achieves a success rate of over 80\% within 60 training steps, whereas the baseline requires approximately 90 steps to reach a lower peak. 
+This acceleration in convergence suggests that the dynamic introduction of new skills and refinement of existing ones effectively provide the agent with timely strategic guidance to overcome local optima. 
+Furthermore, the higher performance ceiling validates that the co-evolution of the skill library and the policy allows the agent to adapt to increasingly complex task scenarios that static memory methods fail to resolve.
+
+\noindent \textbf{Qualitative Analysis.}
+To further investigate how \method{} utilizes the learned knowledge, we visualize the reasoning process on ALFWorld and WebShop in Figure~\ref{fig:case}. 
+The case studies demonstrate that our trained agent can effectively retrieve and execute relevant skills from the \skillbank{} to guide its decision-making. 
+For instance, in the WebShop task, the agent invokes general strategies like \textit{``Prioritize Core Keywords''} alongside task-specific heuristics \textit{``Focus Key Query''} to ensure the product meets all constraints within a limited budget. 
+Similarly, in ALFWorld, the agent coordinates hierarchical skills, i.e., using \textit{``Progressive Goal Decomposition''} for high-level planning and \textit{``No Appliance Before Object''} to avoid common logical pitfalls. 
+This seamless integration of general and specific skills confirms that the agent does not merely memorize trajectories, but rather develops a structured understanding of task logic, allowing for more robust and efficient problem-solving.
+
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.95\textwidth]{asset/case.pdf}
+    \caption{Case studies of \method{} on WebShop and ALFWorld. The examples illustrate how the agent adaptively retrieves and integrates \textcolor[RGB]{255,128,0}{General Skills} and \textcolor[RGB]{0,128,255}{Task-Specific Skills} within its reasoning process to achieve precise and efficient task execution.}
+    \label{fig:case}
+    \vspace{-0.5em}
+\end{figure*}
+

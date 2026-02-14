@@ -1,0 +1,54 @@
+\clearpage
+\subsection*{A4: Multi-Agent Coding}
+\label{appendix:app:optiguide}
+
+
+\begin{figure*}[h]
+    \centering
+    \includegraphics[width=0.8\linewidth]{figures/app_optiguide.pdf}
+    \caption{Our re-implementation of \textit{OptiGuide} with \libName streamlining agents' interactions. The Commander receives user questions (e.g., What if we prohibit shipping from supplier 1 to roastery 2?) and coordinates with the Writer and Safeguard. The Writer crafts the code and interpretation, the Safeguard ensures safety (e.g., not leaking information, no malicious code), and the Commander executes the code. If issues arise, the process can repeat until resolved. Shaded circles represent steps that may be repeated multiple times.}
+    \label{fig:optiguide}
+\end{figure*}
+
+
+\paragraph{Detailed Workflow.}
+The workflow can be described as follows.
+The end user initiates the interaction by posing a question, such as ``What if we prohibit shipping from supplier 1 to roastery 2?", marked by \circled{1} to the Commander agent. The Commander manages and coordinates with two LLM-based assistant agents: the Writer and the Safeguard. Apart from directing the flow of communication, the Commander has the responsibility of handling memory tied to user interactions. This capability enables the Commander to capture and retain valuable context regarding the user's questions and their corresponding responses. Such memory is subsequently shared across the system, empowering the other agents with context from prior user interactions and ensuring more informed and relevant responses.
+
+In this orchestrated process, the Writer, who combines the functions of a ``Coder" and an ``Interpreter" as defined in~\cite{li2023large}, will craft code and also interpret execution output logs. For instance, during code writing (\circled{2} and \shadeCircled{3}), the Writer may craft code ``model.addConstr(x[`supplier1', `roastery2'] == 0, `prohibit')" to add an additional constraint to answer the user's question. 
+
+After receiving the code, the Commander will communicate with the Safeguard to screen the code and ascertain its safety (\shadeCircled{4}); once the code obtains the Safeguard's clearance, marked by \shadeCircled{5}, the Commander will use external tools (e.g., Python) to execute the code and request the Writer to interpret the execution results for the user's question (\shadeCircled{6} and \circled{7}). For instance, the writer may say ``if we prohibit shipping from supplier 1 to roastery 2, the total cost would increase by 10.5\%." Bringing this intricate process full circle, the Commander furnishes the user with the concluding answer (\circled{8}). 
+
+If at a point there is an exception - either a security red flag raised by Safeguard (in \shadeCircled{5}) or code execution failures within Commander, the Commander redirects the issue back to the Writer with essential information in logs (\shadeCircled{6}).
+So, the process from \shadeCircled{3} to \shadeCircled{6} might be repeated multiple times, until each user query receives a thorough and satisfactory resolution or until the timeout. This entire complex workflow of multi-agent interaction is elegantly managed via \libName.
+
+
+The core workflow code for OptiGuide was reduced from over 430 lines to 100 lines using \libName, leading to significant productivity improvement. The new agents are customizable, conversable, and can autonomously manage their chat memories. This consolidation allows the coder and interpreter roles to merge into a single ``Writer" agent, resulting in a clean, concise, and intuitive implementation that is easier to maintain.
+
+\paragraph{Manual Evaluation Comparing ChatGPT + Code Interpreter and \libName-based OptiGuide.}
+ChatGPT + Code Interpreter is unable to execute code with private or customized dependencies (e.g., Gurobi), which means users need to have engineering expertise to manually handle multiple steps, disrupting the workflow and increasing the chance for mistakes. If users lack access or expertise, the burden falls on supporting engineers, increasing their on-call time.
+
+We carried out a user study that juxtaposed OpenAI's ChatGPT coupled with a Code Interpreter against \libName-based OptiGuide. The study focused on a coffee supply chain scenario, and an expert Python programmer with proficiency in Gurobi participated in the test. We evaluated both systems based on 10 randomly selected questions, measuring time and accuracy. While both systems answered 8 questions correctly, the Code Interpreter was significantly slower than OptiGuide because the former requires more manual intervention. On average, users needed to spend 4 minutes and 35 seconds to solve problems with the Code Interpreter, with a standard deviation of approximately 2.5 minutes. In contrast, OptiGuide's average problem-solving time was around 1.5 minutes, most of which was spent waiting for responses from the GPT-4 model. This indicates a 3x saving on the user's time with \libName-based OptiGuide.
+
+While using ChatGPT + Code Interpreter, users had to read through the code and instructions to know where to paste the code snippets. Additionally, running the code involves downloading it and executing it in a terminal, a process that was both time-consuming and prone to errors. The response time from the Code Interpreter is also slower, as it generates lots of tokens to read the code, read the variables line-by-line, perform chains of thought analysis, and then produce the final answer code. In contrast, \libName integrates multiple agents to reduce user interactions by 3 - 5 times on average as reported in Table~\ref{tab:opti_improve}, where we evaluated our system with 2000 questions across five OptiGuide applications and measured how many prompts the user needs to type.
+
+\begin{table}[h!]
+    \centering
+     \caption{Manual effort saved with OptiGuide (W/ GPT-4) while preserving the same coding performance is shown in the data below. The data include both the mean and standard deviations (indicated in parentheses).}
+    \begin{tabular}{l|ccccc}
+    \toprule
+Dataset & netflow  & facility & tsp & coffee & diet \\
+\midrule
+Saving Ratio &  3.14x (0.65) &  3.14x (0.64) & 4.88x (1.71) &  3.38x (0.86) & 3.03x (0.31)\\
+\bottomrule
+    \end{tabular}
+    \label{tab:opti_improve}
+\end{table}
+
+Table~\ref{tab:optiguide_gpt_complex} and \ref{tab:optiguide_complex} provide a detailed comparison of user experience with ChatGPT+Code Interpreter and \libName-based OptiGuide. ChatGPT+Code Interpreter is unable to run code with private packages or customized dependencies (such as Gurobi); as a consequence, ChatGPT+Code Interpreter requires users to have engineering expertise and to manually handle multiple steps, disrupting the workflow and increasing the chance for mistakes. If customers lack access or expertise, the burden falls on supporting engineers, increasing their on-call time. In contrast, the automated chat by \libName is more streamlined and autonomous, integrating multiple agents to solve problems and address concerns. This results in a 5x reduction in interaction and fundamentally changes the overall usability of the system. A stable workflow can be potentially reused for other applications or to compose a larger one.
+
+
+\paragraph{Takeaways:} 
+The implementation of the multi-agent design with \libName{} in the OptiGuide application offers several advantages. It simplifies the Python implementation and fosters a mixture of collaborative and adversarial problem-solving environments, with the Commander and Writer working together while the Safeguard acts as a virtual adversarial checker. This setup allows for proper memory management, as the Commander maintains memory related to user interactions, providing context-aware decision-making. Additionally, role-playing ensures that each agent's memory remains isolated, preventing shortcuts and hallucinations
+
+

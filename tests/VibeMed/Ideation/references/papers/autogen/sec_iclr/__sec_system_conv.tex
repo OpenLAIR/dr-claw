@@ -1,0 +1,56 @@
+\subsection{Conversation Programming}
+\label{sec:autogen_conv}
+
+\begin{figure}[tb]
+\centering
+\includegraphics[width = 0.95\hsize]{figures/autogen_all.pdf}
+\caption{Illustration of how to use \libName to program a multi-agent conversation. The top sub-figure illustrates the built-in agents provided by \libName, which have unified conversation interfaces and can be customized. The middle sub-figure shows an example of using \libName to develop a two-agent system with a custom reply function. The bottom sub-figure illustrates the resulting automated agent chat from the two-agent system during program execution. 
+}
+\label{fig:conv_programming}
+\vspace{-5mm}
+\end{figure}
+
+As a solution to the above problem, \libName utilizes {\em conversation programming}, a paradigm that considers two concepts: the first is {\em computation} -- the actions agents take to compute their response in a multi-agent conversation. And the second is {\em control flow} -- the sequence (or conditions) under which these computations happen.
+As we will show in the applications section, the ability to program these helps implement many flexible multi-agent conversation patterns. In \libName, these computations are conversation-centric. An agent takes actions relevant to the conversations it is involved in and its actions result in message passing for consequent conversations (unless a termination condition is satisfied). 
+Similarly, control flow is conversation-driven -- the participating agents' decisions on which agents to send messages to and the procedure of computation %the content of the messages 
+are functions of the inter-agent conversation.
+This paradigm helps one to reason intuitively about a complex workflow as agent action taking and conversation message-passing between agents. 
+
+Figure~\ref{fig:conv_programming} provides a simple illustration. The bottom sub-figure shows how
+individual agents perform their role-specific, conversation-centric computations to generate responses (e.g., via LLM inference calls and code execution). The task progresses through conversations displayed in the dialog box. The middle sub-figure demonstrates a conversation-based control flow. When the assistant receives a message, the user proxy agent typically sends the human input as a reply. If there is no input, it executes any code in the assistant's message instead. 
+
+
+
+
+\libName features the following design patterns to facilitate conversation programming:
+\begin{enumerate}[leftmargin=*]
+    \vspace{-1mm}
+    \setlength\itemsep{-0.1em}
+    \item \textbf{Unified interfaces and auto-reply mechanisms for automated agent chat.}  
+   Agents in \libName have unified conversation interfaces for performing the corresponding conversation-centric computation, including a \texttt{send/receive} function for sending/receiving messages and a \texttt{generate\_reply} function for taking actions and generating a response based on the received message.    
+\libName also introduces and by default adopts an \textbf{agent auto-reply} mechanism to realize conversation-driven control:
+Once an agent receives a message from another agent, it automatically invokes \texttt{generate\_reply} and sends the reply back to the sender unless a termination condition is satisfied. 
+\libName provides built-in reply functions based on LLM inference, code or function execution, or human input. One can also register custom reply functions to customize the behavior pattern of an agent, e.g., chatting with another agent before replying to the sender agent. Under this mechanism, once the reply functions are registered, and the conversation is initialized, the conversation flow is naturally induced, and thus the agent conversation proceeds naturally without any extra control plane, i.e., a special module that controls the conversation flow. 
+For example, with the developer code in the blue-shaded area (marked ``Developer Code") of Figure~\ref{fig:conv_programming}, one can readily trigger the conversation among the agents, and the conversation would proceed automatically, as shown in the dialog box in the grey shaded area (marked ``Program Execution") of Figure~\ref{fig:conv_programming}. 
+The auto-reply mechanism provides a decentralized, modular, and unified way to define the workflow.
+
+\item \textbf{Control by fusion of programming and natural language.} \libName allows the usage of programming  and natural language in various control flow management patterns:
+1) \textbf{Natural-language control via LLMs.} 
+In \libName, one can control the conversation flow by prompting the LLM-backed agents with natural language. 
+For instance, the default system message of the built-in \AssistantAgent in \libName uses natural language to instruct the agent to fix errors and generate code again if the previous result indicates there are errors. It also guides the agent to confine the LLM output to certain structures, making it easier for other tool-backed agents to consume. For example, instructing the agent to reply with ``TERMINATE" when all tasks are completed to terminate the program. More concrete examples of natural language controls can be found in Appendix~\ref{append_sys_msg}.  2) \textbf{Programming-language control.} In \libName, Python code can be used to specify the termination condition, human input mode, and tool execution logic, 
+e.g., the max number of auto replies. 
+    One can also register programmed auto-reply functions to control the conversation flow with Python code, as shown in the code block identified as ``Conversation-Driven
+Control Flow" in Figure~\ref{fig:conv_programming}. 
+3) \textbf{Control transition between natural and programming language.}  \libName also supports flexible control transition between natural and programming language. 
+One can achieve transition from code to natural-language control by invoking an LLM inference containing certain control logic in a customized reply function; or transition from natural language to code control via LLM-proposed function calls~\cite{funccall}.
+
+
+\end{enumerate}
+ 
+In the conversation programming paradigm, one can realize multi-agent conversations of diverse patterns.
+In addition to static conversation with predefined flow, \libName also supports dynamic conversation flows with multiple agents. 
+\libName provides two general ways to achieve this: 1) Customized \texttt{generate\_reply} function: within the customized \texttt{generate\_reply} function, one agent can hold the current conversation while invoking conversations with other agents depending on the content of the current message and context.
+2) Function calls:  In this approach, LLM decides whether or not to call a particular function depending on the conversation status. By messaging additional agents in the called functions, the LLM can drive dynamic multi-agent conversation. 
+In addition, \libName supports more complex dynamic group chat via built-in \groupchatmanager, which can dynamically select the next speaker and then broadcast its response to other agents. We elaborate on this feature and its application in Section~\ref{sec:app:groupchat}.  We provide implemented working systems to showcase all these different patterns, with some of them visualized in Figure~\ref{fig:app_summary}. 
+
+

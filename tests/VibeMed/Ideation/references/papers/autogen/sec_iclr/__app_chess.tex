@@ -1,0 +1,14 @@
+
+\subsection*{A6: Conversational Chess}
+
+ 
+Using \libName, we developed Conversational Chess, a natural language interface game shown in the last sub-figure of Figure~\ref{fig:app_summary}.
+ It features built-in agents for players, which can be human or LLM, and a third-party board agent to provide information and validate moves based on standard rules.
+
+With \libName, we enabled two essential features: (1) Natural, flexible, and engaging game dynamics, enabled by the customizable agent design in \libName. Conversational Chess supports a range of game-play patterns, including AI-AI, AI-human, and human-human, with seamless switching between these modes during a single game. An illustrative example of these entertaining game dynamics can be found in Figure~\ref{fig:conversational-chess-example}, Appendix~\ref{appendix:app:chess}. (2) Grounding, which is a crucial aspect to maintain game integrity. During gameplay, the board agent checks each proposed move for legality; if a move is invalid, the agent responds with an error, prompting the player agent to re-propose a legal move before continuing. This process ensures that only valid moves are played and helps maintain a consistent gaming experience.
+As an ablation study, we removed the board agent and instead only relied on a relevant prompt \textit{``you should make sure both you and the opponent are making
+legal moves"} to ground their move. 
+The results highlighted that without the board agent, illegitimate moves caused game disruptions. 
+The modular design offered flexibility, allowing swift adjustments to the board agent in response to evolving game rules or varying chess rule variants. A comprehensive demonstration of this ablation study is in Appendix~\ref{appendix:app:chess}.
+
+

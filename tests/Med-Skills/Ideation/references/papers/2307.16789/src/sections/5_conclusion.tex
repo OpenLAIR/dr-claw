@@ -1,0 +1,17 @@
+\section{Conclusion}
+In this work, we introduce how to elicit the tool-use capabilities within LLMs. We first present an instruction tuning dataset, \ourdata, which covers $16$k+ real-world APIs and various practical use-case scenarios including both single-tool and multi-tool tasks. 
+The construction of \ourdata purely uses ChatGPT and requires minimal human supervision.
+Moreover, we propose \dfs to reinforce the planning and reasoning ability of LLMs, enabling them to navigate through reasoning paths strategically. 
+For efficient evaluation of tool learning, we devise an automatic evaluator ToolEval.
+By fine-tuning LLaMA on \ourdata, the obtained model \ourmodel matches the performance of ChatGPT and exhibits remarkable generalization ability to unseen APIs.
+Besides, we develop a neural API retriever to recommend relevant APIs for each instruction. The retriever can be integrated with \ourmodel as a more automated tool-use pipeline.
+In the experiments, we demonstrate the generalization ability of our pipeline to out-of-distribution domains.
+In general, this work paves the way for future research in the intersection of instruction tuning and tool use for LLMs.
+
+
+% \section*{Acknowledgements}
+% The contributions are listed as follows: (1) API collection: Shihao Liang, Sihan Zhao, Kunlun Zhu, Yujia Qin; (2) instruction generation: Lan Yan, Kunlun Zhu, Shihao Liang, Yujia Qin; (3) solution path annotation: Yining Ye, Shihao Liang, Runchu Tian, Yujia Qin, Xin Cong; (4) model implementation: Shihao Liang, Yujia Qin, Kunlun Zhu, Yifan Wu; (5) system demonstration: Xiangru Tang, Bill Qian. 
+% Yujia Qin led the project, designed the methodology and experiments, and wrote the paper.
+% Yankai Lin, Mark Gerstein, Dahai Li, Zhiyuan Liu, Maosong Sun, and Jie Zhou advised the project. Yankai Lin, Xin Cong, Ruobing Xie proofread the whole paper. All authors participated in the discussion.
+
+% The authors would like to thank Yifan Wu, Si Sun, Zheni Zeng, Chen Zhang, Yu Gu, Chenfei Yuan, Junxi Yan, Shizuo Tian, Mingxi Yan, Jason Phang, Chen Qian, and Weize Chen for their valuable feedback, discussion, and participation in this project.

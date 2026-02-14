@@ -1,0 +1,192 @@
+\section{Introduction}
+
+% agentic approach is powerful
+
+% how to multi agent ?
+
+% its promising and feasible, heres why...
+
+
+Large language models (LLMs) are becoming a crucial building block in developing powerful {\em agents} that utilize LLMs for reasoning, tool usage, and adapting to new observations~\cite{yao2022react,xi2023rise,wang2023survey} in many real-world tasks.
+% \jy{better put survey here? like 
+% \cite{xi2023rise,wang2023survey}}.
+% robot lawyers (DoNotPay),
+% Advanced Data Analytics,
+% Bing Chat,
+% Bard etc.
+% These applications, however, typically require that the developers build handcrafted pipelines %(e.g., via LangChain or Semantic Kernel)
+% or create a single agent that can interleave reasoning, actions, and observations~\cite{yao2022react}.
+% Either case requires management of 
+% user input,
+% prompts,
+% multiple LLM inference calls and outputs,
+% tool use and memory.
+% % 
+% To propose a third, even powerful approach,
+Given the expanding tasks that could benefit from LLMs and the growing task complexity, 
+% limitation of a typical single agent on navigating complex tasks%regarding diversity and adaptability
+% \ahmed{is that about diversity and adaptability or the ability to solve more complex tasks; single LLM call is fast but not accurate. multi-agent is more deliberate} \qw{revised to ``navigating complex tasks"}, \cw{revised again}
+% \ryen{This is a bit of a jump. Why can't single LLMs handle these expanding tasks with all their extensive capabilities?} \cw{and the limitation of a single agent in terms of diversity and adaptability,} \qw{Added.}
+% and the intrinsic weaknesses of using a single agent~\cite{liang-arxiv2023,du2023improving,bubeck2023sparks}, 
+an intuitive approach to scale up the power of agents is to use multiple agents that cooperate.
+% \cw{: on the one hand, LLMs are known to be stochastic and require guardrails; on the other hand, they are effective at criticizing.} 
+Prior work suggests that multiple agents can help encourage divergent thinking~\cite{liang-arxiv2023}, improve factuality and reasoning~\cite{du2023improving}, and provide guardrails~\cite{wu2023empirical}.
+% \gb{One reason is that while models can hallucinate and go off the rails, they are also effective at criticizing, providing essential guardrails for generations—highlighting the fundamental role of a critic in preventing generation errors.}
+In light of the intuition and early evidence of promise, it is intriguing to ask the following question: %Is this multi-agent approach generally feasible and useful, and 
+{\em how} can we facilitate the development of LLM applications that could span a broad spectrum of domains and complexities based on the multi-agent approach?
+% {\em Why} is this approach generally feasible, and {\em how} can we
+% facilitate the development of more applications based on this approach?
+
+% Despite the application diversity, the development of different applications often necessitates common functionalities, such as orchestrating multiple LLM agents, managing the interleaved LLM generation and tool execution, as well as integrating human inputs. Addressing these shared requirements can greatly facilitate the development of LLM applications broadly, and we have the insight that it can be achieved through a multi-agent conversation framework. 
+
+Our insight is to use \emph{multi-agent conversations} to achieve it. 
+There are at least three reasons confirming its general feasibility and utility thanks to recent advances in LLMs: First, because chat-optimized LLMs (e.g., GPT-4) show the ability to incorporate feedback,  
+LLM-agents can cooperate through {\em conversations} with each other or human(s), e.g., a dialog where agents provide and seek reasoning, observations, critiques, and validation. Second, because a single LLM can exhibit a broad range of capabilities (especially when configured with the correct prompt and inference settings), conversations between differently-configured agents can help 
+combine
+these broad LLM capabilities in a modular and complementary manner. 
+{Third, LLMs have demonstrated ability to solve complex tasks when broken into simpler subtasks. Multi-agent conversations can enable this partitioning and integration in an intuitive manner.}
+% \db{In paragraph 2, I think we should call out some of the different patterns that seem important.  First, having different personas/experts/agents allows a combination of divergent thinking (as you refer to in the first paragraph).  That is one key pattern.  Second, the generator/critic pattern seems important.  Third, the notion of hierarchy (task partitioning and integration) seems important.  I'd name these precisely and call them out.  The point to make is that we don't know what patterns work best, these are three patterns that seem foundational and there may be others, but the Autogen tools should accommodate all of the important ones.
+% }
+
+
+
+% Prior work \qw{Prior multi-agent work?} has in fact shown to encourage divergent thinking~\cite{liang-arxiv2023} and improve factuality and reasoning~\cite{du2023improving}.
+% We believe that these reasons can be leveraged to build multi-agent workflows and make them work in an effective way to scale up the power of LLMs and enable the next generation of their applications.
+
+
+% --2--
+% there are some conceptual and systems attempts
+%  <list attempts>
+%  they have issue, including
+%  specialized for tasks that are hard to extend
+%  or conceptual frameworks that have no implementation
+% challenges when trying to faciliate dev of more apps on this approach:
+% Agent design: figuring out a design of an agent that is both general/reusable but also suitable for a multi agent collaboration
+% Agent communication paradigm: is how to create a simple, unified interface that can accommodate a variety of agents, various topologies, dynamic and static interactions, single- \& multi-turn dialogs, allow dev to program the control flow (in NL and PL)
+
+
+% --3--
+% we propose oss library autogen 
+% autogen addressed these challenges
+% 1. conversable agents
+% 2. 
+
+% \qw{The following paragraph is written based on the outline above.}
+
+%In fact, several very recent\footnote{Note for reviewers: As of September 23rd, 2023 (ICRL submission deadline), none of these prior multi-agent approaches have been published at peer-reviewed venues and most appeared online after May 2023.} works have leveraged multi-agent approaches including CAMEL~\cite{li2023camel}, MetaGPT~\cite{hong2023metagpt}, BabyAGI~\cite{babyagi}, Multi-agent debate~\cite{du2023improving}, CHATDEV~\cite{qian2023communicative}, and AgentVerse~\cite{chen2023agentverse}. However, these works either proposed task-specific solutions which make them hard to extend or they proposed general conceptual frameworks without effective agent implementation (see Table~\ref{tab:relevant_work_compare}). 
+
+% Despite the application diversity, the development of different applications often necessitates common functionalities, such as orchestrating multiple LLM calls, managing the interleaved LLM generation and tool execution, as well as integrating human inputs. Addressing these shared requirements can greatly facilitate the development of LLM applications broadly, and we have the insight that it can be achieved through a multi-agent conversation framework. 
+% We desire a multi-agent conversation framework with both implementation support and flexibility to satisfy different application needs.
+How can we leverage the above insights and support different applications with the common requirement of coordinating multiple agents, potentially backed by LLMs, humans, or tools exhibiting different capacities? %managing the interleaved LLM generation and tool execution, as well as integrating human inputs, 
+We desire a multi-agent conversation framework with generic abstraction and effective implementation that has the flexibility to satisfy different application needs.
+%support diverse applications in the future.
+%\gb{``to support ... future'' is redundant with first clause; meaning of ``effective'' is missing}
+%easy-to-extend. 
+%In order to facilitate development of new applications based on multi-agent approaches, addressing these problems is crucial. 
+Achieving this requires addressing two critical questions:
+% This problem is inherently challenging.
+% But there are several reasons that make this problem inherently challenging. 
+% There are several challenges when trying to facilitate the development of more applications on this approach. 
+% One significant challenge is related to agent design -- 
+(1) How can we design individual agents that are capable, reusable, customizable, and effective in multi-agent collaboration? (2) How can we develop a straightforward, unified interface that can accommodate a wide range of agent conversation patterns? %These questions exist because
+In practice, applications of varying complexities may need distinct sets of agents with specific capabilities, and may require different conversation patterns, such as single- or multi-turn dialogs, different human involvement modes, and static vs. dynamic conversation. Moreover, developers may prefer the flexibility to program agent interactions in natural language or code. Failing to adequately address these two questions would limit the framework's scope of applicability and generality.
+% a variety of agents, diverse agent conversation patterns, 
+%single- \& multi-turn dialogs, 
+% flexible human involvement patterns, etc., needed by different applications while giving developers the flexibility to program the conversations
+%control flow 
+% between agents in natural language or code?
+% \gb{q2 is long and convoluted. separate the essential and non essential using better sentence structure}
+%Answering these questions is not trivial.
+% \gb{please double check these two questions carefully}
+
+% \gb{add para break here?}
+While there is contemporaneous %\jy{contemporaneous?} 
+exploration of multi-agent approaches,\footnote{As of September 23rd, 2023, most prior multi-agent LLM approaches have not been published at peer-reviewed venues and only appeared online after May 2023. Hence, per the ICLR reviewer guide they should be considered as contemporaneous work.
+We refer to Appendix~\ref{sec:related_work} for a detailed discussion.}
+% we take a generalized multi-agent conversational approach with broader applicability.
+% our aim is to target a broader scope and applicability.%\gb{of generality $\rightarrow$ and generality}
+%\gb{text needs to say what will happen if these questions are not answered}
+% \gb{cut the last clause}
+% \db{At the end of paragraph 3, you say "our aim is to arget a broader scope and achieve greater generality".  I would not make this claim.  I would say what specific technical approach you are taking that is differentiated and then show in the paper why it achieves the goals you said in this sentence.}
+% \gb{remove para breask}
+\comment{
+\db{why will this paper win an award in 10 years?}
+\gb{One way to do this would be to establish that is the correct way to think about multi agent systems} \cw{+1. LLM-powered multi-agent systems.}
+Large Language Models (LLMs), like GPT-4, have demonstrated
+exceptional capabilities for reasoning, creativity, and deduction in many new AI applications, ranging from robot lawyers~\cite{donotpay},
+tools to assist with fundamental research~\cite{bran-arxiv2023},
+and numerous highly-capable chatbots (e.g., Bing Chat, ChatGPT+, Copilot, Bard). 
+Since single LLM calls lack ability to reflect, possess no working memory or scratch pad, and cannot act or perceive beyond the knowledge obtained from their training data~\cite{bubeck2023sparks}, augmenting language models with tools that facilitate perception and action (e.g., the plugin that enables ChatGPT+ to utilize fresh web pages from the internet~\cite{gptPlugin}) can significantly improve performance.
+
+Despite the success of this LLM-with-tools paradigm~\cite{qin2023tool}, these approaches typically utilize a single LLM agent.\ahmed{Should we make an analogy to a single LLM call exhibiting system 1 behavior (fast, but can be error-prone) and multi-agent LLM-systems exhibiting system 2 behavior (deliberate, slow but more accurate and more capable)} \cw{Shall we start the paper from the next sentence?} Given the evolving range of real-world tasks that could benefit from LLMs and the intrinsic weaknesses of using a single agent~\cite{liang-arxiv2023,du2023improving,bubeck2023sparks}, a promising direction for future LLM applications is to use multiple agents that work together to solve complex tasks.
+\db{This is not a new idea. What are you adding that is novel/unique}
+\gb{Something along the lines of "our way is better way" could address this.} \cw{Previous work is specific or limited. Our work is a generalization of them, including our own prior work (2).}\gb{we provide evidence of importance of conversations}
+For instance, additional agents could (1) encourage divergent thinking by allowing different roles ~\cite{liang-arxiv2023}, improve factuality and reasoning with LLMs through multi-agent debate~\cite{du2023improving}, etc; (2) allow effective tool usage and execution with potentially autonomous troubleshooting through inter-agent interactions~\cite{wu2023empirical}; (3) realize human agency to steer these agents, etc. \ahmed{the relation between multi-agent framework and human agency is not clear} 
+In such multi-agent systems, inter-agent conversations will be crucial, using language (natural or code) as means to enable agent collaboration through potential multi-round, back-and-forth message exchanges. These conversations could  leverage the recent chat-based LLMs' capability to communicate and incorporate feedback from others at human level. 
+
+% \note{Make the intro more concise? Especially the first and second paragraphs.}
+
+ A unified framework that uses conversations between multiple agents can encapsulate the aforementioned insights in a general manner. 
+%  Consider, for example, a developer building an application that uses LLMs to write code that solves a problem specified by a user (e.g., {\em``Plot a chart of META and TESLA stock price change YTD''}). The simplest starting point is to use a single LLM inference call to generate code. Since this code may be erroneous, the developer may use a separate tool to execute candidate code, and 
+% subsequent LLM inference calls to debug the code based on execution results --- resulting in an iterative conversation between the inference and code execution. 
+% Additionally, the developer may want to let users approve code execution, clarify their intent, and remember their preferences. Designing, implementing, and optimizing this workflow can be challenging. However, using well-designed agents and multi-agent conversations, the workflow could potentially be simplified into a series of discussions between the involved agents (Figure~\ref{fig:agent_capabilities}).
+% To support the rapid development of next-gen LLM applications, an ideal framework would support the latest LLMs and augmentations, allow 
+% (potentially automated) cooperation between LLMs, tools,
+% and seamless and flexible human involvement to leverage their expertise and intelligence. 
+}
+%To foster progress with experimentation and development of multi-agent LLM-based applications, To this end, To this end, 
+% To foster progress on this endeavor, 
+% \gb{cut last clause} 
+we develop \libName,
+% \db{Need a concept name and project name.}
+% \gb{This requires discussion} \cw{let's start by understanding why conversation programming is not good enough.}
+a generalized multi-agent conversation framework (Figure~\ref{fig:landing}),
+% \libName introduces 
+based on the following new concepts.
+% to answer the above  challenging questions:
+% \db{The next few lines "to foster progress on this endeavor" should be rewritten, again, not to make bold general claims but to be specific about the design points you are including.}
+\begin{enumerate}[leftmargin=*]
+    \vspace{-2mm}
+    \setlength\itemsep{-0.1em}
+    \item[1] \textbf{Customizable and conversable agents.} \libName uses a generic design of agents that can leverage LLMs, human inputs, tools, or a combination of them. 
+    %uses a design of agents that makes it feasible for them use to capabilities including LLMs, human input, tools, or a combination of these. 
+    The result is that developers can easily and quickly create agents with different roles (e.g., agents to write code, execute code, wire in human feedback, validate outputs, etc.) by selecting and configuring a subset of built-in capabilities. The agent's backend can also be readily extended to allow more custom behaviors.  %(Section~\ref{sec:agent})
+    % One key philosophy of \libName is to simplify and unify complex workflows as multi-agent conversations. To realize this, every \libName
+    %\ryen{What's the difference between the libName and the AutogenAgent name?} \cw{Should be libName} 
+    To make these agents suitable for multi-agent conversation, every
+    agent is made {\em conversable}
+    -- they can receive, react, and respond to messages. 
+     When configured properly, an agent can hold multiple turns of conversations with other agents autonomously or solicit human inputs at certain rounds, enabling human agency and automation.
+     The conversable agent design leverages the strong capability of the most advanced LLMs in taking feedback and making progress via chat
+    and also allows combining capabilities of LLMs in a modular fashion.   (Section~\ref{sec:agent}) 
+%\db{more precise}  \qw{Added one sentence.}
+% When configured properly, an agent can hold multi-turns of conversation with other agents autonomously or solicit human inputs at certain rounds, enabling human agency and automation. 
+    \item[2] \textbf{Conversation programming.} 
+    %We have the insight that multi-agent conversations can be used to address the shared requirements of different applications efficiently and consider simplifying and unifying complex LLM applications workflows as a fundamental principle of \libName. 
+    A fundamental insight of \libName is to simplify and unify complex LLM application workflows as multi-agent conversations.
+    So \libName adopts a programming paradigm centered around these inter-agent conversations. We refer to this paradigm as \emph{conversation programming},  which streamlines the development of intricate %workflows 
+    applications
+    via two primary steps: (1) defining a set of conversable agents with specific capabilities
+    and roles (as described above); (2) programming the interaction behavior between agents via conversation-centric \emph{computation} and \emph{control}. %To accomplish the latter, developers can use both natural language and code to build and experiment with a wide range of conversation patterns,
+    % agent behavior,
+    % the number of agents, and 
+    % topology of agent interactions
+    % (Section~\ref{sec:autogen_conv}). 
+    Both steps can be achieved via a fusion of natural and programming languages to build applications with a wide range of conversation patterns and agent behaviors. \libName provides ready-to-use implementations and also allows easy extension and experimentation for both steps. 
+    (Section~\ref{sec:autogen_conv})
+% % \db{topological experimentation with gates?} 
+% \gb{need to ensure this concept is clear and meaty}
+    
+\end{enumerate}
+% We introduce \libName in Section~\ref{sec:framework}, review related work in Section~\ref{sec:related_work}, present applications in Section~\ref{sec:app}, and summarize the learnings and future work in Section~\ref{sec:summary}.
+
+\libName also provides a collection of multi-agent applications created using conversable agents and conversation programming.
+%, along with general guidelines. %These applications span a wide range of domains and complexities. 
+These applications demonstrate how \libName can easily %support different conversation patterns to
+support applications of various complexities and LLMs of various capabilities. 
+Moreover, we perform %comprehensive evaluation including 
+both evaluation on benchmarks and a pilot study of new applications. The results show that \libName can help achieve outstanding performance on many tasks, and enable innovative ways of using LLMs, while reducing the development % or operational \ahmed{how does it reduce operation effort?} \qw{it can save manual effort on code execution in some applications, e.g., 3x-5x human effort saving in OptiGuide compared with a system that cannot do integrated local code execution, e.g., ChatGPT + code interpreter} 
+effort. (Section~\ref{sec:app} and Appendix~\ref{append:application})  
+    
+    % \db{why does this matter} \cw{empirical proof that the framework works.} \ahmed{+1 to why does this matter? still not clear. Maybe pivot on them being demonstrations of use cases with empirical results}
+

@@ -1,0 +1,751 @@
+Med-Skills: Contract-Verified Skill Composition with Uncertainty-Aware Selection for Trustworthy Medical Imaging Agents
+
+================================================================================
+a) Challenges -- Current Limitations and Key Bottlenecks
+================================================================================
+
+Challenge 1: Unchecked Skill Reliability in Safety-Critical Pipelines.
+When an LLM agent chains multiple medical AI models into a multi-step workflow, each skill invocation introduces its own failure modes: out-of-distribution inputs, silent degradation on edge cases, and format mismatches between consecutive skills. Existing agent frameworks (HuggingGPT, ToolLLM, AgentSkillOS) assume that if a model exists in the registry, it will work correctly when invoked. In medicine, this assumption is dangerous. A lung nodule detector trained primarily on thin-slice CT may silently produce false negatives on thick-slice reconstructions, and neither the upstream DICOM loader nor the downstream measurement skill would detect this failure. There is no principled mechanism for a medical agent to reason about *when a skill is trustworthy* for a given input.
+
+Challenge 2: Missing Formal Guarantees at Skill Interfaces.
+Software engineering solved the composability problem decades ago with Design-by-Contract (DbC): each module declares preconditions, postconditions, and invariants that are checked at runtime. Medical AI skill composition lacks equivalent formalism. When MedSAM's output mask feeds into a volume calculator, there is no contract specifying what constitutes a valid mask (e.g., connected components, minimum voxel count, anatomically plausible topology). Without such contracts, errors propagate silently across the pipeline, potentially producing clinically misleading results with high apparent confidence.
+
+Challenge 3: Confidence-Blind Skill Selection.
+Current skill retrieval methods (ToolRetriever in ToolLLM, semantic routing in MCP-Zero, hierarchical retrieval in prior Med-Skills proposals) rank skills by relevance -- how well a skill's description matches the query. They are entirely blind to the skill's expected *reliability* for the specific input at hand. Two segmentation skills may both match a query "segment the liver," but one may be highly uncertain on the current MRI sequence while the other is well-calibrated. Without uncertainty-aware selection, the agent cannot make informed choices between functionally equivalent but differentially reliable skills.
+
+Challenge 4: No Runtime Safeguards for Error Propagation in DAG Workflows.
+In compositional DAG workflows, errors compound multiplicatively. If skill s_1 has 95% reliability and skill s_2 has 90% reliability, a naive serial composition yields at most 85.5% end-to-end reliability -- before accounting for error correlation. Medical agents need a mechanism to (a) estimate per-skill uncertainty, (b) propagate uncertainty through the DAG, and (c) halt or reroute the workflow when cumulative uncertainty exceeds clinical acceptability thresholds. No existing medical agent framework provides this.
+
+================================================================================
+b) Existing Methods -- Current Approaches and Their Limitations
+================================================================================
+
+| Method          | Approach                                                        | Limitation for Trustworthy Medical Skill Composition                       |
+|-----------------|-----------------------------------------------------------------|----------------------------------------------------------------------------|
+| ToolLLM         | Neural API retrieval + DFSDT reasoning over 16K APIs            | No reliability estimation; no interface contracts; flat confidence-blind    |
+|                 |                                                                 | selection                                                                  |
+| SkillRL         | Experience-based skill distillation + GRPO evolution            | Skills are text heuristics without formal pre/post-conditions; no          |
+|                 |                                                                 | uncertainty quantification                                                 |
+| TxAgent         | ToolGen + ToolRAG with 211 biomedical tools                     | Drug domain; no per-tool confidence; no contract-based verification        |
+| MCP-Zero        | Active tool discovery via hierarchical semantic routing          | Discovery is relevance-based only; no reliability or uncertainty signals   |
+| HuggingGPT      | LLM-as-controller: plan -> select -> execute -> integrate       | No learning from execution quality; no formal interface checking           |
+| MedSAM-Agent    | Multi-turn agentic RL for segmentation                         | Single skill only; no multi-skill uncertainty propagation                  |
+| MedAgentGym     | SFT + DPO for code-based medical reasoning                     | Code-generation approach; no reusable contracts or uncertainty tracking    |
+| Design-by-      | Preconditions/postconditions/invariants (Eiffel, JML, etc.)    | Classical software DbC; never applied to ML model composition or medical   |
+| Contract        |                                                                 | AI agent frameworks                                                        |
+
+The fundamental gap: No existing method combines formal Design-by-Contract principles with uncertainty-aware skill selection to provide trustworthy, verifiable skill composition for medical imaging agents.
+
+================================================================================
+c) Motivation -- Why This Problem Is Important
+================================================================================
+
+Trust is the Bottleneck for Clinical Deployment. MICCAI 2026 emphasizes clinical translation, but clinicians will not adopt AI agent workflows they cannot trust. The primary barrier is not accuracy of individual models -- many achieve expert-level performance -- but rather the lack of guarantees when models are composed into pipelines. A radiologist using a multi-step AI workflow needs assurance that the system will either produce a reliable result or explicitly flag when it cannot.
+
+Design-by-Contract is the Right Abstraction. The software engineering community has decades of evidence that DbC dramatically reduces integration errors in compositional systems. Medical AI model composition is precisely the setting where DbC should excel: skills have well-defined I/O types, medical domain knowledge provides natural constraints (anatomical plausibility, physiological ranges), and the cost of undetected errors is extremely high.
+
+Uncertainty Quantification Enables Informed Selection. When multiple skills can address the same subtask, uncertainty estimates transform skill selection from a relevance-matching problem into a decision-theoretic one. This is particularly valuable in medicine where the same anatomical structure may be better handled by different models depending on imaging protocol, patient demographics, or pathology presentation.
+
+Unique Research Contributions. This work would be the first to:
+1. Formalize Medical Skill Contracts (preconditions, postconditions, invariants) and provide automatic contract generation from model documentation and execution traces.
+2. Introduce uncertainty-aware skill selection that considers both task relevance and expected per-input reliability.
+3. Design a contract-monitored DAG executor with uncertainty propagation that provides formal guarantees on end-to-end workflow reliability.
+4. Propose a contract-learning loop where violated contracts trigger automatic contract refinement from failure traces.
+
+================================================================================
+d) Proposed Method -- Detailed Technical Solution
+================================================================================
+
+We propose Med-Skills-V (Verified), a framework with three core innovations: (1) Med-SkillGen-V -- contract-augmented skill wrapping, (2) Med-SkillSelect -- uncertainty-aware skill selection, and (3) Med-Executor-V -- contract-monitored DAG execution with uncertainty propagation. We also introduce (4) ContractEvolver -- automatic contract refinement from execution experience.
+
+--------------------------------------------------------------------------------
+Core Innovation 1: Med-SkillGen-V -- Contract-Augmented Medical Skill Wrapping
+--------------------------------------------------------------------------------
+
+Definition (Contracted Medical Skill). A Contracted Medical Skill s is a tuple:
+
+  s = (id, name, desc, I, O, M, Pre, Post, Inv, u, f)
+
+where, in addition to the standard fields (I: input schema, O: output schema, M: medical metadata, f: MCP-callable function):
+- Pre = {pre_k}_{k=1}^{n_pre} is a set of executable precondition predicates on the input,
+- Post = {post_l}_{l=1}^{n_post} is a set of executable postcondition predicates on the output,
+- Inv = {inv_m}_{m=1}^{n_inv} is a set of relational invariants linking input properties to output properties,
+- u: I -> [0, 1] is an uncertainty estimator that produces a confidence score for a given input.
+
+Contract Formalism. Each contract element is an executable predicate:
+
+  pre_k: I -> {True, False}       (input validity check)
+  post_l: O -> {True, False}      (output validity check)
+  inv_m: (I, O) -> {True, False}  (input-output relational check)
+
+Examples for a lung segmentation skill:
+  pre_1: "input.modality == CT"
+  pre_2: "input.spacing[2] <= 5.0 mm"  (slice thickness)
+  pre_3: "input.shape[0] >= 64"  (minimum slices)
+  post_1: "output.mask.sum() > 0"  (non-empty segmentation)
+  post_2: "200 mL <= output.volume <= 8000 mL"  (physiological lung volume)
+  post_3: "num_connected_components(output.mask) <= 3"  (anatomical plausibility: L lung, R lung, possibly trachea)
+  inv_1: "output.mask.shape == input.image.shape"  (shape preservation)
+  inv_2: "output.mask is contained within input.body_mask"  (spatial containment)
+
+Automatic Contract Generation Pipeline. Given a model m with code, documentation D_m, and a medical ontology T_med:
+
+  Stage 1 (Interface + Metadata): Same as standard Med-SkillGen.
+
+  Stage 2 (Contract Generation): We use an LLM M_LLM to generate contracts:
+
+    Pre_m = M_LLM(D_m, I_m, T_med, P_precondition)
+    Post_m = M_LLM(D_m, O_m, T_med, P_postcondition)
+    Inv_m = M_LLM(D_m, I_m, O_m, T_med, P_invariant)
+
+  The LLM is prompted with medical domain knowledge from T_med (anatomical reference ranges from RadLex, physiological bounds from medical literature) to generate medically grounded constraints. Each generated contract is represented as an executable Python predicate.
+
+  Stage 3 (Uncertainty Estimator Construction): For each skill, we construct a lightweight uncertainty estimator u_m. We adopt a distribution-shift detection approach that does not require retraining the wrapped model:
+
+    u_m(x) = 1 - d_Mahalanobis(phi(x), mu_train, Sigma_train) / d_max
+
+  where phi(x) is a feature representation of input x extracted from the model's penultimate layer (or from a general medical image encoder if internal features are inaccessible), mu_train and Sigma_train are the mean and covariance of the training distribution features (estimated from a calibration set or from statistics reported in the model's documentation/training logs), and d_max is a normalization constant.
+
+  For models where internal features are inaccessible (black-box MCP tools), we use an input-space proxy:
+
+    u_m^{proxy}(x) = sigma(w^T * [h_modality(x); h_quality(x); h_anatomy(x)] + b)
+
+  where h_modality, h_quality, h_anatomy are lightweight input characterization features (modality classifier confidence, image quality metrics like SNR/CNR, anatomy detector output) and w, b are learned from a small calibration set of (input, success/failure) pairs.
+
+--------------------------------------------------------------------------------
+Core Innovation 2: Med-SkillSelect -- Uncertainty-Aware Skill Selection
+--------------------------------------------------------------------------------
+
+Given a subtask t_k within a clinical workflow, the standard approach retrieves skills by relevance. We augment this with uncertainty-aware selection that jointly considers relevance and expected reliability.
+
+Uncertainty-Aware Retrieval Score. For candidate skill s and subtask t_k with concrete input x_k:
+
+  score(s, t_k, x_k) = alpha * rel(s, t_k) + beta * u_s(x_k) + gamma * contract_compat(s, x_k, G)
+
+where:
+- rel(s, t_k) = sim(e_{t_k}, e_s) is the semantic relevance (cosine similarity of embeddings),
+- u_s(x_k) in [0, 1] is the skill's self-assessed confidence on input x_k,
+- contract_compat(s, x_k, G) in [0, 1] measures contract compatibility:
+
+  contract_compat(s, x_k, G) = (1/|Pre_s|) * sum_{pre in Pre_s} pre(x_k) *
+                                 (1/|edges_into_s in G|) * sum_{(s_i, s) in G} type_match(Post_{s_i}, Pre_s)
+
+  This score is 1.0 when all preconditions are satisfied by the input AND all upstream postconditions are compatible with this skill's preconditions.
+
+- alpha + beta + gamma = 1, with default alpha=0.4, beta=0.35, gamma=0.25.
+
+Decision-Theoretic Selection. When multiple skills have similar relevance but different uncertainty profiles, we apply expected utility maximization:
+
+  s_k* = argmax_{s in S_candidates} E[U(s, x_k)]
+       = argmax_{s in S_candidates} [u_s(x_k) * V_success(s) + (1 - u_s(x_k)) * V_failure(s)]
+
+where V_success(s) is the expected value of a successful execution (based on historical performance), and V_failure(s) is the cost of failure (determined by the skill's safety_level: advisory=-0.1, diagnostic_support=-0.5, critical=-1.0). This naturally favors more confident skills in high-stakes settings.
+
+Adaptive Fallback Strategy. If no skill exceeds the minimum confidence threshold delta_min for a subtask:
+
+  If max_{s in S_candidates} u_s(x_k) < delta_min:
+    Option A: Request human expert input for this step (escalation).
+    Option B: Execute the best available skill but flag the output as LOW_CONFIDENCE.
+    Option C: Decompose the subtask further to find skills for sub-components.
+
+  The choice is governed by the safety_level of the subtask.
+
+--------------------------------------------------------------------------------
+Core Innovation 3: Med-Executor-V -- Contract-Monitored DAG Execution
+--------------------------------------------------------------------------------
+
+The executor runs the planned DAG with three layers of runtime verification: precondition checking, postcondition checking, and uncertainty propagation.
+
+Contract-Monitored Execution Protocol. For each node k in topological order of DAG G:
+
+  Step 1 (Precondition Gate):
+    pre_pass_k = AND_{pre in Pre_{s_k}} pre(inputs_k)
+    If not pre_pass_k:
+      identify violated = {pre in Pre_{s_k} : not pre(inputs_k)}
+      result_k = contract_violation_handler(k, violated, G)
+      continue  // skip to recovery
+
+  Step 2 (Execution with Uncertainty):
+    result_k = f_{s_k}(inputs_k)
+    conf_k = u_{s_k}(inputs_k)
+
+  Step 3 (Postcondition Gate):
+    post_pass_k = AND_{post in Post_{s_k}} post(result_k)
+    If not post_pass_k:
+      identify violated = {post in Post_{s_k} : not post(result_k)}
+      result_k = postcondition_violation_handler(k, violated, result_k, G)
+
+  Step 4 (Invariant Check):
+    inv_pass_k = AND_{inv in Inv_{s_k}} inv(inputs_k, result_k)
+    If not inv_pass_k:
+      flag_invariant_violation(k, inputs_k, result_k)
+
+Uncertainty Propagation Through DAG. We propagate uncertainty through the workflow DAG to maintain an end-to-end confidence estimate. For a node k with parent nodes pa(k):
+
+  conf_cumulative(k) = conf_k * min_{j in pa(k)} conf_cumulative(j)
+
+For a node with multiple parents (e.g., a fusion step):
+
+  conf_cumulative(k) = conf_k * prod_{j in pa(k)} conf_cumulative(j)^{w_j}
+
+where w_j = 1/|pa(k)| distributes the parent influence equally (or can be learned).
+
+The workflow maintains a global confidence:
+
+  conf_global(G) = min_{k in terminal_nodes(G)} conf_cumulative(k)
+
+Clinical Acceptability Gate. Before returning the final result, the executor checks:
+
+  If conf_global(G) < delta_clinical:
+    result.status = "BELOW_CLINICAL_THRESHOLD"
+    result.recommendation = "Requires expert review"
+    result.uncertainty_map = {node_k: conf_cumulative(k) for k in G}  // identifies weak links
+  Else:
+    result.status = "CLINICALLY_ACCEPTABLE"
+
+  where delta_clinical is determined by the workflow's highest safety_level (e.g., delta_clinical = 0.9 for critical, 0.7 for diagnostic_support, 0.5 for advisory).
+
+Contract Violation Recovery Strategies:
+
+  def contract_violation_handler(node_k, violated_contracts, dag):
+      strategy = determine_recovery(node_k.skill.safety_level, violated_contracts)
+
+      if strategy == "SUBSTITUTE":
+          # Find alternative skill that satisfies contracts
+          alt_skill = find_alternative(node_k.subtask, violated_contracts, skill_lib)
+          if alt_skill and all(pre(inputs) for pre in alt_skill.Pre):
+              return execute_with_contracts(alt_skill, inputs)
+
+      elif strategy == "ADAPT_INPUT":
+          # Apply input transformation to satisfy preconditions
+          adapted = apply_adaptation(inputs, violated_contracts)
+          # e.g., resample spacing, convert format
+          if all(pre(adapted) for pre in node_k.skill.Pre):
+              return execute_with_contracts(node_k.skill, adapted)
+
+      elif strategy == "ESCALATE":
+          return HumanEscalation(node_k, violated_contracts)
+
+      return SkipWithWarning(node_k, violated_contracts)
+
+--------------------------------------------------------------------------------
+Core Innovation 4: ContractEvolver -- Learning Contracts from Experience
+--------------------------------------------------------------------------------
+
+Contracts generated by LLMs from documentation may be incomplete (missing edge cases) or overly strict (rejecting valid inputs). We introduce ContractEvolver to refine contracts from execution experience.
+
+Contract Refinement from Execution Traces. After executing N workflows, we collect execution logs:
+
+  L = {(s_k, inputs_k, result_k, pre_pass_k, post_pass_k, inv_pass_k, clinical_correct_k)}
+
+where clinical_correct_k is a binary label indicating whether the step produced a clinically correct result (assessed via downstream validation or expert review where available).
+
+We identify four types of contract errors:
+
+  Type 1 -- False Rejection (FP precondition): pre_pass = False, but clinical_correct = True for similar inputs.
+    Action: Relax the violated precondition.
+
+    Pre_relaxed = M_LLM(Pre_current, FP_examples, P_relax)
+
+  Type 2 -- Missed Failure (FN postcondition): post_pass = True, but clinical_correct = False.
+    Action: Add new postcondition to catch this failure mode.
+
+    Post_new = M_LLM(Post_current, FN_examples, result_properties, P_tighten)
+
+  Type 3 -- False Alarm (FP postcondition): post_pass = False, but clinical_correct = True.
+    Action: Adjust postcondition thresholds.
+
+    Post_adjusted = M_LLM(Post_current, FP_post_examples, P_adjust)
+
+  Type 4 -- Missed Input Failure (FN precondition): pre_pass = True, but skill fails or produces incorrect result.
+    Action: Add new precondition.
+
+    Pre_new = M_LLM(Pre_current, FN_pre_examples, input_properties, P_add_pre)
+
+Quantitative Contract Quality Metric. We define contract quality as:
+
+  Q(Pre, Post) = F1(Pre) * F1(Post)
+
+where:
+  F1(Pre) = 2 * precision(Pre) * recall(Pre) / (precision(Pre) + recall(Pre))
+
+  precision(Pre) = P(skill succeeds | Pre accepts input)
+  recall(Pre) = P(Pre accepts input | skill succeeds on input)
+
+Similarly for Post. The ContractEvolver aims to maximize Q iteratively.
+
+Contract Evolution Update Rule:
+
+  Pre_{s}^{t+1} = Pre_{s}^{t} UNION Pre_new MINUS Pre_removed    (refined preconditions)
+  Post_{s}^{t+1} = Post_{s}^{t} UNION Post_new MINUS Post_removed  (refined postconditions)
+  Inv_{s}^{t+1} = Inv_{s}^{t} UNION Inv_new                       (invariants only grow)
+
+================================================================================
+e) Technical Details -- Architecture, Algorithms, Data Flow
+================================================================================
+
+--------------------------------------------------------------------------------
+System Architecture
+--------------------------------------------------------------------------------
+
+                    +------------------+
+                    |  Clinical Query  |
+                    +--------+---------+
+                             |
+                    +--------v---------+
+                    |    Med-Agent     |
+                    |  (LLM Planner)  |
+                    +---+----+----+---+
+                        |    |    |
+            +-----------+    |    +------------+
+            |                |                 |
+   +--------v--------+  +---v-----------+  +--v------------------+
+   | Task Decomposer |  | Med-SkillSelect|  | Med-Executor-V     |
+   |                 |  | (Uncertainty-  |  | (Contract-Monitored)|
+   |                 |  |  Aware)        |  |                     |
+   +--------+--------+  +---+--------+--+  +--+--------+---------+
+            |                |        |        |        |
+            +-------+--------+        |        |        |
+                    |                  |        |        |
+           +--------v---------+  +----v---+ +--v--------v--------+
+           |  Med-SkillLib    |  |Uncert. | | Contract Monitor   |
+           |  (Contracted     |  |Estimat.| | (Pre/Post/Inv      |
+           |   Skills)        |  |Module  | |  Verification)     |
+           +------------------+  +--------+ +---------+----------+
+                                                      |
+                                            +---------v----------+
+                                            | ContractEvolver    |
+                                            | (Learn from Exec.) |
+                                            +--------------------+
+
+--------------------------------------------------------------------------------
+Algorithm 1: Med-SkillGen-V -- Contract-Augmented Skill Wrapping
+--------------------------------------------------------------------------------
+
+def med_skill_gen_v(model_repo, documentation, ontology, calibration_data=None):
+    """
+    Convert a medical AI model into a Contracted Medical Skill.
+
+    Args:
+        model_repo: Path to model code and weights
+        documentation: Model docs (README, paper, docstrings)
+        ontology: Medical ontology T_med (RadLex + SNOMED-CT)
+        calibration_data: Optional small calibration set for uncertainty estimator
+
+    Returns:
+        ContractedMedicalSkill: Skill with contracts + uncertainty estimator
+    """
+    # Stage 1: Interface + Metadata Extraction (standard)
+    I_schema = LLM.extract_input_schema(model_repo, documentation)
+    O_schema = LLM.extract_output_schema(model_repo, documentation)
+    M = LLM.annotate_medical_metadata(documentation, ontology)
+
+    # Stage 2: Contract Generation
+    Pre = LLM.generate_preconditions(
+        I_schema, M, ontology,
+        prompt=P_precondition  # includes medical reference ranges
+    )
+    Post = LLM.generate_postconditions(
+        O_schema, M, ontology,
+        prompt=P_postcondition  # includes physiological plausibility bounds
+    )
+    Inv = LLM.generate_invariants(
+        I_schema, O_schema, M,
+        prompt=P_invariant  # includes shape/type/containment relations
+    )
+
+    # Compile contracts into executable predicates
+    Pre_exec = [compile_predicate(p) for p in Pre]
+    Post_exec = [compile_predicate(p) for p in Post]
+    Inv_exec = [compile_predicate(p) for p in Inv]
+
+    # Stage 3: Uncertainty Estimator
+    if has_internal_features(model_repo):
+        # Mahalanobis distance-based (white-box)
+        phi = extract_feature_extractor(model_repo)
+        if calibration_data:
+            features = [phi(x) for x in calibration_data]
+            mu_train = mean(features)
+            Sigma_train = covariance(features)
+        else:
+            mu_train, Sigma_train = estimate_from_docs(documentation)
+        u = MahalanobisUncertainty(phi, mu_train, Sigma_train)
+    else:
+        # Input-space proxy (black-box)
+        u = InputProxyUncertainty(modality_classifier, quality_estimator,
+                                   anatomy_detector)
+        if calibration_data:
+            u.calibrate(calibration_data)
+
+    # Generate MCP wrapper with contract hooks
+    mcp_tool = generate_contracted_mcp_wrapper(
+        model_repo, I_schema, O_schema, Pre_exec, Post_exec, Inv_exec, u
+    )
+
+    return ContractedMedicalSkill(
+        id=generate_id(model_repo),
+        name=LLM.generate_name(documentation),
+        desc=LLM.generate_description(documentation),
+        input_schema=I_schema, output_schema=O_schema,
+        metadata=M,
+        preconditions=Pre_exec, postconditions=Post_exec, invariants=Inv_exec,
+        uncertainty_estimator=u,
+        mcp_callable=mcp_tool
+    )
+
+--------------------------------------------------------------------------------
+Algorithm 2: Med-Agent with Uncertainty-Aware Selection and Contract Execution
+--------------------------------------------------------------------------------
+
+def med_agent_verified(query, skill_lib, policy):
+    """
+    Plan and execute a clinical workflow with contract verification
+    and uncertainty-aware skill selection.
+
+    Args:
+        query: Clinical query
+        skill_lib: Med-SkillLib with contracted skills
+        policy: LLM policy
+
+    Returns:
+        result: Clinical result with confidence metadata
+        trace: Full execution trace with contract logs
+    """
+    trace = ExecutionTrace()
+
+    # Phase 1: Task Decomposition (standard)
+    subtasks = policy.decompose(query)  # [(t_k, deps_k), ...]
+
+    # Phase 2: Uncertainty-Aware Skill Selection
+    dag = DAG()
+    for t_k, deps_k in subtasks:
+        # Estimate concrete input (from upstream outputs or query)
+        x_k = estimate_input(t_k, deps_k, dag)
+
+        # Retrieve candidates by relevance
+        candidates = skill_lib.retrieve_by_relevance(t_k, top_n=10)
+
+        # Score with uncertainty and contract compatibility
+        scored = []
+        for s in candidates:
+            rel_score = cosine_sim(encode(t_k), encode(s.desc))
+            conf_score = s.uncertainty_estimator(x_k) if x_k is not None else 0.5
+
+            # Contract compatibility: check preconditions on estimated input
+            if x_k is not None:
+                pre_score = mean([pre(x_k) for pre in s.preconditions])
+            else:
+                pre_score = 1.0  # defer to runtime
+
+            # Check upstream postcondition compatibility
+            if deps_k:
+                upstream_posts = [dag.node[j].skill.postconditions for j in deps_k]
+                compat_score = contract_compatibility(upstream_posts, s.preconditions)
+            else:
+                compat_score = 1.0
+
+            contract_score = 0.5 * pre_score + 0.5 * compat_score
+
+            total = alpha * rel_score + beta * conf_score + gamma * contract_score
+            scored.append((s, total, conf_score))
+
+        # Decision-theoretic selection for high-stakes subtasks
+        if infer_safety_level(t_k) == "critical":
+            s_k_star = expected_utility_select(scored, safety_level="critical")
+        else:
+            s_k_star = max(scored, key=lambda x: x[1])[0]
+
+        dag.add_node(k, skill=s_k_star, deps=deps_k)
+
+    # Phase 3: Contract-Monitored DAG Execution
+    for node_k in dag.topological_order():
+        skill = node_k.skill
+
+        # Gather inputs from upstream
+        inputs_k = gather_inputs(node_k, dag)
+
+        # === PRECONDITION GATE ===
+        pre_results = {pre: pre(inputs_k) for pre in skill.preconditions}
+        if not all(pre_results.values()):
+            violated = [p for p, v in pre_results.items() if not v]
+            trace.log("PRE_VIOLATION", node_k, violated)
+
+            # Recovery: substitute skill or adapt input
+            recovery = contract_violation_handler(node_k, violated, dag, skill_lib)
+            if recovery.type == "SUBSTITUTE":
+                skill = recovery.alt_skill
+                node_k.skill = skill
+            elif recovery.type == "ADAPT":
+                inputs_k = recovery.adapted_inputs
+            elif recovery.type == "ESCALATE":
+                trace.log("ESCALATED", node_k)
+                dag.mark_halted(node_k)
+                continue
+
+        # === EXECUTE WITH CONFIDENCE ===
+        result_k = skill.mcp_callable(**inputs_k)
+        conf_k = skill.uncertainty_estimator(inputs_k)
+
+        # === POSTCONDITION GATE ===
+        post_results = {post: post(result_k) for post in skill.postconditions}
+        if not all(post_results.values()):
+            violated = [p for p, v in post_results.items() if not v]
+            trace.log("POST_VIOLATION", node_k, violated)
+            result_k = postcondition_recovery(node_k, result_k, violated, skill_lib)
+
+        # === INVARIANT CHECK ===
+        inv_results = {inv: inv(inputs_k, result_k) for inv in skill.invariants}
+        if not all(inv_results.values()):
+            trace.log("INV_VIOLATION", node_k,
+                       [i for i, v in inv_results.items() if not v])
+
+        # === UNCERTAINTY PROPAGATION ===
+        parent_confs = [dag.node[j].conf_cumulative for j in node_k.deps]
+        if parent_confs:
+            conf_cumulative_k = conf_k * min(parent_confs)
+        else:
+            conf_cumulative_k = conf_k
+
+        dag.node[node_k].result = result_k
+        dag.node[node_k].conf_local = conf_k
+        dag.node[node_k].conf_cumulative = conf_cumulative_k
+        trace.log("EXECUTED", node_k, conf_k, conf_cumulative_k)
+
+    # Phase 4: Clinical Acceptability Gate
+    terminal_confs = [dag.node[k].conf_cumulative for k in dag.terminal_nodes()]
+    conf_global = min(terminal_confs) if terminal_confs else 0.0
+
+    max_safety = max(dag.node[k].skill.metadata.safety_level for k in dag.all_nodes())
+    delta_clinical = {"advisory": 0.5, "diagnostic_support": 0.7, "critical": 0.9}[max_safety]
+
+    final_result = policy.integrate(query, dag, trace)
+    final_result.confidence = conf_global
+    final_result.clinically_acceptable = (conf_global >= delta_clinical)
+    final_result.uncertainty_map = {k: dag.node[k].conf_cumulative for k in dag.all_nodes()}
+
+    if not final_result.clinically_acceptable:
+        # Identify weakest link for targeted review
+        weakest = min(dag.all_nodes(), key=lambda k: dag.node[k].conf_cumulative)
+        final_result.review_recommendation = f"Expert review needed at step: {weakest}"
+
+    return final_result, trace
+
+--------------------------------------------------------------------------------
+Algorithm 3: ContractEvolver -- Learning Contracts from Execution Experience
+--------------------------------------------------------------------------------
+
+def contract_evolver(skill_lib, execution_logs, teacher_model):
+    """
+    Refine skill contracts based on execution experience.
+
+    Args:
+        skill_lib: Current Med-SkillLib with contracted skills
+        execution_logs: Collected (skill, input, output, contract_results,
+                        clinical_correctness) tuples
+        teacher_model: LLM for contract refinement
+
+    Returns:
+        Updated skill_lib with refined contracts
+    """
+    # Group logs by skill
+    for skill_id, logs in group_by_skill(execution_logs).items():
+        skill = skill_lib.get(skill_id)
+
+        # Compute current contract quality
+        Q_current = compute_contract_quality(logs, skill)
+
+        # Identify contract errors
+        # Type 1: False Rejection (precondition too strict)
+        false_rejections = [
+            log for log in logs
+            if not log.pre_pass and log.clinical_correct
+        ]
+        if len(false_rejections) >= 3:  # minimum evidence threshold
+            relaxed_pre = teacher_model.relax_preconditions(
+                skill.preconditions, false_rejections,
+                prompt=P_relax_precondition
+            )
+            skill.preconditions = merge_contracts(skill.preconditions, relaxed_pre)
+
+        # Type 2: Missed Failure (postcondition too loose)
+        missed_failures = [
+            log for log in logs
+            if log.post_pass and not log.clinical_correct
+        ]
+        if len(missed_failures) >= 3:
+            new_post = teacher_model.tighten_postconditions(
+                skill.postconditions, missed_failures,
+                prompt=P_tighten_postcondition
+            )
+            skill.postconditions = skill.postconditions + new_post
+
+        # Type 3: False Alarm (postcondition too strict)
+        false_alarms = [
+            log for log in logs
+            if not log.post_pass and log.clinical_correct
+        ]
+        if len(false_alarms) >= 3:
+            adjusted_post = teacher_model.adjust_postconditions(
+                skill.postconditions, false_alarms,
+                prompt=P_adjust_postcondition
+            )
+            skill.postconditions = adjusted_post
+
+        # Type 4: Missed Input Failure (precondition too loose)
+        missed_input_failures = [
+            log for log in logs
+            if log.pre_pass and not log.clinical_correct
+        ]
+        if len(missed_input_failures) >= 3:
+            new_pre = teacher_model.add_preconditions(
+                skill.preconditions, missed_input_failures,
+                prompt=P_add_precondition
+            )
+            skill.preconditions = skill.preconditions + new_pre
+
+        # Recalibrate uncertainty estimator
+        if len(logs) >= 20:
+            calib_data = [(log.input, log.clinical_correct) for log in logs]
+            skill.uncertainty_estimator.recalibrate(calib_data)
+
+        # Compute updated contract quality
+        Q_updated = compute_contract_quality(logs, skill)
+
+        skill_lib.update(skill_id, skill)
+
+    return skill_lib
+
+def compute_contract_quality(logs, skill):
+    """
+    Compute F1-based contract quality metric.
+
+    Q(Pre, Post) = F1(Pre) * F1(Post)
+
+    precision(Pre) = P(correct | accepted)
+    recall(Pre) = P(accepted | correct)
+    """
+    # Precondition quality
+    accepted = [l for l in logs if l.pre_pass]
+    correct = [l for l in logs if l.clinical_correct]
+    accepted_and_correct = [l for l in logs if l.pre_pass and l.clinical_correct]
+
+    pre_precision = len(accepted_and_correct) / max(len(accepted), 1)
+    pre_recall = len(accepted_and_correct) / max(len(correct), 1)
+    F1_pre = 2 * pre_precision * pre_recall / max(pre_precision + pre_recall, 1e-8)
+
+    # Postcondition quality
+    post_passed = [l for l in logs if l.post_pass]
+    post_passed_and_correct = [l for l in logs if l.post_pass and l.clinical_correct]
+
+    post_precision = len(post_passed_and_correct) / max(len(post_passed), 1)
+    post_recall = len(post_passed_and_correct) / max(len(correct), 1)
+    F1_post = 2 * post_precision * post_recall / max(post_precision + post_recall, 1e-8)
+
+    return F1_pre * F1_post
+
+================================================================================
+f) Expected Outcomes -- Anticipated Improvements and Evaluation
+================================================================================
+
+--------------------------------------------------------------------------------
+Evaluation Protocol
+--------------------------------------------------------------------------------
+
+Benchmark: Med-SkillBench-V (Verified). We construct a benchmark of 100+ clinical workflow scenarios across 5 modalities (CT, MRI, X-ray, Ultrasound, Pathology) and 8 anatomical regions. Each scenario includes: a clinical query, expected skill sequence, reference outputs, clinical correctness labels, and adversarial inputs designed to trigger edge cases (e.g., unusual spacing, low-quality images, out-of-distribution pathologies).
+
+Baselines:
+- HuggingGPT-Med: LLM-as-controller with medical model registry (no contracts, no uncertainty)
+- ToolLLM-Med: ToolLLM with medical APIs (flat retrieval, no contracts)
+- ReAct-Med: ReAct agent with medical models (no skill library, no verification)
+- Med-Skills-Ontology (Idea #1): Anatomy-aware hierarchical retrieval + recursive evolution (no contracts, no uncertainty)
+- Med-Skills-V (ours): Full framework with contracts + uncertainty + contract evolution
+
+Ablation studies:
+- w/o contracts (remove Pre/Post/Inv, keep uncertainty)
+- w/o uncertainty-aware selection (relevance-only retrieval, keep contracts)
+- w/o uncertainty propagation (per-step contracts only, no cumulative confidence)
+- w/o ContractEvolver (static LLM-generated contracts)
+- w/o clinical acceptability gate (no end-to-end confidence threshold)
+
+--------------------------------------------------------------------------------
+Metrics
+--------------------------------------------------------------------------------
+
+| Metric                         | Description                                                      | Expected                                            |
+|--------------------------------|------------------------------------------------------------------|-----------------------------------------------------|
+| Workflow Completion Rate       | % of workflows that execute fully without fatal errors           | Med-Skills-V: ~88% vs. no-contract baselines: ~65%  |
+| Silent Failure Detection Rate  | % of clinically incorrect outputs caught before returning        | Med-Skills-V: ~85% vs. baselines: ~20-30%           |
+| End-to-End Clinical Accuracy   | Expert-evaluated correctness of final results (1-5 Likert)      | Med-Skills-V: 4.3 vs. baselines: 2.8-3.5            |
+| Skill Selection Precision      | % of correctly selected skills per workflow step                 | Med-Skills-V: ~88% vs. relevance-only: ~70%         |
+| False Rejection Rate           | % of valid inputs incorrectly rejected by preconditions          | After ContractEvolver: ~3% vs. initial LLM: ~12%    |
+| Uncertainty Calibration (ECE)  | Expected Calibration Error of confidence estimates               | Med-Skills-V: ECE < 0.08 after calibration          |
+| Contract Quality (Q metric)    | F1(Pre) * F1(Post) measuring contract precision and recall       | After evolution: Q > 0.85 vs. initial: Q ~ 0.65     |
+| Safety Compliance              | % of workflows with zero safety violations                      | Med-Skills-V: ~97% vs. baselines: ~75%              |
+
+--------------------------------------------------------------------------------
+Expected Key Findings
+--------------------------------------------------------------------------------
+
+1. Contract-based verification catches 60-70% of silent failures that pass through unverified pipelines. In medicine, these are the most dangerous errors -- an incorrect segmentation mask or a missed detection that looks plausible. Postcondition checking (e.g., anatomical plausibility, physiological range validation) catches outputs that are technically valid model outputs but clinically incorrect.
+
+2. Uncertainty-aware skill selection improves end-to-end accuracy by 10-15% over relevance-only selection when multiple functionally equivalent skills are available. The improvement is largest on out-of-distribution inputs where one skill's training distribution covers the input while another's does not.
+
+3. Uncertainty propagation through the DAG enables the agent to identify the weakest link in multi-step workflows, focusing expert review on the 1-2 steps where confidence is lowest rather than requiring review of the entire pipeline. This reduces expert review burden by approximately 60-70% compared to full pipeline review.
+
+4. ContractEvolver improves contract quality Q from ~0.65 (initial LLM-generated) to ~0.85 after processing 300+ workflow executions, demonstrating that contracts can be learned from experience. The primary improvement comes from reducing false rejections (overly strict preconditions) and adding missed postconditions.
+
+5. The decision-theoretic selection mechanism (expected utility with safety-level-dependent failure costs) naturally produces more conservative selections for critical tasks and more exploratory selections for advisory tasks, aligning agent behavior with clinical risk tolerance without manual tuning.
+
+--------------------------------------------------------------------------------
+Concrete Demonstration Scenarios
+--------------------------------------------------------------------------------
+
+Scenario 1: Robust Chest CT Analysis with Quality Variation
+Query: "Analyze this chest CT for lung nodules."
+Challenge: Input CT has 5mm slice thickness (thick-slice), which is outside the training distribution of the primary nodule detector (trained on 1mm slices).
+Med-Skills-V behavior:
+  - Precondition of primary nodule detector catches: pre("spacing[2] <= 2.0mm") FAILS
+  - Uncertainty estimator confirms low confidence: u = 0.3
+  - Uncertainty-aware selection substitutes a thick-slice-compatible detector
+  - Postcondition verifies: detected nodules have plausible sizes and locations
+  - Final result includes confidence: 0.78 (above delta_clinical=0.7 for diagnostic_support)
+Baseline behavior: Silently runs thin-slice detector, producing false negatives.
+
+Scenario 2: Multi-Step Brain Analysis with Error Propagation Detection
+Query: "Segment brain tumor and assess treatment response."
+Challenge: MRI has motion artifact that degrades segmentation quality.
+Med-Skills-V behavior:
+  - Brain extraction succeeds (pre/post satisfied), but conf=0.65
+  - Tumor segmentation runs, but postcondition "volume > 0" passes while
+    invariant "mask contained within brain mask" FAILS (artifact causes
+    segmentation to extend beyond brain boundary)
+  - Invariant violation triggers re-segmentation with artifact-robust model
+  - Cumulative confidence at volume measurement: 0.52 (below critical threshold 0.9)
+  - Result flagged: "Below clinical threshold. Weakest link: tumor segmentation.
+    Expert review recommended."
+Baseline behavior: Returns incorrect tumor volume with no uncertainty flag.
+
+Scenario 3: Contract Evolution in Action
+Initial state: Liver segmentation postcondition includes "volume in [1000, 2000] mL"
+  (from medical literature for healthy adults).
+Execution experience: 5 cases of hepatomegaly (enlarged liver) produce volumes of
+  2200-3500 mL, triggering false postcondition violations.
+ContractEvolver action: Relaxes postcondition to "volume in [800, 4000] mL" with
+  added condition "if volume > 2000 mL, flag as possible_hepatomegaly."
+Result: Reduces false alarm rate while adding clinically informative flagging.
+
+================================================================================
+Summary of Novelty for MICCAI 2026
+================================================================================
+
+This proposal, Med-Skills-V, makes four contributions distinct from prior Med-Skills proposals (which focus on hierarchical organization and recursive evolution):
+
+(1) Contract-Augmented Skill Abstraction (Med-SkillGen-V): The first formalization of Design-by-Contract principles for medical AI model composition, with automatic contract generation from LLM analysis of model documentation grounded in medical ontologies. This brings decades of software engineering reliability principles into the medical AI agent setting.
+
+(2) Uncertainty-Aware Skill Selection (Med-SkillSelect): Moving beyond relevance-based retrieval to decision-theoretic skill selection that jointly considers task relevance, per-input confidence, and contract compatibility. This is especially critical for medicine where functionally equivalent models have vastly different reliability profiles depending on the specific input.
+
+(3) Contract-Monitored DAG Execution with Uncertainty Propagation (Med-Executor-V): Runtime verification with three layers (preconditions, postconditions, invariants) and formal uncertainty propagation through the workflow DAG, culminating in a clinical acceptability gate that provides end-to-end reliability guarantees.
+
+(4) Contract Evolution from Experience (ContractEvolver): A learning loop where contracts are automatically refined based on execution traces, addressing the cold-start problem of LLM-generated contracts and enabling the system to discover edge cases and failure modes that are not documented. This is distinct from Idea #1's recursive skill evolution (which creates new composite skills) -- ContractEvolver instead refines the *reliability guarantees* of existing skills.
+
+The framework addresses the trust gap that prevents clinical adoption of AI agent workflows: instead of simply producing results, Med-Skills-V produces results with calibrated confidence, flags uncertain outputs, and provides formal guarantees that each step in the pipeline has been verified against domain-specific contracts.

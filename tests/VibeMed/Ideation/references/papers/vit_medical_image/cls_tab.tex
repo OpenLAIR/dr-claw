@@ -1,0 +1,76 @@
+% Please add the following required packages to your document preamble:
+% \usepackage{graphicx}
+% Please add the following required packages to your document preamble:
+% \usepackage{graphicx}
+% Please add the following required packages to your document preamble:
+% \usepackage{graphicx}
+% Please add the following required packages to your document preamble:
+% \usepackage{graphicx}
+% Please add the following required packages to your document preamble:
+% \usepackage{graphicx}
+% Please add the following required packages to your document preamble:
+% \usepackage{graphicx}
+% \usepackage[table,xcdraw]{xcolor}
+% If you use beamer only pass "xcolor=table" option, i.e. \documentclass[xcolor=table]{beamer}
+% Please add the following required packages to your document preamble:
+% \usepackage{graphicx}
+% Please add the following required packages to your document preamble:
+% \usepackage{graphicx}
+% Please add the following required packages to your document preamble:
+% \usepackage{graphicx}
+% \usepackage[table,xcdraw]{xcolor}
+% If you use beamer only pass "xcolor=table" option, i.e. \documentclass[xcolor=table]{beamer}
+% Please add the following required packages to your document preamble:
+% \usepackage{graphicx}
+% \usepackage[table,xcdraw]{xcolor}
+% If you use beamer only pass "xcolor=table" option, i.e. \documentclass[xcolor=table]{beamer}
+\begin{table*}[]
+\centering
+\resizebox{0.95\textwidth}{!}{%
+\begin{tabular}{V{3}l|l|p{2cm}|l|p{2.5cm}|p{2cm}|l|p{7cm}V{3}}
+\hlineB{3}
+\rowcolor{mygray} \textbf{Method}                                           & \textbf{Organ} & \textbf{Modality}                                                & \textbf{Type}             & \textbf{Datasets}                                                                        & \textbf{Metrics}                                                                                            & \textbf{Arch.} & \textbf{Highlights}                                                                                                                                                                                                 \\ \hlineB{2}
+TransMed\cite{dai2021transmed}                                                   & Ear            & MRI (T1,T2)                                                      & 3D                       &  MRI (private)                                                                          &  Accuracy \newline Precision                                 & Pure           & First ViT-based multi-modal medical image classification approach with novel multi-modal fusion strategy                                                                                            \\ \hline
+%\multicolumn{1}{|l|}{}                                                          & \multicolumn{1}{l|}{}               & \multicolumn{1}{l|}{MRI}                                                              & \multicolumn{1}{c|}{3D}                        & \multicolumn{1}{l|}{- ADNI Cohort}                                                                            & \multicolumn{1}{l|}{-mAuC}                                                                                                      & \multicolumn{1}{l|}{Hybrid}         & - Transfer learning based parameter efficient training                                                                                                                                                                                   \\ \hline
+%\multicolumn{1}{|l|}{}                                                          & \multicolumn{1}{l|}{}               & \multicolumn{1}{l|}{Colonoscopy}                                                      & \multicolumn{1}{c|}{2D}                        & \multicolumn{1}{l|}{\begin{tabular}[c]{@{}l@{}}- CVC-ClinicDB\\ - ETIS-LARIB\\ - CVC-ColonDB\end{tabular}}    & \multicolumn{1}{l|}{\begin{tabular}[c]{@{}l@{}}- Precision\\ - Sensitivity\\ - F1-Score\end{tabular}}                           & \multicolumn{1}{l|}{}               & \begin{tabular}[c]{@{}l@{}}- Interleaved CNN and transformer layers\\ - Bipartite matching loss\end{tabular}                                                                                                                             \\ \hline
+ {\color{teal}TransMIL}~\cite{shao2021transmil}                                                  & Multi-organ    & Pathology                                                        & 2D                        & Camelyon16~\cite{bejnordi2017diagnostic} \newline TCGA-NSCLC~\cite{bakr2018radiogenomic} \newline TCGA-RCC~\cite{tcga}         & Accuracy \newline AuC                  & Hybrid         &  Transformer based architecture to explore morphological and spatial information for Whole Slide Image  classification.                                        \\ \hline
+
+Matsokus \textit{et al.}\cite{matsoukas2021time} & Multi-organ    & Mammograms \newline Dermoscopy & 2D                        & APTOS-2019~\cite{aptos19} \newline ISIC-2019~\cite{isic19} \newline CBIS-DDSM~\cite{lee2017curated}         & Recall \newline AuC                                               & Pure           & Systemetic study of whether one should replace CNNs with ViTs for medical image classification. \\ \hline
+
+Gheflati \textit{et al.}\cite{gheflati2021vision} & Breast         & Ultrasound        & 2D                        &  BUSY~\cite{al2020dataset} \newline Yap \textit{et al.}~\cite{yap2017automated}                             & Accuracy \newline AuC                                                 & Pure           & First application of ViTs to ultrasound images classification.    
+\\ \hline
+{\color{teal}GTN}~\cite{zheng2021deep} & Lung         & Microscopy        & 2D                        &  TCGA dataset~\cite{napel2014nsclc}                             & Accuracy \newline Precision \newline Sensitivity \newline Specificity \newline Recall                                                 & Hybrid          & Consists of a graph convolutional layer, a transformer module, and a pooling layer for accurate classification of WSI images.    
+\\ \hline
+MIL-ViT~\cite{yu2021mil} & Eye         & Fundus        & 2D                        &  APTOS-2019~\cite{aptos19} \newline  RFMiD2020~\cite{quellec2020automatic}                             & Accuracy \newline AuC, F1 \newline Precision \newline Recall                                                 & Pure           &  First pretrained on a large fundus image dataset and later fine-tuned
+on the downstream task of the retinal disease classification.   \\ \hline
+LAT~\cite{sun2021lesion} & Eye         & Fundus        & 2D                        &  Messidor-1 ~~\cite{decenciere2014feedback} \newline  Messidor-2~\cite{decenciere2014feedback} \newline EyePACS~\cite{cuadros2009eyepacs}                             & AuC \newline Kappa                                                & Hybrid           &  Formulate lesion discovery as a weakly supervised lesion localization problem via
+a transformer decoder. Jointly solve diabetic retinopathy grading and lesion discovery. 
+\\ \hlineB{2}
+%\hline
+ \rowcolor{mygray} \multicolumn{8}{V{3}cV{3}}{\textbf{COVID-19}}  \\ \hlineB{2} 
+
+{\color{teal}Park \textit{et al.}}~\cite{park2021vision}                                               & Chest         & X-ray                                                            & 2D                        & CheXpert~\cite{irvin2019chexpert}                      &   AuC                                & Hybrid         & Leveraging a backbone network trained to find low-level abnormal CXR findings in pre-built large-scale dataset to embed feature  corpus suitable for high-level disease classification.     \\ \hline
+
+POCFormer~\cite{perera2021pocformer}  & Chest          & Ultrasound        & 2D                        & POCUS~\cite{born2020pocovid}                                                                             & Recall, F1 \newline Specificity \newline Sensitivity \newline Accuracy & Pure          & Proposed light weight transformer architecture that demonstrates the efficiency and performance improvements.\\ \hline
+
+FESTA~\cite{park2021federated}  & Chest          & X-ray        & 2D                        & CheXpert~\cite{irvin2019chexpert} \newline SIIM-ACR~\cite{siimacr} \newline  RSNA~\cite{rsna}                                                                              & Recall, F1 \newline Specificity \newline Sensitivity \newline AuC & Pure          &   Utilize ViT  to  simultaneously  process  multiple  chest  X-ray  tasks, including the diagnosis in COVID-19 Chest X-ray images on a massive decentralized dataset.\\ \hline
+
+Liu \textit{et al.}~\cite{liu2021automatic}                                                & Chest          & X-ray                                                            & \multicolumn{1}{l|}{2D}                        & COVID-19-1~\cite{chowdhury2020can} \newline COVID-19-2~\cite{cohen2020covid}                      &  Accuracy                                                                                                 & Pure           & Explore VOLO tailored with transfer learning technique to effectively encodes fine-level features into the token representations.                                                            \\ \hline
+
+COVID-VIT~\cite{gao2021covid}                                                & Chest          & CT                                                               & 3D & MIA-COV19~\cite{kollias2021mia}                                                                              & Accuracy, F1                                            & Pure           & Propose ViT based architecture to classifiy COVID-19 CT images in MIA-COV19 competition.                                                                                                     \\ \hline
+
+{\color{teal}xViTCOS}~\cite{mondal2021xvitcos}                                                   & Chest          & X-ray, CT                                                        &  2D                        & xViTCOS-CT~\cite{gunraj2021covid} \newline xViTCOS-CXR~\cite{wang2020covid}                     & Precision \newline Recall, F1 \newline Specificity,  NPV        & Pure           & Propose ViT based multi-stage transfer learning technique to address the issue of COVID-19 data scarcity. The approach is clinically interpretable.                                         \\ \hline
+
+Hsu \textit{et al.}~\cite{hsu2021visual}                                                & Chest          & CT                                                              & 3D                        & COV19 CT DB~\cite{kollias2021mia}                      & Accuracy \newline Recall,F1 \newline Precision                 & Hybrid        & Importance of slices are determined in CT scan via Wilcoxon signed-rank test. Then, spatial and temporal features are exploited via proposed convolutional CT scan Aware Transformer module. \\ \hline
+
+Zhang \textit{et al.}\cite{zhang2021transformer}                                              & Chest          & CT           & 3D                        & MIA-COV19~\cite{kollias2021mia}                                              & F1 score                                                 & Hybrid         & Swin Transformer based two stage framework for diagnosis of COVID-19 in 3D CT scans.                                                                                                          \\ \hline
+
+COViT-GAN~\cite{ambita2021covit}     & Chest          & CT          & 2D                          & COVID-CT~\cite{kollias2021mia} \newline Sars-CoV-2~\cite{angelov2020sars}                                & Accuracy \newline Sensitivity \newline Precision, F1                                                                                                             & Hybrid               &  Generate synthetic images using a self-attention generative adversarial network and use it as a data augmentation method to alleviate the problem of limited data and improve performance.\\ \hline
+
+{\color{teal}COVID-Trans.}\cite{shome2021covid}        & Chest          & X-ray     & 2D                        & El-Shafai \textit{et al.}~\cite{el2020extensive} \newline Sait \textit{et al.}~\cite{sait2020curated} \newline Qi \textit{et al.}~\cite{qi2021chest} & Accuracy \newline Precision \newline AuC, Recall, F1             & Pure           & Propose a ViT model to diagnose COVID-19 at scale. Combines several open source COVID-19 chest X-ray datasets to form large dataset  for binary and multi-class classification.        \\ \hlineB{3}
+\end{tabular}%
+}
+\caption{An overview of ViT-based approaches for medical image classification. {\color{teal} Teal color} indicates that the model is interpretable.}
+\label{tab:class_taxonomy}
+\end{table*}
+

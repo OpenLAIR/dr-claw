@@ -1,0 +1,847 @@
+{
+  "version": "BioASQ6b", 
+  "data": [
+    {
+      "title": "BioASQ6b", 
+      "paragraphs": [
+        {
+          "context": "The Race of 10 Synthetic RNAi-Based Drugs to the Pharmaceutical Market. Ten years after Fire and Melo's Nobel Prize for discovery of gene silencing by double-stranded RNA, a remarkable progress was achieved in RNA interference (RNAi). Changes in the chemical structure of synthetic oligonucleotides make them more stable and specific, and new delivery strategies became progressively available. The attention of pharmaceutical industry rapidly turned to RNAi, as an opportunity to explore new drug targets. This review addresses nine small-interfering RNAs (siRNAs) and one unique microRNA (miRNA) inhibitor, which entered the phase 2-3 clinical trials. The siRNAs in focus are PF-04523655, TKM-080301, Atu027, SYL040012, SYL1001, siG12D-LODER (phase 2), QPI-1002, QPI-1007, and patisiran (phase 3). Regarding miRNAs, their content can be down- or up-regulated, by using miRNA inhibitors (AntimiRs) or miRNA mimics. Miravirsen is an AntimiR-122 for hepatitis C virus infection. The flexibility of RNAi technology is easily understood taking into account: (i) the different drug targets (i.e. p53, caspase 2, PKN3, \u03b22-adrenergic receptor, mutated KRAS, microRNAs); (ii) therapeutic conditions, including ophthalmic diseases, kidney injury, amyloidosis, pancreatic cancer, viral hepatitis; and (iii) routes of administration (ocular, intravenous, subcutaneous, intratumoral). Although some issues are still matters of concern (delivery, toxicity, cost, and biological barriers), RNAi definitively opens a wide avenue for drug development.", 
+          "qas": [
+            {
+              "question": "In November 2017,  in what phase  was  the clinical trial for the drug SYL040012?", 
+              "id": "5a735cdc3b9d13c708000004_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Quantification of suvorexant in urine using gas chromatography/mass spectrometry. Suvorexant (Belsomra) is a novel sedative hypnotic drug that is prescribed to promote sleep in patients with insomnia. It is the first of a new class of drugs classified as dual orexin receptor antagonists (DORAs). Sedative hypnotics with central nervous system depressant effects feature prominently in forensic toxicology investigations. For this reason, a new analytical method was developed to identify suvorexant in urine using liquid-liquid extraction (LLE) and gas chromatography/mass spectrometry (GC/MS). Due to the absence of a commercially available isotopically labeled internal standard, estazolam-D5 was used due to its azepine, triazole and chlorinated functionality. The limit of detection and limit of quantitation was 10ng/mL and the linear range of the assay was 10-1000ng/mL. Accuracy and precision (%CV) were 98-101% and <11% at 30, 250 and 800ng/mL. Interferences from matrix and fifty common drugs were not present and processed samples were stable for 24h at room temperature. Suvorexant is a new drug of significant forensic interest due to its hypnotic and central nervous system depressant effects. The absence of commercially available metabolites and its chromatographic properties present some challenges in terms of identification. Nevertheless, a robust, reliable and sensitive assay was developed to identify suvorexant using GC/MS analysis.", 
+          "qas": [
+            {
+              "question": "What is the drug target(s) for Belsomra?", 
+              "id": "5a777ab9faa1ab7d2e00000a_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Suvorexant for the treatment of primary insomnia: A systematic review and meta-analysis. Suvorexant is a dual orexin receptor agonist and is currently approved for the treatment of insomnia in the United States and Japan. We conducted a systematic review and meta-analysis to assess the efficacy and safety of suvorexant for the treatment of primary insomnia. We searched PubMed, EMBASE, and the Cochrane central register of controlled trials, contacted a relevant pharmaceutical company, and accessed websites of the U.S. Food and Drug Administration (FDA) and Pharmaceuticals and Medical Devices Agency (PMDA) for published and unpublished data. A total of four randomized trials involving 3076 patients with primary insomnia were included in our analysis. Our analysis suggested that suvorexant was associated with significant improvements in subjective time to sleep onset, subjective total sleep time, and subjective quality of sleep at 1\u00a0mo\u00a0and 3\u00a0mo. Somnolence, fatigue, and abnormal dreams were the most common adverse effects. We concluded that suvorexant was associated with improvement in some sleep parameters and some adverse effects. To determine the place of suvorexant in the treatment of insomnia, comparative effectiveness trials are needed.", 
+          "qas": [
+            {
+              "question": "What is the drug target(s) for Belsomra?", 
+              "id": "5a777ab9faa1ab7d2e00000a_001"
+            }
+          ]
+        }, 
+        {
+          "context": "A Decade of Orexin/Hypocretin and Addiction: Where Are We Now? One decade ago, our laboratory provided the first direct evidence linking orexin/hypocretin signaling with drug seeking by showing that activation of these neurons promotes conditioned morphine-seeking behavior. In the years since, contributions from many investigators have revealed roles for orexins in addiction for all drugs of abuse tested, but only under select circumstances. We recently proposed that orexins play a fundamentally unified role in coordinating \"motivational activation\" under numerous behavioral conditions, and here we unpack this hypothesis as it applies to drug addiction. We describe evidence collected over the past 10 years that elaborates the role of orexin in drug seeking under circumstances where high levels of effort are required to obtain the drug, or when motivation for drug reward is augmented by the presence of external stimuli like drug-associated cues/contexts or stressors. Evidence from studies using traditional self-administration and reinstatement models, as well as behavioral economic analyses of drug demand elasticity, clearly delineates a role for orexin in modulating motivational, rather than the primary reinforcing aspects of drug reward. We also discuss the anatomical interconnectedness of the orexin system with wider motivation and reward circuits, with a particular focus on how orexin modulates prefrontal and other glutamatergic inputs onto ventral tegmental area dopamine neurons. Last, we look ahead to the next decade of the research in this area, highlighting the recent FDA approval of the dual orexin receptor antagonist suvorexant (Belsomra) for the treatment of insomnia as a promising sign of the potential clinical utility of orexin-based therapies for the treatment of addiction.", 
+          "qas": [
+            {
+              "question": "What is the drug target(s) for Belsomra?", 
+              "id": "5a777ab9faa1ab7d2e00000a_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Preclinical assessment of the abuse potential of the orexin receptor antagonist, suvorexant. Suvorexant (Belsomra) is a dual orexin receptor antagonist approved for the treatment of insomnia. Because of its pharmacology within the central nervous system, intended therapeutic indication, and first-in-class status, an assessment of suvorexant abuse liability potential was required prior to marketing approval. The nonclinical abuse liability potential studies for suvorexant included: 1) rat drug-dependence model to assess physical dependence following abrupt cessation; 2) rat drug-discrimination model to examine the potential similarity of the interoceptive or subjective effects of suvorexant to those elicited by zolpidem and morphine; 3) self-administration model to assess the relative reinforcing efficacy of suvorexant in rhesus monkeys conditioned to self-administer methohexital. No significant signs of spontaneous drug withdrawal or 'discontinuation syndrome' were observed in rats following abrupt discontinuation of suvorexant. Suvorexant did not elicit complete cross-generalization to either a zolpidem or morphine training/reference stimuli in rats, and suvorexant was devoid of behavioral evidence of positive reinforcing efficacy in monkeys. These nonclinical findings suggested that suvorexant will have low abuse potential in humans. In the final regulatory risk assessment, suvorexant was placed into Schedule IV, likely due to its first-in-class status, its sedative properties, and the outcome of the clinical abuse potential assessment.", 
+          "qas": [
+            {
+              "question": "What is the drug target(s) for Belsomra?", 
+              "id": "5a777ab9faa1ab7d2e00000a_003"
+            }
+          ]
+        }, 
+        {
+          "context": "MARS: improving multiple circular sequence alignment using refined sequences. BACKGROUND: A fundamental assumption of all widely-used multiple sequence alignment techniques is that the left- and right-most positions of the input sequences are relevant to the alignment. However, the position where a sequence starts or ends can be totally arbitrary due to a number of reasons: arbitrariness in the linearisation (sequencing) of a circular molecular structure; or inconsistencies introduced into sequence databases due to different linearisation standards. These scenarios are relevant, for instance, in the process of multiple sequence alignment of mitochondrial DNA, viroid, viral or other genomes, which have a circular molecular structure. A solution for these inconsistencies would be to identify a suitable rotation (cyclic shift) for each sequence; these refined sequences may in turn lead to improved multiple sequence alignments using the preferred multiple sequence alignment program. RESULTS: We present MARS, a new heuristic method for improving Multiple circular sequence Alignment using Refined Sequences. MARS was implemented in the C++ programming language as a program to compute the rotations (cyclic shifts) required to best align a set of input sequences. Experimental results, using real and synthetic data, show that MARS improves the alignments, with respect to standard genetic measures and the inferred maximum-likelihood-based phylogenies, and outperforms state-of-the-art methods both in terms of accuracy and efficiency. Our results show, among others, that the average pairwise distance in the multiple sequence alignment of a dataset of widely-studied mitochondrial DNA sequences is reduced by around 5% when MARS is applied before a multiple sequence alignment is performed. CONCLUSIONS: Analysing multiple sequences simultaneously is fundamental in biological research and multiple sequence alignment has been found to be a popular method for this task. Conventional alignment techniques cannot be used effectively when the position where sequences start is arbitrary. We present here a method, which can be used in conjunction with any multiple sequence alignment program, to address this problem effectively and efficiently.", 
+          "qas": [
+            {
+              "question": "Which algorithm has been developed in order to improve multiple circular sequence alignment using refined sequences?", 
+              "id": "5a6a3464b750ff4455000026_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Systemic drugs that influence titanium implant osseointegration. Titanium implants are widely used on an increasing number of patients in orthopedic and dental medicine. Despite the good survival rates of these implants, failures that lead to important socio-economic consequences still exist. Recently, research aimed at improving implant fixation, a process called osseointegration, has focused on a new, innovative field: systemic delivery of drugs. Following implant fixation, patients receive systemic drugs that could either impair or enhance osseointegration; these drugs include anabolic and anti-catabolic bone-acting agents in addition to new treatments. Anabolic bone-acting agents include parathyroid hormone (PTH) peptides, simvastatin, prostaglandin EP4 receptor antagonist, vitamin D and strontium ranelate; anti-catabolic bone-acting agents include compounds like calcitonin, biphosphonates, RANK/RANKL/OPG system and selective estrogen receptor modulators (SERM). Examples of the new therapies include DKK1- and anti-sclerostin antibodies. All classes of treatments have proven to possess positive impacts such as an increase in bone mineral density and on osseointegration. In order to prevent complications from occurring after surgery, some post-operative systemic drugs are administered; these can show an impairment in the osseointegration process. These include nonsteroidal anti-inflammatory drugs, proton pump inhibitors and selective serotonin reuptake inhibitors. The effects of aspirin, acetaminophen, opioids, adjuvants, anticoagulants and antibiotics in implant fixations are not fully understood, but studies are being carried out to investigate potential ramifications. It is currently accepted that systemic pharmacological agents can either enhance or impair implant osseointegration; therefore, proper drug selection is essential. This review aims to discuss the varying effects of three different classes of treatments on improving this process.", 
+          "qas": [
+            {
+              "question": "What is a SERM?", 
+              "id": "5a74e9ad0384be955100000a_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Tamoxifen and amphetamine abuse: Are there therapeutic possibilities? Although best known as a selective estrogen receptor modulator (SERM), tamoxifen is a drug with a wide range of activities. Tamoxifen has demonstrated some efficacy has a therapeutic for bipolar mania and is believed to exert these effects through inhibition of protein kinase C (PKC). As the symptoms of amphetamine treatment in rodents are believed to mimic the symptoms of a manic episode, many of the preclinical studies for this indication have demonstrated that tamoxifen inhibits amphetamine action. The amphetamine-induced increase in extracellular dopamine which gives rise to the 'manic' effects is due to interaction of amphetamine with the dopamine transporter. We and others have demonstrated that PKC reduces amphetamine-induced reverse transport through the dopamine transporter. In this review, we will outline the actions of tamoxifen as a SERM and further detail another known action of tamoxifen-inhibition of PKC. We will summarize the literature showing how tamoxifen affects amphetamine action. Finally, we will present our hypothesis that tamoxifen, or an analog, could be used therapeutically to reduce amphetamine abuse in addition to treating mania.", 
+          "qas": [
+            {
+              "question": "What is a SERM?", 
+              "id": "5a74e9ad0384be955100000a_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Is there a SERM in your menopause toolkit? Over the past 3 decades, compounds called selective estrogen receptor modulators (SERMs) have been developed that block the estrogen receptor in some tissues (estrogen receptor antagonists) or stimulate the estrogen receptor in other tissues (estrogen receptor agonists). This Practice Pearl focuses on SERMs that clinicians can use for menopausal patients.", 
+          "qas": [
+            {
+              "question": "What is a SERM?", 
+              "id": "5a74e9ad0384be955100000a_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Combined Pharmacologic Therapy in Postmenopausal Osteoporosis. Antiresorptive agents for treating postmenopausal osteoporosis include selective estrogen receptor modulator (SERM), bisphosphonates and denoumab. Teriparatide is the only Food and Drug Administration-approved anabolic agent. Synergistic effects of combining teriparatide with an antiresorptive agent have been proposed and studied. This article reviews the trial designs and the outcomes of combination therapies. Results of the combination therapy for teriparatide and bisphosphonates were mixed; while small increases of bone density were observed in the combination therapy of teriparatide and estrogen/SERM and that of teriparatide and denosumab. Those clinical studies were limited by small sample sizes and lack of fracture outcomes.", 
+          "qas": [
+            {
+              "question": "What is a SERM?", 
+              "id": "5a74e9ad0384be955100000a_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Prognostic performance of MR-pro-adrenomedullin in patients with community acquired pneumonia in the Emergency Department compared to clinical severity scores PSI and CURB. AIM: (i) evaluate the performance of MR-pro-ADM in reflecting the outcome and risk for CAP patients in the emergency department, and (ii) compare the prognostic performance of MR-pro-ADM with that of clinical scores PSI and CURB65. METHODS: Observational prospective, single-center study in patients with suspected community acquired pneumonia (CAP). Eighty one patients underwent full clinical and laboratory assessment as by protocol, and were followed up a 28 days. Primary endpoints measured were: death, death at 14 days, non-invasive mechanical ventilation (NIMV), endotracheal intubation (EI), ICU admission, overall hospital stay >10 days, emergency department stay >4 days. The discriminative performance of MR-pro-ADM and clinical scores was assessed by AUROC analysis. RESULTS: The distribution for MR-pro-ADM followed an upward trend, increasing with the increase of both PSI (p<0.001) and CURB65 (p<0.001) classes. However, the difference between MRproADM values and score classes was significant only in the case of CURB65 classes 0 and 1 (p = 0.046), 2 (p = 0.013), and 3 (p = 0.011); and with PSI classes 5, 3 (p = 0.044), and 1 (p = 0.020). As to the differences among variables for the six end-points, MR-pro-ADM values in the two groups selected for each considered end-point differed in a statistically significant manner for all endpoints. Both PSI and CURB65 differed significantly for all end-points, except for stay in the ED longer than 4 days and the hospital stay longer than 10 days and endotracheal intubation (only PSI classes differed with statistical significance). ROC analyses evidenced that MR-pro-ADM values gave the greatest AUC for the prediction of death, endotracheal intubation, hospital stay >10 days and DE stay >4 days, compared to the PSI and CURB (though difference not statistically significant). For each endpoint measured, the best thresholds values for Mr-pro-ADM were: 1.6 (specificity 76.5%; sensitivity 77.8%) for death; 2.5 (specificity 88.9%; sensitivity 80.0%) for death at 14 days; 1.5 (specificity 77.0%; sensitivity 87.5%) for NIMV; 2.4 (specificity 88.7%; sensitivity 83.3%) for endotracheal intubation; 0.9 (specificity 53.5%; sensitivity 70.6%) for DE stay greater than 4 days; 1.9 (specificity 82.1%; sensitivity 55.3%) for hospital stay greater than 10 days. The AUC for the combination of MR-pro-ADM and PSI was 81.29% [63.41%-99.17%], but not in a statistically significant manner compared to the AUCs of the single predictors. Conversely, the AUC for the combination of MR-pro-ADM and CURB65 was 87.58% [75.54%-99.62%], which was significantly greater than the AUC of CURB65 (p = 0.047) or PSI (p = 0.017) alone. CONCLUSIONS: The present study confirms that assessment of MR-pro-ADM levels in CAP patients in addition to CURB scores increases the prognostic accuracy of CURB alone and may help rule out discrepancies arising from flawed clinical severity classification. With particular reference to patients scoring in the upper classes of CURB and PSI, MR-pro-ADM values provided additional information towards a better risk stratification of those patients. In particular, our results pointed towards two MR-pro-ADM threshold values that appear to predict with a good degree of accuracy the patient's need for non-invasive mechanical ventilation, endotracheal intubation, or intensive care. This aspect, however, deserves further investigation.", 
+          "qas": [
+            {
+              "question": "CURB65 score is used for stratification of which disease?", 
+              "id": "5a67ab79b750ff445500000b_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Mortality prediction using serum biomarkers and various clinical risk scales in community-acquired pneumonia. We evaluated the predictive value of serum biomarkers and various clinical risk scales for the 28-day mortality of community-acquired pneumonia (CAP). Serum biomarkers including procalcitonin (PCT) and C-reactive protein (CRP) were evaluated in the emergency department. Scores for the pneumonia severity index (PSI); CURB65 (confusion, urea, respiration, blood pressure; age >65 years); Infectious Disease Society of America (IDSA) and American Thoracic Society (ATS) guidelines for severe CAP; Acute Physiology, Chronic Health Evaluation (APACHE) II; Sequential Organ Failure Assessment (SOFA); and quick SOFA (qSOFA) were calculated. Receiver-operating characteristic curves for 28-day mortality were calculated for each predictor using cut-off values, and we applied logistic regression models and area under the curve (AUC) analysis to compare the performance of predictors. Of the 125 enrolled patients, 13 died within 28 days. The AUCs of the PCT and CRP were 0.83 and 0.77, respectively. Using a PCT level >5.6 \u03bcg/L as the cut-off, the sensitivity and specificity for mortality were 76.9% and 90.2%, respectively. The three pneumonia severity scales showed an AUC of 0.86 (PSI), 0.87 (IDSA/ATS) and 0.77 (CURB65). The AUCs of the APACHE II, SOFA and qSOFA scores were 0.85, 0.83 and 0.81, respectively. The models combining CRP and/or PCT with PSI or the IDSA/ATS guidelines demonstrated superior performance to those of either PSI or the IDAS/ATS guidelines alone. In conclusion, serum PCT is a reliable single predictor for short-term mortality. Inclusion of CRP and/or PCT could significantly improve the performance of the PSI and IDAS/ATS guidelines.", 
+          "qas": [
+            {
+              "question": "CURB65 score is used for stratification of which disease?", 
+              "id": "5a67ab79b750ff445500000b_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Pneumonia in the developing world: Characteristic features and approach to management. Community-acquired pneumonia (CAP) is a common cause of morbidity and mortality in adults worldwide, but its epidemiology varies markedly by region. Whilst in high-income countries, the predominant burden of CAP is in the elderly and those with chronic cardiovascular and pulmonary co-morbidity, CAP patients in low-income settings are often of working age and, in sub-Saharan Africa, frequently HIV-positive. Although region-specific aetiological data are limited, they are sufficient to highlight major trends: in high-burden settings, tuberculosis (TB) is a common cause of acute CAP; Gram-negative pathogens such as Klebsiella pneumoniae are regionally important; and HIV-associated opportunistic infections are common but difficult to diagnose. These differences in epidemiology and aetiological profile suggest that modified approaches to diagnosis, severity assessment and empirical antimicrobial therapy of CAP are necessary, but tailored individualized management approaches are constrained by limitations in the availability of radiological and laboratory diagnostic services, as well as medical expertise. The widespread introduction of the Xpert MTB/RIF platform represents a major advance for TB diagnosis, but innovations in rapid diagnostics for other opportunistic pathogens are urgently needed. Severity assessment tools (e.g. CURB65) that are used to guide early management decisions in CAP have not been widely validated in low-income settings and locally adapted tools are required. The optimal approach to initial antimicrobial therapy choices such as the need to provide early empirical cover for atypical bacteria and TB remain poorly defined. Improvements in supportive care such as correcting hypoxaemia and intravenous fluid management represent opportunities for substantial reductions in mortality.", 
+          "qas": [
+            {
+              "question": "CURB65 score is used for stratification of which disease?", 
+              "id": "5a67ab79b750ff445500000b_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Relevant Cytokines in the Management of Community-Acquired Pneumonia. Community-acquired pneumonia (CAP) is the leading cause of infectious death in the world. Immune dysregulation during acute lung infection plays a role in lung injury and the systemic inflammatory response. Cytokines seem to be major players in severe lung infection cases. Here, we present a review of published papers in the last 3\u00a0years regarding this topic. The cytokine response during pneumonia is different in bacterial vs viral infections; some of these cytokines correlate with clinical severity scales such as CURB65 or SOFA. Treatment focused in the cytokine environment is an interesting area that could impact the prognosis of CAP. Some of the agents that have been studied as co-adjuvant therapy are corticosteroids, macrolides, and linezolid, but anyone of those have shown a clear or proven efficacy or have been recommended as a part of the standard of care for CAP. More studies designed to define the role of immunomodulatory agents, such as co-adjuvant therapy in pneumonia, are needed.", 
+          "qas": [
+            {
+              "question": "CURB65 score is used for stratification of which disease?", 
+              "id": "5a67ab79b750ff445500000b_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Targeting the Genome-Stability Hub Ctf4 by Stapled-Peptide Design. The exploitation of synthetic lethality by small-molecule targeting of pathways that maintain genomic stability is an attractive chemotherapeutic approach. The Ctf4/AND-1 protein hub, which links DNA replication, repair, and chromosome segregation, represents a novel target for the synthetic lethality approach. Herein, we report the design, optimization, and validation of double-click stapled peptides encoding the Ctf4-interacting peptide (CIP) of the replicative helicase subunit Sld5. By screening stapling positions in the Sld5 CIP, we identified an unorthodox i,i+6 stapled peptide with improved, submicromolar binding to Ctf4. The mode of interaction with Ctf4 was confirmed by a crystal structure of the stapled Sld5 peptide bound to Ctf4. The stapled Sld5 peptide was able to displace the Ctf4 partner DNA polymerase \u03b1 from the replisome in yeast extracts. Our study provides proof-of-principle evidence for the development of small-molecule inhibitors of the human CTF4 orthologue AND-1.", 
+          "qas": [
+            {
+              "question": "Which stapled peptide has been designed to target Ctf4?", 
+              "id": "5a6d08d5b750ff445500002c_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Limb-Enhancer Genie: An accessible resource of accurate enhancer predictions in the developing limb. Epigenomic mapping of enhancer-associated chromatin modifications facilitates the genome-wide discovery of tissue-specific enhancers in vivo. However, reliance on single chromatin marks leads to high rates of false-positive predictions. More sophisticated, integrative methods have been described, but commonly suffer from limited accessibility to the resulting predictions and reduced biological interpretability. Here we present the Limb-Enhancer Genie (LEG), a collection of highly accurate, genome-wide predictions of enhancers in the developing limb, available through a user-friendly online interface. We predict limb enhancers using a combination of >50 published limb-specific datasets and clusters of evolutionarily conserved transcription factor binding sites, taking advantage of the patterns observed at previously in vivo validated elements. By combining different statistical models, our approach outperforms current state-of-the-art methods and provides interpretable measures of feature importance. Our results indicate that including a previously unappreciated score that quantifies tissue-specific nuclease accessibility significantly improves prediction performance. We demonstrate the utility of our approach through in vivo validation of newly predicted elements. Moreover, we describe general features that can guide the type of datasets to include when predicting tissue-specific enhancers genome-wide, while providing an accessible resource to the general biological community and facilitating the functional interpretation of genetic studies of limb malformations.", 
+          "qas": [
+            {
+              "question": "Which resource contains accurate enhancer predictions in the developing limb?", 
+              "id": "5a6d1733b750ff4455000030_000"
+            }
+          ]
+        }, 
+        {
+          "context": "No evidence found for an association between prednisone dose and FVC change in newly-treated pulmonary sarcoidosis. BACKGROUND: Prednisone is used as first-line therapy for pulmonary sarcoidosis. What dosing strategy has the best balance between effect and side-effects is largely unknown. We analyzed change in forced vital capacity (FVC) and weight during different prednisone doses used in daily practice for treatment na\u00efve pulmonary sarcoidosis patients. METHODS: Multilevel models were used to describe FVC and weight change over time. Correlations were calculated using linear regression models. RESULTS: Fifty-four patients were included. FVC changed over time (p\u00a0<\u00a00.001), with an average increase of 9.6% predicted (95% CI: 7.2 to 12.1) at 12 months. Weight changed significantly over time (p\u00a0<\u00a00.001), with an average increase of 4.3\u00a0kg (95% CI: 3.0 to 5.6) at 12 months. Although FVC and weight changed significantly over time, there was little correlation between prednisone dose and FVC change, while weight increase correlated significantly with cumulative prednisone dose at 24 months. In patients treated with a high cumulative prednisone dose, baseline FVC was on average lower (p\u00a0=\u00a00.001) compared to low dose treated patients, while no significant differences were observed in need for second/third-line therapy or number of exacerbations. A strategy leading to a low cumulative dose at 12 months was defined by rapid dose tapering to 10\u00a0mg/day within 3.5 months. CONCLUSIONS: These results suggest that prednisone therapy aimed at improving or preserving FVC in newly- treated pulmonary sarcoidosis can often be reduced in dose, using a treatment regimen that is characterized by early dose tapering.", 
+          "qas": [
+            {
+              "question": "What is the first line treatment for sarcoidosis?", 
+              "id": "5a7877c0faa1ab7d2e00000c_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Update on Treatment in Cardiac Sarcoidosis. The prevalence of cardiac sarcoidosis has exponentially increased over the past decade, primarily due to increased awareness and diagnostic modalities for the disease entity. Despite an expanding patient cohort, the optimal management of cardiac sarcoidosis remains yet to be established with a significant lack of prospective trials to support current practice. Corticosteroids remain first-line treatment of this disorder, and we recommend that immunosuppressive therapy should be initiated in all patients diagnosed with cardiac sarcoidosis. Additional pharmacotherapy may be necessary based on disease manifestations and response to treatment. The use of nuclear imaging with fluorodeoxyglucose (FDG) positron emission tomography (PET) to guide treatment has become more common, but lacks rigorous data from larger cohorts. Whether an improvement in inflammatory burden as assessed by FDG-PET is correlated with clinical outcomes is as yet unproven. Device therapy with implantable-cardioverter defibrillators should be considered in all cardiac sarcoidosis patients for either primary or secondary prevention of ventricular arrhythmias and cardiac death.", 
+          "qas": [
+            {
+              "question": "What is the first line treatment for sarcoidosis?", 
+              "id": "5a7877c0faa1ab7d2e00000c_001"
+            }
+          ]
+        }, 
+        {
+          "context": "[Current Therapeutic Approaches to Sarcoidosis]. Sarcoidosis represents a non-caseating, granulomatous disorder of unknown aetiology whose clinical manifestation is heterogeneous and frequently multisystemic. The portion of patients needing systemic treatment varies: though many patients may undergo spontaneous remission, organ-threatening courses demand systemic therapy. Corticosteroids are the first-line treatment option; however, disease\u00b4s progression and/or major corticosteroid side effects may require second- and third-line therapeutics. A current stepwise therapeutic algorithm to sarcoidosis that characterizes additive and alternative therapeutic agents is given in the following review.", 
+          "qas": [
+            {
+              "question": "What is the first line treatment for sarcoidosis?", 
+              "id": "5a7877c0faa1ab7d2e00000c_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Pain-mediated affect regulation is reduced after dialectical behavior therapy in borderline personality disorder: a longitudinal fMRI study. Borderline Personality Disorder (BPD) is characterized by affective instability, but self-injurious behavior appears to have an emotion-regulating effect. We investigated whether pain-mediated affect regulation can be altered at the neural level by residential Dialectical Behavior Therapy (DBT), providing adaptive emotion regulation techniques. Likewise, we investigated whether pain thresholds or the appraisal of pain change after psychotherapy. We investigated 28 patients with BPD undergoing DBT (self-referral), 15 patients with treatment as usual and 23 healthy control subjects at two time points 12 weeks apart. We conducted an fMRI experiment eliciting negative emotions with picture stimuli and induced heat pain to investigate the role of pain in emotion regulation. Additionally, we assessed heat and cold pain thresholds.At first measurement, patients with BPD showed amygdala deactivation in response to painful stimulation, as well as altered connectivity between left amygdala and dorsal anterior cingulate cortex. These effects were reduced after DBT, as compared with patients with treatment as usual. Pain thresholds did not differ between the patient groups. We replicated the role of pain as a means of affect regulation in BPD, indicated by increased amygdala coupling. For the first time, we could demonstrate that pain-mediated affect regulation can be changed by DBT.", 
+          "qas": [
+            {
+              "question": "Which personality disorder is treated using dialectical behavior therapy?", 
+              "id": "5a68f005b750ff4455000016_000"
+            }
+          ]
+        }, 
+        {
+          "context": "[Influence and Change of Self-Directedness in Dialectical Behavior Therapy]. Objective Investigate influence and change of self-directedness (SD) in Dialectical-Behavior Therapy (DBT) for 26 female outpatients with borderline personality disorder (BPS). Method Variance analyses are used to evaluate psychopathology and interpersonal problems in 2 subgroups (low vs. high SD) with questionnaires at 3 measuring times over the period of 1 year. Results Low SD was associated with higher psychopathology, more interpersonal problems and lower symptomreduction. Over time of intervention the SD of all patients improved significantly. Conclusion DBT strengthens the SD of patients with BPD. A screening of SD before intervention, and systematic support should be considered.", 
+          "qas": [
+            {
+              "question": "Which personality disorder is treated using dialectical behavior therapy?", 
+              "id": "5a68f005b750ff4455000016_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Teaching Dialectical Behavior Therapy to Psychiatry Residents: The Columbia Psychiatry Residency DBT Curriculum. OBJECTIVE: Dialectical behavior therapy (DBT) is an evidence-based psychosocial treatment with efficacy in reducing self-harm behaviors in borderline personality disorder (BPD). This study describes and evaluates a clinical curriculum to teach DBT to psychiatry residents, developed at a large urban university hospital. The curriculum objectives are to (1) have psychiatry residents achieve basic understanding of DBT theory and clinical skill, (2) increase residents' ability and confidence in treating self-harm behaviors (both suicidal behavior and non-suicidal self-injury), and (3) enhance residents' willingness to treat individuals with BPD. METHODS: In addition to a 6-week didactic course on DBT offered to all residents (n = 62), 25 elected to enroll in a year-long DBT clinical training curriculum over the course of a 5-year period. The DBT clinical training consisted of 15\u00a0h of additional didactics, ongoing conduct of individual therapy and group DBT skills training, videotaping of individual therapy sessions, and weekly supervision meetings utilizing videotape to provide feedback. Residents participating in the clinical training program videotaped baseline and later sessions, which were rated for DBT adherence. All 62 graduates of the program were surveyed regarding the impact of the training on their practice of psychiatry. RESULTS: Upon graduation, a high percentage (87\u00a0% in the curriculum and 70\u00a0% in the didactic course only) reported incorporating DBT into their psychiatry practice, as well as willingness and confidence in treating BPD and self-harm behaviors. Residents participating in the clinical training demonstrated significant improvement in their ability to utilize DBT interventions, particularly in structuring sessions, problem assessment, problem solving, and using validation and dialectical strategies. CONCLUSION: This DBT curriculum was effective in preparing psychiatrists-in-training to incorporate evidence-based practices for effective treatment of BPD and self-harm behaviors and can serve as a model for teaching DBT during psychiatry residency training. Limitations include a small sample size and lack of baseline survey measurement of attitudes for pre- and post-curriculum comparison.", 
+          "qas": [
+            {
+              "question": "Which personality disorder is treated using dialectical behavior therapy?", 
+              "id": "5a68f005b750ff4455000016_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Neural correlates of distraction in borderline personality disorder before and after dialectical behavior therapy. Neural underpinnings of emotion dysregulation in borderline personality disorder (BPD) are characterized by limbic hyperactivity and disturbed prefrontal activity. It is unknown whether neural correlates of emotion regulation change after a psychotherapy which has the goal to improve emotion dysregulation in BPD, such as dialectical behavioral therapy (DBT). We investigated distraction as a main emotion regulation strategy before and after DBT in female patients with BPD. Thirty-one BPD patients were instructed to either passively view or memorize letters before being confronted with negative or neutral pictures in a distraction task during functional magnetic resonance imaging. This paradigm was applied before and after a 12-week residential DBT-based treatment program. We compared the DBT group to 15 BPD control patients, who continued their usual, non-DBT-based treatment or did not have any treatment, and 22 healthy participants. Behaviorally, BPD groups and healthy participants did not differ significantly with respect to alterations over time. On the neural level, BPD patients who received DBT-based treatment showed an activity decrease in the right inferior parietal lobe/supramarginal gyrus during distraction from negative rather than neutral stimuli when compared to both control groups. This decrease was correlated with improvement in self-reported borderline symptom severity. DBT responders exhibited decreased right perigenual anterior cingulate activity when viewing negative (rather than neutral) pictures. In conclusion, our findings reveal changes in neural activity associated with distraction during emotion processing after DBT in patients with BPD. These changes point to lower emotional susceptibility during distraction after BPD symptom improvement.", 
+          "qas": [
+            {
+              "question": "Which personality disorder is treated using dialectical behavior therapy?", 
+              "id": "5a68f005b750ff4455000016_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Exploring the effectiveness of combined mentalization-based group therapy and dialectical behaviour therapy for inpatients with borderline personality disorder - A pilot study. OBJECTIVES: Borderline personality disorder (BPD) is characterized by emotional instability, interpersonal dysfunction, and other features that typically develop before a background of insecure attachment and traumatic experiences. Dialectical behaviour therapy (DBT) has proven highly effective in reducing self-harm and improving emotion regulation, whereby problems concerning social cognition, which are also characteristic of BPD, may need additional approaches such as mentalization-based treatment (MBT). METHODS: Here, we examined, in a pilot study, the effectiveness of MBT given adjunct to DBT, compared to DBT alone, in an inpatient sample with BPD, whereby mentalization was measured using a novel cartoon-based task. RESULTS: Both treatments were highly effective in reducing symptom severity. The combination of DBT and MBT was superior in reducing fearful attachment and in improving affective mentalizing. CONCLUSIONS: Mentalization-based treatment in combination with DBT may improve certain aspects of social cognitive skills and attachment security, as compared to DBT alone, although the exact mechanisms that led to these changes need to be studied further. PRACTITIONER POINTS: Clinical implications Dialectical behaviour therapy (DBT) can usefully be combined with mentalization-based treatment (MBT). The combination of DBT and MBT reduces self-harm more than DBT alone. DBT plus MBT may lead to a reduction in fearful attachment and improvement of affective mentalizing. Short-term combinations of evidence-based borderline treatments may enrich psychiatric inpatient care. Therefore, such approaches deserve further research. Limitations The treatment condition was therapeutically more intense than the control condition. The study lacked a follow-up assessment. The impact of comorbid conditions on treatment response was not taken into account. Adherence to the manualized approach was not measured.", 
+          "qas": [
+            {
+              "question": "Which personality disorder is treated using dialectical behavior therapy?", 
+              "id": "5a68f005b750ff4455000016_004"
+            }
+          ]
+        }, 
+        {
+          "context": "Eukaryotic DNA Replication Fork. This review focuses on the biogenesis and composition of the eukaryotic DNA replication fork, with an emphasis on the enzymes that synthesize DNA and repair discontinuities on the lagging strand of the replication fork. Physical and genetic methodologies aimed at understanding these processes are discussed. The preponderance of evidence supports a model in which DNA polymerase \u03b5 (Pol \u03b5) carries out the bulk of leading strand DNA synthesis at an undisturbed replication fork. DNA polymerases \u03b1 and \u03b4 carry out the initiation of Okazaki fragment synthesis and its elongation and maturation, respectively. This review also discusses alternative proposals, including cellular processes during which alternative forks may be utilized, and new biochemical studies with purified proteins that are aimed at reconstituting leading and lagging strand DNA synthesis separately and as an integrated replication fork.", 
+          "qas": [
+            {
+              "question": "What cellular process are okazaki fragments associated with?", 
+              "id": "5a79d0b8faa1ab7d2e00000d_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Days weaving the lagging strand synthesis of DNA - A personal recollection of the discovery of Okazaki fragments and studies on discontinuous replication mechanism. At DNA replication forks, the overall growth of the antiparallel two daughter DNA chains appears to occur 5'-to-3' direction in the leading-strand and 3'-to-5' direction in the lagging-strand using enzyme system only able to elongate 5'-to-3' direction, and I describe in this review how we have analyzed and proved the lagging strand multistep synthesis reactions, called Discontinuous Replication Mechanism, which involve short RNA primer synthesis, primer-dependent short DNA chains (Okazaki fragments) synthesis, primer removal from the Okazaki fragments and gap filling between Okazaki fragments by RNase H and DNA polymerase I, and long lagging strand formation by joining between Okazaki fragments with DNA ligase.", 
+          "qas": [
+            {
+              "question": "What cellular process are okazaki fragments associated with?", 
+              "id": "5a79d0b8faa1ab7d2e00000d_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Subpallial Enhancer Transgenic Lines: a Data and Tool Resource to Study Transcriptional Regulation of GABAergic Cell Fate. Elucidating the transcriptional circuitry controlling forebrain development requires an understanding of\u00a0enhancer activity and regulation. We generated stable transgenic mouse lines that express CreER and GFP from ten different enhancer elements with activity in distinct domains within the embryonic basal ganglia. We used these unique tools to generate a comprehensive regional fate map of the mouse subpallium, including sources for specific subtypes of amygdala neurons. We then focused on deciphering transcriptional mechanisms that control enhancer activity. Using machine-learning computations, in\u00a0vivo chromosomal occupancy of 13 transcription factors that regulate subpallial patterning and differentiation and analysis of enhancer activity in Dlx1/2 and Lhx6 mutants, we elucidated novel molecular mechanisms that regulate region-specific enhancer activity in the developing brain. Thus, these subpallial enhancer transgenic lines are data and tool\u00a0resources to study transcriptional regulation of GABAergic cell fate.", 
+          "qas": [
+            {
+              "question": "Which resource has been developed in order to study the transcriptional regulation of GABAergic cell fate?", 
+              "id": "5a6d196db750ff4455000032_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Definition of a type of abnormal vaginal flora that is distinct from bacterial vaginosis: aerobic vaginitis. OBJECTIVE: To define an entity of abnormal vaginal flora: aerobic vaginitis. DESIGN: Observational study. SETTING: University Hospital Gasthuisberg, Leuven, Belgium. SAMPLE: 631 women attending for routine prenatal care or attending vaginitis clinic. METHODS: Samples were taken for fresh wet mount microscopy of vaginal fluid, vaginal cultures and measurement of lactate, succinate and cytokine levels in vaginal fluid. Smears deficient in lactobacilli and positive for clue cells were considered to indicate a diagnosis of bacterial vaginosis. Aerobic vaginitis was diagnosed if smears were deficient in lactobacilli, positive for cocci or coarse bacilli, positive for parabasal epithelial cells, and/or positive for vaginal leucocytes (plus their granular aspect). RESULTS: Genital complaints include red inflammation, yellow discharge, vaginal dyspareunia. Group B streptococci, escherichia coli, staphylococcus aureus and trichomonas vaginalis are frequently cultured. Vaginal lactate concentration is severely depressed in women with aerobic vaginitis, as in bacterial vaginosis, but vaginal succinate is not produced. Also in contrast to bacterial vaginosis, aerobic vaginitis produces a host immune response that leads to high production of interleukin-6, interleukin-1-beta and leukaemia inhibitory factor in the vaginal fluid. CONCLUSION: Aerobic vaginitis is associated with aerobic micro-organisms, mainly group B streptococci and E. coli. Its characteristics are different from those of bacterial vaginosis and elicit an important host response. The most severe form of aerobic vaginitis equals desquamative inflammatory vaginitis. In theory, aerobic vaginitis may be a better candidate than bacterial vaginosis as the cause of pregnancy complications, such as ascending chorioamnionitis, preterm rupture of the membranes and preterm delivery.", 
+          "qas": [
+            {
+              "question": "Clue cells are characteristics to which causative bacteria of vaginitis?", 
+              "id": "5a68f965b750ff445500001a_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Diagnostic utility of the genital Gram stain in ED patients. OBJECTIVE: The study aimed to determine the diagnostic usefulness of the genital Gram stain in an emergency department (ED) population. METHODS: A linked-query of an urban, tertiary-care, university- affiliated hospital laboratory database was conducted for all completed Chlamydia trachomatis and Neisseria gonorrhoeae DNA probes, Trichomonas vaginalis wet preps, and genital Gram stains performed on ED patient visits between January and December 2004. Positive criteria for a Gram stain included greater than 10 white blood cells per high-power field, gram-negative intracellular/extracellular diplococci (suggesting N gonorrhoeae), clue cells (suggesting T vaginalis), or direct visualization of T vaginalis organisms. DNA probes were used as the gold standard definition for N gonorrhoeae and C trachomatis infection. RESULTS: Of 1511 initially eligible ED visits, 941 were analyzed (genital Gram stain and DNA probe results both present), with a prevalence of either C trachomatis or N gonorrhoeae of 11.4%. A positive genital Gram stain was 75.7% sensitive and 43.3% specific in diagnosing either C trachomatis and/or N gonorrhoeae infection, and 80.4% sensitive and 32.2% specific when the positive cutoff was lowered to more than 5 white blood cells/high-power field. No Gram stains were positive for T vaginalis (with 47 positive wet mounts), and clue cells were noted on 117 Gram stains (11.6%). CONCLUSION: Gram stains in isolation lack sufficient diagnostic ability to detect either C trachomatis or N gonorrhoeae infection in the ED.", 
+          "qas": [
+            {
+              "question": "Clue cells are characteristics to which causative bacteria of vaginitis?", 
+              "id": "5a68f965b750ff445500001a_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Frequency of infectious agents for vaginitis in patients with a cytological diagnosis of atypical squamous cells of undetermined significance. AIM: To evaluate the presence of infectious agents for vaginitis in patients with ASCUS. METHODS: 33,388 patients who underwent cervical-vaginal cytology from 08/1993 to 05/2002 were included in the study, and 1,104 (3.4%) presented positive ASCUS. The appraised infectious agents were Coccobacilli, Candida sp, Trichomonas vaginalis, and clue cells (Gardnerella vaginalis). RESULTS: In the group with ASCUS a larger frequency of Coccobacilli (22.37%) and Trichomonas vaginalis (5.25%) was found when compared with the group with negative ASCUS (17.79% and 3.98%, respectively; p < 0.05). Cytolysis occurred more frequently in patients with ASCUS (3.8 vs 6.3%, first phase and 4.5 vs 10%, second phase). CONCLUSIONS: We believe that some diagnoses of ASCUS can be induced by the presence of infectious agents for vaginitis, mainly cocci and coccoides. ASCUS occurs more frequently in the first phase of the menstrual cycle, therefore in less acid vaginal pH.", 
+          "qas": [
+            {
+              "question": "Clue cells are characteristics to which causative bacteria of vaginitis?", 
+              "id": "5a68f965b750ff445500001a_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Gardnerella, Trichomonas and Candida in cervical smears of 58,904 immigrants participating in the Dutch national cervical screening program. OBJECTIVE: To report the prevalence of Gardnerella, Trichomonas and Candida in the cervical smears of 9 immigrant groups participating in the Dutch national cervical screening program. STUDY DESIGN: Cervical smears were taken from 58,904 immigrant participants and 498,405 Dutch participants. As part of the routine screening process, all smears were screened for the overgrowth of Gardnerella (i.e. smears with an abundance of clue cells) and for the presence of Trichomonas and Candida. The smears were screened by 6 laboratories, all of which use the Dutch KOPAC coding system. The odds ratio and confidence interval were calculated for the 9 immigrant groups and compared to Dutch participants. RESULTS: Immigrants from Suriname, Turkey and the Dutch Antilles have a 2-5 times higher prevalence of Gardnerella and Trichomonas when compared to native Dutch women. Interestingly, the prevalence of Trichomonas in cervical smears of Moroccan immigrants is twice as high, yet the prevalence of Gardnerella is 3 times lower than in native Dutch women. CONCLUSIONS: Immigrants with a high prevalence of Gardnerella also have a high prevalence of Trichomonas. In the context of the increased risk of squamous abnormalities in smears with Gardnerella, such slides should be screened with extra care.", 
+          "qas": [
+            {
+              "question": "Clue cells are characteristics to which causative bacteria of vaginitis?", 
+              "id": "5a68f965b750ff445500001a_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Bacterial vaginosis. Bacterial vaginosis is the most common cause of vaginitis, affecting over 3 million women in the United States annually. Depopulation of lactobacilli from the normal vaginal flora and overgrowth of Gardnerella vaginalis and other anaerobic species are the presumed etiology. To date, no scientific evidence shows that bacterial vaginosis is a sexually transmitted disease. Malodorous vaginal discharge is the most common symptom. Differential diagnoses include trichomoniasis, moniliasis, and allergic or chemical dermatitis. The diagnosis is confirmed when at least three of the following four findings are present (Amsel's criteria): 1) thin, homogenous discharge, 2) pH greater than 4.5, 3) positive amine test, and 4) presence of clue cells. The sensitivity and positive predictive value are both 90%. Vaginal Gram stain is also reliable and allows for permanent record. Cultures are nonspecific because G. vaginalis resides in normal vaginal flora as well. Papanicolaou smears are not particularly sensitive, but their positive predictive value is very high. The Centers for Disease Control and Prevention recommend three treatment regimens in nonpregnant patients: oral metronidazole (500 mg twice daily for 7 days), intravaginal 2% clindamycin cream (one applicatorful at bedtime for 7 days), or intravaginal metronidazole gel (one to two applicatorfuls per day for 5 days). Alternative regimens include a single 2-g oral dose of metronidazole or a 7-day course of oral clindamycin, 300 mg twice daily. The association between bacterial vaginosis and adverse pregnancy outcomes has satisfied many criteria for a causal inference. Treatment of bacterial vaginosis in women with previous history of preterm labor results in fewer preterm deliveries than in untreated women from the same population.", 
+          "qas": [
+            {
+              "question": "Clue cells are characteristics to which causative bacteria of vaginitis?", 
+              "id": "5a68f965b750ff445500001a_004"
+            }
+          ]
+        }, 
+        {
+          "context": "Clinicopathological study of Papanicolaou (Pap) smears for diagnosing of cervical infections. Cervical infections are not uncommon in our population especially in young and sexually active women. One thousand samples of married women, aged between 20 and 70 years, were studied by conventional Papanicolaou smears. These samples were examined in the Department of Pathology, King Edward Medical University, Lahore from January 2007 to June 2009. Only cases without (pre)neoplastic cytology were included. Six types of infections were diagnosed cytologically. The overall frequency of normal, inadequate, neoplastic, and infective smears was 50%, 1.8%, 10.2%, and 38.3%, respectively. Most of the patients (67%) were in the reproductive age group with mean age 34.7 \u00b1 2.6 years. The commonest clinical sign seen in 354/383 (92%) cases and symptom in (349/383; 91%) cases were vaginal discharge and pruritis vulvae. Among the infective smears, 290 cases (75.7%), the cytologic diagnosis was nonspecific inflammation. Most of these 290 smears contained clue cells (indicating Gardnerella infection) and a lack of lactobacilli. Such smears are predominant in patients suffering from bacterial vaginosis (BV). Twenty-eight smears (7.3%) were positive for Trichomonas vaginalis, 27 cases (7%) were smears with koilocytic change pathognomonic of human papilloma virus infection. Twenty-five smears (6.5%) were positive for fungal infection. Seven cases (1.8%) were diagnosed as herpes simplex virus infection. Finally, there were six cases (1.5%) with atrophic vaginitis. We conclude that the cervical smear is well suited for diagnosing cervical infections. It is clear that Gardnerella, known to be associated with bacterial vaginosis, is a major problem in our Pakistani population.", 
+          "qas": [
+            {
+              "question": "Clue cells are characteristics to which causative bacteria of vaginitis?", 
+              "id": "5a68f965b750ff445500001a_005"
+            }
+          ]
+        }, 
+        {
+          "context": "Psoriasis and comorbid diseases: Implications for management. As summarized in the first article in this continuing medical education series, the currently available epidemiologic data suggest that psoriasis may be a risk factor for cardiometabolic disease. Emerging data also suggest associations between psoriasis and other comorbidities beyond psoriatic arthritis, including chronic kidney disease, inflammatory bowel disease, hepatic disease, certain malignancies, infections, and mood disorders. Recognizing the comorbid disease burden of psoriasis is essential for ensuring comprehensive care of patients with psoriasis. The clinical implications of the comorbid diseases that\u00a0are associated with psoriasis and recommendations for clinical management are reviewed in this article.", 
+          "qas": [
+            {
+              "question": "What is the link between psoriatic arthritis and depression", 
+              "id": "5a8712af61bb38fb24000002_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Depression Is Associated with an Increased Risk of Psoriatic Arthritis among Patients with Psoriasis: A Population-Based Study. The factors that contribute to the development of psoriatic arthritis (PsA) among patients with psoriasis are not well known; however, systemic inflammation is believed to be important. On the basis of recent laboratory work demonstrating that major depressive disorder (MDD) is associated with increased systemic inflammation, we hypothesized that patients with psoriasis who develop MDD are at increased risk of subsequently developing PsA. We utilized The Health Improvement Network, a primary care medical records database, to identify 73,447 individuals with psoriasis. Patients were followed up to 25 years until the development of the primary outcome of PsA or the censor date. The exposure of interest was the development of MDD. Cox proportional-hazards models showed that patients with psoriasis who developed MDD were at significantly increased risk of subsequently developing PsA compared with patients who did not develop MDD, even after accounting for numerous covariates (hazard ratio 1.37, 95% confidence interval 1.05-1.80, P\u00a0= 0.021). This result was maintained through numerous sensitivity analyses. These data support the hypothesis that MDD increases the risk of developing PsA among patients with psoriasis, suggesting a need for heightened prevention and management of MDD in patients with psoriasis.", 
+          "qas": [
+            {
+              "question": "What is the link between psoriatic arthritis and depression", 
+              "id": "5a8712af61bb38fb24000002_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Corticosteroid injection for de Quervain's tenosynovitis. BACKGROUND: De Quervain's tenosynovitis is a disorder characterised by pain on the radial (thumb) side of the wrist and functional disability of the hand. It can be treated by corticosteroid injection, splinting and surgery. OBJECTIVES: To summarise evidence on the efficacy and safety of corticosteroid injections for de Quervain's tenosynovitis. SEARCH STRATEGY: We searched the following databases: the Cochrane Central Register of Controlled Trials (CENTRAL) (The Cochrane Library 2009, Issue 2), MEDLINE (1966 to April 2009), EMBASE (1956 to April 2009), CINAHL (1982 to April 2009), AMED (1985 to April 2009), DARE, Dissertation Abstracts and PEDro (physiotherapy evidence database). SELECTION CRITERIA: Randomised and controlled clinical trials evaluating the efficacy and safety of corticosteroid injections for de Quervain's tenosynovitis. DATA COLLECTION AND ANALYSIS: After screening abstracts of studies identified by the search we obtained full text articles of studies which fulfilled the selection criteria. We extracted data using a predefined electronic form. We assessed the methodological quality of included trials by using the checklist developed by Jadad and the Delphi list. We extracted data on the primary outcome measures: treatment success; severity of pain or tenderness at the radial styloid; functional impairment of the wrist or hand; and outcome of Finkelstein's test, and the secondary outcome measures: proportion of patients with side effects; type of side effects and patient satisfaction with injection treatment. MAIN RESULTS: We found one controlled clinical trial of 18 participants (all pregnant or lactating women) that compared one steroid injection with methylprednisolone and bupivacaine to splinting with a thumb spica. All patients in the steroid injection group (9/9) achieved complete relief of pain whereas none of the patients in the thumb spica group (0/9) had complete relief of pain, one to six days after intervention (number needed to treat to benefit (NNTB) = 1, 95% confidence interval (CI) 0.8 to 1.2). No side effects or local complications of steroid injection were noted. AUTHORS' CONCLUSIONS: The efficacy of corticosteroid injections for de Quervain's tenosynovitis has been studied in only one small controlled clinical trial, which found steroid injections to be superior to thumb spica splinting. However, the applicability of our findings to daily clinical practice is limited, as they are based on only one trial with a small number of included participants, the methodological quality was poor and only pregnant and lactating women participated in the study. No adverse effects were observed.", 
+          "qas": [
+            {
+              "question": "Which disease is diagnosed using the Finkelstein's test?", 
+              "id": "5a6900ebb750ff445500001d_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Outcome of longitudinal versus transverse incision in de Quervain's disease and its implications in Indian population. BACKGROUND: de Quervain's disease is an inadequacy into the first extensor compartment of wrist between the osteofibrous tunnel and the tendons. This mechanical conflict generates a tenosynovitis of the extensor pollicis brevis and the abductor pollicis longus tendons in first dorsal extensor compartment of the wrist. AIM: (1) To compare the clinical results obtained by longitudinal and transverse incisions and (2) the implication of clinical results in Indian population. MATERIALS AND METHODS: This study was conducted at Kalpana Chawla Government Medical College, Karnal, Haryana. The inclusion criteria were positive Finkelstein's test and no response to non-surgical treatment for 6 weeks. Forty-eight patients with de Quervain's disease who did not respond to conservative treatment were operated with two different incisions. The patients were followed at 6 weeks, 3 and 6 months to compare the surgical outcomes. RESULTS: During a three-month follow-up, a significant difference was shown between the two methods (p = 0.0001). Results of surgical treatment with longitudinal incision were better (only one hypertrophic scar), but there were 12 postoperative complications with transverse incision. Visual analog scale (VAS) was used to evaluate the hypertrophic scar. In transverse incision group, out of five patients, four patients who developed hypertrophic scar have poor score according to VAS. CONCLUSION: Overall, longitudinal incision should be used for surgical treatment for de Quervain's disease due to lower risk of complications.", 
+          "qas": [
+            {
+              "question": "Which disease is diagnosed using the Finkelstein's test?", 
+              "id": "5a6900ebb750ff445500001d_001"
+            }
+          ]
+        }, 
+        {
+          "context": "The role of ultrasound-guided triamcinolone injection in the treatment of de Quervain's disease: treatment and a diagnostic tool? The purpose of this study was to describe the technique and usefulness of ultrasound-guided intrasheath injection of triamcinolone in the treatment of de Quervain's disease (dQD). Our study was retrospective in design. Seventy-one wrists of 62 patients who were treated with an ultrasound-guided triamcinolone injection for dQD were included. A literature search was performed to compare our results. In the literature we found supportive evidence that accurate injection of triamcinolone in the first dorsal compartment of the wrist is important for a good outcome. In this retrospective study we found that treatment with ultrasound-guided injections of triamcinolone is both safe and effective. After two injections, 91% of the patients had good long-term results, which is a higher cure rate than found in most other studies. Furthermore, we found that Finkelstein's test can give a false positive result. Therefore, ultrasound should not only be considered to improve the treatment outcome, but can also be useful as a diagnostic tool in the management of de Quervain's disease.", 
+          "qas": [
+            {
+              "question": "Which disease is diagnosed using the Finkelstein's test?", 
+              "id": "5a6900ebb750ff445500001d_002"
+            }
+          ]
+        }, 
+        {
+          "context": "[De Quervain's stenosing tendovaginitis--one of the most common conditions affecting the hand]. De Quervain's stenosing tendovaginitis is an inflammation of the first dorsal compartment. It is considered to be one of the most common forms of inflammation of the tendon sheaths. The diagnosis is based on the case history and the clinical examination. Finkelstein's test is pathognomonic. Should conservative treatment not prove successful, the condition is readily amenable to surgical treatment.", 
+          "qas": [
+            {
+              "question": "Which disease is diagnosed using the Finkelstein's test?", 
+              "id": "5a6900ebb750ff445500001d_003"
+            }
+          ]
+        }, 
+        {
+          "context": "[Surgical treatment in De Quervain's tenosynovitis. About 20 cases]. INTRODUCTION: The De Quervain's tenosynovitis is an inadequacy into the first extensor compartment between the osteo-fibrous tunnel and the tendons. This mechanical conflict generates a tenosynovitis of the extensor pollicis brevis and the abductor pollicis longus tendons in first dorsal extensor compartment of the wrist. PATIENTS AND METHODS: The authors report a retrospective study of 20 patients who have been treated by a longitudinal surgical approach. The mean age was 49 years old with a net female predominance. The Finkelstein's test was positive in all cases. All patients were treated operatively by incision of the sheath, which was sufficient to unwind the dorsal compartment tendons. The sheath palmar flap has been sutured with skin (Le Viet plasty) to avoid a further tendons luxation. RESULTS: At three years follow-up, the functional results were good in all the patients. However, non-aesthetic scars were noticed in three patients. We did not notice neither a case of anesthesia of the radial nerve nor a tendinous luxation in our series. DISCUSSION: The stenosing tenosynovitis of the first dorsal extensor compartment of the wrist is a relatively frequent pathology in the young woman. We use a longitudinal surgical approach to avoid the radial nerve lesions. Le Viet procedure using the palmar flap of the pulley fixed to the dermis works as a barrier and maintains the tendons sliding on the radial styloid groove.", 
+          "qas": [
+            {
+              "question": "Which disease is diagnosed using the Finkelstein's test?", 
+              "id": "5a6900ebb750ff445500001d_004"
+            }
+          ]
+        }, 
+        {
+          "context": "The wrist hyperflexion and abduction of the thumb (WHAT) test: a more specific and sensitive test to diagnose de Quervain tenosynovitis than the Eichhoff's Test. De Quervain's disease has different clinical features. Different tests have been described in the past, the most popular test being the Eichhoff's test, often wrongly named as the Finkelstein's test. Over the years, a misinterpretation has occurred between these two tests, the latter being confused with the first. To compare the Eichhoff's test with a new test, the wrist hyperflexion and abduction of the thumb test, we set up a prospective study over a period of three years for a cohort of 100 patients (88 women, 12 men) presenting spontaneous pain over the radial side of the styloid of the radius (de Quervain tendinopathy). The purpose of the study was to compare the accuracy of the Eichhoff's test and wrist hyperflexion and abduction of the thumb test to diagnose correctly de Quervain's disease by comparing clinical findings using those tests with the results on ultrasound. The wrist hyperflexion and abduction of the thumb test revealed greater sensitivity (0.99) and an improved specificity (0.29) together with a slightly better positive predictive value (0.95) and an improved negative predictive value (0.67). Moreover, the study showed us that the wrist hyperflexion and abduction of the thumb test is very valuable in diagnosing dynamic instability after successful decompression of the first extensor compartment. Our results support that the wrist hyperflexion and abduction of the thumb test is a more precise tool for the diagnosis of de Quervain's disease than the Eichhoff's test and thus could be adopted to guide clinical diagnosis in the early stages of de Quervain's tendinopathy.", 
+          "qas": [
+            {
+              "question": "Which disease is diagnosed using the Finkelstein's test?", 
+              "id": "5a6900ebb750ff445500001d_005"
+            }
+          ]
+        }, 
+        {
+          "context": "Long-term results of surgical release of de Quervain's stenosing tenosynovitis. The management of de Quervain's disease (DD) is nonoperative in the first instance, but surgery should be considered if conservative measures fail. We present the long-term results of operative treatment of DD. From July 1988 to July 1998, 94 consecutive patients with DD were treated operatively by a single surgeon. There were 80 women and 14 men. Average age at the time of operation was 47.4 years (range 22-76). The right wrist was involved in 43 cases, the left in 51 cases. All operations were done under tourniquet control with local infiltration anaesthesia using a longitudinal incision and partial resection of the extensor ligament. There were six perioperative complications, including one superficial wound infection, one delayed wound healing, and four transient lesions of the radial nerve. A successful outcome was achieved in all cases with negative Finkelstein's test. Simple decompression of both tendons and partial resection of the extensor ligament with a maximum of 3 mm can be recommended in operative treatment of DD with excellent long-term results.", 
+          "qas": [
+            {
+              "question": "Which disease is diagnosed using the Finkelstein's test?", 
+              "id": "5a6900ebb750ff445500001d_006"
+            }
+          ]
+        }, 
+        {
+          "context": "[Finkelstein's versus Brunelli's test in De Quervain tenosynovitis]. This short paper demonstrates that the Finkelstein's test in De Quervain's tenosynovitis is based on an incorrect assumption. The correct basis for a pathognomic manoeuvre in De Quervain is the provocation of tendons attrition of the first wrist dorsal compartment against their pulley which elicits pain. The Brunelli's test induces this friction and pain by asking the patient to hardly adduct the thumb with the wrist in radial deviation.", 
+          "qas": [
+            {
+              "question": "Which disease is diagnosed using the Finkelstein's test?", 
+              "id": "5a6900ebb750ff445500001d_007"
+            }
+          ]
+        }, 
+        {
+          "context": "Finkelstein's test: a biomechanical analysis. PURPOSE: Finkelstein's test is the classic diagnostic test for de Quervain's disease. Finkelstein hypothesized that the entry of the muscle bellies of the extensor pollicis brevis (EPB) and abductor pollicis longus (APL) tendons into the first extensor compartment was responsible for the findings observed in his now eponymous test. We agree with Finkelstein's hypothesis and further hypothesize that this position would induce measurable bulk (muscle mass within the retinaculum) and tethering (stretching of synovial tissue) effects within the compartment. To test this latter hypothesis we measured the excursion and gliding resistance of the EPB and APL tendons within the first compartment. METHODS: Fifteen fresh-frozen cadavers were used. Gliding resistance and excursion were measured in 4 different wrist positions, including the wrist position of Finkelstein's test (30 degrees ulnar deviation). The bulk and tethering effect was calculated based on the mean gliding resistance over the tendon proximal/distal excursion cycle and the gliding resistance at the terminal distal excursion. RESULTS: The EPB tendon excursion was significantly more distal in 30 degrees ulnar deviation than in 60 degrees extension. Additionally the bulk and tethering resistance was significantly greater in 30 degrees ulnar deviation compared with 60 degrees extension. For the APL tendon there was no significant difference in either the tendon excursion or the bulk and tethering resistance between 30 degrees ulnar deviation and 60 degrees extension. CONCLUSIONS: We showed that in the position of Finkelstein's test the EPB tendon is significantly more distal and has significantly greater bulk and tethering effect compared with the other EPB positions. This is not the case for the APL tendon in the position of Finkelstein's test. These results suggest that an abnormal Finkelstein's test reflects differences of the EPB more than it does the APL.", 
+          "qas": [
+            {
+              "question": "Which disease is diagnosed using the Finkelstein's test?", 
+              "id": "5a6900ebb750ff445500001d_008"
+            }
+          ]
+        }, 
+        {
+          "context": "Upregulation of uc.189 in patients with esophageal squamous cell carcinoma and its clinicopathologic value. Ultraconserved elements (UCEs) encoding noncoding RNAs serve as important regulators in cancer biology. Until now, the role of the UCE uc.189 in human cancers remains undefined and the clinical significance of uc.189 in esophageal cancers remains unknown. This study was to identify the prognostic value of uc.189 expression in esophageal squamous cell carcinomas (ESCC). Quantitative real-time polymerase chain reaction (qRT-PCR) was used to detect the expression level of uc.189 in matched cancerous tissues and adjacent noncancerous tissues from 152 patients with ESCC. The correlation of uc.189 with clinicopathological features and prognosis were also analyzed. The expression of uc.189 was significantly higher in human ESCC compared with the adjacent noncancerous tissues (122/152, 80.3%, p<0.01), and the high level of uc.189 expression was significantly correlated with invasion of the tumor (p=0.009), advanced clinical stage (p=0.000), lymph node metastasis (p=0.000), and poor prognosis. High expression of uc.189 might reflect poor prognosis of ESCC and indicate a potential diagnostic target in ESCC patients. Uc.189 might be considered as a novel molecule involved in ESCC progression, which provides a potential prognostic biomarker and therapeutic target.", 
+          "qas": [
+            {
+              "question": "For which type of cancer can uc.189 be used as a potential prognostic biomarker?", 
+              "id": "5a6e1280b750ff4455000037_000"
+            }
+          ]
+        }, 
+        {
+          "context": "From explosions to black lung: a history of efforts to control coal mine dust. Highlights in the history of efforts to prevent occupational lung disease among coal miners in the United States are reviewed. The Federal Coal Mine Health and Safety Act of 1969 is summarized, and the sources and effects of its provisions to prevent coal workers' pneumoconiosis are examined. Descriptions follow of the identification of coal workers' pneumoconiosis as a disease, identification of respirable coal mine dust as its cause, and establishment and enforcement of an exposure limit. The development of prevention efforts focusing on surveillance of both exposure and outcome and of enforcement of dust control methods is examined.", 
+          "qas": [
+            {
+              "question": "What causes Black Lung?", 
+              "id": "5a87145861bb38fb24000004_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Airways obstruction, coal mining, and disability. It has recently been suggested that the inhalation of coal in the absence of complicated coal workers' pneumoconiosis (CWP) or smoking can lead to disabling airways obstruction. The cause of such obstruction has been variously attributed to emphysema or bronchitis. The frequency of significant airways obstruction in a group of United States coal miners seeking compensation for occupationally induced pulmonary impairment was therefore determined. In a sample of 611 \"Black Lung\" claimants there was only one subject who was a non-smoker and who in the absence of other non-occupationally related diseases,--for example, asthma and bronchiectasis--had sufficient airways obstruction to render it difficult for him to carry out hard labour. An alternative explanation for his reduced ventilatory capacity other than coal dust or smoking may be available. If the inhalation of coal dust in the absence of smoking and complicated CWP ever induces sufficient ventilatory impairment to preclude a miner from working, it is indeed rare.", 
+          "qas": [
+            {
+              "question": "What causes Black Lung?", 
+              "id": "5a87145861bb38fb24000004_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Pulmonary disability in former Appalachian coal miners. A prospective case-control study was undertaken to assess respiratory disability in 133 former coal miners who were claimants for \"black lung\" benefits. Consecutive assignment was made to either case or control group based on their chest radiograph having shown coal workers' pneumoconiosis or no coal workers' pneumoconiosis. A respiratory occupational survey was completed with physical examination that placed special emphasis on the cardiorespiratory systems. Subjects underwent pulmonary function testing while 92 of these also received arterial blood gases to assess respiratory disability and pulmonary insufficiency. Arterial blood gases were superior to spirometry in assessment of pulmonary insufficiency/disability. Smoking interacts with coal workers' pneumoconiosis to cause pulmonary insufficiency. The most frequent spirometric pattern was obstructive. Disability was caused by occupational injuries and comorbidities, both of which occurred with greater frequency in miners with coal workers' pneumoconiosis than in controls. Pulmonary insufficiency appears to be a better discriminator than respiratory disability in coal miners, suggesting that arterial blood gases replace spirometry in their evaluation. Greater emphasis on smoking intervention among coal miners should be given.", 
+          "qas": [
+            {
+              "question": "What causes Black Lung?", 
+              "id": "5a87145861bb38fb24000004_002"
+            }
+          ]
+        }, 
+        {
+          "context": "diffloop: a computational framework for identifying and analyzing differential DNA loops from sequencing data. Summary: The 3D architecture of DNA within the nucleus is a key determinant of interactions between genes, regulatory elements, and transcriptional machinery. As a result, differences in DNA looping structure are associated with variation in gene expression and cell state. To systematically assess changes in DNA looping architecture between samples, we introduce diffloop, an R/Bioconductor package that provides a suite of functions for the quality control, statistical testing, annotation, and visualization of DNA loops. We demonstrate this functionality by detecting differences between ENCODE ChIA-PET samples and relate looping to variability in epigenetic state. Availability and implementation: Diffloop is implemented as an R/Bioconductor package available at https://bioconductor.org/packages/release/bioc/html/diffloop.html. Contact: aryee.martin@mgh.harvard.edu. Supplementary information: Supplementary data are available at Bioinformatics online.", 
+          "qas": [
+            {
+              "question": "Which package in Bioconductor has been developed with the aim to analyze differential DNA loops from sequencing data?", 
+              "id": "5a6e2578b750ff445500003d_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Therapeutic molecules and endogenous ligands regulate the interaction between brain cellular prion protein (PrPC) and metabotropic glutamate receptor 5 (mGluR5). Soluble Amyloid-\u03b2 oligomers (A\u03b2o) can trigger Alzheimer disease (AD) pathophysiology by binding to cell surface cellular prion protein (PrP(C)). PrP(C) interacts physically with metabotropic glutamate receptor 5 (mGluR5), and this interaction controls the transmission of neurotoxic signals to intracellular substrates. Because the interruption of the signal transduction from PrP(C) to mGluR5 has therapeutic potential for AD, we developed assays to explore the effect of endogenous ligands, agonists/antagonists, and antibodies on the interaction between PrP(C) and mGluR5 in cell lines and mouse brain. We show that the PrP(C) segment of amino acids 91-153 mediates the interaction with mGluR5. Agonists of mGluR5 increase the mGluR5-PrP(C) interaction, whereas mGluR5 antagonists suppress protein association. Synthetic A\u03b2o promotes the protein interaction in mouse brain and transfected HEK-293 cell membrane preparations. The interaction of PrP(C) and mGluR5 is enhanced dramatically in the brains of familial AD transgenic model mice. In brain homogenates with A\u03b2o, the interaction of PrP(C) and mGluR5 is reversed by mGluR5-directed antagonists or antibodies directed against the PrP(C) segment of amino acids 91-153. Silent allosteric modulators of mGluR5 do not alter Glu or basal mGluR5 activity, but they disrupt the A\u03b2o-induced interaction of mGluR5 with PrP(C). The assays described here have the potential to identify and develop new compounds that inhibit the interaction of PrP(C) and mGluR5, which plays a pivotal role in the pathogenesis of Alzheimer disease by transmitting the signal from extracellular A\u03b2o into the cytosol.", 
+          "qas": [
+            {
+              "question": "Silent Allosteric Modulation of mGluR5 is a form of treatment for what disease?", 
+              "id": "5a8715a961bb38fb24000006_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Silent Allosteric Modulation of mGluR5 Maintains Glutamate Signaling while Rescuing Alzheimer's Mouse Phenotypes. Metabotropic glutamate receptor 5 (mGluR5) has been implicated in Alzheimer's disease (AD) pathology. We sought to understand whether mGluR5's role in AD requires glutamate signaling. We used a potent mGluR5 silent allosteric modulator (SAM, BMS-984923) to separate its well-known physiological role in glutamate signaling from a pathological role in mediating amyloid-\u03b2 oligomer (A\u03b2o) action. Binding of the SAM to mGluR5 does not change glutamate signaling but strongly reduces mGluR5 interaction with cellular prion protein (PrP) bound to A\u03b2o. The SAM compound prevents A\u03b2o-induced signal transduction in brain slices and in an AD transgenic mouse model, the APPswe/PS1\u0394E9 strain. Critically, 4\u00a0weeks of SAM treatment rescues memory deficits and synaptic depletion in the APPswe/PS1\u0394E9 transgenic mouse brain. Our data show that mGluR5's role in A\u03b2o-dependent AD phenotypes is separate from its role in glutamate signaling and silent allosteric modulation of mGluR5 has promise as a disease-modifying AD intervention with a broad therapeutic window.", 
+          "qas": [
+            {
+              "question": "Silent Allosteric Modulation of mGluR5 is a form of treatment for what disease?", 
+              "id": "5a8715a961bb38fb24000006_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Diagnostic and therapeutic update on diabetic foot osteomyelitis. Diabetic foot osteomyelitis (DFO) is the most common infection associated to diabetic foot ulcers (DFU). This review is designed to provide an update on the diagnosis and treatment of DFO based on an analysis of MEDLINE through PubMed using as search criterion \"Diabetic Foot Osteomyelitis\". Authors have included in this review the most relevant manuscripts regarding diagnosis and treatment of DFO. After review and critical analysis of publications, it may be concluded that diagnosis of DFO is not simple because of its heterogeneous presentation. Clinical inflammatory signs, probe-to-bone test, and plain X-rays are postulated as the basic tests for clinical diagnosis when DFO is suspected. Diagnosis should be supported by laboratory tests, of which ESR (>70mm/h) has been shown to be most precise. MRI is the most accurate imaging test, especially for differential diagnosis with Charcot foot. Pathogen isolation by bone culture is essential when the patient is treated with ATB only. Medical or surgical treatment should be based on the clinical characteristics of the patient and the lesion. Surgery should always be an option if medical treatment fails.", 
+          "qas": [
+            {
+              "question": "Which disease can be diagnosed with the \"probe to bone\" test?", 
+              "id": "5a6f853ab750ff4455000055_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Diagnosing diabetic foot osteomyelitis: is the combination of probe-to-bone test and plain radiography sufficient for high-risk inpatients? AIMS: To investigate the accuracy of the sequential combination of the probe-to-bone test and plain X-rays for diagnosing osteomyelitis in the foot of patients with diabetes. METHODS: We prospectively compiled data on a series of 338 patients with diabetes with 356 episodes of foot infection who were hospitalized in the Diabetic Foot Unit of La Paloma Hospital from 1 October 2002 to 31 April 2010. For each patient we did a probe-to-bone test at the time of the initial evaluation and then obtained plain X-rays of the involved foot. All patients with positive results on either the probe-to-bone test or plain X-ray underwent an appropriate surgical procedure, which included obtaining a bone specimen that was processed for histology and culture. We calculated the sensitivity, specificity, predictive values and likelihood ratios of the procedures, using the histopathological diagnosis of osteomyelitis as the criterion standard. RESULTS: Overall, 72.4% of patients had histologically proven osteomyelitis, 85.2% of whom had positive bone culture. The performance characteristics of both the probe-to-bone test and plain X-rays were excellent. The sequential diagnostic approach had a sensitivity of 0.97, specificity of 0.92, positive predictive value of 0.97, negative predictive value of 0.93, positive likelihood ratio of 12.8 and negative likelihood ratio of 0.02. Only 6.6% of patients with negative results on both diagnostic studies had osteomyelitis. CONCLUSIONS: Clinicians seeing patients in a setting similar to ours (specialized diabetic foot unit with a high prevalence of osteomyelitis) can confidently diagnose diabetic foot osteomyelitis when either the probe-to-bone test or a plain X-ray, or especially both, are positive.", 
+          "qas": [
+            {
+              "question": "Which disease can be diagnosed with the \"probe to bone\" test?", 
+              "id": "5a6f853ab750ff4455000055_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Diagnostic Accuracy of Probe to Bone to Detect Osteomyelitis in the Diabetic Foot: A Systematic Review. The probe-to-bone (PTB) test is a commonly used clinical test for osteomyelitis (OM), but its utility has been questioned in clinical settings where the prevalence of OM is low. This article aims to systematically review the accuracy of the PTB test to diagnose diabetic foot OM. We searched Ovid Medline and Scopus databases for studies using the keywords \"probe to bone,\" \"osteomyelitis,\" and \"diabetic foot\" from 1946 to May 2015. We summarized characteristics of the included studies and pooled the accuracy numbers using a bivariate random-effects model. Seven studies met our inclusion criteria. Pooled sensitivity and specificity for the PTB test was 0.87 (95% confidence interval [CI], .75-.93) and 0.83 (95% CI, .65-.93), respectively. We conclude that the PTB test can accurately rule in diabetic foot OM in the high-risk patients and rule out OM in low-risk patients.", 
+          "qas": [
+            {
+              "question": "Which disease can be diagnosed with the \"probe to bone\" test?", 
+              "id": "5a6f853ab750ff4455000055_002"
+            }
+          ]
+        }, 
+        {
+          "context": "The management of diabetic foot: A clinical practice guideline by the Society for Vascular Surgery in collaboration with the American Podiatric Medical Association and the Society for Vascular Medicine. BACKGROUND: Diabetes mellitus continues to grow in global prevalence and to consume an increasing amount of health care resources. One of the key areas of morbidity associated with diabetes is the diabetic foot. To improve the care of patients with diabetic foot and to provide an evidence-based multidisciplinary management approach, the Society for Vascular Surgery in collaboration with the American Podiatric Medical Association and the Society for Vascular Medicine developed this clinical practice guideline. METHODS: The committee made specific practice recommendations using the Grades of Recommendation Assessment, Development, and Evaluation system. This was based on five systematic reviews of the literature. Specific areas of focus included (1) prevention of diabetic foot ulceration, (2) off-loading, (3) diagnosis of osteomyelitis, (4) wound care, and (5) peripheral arterial disease. RESULTS: Although we identified only limited high-quality evidence for many of the critical questions, we used the best available evidence and considered the patients' values and preferences and the clinical context to develop these guidelines. We include preventive recommendations such as those for adequate glycemic control, periodic foot inspection, and patient and family education. We recommend using custom therapeutic footwear in high-risk diabetic patients, including those with significant neuropathy, foot deformities, or previous amputation. In patients with plantar diabetic foot ulcer (DFU), we recommend off-loading with a total contact cast or irremovable fixed ankle walking boot. In patients with a new DFU, we recommend probe to bone test and plain films to be followed by magnetic resonance imaging if a soft tissue abscess or osteomyelitis is suspected. We provide recommendations on comprehensive wound care and various d\u00e9bridement methods. For DFUs that fail to improve (>50% wound area reduction) after a minimum of 4 weeks of standard wound therapy, we recommend adjunctive wound therapy options. In patients with DFU who have peripheral arterial disease, we recommend revascularization by either surgical bypass or endovascular therapy. CONCLUSIONS: Whereas these guidelines have addressed five key areas in the care of DFUs, they do not cover all the aspects of this complex condition. Going forward as future evidence accumulates, we plan to update our recommendations accordingly.", 
+          "qas": [
+            {
+              "question": "Which disease can be diagnosed with the \"probe to bone\" test?", 
+              "id": "5a6f853ab750ff4455000055_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Clinical Inquiry: What's the best test for underlying osteomyelitis in patients with diabetic foot ulcers? Magnetic resonance imaging (MRI) has a higher sensitivity and specificity (90% and 79%) than plain radiography (54% and 68%) for diagnosing diabetic foot osteomyelitis. MRI performs somewhat better than any of several common tests--probe to bone (PTB), erythrocyte sedimentation rate (ESR) >70 mm/hr, C-reactive protein (CRP) >14 mg/L, procalcitonin >0.3 ng/mL, and ulcer size >2 cm\u00b2--although PTB has the highest specificity of any test and is commonly used together with MRI. No studies have directly compared MRI with a combination of these tests, which may assist in diagnosis.", 
+          "qas": [
+            {
+              "question": "Which disease can be diagnosed with the \"probe to bone\" test?", 
+              "id": "5a6f853ab750ff4455000055_004"
+            }
+          ]
+        }, 
+        {
+          "context": "Inter-observer reproducibility of diagnosis of diabetic foot osteomyelitis based on a combination of probe-to-bone test and simple radiography. Probe-to-bone test and simple X-rays are both standard tests for the diagnosis of diabetic foot osteomyelitis. This study demonstrates the importance of considering jointly clinical information (probe-to-bone test) and diagnostic tests (simple radiography) to increase agreement among clinicians on diagnosis of diabetic foot osteomyelitis.", 
+          "qas": [
+            {
+              "question": "Which disease can be diagnosed with the \"probe to bone\" test?", 
+              "id": "5a6f853ab750ff4455000055_005"
+            }
+          ]
+        }, 
+        {
+          "context": "New Approaches in Glioblastoma Multiforme: The Potential Role of Immune- check Point Inhibitors. BACKGROUND: Glioblastoma multiforme (GBM) is the most frequent brain tumor. Despite recent advances in treatment approaches the prognosis remains poor, with a median overall survival of 14.6 months. Immunotherapy is the subject of ongoing research and its benefit is becoming evident in other malignancies. Immune check-points such as cytotoxic T lymphocyte associated antigen 4 (CTLA-4), programmed cell death receptor (PD-1) and indoleamine 2,3-dioxygenase (IDO) reduce immune response. OBJECTIVE: To clarify the role of immune check point inhibitors in GBM management. METHODS: Preclinical and clinical trials of immune check-point inhibitors in GBM were obtained by searching for English peer-reviewed articles on PubMed databases, trials registered on clincaltrials. gov and abstracts recently presented at international congresses. RESULTS: Immune check point inhibitors may be of critical importance for the design of future immunotherapy approaches in GBM management. CONCLUSION: Immune check-point inhibitors should be considered a promising treatment option in GBM.", 
+          "qas": [
+            {
+              "question": "What are check point inhibitors?", 
+              "id": "5a8718c861bb38fb24000008_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Renal Toxicities of Novel Agents Used for Treatment of Multiple Myeloma. Survival for patients with multiple myeloma has significantly improved in the last decade in large part due to the development of proteasome inhibitors and immunomodulatory drugs. These next generation agents with novel mechanisms of action as well as targeted therapies are being used both in the preclinical and clinical settings for patients with myeloma. These agents include monoclonal antibodies, deacetylase inhibitors, kinase inhibitors, agents affecting various signaling pathways, immune check point inhibitors, and other targeted therapies. In some cases, off target effects of these therapies can lead to unanticipated effects on the kidney that can range from electrolyte disorders to AKI. In this review, we discuss the nephrotoxicities of novel agents currently in practice as well as in development for the treatment of myeloma.", 
+          "qas": [
+            {
+              "question": "What are check point inhibitors?", 
+              "id": "5a8718c861bb38fb24000008_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Novel immune check point inhibiting antibodies in cancer therapy-Opportunities and challenges. Drug resistance of tumor cells to chemotherapy is limiting the therapeutic efficacy of most anticancer drugs and represents a major obstacle in medical oncology. However, treatment of various human malignancies with biologics, mostly monoclonal antibodies (mAbs), is not limited by such chemoresistance mechanisms. However, other resistance or evasion mechanisms limit the efficacy to anticancer therapeutic mAbs that engage tumor-associated antigens on the surface of the malignant cells. Immune checkpoint blocking monoclonal antibodies are heralded as a promising therapeutic approach in clinical oncology. These mAbs do not directly attack the malignant cells as most anticancer mAbs; rather, they enhance the anti-tumor response of the immune system by targeting immune regulatory pathways. Three mAbs targeting immune checkpoint molecules are currently used in the clinic and new mAbs that target other potential inhibitory targets are being actively investigated. This therapeutic approach, while proving as highly beneficial for many patients, is prone to toxicities and side effects of an autoimmune nature. Defining suitable management algorithms and biomarkers that predict therapeutic effects and adverse toxicity are required to provide survival benefit for larger numbers of cancer patients. Overcoming these challenges, along with opportunities for new agents and combinatorial strategies are the main focus of immune checkpoint blockade research today.", 
+          "qas": [
+            {
+              "question": "What are check point inhibitors?", 
+              "id": "5a8718c861bb38fb24000008_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Fine-needle aspiration cytology yield as a basis for morphological, molecular, and cytogenetic diagnosis in alk-positive anaplastic large cell lymphoma with atypical clinical presentation. ALK positive anaplastic large cell lymphoma is a T-cell lymphoma usually occurring in children and young adults. It frequently involves lymph nodes and extranodal sites and is associated with favorable prognosis. A 20-year old man was admitted for painful mass in the left axilla with overlying skin redness. Clinical presentation and US findings were highly suspicious for sarcoma. Definitive diagnosis was established cytolologically and using ancillary technologies from cytological samples. Fine needle aspiration cytology of tumor mass (lymph node conglomerate and surrounding tissue) show predominance of large, pleomorphic, atypical cells with large nuclei and vacuolised cytoplasm. Atypical cells immunocytochemically were positive for LCA, CD30, CD3, EMA, and ALK; negative for CD15 and CD56. NPM-ALK transcript was detected by reverse transcriptase-polymerase chain reaction (RT-PCT). Molecular analysis of TCR\u00df and TCR\u03b3 genes demonstrated clonal TCR genes rearrangement. Complex karyotype with multiple numerical and structural changes was found on conventional cytogenetics. These findings excluded sarcoma and corroborated the diagnosis of ALK positive ALCL. Cutaneous involvement in ALCL can clinically mimic sarcoma, especially in cases with localized disease without B symptoms. In those cases, immunostaining, PCR, and conventional cytogenetics are helpful to exclude sarcoma. Diagn. Cytopathol. 2017;45:51-54. \u00a9 2016 Wiley Periodicals, Inc.", 
+          "qas": [
+            {
+              "question": "What disease is the ALK tyrosine kinase associated with?", 
+              "id": "5a871a6861bb38fb24000009_000"
+            }
+          ]
+        }, 
+        {
+          "context": "[Lung adenocarcinoma with concomitant EGFR mutation and ALK rearrangement]. INTRODUCTION: Among patients with non-small-cell lung cancer, coexistence of EGFR mutation and ALK rearrangement is rare. We describe the clinical features of two patients with this double anomaly. CASE REPORTS: A 62-year-old Caucasian non-smoking woman was diagnosed with cT4N0M0\u00a0lung adenocarcinoma. Initial biopsy showed EGFR mutation and ALK rearrangement. She received cisplatin-gemcitabine, followed by 17\u00a0months of gemcitabine. Owing to progression, she received erlotinib for 14\u00a0months, then paclitaxel for 6\u00a0months and finally crizotinib. A partial response was achieved and maintained for 24\u00a0months. A 45-year-old Caucasian woman, light smoker, was diagnosed with cT2N3M0\u00a0lung adenocarcinoma. Only EGFR mutation was found on initial analysis. She underwent treatment with cisplatin-gemcitabine and thoracic radiotherapy. Progression occurred after 8\u00a0months and afatinbib was started. Eight months later, progression was observed with a neoplasic pleural effusion in which tumor cells expressing ALK rearrangement were found. A new FISH analysis was performed on the initial tumor but did not find this rearrangement. Despite a third line of crizotinib, the patient died one month later. DISCUSSION: The literature shows 45\u00a0other cases of these two abnormalities, observed either from the start or during follow-up. EGFR's TKI were almost always given before ALK's TKI. CONCLUSIONS: Therapeutic strategy needs to be clarified in cases of double alteration. With regard to the second patient, appearance of ALK rearrangement may constitute a resistance mechanism to EGFR's TKI.", 
+          "qas": [
+            {
+              "question": "What disease is the ALK tyrosine kinase associated with?", 
+              "id": "5a871a6861bb38fb24000009_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Brigatinib Effective in ALK+ NSCLC. Results from a phase I/II trial indicate that the investigational ALK inhibitor brigatinib is active in patients with ALK-rearranged non-small cell lung cancer. Patients who had previously received crizotinib-as well as those who hadn't-responded to the drug, which was also active in patients with brain metastases.", 
+          "qas": [
+            {
+              "question": "What disease is the ALK tyrosine kinase associated with?", 
+              "id": "5a871a6861bb38fb24000009_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Estimating Survival in Patients With Lung Cancer and Brain Metastases: An Update of the Graded Prognostic Assessment for Lung Cancer Using Molecular Markers (Lung-molGPA). Importance: Lung cancer is the leading cause of cancer-related mortality in the United States and worldwide. As systemic therapies improve, patients with lung cancer live longer and thus are at increased risk for brain metastases. Understanding how prognosis varies across this heterogeneous patient population is essential to individualize care and design future clinical trials. Objective: To update the current Diagnosis-Specific Graded Prognostic Assessment (DS-GPA) for patients with non-small-cell lung cancer (NSCLC) and brain metastases. The DS-GPA is based on data from patients diagnosed between 1985 and 2005, and we set out to update it by incorporating more recently reported gene and molecular alteration data for patients with NSCLC and brain metastases. This new index is called the Lung-molGPA. Design, Setting, and Participants: This is a multi-institutional retrospective database analysis of 2186 patients diagnosed between 2006 and 2014 with NSCLC and newly diagnosed brain metastases. The multivariable analyses took place between December 2015 and May 2016, and all prognostic factors were weighted for significance by hazard ratios. Significant factors were included in the updated Lung-molGPA prognostic index. Main Outcomes and Measures: The main outcome was survival. Multiple Cox regression was used to select and weight prognostic factors in proportion to their hazard ratios. Log rank tests were used to compare adjacent classes and to compare overall survival for adenocarcinoma vs nonadenocarcinoma groups. Results: The original DS-GPA was based on 4 factors found in 1833 patients with NSCLC and brain metastases diagnosed between 1985 and 2005: patient age, Karnofsky Performance Status, extracranial metastases, and number of brain metastases. The patients studied for the creation of the DS-GPA had a median survival of 7 months from the time of initial treatment of brain metastases. To design the updated Lung-molGPA, we analyzed data from 2186 patients from 2006 through 2014 with NSCLC and newly diagnosed brain metastases (1521 adenocarcinoma and 665 nonadenocarcinoma). Significant prognostic factors included the original 4 factors used in the DS-GPA index plus 2 new factors: EGFR and ALK alterations in patients with adenocarcinoma (mutation status was not routinely tested for nonadenocarcinoma). The overall median survival for the cohort in the present study was 12 months, and those with NSCLC-adenocarcinoma and Lung-molGPA scores of 3.5 to 4.0 had a median survival of nearly 4 years. Conclusions and Relevance: In recent years, patient survival and physicians' ability to predict survival in NSCLC with brain metastases has improved significantly. The updated Lung-molGPA incorporating gene alteration data into the DS-GPA is a user-friendly tool that may facilitate clinical decision making and appropriate stratification of future clinical trials.", 
+          "qas": [
+            {
+              "question": "What disease is the ALK tyrosine kinase associated with?", 
+              "id": "5a871a6861bb38fb24000009_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Dysregulation of zinc/lipid metabolism - associated genes in the rat hippocampus and cerebral cortex in early adulthood following recurrent neonatal seizures. Although it has been established that recurrent or prolonged clinical seizures during infancy may cause lifelong brain damage, the underlying molecular mechanism is still not well elucidated. The present study, to the best of our knowledge, is the first to investigate the expression of twenty zinc (Zn)/lipid metabolism - associated genes in the hippocampus and cerebral cortex of rats following recurrent neonatal seizures. In the current study, 6 - day - old Sprague - Dawley rats were randomly divided into control (CONT) and recurrent neonatal seizure (RS) groups. On postnatal day 35 (P35), mossy fiber sprouting and gene expression were assessed by Timm staining and reverse transcription - quantitative polymerase chain reaction, respectively. Of the twenty genes investigated, seven were significantly downregulated, while four were significantly upregulated in the RS group compared with CONT rats, which was observed in the hippocampus but not in the cerebral cortex. Meanwhile, aberrant mossy fiber sprouting was observed in the supragranular region of the dentate gyrus and Cornu Ammonis 3 subfield of the hippocampus in the RS group. In addition, linear correlation analysis identified significant associations between the expression of certain genes in the hippocampus, which accounted for 40% of the total fifty - five gene pairs among the eleven regulated genes. However, only eight gene pairs in the cerebral cortex exhibited significant positive associations, which accounted for 14.5% of the total. The results of the present study indicated the importance of hippocampal Zn/lipid metabolism - associated genes in recurrent neonatal seizure - induced aberrant mossy fiber sprouting, which may aid the identification of novel potential targets during epileptogenesis.", 
+          "qas": [
+            {
+              "question": "What body process does the Dentate Gyrus Mossy Cell control?", 
+              "id": "5a871b8d61bb38fb2400000a_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Impaired neuronal operation through aberrant intrinsic plasticity in epilepsy. OBJECTIVE: Patients with temporal lobe epilepsy often display cognitive comorbidity with recurrent seizures. However, the cellular mechanisms underlying the impairment of neuronal information processing remain poorly understood in temporal lobe epilepsy. Within the hippocampal formation neuronal networks undergo major reorganization, including the sprouting of mossy fibers in the dentate gyrus; they establish aberrant recurrent synapses between dentate granule cells and operate via postsynaptic kainate receptors. In this report, we tested the hypothesis that this aberrant local circuit alters information processing of perforant path inputs constituting the major excitatory afferent pathway from entorhinal cortex to dentate granule cells. METHODS: Experiments were performed in dentate granule cells from control rats and rats with temporal lobe epilepsy induced by pilocarpine hydrochloride treatment. Neurons were recorded in patch clamp in whole cell configuration in hippocampal slices. RESULTS: Our present data revealed that an aberrant readout of synaptic inputs by kainate receptors triggered a long-lasting impairment of the perforant path input-output operation in epileptic dentate granule cells. We demonstrated that this is due to the aberrant activity-dependent potentiation of the persistent sodium current altering intrinsic firing properties of dentate granule cells. INTERPRETATION: We propose that this aberrant activity-dependent intrinsic plasticity, which lastingly impairs the information processing of cortical inputs in dentate gyrus, may participate in hippocampal-related cognitive deficits, such as those reported in patients with epilepsy.", 
+          "qas": [
+            {
+              "question": "What body process does the Dentate Gyrus Mossy Cell control?", 
+              "id": "5a871b8d61bb38fb2400000a_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Acute restraint stress decreases c-fos immunoreactivity in hilar mossy cells of the adult dentate gyrus. Although a great deal of information is available about the circuitry of the mossy cells (MCs) of the dentate gyrus (DG) hilus, their activity in vivo is not clear. The immediate early gene c-fos can be used to gain insight into the activity of MCs in vivo, because c-fos protein expression reflects increased neuronal activity. In prior work, it was identified that control rats that were perfusion-fixed after removal from their home cage exhibited c-fos immunoreactivity (ir) in the DG in a spatially stereotyped pattern: ventral MCs and dorsal granule cells (GCs) expressed c-fos protein (Duffy et al., Hippocampus 23:649-655, 2013). In this study, we hypothesized that restraint stress would alter c-fos-ir, because MCs express glucocorticoid type 2 receptors and the DG is considered to be involved in behaviors related to stress or anxiety. We show that acute restraint using a transparent nose cone for just 10\u00a0min led to reduced c-fos-ir in ventral MCs compared to control rats. In these comparisons, c-fos-ir was evaluated 30\u00a0min after the 10\u00a0min-long period of restraint, and if evaluation was later than 30\u00a0min c-fos-ir was no longer suppressed. Granule cells (GCs) also showed suppressed c-fos-ir after acute restraint, but it was different than MCs, because the suppression persisted for over 30 min after the restraint. We conclude that c-fos protein expression is rapidly and transiently reduced in ventral hilar MCs after a brief period of restraint, and suppressed longer in dorsal GCs.", 
+          "qas": [
+            {
+              "question": "What body process does the Dentate Gyrus Mossy Cell control?", 
+              "id": "5a871b8d61bb38fb2400000a_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Isolated posterior cruciate ligament injuries in athletes. The literature is divided as to the necessity of an intact posterior cruciate ligament for functional stability. Presented here is a prospective study of isolated posterior cruciate injuries seen in the acute stage in 13 patients, 6 males and 7 females. The diagnosis of posterior cruciate ligament tear was made clinically and confirmed by arthroscopy. The average age at injury was 22 years. The athletic activity at injury was varied. Hyperflexion was the most common mechanism of injury, followed by pretibial trauma in the hyperflexed knee or in the \"dashboard\" injury. There were seven complete midsubstance tears and five partial tears. Direct visualization of the posterior cruciate ligament was not attained in one patient. All patients were treated nonoperatively on a physiotherapy routine. Average followup was 2.6 years. Patients were clinically examined and subjected to KT-1000 and Cybex testing. All patients were able to return to their previous activity and experienced no limitations with their injured knees. Using Hughston's criteria, subjective and functional ratings were all good. However, only 3 rated good and 10 fair when assessed objectively. We conclude that acceptable functional stability in these patients does not necessarily require absolute static stability. Nonoperative treatment of the isolated posterior cruciate ligament midsubstance injury may be a viable alternative to the difficult repair/reconstruction procedure.", 
+          "qas": [
+            {
+              "question": "Which ligament is most commonly injured in dashboard injury?", 
+              "id": "5a6f98e6b750ff445500005d_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Posterior cruciate ligament injuries of the knee joint. Posterior cruciate ligament (PCL) injuries have a reported incidence of between 3 and 37%, depending on the clinical setting. The most common mechanism of injury in motor vehicle accidents is a dashboard injury or direct force to the proximal anterior tibia. Sports related injuries result from hyperflexion of the knee with the foot typically plantarflexed. The latter mechanism is the most common cause of isolated PCL injuries, while in the trauma population as many as 95% of patients with knee injuries have combined ligamentous damage. Improved knowledge at an anatomical, biomechanical and clinical level has provided the orthopaedist with a more defined treatment algorithm. Isolated, partial PCL injuries (grades I and II) can best be treated nonoperatively while complete injuries (grade III) may require operative treatment based on clinical symptoms. All combined ligamentous injuries usually respond best with surgical management.", 
+          "qas": [
+            {
+              "question": "Which ligament is most commonly injured in dashboard injury?", 
+              "id": "5a6f98e6b750ff445500005d_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Renal Amyloidosis Associated With Kartagener Syndrome in a Dog. A 4-year-old cocker spaniel, male, of 12kg body weight was presented because of the onset of polyuria or polydipsia. From the first months of its life, the dog had exhibited constant serous to mucopurulent nasal discharge, productive cough, sneezing, reverse sneezing, otitis, and recurrent episodes of fever. The respiratory signs had been treated several times with antibiotics, without ever achieving a complete resolution. Clinical examination revealed normal rectal temperature (38.3\u00b0C), increased respiratory rate (40breaths/min), a copious mucous nasal discharge and right deviation of the heart apex beat (ictus cordis). Increased respiratory sounds with moist rales and crackles were found on chest auscultation. An increase in serum creatinine, urea and phosphorus, hypoalbuminemia and proteinuria were found. Lateral and ventrodorsal radiographs of the thorax and of the abdomen showed the transposition of the heart, with the cardiac apex pointing toward the right (dextrocardia), bronchointerstitial lung pattern, areas of consolidation, lesions consistent with bronchiectasis caves and a mirror-image of abdominal organs, confirming the diagnosis of complete situs inversus (CSI). Respiratory signs, combined with CSI, suggested the diagnosis of Kartagener syndrome (KS). Abdominal ultrasound showed an increase in the echogenicity of the renal parenchyma, a loss of definition of the corticomedullary line, slight bilateral pyelectasis, and decreased cortical perfusion. The dog died 2 months later because of a further worsening of the clinical condition. Necroscopy demonstrated the existence of CSI, rhinosinusitis, bronchitis, and bronchiectasis, so confirming the diagnosis of KS, and renal amyloidosis. This is the first case reported in veterinary medicine of the presence of renal amyloidosis together with KS in a dog.", 
+          "qas": [
+            {
+              "question": "What is the normal body temperature in dogs?", 
+              "id": "5a897a06fcd1d6a10c00000b_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Measurement of body temperature in 300 dogs with a novel noncontact infrared thermometer on the cornea in comparison to a standard rectal digital thermometer. OBJECTIVE: To assess the accuracy of obtaining body temperatures in dogs with a noncontact infrared thermometer (NCIT) on the cornea compared with a rectal digital thermometer (RDT). DESIGN: Prospective single center study. SETTING: University teaching hospital. ANIMALS: Three hundred dogs presented with low, normal, or high body temperatures. INTERVENTIONS: Three body temperature readings were measured by an RDT and by an NCIT on the cornea of the left eye by 2 investigators (experienced and inexperienced). Results obtained by the 2 methods were compared. MEASUREMENTS AND MAIN RESULTS: Median body temperature measured by the experienced investigator with the RDT and the NCIT were 38.3\u00b0C (range 35.5\u00b0C-41.1\u00b0C; 95% CI: 38.2-38.4\u00b0C) and 37.7\u00b0C (35.9\u00b0C-40.1\u00b0C; 95% CI: 37.7\u00b0C-37.9\u00b0C), respectively. Measurement of RDT as well as of NCIT correlated well between both investigators (rRDT = 0.94; rNCIT = 0.82; respectively, P < 0.001 for both methods). Mean RDT and NCIT-temperature correlated poorly (r = 0.43; P < 0.001) when taken by the experienced investigator and even less by the nonexperienced investigator (r = 0.38; P < 0.001). Repeatability of the NCIT revealed an unsatisfactory value (0.24\u00b0C) compared to RDT measurement (0.12\u00b0C). Agreement between both devices in measuring low, normal, and high values, calculated by Cohens-Kappa, was unsatisfactory (\u043a = 0.201; P < 0.001). Calculating the receiver operating characteristic curve to determine the best threshold for fever (defined as RDT temperature >39.0\u00b0C) showed an area under the curve of 0.76. Mean discomfort score was significantly lower using NCIT compared to RDT measurement (P < 0.001). CONCLUSIONS: There was poor agreement between body temperatures obtained by RDT and NCIT. The corneal NCIT measurement tends to underrecognize hypothermic and hyperthermic conditions. Although the use of the NCIT yields faster results and is significantly more comfortable for the dog than the RDT measurement, it cannot be recommended in dogs at this time.", 
+          "qas": [
+            {
+              "question": "What is the normal body temperature in dogs?", 
+              "id": "5a897a06fcd1d6a10c00000b_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Ophthalmic findings in patients with arterial tortuosity syndrome and carriers: A case series. INTRODUCTION: Arterial tortuosity syndrome (ATS) is a rare autosomal recessive disease hallmarked by tortuosity, stenosis, and aneurysm development of large- and medium-sized arteries. Mutations in SLC2A10, a gene that encodes the facilitative glucose transporter GLUT10, cause ATS. Several case reports have noted associated ophthalmic findings such as keratoconus, keratoglobus, and myopia without detailed descriptions or standardized examinations. We report the ophthalmic findings in a cohort of compound heterozygous ATS patients and heterozygous carriers of SLC2A10 mutations. METHODS: Five ATS patients and three carriers were identified through an ATS specialty clinic at the Arkansas Children's Hospital in Little Rock, Arkansas. Patients underwent complete eye examinations, including corneal pachymetry, topography, and optical coherence tomography when indicated. RESULTS: All five patients with ATS had myopia and thin corneas with an average central corneal thickness of 426 \u00b5m, and three had corneal ectasia, two with early keratoconus and one with keratoglobus and deep stromal corneal opacities. One patient had bilateral high irregular astigmatism, and one had unilateral high regular astigmatism. All carriers had myopia, one had corneal thinning, and one developed keratectasia in one eye many years after laser-assisted in situ keratomileusis (LASIK) surgery. CONCLUSION: We document a spectrum of ophthalmic manifestations of ATS with universal findings of myopia, corneal thinning, and a propensity for corneal ectasia leading to keratoconus or keratoglobus. Heterozygous carriers may develop keratectasia after corneal refractive surgery. Our data support regular eye examinations for all patients carrying SLC2A10 mutations with follow-up tailored to clinical findings.", 
+          "qas": [
+            {
+              "question": "Mutation of which gene causes arterial tortuosity syndrome?", 
+              "id": "5a70d42899e2c3af26000002_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Arterial Tortuosity Syndrome: homozygosity for two novel and one recurrent SLC2A10 missense mutations in three families with severe cardiopulmonary complications in infancy and a literature review. BACKGROUND: Arterial Tortuosity Syndrome (ATS) is a very rare autosomal recessive connective tissue disorder (CTD) characterized by tortuosity and elongation of the large- and medium-sized arteries and a propensity for aneurysm formation and vascular dissection. During infancy, children frequently present the involvement of the pulmonary arteries (elongation, tortuosity, stenosis) with dyspnea and cyanosis. Other CTD signs of ATS are dysmorphisms, abdominal hernias, joint hypermobility, skeletal abnormalities, and keratoconus. ATS is typically described as a severe disease with high rate of mortality due to major cardiovascular malformations. ATS is caused by mutations in the SLC2A10 gene, which encodes the facilitative glucose transporter 10 (GLUT10). Approximately 100 ATS patients have been described, and 21 causal mutations have been identified in the SLC2A10 gene. CASE PRESENTATION: We describe the clinical findings and molecular characterization of three new ATS families, which provide insight into the clinical phenotype of the disorder; furthermore, we expand the allelic repertoire of SLC2A10 by identifying two novel mutations. We also review the ATS patients characterized by our group and compare their clinical findings with previous data. CONCLUSIONS: Our data confirm that the cardiovascular prognosis in ATS is less severe than previously reported and that the first years of life are the most critical for possible life-threatening events. Molecular diagnosis is mandatory to distinguish ATS from other CTDs and to define targeted clinical follow-up and timely cardiovascular surgical or interventional treatment, when needed.", 
+          "qas": [
+            {
+              "question": "Mutation of which gene causes arterial tortuosity syndrome?", 
+              "id": "5a70d42899e2c3af26000002_001"
+            }
+          ]
+        }, 
+        {
+          "context": "GLUT10 deficiency leads to oxidative stress and non-canonical \u03b1v\u03b23 integrin-mediated TGF\u03b2 signalling associated with extracellular matrix disarray in arterial tortuosity syndrome skin fibroblasts. Arterial tortuosity syndrome (ATS) is an autosomal recessive connective tissue disorder caused by loss-of-function mutations in SLC2A10, which encodes facilitative glucose transporter 10 (GLUT10). The role of GLUT10 in ATS pathogenesis remains an enigma, and the transported metabolite(s), i.e. glucose and/or dehydroascorbic acid, have not been clearly elucidated. To discern the molecular mechanisms underlying the ATS aetiology, we performed gene expression profiling and biochemical studies on skin fibroblasts. Transcriptome analyses revealed the dysregulation of several genes involved in TGF\u03b2 signalling and extracellular matrix (ECM) homeostasis as well as the perturbation of specific pathways that control both the cell energy balance and the oxidative stress response. Biochemical and functional studies showed a marked increase in ROS-induced lipid peroxidation sustained by altered PPAR\u03b3 function, which contributes to the redox imbalance and the compensatory antioxidant activity of ALDH1A1. ATS fibroblasts also showed activation of a non-canonical TGF\u03b2 signalling due to TGFBRI disorganization, the upregulation of TGFBRII and connective tissue growth factor, and the activation of the \u03b1v\u03b23 integrin transduction pathway, which involves p125FAK, p60Src and p38 MAPK. Stable GLUT10 expression in patients' fibroblasts normalized redox homeostasis and PPAR\u03b3 activity, rescued canonical TGF\u03b2 signalling and induced partial ECM re-organization. These data add new insights into the ATS dysregulated biological pathways and definition of the pathomechanisms involved in this disorder.", 
+          "qas": [
+            {
+              "question": "Mutation of which gene causes arterial tortuosity syndrome?", 
+              "id": "5a70d42899e2c3af26000002_002"
+            }
+          ]
+        }, 
+        {
+          "context": "GLUT10 is required for the development of the cardiovascular system and the notochord and connects mitochondrial function to TGF\u03b2 signaling. Growth factor signaling results in dramatic phenotypic changes in cells, which require commensurate alterations in cellular metabolism. Mutations in SLC2A10/GLUT10, a member of the facilitative glucose transporter family, are associated with altered transforming growth factor-\u03b2 (TGF\u03b2) signaling in patients with arterial tortuosity syndrome (ATS). The objective of this work was to test whether SLC2A10/GLUT10 can serve as a link between TGF\u03b2-related transcriptional regulation and metabolism during development. In zebrafish embryos, knockdown of slc2a10 using antisense morpholino oligonucleotide injection caused a wavy notochord and cardiovascular abnormalities with a reduced heart rate and blood flow, which was coupled with an incomplete and irregular vascular patterning. This was phenocopied by treatment with a small-molecule inhibitor of TGF\u03b2 receptor (tgfbr1/alk5). Array hybridization showed that the changes at the transcriptome level caused by the two treatments were highly correlated, revealing that a reduced tgfbr1 signaling is a key feature of ATS in early zebrafish development. Interestingly, a large proportion of the genes, which were specifically dysregulated after glut10 depletion gene and not by tgfbr1 inhibition, play a major role in mitochondrial function. Consistent with these results, slc2a10 morphants showed decreased respiration and reduced TGF\u03b2 reporter gene activity. Finally, co-injection of antisense morpholinos targeting slc2a10 and smad7 (a TGF\u03b2 inhibitor) resulted in a partial rescue of smad7 morphant phenotypes, suggesting scl2a10/glut10 functions downstream of smads. Taken together, glut10 is essential for cardiovascular development by facilitating both mitochondrial respiration and TGF\u03b2 signaling.", 
+          "qas": [
+            {
+              "question": "Mutation of which gene causes arterial tortuosity syndrome?", 
+              "id": "5a70d42899e2c3af26000002_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Arterial tortuosity in genetic arteriopathies. PURPOSE OF REVIEW: Arterial tortuosity is emerging as a common feature in genetically mediated thoracic aortic disease that may be prognostic. This review will summarize recent literature on arterial tortuosity in the setting of genetic arteriopathies. RECENT FINDINGS: Although arterial tortuosity has been primarily described in Loeys-Dietz syndrome due to TGFBR1 and TGFBR2 mutations and in arterial tortuosity syndrome due to SLC210A mutations, recent studies that use quantitative measures of tortuosity suggest that tortuosity is present in many other genetic conditions associated with aortic dilation and dissection. The mechanisms of the development of tortuosity in these disorders are not fully understood, but are founded in the concept that there is abnormal, pathologic arterial lengthening in a fixed space, resulting in more tortuous vessels. Further studies suggest that patients with increased arterial tortuosity are at increased risk of adverse cardiovascular events, including aortic surgery, aortic dissection, and death. SUMMARY: Arterial tortuosity is commonly present in genetically mediated aortic disease. Given the suboptimal performance of aortic dimension alone in predicting aortic dissection, quantification of tortuosity may augment the current algorithms for determining risk in patients with aortic disease.", 
+          "qas": [
+            {
+              "question": "Mutation of which gene causes arterial tortuosity syndrome?", 
+              "id": "5a70d42899e2c3af26000002_004"
+            }
+          ]
+        }, 
+        {
+          "context": "Role of fusaric acid in the development of 'Fusarium wilt' symptoms in tomato: Physiological, biochemical and proteomic perspectives. Fusarium wilt is one of the most prevalent and damaging diseases of tomato. Among various toxins secreted by the Fusarium oxysporum f. sp. lycopersici (causal agent of Fusarium wilt of tomato), fusaric acid (FA) is suspected to be a potent pathogenicity factor in tomato wilt disease development. With this rationale the present study was carried out with physiological, biochemical and proteomic perspectives. Treatment of FA was given to the leaves of tomato directly through infiltration to show the characteristic features of Fusarium wilt of tomato. The phytotoxic effect of FA was assessed in the form of cell death in tomato leaves which was observed by increased uptake of Evans blue stain. The measurement of electrolyte leakage was used as an indicator of the extent of cell death. The influence of FA on the leaf photosynthesis of tomato plant was investigated and it was found that FA strongly reduced the photosynthetic pigment contents of tomato leaves resulting to heavy suppression of leaf photosynthesis processes, which therefore affected leaf physiology finally leading to leaf wilting and necrosis. This cell death inducer (FA) produced an enormous oxidative burst during which large quantities of reactive oxygen species (ROS) like HO was generated in the treated leaf tissues of tomato plants which was evident from enhancement in lipid peroxidation. To assess the involvement of proteolysis in the cell death cascade induced by FA treatment, total protease activity was measured in the leaf tissues and it was found that the total protease activity increased with the treatment and leading to cell death. Furthermore, proteomic study was used as a powerful tool to understand the alterations in cellular protein expression in response to FA exposure. Differential expression in several proteins was observed in the present study. Proteomic analyses, thus, clearly indicate that proteins belonging to different functional classes are significantly affected in the plant leaf tissues after FA exposure leading to deterioration of structure and metabolism of cells. Thus, it is concluded that FA plays an important role in fungal pathogenicity by decreasing cell viability.", 
+          "qas": [
+            {
+              "question": "Fusarium oxysporum f. sp lycopersici. is a plant pathogen in plants producing what common food?", 
+              "id": "5a8b1264fcd1d6a10c00001d_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Effector Gene Suites in Some Soil Isolates of Fusarium oxysporum Are Not Sufficient Predictors of Vascular Wilt in Tomato. Seventy-four Fusarium oxysporum soil isolates were assayed for known effector genes present in an F. oxysporum f. sp. lycopersici race 3 tomato wilt strain (FOL MN-25) obtained from the same fields in Manatee County, Florida. Based on the presence or absence of these genes, four haplotypes were defined, two of which represented 96% of the surveyed isolates. These two most common effector haplotypes contained either all or none of the assayed race 3 effector genes. We hypothesized that soil isolates with all surveyed effector genes, similar to FOL MN-25, would be pathogenic toward tomato, whereas isolates lacking all effectors would be nonpathogenic. However, inoculation experiments revealed that presence of the effector genes alone was not sufficient to ensure pathogenicity on tomato. Interestingly, a nonpathogenic isolate containing the full suite of unmutated effector genes (FOS 4-4) appears to have undergone a chromosomal rearrangement yet remains vegetatively compatible with FOL MN-25. These observations confirm the highly dynamic nature of the F. oxysporum genome and support the conclusion that pathogenesis among free-living populations of F. oxysporum is a complex process. Therefore, the presence of effector genes alone may not be an accurate predictor of pathogenicity among soil isolates of F. oxysporum.", 
+          "qas": [
+            {
+              "question": "Fusarium oxysporum f. sp lycopersici. is a plant pathogen in plants producing what common food?", 
+              "id": "5a8b1264fcd1d6a10c00001d_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Analysis of protein profile of tomato root infected with Fusarium oxysporum f. sp lycopersici. Fusarium wilt caused by Fusarium oxysporum f. sp lycopersici (Fol) is one of the main diseases affecting tomatoes. The BHRS 2,3 genotype of tomato is, however, resistant to this disease. A proteomic approach was used to understand the defense mechanisms of this genotype using the tomato root, the first tissue that interacts with the fungus, as a target. Protein was extracted and separated by two-dimensional electrophoresis followed by staining with Coomassie brilliant blue. The proteins were identified by MALDI-TOF/TOF mass spectrometry. A total of 22 proteins were identified, 21 of which showed differential expression with 12 proteins being upregulated and nine being downregulated. Plants responded to the pathogen with increased expression of pathogenesis-related proteins. We noted the induction of proteins involved in hypersensitivity reaction and other defense mechanisms. The expression of proteins of primary metabolism related to energy production, however, decreased, as did the expression of two proteins related to defense against abiotic stress. These results demonstrate the presence of important mechanisms for defense against Fol in the tomato genotype BHRS 2,3.", 
+          "qas": [
+            {
+              "question": "Fusarium oxysporum f. sp lycopersici. is a plant pathogen in plants producing what common food?", 
+              "id": "5a8b1264fcd1d6a10c00001d_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Success evaluation of the biological control of Fusarium wilts of cucumber, banana, and tomato since 2000 and future research strategies. The Fusarium wilt caused by Fusarium oxysporum strains is the most devastating disease of cucumber, banana, and tomato. The biological control of this disease has become an attractive alternative to the chemical fungicides and other conventional control methods. In this review, the research trends and biological control efficiencies (BCE) of different microbial strains since 2000 are reviewed in detail, considering types of microbial genera, inoculum application methods, plant growth medium and conditions, inoculum application with amendments, and co-inoculation of different microbial strains and how those affect the BCE of Fusarium wilt. The data evaluation showed that the BCE of biocontrol agents was higher against the Fusarium wilt of cucumber compared to the Fusarium wilts of banana and tomato. Several biocontrol agents mainly Bacillus, Trichoderma, Pseudomonas, nonpathogenic Fusarium, and Penicillium strains were evaluated to control Fusarium wilt, but still this lethal disease could not be controlled completely. We have discussed different reasons of inconsistent results and recommendations for the betterment of BCE in the future. This review provides knowledge of the biotechnology of biological control of Fusarium wilt of cucumber, banana, and tomato in a nut shell that will provide researchers a beginning line to start and to organize and plan research for the future studies.", 
+          "qas": [
+            {
+              "question": "Fusarium oxysporum f. sp lycopersici. is a plant pathogen in plants producing what common food?", 
+              "id": "5a8b1264fcd1d6a10c00001d_003"
+            }
+          ]
+        }, 
+        {
+          "context": "McEnhancer: predicting gene expression via semi-supervised assignment of enhancers to target genes. Transcriptional enhancers regulate spatio-temporal gene expression. While genomic assays can identify putative enhancers en masse, assigning target genes is a complex challenge. We devised a machine learning approach, McEnhancer, which links target genes to putative enhancers via a semi-supervised learning algorithm that predicts gene expression patterns based on enriched sequence features. Predicted expression patterns were 73-98% accurate, predicted assignments showed strong Hi-C interaction enrichment, enhancer-associated histone modifications were evident, and known functional motifs were recovered. Our model provides a general framework to link globally identified enhancers to targets and contributes to deciphering the regulatory genome.", 
+          "qas": [
+            {
+              "question": "Which method has been developed for assignment of enhancers to target genes?", 
+              "id": "5a6fa31ab750ff445500005e_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Pharmacokinetics, Safety, and Tolerability of Glecaprevir and Pibrentasvir in Healthy White, Chinese, and Japanese Adult Subjects. Glecaprevir and pibrentasvir are direct-acting antiviral agents being developed as combination therapy for the treatment of chronic hepatitis C virus infection. The aim of the present studies was to assess the effect of race and ethnicity (white, Han Chinese, Japanese) on the pharmacokinetics and safety of multiple oral doses of glecaprevir and pibrentasvir given alone and in combination. Two multiple-dose, single-center, phase 1 studies were conducted in healthy adult male and female subjects (n = 170) of respective Asian and white race/ethnicity. Glecaprevir (100, 200, 300, or 700\u00a0mg once daily) and pibrentasvir (80, 120, or 160\u00a0mg once daily) were administered alone for 7 days followed by the combination of both direct-acting antiviral agents for another 7 days. Intensive blood sampling was performed, and pharmacokinetic parameters were estimated by noncompartmental analyses. ANOVA was employed to evaluate for differences of steady-state glecaprevir and pibrentasvir exposures between Asian (Japanese or Han Chinese) and white subjects. Glecaprevir and pibrentasvir exposures in Han Chinese and Japanese were similar to those in whites across dose levels. The nonlinear dose-exposure relationships for glecaprevir and pibrentasvir were similar across Japanese, Han Chinese, and white subjects, and the safety profiles of the agents were comparable across these groups. The results of these studies demonstrate that race/ethnicity has no clinically meaningful impact on direct-acting antiviral agent exposures, safety, or tolerability of the glecaprevir and pibrentasvir combination. This is supported in part by the large global registration program of the pangenotypic, coformulated fixed-dose glecaprevir/pibrentasvir regimen and allows for inclusion of diverse ethnic populations.", 
+          "qas": [
+            {
+              "question": "Glecaprevir and Pibrentasvir are used for tratment of which disease?", 
+              "id": "5a70e4b399e2c3af26000008_000"
+            }
+          ]
+        }, 
+        {
+          "context": "No Clinically Relevant Drug-Drug Interactions between Methadone or Buprenorphine-Naloxone and Antiviral Combination Glecaprevir and Pibrentasvir. The combination of glecaprevir (formerly ABT-493), a nonstructural protein 3/4A (NS3/4A) protease inhibitor, and pibrentasvir (formerly ABT-530), an NS5A protein inhibitor, is being developed as treatment for HCV genotype 1 to 6 infection. The pharmacokinetics, pharmacodynamics, safety, and tolerability of methadone or buprenorphine-naloxone when coadministered with the glecaprevir-pibrentasvir combination in HCV-negative subjects on stable opioid maintenance therapy were investigated in a phase 1, single-center, two-arm, multiple-dose, open-label sequential study. Subjects received methadone (arm 1) or buprenorphine-naloxone (arm 2) once daily (QD) per their existing individual prescriptions alone (days 1 to 9) and then in combination with glecaprevir at 300 mg QD and pibrentasvir at 120 mg QD (days 10 to 16) each morning. Dose-normalized exposures were similar with and without glecaprevir and pibrentasvir for (R)- and (S)-methadone ( < 5% difference) and for buprenorphine and naloxone ( < 24% difference); the norbuprenorphine area under the curve was 30% higher with glecaprevir and pibrentasvir, consistent with maximum and trough plasma concentrations that increased by 21% to 25%. No changes in pupil response, short opiate withdrawal scale score, or desire for drugs questionnaire were observed when glecaprevir and pibrentasvir were added to methadone or buprenorphine-naloxone therapy. No dose adjustment is required when glecaprevir and pibrentasvir are coadministered with methadone or buprenorphine-naloxone.", 
+          "qas": [
+            {
+              "question": "Glecaprevir and Pibrentasvir are used for tratment of which disease?", 
+              "id": "5a70e4b399e2c3af26000008_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Glecaprevir and pibrentasvir yield high response rates in patients with HCV genotype 1-6 without cirrhosis. BACKGROUND & AIMS: Hepatitis C virus (HCV) therapy that is highly efficacious, pangenotypic, with a high barrier to resistance and short treatment duration is desirable. The efficacy and safety of 8- and 12-week treatments with glecaprevir (ABT-493; NS3/4A protease inhibitor) and pibrentasvir (ABT-530; NS5A inhibitor) were evaluated in non-cirrhotic patients with chronic HCV genotype 1-6 infection. METHODS: SURVEYOR-I and SURVEYOR-II were phase II, open-label, multicenter, dose-ranging trials including patients with chronic HCV genotype 1-6 infection who were either previously untreated or treated with pegylated interferon plus ribavirin. Patients received once-daily glecaprevir plus pibrentasvir at varying doses with or without ribavirin for 8 or 12weeks. The primary efficacy endpoint was the percentage of patients with a sustained virologic response at post-treatment week 12 (SVR12). RESULTS: Of the 449 patients who received varying doses of glecaprevir plus pibrentasvir, 25%, 29%, 39%, and 8% had HCV genotype 1, 2, 3, and 4-6 infection, respectively. Twelve-week treatment achieved SVR12 in 97-100%, 96-100%, 83-94%, and 100% in genotypes 1, 2, 3, and 4-6, respectively. Eight-week treatment with 300mg glecaprevir plus 120mg pibrentasvir in genotype 1-, 2-, or 3-infected patients yielded 97-98% SVR12 with no virologic failures. Three (0.7%) patients discontinued treatment due to adverse events; most events were mild (grade 1) in severity. No post-nadir alanine aminotransferase elevations were observed. CONCLUSIONS: Glecaprevir plus pibrentasvir was well tolerated and achieved high sustained virologic response rates in HCV genotypes 1-6-infected patients without cirrhosis following 8- or 12-week treatment durations. LAY SUMMARY: The combination of direct-acting antivirals glecaprevir and pibrentasvir comprise a once-daily, all-oral, pangenotypic treatment for HCV genotype 1-6 infection. This article describes results from two phase II trials investigating a range of doses at treatment durations of 8 or 12weeks in 449 patients without cirrhosis. Efficacy of the optimal dose, as determined by rates of sustained virologic response at post-treatment week 12, ranged from 92%-100%; treatment was well tolerated and significant laboratory abnormalities were rare. CLINICAL TRIAL REGISTRATION: clinicaltrials.gov Identifiers: NCT02243280 and NCT02243293. http://www.clinicaltrials.gov/show/NCT02243280, http://www.clinicaltrials.gov/show/NCT01939197.", 
+          "qas": [
+            {
+              "question": "Glecaprevir and Pibrentasvir are used for tratment of which disease?", 
+              "id": "5a70e4b399e2c3af26000008_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Glecaprevir and pibrentasvir for 12 weeks for hepatitis C virus genotype 1 infection and prior direct-acting antiviral treatment. Although direct-acting antiviral (DAA) therapies for chronic hepatitis C virus (HCV) infection have demonstrated high rates of sustained virologic response, virologic failure may still occur, potentially leading to the emergence of viral resistance, which can decrease the effectiveness of subsequent treatment. Treatment options for patients who failed previous DAA-containing regimens, particularly those with nonstructural protein 5A inhibitors, are limited and remain an area of unmet medical need. This phase 2, open-label study (MAGELLAN-1) evaluated the efficacy and safety of glecaprevir (GLE) + pibrentasvir (PIB) \u00b1 ribavirin (RBV) in HCV genotype 1-infected patients with prior virologic failure to HCV DAA-containing therapy. A total of 50 patients without cirrhosis were randomized to three arms: 200 mg GLE + 80 mg PIB (arm A), 300 mg GLE + 120 mg PIB with 800 mg once-daily RBV (arm B), or 300 mg GLE + 120 mg PIB without RBV (arm C). By intent-to-treat analysis, sustained virologic response at posttreatment week 12 was achieved in 100% (6/6, 95% confidence interval 61-100), 95% (21/22, 95% confidence interval 78-99), and 86% (19/22, 95% confidence interval 67-95) of patients in arms A, B, and C, respectively. Virologic failure occurred in no patients in arm A and in 1 patient each in arms B and C (two patients were lost to follow-up in arm C). The majority of adverse events were mild in severity; no serious adverse events related to study drug and no relevant laboratory abnormalities in alanine aminotransferase, total bilirubin, or hemoglobin were observed. CONCLUSION: The combination of GLE and PIB was highly efficacious and well tolerated in patients with HCV genotype 1 infection and prior failure of DAA-containing therapy; RBV coadministration did not improve efficacy. (Hepatology 2017;66:389-397).", 
+          "qas": [
+            {
+              "question": "Glecaprevir and Pibrentasvir are used for tratment of which disease?", 
+              "id": "5a70e4b399e2c3af26000008_003"
+            }
+          ]
+        }, 
+        {
+          "context": "FullSSR: Microsatellite Finder and Primer Designer. Microsatellites are genomic sequences comprised of tandem repeats of short nucleotide motifs widely used as molecular markers in population genetics. FullSSR is a new bioinformatic tool for microsatellite (SSR) loci detection and primer design using genomic data from NGS assay. The software was tested with 2000 sequences of Oryza sativa shotgun sequencing project from the National Center of Biotechnology Information Trace Archive and with partial genome sequencing with ROCHE 454\u00ae from Caiman latirostris, Salvator merianae, Aegla platensis, and Zilchiopsis collastinensis. FullSSR performance was compared against other similar SSR search programs. The results of the use of this kind of approach depend on the parameters set by the user. In addition, results can be affected by the analyzed sequences because of differences among the genomes. FullSSR simplifies the detection of SSRs and primer design on a big data set. The command line interface of FullSSR was intended to be used as part of genomic analysis tools pipeline; however, it can be used as a stand-alone program because the results are easily interpreted for a nonexpert user.", 
+          "qas": [
+            {
+              "question": "Which tool exists for microsatellite (SSR) loci detection and primer design?", 
+              "id": "5a6fa61ab750ff4455000060_000"
+            }
+          ]
+        }, 
+        {
+          "context": "CSEQ-SIMULATOR: A DATA SIMULATOR FOR CLIP-SEQ EXPERIMENTS. CLIP-Seq protocols such as PAR-CLIP, HITS-CLIP or iCLIP allow a genome-wide analysis of protein-RNA interactions. For the processing of the resulting short read data, various tools are utilized. Some of these tools were specifically developed for CLIP-Seq data, whereas others were designed for the analysis of RNA-Seq data. To this date, however, it has not been assessed which of the available tools are most appropriate for the analysis of CLIP-Seq data. This is because an experimental gold standard dataset on which methods can be accessed and compared, is still not available. To address this lack of a gold-standard dataset, we here present Cseq-Simulator, a simulator for PAR-CLIP, HITS-CLIP and iCLIP-data. This simulator can be applied to generate realistic datasets that can serve as surrogates for experimental gold standard dataset. In this work, we also show how Cseq-Simulator can be used to perform a comparison of steps of typical CLIP-Seq analysis pipelines, such as the read alignment or the peak calling. These comparisons show which tools are useful in different settings and also allow identifying pitfalls in the data analysis.", 
+          "qas": [
+            {
+              "question": "Which data simulator is available for CLIP-SEQ experiments?", 
+              "id": "5a75f6e083b0d9ea66000009_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Patent foramen ovale closure with GORE HELEX or CARDIOFORM Septal Occluder vs. antiplatelet therapy for reduction of recurrent stroke or new brain infarct in patients with prior cryptogenic stroke: Design of the randomized Gore REDUCE Clinical Study. Rationale The utility of patent foramen ovale (PFO) closure for secondary prevention in patients with prior cryptogenic stroke is uncertain despite multiple randomized trials completed to date. Aims The Gore REDUCE Clinical Study (REDUCE) aims to establish superiority of patent foramen ovale closure in conjunction with antiplatelet therapy over antiplatelet therapy alone in reducing the risk of recurrent clinical ischemic stroke or new silent brain infarct in patients who have had a cryptogenic stroke. Methods and design This controlled, open-label trial randomized 664 subjects with cryptogenic stroke at 63 multinational sites in a 2:1 ratio to either antiplatelet therapy plus patent foramen ovale closure (with GORE\u00ae HELEX\u00ae Septal Occluder or GORE\u00ae CARDIOFORM Septal Occluder) or antiplatelet therapy alone. Subjects will be prospectively followed for up to five years. Neuroimaging is required for all subjects at baseline and at two years or study exit. Study outcomes The two co-primary endpoints for the study are freedom from recurrent clinical ischemic stroke through at least 24 months post-randomization and incidence of new brain infarct (defined as clinical ischemic stroke or silent brain infarct) through 24 months. The primary analyses are an unadjusted log-rank test and a binomial test of subject-based proportions, respectively, both on the intent-to-treat population, with adjustment for testing multiplicity. Discussion The REDUCE trial aims to target a patient population with truly cryptogenic strokes. Medical therapy is limited to antiplatelet agents in both arms thereby reducing confounding. The trial should determine whether patent foramen ovale closure with the Gore septal occluders is safe and more effective than medical therapy alone for the prevention of recurrent clinical ischemic stroke or new silent brain infarct; the neuroimaging data will provide an opportunity to further support the proof of concept. The main results are anticipated in 2017. Registration Clinical trial registration-URL: http://clinicaltrials.gov/show/NCT00738894.", 
+          "qas": [
+            {
+              "question": "Treatment of which disease was studied in the Gore REDUCE Clinical Study?", 
+              "id": "5a72302b2dc08e987e000005_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Patent Foramen Ovale Closure or Antiplatelet Therapy for Cryptogenic Stroke. BACKGROUND: The efficacy of closure of a patent foramen ovale (PFO) in the prevention of recurrent stroke after cryptogenic stroke is uncertain. We investigated the effect of PFO closure combined with antiplatelet therapy versus antiplatelet therapy alone on the risks of recurrent stroke and new brain infarctions. METHODS: In this multinational trial involving patients with a PFO who had had a cryptogenic stroke, we randomly assigned patients, in a 2:1 ratio, to undergo PFO closure plus antiplatelet therapy (PFO closure group) or to receive antiplatelet therapy alone (antiplatelet-only group). Imaging of the brain was performed at the baseline screening and at 24 months. The coprimary end points were freedom from clinical evidence of ischemic stroke (reported here as the percentage of patients who had a recurrence of stroke) through at least 24 months after randomization and the 24-month incidence of new brain infarction, which was a composite of clinical ischemic stroke or silent brain infarction detected on imaging. RESULTS: We enrolled 664 patients (mean age, 45.2 years), of whom 81% had moderate or large interatrial shunts. During a median follow-up of 3.2 years, clinical ischemic stroke occurred in 6 of 441 patients (1.4%) in the PFO closure group and in 12 of 223 patients (5.4%) in the antiplatelet-only group (hazard ratio, 0.23; 95% confidence interval [CI], 0.09 to 0.62; P=0.002). The incidence of new brain infarctions was significantly lower in the PFO closure group than in the antiplatelet-only group (22 patients [5.7%] vs. 20 patients [11.3%]; relative risk, 0.51; 95% CI, 0.29 to 0.91; P=0.04), but the incidence of silent brain infarction did not differ significantly between the study groups (P=0.97). Serious adverse events occurred in 23.1% of the patients in the PFO closure group and in 27.8% of the patients in the antiplatelet-only group (P=0.22). Serious device-related adverse events occurred in 6 patients (1.4%) in the PFO closure group, and atrial fibrillation occurred in 29 patients (6.6%) after PFO closure. CONCLUSIONS: Among patients with a PFO who had had a cryptogenic stroke, the risk of subsequent ischemic stroke was lower among those assigned to PFO closure combined with antiplatelet therapy than among those assigned to antiplatelet therapy alone; however, PFO closure was associated with higher rates of device complications and atrial fibrillation. (Funded by W.L. Gore and Associates; Gore REDUCE ClinicalTrials.gov number, NCT00738894 .).", 
+          "qas": [
+            {
+              "question": "Treatment of which disease was studied in the Gore REDUCE Clinical Study?", 
+              "id": "5a72302b2dc08e987e000005_001"
+            }
+          ]
+        }, 
+        {
+          "context": "What determines the periportal free air, and ligamentum teres and falciform ligament signs on CT: can these specific air distributions be valuable predictors of gastroduodenal perforation? PURPOSE: The purpose of this retrospective study was to determine what gives rise to the periportal free air, and ligamentum teres and falciform ligament signs on CT in patients with gastrointestinal (GI) tract perforation, and whether these specific air distributions can play a clinically meaningful role in the diagnosis of gastroduodenal perforation. MATERIAL AND METHODS: Ninety-three patients who underwent a diagnostic CT scan before laparotomy for a GI tract perforation were included. The readers assessed the presence of specific air distributions on CT (periportal free air, and ligamentum teres and falciform ligament signs). The readers also assessed the presence of strong predictors of gastroduodenal perforation (focal defects in the stomach and duodenal bulb wall, concentrated extraluminal air bubbles in close proximity to the stomach and duodenal bulb, and wall thickening at the stomach and duodenal bulb). The specific air distributions were assessed according to perforation sites, and the elapsed time and amount of free air, and then compared with the strong predictors of gastroduodenal perforation by using statistical analysis. RESULTS: All specific air distributions were more frequently present in patients with gastroduodenal perforation than lower GI tract perforation, but only the falciform ligament sign was statistically significant (p<0.05). The presence of all three specific air distributions was demonstrated in only 13 (20.6%) of 63 patients with gastroduodenal perforation. Regardless of the perforation sites, the falciform ligament sign was present significantly more frequently with an increase in the amount of free air on multiple logistic regression analysis (adjusted odds ratio, 1.29; p<0.001). The sensitivity, specificity, accuracy, and positive predictive and negative predictive values of each strong predictor for the diagnosis of gastroduodenal perforation were higher than those of specific air distributions. The focal wall thickening (accuracy, 95.7%) was the most useful parameter for the diagnosis of gastroduodenal perforation. CONCLUSION: The prediction of the perforation site of the GI tract on CT should be based on the presence of strong predictors of the site of bowel perforation, and the specific free air distribution should be regarded as complementary predictors.", 
+          "qas": [
+            {
+              "question": "Falciform ligament sign is characteristic to which disease?", 
+              "id": "5a72329e2dc08e987e000006_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Distinction between upper and lower gastrointestinal perforation: usefulness of the periportal free air sign on computed tomography. PURPOSE: To evaluate the usefulness of the periportal free air (PPFA) sign on computed tomography (CT) to distinguish upper from lower gastrointestinal (GI) tract perforation. MATERIALS AND METHODS: During a 30-month period, we retrospectively analyzed abdominal CT images of 53 consecutive patients with surgically proven GI tract perforation. We divided the patients into two groups, i.e. upper and lower GI tract perforation groups. According to the distribution of free air, we divided the peritoneal cavity into supramesocolic compartment and inframesocolic compartment. We observed the presence or absence of free air in each compartment in each group. When there was free air in the periportal area, it was defined as periportal free air (PPFA) and the sign was positive. To evaluate the usefulness of the PPFA sign, we compared the PPFA sign with the falciform ligament sign and the ligamentum teres sign, both of which are well-known CT signs of pneumoperitoneum. Statistical analyses were performed with univariate and multivariate analyses using SPSS version 11.5 for significant findings among the CT signs. RESULTS: Free air was seen in supramesocolic compartment in 29 of 30 (97%) patients in the upper GI perforation group and in 17 of 23 (74%) in the lower GI perforation group. Free air in inframesocolic compartment did not show significant difference in either group (p=.16). The PPFA sign was seen in 28 of 30 (93%) patients with upper GI tract perforation, but in only 8 of 23 (35%) patients with lower GI tract perforation (p<.0001). The falciform ligament sign was seen in 24 of 30 (80%) patients with upper GI tract perforation and in 10 of 23 (43%) patients with lower GI tract perforation (p=.020). The ligamentum teres sign was seen in 16 of 30 (53%) patients with upper GI tract perforation and in 2 of 23 (8%) patients with lower GI tract perforation (p=.008). Multivariate logistic regression analysis showed that the PPFA sign was the only variable, which adjusted odds ratio of 15.5 (p=.002). CONCLUSION: The PPFA sign is a useful finding which can help to distinguish upper from lower GI tract perforation. When this sign is present, upper GI tract perforation is strongly suggested.", 
+          "qas": [
+            {
+              "question": "Falciform ligament sign is characteristic to which disease?", 
+              "id": "5a72329e2dc08e987e000006_001"
+            }
+          ]
+        }, 
+        {
+          "context": "CT evaluation of gastrointestinal tract perforation. The purpose of this study is to review the computed tomography (CT) appearance of gastrointestinal tract (GI) perforation. Forty-two patients with 10 cases of proximal GI perforation and 32 cases of distal GI perforation were evaluated based on the CT findings of extraluminal air (which was subdivided into the CT-falciform ligament sign crossing the midline and scattered pockets of air), bowel wall thickening (>8 mm in gastroduodenal wall, >3 mm in the small bowel wall, >6 mm in the caliber of the appendix and >5 mm in the colonic wall), associated abscess formation, ascites and adjacent fat stranding. The results were compared using Fisher's Exact Test. Detection of extraluminal air in the upright plain films and CT was analyzed by Z test. Our results showed that CT-falciform ligament sign was more frequent in the proximal GI perforation, while pockets of extraluminal air (excluding the cases accompanying CT-falciform ligament sign), bowel wall thickening and fat stranding were found in higher incidence in distal GI perforation (P<.05). CT detected extraluminal air in more cases than the upright plain films did (69% vs. 19%; Z=4.62>Z(0.01)=2.326). We concluded that CT is a good imaging tool to differentiate the various GI perforations.", 
+          "qas": [
+            {
+              "question": "Falciform ligament sign is characteristic to which disease?", 
+              "id": "5a72329e2dc08e987e000006_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Diagnosis of pneumoperitoneum on supine abdominal radiographs. A blinded, retrospective study was performed to determine the value of supine abdominal radiographs in diagnosing pneumoperitoneum. Supine films from 44 cases of pneumoperitoneum were randomly interspersed among supine films from 87 control subjects without free air, and the films were reviewed for the presence or absence of various signs of pneumoperitoneum, including Rigler's sign (gas on both sides of the bowel wall), the falciform ligament sign (gas outlining the falciform ligament), the football sign (gas outlining the peritoneal cavity), the inverted-V sign (gas outlining the medial umbilical folds), and the right-upper-quadrant gas sign (localized gas in the right upper quadrant). One or more of these signs were present in 26 cases (59%) of pneumoperitoneum, including the right-upper-quadrant gas sign in 18 cases (41%), Rigler's sign in 14 cases (32%), and the falciform ligament and football signs in one case each (2%). Unfortunately, there were frequent errors in the interpretation of the right-upper-quadrant gas sign and Rigler's sign, with a total of 11 false-positive cases (13%). Further analysis of the true-positive right-upper-quadrant gas signs showed that these gas collections were always triangular or linear with an inferolateral to superomedial orientation and, if triangular, a concave superolateral border. In the true-positive Rigler's signs, the bowel wall thickness ranged from 1 to 8 mm, whereas the false positives all had a bowel wall thickness of 1 mm or less. Proper interpretation of the various signs of pneumoperitoneum on supine films should lead to more accurate diagnosis of this condition.", 
+          "qas": [
+            {
+              "question": "Falciform ligament sign is characteristic to which disease?", 
+              "id": "5a72329e2dc08e987e000006_003"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

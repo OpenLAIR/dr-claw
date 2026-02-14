@@ -1,0 +1,64 @@
+\clearpage
+\section{Expanded Discussion}
+\label{append:summary}
+
+The applications in Section~\ref{sec:app} show how \libName not only enables new applications but also helps renovate existing ones.
+For example, in A1 (scenario 3), A5, and A6, \libName enabled the creation of multi-agent conversations that follow a dynamic pattern instead of a fixed back-and-forth. And in both A5 and A6, humans can participate in the activities together with multiple other AI agents in a conversational manner.
+Similarly, A1-A4 show how popular applications can be renovated quickly with \libName.
+Despite the complexity of these applications (most of them involve more than two agents or dynamic multi-turn agent cooperation), our \libName-based implementation remains simple, demonstrating promising opportunities to build creative applications and a large space for innovation. In reflecting on {\em why} these benefits can be achieved in these applications with \libName, we believe there are a few reasons:
+\begin{itemize}[leftmargin=*]
+    \vspace{-1mm}
+    \setlength\itemsep{-0.1em}
+    \item \textbf{Ease of use}: The built-in agents can be used out-of-the-box, delivering strong performance even without any customization. (A1, A3)
+    \item \textbf{Modularity}: The division of tasks into separate agents promotes modularity in the system. Each agent can be developed, tested, and maintained independently, simplifying the overall development process and facilitating code management. (A3, A4, A5, and A6)
+    \item \textbf{Programmability:} \libName allows users to extend/customize existing agents to develop systems satisfying their specific needs with ease. (A1-A6). For example, with \libName, the core workflow code in A4 is reduced from over 430 lines to 100 lines, for a 4x saving. 
+    \item \textbf{Allowing human involvement}: \libName provides a native mechanism to achieve human participation and/or human oversight. With \libName, humans can seamlessly and optionally cooperate with AIs to solve problems or generally participate in the activity. \libName also facilitates interactive user instructions to ensure the process stays on the desired path. (A1, A2, A5, and A6)
+    \item \textbf{Collaborative/adversarial agent interactions}: Like many collaborative agent systems \cite{dong2023self}, agents in \libName can share information and knowledge, to complement each other's abilities and collectively arrive at better solutions. (A1, A2, A3, and A4). Analogously, in certain scenarios, some agents are required to work in an adversarial way. Relevant information is shared among different conversations in a controlled manner, preventing distraction or hallucination. (A4, A6). \libName supports both patterns, enabling effective utilization and augmentation of LLMs.
+\end{itemize}
+
+\subsection{General Guidelines for Using \libName}
+\label{sec:guideline}
+
+Below we give some recommendations for using agents in \libName to accomplish a task. 
+\begin{enumerate}[leftmargin=*]
+    \vspace{-1mm}
+    \setlength\itemsep{-0.1em}
+\item {\bf Consider using built-in agents first.} For example, \AssistantAgent is pre-configured to be backed by GPT-4, with a carefully designed system message for generic problem-solving via code. The \UserProxyAgent is configured to solicit human inputs and perform tool execution. Many problems can be solved by simply combining these two agents. When customizing agents for an application, consider the following options: (1) human input mode, termination condition, code execution configuration, and LLM configuration can be specified when constructing an agent; (2) \libName supports adding instructions in an initial user message, which is an effective way to boost performance without needing to modify the system message; (3) \UserProxyAgent can be extended to handle different execution environments and exceptions, etc.; (4) when system message modification is needed, consider leveraging the LLM's capability to program its conversation flow with natural language. 
+
+\item {\bf Start with a simple conversation topology}. Consider using the two-agent chat or the group chat setup first, as they can often be extended with the least code. Note that the two-agent chat can be easily extended to involve more than two agents by using LLM-consumable functions in a dynamic way. 
+\item Try to {\bf reuse built-in reply methods} based on LLM, tool, or human before implementing a custom reply method because they can often be reused to achieve the goal in a simple way (e.g., the built-in agent \texttt{GroupChatManager}'s reply method reuses the built-in LLM-based reply function when selecting the next speaker, ref. A5 in Section~\ref{sec:app}). 
+\item When developing a new application with \UserProxyAgent, {\bf start with humans always in the loop}, i.e., human\_input\_mode=`ALWAYS', even if the target operation mode is more autonomous. This helps evaluate the effectiveness of \AssistantAgent, tuning the prompt, discovering corner cases, and debugging. Once confident with small-scale success, consider 
+setting human\_input\_mode = `NEVER'.
+This enables LLM as a backend, and one can either use the LLM or manually generate diverse system messages to simulate different use cases. 
+
+\item Despite the numerous advantages of \libName agents,  there could be cases/scenarios where {\bf other libraries/packages could help}. For example: (1) For (sub)tasks that do not have requirements for back-and-forth trouble-shooting, multi-agent interaction, etc., a unidirectional (no back-and-forth message exchange) pipeline can also be orchestrated with LangChain~\cite{langchain}, LlamaIndex~\cite{Liu_LlamaIndex_2022}, Guidance~\cite{guidance}, Semantic Kernel~\cite{sk}, Gorilla~\cite{patil2023gorilla} or low-level inference API (`autogen.oai' provides an enhanced LLM inference layer at this level)~\cite{dibia-2023-lida}. (2) When existing tools from LangChain etc. are helpful, one can use them as tool backends for \libName agents. For example, one can readily use tools, e.g., Wolfram Alpha, from LangChain in \libName agent. (3) For specific applications, one may want to leverage agents implemented in other libraries/packages. To achieve this, one could wrap those agents as conversable agents in \libName and then use them to build LLM applications through multi-agent conversation. (4) It can be hard to find an optimal operating point among many tunable choices, such as the LLM inference configuration. Blackbox optimization packages like `flaml.tune' \cite{wang2021flaml} can be used together with \libName to automate such tuning. 
+\end{enumerate}
+
+\subsection{Future Work}
+This work raises many research questions and future directions and .
+
+    \textbf{Designing optimal multi-agent workflows:} Creating a multi-agent workflow for a given task can involve many decisions, e.g., how many agents to include, how to assign agent roles and agent capabilities, how the agents should interact with each other, and whether to automate a particular part of the workflow. There may not exist a one-fits-all answer, and the best solution might depend on the specific application. 
+    This raises important questions: For what types of tasks and applications are multi-agent workflows most useful?  How do multiple agents help in different applications? For a given task, what is the optimal (e.g., cost-effective) multi-agent workflow?
+
+
+\textbf{Creating highly capable agents:}
+\libName can enable the development of highly capable agents that leverage the strengths of LLMs, tools, and humans. Creating such agents is crucial to ensuring that a multi-agent workflow can effectively troubleshoot and make progress on a task. For example, we observed that CAMEL, another multi-agent LLM system, cannot effectively solve problems in most cases primarily because it lacks the capability to execute tools or code. 
+This failure shows that LLMs and multi-agent conversations with simple role playing are insufficient, and highly capable agents with diverse skill sets are essential. We believe that more systematic work will be required to
+develop guidelines for application-specific agents,
+to create a large OSS knowledge base of agents,
+and to create agents that can discover and upgrade their skills~\cite{cai2023large}.
+
+
+\textbf{Enabling scale, safety, and human agency:}
+Section~\ref{sec:app} shows how complex multi-agent workflows can enable new applications, and future work will be needed to assess whether scaling further can help solve extremely complex tasks.
+However, as these workflows scale and grow more complex, it may become difficult to log and adjust them. 
+Thus, it will become essential to develop clear mechanisms and tools to track and debug their behavior. 
+Otherwise, these techniques risk resulting in incomprehensible, unintelligible chatter among agents~\cite{lewis2017deal}.
+
+    
+    Our work also shows how complex, fully autonomous workflows with \libName can be useful, but fully autonomous agent conversations will need to be used with care. While the autonomous mode \libName supports could be desirable in many scenarios, a high level of autonomy can also pose potential risks, especially in high-risk applications~\cite{amodei-arxiv2016,weld-aaai94}. As a result, building 
+    fail-safes against cascading failures and exploitation,
+    mitigating reward hacking, 
+    out of control and undesired behaviors, 
+    maintaining effective human oversight of applications built with \libName agents will become important. 
+    While \libName provides convenient and seamless involvement of humans through a user proxy agent, developers and stakeholders still need to understand and determine the appropriate level and pattern of human involvement to ensure the safe and ethical use of the technology~\cite{horvitz-chi99,amershi-chi19}.

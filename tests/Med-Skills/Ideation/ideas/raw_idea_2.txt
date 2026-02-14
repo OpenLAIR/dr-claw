@@ -1,0 +1,691 @@
+Med-Skills: Uncertainty-Guided Skill Orchestration with Contrastive Skill Representations for Medical Imaging Agents
+
+================================================================================
+a) Challenges -- Current Limitations and Key Bottlenecks
+================================================================================
+
+Challenge 1: Blind Skill Composition without Confidence Awareness.
+Current agent frameworks (HuggingGPT, ToolLLM, AgentSkillOS) execute skill pipelines in a "fire-and-forget" manner: each skill produces a deterministic output that is unconditionally fed to the next skill. In medical imaging, this is dangerous because model predictions carry widely varying confidence levels -- a segmentation model may be highly uncertain on a boundary region, a classifier may produce near-uniform softmax scores for ambiguous pathology. If a low-confidence intermediate result silently propagates through a multi-step pipeline, the final clinical conclusion can be catastrophically unreliable. No existing framework propagates or reasons about uncertainty across skill chains.
+
+Challenge 2: Brittle Skill Retrieval via Surface-Level Similarity.
+Existing skill/tool retrieval methods rely on either text embedding similarity (ToolLLM's ToolRetriever), keyword-based ontology matching, or their linear combination. These approaches suffer from the "semantic gap" in medicine: a skill described as "cardiac structure delineation" should match queries about "left ventricular segmentation" even though they share few surface tokens. Moreover, skills that perform similar functions on different anatomies (e.g., liver segmentation vs. kidney segmentation) should be close in a functional representation space but may be distant in a purely textual embedding space. Without learning a representation that captures functional equivalence and composability, retrieval remains brittle.
+
+Challenge 3: No Self-Verification Loop for Clinical Quality Assurance.
+Medical imaging workflows demand verification -- radiologists routinely double-check findings, compare with prior studies, and cross-validate across modalities. Current agent systems lack any mechanism for self-verification: once a skill pipeline produces an output, it is accepted as-is. MedSAM-Agent introduced multi-turn refinement for a single segmentation skill, but this concept has not been generalized to multi-skill workflows. An agent that can verify its own intermediate results and trigger corrective re-execution would substantially improve clinical reliability.
+
+Challenge 4: Static Orchestration Cannot Handle Conditional Clinical Logic.
+Real clinical workflows are not linear pipelines -- they involve conditional branching (e.g., "if lesion is detected, characterize it; otherwise, report normal"), iterative refinement (e.g., "if segmentation quality is poor, retry with different prompts"), and dynamic skill selection based on intermediate results. Existing DAG-based planning (AgentSkillOS) pre-commits to a fixed execution graph before any skill runs. An adaptive orchestration strategy that can dynamically modify the execution plan based on intermediate results and their confidence levels is needed.
+
+================================================================================
+b) Existing Methods -- Current Approaches and Their Limitations
+================================================================================
+
+| Method          | Approach                                                        | Key Limitation                                                              |
+|-----------------|-----------------------------------------------------------------|-----------------------------------------------------------------------------|
+| ToolLLM         | ToolRetriever (dense embedding) + DFSDT reasoning               | No uncertainty propagation; text-only embeddings miss functional similarity |
+| SkillRL         | Text-based skill heuristics + GRPO evolution                    | Skills lack computational structure; no confidence-aware execution          |
+| TxAgent         | ToolRAG (adaptive retrieval) + multi-step reasoning             | Domain-specific to therapeutics; no intermediate verification               |
+| MCP-Zero        | Hierarchical semantic routing across MCP servers                | Greedy one-shot skill selection; no backtracking on low-confidence results  |
+| HuggingGPT      | Plan -> Select -> Execute -> Integrate (4-stage)                | Fixed plan; no conditional re-planning based on execution outcomes          |
+| MedSAM-Agent    | Multi-turn agentic RL for iterative segmentation                | Single-skill refinement only; cannot generalize to multi-skill workflows    |
+| MedAgentGym     | Code-based reasoning with SFT + DPO                            | No reusable skill abstraction; no uncertainty tracking                      |
+
+The fundamental gap: No existing method provides (i) learned functional skill representations that capture composability, (ii) uncertainty propagation across multi-skill pipelines, (iii) self-verification with corrective re-execution, or (iv) confidence-conditioned adaptive orchestration.
+
+================================================================================
+c) Motivation -- Why This Problem Is Important
+================================================================================
+
+Reliability is the Bottleneck for Clinical Deployment. The single greatest barrier to deploying AI agents in clinical practice is not accuracy but *reliability*. Clinicians need to know when the system is confident and when it is uncertain. An agent that can propagate uncertainty, self-verify, and adaptively adjust its execution plan provides the transparency and safety guarantees required for clinical adoption.
+
+Functional Skill Representations Enable Generalization. Medical imaging continually produces new specialized models. A representation space that captures functional similarity (what a skill does, not just what its text description says) enables zero-shot retrieval of newly added skills without retraining the retriever. This is critical for a growing skill library.
+
+Self-Verification Closes the Quality Loop. SkillsBench demonstrated that skills improve healthcare agent performance by +51.9pp. We hypothesize that adding self-verification on top of skill-based execution can provide an additional significant improvement, because verification catches the failure modes that even good skill selection cannot prevent (e.g., a correctly selected segmentation model that fails on an atypical case).
+
+Adaptive Orchestration Matches Clinical Reasoning. Clinicians do not follow rigid protocols -- they adapt their workflow based on findings. An agent that mirrors this adaptive reasoning pattern (inspect intermediate result -> decide next action) is more aligned with clinical practice than one that pre-commits to a fixed execution graph.
+
+Unique Research Contributions:
+1. First framework to propagate prediction uncertainty across multi-skill medical imaging pipelines.
+2. Contrastive skill representation learning that captures functional equivalence and composability.
+3. A self-verification module that enables the agent to check and correct its own intermediate outputs.
+4. Confidence-conditioned adaptive orchestration that dynamically adjusts the execution plan.
+
+================================================================================
+d) Proposed Method -- Detailed Technical Solution
+================================================================================
+
+We propose Med-Skills-v2, a framework with four core innovations: (1) Contrastive Skill Representations (ConSkill) for robust retrieval, (2) Uncertainty-Aware Skill Execution (UASE) with confidence propagation, (3) a Self-Verification Module (SVM) for quality assurance, and (4) Confidence-Conditioned Adaptive Orchestration (CCAO) for dynamic planning.
+
+We retain the same Medical Skill definition as the base Med-Skills framework (skill tuple s = (id, name, desc, I, O, M, C, V, f)) and the same Med-SkillGen wrapping pipeline. The innovations focus on how skills are represented, retrieved, executed, and orchestrated.
+
+--------------------------------------------------------------------------------
+Core Innovation 1: Contrastive Skill Representations (ConSkill)
+--------------------------------------------------------------------------------
+
+Motivation. Rather than relying on text embeddings of skill descriptions, we learn a skill representation space where functionally similar skills are close and functionally dissimilar skills are far apart, regardless of their textual descriptions.
+
+Skill Representation Encoder. For each skill s, we construct a multi-view representation by encoding:
+- Textual view: e_text(s) = BioEncoder(s.desc)  (PubMedBERT-based)
+- Structural view: e_struct(s) = MLP([onehot(s.M.modality); onehot(s.M.anatomy); onehot(s.M.task_type); type_embed(s.I); type_embed(s.O)])
+- Behavioral view: e_behav(s) = MeanPool({h_j}) where h_j = Encoder(x_j, s.f(x_j)) are encodings of (input, output) pairs from a small calibration set
+
+The fused skill embedding is:
+
+  z_s = Proj(e_text(s) || e_struct(s) || e_behav(s))
+
+where || denotes concatenation and Proj is a learned projection to a d-dimensional space.
+
+Contrastive Learning Objective. We define positive pairs (s_i, s_j)^+ as skills that are functionally interchangeable (same task type on same anatomy, verified by successful substitution in at least one workflow) and negative pairs (s_i, s_k)^- as skills that are not interchangeable. The training objective is an InfoNCE loss:
+
+  L_contra = -E_{(s_i, s_j)^+} [ log( exp(sim(z_i, z_j) / tau) / sum_{k=1}^{K} exp(sim(z_i, z_k) / tau) ) ]
+
+where sim(z_i, z_j) = z_i^T z_j / (||z_i|| ||z_j||) and tau is a temperature parameter.
+
+Additionally, we add a composability-aware alignment term: if skills s_a and s_b are frequently composed in sequence (s_a -> s_b), then the output-type embedding of s_a should align with the input-type embedding of s_b:
+
+  L_compose = E_{(s_a, s_b) in E_compat} [ ||type_embed(s_a.O) - type_embed(s_b.I)||^2 ]
+
+Total loss:
+
+  L_total = L_contra + lambda * L_compose
+
+where lambda balances the two objectives.
+
+Retrieval with ConSkill. Given a query q, we encode it as z_q = Proj(BioEncoder(q) || inferred_struct(q) || zero_pad) and retrieve top-K skills by cosine similarity in the learned space. This naturally handles the semantic gap because the behavioral view captures what skills actually do, not just what their descriptions say.
+
+--------------------------------------------------------------------------------
+Core Innovation 2: Uncertainty-Aware Skill Execution (UASE)
+--------------------------------------------------------------------------------
+
+Key Idea. Each skill execution produces not just an output but also a confidence score. This confidence propagates through the pipeline, enabling downstream skills and the orchestrator to make informed decisions.
+
+Uncertainty Estimation. We extend each Medical Skill to produce an uncertainty estimate alongside its primary output. For a skill s_k with function f_k:
+
+  (y_k, u_k) = f_k^U(x_k)
+
+where y_k is the primary output and u_k in [0, 1] is a calibrated confidence score. The uncertainty estimation method depends on the skill type:
+
+- Segmentation skills: u_k = 1 - H(p_k) / H_max, where H(p_k) is the mean pixel-wise entropy of the softmax output and H_max = log(C) for C classes. This is computed from the model's own softmax probabilities without requiring additional forward passes.
+- Classification skills: u_k = max(softmax(logits_k)), the maximum class probability.
+- Detection skills: u_k = mean({conf_j}) over detected objects, where conf_j is each detection's confidence.
+- Report generation skills: u_k = exp(mean(log_probs_k)), the geometric mean of token-level probabilities (perplexity-based confidence).
+
+Confidence Propagation. In a multi-skill pipeline, the confidence of a downstream skill depends on both its own estimation and the confidence of its upstream inputs. We define the propagated confidence as:
+
+  u_k^prop = u_k * prod_{j in parents(k)} u_j^prop
+
+This multiplicative propagation ensures that any low-confidence upstream result appropriately reduces confidence in all downstream outputs. The final workflow confidence is:
+
+  U_workflow = min_{k in terminal_nodes} u_k^prop
+
+Confidence Thresholds. We define three operating regimes based on propagated confidence:
+
+  regime(u_k^prop) = { HIGH     if u_k^prop >= theta_high (e.g., 0.85)
+                     { MEDIUM   if theta_low <= u_k^prop < theta_high
+                     { LOW      if u_k^prop < theta_low (e.g., 0.5)
+
+These regimes drive the adaptive orchestrator's decisions (described in Innovation 4).
+
+--------------------------------------------------------------------------------
+Core Innovation 3: Self-Verification Module (SVM)
+--------------------------------------------------------------------------------
+
+Motivation. Inspired by MedSAM-Agent's multi-turn refinement and the clinical practice of double-checking, we introduce a self-verification module that can assess and correct intermediate results.
+
+Verification Skill Type. We introduce a new category of skills: verification skills. A verification skill v takes an (input, output, context) triple and produces a quality assessment:
+
+  (quality_score, issues, suggestion) = v(x_k, y_k, context_k)
+
+where quality_score in [0, 1] quantifies output quality, issues is a list of detected problems, and suggestion is a corrective recommendation.
+
+Verification skills are constructed from three sources:
+(a) Cross-model verification: use a different model for the same task to check consistency (e.g., verify MedSAM segmentation with a different segmentation model).
+(b) Inverse-task verification: use an inverse operation to check consistency (e.g., verify segmentation by checking whether a classifier applied to the segmented region produces a consistent diagnosis).
+(c) Heuristic verification: apply domain-specific heuristic checks (e.g., anatomical plausibility of segmentation masks -- connectivity, volume ranges, spatial relationships).
+
+Self-Verification Protocol. For each skill execution at step k with propagated confidence u_k^prop:
+
+  if u_k^prop < theta_verify:        # Below verification threshold
+      (q_score, issues, suggest) = SVM.verify(x_k, y_k, context_k)
+      if q_score < theta_accept:     # Verification failed
+          y_k = SVM.correct(x_k, y_k, issues, suggest, skill_lib)
+          # Correction may involve: re-execution with different params,
+          # alternative skill selection, or prompt-based refinement
+
+The correction function SVM.correct tries up to max_retry correction strategies:
+1. Parameter adjustment: modify skill parameters based on the suggestion (e.g., change prompt, adjust threshold).
+2. Alternative skill: select a different skill for the same subtask.
+3. Ensemble: run multiple skills and aggregate results (e.g., majority voting for segmentation).
+
+If all corrections fail, the result is flagged with a low-confidence annotation for the clinician.
+
+Verification Budget. To avoid excessive verification overhead, we allocate a fixed verification budget B_verify per workflow. The agent learns to allocate this budget to the most uncertainty-critical steps:
+
+  verify_priority(k) = (1 - u_k^prop) * importance(k)
+
+where importance(k) reflects the step's position in the DAG (terminal and high-fan-out nodes are more important). Steps are verified in decreasing order of verify_priority until the budget is exhausted.
+
+--------------------------------------------------------------------------------
+Core Innovation 4: Confidence-Conditioned Adaptive Orchestration (CCAO)
+--------------------------------------------------------------------------------
+
+Key Idea. Instead of pre-committing to a fixed DAG, the orchestrator dynamically decides the next action based on intermediate results and their confidence levels. This implements an observe-decide-act loop analogous to clinical reasoning.
+
+State Representation. At each orchestration step t, the state is:
+
+  sigma_t = (q, {(s_k, y_k, u_k^prop)}_{k in executed}, plan_remaining)
+
+where q is the original query, executed is the set of already-executed skills with their results and confidence, and plan_remaining is the current planned (but not yet committed) future steps.
+
+Adaptive Decision Function. The orchestrator uses the LLM policy to decide the next action from a discrete action space:
+
+  a_t = pi_phi(sigma_t) in {PROCEED, VERIFY, BRANCH, REFINE, ESCALATE}
+
+where:
+- PROCEED: execute the next planned skill as-is (when u_k^prop >= theta_high)
+- VERIFY: trigger self-verification on the most recent result (when u_k^prop < theta_verify)
+- BRANCH: add a conditional branch based on the intermediate result (e.g., "lesion detected" -> characterize; "no lesion" -> report normal)
+- REFINE: re-execute the current step with modified parameters or an alternative skill (when verification fails)
+- ESCALATE: flag the current result as uncertain and request clinician review (when u_k^prop < theta_escalate)
+
+Policy Learning for CCAO. We formulate the orchestration as a contextual bandit problem. The reward for each orchestration decision is:
+
+  r_t = R_quality(y_final) + alpha_eff * R_efficiency(t) + alpha_safe * R_safety(t)
+
+where:
+- R_quality(y_final) in [0, 1] is the final output quality (task-specific metric),
+- R_efficiency(t) = max(0, 1 - (T_actual - T_min) / T_min) penalizes excessive steps,
+- R_safety(t) = 1 if no safety violations occurred, 0 otherwise.
+
+The policy pi_phi is trained via supervised fine-tuning on expert-annotated orchestration traces followed by GRPO-based RL refinement:
+
+  J(phi) = E_sigma [ sum_t gamma^t * r_t ]
+  phi* = argmax_phi J(phi)   subject to   KL(pi_phi || pi_ref) < epsilon
+
+================================================================================
+e) Technical Details -- Architecture, Algorithms, Data Flow
+================================================================================
+
+--------------------------------------------------------------------------------
+System Architecture
+--------------------------------------------------------------------------------
+
+                    +------------------+
+                    |  Clinical Query  |
+                    +--------+---------+
+                             |
+                    +--------v---------+
+                    |  CCAO Module     |
+                    | (Adaptive Orch.) |
+                    +---+----+----+---+
+                        |    |    |
+            +-----------+    |    +------------+
+            |                |                 |
+   +--------v--------+  +---v--------+  +-----v-----------+
+   | ConSkill        |  | UASE       |  | Self-Verification|
+   | Retriever       |  | Executor   |  | Module (SVM)     |
+   | (Contrastive    |  | (Conf.     |  | (Verify/Correct) |
+   |  Skill Repr.)   |  |  Propag.)  |  +--------+---------+
+   +--------+--------+  +---+--------+           |
+            |                |                    |
+            +-------+--------+--------------------+
+                    |
+           +--------v---------+
+           |  Med-SkillLib    |
+           |  (MCP-Compat.   |
+           |   Skill Library) |
+           +------------------+
+
+--------------------------------------------------------------------------------
+Algorithm 1: Contrastive Skill Representation Learning
+--------------------------------------------------------------------------------
+
+def train_conskill(skill_lib, calibration_data, workflow_logs):
+    """
+    Learn contrastive skill representations capturing functional
+    equivalence and composability.
+
+    Args:
+        skill_lib: Med-SkillLib with all registered skills
+        calibration_data: Small set of (input, output) pairs per skill
+        workflow_logs: Historical workflow execution logs for mining
+                       positive/negative pairs and composition patterns
+    Returns:
+        encoder: Trained multi-view skill encoder
+        proj: Projection head for retrieval
+    """
+    # Initialize encoders
+    text_enc = load_pretrained("PubMedBERT")
+    struct_enc = MLP(input_dim=d_struct, hidden=256, output=128)
+    behav_enc = TransformerEncoder(d_model=128, n_layers=2)
+    proj = LinearProjection(input_dim=128*3, output_dim=d_embed)
+
+    # Mine training pairs from workflow logs
+    pos_pairs = []  # functionally interchangeable skills
+    neg_pairs = []  # non-interchangeable skills
+    comp_pairs = [] # frequently composed in sequence
+
+    for wf in workflow_logs:
+        for step in wf.steps:
+            # Skills that succeeded on same subtask = positive
+            for alt_skill in step.alternatives_that_succeeded:
+                pos_pairs.append((step.skill, alt_skill))
+            # Skills from different task types = negative
+            for neg_skill in sample_different_task_type(step.skill, skill_lib):
+                neg_pairs.append((step.skill, neg_skill))
+        # Sequential pairs = composition pairs
+        for (s_a, s_b) in wf.sequential_pairs():
+            comp_pairs.append((s_a, s_b))
+
+    # Compute behavioral embeddings from calibration data
+    for s in skill_lib:
+        io_pairs = calibration_data[s.id]
+        h_list = [behav_enc(concat(encode(x), encode(s.f(x)))) for (x, _) in io_pairs]
+        s.e_behav = mean_pool(h_list)
+
+    # Contrastive training loop
+    for epoch in range(num_epochs):
+        for batch in sample_batches(pos_pairs, neg_pairs):
+            # Compute fused embeddings
+            z_i = proj(concat(text_enc(s_i.desc), struct_enc(s_i.M), s_i.e_behav))
+            z_j = proj(concat(text_enc(s_j.desc), struct_enc(s_j.M), s_j.e_behav))
+
+            # InfoNCE loss
+            loss_contra = info_nce(z_i, z_j, negatives, tau=0.07)
+
+            # Composability alignment loss
+            loss_compose = 0
+            for (s_a, s_b) in sample_comp_pairs(comp_pairs, batch_size):
+                loss_compose += mse(type_embed(s_a.O), type_embed(s_b.I))
+            loss_compose /= batch_size
+
+            loss = loss_contra + lambda_comp * loss_compose
+            loss.backward()
+            optimizer.step()
+
+    return encoder, proj
+
+--------------------------------------------------------------------------------
+Algorithm 2: Uncertainty-Aware Skill Execution with Self-Verification
+--------------------------------------------------------------------------------
+
+def execute_with_uase_and_svm(skill, inputs, parent_confidences, svm, skill_lib,
+                               theta_verify=0.7, theta_accept=0.6, max_retry=2):
+    """
+    Execute a skill with uncertainty estimation, confidence propagation,
+    and self-verification.
+
+    Args:
+        skill: Medical Skill to execute
+        inputs: Input data dict
+        parent_confidences: List of propagated confidence from upstream skills
+        svm: Self-Verification Module
+        skill_lib: Skill library for alternative skill lookup
+        theta_verify: Threshold below which verification is triggered
+        theta_accept: Threshold below which correction is attempted
+        max_retry: Maximum correction attempts
+
+    Returns:
+        result: Skill output
+        u_prop: Propagated confidence score
+        verified: Whether result passed verification
+    """
+    # Execute skill with uncertainty estimation
+    if skill.task_type == "segmentation":
+        y, logits = skill.f(inputs, return_logits=True)
+        probs = softmax(logits, dim=-1)
+        entropy = -sum(probs * log(probs + eps), dim=-1).mean()
+        u_self = 1.0 - entropy / log(num_classes)
+    elif skill.task_type == "classification":
+        y, logits = skill.f(inputs, return_logits=True)
+        u_self = max(softmax(logits))
+    elif skill.task_type == "detection":
+        y = skill.f(inputs)  # list of (bbox, conf) pairs
+        u_self = mean([det.conf for det in y]) if len(y) > 0 else 0.5
+    elif skill.task_type == "report":
+        y, log_probs = skill.f(inputs, return_log_probs=True)
+        u_self = exp(mean(log_probs))  # perplexity-based
+    else:
+        y = skill.f(inputs)
+        u_self = 0.5  # default for unknown types
+
+    # Propagate confidence from parents
+    u_parent = prod(parent_confidences) if parent_confidences else 1.0
+    u_prop = u_self * u_parent
+
+    # Self-verification if below threshold
+    verified = True
+    if u_prop < theta_verify:
+        q_score, issues, suggestion = svm.verify(inputs, y, skill.metadata)
+
+        if q_score < theta_accept:
+            verified = False
+            # Attempt correction
+            for attempt in range(max_retry):
+                if attempt == 0:
+                    # Strategy 1: Re-execute with adjusted parameters
+                    adjusted_inputs = svm.adjust_params(inputs, suggestion)
+                    y_new = skill.f(adjusted_inputs)
+                    q_new, _, _ = svm.verify(adjusted_inputs, y_new, skill.metadata)
+                    if q_new >= theta_accept:
+                        y, u_self, verified = y_new, q_new, True
+                        break
+                elif attempt == 1:
+                    # Strategy 2: Try alternative skill
+                    alt_skill = skill_lib.get_alternative(skill, inputs)
+                    if alt_skill is not None:
+                        y_alt = alt_skill.f(inputs)
+                        q_alt, _, _ = svm.verify(inputs, y_alt, alt_skill.metadata)
+                        if q_alt >= theta_accept:
+                            y, u_self, verified = y_alt, q_alt, True
+                            break
+
+            u_prop = u_self * u_parent  # Recompute after correction
+
+    return y, u_prop, verified
+
+--------------------------------------------------------------------------------
+Algorithm 3: Confidence-Conditioned Adaptive Orchestration (CCAO)
+--------------------------------------------------------------------------------
+
+def ccao_orchestrate(query, skill_lib, conskill_retriever, svm, policy):
+    """
+    Adaptively orchestrate a medical imaging workflow with
+    confidence-conditioned decision making.
+
+    Args:
+        query: Clinical query
+        skill_lib: Med-SkillLib
+        conskill_retriever: ConSkill-based retriever
+        svm: Self-Verification Module
+        policy: LLM-based orchestration policy pi_phi
+
+    Returns:
+        final_result: Integrated result with confidence annotations
+        trajectory: Full execution trace with confidence at each step
+    """
+    # Initial plan generation
+    subtasks = policy.decompose(query)
+    initial_plan = []
+    for t_k, deps_k in subtasks:
+        candidates = conskill_retriever.retrieve(t_k, top_k=5)
+        best_skill = select_best(candidates, deps_k, skill_lib)
+        initial_plan.append(PlanNode(subtask=t_k, skill=best_skill, deps=deps_k))
+
+    # Adaptive execution loop
+    executed = {}      # step_id -> (result, confidence, verified)
+    trajectory = []
+    plan_queue = topological_sort(initial_plan)
+    verify_budget = B_VERIFY  # e.g., 3 verification calls per workflow
+
+    while plan_queue:
+        node = plan_queue.pop(0)
+
+        # Gather upstream results and confidences
+        inputs = {}
+        parent_confs = []
+        for dep_id in node.deps:
+            inputs.update(executed[dep_id][0])
+            parent_confs.append(executed[dep_id][1])
+
+        # Build state for policy decision
+        state = OrchestratorState(
+            query=query,
+            executed=executed,
+            current_node=node,
+            remaining_plan=plan_queue,
+            verify_budget_left=verify_budget
+        )
+
+        # Policy decides action
+        action = policy.decide(state)
+        # action in {PROCEED, VERIFY, BRANCH, REFINE, ESCALATE}
+
+        if action == "PROCEED":
+            result, u_prop, verified = execute_with_uase_and_svm(
+                node.skill, inputs, parent_confs, svm, skill_lib,
+                theta_verify=1.1  # skip auto-verify, rely on policy
+            )
+            executed[node.id] = (result, u_prop, verified)
+            trajectory.append(("PROCEED", node.id, u_prop))
+
+        elif action == "VERIFY":
+            verify_budget -= 1
+            result, u_prop, verified = execute_with_uase_and_svm(
+                node.skill, inputs, parent_confs, svm, skill_lib,
+                theta_verify=0.0  # force verification
+            )
+            executed[node.id] = (result, u_prop, verified)
+            trajectory.append(("VERIFY", node.id, u_prop, verified))
+
+        elif action == "BRANCH":
+            # Execute current skill, then create conditional branches
+            result, u_prop, verified = execute_with_uase_and_svm(
+                node.skill, inputs, parent_confs, svm, skill_lib
+            )
+            executed[node.id] = (result, u_prop, verified)
+            # Policy generates conditional branches based on result
+            new_branches = policy.generate_branches(state, result)
+            for branch in new_branches:
+                branch_candidates = conskill_retriever.retrieve(branch.subtask, top_k=3)
+                branch_skill = select_best(branch_candidates, [node.id], skill_lib)
+                new_node = PlanNode(
+                    subtask=branch.subtask, skill=branch_skill,
+                    deps=[node.id], condition=branch.condition
+                )
+                if branch.condition(result):
+                    plan_queue.insert(0, new_node)  # add to front
+            trajectory.append(("BRANCH", node.id, len(new_branches)))
+
+        elif action == "REFINE":
+            # Re-execute with alternative skill or adjusted parameters
+            alt_skill = conskill_retriever.retrieve_alternative(
+                node.subtask, exclude=[node.skill.id], top_k=1
+            )[0]
+            result, u_prop, verified = execute_with_uase_and_svm(
+                alt_skill, inputs, parent_confs, svm, skill_lib
+            )
+            executed[node.id] = (result, u_prop, verified)
+            trajectory.append(("REFINE", node.id, alt_skill.id, u_prop))
+
+        elif action == "ESCALATE":
+            # Flag for clinician review
+            executed[node.id] = (None, 0.0, False)
+            trajectory.append(("ESCALATE", node.id, "requires_clinician_review"))
+            # Continue with remaining plan if possible
+            # Downstream nodes depending on this will inherit 0.0 confidence
+
+    # Result integration with confidence summary
+    final_result = policy.integrate(
+        query, executed, trajectory,
+        overall_confidence=compute_workflow_confidence(executed)
+    )
+
+    return final_result, trajectory
+
+--------------------------------------------------------------------------------
+Workflow Confidence Computation
+--------------------------------------------------------------------------------
+
+The overall workflow confidence aggregates confidence from all terminal nodes
+(nodes with no dependents):
+
+  U_workflow = min_{k in terminal_nodes}(u_k^prop)
+
+Additionally, we compute a calibrated confidence interval by tracking
+the empirical relationship between propagated confidence and actual
+correctness across a calibration dataset:
+
+  P(correct | U_workflow = u) ~ sigmoid(a * u + b)
+
+where a, b are calibration parameters learned via Platt scaling on held-out
+workflow executions. This provides clinicians with a well-calibrated
+probability of the workflow result being correct.
+
+--------------------------------------------------------------------------------
+ConSkill Training Data Construction (No New Labels Required)
+--------------------------------------------------------------------------------
+
+Critically, ConSkill training does NOT require new labels. Training pairs
+are mined from:
+
+(a) Functional equivalence pairs: Skills registered in Med-SkillLib with the
+same (anatomy, task_type) metadata are candidate positive pairs. We verify by
+running both skills on shared calibration inputs and checking output
+consistency (e.g., Dice > 0.8 for segmentation).
+
+(b) Negative pairs: Skills with different task_types are automatic negatives.
+Skills with same task_type but different anatomy are hard negatives.
+
+(c) Composition pairs: Mined from the skill compatibility graph (existing
+metadata about which skills' outputs are type-compatible with which skills'
+inputs).
+
+All training signal comes from the skill metadata and calibration runs --
+no new manual annotations are needed.
+
+================================================================================
+f) Expected Outcomes -- Anticipated Improvements and Evaluation
+================================================================================
+
+--------------------------------------------------------------------------------
+Evaluation Protocol
+--------------------------------------------------------------------------------
+
+Benchmark: Med-SkillBench (same as base framework). We evaluate on 100+
+clinical workflow scenarios across 5 modalities and 8 anatomical regions.
+
+Baselines:
+- HuggingGPT-Med: HuggingGPT with medical model registry (no uncertainty, no verification)
+- ToolLLM-Med: ToolLLM with text embedding retrieval (no contrastive learning, no confidence)
+- ReAct-Med: ReAct agent with medical models (no skill abstraction)
+- Med-Skills-v1 (Idea #1): Anatomy-aware retrieval + DAG planning + recursive evolution (no uncertainty, no verification, no contrastive representations)
+- Med-Skills-v2 (ours): ConSkill + UASE + SVM + CCAO
+
+Ablation studies:
+- w/o ConSkill (text-only retrieval, no contrastive learning)
+- w/o UASE (no uncertainty propagation, deterministic confidence = 1.0 everywhere)
+- w/o SVM (no self-verification, execute and accept all results)
+- w/o CCAO (fixed DAG execution, no adaptive re-planning)
+- w/o behavioral view in ConSkill (text + structure only)
+
+--------------------------------------------------------------------------------
+Metrics
+--------------------------------------------------------------------------------
+
+| Metric                         | Description                                          | Expected Outcome                                |
+|--------------------------------|------------------------------------------------------|-------------------------------------------------|
+| Workflow Completion Rate       | % of workflows that execute without fatal errors     | v2: ~88% vs. v1: ~85% vs. baselines: ~50-65%   |
+| Clinical Correctness           | Expert-evaluated correctness (1-5 Likert)            | v2: 4.3 vs. v1: 4.1 vs. baselines: 2.8-3.4    |
+| Skill Selection Recall@5       | Correct skill in top-5 retrieved candidates          | ConSkill: ~95% vs. text-only: ~78%             |
+| Confidence Calibration (ECE)   | Expected Calibration Error of workflow confidence     | v2: ECE < 0.08 (well-calibrated)               |
+| Error Detection Rate           | % of incorrect intermediate results caught by SVM    | SVM catches ~70% of propagation-risky errors    |
+| Adaptive Efficiency            | Avg. skill invocations per workflow                   | CCAO: ~K+1.2 (near-optimal + verification)     |
+| Safety Compliance              | % of workflows with zero safety violations            | v2: ~99% vs. v1: ~98% vs. baselines: ~75%      |
+| Uncertainty-Aware Escalation   | % of truly uncertain cases correctly escalated        | ~85% of cases where u_prop < 0.5 are escalated |
+
+--------------------------------------------------------------------------------
+Expected Key Findings
+--------------------------------------------------------------------------------
+
+1. Contrastive skill representations (ConSkill) outperform text-only embeddings by ~17pp on Recall@5, because the behavioral view captures what skills actually compute rather than relying on potentially ambiguous textual descriptions. This improvement is most pronounced for skills with terse or jargon-heavy descriptions.
+
+2. Uncertainty propagation (UASE) reduces undetected error propagation by ~45% compared to deterministic execution. By tracking confidence through the pipeline, low-confidence intermediate results trigger verification before they corrupt downstream computations.
+
+3. Self-verification (SVM) catches approximately 70% of intermediate results that would have led to incorrect final outputs. The verification budget allocation strategy ensures this is achieved with only 2-3 additional verification calls per workflow (manageable computational overhead).
+
+4. Confidence-conditioned adaptive orchestration (CCAO) reduces clinical risk by dynamically escalating ~85% of genuinely uncertain cases to clinician review, while avoiding unnecessary escalation of confident results (false escalation rate < 10%).
+
+5. The overall confidence calibration (ECE < 0.08) means that when the system reports 90% confidence, the result is correct approximately 90% of the time -- providing clinicians with trustworthy confidence estimates for decision support.
+
+6. The combined framework achieves the largest improvement on complex multi-step workflows (5+ skills), where error propagation and conditional logic are most critical. On simple single-skill queries, the improvement is modest (~2-3pp) since the uncertainty and verification mechanisms add minimal value when there is no pipeline to propagate through.
+
+--------------------------------------------------------------------------------
+Concrete Demonstration Scenarios
+--------------------------------------------------------------------------------
+
+Scenario 1: Uncertain Lung Nodule Detection
+Query: "Analyze this chest CT for lung nodules and assess malignancy risk."
+Execution: DICOM_Load -> Lung_Seg (conf=0.92) -> Nodule_Det (conf=0.45,
+  LOW -> triggers VERIFY) -> SVM detects that detected "nodule" overlaps with
+  vessel artifact -> REFINE with alternative detection skill -> Nodule_Det_v2
+  (conf=0.78, MEDIUM) -> Size_Measurement -> Malignancy_Assessment ->
+  Report_with_confidence_annotation
+Key: Without UASE+SVM, the false positive nodule would propagate through
+the entire pipeline undetected.
+
+Scenario 2: Conditional Brain Tumor Workflow
+Query: "Segment and characterize the brain lesion."
+Execution: NIfTI_Load -> Brain_Extraction (conf=0.95) -> Lesion_Seg
+  (conf=0.88) -> CCAO decides BRANCH based on segmentation result ->
+  IF volume > 1cm3: Tumor_Classification -> Treatment_Planning
+  IF volume <= 1cm3: Monitoring_Recommendation
+  -> Structured_Report
+Key: CCAO dynamically creates conditional branches based on intermediate
+results, matching clinical reasoning patterns.
+
+Scenario 3: Low-Confidence Escalation
+Query: "Assess cardiac function from this MRI."
+Execution: DICOM_Load -> LV_Seg (conf=0.35, LOW -- image quality poor) ->
+  CCAO decides VERIFY -> SVM confirms poor segmentation quality ->
+  CCAO decides REFINE with alternative skill -> LV_Seg_v2 (conf=0.42,
+  still LOW) -> CCAO decides ESCALATE -> Flags case for clinician review
+  with explanation: "LV segmentation confidence below threshold on both
+  primary and alternative models. Possible cause: poor image quality
+  or atypical anatomy."
+Key: The system appropriately refuses to produce a potentially harmful
+result and transparently escalates with explanation.
+
+================================================================================
+Summary of Novelty Compared to Idea #1 (Med-Skills-v1)
+================================================================================
+
+While Idea #1 (Med-Skills-v1) focused on anatomy-aware hierarchical
+organization, ontology-based retrieval, DAG-based planning, and recursive
+skill evolution, this proposal (Med-Skills-v2) addresses a complementary
+and orthogonal set of challenges:
+
+| Dimension           | Idea #1 (v1)                      | Idea #2 (v2, this proposal)              |
+|---------------------|-----------------------------------|------------------------------------------|
+| Skill Retrieval     | Ontology + semantic similarity    | Contrastive learned representations      |
+|                     | (linear combination)              | (functional + behavioral matching)       |
+| Execution Model     | Deterministic DAG execution       | Uncertainty-aware with confidence propag.|
+| Quality Assurance   | Static validation checks (V set)  | Dynamic self-verification module         |
+| Planning Strategy   | Pre-committed DAG with recovery   | Adaptive orchestration conditioned on    |
+|                     |                                   | intermediate confidence levels           |
+| Skill Evolution     | Recursive library growth          | Not the focus (compatible with v1's      |
+|                     | from successes/failures           | evolution mechanism)                     |
+| Key Innovation      | Medical domain structure for      | Reliability and trustworthiness for      |
+|                     | organization and retrieval        | clinical deployment                      |
+
+The two ideas are complementary: v1 provides the structural foundation
+(how to organize and discover skills), while v2 provides the reliability
+layer (how to execute skills trustworthily). They can be combined in a
+full system.
+
+================================================================================
+Novelty for MICCAI 2026
+================================================================================
+
+This work contributes four innovations novel to the MICCAI community:
+
+(1) Contrastive Skill Representations (ConSkill) -- the first learned
+embedding space for medical AI skills that captures functional equivalence
+and composability through multi-view contrastive learning, moving beyond
+text-similarity-based tool retrieval.
+
+(2) Uncertainty-Aware Skill Execution (UASE) -- the first framework to
+propagate prediction uncertainty through multi-skill medical imaging
+pipelines, enabling confidence-aware downstream processing.
+
+(3) Self-Verification Module (SVM) -- generalizing MedSAM-Agent's
+single-skill refinement to a principled multi-skill verification framework
+with budget-constrained quality assurance.
+
+(4) Confidence-Conditioned Adaptive Orchestration (CCAO) -- replacing
+static execution graphs with adaptive, confidence-driven workflow
+management that mirrors clinical reasoning patterns of inspect-decide-act.
+
+Together, these innovations address the critical trustworthiness gap that
+prevents current AI agent systems from clinical deployment, directly
+aligned with MICCAI 2026's theme of translating algorithms to practice.

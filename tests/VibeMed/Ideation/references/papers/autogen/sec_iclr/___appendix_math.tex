@@ -1,0 +1,116 @@
+\section{Application Details}
+\label{append:application}
+
+\subsection*{A1: Math Problem Solving} \label{appendix_sec:app:math}
+ 
+ \paragraph{Scenario 1: Autonomous Problem Solving.} We perform both qualitative and quantitative evaluations in this scenario. For all evaluations, we use GPT-4 as the base model, and pre-install the ``sympy" package in the execution environment. We compare \libName with the following LLM-based agent systems:
+ \begin{itemize}[leftmargin=*]
+    \vspace{-1mm}
+    \setlength\itemsep{-0.1em}
+    \item AutoGPT: The out-of-box AutoGPT is used. We initialize AutoGPT by setting the purpose to ``solve math problems", resulting in a  ``MathSolverGPT" with auto-generated goals.
+    \item ChatGPT+Plugin: We enable the Wolfram Alpha plugin (a math computation engine) in the OpenAI web client.
+    \item ChatGPT+Code Interpreter: This is a recent feature in OpenAI web client. Note that the above two premium features from ChatGPT require a paid subscription to be accessed and are the most competitive commercial systems.  
+    \item LangChain ReAct+Python: We use Python agent from LangChain. To handle parsing errors, we set ``handle\_parsing\_errors=True", and use the default zero-shot ReAct prompt.
+    \item Multi-Agent Debate~\cite{liang-arxiv2023}: We modified the code of the multi-agent debate to perform evaluation. By default, there are three agents: an affirmative agent, a negative agent, and a moderator.
+\end{itemize}
+We also conducted preliminary evaluations on several other multi-agent systems, including BabyAGI, CAMEL, and MetaGPT. The results indicate that they are not suitable choices for solving math problems out of the box. For instance, when MetaGPT is tasked with solving a math problem, it begins developing software to address the problem, but most of the time, it does not actually solve the problem. We have included the test examples in Appendix~\ref{sec:example}.
+
+\begin{table}[h]
+    \caption{Qualitative evaluation of two math problems from the MATH dataset within the autonomous problem-solving scenario. Each LLM-based system is tested three times on each of the problems. This table reports the problem-solving correctness and summarizes the reasons for failure. }
+    \label{tab:mathsolving}
+    \small
+    
+    \begin{subtable}{\linewidth}
+        \centering
+        \begin{tabular}{p{3.5cm}|P{1.5cm}|P{7.5cm}}
+            \hline \hline
+             & Correctness & Failure Reason \\ \hline
+            \libName &  3/3 &  N/A.  \\
+            \hline
+            AutoGPT & 0/3 &  The LLM gives code without the print
+function so the result is not printed. \\
+            \hline
+            ChatGPT+Plugin & 1/3  & The return from Wolfram Alpha contains 2 simplified results, including the correct answer, but GPT-4 always chooses the wrong answer.  \\
+            \hline
+            ChatGPT+Code Interpreter & 2/3  & Returns a wrong decimal result.  \\
+            \hline
+            LangChain ReAct & 0/3 &  LangChain gives 3 different wrong answers. \\
+            \hline
+            % Open Interpreter & 3/3 & N/A. \\
+            % \hline
+            Multi-Agent Debate & 0/3 & It gives 3 different wrong answers due to calculation errors.\\
+            \hline
+        \end{tabular}
+        \caption{Evaluation on the first problem that asks to simplify a square root fraction.}
+    \end{subtable}
+    \vspace{1em}
+
+    \begin{subtable}{\linewidth}
+        \centering
+        \begin{tabular}{p{3.5cm}|P{1.5cm}|P{7.5cm}}
+            \hline \hline
+             & Correctness & Failure Reason \\ \hline
+            \libName &  2/3 & The final answer from code execution is wrong.  \\
+            \hline
+            AutoGPT & 0/3 &  The LLM gives code without the print function so the result is not printed. \\
+            \hline
+            ChatGPT+Plugin & 1/3  & For one trial, GPT-4 got stuck because it keeps giving wrong queries and has to be stopped. Another trial simply gives a wrong answer. \\
+            \hline
+            ChatGPT+Code Interpreter & 0/3  & It gives 3 different wrong answers.  \\
+            \hline
+            LangChain ReAct & 0/3 & LangChain gives 3 different wrong answers. \\
+            \hline
+            Multi-Agent Debate & 0/3 & It gives 3 different wrong answers.\\
+            \hline
+        \end{tabular}
+        \caption{Evaluation on the second number theory problem.}
+    \end{subtable}
+\end{table}
+
+
+For the qualitative evaluation, we utilize two level-5 problems from the MATH dataset, testing each problem three times. The first problem involves simplifying a square root fraction, and the second problem involves solving a number theory issue.  The correctness counts and reasons for failure are detailed in Table~\ref{tab:mathsolving}. For the quantitative evaluation, we conduct two sets of experiments on the MATH dataset to assess the correctness of these systems: (1) an experiment involving 120 level-5 (the most challenging level) problems, including 20 problems from six categories, excluding geometry, and (2) an experiment on the entire test set, which includes 5000 problems. We exclude AutoGPT from this evaluation as it cannot access results from code executions and does not solve any problems in the qualitative evaluation. Our analysis of the entire dataset reveals that \libName achieves an overall accuracy of 69.48\%, while GPT-4's accuracy stands at 55.18\%. From these evaluations, we have the following observations regarding the problem-solving success rate and user experience of these systems:
+\begin{itemize}[leftmargin=*]
+    \vspace{-1mm}
+    \setlength\itemsep{-0.1em}
+    \item Problem-solving success rate: Results from the quantitative evaluations show that \libName can help achieve the highest problem-solving success rate among all the compared methods. The qualitative evaluations elucidate common failure reasons across several alternative approaches.  ChatGPT+Code Interpreter fails to solve the second problem, and ChatGPT+Plugin struggles to solve both problems. AutoGPT fails on both problems due to code execution issues. The LangChain agent also fails on both problems, producing code that results in incorrect answers in all trials.
+    \item Based on the qualitative evaluation, we analyze the user experience concerning the verbosity of the response and the ability of the LLM-based system to run without unexpected behaviors. ChatGPT+Plugin is the least verbose, mainly because Wolfram queries are much shorter than Python code. \libName, ChatGPT+Code Interpreter, and LangChain exhibit similar verbosity, although LangChain is slightly more verbose due to more code execution errors. AutoGPT is the most verbose system owing to predefined steps like THOUGHTS, REASONING, and PLAN, which it includes in replies every time.  Overall, \libName and ChatGPT+Code Interpreter operate smoothly without exceptions.  We note the occurrences of undesired behaviors from other LLM-based systems that could affect user experience:  AutoGPT consistently outputs code without the print' statement and cannot correct this, requiring the user to run them manually; ChatGPT with Wolfram Alpha plugin has the potential to become stuck in a loop that must be manually stopped; and Langchain ReAct could exit with a parse error, necessitating the passing of a `handle\_parse\_error' parameter.
+\end{itemize}
+
+
+\begin{figure*}[th]
+    \centering
+\includegraphics[width=0.8\linewidth]{figures/app_math.pdf}
+    \caption{
+   Examples of three settings utilized to solve math problems using \libName:
+(Gray) Enables a workflow where a student collaborates with an assistant agent to solve problems, either autonomously or in a human-in-the-loop mode.
+(Gray + Orange) Facilitates a more sophisticated workflow wherein the assistant, on the fly, can engage another user termed ``expert", who is in the loop with their own assistant agent, to aid in problem-solving if its own solutions are not satisfactory. 
+    }
+    \label{fig:app1}
+\end{figure*}
+
+\paragraph{Scenario 2: Human-in-the-loop Problem Solving.}
+For challenging problems that these LLM systems cannot solve autonomously, human feedback during the problem-solving process can be helpful. To incorporate human feedback with \libName, one can set \texttt{human\_input\_mode=`ALWAYS'} in the user proxy agent. We select one challenging problem that none of these systems can solve autonomously across three trials.  We adhere to the process outlined below to provide human inputs for all the compared methods:
+\begin{enumerate}
+    \vspace{-1mm}
+    \setlength\itemsep{-0.1em}
+    \item Input the problem: \texttt{Find the equation of the plane which bisects the angle between the planes $3x - 6y + 2z + 5 = 0$ and $4x - 12y + 3z - 3 = 0,$ and which contains the point $(-5,-1,-5).$  Enter your answer in the form
+\[Ax + By + Cz + D = 0,\]where $A,$ $B,$ $C,$ $D$ are integers such that $A > 0$ and $\gcd(|A|,|B|,|C|,|D|) = 1.$}
+    \item The response from the system does not solve the problem correctly. We then give a hint to the model: \texttt{Your idea is not correct. Let's solve this together. Suppose $P = (x,y,z)$ is a point that lies on a plane that bisects the angle,
+    the distance from P to the two planes is the same. Please set up this equation first.}
+    \item We expect the system to give the correct distance equation. Since the equation involves an absolute sign that is hard to solve, we would give the next hint: \texttt{Consider the two cases to remove the abs sign and get two possible solutions.}
+    \item If the system returns the two possible solutions and doesn't continue to the next step, we give the last hint: \texttt{Use point (-5,-1,-5) to determine which is correct and give the final answer.}
+    \item Final answer is \boxed{$11x+6y+5z+86=0$}.
+\end{enumerate} 
+% \end{mdframed}
+We observed that \libName consistently solved the problem across all three trials. ChatGPT+Code Interpreter and ChatGPT+Plugin managed to solve the problem in two out of three trials, while AutoGPT failed to solve it in all three attempts. In its unsuccessful attempt, ChatGPT+Code Interpreter failed to adhere to human hints. In its failed trial, ChatGPT+Plugin produced an almost correct solution but had a sign discrepancy in the final answer. AutoGPT was unable to yield a correct solution in any of the trials. In one trial, it derived an incorrect distance equation. In the other two trials, the final answer was incorrect due to code execution errors.
+
+
+\paragraph{Scenario 3:  Multi-User Problem Solving.}
+
+Next-generation LLM applications may necessitate the involvement of multiple real users for collectively solving a problem with the assistance of LLMs. We showcase how \libName can be leveraged to effortlessly construct such a system. Specifically, building upon scenario 2 mentioned above, we aim to devise a simple system involving two human users: a student and an expert. In this setup, the student interacts with an LLM assistant to address some problems, and the LLM automatically resorts to the expert when necessary.
+
+The overall workflow is as follows: The student chats with the LLM-based assistant agent through a student proxy agent to solve problems. 
+When the assistant cannot solve the problem satisfactorily, or the solution does not match the expectation of the student, it would automatically hold the conversation and call the pre-defined \texttt{ask\_for\_expert} function via the \textit{function\_call} feature of GPT in order to resort to the expert. Specifically, it would automatically produce the initial message for the \texttt{ask\_for\_expert} function, which could be the statement of the problem or the request to verify the solution to a problem, and the expert is supposed to respond to this message with the help of the expert assistant. After the conversation between the expert and the expert's assistant, the final message would be sent back to the student assistant as the response to the initial message. Then, the student assistant would resume the conversation with the student using the response from the expert for a better solution.  A detailed visualization is shown in Figure~\ref{fig:app1}.
+
+With \libName, constructing the student/expert proxy agent and the assistant agents is straightforward by reusing the built-in \UserProxyAgent and \AssistantAgent through appropriate configurations. The only development required involves writing several lines of code for the \texttt{ask\_for\_expert} function, which then becomes part of the configuration for the assistant. Additionally, it's easy to extend such a system to include more than one expert, with a specific \texttt{ask\_for\_expert} function for each, or to include multiple student users with a shared expert for consultation.
+

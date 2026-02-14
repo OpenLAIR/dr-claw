@@ -1,0 +1,780 @@
+\clearpage
+\onecolumn
+
+\renewcommand{\thesection}{A.\arabic{section}}
+\renewcommand{\thefigure}{A.\arabic{figure}}
+\renewcommand{\thetable}{A.\arabic{table}} 
+\renewcommand{\theequation}{A.\arabic{equation}} 
+
+\setcounter{section}{0}
+\setcounter{figure}{0}
+\setcounter{table}{0}
+\setcounter{equation}{0}
+
+
+\noindent \textbf{\LARGE{Appendix}}\\
+\normalfont
+
+% **************************************************************************************************
+% ##################################################################################################
+% \section{Dataset Curation for Instruction Prompt-tuning}
+
+% To adapt Flan-PaLM to the medical domain, we applied instruction tuning on a small set of exemplars. These examples were effectively used to instruct the model to produce text generations more aligned with clinical and societal values, with good examples of medical comprehension, recall of clinical knowledge, and reasoning on medical knowledge unlikely to lead to patient harm. Thus, curation of these examples was very important. 
+
+% We randomly sampled examples from MultiMedQA free-response datasets (HealthSearchQA, MedicationQA, LiveQA) and asked a panel of five clinicians across the US and UK to provide exemplars. Clinicians then filtered out questions / answer pairs that they decided were not strong examples to instruct the model. We were left with 40 examples across HealthSearchQA, MedicationQA, and LiveQA used for instruction prompt tuning training. 
+
+% We found this number of examples to be sufficient to significantly boost human evaluation ratings of Med-PaLM compared to Flan-PaLM across several axes. Future work that explores the effect of ablations with more or less data is needed; this ablation was not feasible in this work given the cost of physician evaluation of model-produced answers.
+
+
+% **************************************************************************************************
+% ##################################################################################################
+\section{Hyperparameters and model selection}
+\label{appendix:model-selection}
+We performed instruction prompt tuning on Flan-PaLM 540B with a soft prompt length of 100 to produce Med-PaLM. We froze the rest of the model, and the embedding dimension is 18432 as in~\citet{chowdhery2022palm}, so this resulted in 1.84M trainable parameters. We randomly initialized the learnable parameters to be uniform over [-0.5, 0.5], following~\citet{lester2021power}. We grid searched over learning rates in {0.001, 0.003, 0.01} with AdamW optimizer~\cite{loshchilov2017decoupled} and a weight decay factor in $\left \{ 0.001, 0.00001 \right \}$. We used a batch size of 32 across all runs. We ran training for 200 steps.
+
+We performed model selection by asking a clinician to rank responses on several held-out HealthSearchQA, MedicationQA and LiveQA examples (not used for training or human evaluation), and chose the checkpoint that performed the best. We did this manual validation instead of computing some automated metric on a validation set, e.g. negative log-likelihood on held-out (question, answer) pairs, since in the large output space of natural language generations, these metrics may not correlate well with human judgements of actual model outputs. The model we chose for human evaluation had a learning rate of 0.003 and a weight decay factor of 0.00001.
+
+
+% **************************************************************************************************
+% ##################################################################################################
+\section{Variation of results}
+\label{appendix:result-variation}
+
+Due to repeated stochastic decodes using temperature sampling, there is some expected variation in results with self-consistency. While it is impractical to run multiple experiments for all of our models across all the datasets used in this study, we repeat the evaluations on the MedQA dataset 4 times with our best performing model. The observed variance is 0.078 suggesting a high-degree of consistency in the results.
+
+
+
+
+\section{MMLU ablations}
+\label{appendix:mmlu-ablations}
+
+We performed ablations comparing Flan-PaLM 540B model using the few-shot, chain-of-thought (CoT) and self-consistency prompting strategies on MMLU clinical topics~\cite{hendrycks2020measuring}. The results are summarized in~\cref{appendix:mmlu-ablations}. We observe that while for most topics, Flan-PaLM 540B with self-consistency obtains the best results, there are a couple of topics where standard few-shot or CoT prompting does better. Across these topics, Flan-PaLM 540B obtains state-of-the-art performance.
+
+\begin{table}[h]
+\centering
+\caption{Comparison of the performance of Flan-PaLM 540B models with few-shot, chain-of-thought (CoT) and self-consistency(SC) prompting on MMLU clinical topics. We also provide the PaLM 540B results with few-shot prompting.}
+\vspace{3pt}
+\label{tab:mmlu-dtailed}
+\begin{tabular}{l|cccc}
+\toprule
+\multicolumn{1}{c|}{Topic} &
+  \begin{tabular}[c]{@{}c@{}}PaLM 540B\\ with few-shot\end{tabular} &
+  \begin{tabular}[c]{@{}c@{}}Flan-PaLM 540B\\ with few-shot\end{tabular} &
+  \begin{tabular}[c]{@{}c@{}}Flan-PaLM 540B\\ with CoT\end{tabular} &
+  \begin{tabular}[c]{@{}c@{}}Flan-PaLM 540B\\ with SC\end{tabular} \\ \hline 
+Clinical knowledge    & 76.2 & 77.0          & 77.0          & \textbf{80.4} \\ \hline
+Medical genetics      & 68.0 & 70.0          & \textbf{75.0} & 74.0          \\ \hline
+Anatomy               & 63.7 & 65.2          & 66.7          & \textbf{71.9} \\  \hline
+Professional medicine & 75.0 & \textbf{83.8} & 76.5          & 83.5          \\ \hline
+College biology       & 87.5 & 87.5          & 83.3          & \textbf{88.9} \\ \hline
+College medicine      & 68.2 & 69.9          & 71.1          & \textbf{76.3}  \\ \bottomrule
+\end{tabular}
+\end{table}
+
+% **************************************************************************************************
+% ##################################################################################################
+
+\section{Scaling plots}
+\label{appendix:scaling-plots}
+We provide scaling plots comparing the PaLM and Flan-PaLM models using few-shot prompting on the MedQA and MedMCQA datasets in~\cref{fig:emergent_1} and another scaling plot comparing Flan-PaLM with few-shot prompting and Flan-PaLM with self-consistency prompting in~\cref{fig:emergent_2}. We observe strong scaling performance and see a steeper increase in performance as we scale up the LLM model size.
+
+\begin{figure*}[t]
+\small
+    \centering
+    \includegraphics[width=0.5\textwidth]{figures/emergent_1.pdf}
+    \vspace{0pt}
+    \caption{\textbf{Scaling plots for PaLM and Flan-PaLM with few-shot prompting on MedQA and MedMCQA}}
+    \vspace{-0pt}
+    \label{fig:emergent_1}
+\end{figure*}
+
+
+\begin{figure*}[t]
+\small
+    \centering
+    \includegraphics[width=0.5\textwidth]{figures/emergent_2.pdf}
+    \vspace{0pt}
+    \caption{\textbf{Scaling plots for Flan-PaLM with few-shot and Flan-PaLM few-shot + chain-of-thought (CoT) + self-consistency (SC) on MedQA and MedMCQA}}
+    \vspace{-0pt}
+    \label{fig:emergent_2}
+\end{figure*}
+
+
+\section{Model card for Med-PaLM}
+\label{appendix:medpalm-model-card}
+Med-PaLM uses the same system type and implementation frameworks as Flan-PaLM~\cite{chung2022scaling}. We show parts of the model card~\cite{mitchell2019model} specific to Med-PaLM in~\cref{tab:model-card-med-palm}.
+
+
+\begin{table}[]
+\centering
+\small
+\caption{Model card for Med-PaLM.}
+\vspace{3pt}
+\label{tab:model-card-med-palm}
+\begin{tabular}{lp{0.6\textwidth}}
+\toprule
+\textbf{}            & \textbf{Model characteristics}                               \\ 
+Model initialization & The model is initialized from Flan-PaLM \cite{chung2022scaling}. Additional soft prompt parameters are initialized as described in~\cref{appendix:model-selection}. \\
+Model stats &
+  The  model has 540 billion parameters following Flan-PaLM. There are 1.84M additional domain-specific prompt parameters learned via instruction prompt tuning as described in~\cref{sec:aligning-llms-to-medical-domain}. \\ \hline
+                     & \textbf{Usage}                                               \\
+Application &
+  The primary use is research on LLMs for medical question answering including advancing accuracy, alignment methods, fairness, safety, and equity research, and understanding limitations of current LLMs for potential medical applications. \\ \hline
+                     & \textbf{Data overview}                                       \\
+Instruction prompt tuning dataset &
+  The dataset was curated using inputs from a panel of clinicians. The exemplars came from LiveQA, MedicationQA and HealthSearchQA datasets. Further details are provided in~\cref{sec:aligning-llms-to-medical-domain}. \\
+Evaluation dataset &
+  The model was evaluated on a benchmark of 140 questions curated from the LiveQA, MedicationQA, and HealthSearchQA  datasets. These datasets are described in~\cref{sec:datasets}. \\
+                     & \textbf{Evaluation results}                                  \\
+Evaluation results   & The results are described in~\cref{sec:human_evaluation_results}.          \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Med-PaLM multiple-choice evaluation}
+\label{sec:med-palm-mcq-eval}
+Med-PaLM was trained using instruction prompt tuning to improve the quality of long-form generations produced by Flan-PaLM. However, given the generality of instruction prompt tuning, the technique can also be applied to multiple-choice datasets. We can learn shared soft prompt parameters to be prepended to instructions and/or few-shot exemplars which vary for each multiple-choice dataset. 
+
+In a preliminary experiment, we trained Flan-PaLM using instruction prompt tuning on MedQA, MedMCQA, PubMedQA, and MMLU (clinical topics). Exemplars were written by a panel of five qualified clinicians. Each training example contained dataset-specific instructions and 5 few-shot examples. The resulting model achieved a 67.2\% accuracy on MedQA using chain-of-thought and self-consistency, roughly matching the corresponding result with Flan-PaLM i~\cref{sec:results}. We plan to extend this early result in future work.
+% **************************************************************************************************
+% ##################################################################################################
+\section{Detailed human evaluation results}
+\label{appendix:det-human-eval}
+Detailed human evaluation results with confidence intervals are summarized in~\cref{tab:detailed-expert-1} -~\cref{tab:detailed-lay-task2}.
+
+\begin{table}[]
+\small
+\centering
+\caption{\textbf{Agreement with scientific and clinical consensus} The results showed that the answers provided by the Flan-PaLM model were in agreement with the scientific consensus only 61.9\% of the time, but this improved to 92.9\% for the Med-PaLM model when compared to expert answers.}
+\vspace{3pt}
+\label{tab:detailed-expert-1}
+\begin{tabular}{l|ccc}
+\toprule
+\textbf{Scientific Consensus} & \textbf{Expert} & \textbf{Med-PaLM} & \textbf{Flan-PaLM} \\ \hline
+No Consensus                  & 92.9 ± 2.3      & 92.6 ± 2.1        & 61.9 ± 4.7         \\
+Oppose to Consensus           & 2.2 ± 1.1       & -                 & 19.0 ± 3.2         \\
+Aligned with Consensus        & 5.0 ± 1.9       & 7.4 ± 2.1         & 19.1 ± 3.5        \\ \bottomrule
+\end{tabular}
+\end{table}
+
+
+\begin{table}[]
+\small
+\centering
+\caption{\textbf{Possible extent of harm} While 29.6\% of the Flan-PaLM responses were judged as potentially leading to harm, this number dropped to 6.0\% for Med-PaLM comparing favorably with clinician-generated answers (judged as potentially harmful in 6.5\% of the cases)}
+\vspace{3pt}
+\label{tab:detailed-expert-2}
+\begin{tabular}{l|ccc}
+\toprule
+\textbf{Extent of Possible Harm}              & \textbf{Expert} & \textbf{Med-PaLM} & \textbf{Flan-PaLM} \\ \hline
+No Harm               & 94.3 ± 2.0 & 94.1 ± 1.9 & 70.3 ± 4.2 \\
+Moderate or Mild Harm & 4.9 ± 1.8  & 4.3 ± 1.6  & 18.6 ± 3.4 \\
+Death, life-threatening injury, or severe harm & 1.1 ± 0.5       & 1.7 ± 0.9         & 11.0 ± 2.6     \\ \bottomrule    
+\end{tabular}
+\end{table}
+
+\begin{table}[]
+\centering
+\caption{\textbf{Likelihood of harm from answers} While 19.4\% of the Flan-PaLM responses were judged as likely to lead to harm, this number dropped to 3.1\% for Med-PaLM on par with clinician-generated answers which were also judged as likely to be harmful in 1.6\% of the cases.}
+\vspace{3pt}
+\label{tab:detailed-expert-3}
+\begin{tabular}{l|ccc}
+\toprule
+\textbf{Extent of Possible Harm}              & \textbf{Expert} & \textbf{Med-PaLM} & \textbf{Flan-PaLM} \\ \hline
+No Harm               & 94.3 ± 2.0 & 94.1 ± 1.9 & 70.3 ± 4.2 \\
+Moderate or Mild Harm & 4.9 ± 1.8  & 4.3 ± 1.6  & 18.6 ± 3.4 \\
+Death, life-threatening injury, or severe harm & 1.1 ± 0.5       & 1.7 ± 0.9         & 11.0 ± 2.6    \\ \bottomrule     
+\end{tabular}
+\end{table}
+
+\begin{table}[]
+\small
+\centering
+\caption{\textbf{Evidence of comprehension, retrieval and reasoning capabilities} The results showed that the answers provided by the Flan-PaLM model exhibits comprehension 90.5\% of the time, but this improved to 97.5\% for the Med-PaLM. With regard to evidence of correct retrieval and reasoning of medical knowledge, we found that clinician answers scored 97.8\% and 97.7\%  while Flan-PaLM only scored 76.3\% and 85.7\%, respectively while Med-PaLM reached 95.4\% and 93.5\%. }
+\vspace{3pt}
+\label{tab:detailed-expert-4}
+\begin{tabular}{l|c|ccc}
+\toprule
+\multicolumn{2}{l|}{\textbf{Evidence of correct Comprehension, Retrieval, Reasoning}} & \textbf{Expert} & \textbf{Med-PaLM} & \textbf{Flan-PaLM} \\ \hline
+\multirow{2}{*}{Comprehension} & Yes & 97.8  ± 1.2 & 97.5 ± 1.3 & 90.5 ± 2.5 \\
+                               & No  & 2.3 ± 1.2   & 2.6  ± 1.3 & 9.0 ± 2.5  \\ \hline
+\multirow{2}{*}{Retrieval}     & Yes & 97.8  ± 1.3 & 95.4 ± 1.6 & 76.3 ± 3.7 \\
+                               & No  & 2.2 ± 1.2   & 4.6  ± 1.6 & 23.7 ± 3.3 \\ \hline
+\multirow{2}{*}{Reasoning}     & Yes & 97.7  ± 1.2 & 93.5 ± 2.1 & 85.7 ± 3.3 \\ 
+                               & No  & 2.4 ± 1.2   & 7.5  ± 2.1 & 14.3 ± 3.2
+                               \\ \bottomrule
+\end{tabular}
+\end{table}
+
+
+\begin{table}[]
+\small
+\centering
+\caption{\textbf{Evidence of incorrect comprehension, retrieval and reasoning capabilities} The results indicate Med-PaLM showed evidence of incorrect comprehension only 5.0\% of the time.}
+\vspace{3pt}
+\label{tab:detailed-expert-5}
+\begin{tabular}{l|c|ccc}
+\toprule
+\multicolumn{2}{l|}{\textbf{Evidence of Incorrect Comprehension, Retrieval, Reasoning}} & \textbf{Expert} & \textbf{Med-PaLM} & \textbf{Flan-PaLM} \\ \hline
+\multirow{2}{*}{Comprehension} & No  & 97.8  ± 1.1 & 95.0 ± 1.9  & 90.8 ± 2.2 \\
+                               & Yes & 2.3 ± 1.2    & 5.0  ± 1.9  & 9.2 ± 2.2  \\ \hline
+\multirow{2}{*}{Retrieval}     & No  & 96.4 ± 1.6  & 83.1 ± 3.3  & 76.9 ± 3.8 \\
+                               & Yes & 3.6 ± 1.7   & 16.9  ± 3.2 & 23.1 ± 3.6 \\ \hline
+\multirow{2}{*}{Reasoning}     & No  & 97.9 ± 1.1  & 89.9 ± 2.7  & 85.7 ± 3.3 \\
+                               & Yes & 2.3 ± 1.0   & 10.1  ± 2.7 & 14.3 ± 3.3
+                               
+                               \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[]
+\small
+\centering
+\caption{\textbf{Presence of inappropriate/incorrect content} Clinician answers showed evidence of inappropriate/incorrect content in only 1.4\% of the cases, compared to 16.1\% for Flan-PaLM. Surprisingly, Med-PaLM seemed to further degrade performance, with 18.7\% of the Med-PaLM answers judged to contain inappropriate or incorrect content.}
+\vspace{3pt}
+\label{tab:detailed-expert-6}
+\begin{tabular}{l|ccc}
+\toprule
+\textbf{Inappropriate/incorrect Content} & \textbf{Expert} & \textbf{Med-PaLM} & \textbf{Flan-PaLM} \\ \hline
+No                                & 98.6 ± 0.9 & 81.3 ± 3.2 & 83.9 ± 2.9 \\
+Yes, Little Clinical Significance & 1.6 ± 0.8  & 8.1 ± 2.3  & 7.7 ± 2.0  \\
+Yes, Great Clinical Significance  & -          & 10.7 ± 2.6 & 8.3 ± 2.4  \\ \bottomrule
+\end{tabular}
+\end{table}
+
+
+\begin{table}[]
+\small
+\centering
+\caption{\textbf{Missing contents} While Flan-PaLM answers were judged to miss important information 47.2\% of the time, the number improved significantly for Med-PaLM with only 15.1\% of the answers adjudged to have missing information, reducing the inferiority compared to clinicians whose answers were judged to have missing information in only 11.1\% of the cases.}
+\vspace{3pt}
+\label{tab:detailed-expert-7}
+\begin{tabular}{l|ccc}
+\toprule
+\textbf{Missing Content} & \textbf{Expert} & \textbf{Med-PaLM} & \textbf{Flan-PaLM} \\ \hline
+No                                & 88.9 ± 2.8 & 84.7 ± 3.0 & 52.4 ± 4.2 \\
+Yes, Little Clinical Significance & 6.9 ± 1.6  & 8.9 ± 2.3  & 28.0 ± 3.5 \\
+Yes, Great Clinical Significance  & 4.2 ± 2.1  & 6.4 ± 2.1  & 19.6 ± 4.0 \\ \bottomrule
+\end{tabular}
+\end{table}
+
+
+\begin{table}[]
+\small
+\centering
+\caption{\textbf{Possible bias} Flan-PaLM answers were found to contain biased information in 7.9\% of the cases. However, this number reduced to 0.7\% for Med-PaLM, comparing favorably with experts whose answers were judged to contain evidence of bias in 1.4\% of the cases.}
+\vspace{3pt}
+\label{tab:detailed-expert-8}
+\begin{tabular}{l|ccc}
+\toprule
+\textbf{Possibility of Bias} & \textbf{Expert} & \textbf{Med-PaLM} & \textbf{Flan-PaLM} \\ \hline
+No                           & 98.6 ± 0.9      & 99.2 ± 0.7        & 92.1 ± 2.5         \\
+Yes                          & 1.5 ± 0.8       & 1.2 ± 0.6         & 7.9 ± 2.5    \\ \bottomrule      
+\end{tabular}
+\end{table}
+
+
+\begin{table}[]
+\small
+\centering
+\caption{\textbf{Lay user assessment of  answers with respect to capturing user intent}  Flan-PaLM answers were judged as directly addressing the user’s question intent in 90.8\% of cases. Using Med-PaLM this number improves to 94.0\%, while clinician-generated answers were at 95.9\%.}
+\vspace{3pt}
+\label{tab:detailed-lay-task1}
+\begin{tabular}{l|ccc}
+\toprule
+\textbf{Answer Captures User Intent} & \textbf{Expert} & \textbf{Med-PaLM} & \textbf{Flan-PaLM} \\ \hline
+Address Query                        & 95.9 ± 1.7      & 94.4 ± 2.0        & 90.8 ± 2.1         \\ \hline
+Does Not Address Query               & 4.1 ± 1.7       & 5.6 ± 2.0         & 9.2 ± 2.1         \\ \bottomrule
+\end{tabular}
+\end{table}
+
+
+\begin{table}[]
+\small
+\centering
+\caption{\textbf{Lay user assessment of  answers with respect to helpfulness} While Flan-PaLM answers were judged to be helpful in only 59.6\% of the cases, the number improved to 80.1\% for Med-PaLM answers. However, this remained inferior to clinician  answers which were judged to be helpful 90.8\% of the time.}
+\vspace{3pt}
+\label{tab:detailed-lay-task2}
+\begin{tabular}{l|ccc}
+\toprule
+\textbf{Helpfulness of the answer} & \textbf{Expert} & \textbf{Med-PaLM} & \textbf{Flan-PaLM} \\ \hline
+Helpful          & 91.1 ± 2.3 & 80.3 ± 3.2 & 60.6 ± 4.5 \\
+Somewhat helpful & 7.0 ± 2.2  & 16.1 ± 2.8 & 26.4 ± 3.8 \\
+Not helpful      & 2.0 ± 1.2  & 3.6 ± 1.6  & 13.0 ± 2.6 \\ \bottomrule
+\end{tabular}
+\end{table}
+
+
+
+
+
+
+
+% **************************************************************************************************
+% ##################################################################################################
+
+\section{Few-shot prompt examples}
+\label{appendix:few-shot}
+We provide examples of some few-shot prompts used in the study in~\cref{tab-app:medqa-few-shot},~\cref{tab-app:medmcqa-few-shot},~\cref{tab-app:pubmedqa-few-shot},~\cref{tab-app:liveqa-consumer-few-shot}, and~\cref{tab-app:medication-few-shot}.
+
+\begin{table}[!]
+\footnotesize
+\centering
+\caption{MedQA (2021)~\cite{jin2021disease} few-shot prompt examples.}
+\vspace{3pt}
+\label{tab-app:medqa-few-shot}
+\begin{tabular}{l@{\hspace{.1em}}l@{\hspace{0.1em}}}
+\toprule
+{\color{ourdarkblue} {\begin{tabular}[l]{@{}p{0.98\textwidth}}
+
+The following are multiple choice questions (with answers) about medical knowledge. \\ \\
+
+\textbf{Question:} A 32-year-old woman with bipolar disorder visits her gynecologist because she believes she is pregnant. A urine pregnancy test is performed which confirms she is pregnant. She has mild bipolar disorder for which she takes lithium and admits that she has been taking it ‘on and off’ for 2 years now but has never had any symptoms or episodes of relapse. She says that she had not made contact with her psychiatrist for the past several months because she ‘couldn’t find any time.’ Which of the following is the next best step in the management of this patient?\\
+(A) Taper lithium and administer valproate (B) Continue lithium administration through pregnancy and add lamotrigine (C) Taper lithium and administer carbamazepine (D) Taper lithium and provide a prescription for clonazepam as needed\\
+\textbf{Answer:}(D)
+\end{tabular}}} 
+& \\ \\
+
+{\color{ourdarkblue} {\begin{tabular}[l]{@{}p{0.98\textwidth}}
+\textbf{Question:} A 22-year-old man is brought to the emergency department 10 minutes after falling down a flight of stairs. An x-ray of the right wrist shows a distal radius fracture. A rapidly acting intravenous anesthetic agent is administered, and closed reduction of the fracture is performed. Following the procedure, the patient reports palpitations and says that he experienced an “extremely vivid dream,” in which he felt disconnected from himself and his surroundings while under anesthesia. His pulse is 110/min and blood pressure is 140/90 mm Hg. The patient was most likely administered a drug that predominantly blocks the effects of which of the following neurotransmitters?\\
+(A) Glutamate (B) Norepinephrine (C) Endorphin (D) Gamma-aminobutyric acid\\
+\textbf{Answer:}(A)
+\end{tabular}}} 
+&\\ \\
+
+{\color{ourdarkblue} {\begin{tabular}[l]{@{}p{0.98\textwidth}}
+\textbf{Question:} A 65-year-old man comes to the physician because of increasing swelling of the legs and face over the past 2 months. He has a history of diastolic heart dysfunction. The liver and spleen are palpable 4 cm below the costal margin. On physical examination, both lower limbs show significant pitting edema extending above the knees and to the pelvic area. Laboratory studies show: Serum Cholesterol 350 mg/dL (<200 mg/dL) Triglycerides 290 mg/dL (35–160 mg/dL) Calcium 8 mg/dL Albumin 2.8 g/dL Urea nitrogen 54 mg/dL Creatinine 2.5 mg/dL Urine Blood 3+ Protein 4+ RBC 15–17/hpf WBC 1–2/hpf RBC casts Many Echocardiography shows concentrically thickened ventricles with diastolic dysfunction. Skeletal survey shows no osteolytic lesions. Which of the following best explains these findings?\\
+(A) AL amyloidosis (B) Smoldering multiple myeloma (C) Symptomatic multiple myeloma (D) Waldenstrom’s macroglobulinemia\\
+\textbf{Answer:}(A)
+\end{tabular}}} 
+&\\ \\
+
+{\color{ourdarkblue} {\begin{tabular}[l]{@{}p{0.98\textwidth}}
+\textbf{Question:} Background: Aldosterone blockade reduces mortality and morbidity among patients with severe heart failure. We conducted a double-blind, placebo-controlled study evaluating the effect of eplerenone, a selective aldosterone blocker, on morbidity and mortality among patients with acute myocardial infarction complicated by left ventricular dysfunction and heart failure. Methods: Patients were randomly assigned to eplerenone (25 mg per day initially, titrated to a maximum of 50 mg per day; 3,319 patients) or placebo (3,313 patients) in addition to optimal medical therapy. The study continued until 1,012 deaths occurred. The primary endpoints were death from any cause, death from cardiovascular causes, hospitalization for heart failure, acute myocardial infarction, stroke, or ventricular arrhythmia. Results: During a mean follow-up of 16 months, there were 478 deaths in the eplerenone group and 554 deaths in the placebo group (relative risk, 0.85; 95 percent confidence interval, 0.75 to 0.96; p = 0.008). Of these deaths, 407 in the eplerenone group and 483 in the placebo group were attributed to cardiovascular causes (relative risk, 0.83; 95 percent confidence interval, 0.72 to 0.94; p = 0.005). The rate of the other primary endpoint, death from cardiovascular causes, or hospitalization for cardiovascular events was reduced by eplerenone (relative risk, 0.87; 95 percent confidence interval, 0.79 to 0.95; p = 0.002), as was the secondary endpoint of death from any cause or any hospitalization (relative risk, 0.92; 95 percent confidence interval, 0.86 to 0.98; p = 0.02). There was also a reduction in the rate of sudden death from cardiac causes (relative risk, 0.79; 95 percent confidence interval, 0.64 to 0.97; p = 0.03). The rate of serious hyperkalemia was 5.5 percent in the eplerenone group and 3.9 percent in the placebo group (p = 0.002), whereas the rate of hypokalemia was 8.4 percent in the eplerenone group and 13.1 percent in the placebo group (p < 0.001). Which of the following statements represents the most accurate interpretation of the results from the aforementioned clinical trial?\\
+(A) There was no significant difference in the incidence of hyperkalemia between trial arms. (B) There was no significant difference in the rate of sudden cardiac death between trial arms. (C) Eplerenone, when added to optimal medical therapy, decreases all cause mortality in patients with left ventricular dysfunction following myocardial infarction. (D) The most common causes of death seen in enrolled patients over the course of this trial were non-cardiac in nature.\\
+\textbf{Answer:}(C)
+\end{tabular}}} 
+&\\ \\
+
+{\color{ourdarkblue} {\begin{tabular}[l]{@{}p{0.98\textwidth}}
+\textbf{Question:} A 2-day-old newborn boy has failed to pass meconium after 48 hours. There is an absence of stool in the rectal vault. Family history is significant for MEN2A syndrome. Which of the following confirms the diagnosis?\\
+(A) Absence of ganglion cells demonstrated by rectal suction biopsy (B) Atrophic nerve fibers and decreased\\ acetylcholinesterase activity (C) Barium enema demonstrating absence of a transition zone (D) Rectal manometry demonstrating relaxation of the internal anal sphincter with distension of the rectum\\
+\textbf{Answer:}(A)
+
+\end{tabular}}} 
+&\\
+\bottomrule 
+ 
+\end{tabular}
+\end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
+
+\begin{table}[!]
+\footnotesize
+\centering
+\caption{MedMCQA (2021)~\cite{pal2022medmcqa} few-shot prompt examples.}
+\vspace{3pt}
+\label{tab-app:medmcqa-few-shot}
+\begin{tabular}{l@{\hspace{.1em}}l@{\hspace{0.1em}}}
+\toprule
+{\color{ourdarkblue} {\begin{tabular}[l]{@{}p{0.98\textwidth}}
+
+The following are multiple choice questions (with answers) about medical knowledge. \\ \\
+
+\textbf{Question:} Epulis is?\\
+(A) Benign (B) Malignant (C) Reactive process (D) Precancerous\\
+Answer:(A)
+\end{tabular}}} 
+& \\ \\
+{\color{ourdarkblue} {\begin{tabular}[l]{@{}p{0.98\textwidth}}
+\textbf{Question:} The most important sign of significance of renal artery stenosis on an angiogram is:
+(A) A percentage diameter stenosis >70\% (B) Presence of collaterals (C) A systolic pressure gradient >20 mmHg across the lesion (D) Post stenotic dilatation of the renal artery\\
+\textbf{Answer:}(B)
+\end{tabular}}} 
+&\\ \\
+{\color{ourdarkblue} {\begin{tabular}[l]{@{}p{0.98\textwidth}}
+\textbf{Question:} Ghon's focus lies at ?\\
+(A) Left apical parenchymal region (B) Right apical parenchymal region (C) Sub pleural caesous lesion in right upper lobe (D) Sub pleural caesous lesion in left upper lobe\\
+\textbf{Answer:}(C)
+\end{tabular}}} 
+&\\ \\
+{\color{ourdarkblue} {\begin{tabular}[l]{@{}p{0.98\textwidth}}
+\textbf{Question:} True about Mooren's ulcer: March 2007, March 2013\\
+(A) Painless condition (B) Affects cornea (C) Sudden loss of vision (D) Bilateral in majority of cases\\
+\textbf{Answer:}(B)
+\end{tabular}}} 
+&\\ \\
+{\color{ourdarkblue} {\begin{tabular}[l]{@{}p{0.98\textwidth}}
+\textbf{Question:} Which of the following is an intermediate-acting local anesthetic which is an amino amide causing methemoglobinemia?\\
+(A) Procaine (B) Prilocaine (C) Etidocaine (D) Ropivacaine\\
+\textbf{Answer:}(B)
+
+\end{tabular}}} 
+&\\
+\bottomrule 
+ 
+\end{tabular}
+\end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{table}[!]
+\footnotesize
+\centering
+\caption{PubMedQA (2019)~\cite{jin2019pubmedqa} few-shot prompt examples.}
+\vspace{3pt}
+\label{tab-app:pubmedqa-few-shot}
+\begin{tabular}{l@{\hspace{.1em}}l@{\hspace{0.1em}}}
+\toprule
+{\color{ourdarkblue} {\begin{tabular}[l]{@{}p{0.98\textwidth}}
+
+The following are multiple choice questions (with answers) about medical knowledge. \\ \\
+
+Answer the following question given the context (reply with one of the options):
+\textbf{Context:} To describe the interstitial fluid (ISF) and plasma pharmacokinetics of meropenem in patients on continuous venovenous haemodiafiltration (CVVHDF). This was a prospective observational pharmacokinetic study. Meropenem (500 mg) was administered every 8 h. CVVHDF was targeted as a 2-3 L/h exchange using a polyacrylonitrile filter with a surface area of 1.05 m2 and a blood flow rate of 200 mL/min. Serial blood (pre- and post-filter), filtrate/dialysate and ISF concentrations were measured on 2 days of treatment (Profiles A and B). Subcutaneous tissue ISF concentrations were determined using microdialysis. A total of 384 samples were collected. During Profile A, the comparative median (IQR) ISF and plasma peak concentrations were 13.6 (12.0-16.8) and 40.7 (36.6-45.6) mg/L and the trough concentrations were 2.6 (2.4-3.4) and 4.9 (3.5-5.0) mg/L, respectively. During Profile B, the ISF trough concentrations increased by $\sim$40\%. Meropenem ISF penetration was estimated at 63\% (60\%-69\%) and 69\% (65\%-74\%) for Profiles A and B, respectively, using comparative plasma and ISF AUCs. For Profile A, the plasma elimination t1/2 was 3.7 (3.3-4.0) h, the volume of distribution was 0.35 (0.25-0.46) L/kg, the total clearance was 4.1 (4.1-4.8) L/h and the CVVHDF clearance was 2.9 (2.7-3.1) L/h. \textbf{Question:} Are interstitial fluid concentrations of meropenem equivalent to plasma concentrations in critically ill patients receiving continuous renal replacement therapy?\\
+(A) Yes (B) No (C) Maybe\\
+\textbf{Answer:}(B)
+\end{tabular}}} 
+& \\ \\
+
+{\color{ourdarkblue} {\begin{tabular}[l]{@{}p{0.98\textwidth}}
+Answer the following question given the context (reply with one of the options):
+\textbf{Context:} Family caregivers of dementia patients are at increased risk of developing depression or anxiety. A multi-component program designed to mobilize support of family networks demonstrated effectiveness in decreasing depressive symptoms in caregivers. However, the impact of an intervention consisting solely of family meetings on depression and anxiety has not yet been evaluated. This study examines the preventive effects of family meetings for primary caregivers of community-dwelling dementia patients. A randomized multicenter trial was conducted among 192 primary caregivers of community dwelling dementia patients. Caregivers did not meet the diagnostic criteria for depressive or anxiety disorder at baseline. Participants were randomized to the family meetings intervention (n=96) or usual care (n=96) condition. The intervention consisted of two individual sessions and four family meetings which occurred once every 2 to 3 months for a year. Outcome measures after 12 months were the incidence of a clinical depressive or anxiety disorder and change in depressive and anxiety symptoms (primary outcomes), caregiver burden and quality of life (secondary outcomes). Intention-to-treat as well as per protocol analyses were performed. A substantial number of caregivers (72/192) developed a depressive or anxiety disorder within 12 months. The intervention was not superior to usual care either in reducing the risk of disorder onset (adjusted IRR 0.98; 95\% CI 0.69 to 1.38) or in reducing depressive (randomization-by-time interaction coefficient=-1.40; 95\% CI -3.91 to 1.10) or anxiety symptoms (randomization-by-time interaction coefficient=-0.55; 95\% CI -1.59 to 0.49). The intervention did not reduce caregiver burden or their health related quality of life. \textbf{Question:} Does a family meetings intervention prevent depression and anxiety in family caregivers of dementia patients?\\
+(A) Yes (B) No (C) Maybe\\
+\textbf{Answer:}(B)
+\end{tabular}}} 
+&\\ \\
+
+{\color{ourdarkblue} {\begin{tabular}[l]{@{}p{0.98\textwidth}}
+Answer the following question given the context (reply with one of the options):
+\textbf{Context:} To compare adherence to follow-up recommendations for colposcopy or repeated Papanicolaou (Pap) smears for women with previously abnormal Pap smear results. Retrospective cohort study. Three northern California family planning clinics. All women with abnormal Pap smear results referred for initial colposcopy and a random sample of those referred for repeated Pap smear. Medical records were located and reviewed for 90 of 107 women referred for colposcopy and 153 of 225 women referred for repeated Pap smears. Routine clinic protocols for follow-up--telephone call, letter, or certified letter--were applied without regard to the type of abnormality seen on a Pap smear or recommended examination. Documented adherence to follow-up within 8 months of an abnormal result. Attempts to contact the patients for follow-up, adherence to follow-up recommendations, and patient characteristics were abstracted from medical records. The probability of adherence to follow-up vs the number of follow-up attempts was modeled with survival analysis. Cox proportional hazards models were used to examine multivariate relationships related to adherence. The rate of overall adherence to follow-up recommendations was 56.0\% (136/243). Adherence to a second colposcopy was not significantly different from that to a repeated Pap smear (odds ratio, 1.40; 95\% confidence interval, 0.80-2.46). The use of as many as 3 patient reminders substantially improved adherence to follow-up. Women without insurance and women attending 1 of the 3 clinics were less likely to adhere to any follow-up recommendation (hazard ratio for no insurance, 0.43 [95\% confidence interval, 0.20-0.93], and for clinic, 0.35 [95\% confidence interval, 0.15-0.73]). \textbf{Question:} Do follow-up recommendations for abnormal Papanicolaou smears influence patient adherence?\\
+(A) Yes (B) No (C) Maybe\\
+\textbf{Answer:}(B)
+
+\end{tabular}}} 
+&\\
+
+\bottomrule 
+ 
+\end{tabular}
+\end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{table}[!]
+\footnotesize
+\centering
+\caption{LiveQA (2017~\cite{abacha2017overview} and ConsumerQA few-shot prompt examples.}
+\vspace{3pt}
+\label{tab-app:liveqa-consumer-few-shot}
+\begin{tabular}{l@{\hspace{.1em}}l@{\hspace{0.1em}}}
+\toprule
+{\color{ourdarkblue} {\begin{tabular}[l]{@{}p{0.98\textwidth}}
+
+You are a helpful medical knowledge assistant. Provide useful, complete and scientifically-grounded answers to patient queries.  \\ \\
+
+\textbf{Question:} What does an abscess look like? \\ 
+
+\textbf{Complete Answer:} An abscess is usually a painful, fluctuant swelling underneath the skin. The term fluctuant means that it is movable and compressible, characteristics conferred by the pus inside it. It may be red, hot and inflamed on the surface. \\ \\                    
+
+\textbf{Question:} Do granulomas on skin go away?    \\                  
+\textbf{Complete Answer:} Granulomas on the skin are a chronic condition that can last anywhere from a few months to a few years to go away on its own. \\ \\               
+
+\textbf{Question:} What causes anagen effluvium?  \\                  
+
+\textbf{Complete Answer:} Anagen effluvium is a shedding of the hair follicles during the growth stage of the hair cycle. The main cause is usually some type of acute injury to the hair follicle, typically from chemotherapy. Radiation, infection and autoimmune diseases are some other causes that are less common.\\ \\ 
+
+\textbf{Subject:} moles and diet, \textbf{Question:} What do I eat to reduce moles?   \\                 
+
+\textbf{Complete Answer:} Moles are not specifically caused by your dietary choices, nor will changing your diet reduce moles. Most moles are harmless, but if you have a change in a mole or it is of concern, you should have it checked by a doctor.\\ \\                 
+
+\textbf{Question:} What are the 4 stages of Acute Kidney Injury (AKI)? \\
+
+\textbf{Complete Answer:} If renal function is truly affected the typical course of AKI includes 4 stages: 1> initiation, 2> oligo-anuria, 3> polyuria, and 4> restitution. In this dynamic process, clinical signs of renal dysfunction emerge during stage 2 (oligo-anuria). \\ \\                
+
+\textbf{Question:} how to treat eczema? \\
+
+\textbf{Complete Answer:} Treatment of eczema may start with the avoidance of scratching and practicing regular moisturizing with emollient creams to prevent the skin becoming dry. Self-care is important, for example avoiding triggers. If certain fabrics irritate your skin, avoid wearing these and stick to soft, fine-weave clothing or natural materials such as cotton. If heat aggravates your eczema, keep the rooms in your home cool, especially the bedroom. Avoid using soaps or detergents that may affect your skin – use soap substitutes instead. If these don't help, your health care provider might suggest medicated creams that control itching and help repair skin. Some foods, such as eggs and cows' milk, can trigger eczema symptoms. But you should not make significant changes to your diet to prevent eczema without first speaking to a doctor about the risks and benefits.  Doctors may also prescribe medications for treating eczema. For example emollients (moisturizers) – used every day to stop the skin becoming dry. Topical corticosteroids – creams and ointments used to reduce swelling and redness during flare-ups. Topical pimecrolimus or tacrolimus for eczema in sensitive sites not responding to simpler treatment. Antihistamines for severe itching.\\ \\
+
+\end{tabular}}} 
+& \\
+
+\bottomrule 
+ 
+\end{tabular}
+\end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{table}[!]
+\footnotesize
+\centering
+\caption{MedicationQA (2017) \cite{abacha2019bridging} few-shot prompt examples.}
+\vspace{3pt}
+\label{tab-app:medication-few-shot}
+\begin{tabular}{l@{\hspace{.1em}}l@{\hspace{0.1em}}}
+\toprule
+{\color{ourdarkblue} {\begin{tabular}[l]{@{}p{0.98\textwidth}}
+
+You are a helpful medical assistant. Provide useful and scientifically-grounded explanation to justify the question statement. \\ \\                     
+\textbf{Question:} what does vitamin d3 do? \\
+
+\textbf{Answer:} Vitamin D helps your body absorb calcium. Calcium is one of the main building blocks of bone. A lack of vitamin D can lead to bone diseases such as osteoporosis or rickets. Vitamin D also has a role in your nerve, muscle, and immune systems.  \\ \\                   
+
+\textbf{Question:} how reduce cholesterol?   \\                   
+Answer: High cholesterol is when you have too much of a fatty substance called cholesterol in your blood. It's mainly caused by eating fatty food, not exercising  enough, being overweight, smoking and drinking alcohol. It can also run in families. You can lower your cholesterol by eating healthily and getting more exercise. Some people also need to take medicines as advised by a doctor, for example statins or other options.   \\ \\                   
+
+\textbf{Question:} metoprolol pill how long before it takes effect?  \\                  
+\textbf{Answer:} Metoprolol starts to work after about 2 hours, but it can take up to 1 week to fully take effect. You may not feel any different when you take metoprolol, but this doesn't mean it's not working. \\ \\                   
+
+\textbf{Question:} how long do opioid withdrawals last? \\
+
+\textbf{Answer:} Opioid withdrawal symptoms can last anywhere from one week to one month. The first phase (acute withdrawal) begins about 12 hours after your last opioid use. It peaks at around 3 - 5 days, and lasts for approximately 1 - 4 weeks. The second phase (post-acute withdrawal) can last up to two years. The symptoms include mood swings, anxiety, variable energy, low enthusiasm, variable concentration, and disturbed sleep. \\ \\
+
+\textbf{Question:} what foods should a person taking warfarin eat?  \\
+
+\textbf{Answer:} Foods containing a lot of vitamin K can affect how warfarin works. These include green leafy vegetables, including broccoli, spinach and lettuce, chickpeas, liver, egg yolks, mature cheese and blue cheese, avocado, olive oil. It's important that you eat foods containing vitamin K, so rather than leaving them out of your diet, make sure you eat similar amounts of them regularly. This will mean the level of vitamin K in your blood stays fairly constant and makes it more likely that your INR level stays stable. Do not drink cranberry juice, grapefruit juice or pomegranate juice while you're taking warfarin. It can increase the effect of your medicine and put you at higher risk of bleeding. \\ \\
+
+\end{tabular}}} 
+& \\
+
+\bottomrule 
+ 
+\end{tabular}
+\end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+
+% **************************************************************************************************
+% ##################################################################################################
+
+\section{Chain-of-Thought prompt examples}
+\label{appendix:cot}
+We provided examples of some of the chain-of-thought prompts used in this study in~\cref{tab-app:medqa-cot},~\cref{tab-app:medmcqa-cot},~\cref{tab-app:pubmedqa-cot} and~\cref{tab-app:mmlu-cot}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{table}[!]
+\footnotesize
+\centering
+\caption{MedQA (2021)~\cite{jin2021disease} chain-of-thought prompt examples.}
+\vspace{3pt}
+\label{tab-app:medqa-cot}
+\begin{tabular}{l@{\hspace{.1em}}l@{\hspace{0.1em}}}
+\toprule
+{\color{ourdarkblue} {\begin{tabular}[l]{@{}p{0.98\textwidth}}
+
+\textbf{Instructions:} The following are multiple-choice questions about medical knowledge. Solve them in a step-by-step fashion. Output a single option as the final answer. \\ \\
+
+\textbf{Question:} A 22-year-old male marathon runner presents to the office with the complaint of right-sided rib pain when he runs long distances. Physical examination reveals normal heart and lung findings and an exhalation dysfunction at ribs 4-5 on the right. Which of the following muscles or muscle groups will be most useful in correcting this dysfunction utilizing a direct method?\\
+(A) anterior scalene (B) latissimus dorsi (C) pectoralis minor (D) quadratus lumborum\\
+\textbf{Explanation:} We refer to Wikipedia articles on medicine for help. Among the options, only pectoralis minor muscle origins from the outer surfaces of the 3rd to 5th ribs.\\
+\textbf{Answer:} (C)
+\end{tabular}}} 
+& \\ \\
+
+{\color{ourdarkblue} {\begin{tabular}[l]{@{}p{0.98\textwidth}}
+\textbf{Question:} A 36-year-old male presents to the office with a 3-week history of low back pain. He denies any recent trauma but says that he climbs in and out of his truck numerous times a day for his job. Examination of the patient in the prone position reveals a deep sacral sulcus on the left, a posterior inferior lateral angle on the right, and a lumbosacral junction that springs freely on compression. The most likely diagnosis is\\
+(A) left-on-left sacral torsion (B) left-on-right sacral torsion (C) right unilateral sacral flexion (D) right-on-right sacral torsion\\
+\textbf{Explanation:} We refer to Wikipedia articles on medicine for help. The deep sulcus on the left, a posterior ILA on the right, with a negative spring test suggests a right-on-right sacral torsion. All other options have a deep sulcus on the right.\\
+\textbf{Answer:} (D)
+\end{tabular}}} 
+&\\ \\
+
+{\color{ourdarkblue} {\begin{tabular}[l]{@{}p{0.98\textwidth}}
+\textbf{Question:} A 44-year-old man comes to the office because of a 3-day history of sore throat, nonproductive cough, runny nose, and frontal headache. He says the headache is worse in the morning and ibuprofen does provide some relief. He has not had shortness of breath. Medical history is unremarkable. He takes no medications other than the ibuprofen for pain. Vital signs are temperature 37.4°C (99.4°F), pulse 88/min, respirations 18/min, and blood pressure 120/84 mm Hg. Examination of the nares shows erythematous mucous membranes. Examination of the throat shows erythema and follicular lymphoid hyperplasia on the posterior oropharynx. There is no palpable cervical adenopathy. Lungs are clear to auscultation. Which of the following is the most likely cause of this patient's symptoms?\\
+(A) Allergic rhinitis (B) Epstein-Barr virus (C) Mycoplasma pneumonia (D) Rhinovirus\\
+\textbf{Explanation:} We refer to Wikipedia articles on medicine for help. The symptoms, especially the headache, suggest that the most likely cause is Rhinovirus. Epstein-Barr virus will cause swollen lymph nodes but there is no palpable cervical adenopathy. Lungs are clear to auscultation suggests it's not Mycoplasma pneumonia.\\
+\textbf{Answer:} (D)
+\end{tabular}}} 
+&\\ \\
+
+{\color{ourdarkblue} {\begin{tabular}[l]{@{}p{0.98\textwidth}}
+\textbf{Question:} A previously healthy 32-year-old woman comes to the physician 8 months after her husband was killed in a car crash. Since that time, she has had a decreased appetite and difficulty falling asleep. She states that she is often sad and cries frequently. She has been rechecking the door lock five times before leaving her house and has to count exactly five pieces of toilet paper before she uses it. She says that she has always been a perfectionist but these urges and rituals are new. Pharmacotherapy should be targeted to which of the following neurotransmitters?\\
+(A) Dopamine (B) Glutamate (C) Norepinephrine (D) Serotonin\\
+\textbf{Explanation:} We refer to Wikipedia articles on medicine for help. The patient feels sad and among the options, only Dopamine and Serotonin can help increase positive emotions. Serotonin also affects digestion and metabolism, which can help the patient's decreased appetite and sleep difficulty.\\
+\textbf{Answer:} (D)
+\end{tabular}}} 
+&\\ \\
+
+{\color{ourdarkblue} {\begin{tabular}[l]{@{}p{0.98\textwidth}}
+\textbf{Question:} A 42-year-old man comes to the office for preoperative evaluation prior to undergoing adrenalectomy scheduled in 2 weeks. One month ago, he received care in the emergency department for pain over his right flank following a motor vehicle collision. At that time, blood pressure was 160/100 mm Hg and CT scan of the abdomen showed an incidental 10-cm left adrenal mass. Results of laboratory studies, including complete blood count, serum electrolyte concentrations, and liver function tests, were within the reference ranges. The patient otherwise had been healthy and had never been told that he had elevated blood pressure. He takes no medications. A follow-up visit in the office 2 weeks ago disclosed elevated urinary normetanephrine and metanephrine and plasma aldosterone concentrations. The patient was referred to a surgeon, who recommended the adrenalectomy. Today, vital signs are temperature 36.6°C (97.9°F), pulse 100/min, respirations 14/min, and blood pressure 170/95 mm Hg. Physical examination discloses no significant findings. Initial preoperative preparation should include treatment with which of the following?\\
+(A) Labetalol (B) A loading dose of potassium chloride (C) Nifedipine (D) Phenoxybenzamine\\
+\textbf{Explanation:} We refer to Wikipedia articles on medicine for help. The symptoms and the adrenal mass suggested pheochromocytoma, and the blood pressure indicates hypertension. Phenoxybenzamine is used to treat hypertension caused by pheochromocytoma.\\
+\textbf{Answer:} (D)
+ \\
+\end{tabular}}} 
+&\\ \\
+\bottomrule 
+ 
+\end{tabular}
+\end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{table}[!]
+\footnotesize
+\centering
+\caption{MedMCQA (2022)~\cite{pal2022medmcqa} chain-of-thought prompt examples.}
+\vspace{3pt}
+\label{tab-app:medmcqa-cot}
+\begin{tabular}{l@{\hspace{.1em}}l@{\hspace{0.1em}}}
+\toprule
+{\color{ourdarkblue} {\begin{tabular}[l]{@{}p{0.98\textwidth}}
+
+\textbf{Instructions:} The following are multiple-choice questions about medical knowledge. Solve them in a step-by-step fashion or by referring to Wikipedia articles on medicine for help. Output a single option as the final answer.      \\ \\              
+
+\textbf{Question:} Maximum increase in prolactin level is caused by:\\
+(A) Risperidone (B) Clozapine (C) Olanzapine (D) Aripiprazole\\
+\textbf{Explanation:} Clozapine generally does not raise prolactin levels. Atypicals such as olanzapine and aripiprazole cause small if no elevation. Risperidone is known to result in a sustained elevated prolactin level. Therefore risperidone is likely to cause the maximum increase in prolactin level. \\
+\textbf{Answer:} (A) \\ \\
+ 
+\textbf{Question:} What is the age of routine screening mammography?\\
+(A) 20 years (B) 30 years (C) 40 years (D) 50 years\\
+\textbf{Explanation:} The age of routine screening depends on the country you are interested in and varies widely. For the US, it is 40 years of age according to the American Cancer Society. In Europe, it is typically closer to 50 years. For a patient based in the US, the best answer is 40 years. \\ 
+\textbf{Answer:} (C)\\ \\
+ 
+\textbf{Question:} A 65-year-old male complains of severe back pain and inability to move his left lower limb. Radiographic studies demonstrate the compression of nerve elements at the intervertebral foramen between vertebrae L5 and S1. Which structure is most likely responsible for this space-occupying lesion?\\
+(A) Anulus fibrosus (B) Nucleus pulposus (C) Posterior longitudinal ligament (D) Anterior longitudinal ligament\\
+\textbf{Explanation:} This man describes a herniated invertebral disk through a tear in the surrounding annulus fibrosus. The soft, gelatinous "nucleus pulposus" is forced out through a weakened part of the disk, resulting in back pain and nerve root irritation. In this case, the impingement is resulting in paralysis, and should be considered a medical emergency. Overall, the structure that is causing the compression and symptoms is the nucleus pulposus. \\ 
+\textbf{Answer:} (B)\\ \\
+ 
+\textbf{Question:} Neuroendocrine cells in the lungs are:\\
+(A) Dendritic cells (B) Type I pneumocytes (C) Type II pneumocytes (D) APUD cells\\
+\textbf{Explanation:} Neuroendocrine cells, which are also known as Kultschitsky-type cells, Feyrter cells and APUD cells, are found in the basal layer of the surface epithelium and in the bronchial glands. \\ 
+\textbf{Answer:} (D)\\ \\
+ 
+\textbf{Question:} Presence of it indicates remote contamination of water\\
+(A) Streptococci (B) Staphalococci (C) Clastridium pertringes (D) Nibrio\\
+\textbf{Explanation:} Because Clostridium perfringens spores are both specific to sewage contamination and environmentally stable, they are considered as possible conservative indicators of human fecal contamination and possible surrogates for environmentally stable pathogens. \\ 
+\textbf{Answer:} (C)
+\\ \\
+
+\end{tabular}}} 
+& \\
+
+\bottomrule 
+ 
+\end{tabular}
+\end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{table}[!]
+\footnotesize
+\centering
+\caption{PubMedQA (2019)~\cite{jin2019pubmedqa} chain-of-thought prompt examples.}
+\label{tab-app:pubmedqa-cot}
+\begin{tabular}{l@{\hspace{.1em}}l@{\hspace{0.1em}}}
+\toprule
+{\color{ourdarkblue} {\begin{tabular}[l]{@{}p{0.98\textwidth}}
+
+\textbf{Instructions:} The following are multiple choice questions about medical research. Determine the answer to the question given the context in a step-by-step fashion. Consider the strength of scientific evidence to output a single option as the final answer. \\ \\
+\vspace{-0.5cm}
+\textbf{Context:} To describe the interstitial fluid (ISF) and plasma pharmacokinetics of meropenem in patients on continuous venovenous haemodiafiltration (CVVHDF). This was a prospective observational pharmacokinetic study. Meropenem (500 mg) was administered every 8 h. CVVHDF was targeted as a 2-3 L/h exchange using a polyacrylonitrile filter with a surface area of 1.05 $m^{2}$ and a blood flow rate of 200 mL/min. Serial blood (pre- and post-filter), filtrate/dialysate and ISF concentrations were measured on 2 days of treatment (Profiles A and B). Subcutaneous tissue ISF concentrations were determined using microdialysis. A total of 384 samples were collected. During Profile A, the comparative median (IQR) ISF and plasma peak concentrations were 13.6 (12.0-16.8) and 40.7 (36.6-45.6) mg/L and the trough concentrations were 2.6 (2.4-3.4) and 4.9 (3.5-5.0) mg/L, respectively. During Profile B, the ISF trough concentrations increased by $\sim$40\%. Meropenem ISF penetration was estimated at 63\% (60\%-69\%) and 69\% (65\%-74\%) for Profiles A and B, respectively, using comparative plasma and ISF AUCs. For Profile A, the plasma elimination t1/2 was 3.7 (3.3-4.0) h, the volume of distribution was 0.35 (0.25-0.46) L/kg, the total clearance was 4.1 (4.1-4.8) L/h and the CVVHDF clearance was 2.9 (2.7-3.1) L/h. \textbf{Question:} Are interstitial fluid concentrations of meropenem equivalent to plasma concentrations in critically ill patients receiving continuous renal replacement therapy?
+(A) Yes (B) No (C) Maybe\\
+\textbf{Explanation:} This is the first known report of concurrent plasma and ISF concentrations of a meropenem antibiotic during CVVHDF. We observed that the ISF concentrations of meropenem were significantly lower than the plasma concentrations, although the present dose was appropriate for infections caused by intermediately susceptible pathogens (MIC$\leq$4 mg/L).\\
+\textbf{Answer:} (B)
+\end{tabular}}} 
+& \\ \\
+
+{\color{ourdarkblue} {\begin{tabular}[l]{@{}p{0.98\textwidth}}
+\textbf{Context:} Family caregivers of dementia patients are at increased risk of developing depression or anxiety. A multi-component program designed to mobilize support of family networks demonstrated effectiveness in decreasing depressive symptoms in caregivers. However, the impact of an intervention consisting solely of family meetings on depression and anxiety has not yet been evaluated. This study examines the preventive effects of family meetings for primary caregivers of community-dwelling dementia patients. A randomized multicenter trial was conducted among 192 primary caregivers of community dwelling dementia patients. Caregivers did not meet the diagnostic criteria for depressive or anxiety disorder at baseline. Participants were randomized to the family meetings intervention (n=96) or usual care (n=96) condition. The intervention consisted of two individual sessions and four family meetings which occurred once every 2 to 3 months for a year. Outcome measures after 12 months were the incidence of a clinical depressive or anxiety disorder and change in depressive and anxiety symptoms (primary outcomes), caregiver burden and quality of life (secondary outcomes). Intention-to-treat as well as per protocol analyses were performed. A substantial number of caregivers (72/192) developed a depressive or anxiety disorder within 12 months. The intervention was not superior to usual care either in reducing the risk of disorder onset (adjusted IRR 0.98; 95\% CI 0.69 to 1.38) or in reducing depressive (randomization-by-time interaction coefficient=-1.40; 95\% CI -3.91 to 1.10) or anxiety symptoms (randomization-by-time interaction coefficient=-0.55; 95\% CI -1.59 to 0.49). The intervention did not reduce caregiver burden or their health related quality of life. \textbf{Question:} Does a family meetings intervention prevent depression and anxiety in family caregivers of dementia patients?
+(A) Yes (B) No (C) Maybe\\
+\textbf{Explanation:} This study did not demonstrate preventive effects of family meetings on the mental health of family caregivers. Further research should determine whether this intervention might be more beneficial if provided in a more concentrated dose, when applied for therapeutic purposes or targeted towards subgroups of caregivers.\\
+\textbf{Answer:} (B)
+\vspace{-0.4cm}
+\end{tabular}}} 
+&\\ \\
+
+{\color{ourdarkblue} {\begin{tabular}[l]{@{}p{0.98\textwidth}}
+\textbf{Context:} To compare adherence to follow-up recommendations for colposcopy or repeated Papanicolaou (Pap) smears for women with previously abnormal Pap smear results. Retrospective cohort study. Three northern California family planning clinics. All women with abnormal Pap smear results referred for initial colposcopy and a random sample of those referred for repeated Pap smear. Medical records were located and reviewed for 90 of 107 women referred for colposcopy and 153 of 225 women referred for repeated Pap smears. Routine clinic protocols for follow-up--telephone call, letter, or certified letter--were applied without regard to the type of abnormality seen on a Pap smear or recommended examination. Documented adherence to follow-up within 8 months of an abnormal result. Attempts to contact the patients for follow-up, adherence to follow-up recommendations, and patient characteristics were abstracted from medical records. The probability of adherence to follow-up vs the number of follow-up attempts was modeled with survival analysis. Cox proportional hazards models were used to examine multivariate relationships related to adherence. The rate of overall adherence to follow-up recommendations was 56.0\% (136/243). Adherence to a second colposcopy was not significantly different from that to a repeated Pap smear (odds ratio, 1.40; 95\% confidence interval, 0.80-2.46). The use of as many as 3 patient reminders substantially improved adherence to follow-up. Women without insurance and women attending 1 of the 3 clinics were less likely to adhere to any follow-up recommendation (hazard ratio for no insurance, 0.43 [95\% confidence interval, 0.20-0.93], and for clinic, 0.35 [95\% confidence interval, 0.15-0.73]). \textbf{Question:} Do follow-up recommendations for abnormal Papanicolaou smears influence patient adherence?
+(A) Yes (B) No (C) Maybe\\
+Explanation: Adherence to follow-up was low in this family planning clinic population, no matter what type of follow-up was advised. Adherence was improved by the use of up to 3 reminders. Allocating resources to effective methods for improving adherence to follow-up of abnormal results may be more important than which follow-up procedure is recommended.\\
+\textbf{Answer:} (B)
+\vspace{-0.4cm}
+\end{tabular}}} 
+&\\
+
+\bottomrule 
+ 
+\end{tabular}
+\end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{table}[!]
+\footnotesize
+\centering
+\caption{MMLU (2020)~\cite{hendrycks2020measuring} chain-of-thought prompt examples.}
+\vspace{3pt}
+\label{tab-app:mmlu-cot}
+\begin{tabular}{l@{\hspace{.1em}}l@{\hspace{0.1em}}}
+\toprule
+{\color{ourdarkblue} {\begin{tabular}[l]{@{}p{0.98\textwidth}}
+
+\textbf{Instructions:} The following are multiple-choice questions about medical knowledge. Solve them in a step-by-step fashion. Output a single option as the final answer. \\ \\ 
+ 
+\textbf{Question:} The energy for all forms of muscle contraction is provided by:\\
+(A) ATP. (B) ADP. (C) phosphocreatine. (D) oxidative phosphorylation.\\
+\textbf{Explanation:} The sole fuel for muscle contraction is adenosine triphosphate (ATP). During near maximal intense exercise the muscle store of ATP will be depleted in less than one second. Therefore, to maintain normal contractile function ATP must be continually resynthesized. These pathways include phosphocreatine and muscle glycogen breakdown, thus enabling substrate-level phosphorylation (‘anaerobic’) and oxidative phosphorylation by using reducing equivalents from carbohydrate and fat metabolism (‘aerobic’). \\ 
+\textbf{Answer:} (A) \\ \\ 
+ 
+\textbf{Question:} Which of the following conditions does not show multifactorial inheritance?\\
+(A) Pyloric stenosis (B) Schizophrenia (C) Spina bifida (neural tube defects) (D) Marfan syndrome\\
+\textbf{Explanation:} Multifactorial inheritance refers to when a condition is caused by multiple factors, which may be both genetic or environmental. Marfan is an autosomal dominant trait. It is caused by mutations in the FBN1 gene, which encodes a protein called fibrillin-1. Hence, Marfan syndrome is not an example of multifactorial inheritance. \\
+\textbf{Answer:} (D) \\ \\
+ 
+\textbf{Question:} What is the embryological origin of the hyoid bone?\\
+(A) The first pharyngeal arch (B) The first and second pharyngeal arches (C) The second pharyngeal arch (D) The second and third pharyngeal arches\\
+\textbf{Explanation:} In embryology, the pharyngeal arches give rise to anatomical structure in the head and neck. The hyoid bone, a small bone in the midline of the neck anteriorly, is derived from the second and third pharyngeal arches. \\ 
+\textbf{Answer:} (D) \\ \\ 
+ 
+\textbf{Question:} In a given population, 1 out of every 400 people has a cancer caused by a completely recessive allele, b. Assuming the population is in Hardy-Weinberg equilibrium, which of the following is the expected proportion of individuals who carry the b allele but are not expected to develop the cancer?\\
+(A) 1/400 (B) 19/400 (C) 20/400 (D) 38/400 \\
+\textbf{Explanation:} The expected proportion of individuals who carry the b allele but are not expected to develop the cancer equals to the frequency of heterozygous allele in the given population. According to the Hardy-Weinberg equation p$\wedge$2 + 2pq + q$\wedge$2 = 1, where p is the frequency of dominant allele frequency, q is the frequency of recessive allele frequency, p$\wedge$2 is the frequency of the homozygous dominant allele, q$\wedge$2 is the frequency of the recessive allele, and 2pq is the frequency of the heterozygous allele. Given that q$\wedge$2=1/400, hence, q=0.05 and p=1-q=0.95. The frequency of the heterozygous allele is 2pq=2*0.05*0.95=38/400. \\
+\textbf{Answer:} (D) \\ \\ 
+ 
+\textbf{Question:} A high school science teacher fills a 1 liter bottle with pure nitrogen and seals the lid. The pressure is 1.70 atm, and the room temperature is 25$\circ$C. Which two variables will both increase the pressure of the system, if all other variables are held constant?\\
+(A) Decreasing volume, decreasing temperature  (B) Increasing temperature, increasing volume (C) Increasing temperature, increasing moles of gas (D) Decreasing moles of gas, increasing volume\\
+\textbf{Explanation:} According to the ideal gas law, PV = nRT (P = pressure, V = volume, n = number of moles, R = gas constant, T = temperature). Hence, increasing both temperature (T) and moles of gas (n), while other variables stay constant, will indeed increase the pressure of the system.\\
+\textbf{Answer:} (C) \\ \\
+ 
+\textbf{Question:} A 22-year-old male marathon runner presents to the office with the complaint of right-sided rib pain when he runs long distances. Physical examination reveals normal heart and lung findings and an exhalation dysfunction at ribs 4-5 on the right. Which of the following muscles or muscle groups will be most useful in correcting this dysfunction utilizing a direct method? \\
+(A) anterior scalene (B) latissimus dorsi (C) pectoralis minor (D) quadratus lumborum\\
+\textbf{Explanation:} All of the muscles have an insertion on the rib cage; however only one has an insertion at ribs 4-5 and could be responsible for right-sided rib pain: pectoralis minor. Pectoralis minor inserts to the costal cartilage of the anterior third to fifth ribs.\\
+\textbf{Answer:} (C) \\ \\ 
+
+
+\end{tabular}}} 
+& \\
+
+\bottomrule 
+ 
+\end{tabular}
+\end{table}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,0 +1,910 @@
+{
+  "version": "BioASQ6b", 
+  "data": [
+    {
+      "title": "BioASQ6b", 
+      "paragraphs": [
+        {
+          "context": "Current strategies for treatment of relapsed/refractory multiple myeloma. In spite of significant advances in the management of multiple myeloma (MM), the disease remains incurable and nearly all patients ultimately relapse and require salvage chemotherapy. As such, relapsed and relapsed-refractory MM remains a critical area of research pertaining to biological mechanisms of progression and chemotherapy resistance, as well as to the development of new pharmacologic agents and immunologic approaches for the disease. The immunomodulatory agents and proteasome inhibitors represent the cornerstone of treatment in this setting, with combination regimens incorporating these drugs demonstrating encouraging rates and duration of response, including the newer agents, pomalidomide and carfilzomib. In addition, novel drug classes have shown promising activity in RR MM, including the orally-administered proteasome inhibitors ixazomib and oprozomib; monoclonal antibodies such as the anti-CS1 monoclonal antibody elotuzumab and anti-CD38 monoclonal antibody daratumumab; and histone deacetylase inhibitors such as panobinostat and rocilinostat.", 
+          "qas": [
+            {
+              "question": "How is oprozomib administered?", 
+              "id": "56ecfd572ac5ed1459000002_000"
+            }
+          ]
+        }, 
+        {
+          "context": "New orally active proteasome inhibitors in multiple myeloma. Bortezomib is the first proteasome inhibitor approved for the therapy of multiple myeloma (MM). Although Bortezomib has renovated the treatment of MM, a considerable proportion of subjects fail to respond to Bortezomib treatment and almost all patients relapse from this drug either alone or when used in combination therapies. However, the good clinical outcome of Bortezomib treatment in MM patients gave impulsion for the development of second generation proteasome inhibitors with the ambition of improving efficacy of proteasome inhibition, enhancing antitumor activity, and decreasing toxicity, as well as providing flexible dosing schedules and patient convenience. This review provides an overview of the role of oral proteasome inhibitors including Marizomib, Oprozomib, Delanzomib, chemical proteasome inhibitors, and cinnabaramides, in the therapy of MM, focusing on developments over the past five years. These emerging drugs with different mechanisms of action have exhibited promising antitumor activity in patients with relapsed/refractory MM, and they are creating chances to target multiple pathways, overcome resistance, and improve clinical outcomes, mainly for those subjects who are refractory to approved agents. Future steps in the clinical development of oral inhibitors include the optimization of the schedule and the definition of their antitumor activity in MM.", 
+          "qas": [
+            {
+              "question": "How is oprozomib administered?", 
+              "id": "56ecfd572ac5ed1459000002_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Proteasome inhibitors - molecular basis and current perspectives in multiple myeloma. Inhibition of proteasome, a proteolytic complex responsible for the degradation of ubiquitinated proteins, has emerged as a powerful strategy for treatment of multiple myeloma (MM), a plasma cell malignancy. First-in-class agent, bortezomib, has demonstrated great positive therapeutic efficacy in MM, both in pre-clinical and in clinical studies. However, despite its high efficiency, a large proportion of patients do not achieve sufficient clinical response. Therefore, the development of a second-generation of proteasome inhibitors (PIs) with improved pharmacological properties was needed. Recently, several of these new agents have been introduced into clinics including carfilzomib, marizomib and ixazomib. Further, new orally administered second-generation PI oprozomib is being investigated. This review provides an overview of main mechanisms of action of PIs in MM, focusing on the ongoing development and progress of novel anti-proteasome therapeutics.", 
+          "qas": [
+            {
+              "question": "How is oprozomib administered?", 
+              "id": "56ecfd572ac5ed1459000002_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Carfilzomib and oprozomib synergize with histone deacetylase inhibitors in head and neck squamous cell carcinoma models of acquired resistance to proteasome inhibitors. Acquired resistance to proteasome inhibitors represents a considerable impediment to their effective clinical application. Carfilzomib and its orally bioavailable structural analog oprozomib are second-generation, highly-selective, proteasome inhibitors. However, the mechanisms of acquired resistance to carfilzomib and oprozomib are incompletely understood, and effective strategies for overcoming this resistance are needed. Here, we developed models of acquired resistance to carfilzomib in two head and neck squamous cell carcinoma cell lines, UMSCC-1 and Cal33, through gradual exposure to increasing drug concentrations. The resistant lines R-UMSCC-1 and R-Cal33 demonstrated 205- and 64-fold resistance, respectively, relative to the parental lines. Similarly, a high level of cross-resistance to oprozomib, as well as paclitaxel, was observed, whereas only moderate resistance to bortezomib (8- to 29-fold), and low level resistance to cisplatin (1.5- to 5-fold) was seen. Synergistic induction of apoptosis signaling and cell death, and inhibition of colony formation followed co-treatment of acquired resistance models with carfilzomib and the histone deacetylase inhibitor (HDACi) vorinostat. Synergism was also seen with other combinations, including oprozomib plus vorinostat, or carfilzomib plus the HDACi entinostat. Synergism was accompanied by upregulation of proapoptotic Bik, and suppression of Bik attenuated the synergy. The acquired resistance models also exhibited elevated levels of MDR-1/P-gp. Inhibition of MDR-1/P-gp with reversin 121 partially overcame carfilzomib resistance in R-UMSCC-1 and R-Cal33 cells. Collectively, these studies indicate that combining carfilzomib or oprozomib with HDAC or MDR-1/P-gp inhibitors may be a useful strategy for overcoming acquired resistance to these proteasome inhibitors.", 
+          "qas": [
+            {
+              "question": "How is oprozomib administered?", 
+              "id": "56ecfd572ac5ed1459000002_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Regulation of mTORC1 by amino acids. The mechanistic target of rapamycin complex I (mTORC1) is a central regulator of cellular and organismal growth, and hyperactivation of this pathway is implicated in the pathogenesis of many human diseases including cancer and diabetes. mTORC1 promotes growth in response to the availability of nutrients, such as amino acids, which drive mTORC1 to the lysosomal surface, its site of activation. How amino acid levels are communicated to mTORC1 is only recently coming to light by the discovery of a lysosome-based signaling system composed of Rags (Ras-related GTPases) and Ragulator v-ATPase, GATOR (GAP activity towards Rags), and folliculin (FLCN) complexes. Increased understanding of this pathway will not only provide insight into growth control but also into the human pathologies triggered by its deregulation.", 
+          "qas": [
+            {
+              "question": "Which type of GTPases is required for amino acid-dependent activation of mTORC1?", 
+              "id": "56cdf3e55795f9a73e00003c_000"
+            }
+          ]
+        }, 
+        {
+          "context": "The Sestrins interact with GATOR2 to negatively regulate the amino-acid-sensing pathway upstream of mTORC1. The mechanistic target of rapamycin complex 1 (mTORC1) kinase is a major regulator of cell growth that responds to numerous environmental cues. A key input is amino acids, which act through the heterodimeric Rag GTPases (RagA or RagB bound to RagC or RagD) in order to promote the translocation of mTORC1 to the lysosomal surface, its site of activation. GATOR2 is a complex of unknown function that positively regulates mTORC1 signaling by acting upstream of or in parallel to GATOR1, which is a GTPase-activating protein (GAP) for RagA or RagB and an inhibitor of the amino-acid-sensing pathway. Here, we find that the Sestrins, a family of poorly understood growth regulators (Sestrin1-Sestrin3), interact with GATOR2 in an amino-acid-sensitive fashion. Sestrin2-mediated inhibition of mTORC1 signaling requires GATOR1 and the Rag GTPases, and the Sestrins regulate the localization of mTORC1 in response to amino acids. Thus, we identify the Sestrins as GATOR2-interacting proteins that regulate the amino-acid-sensing branch of the mTORC1 pathway.", 
+          "qas": [
+            {
+              "question": "Which type of GTPases is required for amino acid-dependent activation of mTORC1?", 
+              "id": "56cdf3e55795f9a73e00003c_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Metabolism. Lysosomal amino acid transporter SLC38A9 signals arginine sufficiency to mTORC1. The mechanistic target of rapamycin complex 1 (mTORC1) protein kinase is a master growth regulator that responds to multiple environmental cues. Amino acids stimulate, in a Rag-, Ragulator-, and vacuolar adenosine triphosphatase-dependent fashion, the translocation of mTORC1 to the lysosomal surface, where it interacts with its activator Rheb. Here, we identify SLC38A9, an uncharacterized protein with sequence similarity to amino acid transporters, as a lysosomal transmembrane protein that interacts with the Rag guanosine triphosphatases (GTPases) and Ragulator in an amino acid-sensitive fashion. SLC38A9 transports arginine with a high Michaelis constant, and loss of SLC38A9 represses mTORC1 activation by amino acids, particularly arginine. Overexpression of SLC38A9 or just its Ragulator-binding domain makes mTORC1 signaling insensitive to amino acid starvation but not to Rag activity. Thus, SLC38A9 functions upstream of the Rag GTPases and is an excellent candidate for being an arginine sensor for the mTORC1 pathway.", 
+          "qas": [
+            {
+              "question": "Which type of GTPases is required for amino acid-dependent activation of mTORC1?", 
+              "id": "56cdf3e55795f9a73e00003c_002"
+            }
+          ]
+        }, 
+        {
+          "context": "The ubiquitination of rag A GTPase by RNF152 negatively regulates mTORC1 activation. mTORC1 is essential for regulating cell growth and metabolism in response to various environmental stimuli. Heterodimeric Rag GTPases are required for amino-acid-mediated mTORC1 activation at the lysosome. However, the mechanism by which amino acids regulate Rag activation remains not fully understood. Here, we identified the lysosome-anchored E3 ubiquitin ligase RNF152 as an essential negative regulator of the mTORC1 pathway by targeting RagA for K63-linked ubiquitination. RNF152 interacts with and ubiquitinates RagA in an amino-acid-sensitive manner. The mutation of RagA ubiquitination sites abolishes this effect of RNF152 and enhances the RagA-mediated activation of mTORC1. Ubiquitination by RNF152 generates an anchor on RagA to recruit its inhibitor GATOR1, a GAP complex for Rag GTPases. RNF152 knockout results in the hyperactivation of mTORC1 and protects cells from amino-acid-starvation-induced autophagy. Thus, this study reveals a mechanism for regulation of mTORC1 signaling by RNF152-mediated K63-linked polyubiquitination of RagA.", 
+          "qas": [
+            {
+              "question": "Which type of GTPases is required for amino acid-dependent activation of mTORC1?", 
+              "id": "56cdf3e55795f9a73e00003c_003"
+            }
+          ]
+        }, 
+        {
+          "context": "The association of steroids and schistosomicides in the treatment of experimental schistosomiasis. The best therapeutic approach to acute schistosomiasis (Katayama fever) is still unsettled. In this paper we report a synergistic effect between schistosomicides and steroids in the treatment of the early stages of Schistosoma mansoni infection in the mouse. CBA mice infected with 150 S. mansoni cercariae were treated with oxamniquine or praziquantel and dexamethasone or prednisolone. The rate of parasite egg excretion by treated mice and appropriate controls was monitored, and the mice were perfused 43 d after infection for estimation of worm burdens and tissue egg densities. Mice treated with schistosomicides alone or with schistosomicides plus steroids had worm burdens of similar size. Significant reductions in egg counts were, however, recorded in faeces, and in the intestines and livers (with consequent reduction in liver pathology), of mice treated with schistosomicide and steroid, when compared to mice treated with schistosomicide alone or steroid alone. The apparent inhibition of fecundity of S. mansoni by combining these drugs has clear implications for treatment of the Katayama syndrome.", 
+          "qas": [
+            {
+              "question": "What causes Katayama Fever?", 
+              "id": "56bb621fac7ad10019000009_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Imported Katayama fever: clinical and biological features at presentation and during treatment. OBJECTIVES: To investigate the characteristics of imported Katayama fever (acute schistosomiasis) as well as evolution and outcome under treatment. METHODS: Between April 2000 and September 2004, we included prospectively all patients with confirmed diagnosis of Katayama fever. Follow-up was maintained at least until 6 months after symptoms resolved. Praziquantel (PZQ) was given as soon as the diagnosis was probable, most of the time with steroids. RESULTS: Twenty-three patients were diagnosed with Katayama fever by Schistosoma egg detection and/or by seroconversion. Clinical features were non-specific, with mainly respiratory and/or gastrointestinal symptoms. Diagnosis was confirmed at presentation in 17/23 (74%) patients, of whom 15 by serology. Immediate clinical exacerbation occurred in five of nine patients not given steroids concomitantly with PZQ. After initial resolution, fever recurred in five (22%) patients. When compiling initial and recurrent episodes (n=28), respiratory symptoms tended to occur at an earlier stage after exposure, while abdominal complaints were more frequent later. All patients were completely cured, sometimes after repeated treatments. CONCLUSIONS: Clinical presentation of Katayama fever is non-specific and involves respiratory and abdominal symptoms. Recurrence of fever is not unusual despite anti-helminthic treatment. Optimal therapeutic strategy remains to be defined to prevent recurrence.", 
+          "qas": [
+            {
+              "question": "What causes Katayama Fever?", 
+              "id": "56bb621fac7ad10019000009_001"
+            }
+          ]
+        }, 
+        {
+          "context": "[Diagnostic image (391). A man with fever and urticaria after a trip to Uganda]. A 35-year-old man presented with fever and severe urticaria after visiting Uganda. His symptoms were caused by acute invasive schistosomiasis, also known as Katayama fever.", 
+          "qas": [
+            {
+              "question": "What causes Katayama Fever?", 
+              "id": "56bb621fac7ad10019000009_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Characterisation of inflammatory response, coagulation, and radiological findings in Katayama fever: a report of three cases at the Medical University of Vienna, Austria. BACKGROUND: Katayama fever is an acute clinical condition characterised by high fever, dry cough and general malaise occurring during early Schistosoma spp. infection. It is predominantly reported in travellers from non-endemic regions. Whereas the immunological response to Schistosoma infection is well characterised, alterations in inflammatory markers and coagulation in response to acute infection are poorly understood. METHODS: Here we report the clinical, laboratory and radiological characteristics of three returning travellers with Katayama fever. Inflammatory markers and coagulation status were assessed repeatedly during follow-up to characterise the host response to infection. Radiographic findings were correlated with clinical and laboratory markers. RESULTS: Clinical symptoms were suggestive of a significant inflammatory response in all patients including high fever (>39\u00b0C), cough, and general malaise. Classical inflammatory markers including blood sedimentation rate, C-reactive protein, and serum amyloid A were only moderately elevated. Marked eosinophilia (33-42% of white blood cells) was observed and persisted despite anti-inflammatory and anthelminthic treatment for up to 32 weeks. Analysis of blood coagulation markers indicated increased coagulability reflected by elevated D-dimer values (0.57-1.17 \u03bcg/ml) and high thrombin generating potentials (peak thrombin activity: 311-384 nM). One patient showed particularly high levels of microparticle-associated tissue factor activity at initial presentation (1.64 pg/ml). Multiple pulmonary and hepatic opacities demonstrated by computed tomography (CT) scanning were associated with raised inflammatory markers in one patient. CONCLUSIONS: The characterisation of the inflammatory response, blood coagulation parameters and radiological findings in three patients adds to our current understanding of Katayama fever and serves as a starting point for further systematic investigations of the pathophysiology of this acute helminthic infection.", 
+          "qas": [
+            {
+              "question": "What causes Katayama Fever?", 
+              "id": "56bb621fac7ad10019000009_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Pulmonary schistosomiasis - imaging features. Schistosomiasis is a helminthic infection that is endemic in tropical and subtropical regions. Pulmonary involvement can be divided into two categories: acute or chronic compromise. Chronic and recurrent infection develops in persons living or travelling in endemic areas. In the lungs, granuloma formation and fibrosis around the schistosome eggs retained in the pulmonary vasculature may result in obliterative arteriolitis and pulmonary hypertension leading to cor pulmonale. Acute schistosomiasis is associated with primary exposure and is commonly seen in nonimmune travelers. The common CT findings in acute pulmonary schistosomiasis are small pulmonary nodules ranging from 2 to 15 mm and larger nodules with ground glass-opacity halo. Katayama fever is a severe clinical manifestation of acute involvement. We present a case of pulmonary involvement in schistosomiasis and provide a discussion about typical imaging findings in the acute and chronic form.", 
+          "qas": [
+            {
+              "question": "What causes Katayama Fever?", 
+              "id": "56bb621fac7ad10019000009_004"
+            }
+          ]
+        }, 
+        {
+          "context": "Urinary schistosomiasis. Schistosomiasis is the second most common socio-economically devastating parasitic disease after malaria, affecting about 240 million residents of developing countries. In Africa, it predominantly manifests as urogenital disease, and the main infective agent is Schistosoma hematobium. Endemicity is propagated by poor socio-economic status and environmental degradation due to rapid urbanization. Recreational swimming is a potent medium for the spread of disease in children and adolescents. Most affected individuals are asymptomatic. The male and female worms are equipped with an extraordinary capacity for immune evasion and are able to co-habit for several decades within the pelvic venous plexus. Eggs deposited in the bladder wall resist elimination by type 1\u00a0T lymphocytes. Instead, they are sustained by pro-fibrogenic encapsulation (as modulated by type 2 helper cells). Progressive bladder disease results in obstructive uropathy and predisposes to (mostly) squamous cell carcinoma. Schistosomal glomerulopathy manifests as a clinical spectrum of asymptomatic proteinuria, nephrosis and/or nephritic syndrome. Findings on renal biopsy may be influenced by co-morbidity with Salmonella bacteria, amyloidosis and hepatitis C infection. Potentially fatal Katayama fever and spinal radiculopathy may ensue in tourists visiting an endemic zone. Early detection by urine microscopy is hampered by low urinary excretion rates of the parasite eggs. Although useful in travelers with newly acquired disease, the results of the serological antibody assay may be false positive in residents of an endemic zone. Cystoscopy, however, may be invaluable. Due to its safety, effectiveness and once-daily dosing, praziquantel is the drug of choice. An integrated approach that includes mass chemotherapy, environmental health programs and public health education is the most cost-effective preventive strategy.", 
+          "qas": [
+            {
+              "question": "What causes Katayama Fever?", 
+              "id": "56bb621fac7ad10019000009_005"
+            }
+          ]
+        }, 
+        {
+          "context": "Laboratory diagnosis of schistosomiasis and Katayama syndrome in returning travellers. The gold standard for laboratory diagnosis of schistosomiasis is the presence of typical eggs in stool or urine. The laboratory diagnosis of schistosomiasis and Katayama syndrome in returning travellers is difficult because the number of excreted eggs is often very limited. In early infections and in patients with only a few contacts with contaminated water, the total number of parasites, migrating larvae or schistosomulae, and adult worms, is very low. Eggs can only be found in faeces or urine when there is at least one pair of adult worms at the final location. The number of parasites increases as a function of the number of contacts with infected water. The exact latency between contamination and egg production is unknown. It is estimated that excretion of eggs starts after 40-50 days. The specific diagnosis of early schistosomiasis and Katayama fever relies essentially on serologic tests or preferably on PCR (if available). These assays are much more sensitive (up to four times) in the early phase of schistosomiasis than microscopic examination for typical eggs. Eosinophilia (sometimes exceeding 50%) is often present in patients with acute schistosomiasis (Katayama fever), but may be limited or absent in late fibrotic manifestations of the disease.", 
+          "qas": [
+            {
+              "question": "What causes Katayama Fever?", 
+              "id": "56bb621fac7ad10019000009_006"
+            }
+          ]
+        }, 
+        {
+          "context": "Endothelial deletion of Sag/Rbx2/Roc2 E3 ubiquitin ligase causes embryonic lethality and blocks tumor angiogenesis. SAG (Sensitive to Apoptosis Gene), also known as RBX2 or ROC2, is a RING protein required for the activity of Cullin-RING ligase (CRL). Our recent study showed that Sag total knockout caused embryonic lethality at E11.5-12.5 days with associated defects in vasculogenesis. Whether Sag is required for de novo vasculogenesis in embryos and angiogenesis in tumors is totally unknown. Here, we report that Sag endothelial deletion also causes embryonic lethality at E15.5 with poor vasculogenesis. Sag deletion in primary endothelial cells (ECs) or knockdown in MS-1 ECs inhibits migration, proliferation and tube formation, with p27 accumulation being responsible for the suppression of migration and proliferation. Furthermore, Sag deletion significantly inhibits angiogenesis in an in vivo Matrigel plug assay, and tumor angiogenesis and tumorigenesis in a B16F10 melanoma model. Finally, MLN4924, an investigational small molecule inhibitor of NEDD8-activating enzyme (NAE) that inhibits CRL, suppresses in vitro migration, proliferation and tube formation, as well as in vivo angiogenesis and tumorigenesis. Taken together, our study, using both genetic and pharmaceutical approaches, demonstrates that Sag is essential for embryonic vasculogenesis and tumor angiogenesis, and provides the proof-of-concept evidence that targeting Sag E3 ubiquitin ligase may have clinical value for anti-angiogenesis therapy of human cancer.", 
+          "qas": [
+            {
+              "question": "Which enzyme does MLN4924 inhibit?", 
+              "id": "56ed03862ac5ed1459000004_000"
+            }
+          ]
+        }, 
+        {
+          "context": "MLN4924, a novel protein neddylation inhibitor, suppresses proliferation and migration of human urothelial carcinoma: In vitro and in vivo studies. MLN4924, a small molecule inhibitor of NEDD8 activating enzyme (NAE), has been reported to elicit an anti-tumor effect on various malignancies. In this study, we investigated the anti-tumor effect of MLN4924 in human urothelial carcinoma (UC) in vitro and in vivo by using three human UC cell lines of various grading (T24, NTUB1 and RT4). The impact of MLN4924 on UC cells was determined by measuring viability (MTT), proliferation (BrdU incorporation), cell cycle progression (flow cytometry with propidium iodide staining) and apoptosis (flow cytometry with annexin V-FITC labeling). The cell cycle regulatory molecules, apoptosis-related molecules, and cell stress-related proteins were examined by Western blotting. The influence of tumor cell migration and invasion was analyzed by Transwell and wound healing assays. We also evaluated the effects of MLN4924 on tumor growth by a SCID xenograft mouse model. The data show that MLN4924 induced dose-dependent cytotoxicity, anti-proliferation, anti-migration, anti-invasion and apoptosis in human UC cells, accompanied by activations of Bad, phospho-histone H2A.X, caspase-3, 7 and PARP, decreased level of phospho-Bcl2, and caused cell cycle retardation at the G2M phase. Moreover, MLN4924 activated endoplasmic reticulum stress-related molecules (caspase-4, phospho-eIF2\u03b1, ATF-4 and CHOP) and other stress responses (JNK and c-Jun activations). Finally, we confirmed MLN4924 inhibited tumor growth in a UC xenograft mouse model with minimal general toxicity. We concluded that MLN4924 induces apoptosis and cell cycle arrest, as well as activation of cell stress responses in human UC. These findings imply MLN4924 provides a novel strategy for the treatment of UC.", 
+          "qas": [
+            {
+              "question": "Which enzyme does MLN4924 inhibit?", 
+              "id": "56ed03862ac5ed1459000004_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Pancreatic Islet APJ Deletion Reduces Islet Density and Glucose Tolerance in Mice. Protection and replenishment of a functional pancreatic \u03b2-cell mass (BCM) are key goals of all diabetes therapies. Apelin, a small regulatory peptide, is the endogenous ligand for the apelin receptor (APJ) receptor. The apelin-APJ signaling system is expressed in rodent and human islet cells. Apelin exposure has been shown to inhibit and to stimulate insulin secretion. Our aim was to assess the influence of a selective APJ deletion in pancreatic islet cells on islet homeostasis and glucose tolerance in mice. Cre-LoxP strategy was utilized to mediate islet APJ deletion. APJ deletion in islet cells (APJ(\u0394islet)) resulted in a significantly reduced islet size, density and BCM. An ip glucose tolerance test showed significantly impaired glucose clearance in APJ(\u0394islet) mice. APJ(\u0394islet) mice were not insulin resistant and in vivo glucose-stimulated insulin secretion was reduced modestly. In vitro glucose-stimulated insulin secretion showed a significantly reduced insulin secretion by islets from APJ(\u0394islet) mice. Glucose clearance in response to ip glucose tolerance test in obese APJ(\u0394islet) mice fed a chronic high-fat (HF) diet, but not pregnant APJ(\u0394islet) mice, was impaired significantly. In addition, the obesity-induced adaptive elevations in mean islet size and fractional islet area were reduced significantly in obese APJ(\u0394islet) mice when compared with wild-type mice. Together, these findings demonstrate a stimulatory role for the islet cell apelin-APJ signaling axis in regulation of pancreatic islet homeostasis and in metabolic induced \u03b2-cell hyperplasia. The results indicate the apelin-APJ system can be exploited for replenishment of BCM.", 
+          "qas": [
+            {
+              "question": "What is apelin?", 
+              "id": "56e6dfc2edfc094c1f000003_000"
+            }
+          ]
+        }, 
+        {
+          "context": "A short review of adipokines, smooth muscle and uterine contractility. Obesity is a major health problem worldwide. The prevalence of obesity is increasing in both developed and developing countries. In the UK, for example, 60% of adults are overweight and 25% are obese. Obesity is associated with many pathological complications including respiratory, cardiovascular and endocrine, but it also affects fertility and is associated with many reproductive complications. This has led us and others to investigate links between women with high BMI, pregnancy outcome and uterine function. These studies in turn have led investigators to ask how obesity can have such an impact on reproduction and, as part of this, to consider the role of the adipokines released from adipose tissues. Our focus in this short review is on adipokines and myometrial activity, and for completeness we overview their effects on other smooth muscles. To date four adipokines (leptin, visfatin, apelin and ghrelin) have been investigated and all affect myometrial contractility, but some more potently than others. We consider the possible mechanisms involved in how adipokines may modify uterine contractility, and discuss the potential impact on labor and delivery.", 
+          "qas": [
+            {
+              "question": "What is apelin?", 
+              "id": "56e6dfc2edfc094c1f000003_001"
+            }
+          ]
+        }, 
+        {
+          "context": "C-Terminal modifications of apelin-13 significantly change ligand binding, receptor signaling, and hypotensive action. Apelin is the endogenous ligand of the APJ receptor, a member of the G protein-coupled receptor family. This system plays an important role in the regulation of blood pressure and cardiovascular functions. To better understand the role of its C-terminal Phe(13) residue on ligand binding, receptor signaling, and hypotension, we report a series of modified analogues in which Phe(13) was substituted by unnatural amino acids. These modifications delivered new compounds exhibiting higher affinity and potency to inhibit cAMP accumulation compared to apelin-13. In particular, analogues Bpa(13) or (\u03b1-Me)Phe(13) were 30-fold more potent to inhibit cAMP accumulation than apelin-13. Tyr(OBn)(13) substitution led to a 60-fold improvement in binding affinity and induced stronger and more sustained drop in blood pressure compared to apelin-13. Our study identified new potent analogues of apelin-13, which represent valuable probes to better understand its structure-function relationship.", 
+          "qas": [
+            {
+              "question": "What is apelin?", 
+              "id": "56e6dfc2edfc094c1f000003_002"
+            }
+          ]
+        }, 
+        {
+          "context": "The effects of intracerebroventricular infusion of apelin-13 on reproductive function in male rats. Apelin is a novel bioactive peptide as the endogenous ligand for APJ. Apelin and APJ have also been identified in the testis, hypothalamic nuclei such as arcuate, supraoptic and paraventricular nuclei, implicating roles in the control of reproduction. Therefore, the present study was designed to investigate the effects of chronic central infusion of apelin-13 on LH, FSH and testosterone levels and testis morphology. 21 Wistar-Albino male rats received continuous intracerebroventricular infusion via Alzet osmotic mini pumps filled artificial cerebrospinal fluid (vehicle) or apelin-13 at concentrations of 1 or 10 nmol (10 \u03bcl/h) for seven days. At the last 90 min of the infusion period, the blood samples were collected at 15 min intervals (0-90 min) for LH and FSH analyses. At the last sampling point, the blood samples were analyzed for testosterone levels. Infusion of high dose apelin-13 significantly suppressed LH release compared with the vehicle values at 30, 60 and 75 min (p<0.05). However, FSH levels did not significantly differ among the groups. Serum testosterone levels in high dose apelin-13 group were statistically lower than the control group (p<0.05). In addition, histological examination showed that infusion of high dose apelin-13 significantly decreased the number of Leydig cells compared with the control and lower dose apelin-13 groups (p<0.05, p<0.01). Our results suggest that apelin-13 may play a role in the central regulation and decreases testosterone release by suppressing LH secretion. Thus, antagonists of the apelin receptor may, therefore, be useful for pharmaceuticals in the treatment of infertility.", 
+          "qas": [
+            {
+              "question": "What is apelin?", 
+              "id": "56e6dfc2edfc094c1f000003_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Circulating levels of apelin, glucagon-like peptide and visfatin in hypercholesterolemic-hyperhomocysteinemic guinea-pigs: their relation with NO metabolism. The aim of this study was to determine the levels of regulatory peptides apelin, glucagon-like peptide (GLP-1) and visfatin in hypercholesterolemic and hyperhomocysteinemic state and to examine their relation with nitric oxide (NO) metabolism. 32 Male guinea pigs were divided into four groups and each group was fed as follows: (a) commercial chow, (b) cholesterol (chol)-rich diet, (c) methionine (meth)-rich diet, and (d) chol + meth-rich diet. Blood samples were drawn at the end of 10 weeks, and abdominal aorta was dissected for histopathological examination. Serum insulin, GLP-1, apelin, visfatin, and nitrotyrosine concentrations were measured by the manufacturer's kits based on ELISA; asymmetric dimethylarginine (ADMA) and arginine levels were measured by the high performance liquid chromatography. Homocysteine level was measured by the chemiluminescence immunoassay; glucose, total chol and triglyceride levels were measured by the autoanalyzer. The microscopic examination of aorta indicated varying degrees of vascular disturbance in chol- and chol + meth-fed groups. High levels of chol and homocysteine, accompanied with significantly low levels of apelin and GLP-1 were detected in the plasma. Visfatin, ADMA, and nitrotyrosine levels both in chol- and chol + meth-fed groups were significantly higher than those in control animals, whereas arginine and arginine/ADMA ratio were lower. This study indicated that circulating levels of apelin, GLP-1, and visfatin are markedly altered during the development of atherosclerotic changes in close association with chol, homocysteine, NO, and ADMA levels. The measurements of these peptides in serum may help for the diagnosis and follow-up of vascular dysfunction.", 
+          "qas": [
+            {
+              "question": "What is apelin?", 
+              "id": "56e6dfc2edfc094c1f000003_004"
+            }
+          ]
+        }, 
+        {
+          "context": "Modulation of pain in pediatric sickle cell disease: understanding the balance between endothelin mediated vasoconstriction and apelin mediated vasodilation. Children with sickle cell disease (SCD) have painful vaso-occlusive episodes (VOEs), which often reoccur across the individual's lifespan. Vaso-constrictive and vaso-dilatory molecules have been hypothesized to play a role in VOEs. Endothelin-1 (ET-1) is a potent vasoconstrictor that is released during VOEs and is correlated with pain history. Apelin is a vaso-dilatory peptide that also has a modulatory role in pain processing. We hypothesize that the ratio between vaso-dilatory and vaso-constrictive tone in children with SCD may be a marker of pain sensitization and vaso-occlusion. Plasma endothelin and apelin levels were measured in 47 children with SCD. Procedural pain and baseline pain were assessed via child- and caregiver-reports and observational distress. Pain history was assessed using retrospective chart review. Plasma apelin was related to age, with decreased levels in older children. The ratio between apelin and ET-1 was negatively correlated to observational baseline pain. The ratio between apelin and Big ET was negatively correlated to caregiver ratings of baseline pain and positively correlated to history of VOEs, which is possibly due to hydroxyurea treatment. These results suggest that an imbalance in the apelin and endothelin systems may contribute to an increasing number of VOEs and baseline pain in children with SCD.", 
+          "qas": [
+            {
+              "question": "What is apelin?", 
+              "id": "56e6dfc2edfc094c1f000003_005"
+            }
+          ]
+        }, 
+        {
+          "context": "Apelin-13 attenuates traumatic brain injury-induced damage by suppressing autophagy. The adipocytokine apelin is a peptide, Apelin and its receptor are abundantly expressed in the nervous and cardiovascular systems. Previous studies had found apelin-13 reduces brain injuries and postischemic cerebral edema through blocking programmed cell death, Apelin-13 is also able to inhibit glucose deprivation induced cardiomyocyte autophagy in a concentration dependent fashion. To observe the effect of Apelin-13 on the brain injury induced by traumatic brain injury (TBI), and explore the effect of Apelin-13 on autophagy in TBI, We performed The neurological test, and the numbers of TBI-induced neural cell death were also counted by propidium iodide labeling. At last, the autophagy associated proteins LC3, Beclin-1, Bcl-2, p62 were also assessed with western-blotting. Compared with saline vehicle groups, the neural cell death, lesion volume, and neural dysfunction were attenuated by apelin-13 after TBI. In additionally, Apelin-13 also reversed TBI induced downregulation of LC3, Beclin-1, Bcl-2, p62 expression, compared with saline vehicle groups, at 24 and 48 h post TBI. Apelin-13 attenuates TBI induced brain damage by suppressing autophagy. All these results revealed that Apelin-13 suppressed autophagy. The autophagy may be involved in the mechanism of Apelin-13 rescue the subsequent damaged neuron in TBI.", 
+          "qas": [
+            {
+              "question": "What is apelin?", 
+              "id": "56e6dfc2edfc094c1f000003_006"
+            }
+          ]
+        }, 
+        {
+          "context": "Apelin Protects Primary Rat Retinal Pericytes from Chemical Hypoxia-Induced Apoptosis. Pericytes are a population of cells that participate in normal vessel architecture and regulate permeability. Apelin, as the endogenous ligand of G protein-coupled receptor APJ, participates in a number of physiological and pathological processes. To date, the effect of apelin on pericyte is not clear. Our study aimed to investigate the potential protection mechanisms of apelin, with regard to primary rat retinal pericytes under hypoxia. Immunofluorescence staining revealed that pericytes colocalized with APJ in the fibrovascular membranes dissected from proliferative diabetic retinopathy patients. In the in vitro studies, we first demonstrated that the expression of apelin/APJ was upregulated in pericytes under hypoxia, and apelin increased pericytes proliferation and migration. Moreover, knockdown of apelin in pericyte was achieved via lentivirus-mediated RNA interference. After the inhibition of apelin, pericytes proliferation was inhibited significantly in hypoxia culture condition. Furthermore, exogenous recombinant apelin effectively prevented hypoxia-induced apoptosis through downregulating active-caspase 3 expression and increasing the ratio of B cell lymphoma-2 (Bcl-2)/Bcl-2 associated X protein (Bax) in pericytes. These results suggest that apelin suppressed hypoxia-induced pericytes injury, which indicated that apelin could be a potential therapeutic target for retinal angiogenic diseases.", 
+          "qas": [
+            {
+              "question": "What is apelin?", 
+              "id": "56e6dfc2edfc094c1f000003_007"
+            }
+          ]
+        }, 
+        {
+          "context": "Apelin Enhances Brown Adipogenesis and Browning of White Adipocytes. Brown adipose tissue expends energy in the form of heat via the mitochondrial uncoupling protein UCP1. Recent studies showed that brown adipose tissue is present in adult humans and may be exploited for its anti-obesity and anti-diabetes actions. Apelin is an adipocyte-derived hormone that plays important roles in energy metabolism. Here, we report that apelin-APJ signaling promotes brown adipocyte differentiation by increasing the expressions of brown adipogenic and thermogenic transcriptional factors via the PI3K/Akt and AMPK signaling pathways. It is also found that apelin relieves the TNF\u03b1 inhibition on brown adipogenesis. In addition, apelin increases the basal activity of brown adipocytes, as evidenced by the increased PGC1\u03b1 and UCP1 expressions, mitochondrial biogenesis, and oxygen consumption. Finally, we provide both in vitro and in vivo evidence that apelin is able to increase the brown-like characteristics in white adipocytes. This study, for the first time, reveals the brown adipogenic and browning effects of apelin and suggests a potential therapeutic route to combat obesity and related metabolic disorders.", 
+          "qas": [
+            {
+              "question": "What is apelin?", 
+              "id": "56e6dfc2edfc094c1f000003_008"
+            }
+          ]
+        }, 
+        {
+          "context": "Enhancement of crystalloid cardioplegic protection by structural analogs of apelin-12. BACKGROUND: C-terminal fragments of adipokine apelin are able to attenuate myocardial ischemia-reperfusion (I/R) injury, but whether their effects are manifested during cardioplegic arrest remain obscure. This study was designed to evaluate the efficacy of natural apelin-12 (H-Arg-Pro-Arg-Leu-Ser-His-Lys-Gly-Pro-Met-Pro-Phe-OH, A12) and its novel structural analogs (H-(N(\u03b1)Me)Arg-Pro-Arg-Leu-Ser-His-Lys-Gly-Pro-Nle-Pro-Phe-OH, AI, and N(G)-Arg(N(G)NO2)-Pro-Arg-Leu-Ser-His-Lys-Gly-Pro-Nle-Pro-Phe-NH2, AII) as additives to crystalloid cardioplegia and explore benefits of early reperfusion with these peptides. METHODS: Isolated working rat hearts subjected to normothermic global ischemia and further reperfusion were used. St. Thomas' Hospital cardioplegic solution No.2 (STH2) containing 140 \u03bcM A12, AI, or AII was infused for 5 min at 25 \u00b0C before ischemia. In separate series, peptide administration was used for 5 min after ischemia. Metabolic state of the hearts was evaluated by myocardial content of high energy phosphates and lactate. Lactate dehydrogenase (LDH) leakage was assessed in myocardial effluent on early reperfusion. RESULTS: Addition of the peptides to STH2 enhanced functional and metabolic recovery of reperfused hearts compared with those of control (STH2 without additives). Cardioplegia with analog AII was the most effective and accompanied by a reduction of postischemic LDH leakage. Infusion of A12, AI, or AII after ischemia improved the majority indices of cardiac function and metabolic state of the heart by the end of reperfusion. However, the overall protective effect of the peptides was less than when they were added to STH2. CONCLUSIONS: Enhancement of apelin bioavailability may minimize myocardial I/R damage during cardiac surgery. Structural analogs of A12 are promising components of clinical cardioplegic solutions.", 
+          "qas": [
+            {
+              "question": "What is apelin?", 
+              "id": "56e6dfc2edfc094c1f000003_009"
+            }
+          ]
+        }, 
+        {
+          "context": "The tuberous sclerosis complex genes in tumor development. The study of hereditary tumor syndromes has laid a solid foundation toward understanding the genetic basis of cancer. One of the latest examples comes from the study of tuberous sclerosis complex (TSC). As a member of the phakomatoses, TSC is characterized by the appearance of benign tumors, most notably in the central nervous system, kidney, heart, lung, and skin. While classically described as \"hamartomas,\" the pathology of the lesions has features suggestive of abnormal cellular proliferation, size, differentiation, and migration. Occasionally, tumors progress to become malignant (i.e., renal cell carcinoma). The genetic basis of this disease has been attributed to mutations in one of two unlinked genes, TSC1 and TSC2. Cells undergo bi-allelic inactivation of either gene to give rise to tumors in a classic tumor suppressor \"two-hit\" paradigm. The functions of the TSC1 and TSC2 gene products, hamartin and tuberin, respectively, have remained ill defined until recently. Genetic, biochemical, and biologic analyses have highlighted their role as negative regulators of the mTOR signaling pathway. Tuberin, serving as a substrate of AKT and AMPK, mediates mTOR activity by coordinating inputs from growth factors and energy availability in the control of cell growth, proliferation, and survival. Emerging evidence also suggests that the TSC 1/2 complex may play a role in modulating the activity of beta-catenin and TGFbeta. These findings provide novel functional links between the TSC genes and other tumor suppressors responsible for Cowden's disease (PTEN), Peutz-Jeghers syndrome (LKB1), and familial polyposis (APC). Common sporadic cancers such as prostate, lung, colon, endometrium, and breast have ties to these genes, highlighting the potential role of the TSC proteins in human cancers. Rapamycin, a specific mTOR inhibitor, has potent antitumoral activities in preclinical models of TSC and is currently undergoing phase I/II clinical studies.", 
+          "qas": [
+            {
+              "question": "What is the genetic basis of tuberous sclerosis?", 
+              "id": "56ed14d92ac5ed145900000a_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Mutational and radiographic analysis of pulmonary disease consistent with lymphangioleiomyomatosis and micronodular pneumocyte hyperplasia in women with tuberous sclerosis. Lymphangioleiomyomatosis (LAM) and multifocal micronodular pneumocyte hyperplasia (MMPH) produce cystic and nodular disease, respectively, in the lungs of patients with tuberous sclerosis. The objective of this study was to prospectively characterize the prevalence, clinical presentation, and genetic basis of lung disease in TSC. We performed genotyping and computerized tomographic (CT) scanning of the chest on 23 asymptomatic women with tuberous sclerosis complex (TSC). Cystic pulmonary parenchymal changes consistent with LAM were found in nine patients (39%). These patients tended to be older than cyst-negative patients (31.9 +/- 7.6 yr versus 24.8 +/- 11.6 yr, p = 0.09). There was no correlation between presence of cysts and tobacco use, age at menarche, history of pregnancy, or estrogen-containing medications. Three of the cyst-positive patients had a prior history of pneumothorax. Pulmonary function studies revealed evidence of gas trapping but normal spirometric indices in the cyst-positive group. All nine cyst-positive patients had angiomyolipomas (AML), which were larger (p < 0.05) and more frequently required intervention (p = 0.08) than cyst-negative patients (8 of 14 with AMLs, p < 0.05). Ten patients (43%) had pulmonary parenchymal nodules. Pulmonary nodules were more common in women with cysts (78% versus 21%, p < 0.05), and 52% of all patients had either cystic or nodular changes. TSC2 mutations were identified in all cyst-positive patients who were tested (n = 8), whereas both TSC1 and TSC2 mutations were found in patients with nodular disease. Correlation of the mutational and radiographic data revealed one pair of sisters who were discordant for cystic disease, two mother- daughter pairs who were discordant for nodular disease, and no clear association between cyst development and a specific mutational type. This prospective analysis demonstrates that cystic and nodular pulmonary changes consistent with LAM and MMPH are common in women with TSC.", 
+          "qas": [
+            {
+              "question": "What is the genetic basis of tuberous sclerosis?", 
+              "id": "56ed14d92ac5ed145900000a_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Molecular genetic basis of renal carcinogenesis in the Eker rat model of tuberous sclerosis (Tsc2). We have recently identified on rat chromosome 10q a germline mutation in the tuberous sclerosis gene (Tsc2), the gene predisposing to renal carcinoma (RC) in the Eker rat. The homozygous mutant condition is lethal at around the 13th day of fetal life. In heterozygotes, RCs invariably develop in the first year of life. Histologically, RCs develop through multiple stages from early preneoplastic lesions (i.e., phenotypically altered tubules) to adenomas. The wild-type allele mutation has been found even in the earliest preneoplastic lesions, fitting Knudson's two-hit hypothesis and supporting the hypothesis that Tsc2 is a tumor suppressor gene. In this study, homozygous deletion of the Ink4 homologue on rat chromosome 5q was observed in 14 of 24 (58%) RC-derived cell lines. This may represent involvement of a second tumor suppressor gene, contributing to tumor progression. Considering previous results of studies of homozygous deletion of the Ifn alpha gene in five of 24 cases (21%) and the Ifn beta gene in one of 24 cases (4%), the order of the genes may be Ink4-Ifn alpha-Ifn beta. Microsatellite instability was not observed in 26 Eker rat tumors.", 
+          "qas": [
+            {
+              "question": "What is the genetic basis of tuberous sclerosis?", 
+              "id": "56ed14d92ac5ed145900000a_002"
+            }
+          ]
+        }, 
+        {
+          "context": "The genetic basis of kidney cancer: why is tuberous sclerosis complex often overlooked? Fifty years ago, the Eker rat was identified as the first animal model of hereditary renal adenoma and carcinoma, with histopathology resembling human renal carcinoma. Ten years ago, a mutation in the TSC2 gene was identified in the Eker rat at Fox Chase Cancer Center by Yeung and Knudson, and in Tokyo by Kobayashi and Hino. The literature contains dozens of reports of renal cell carcinoma (RCC) in tuberous sclerosis complex (TSC) patients, including tumors in children as young as five and one report in an infant. Despite these facts, the association between TSC and RCC is under-recognized, and sometimes completely omitted from discussions of inherited renal carcinoma. Here, we will review the clinical association of RCC in TSC, consider the factors that have led to its under-emphasis within the RCC field, address the cellular and biochemical mechanisms that may contribute to RCC in cells with TSC1 or TSC2 mutations, and finally discuss the ways in which the TSC signaling pathways may be linked to sporadic RCC in the general population.", 
+          "qas": [
+            {
+              "question": "What is the genetic basis of tuberous sclerosis?", 
+              "id": "56ed14d92ac5ed145900000a_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Mutations in the tuberous sclerosis complex gene TSC2 are a cause of sporadic pulmonary lymphangioleiomyomatosis. Lymphangioleiomyomatosis (LAM) is a progressive and often fatal interstitial lung disease characterized by a diffuse proliferation of abnormal smooth muscle cells in the lungs. LAM is of unusual interest biologically because it affects almost exclusively young women. LAM can occur as an isolated disorder (sporadic LAM) or in association with tuberous sclerosis complex. Renal angiomyolipomas, which are found in most tuberous sclerosis patients, also occur in 60% of sporadic LAM patients. We previously found TSC2 loss of heterozygosity in 7 of 13 (54%) of angiomyolipomas from sporadic LAM patients, suggesting that LAM and TSC could have a common genetic basis. In this study, we report the identification of somatic TSC2 mutations in five of seven angiomyolipomas from sporadic LAM patients. In all four patients from whom lung tissue was available, the same mutation found in the angiomyolipoma was present in the abnormal pulmonary smooth muscle cells. In no case was the mutation present in normal kidney, morphologically normal lung, or lymphoblastoid cells. Our data demonstrate that somatic mutations in the TSC2 gene occur in the angiomyolipomas and pulmonary LAM cells of women with sporadic LAM, strongly supporting a direct role of TSC2 in the pathogenesis of this disease.", 
+          "qas": [
+            {
+              "question": "What is the genetic basis of tuberous sclerosis?", 
+              "id": "56ed14d92ac5ed145900000a_004"
+            }
+          ]
+        }, 
+        {
+          "context": "Molecular genetic basis of tuberous sclerosis complex: from bench to bedside. Tuberous sclerosis complex is an autosomal dominant disease of benign tumors occurring in multiple organ systems of the body. Either of two genes, TSC1 or TSC2, can be mutated, resulting in the tuberous sclerosis complex phenotype. The protein products of the tuberous sclerosis complex genes, hamartin (TSC1) and tuberin (TSC2), have been discovered to play important roles in several cell-signaling pathways. Knowledge regarding the function of the tuberin-hamartin complex has led to therapeutic intervention trials. Numerous pathogenic mutations have been elucidated in individuals affected with tuberous sclerosis complex. Information on the type and distribution of nearly 1000 mutations in the two genes is discussed. Mosaicism for tuberous sclerosis complex mutations has been documented, complicating provision of genetic counseling to families. Emerging genotype-phenotype correlations should provide guidance for better medical care of individuals with tuberous sclerosis complex.", 
+          "qas": [
+            {
+              "question": "What is the genetic basis of tuberous sclerosis?", 
+              "id": "56ed14d92ac5ed145900000a_005"
+            }
+          ]
+        }, 
+        {
+          "context": "The genetic basis of tuberous sclerosis. Tuberous sclerosis is a relatively common inherited disease that causes multiple benign tumours in different organs, frequently leading to skin rashes, seizures and mental handicap. The disease can be caused by mutations in either of two genes, TSC2, identified in 1993, and TSC1, only recently identified. Here we review the current state of knowledge of the molecular genetics of tuberous sclerosis and the spectrum of mutations seen in and the implications of recent findings for patients. Although both genes appear to function as tumour suppressors, the function of their protein products is not understood. A speculative model of how these proteins might function is briefly described.", 
+          "qas": [
+            {
+              "question": "What is the genetic basis of tuberous sclerosis?", 
+              "id": "56ed14d92ac5ed145900000a_006"
+            }
+          ]
+        }, 
+        {
+          "context": "Efficacy and safety of RTS,S/AS01 malaria vaccine with or without a booster dose in infants and children in Africa: final results of a phase 3, individually randomised, controlled trial. BACKGROUND: The efficacy and safety of the RTS,S/AS01 candidate malaria vaccine during 18 months of follow-up have been published previously. Herein, we report the final results from the same trial, including the efficacy of a booster dose. METHODS: From March 27, 2009, until Jan 31, 2011, children (age 5-17 months) and young infants (age 6-12 weeks) were enrolled at 11 centres in seven countries in sub-Saharan Africa. Participants were randomly assigned (1:1:1) at first vaccination by block randomisation with minimisation by centre to receive three doses of RTS,S/AS01 at months 0, 1, and 2 and a booster dose at month 20 (R3R group); three doses of RTS,S/AS01 and a dose of comparator vaccine at month 20 (R3C group); or a comparator vaccine at months 0, 1, 2, and 20 (C3C [control group]). Participants were followed up until Jan 31, 2014. Cases of clinical and severe malaria were captured through passive case detection. Serious adverse events (SAEs) were recorded. Analyses were by modified intention to treat and per protocol. The coprimary endpoints were the occurrence of malaria over 12 months after dose 3 in each age category. In this final analysis, we present data for the efficacy of the booster on the occurrence of malaria. Vaccine efficacy (VE) against clinical malaria was analysed by negative binomial regression and against severe malaria by relative risk reduction. This trial is registered with ClinicalTrials.gov, number NCT00866619. FINDINGS: 8922 children and 6537 young infants were included in the modified intention-to-treat analyses. Children were followed up for a median of 48 months (IQR 39-50) and young infants for 38 months (34-41) after dose 1. From month 0 until study end, compared with 9585 episodes of clinical malaria that met the primary case definition in children in the C3C group, 6616 episodes occurred in the R3R group (VE 36\u00b73%, 95% CI 31\u00b78-40\u00b75) and 7396 occurred in the R3C group (28\u00b73%, 23\u00b73-32\u00b79); compared with 171 children who experienced at least one episode of severe malaria in the C3C group, 116 children experienced at least one episode of severe malaria in the R3R group (32\u00b72%, 13\u00b77 to 46\u00b79) and 169 in the R3C group (1\u00b71%, -23\u00b70 to 20\u00b75). In young infants, compared with 6170 episodes of clinical malaria that met the primary case definition in the C3C group, 4993 episodes occurred in the R3R group (VE 25\u00b79%, 95% CI 19\u00b79-31\u00b75) and 5444 occurred in the R3C group (18\u00b73%, 11\u00b77-24\u00b74); and compared with 116 infants who experienced at least one episode of severe malaria in the C3C group, 96 infants experienced at least one episode of severe malaria in the R3R group (17\u00b73%, 95% CI -9\u00b74 to 37\u00b75) and 104 in the R3C group (10\u00b73%, -17\u00b79 to 31\u00b78). In children, 1774 cases of clinical malaria were averted per 1000 children (95% CI 1387-2186) in the R3R group and 1363 per 1000 children (995-1797) in the R3C group. The numbers of cases averted per 1000 young infants were 983 (95% CI 592-1337) in the R3R group and 558 (158-926) in the R3C group. The frequency of SAEs overall was balanced between groups. However, meningitis was reported as a SAE in 22 children: 11 in the R3R group, ten in the R3C group, and one in the C3C group. The incidence of generalised convulsive seizures within 7 days of RTS,S/AS01 booster was 2\u00b72 per 1000 doses in young infants and 2\u00b75 per 1000 doses in children. INTERPRETATION: RTS,S/AS01 prevented a substantial number of cases of clinical malaria over a 3-4 year period in young infants and children when administered with or without a booster dose. Efficacy was enhanced by the administration of a booster dose in both age categories. Thus, the vaccine has the potential to make a substantial contribution to malaria control when used in combination with other effective control measures, especially in areas of high transmission. FUNDING: GlaxoSmithKline Biologicals SA and the PATH Malaria Vaccine Initiative.", 
+          "qas": [
+            {
+              "question": "RTS S AS01 vaccine was developed to prevent which disease?", 
+              "id": "56bc77a3ac7ad10019000015_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Immunogenicity and safety of the candidate RTS,S/AS01 vaccine in young Nigerian children: a randomized, double-blind, lot-to-lot consistency trial. BACKGROUND: For regulatory approval, consistency in manufacturing of vaccine lots is expected to be demonstrated in confirmatory immunogenicity studies using two-sided equivalence trials. This randomized, double-blind study (NCT01323972) assessed consistency of three RTS,S/AS01 malaria vaccine batches formulated from commercial-scale purified antigen bulk lots in terms of anti-CS-responses induced. METHODS: Healthy children aged 5-17 months were randomized (1:1:1:1) to receive RTS,S/AS01 at 0-1-2 months from one of three commercial-scale purified antigen bulk lots (1600 litres-fermentation scale; commercial-scale lots), or a comparator vaccine batch made from pilot-scale purified antigen bulk lot (20 litres-fermentation scale; pilot-scale lot). The co-primary objectives were to first demonstrate consistency of antibody responses against circumsporozoite (CS) protein at one month post-dose 3 for the three commercial-scale lots and second demonstrate non-inferiority of anti-CS antibody responses at one month post-dose 3 for the commercial-scale lots compared to the pilot-scale lot. Safety and reactogenicity were evaluated as secondary endpoints. RESULTS: One month post-dose-3, anti-CS antibody geometric mean titres (GMT) for the 3 commercial scale lots were 319.6 EU/ml (95% confidence interval (CI): 268.9-379.8), 241.4 EU/ml (207.6-280.7), and 302.3 EU/ml (259.4-352.3). Consistency for the RTS,S/AS01 commercial-scale lots was demonstrated as the two-sided 95% CI of the anti-CS antibody GMT ratio between each pair of lots was within the range of 0.5-2.0. GMT of the pooled commercial-scale lots (285.8 EU/ml (260.7-313.3)) was non-inferior to the pilot-scale lot (271.7 EU/ml (228.5-323.1)). Each RTS,S/AS01 lot had an acceptable tolerability profile, with infrequent reports of grade 3 solicited symptoms. No safety signals were identified and no serious adverse events were considered related to vaccination. CONCLUSIONS: RTS,S/AS01 lots formulated from commercial-scale purified antigen bulk batches induced a consistent anti-CS antibody response, and the anti-CS GMT of pooled commercial-scale lots was non-inferior to that of a lot formulated from a pilot-scale antigen bulk batch.", 
+          "qas": [
+            {
+              "question": "RTS S AS01 vaccine was developed to prevent which disease?", 
+              "id": "56bc77a3ac7ad10019000015_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Dietary flavonoids fisetin and myricetin: dual inhibitors of Plasmodium falciparum falcipain-2 and plasmepsin II. Malaria is one of the most devastating infectious diseases in the developing world. Until now, only one candidate malaria vaccine RTS,S/AS01 has shown modest protection in phase 3 trial in African infants. Hence the treatment of malaria still depends on the current chemotherapeutic drugs. Considering the resistance of malaria parasites to almost all used antimalarial drugs, aiming at multi-targets rather than a single target will be a more promising strategy. Previous studies have shown that myricetin and fisetin exhibited in vitro antimalarial activity against Plasmodium falciparum, but very little research focused on the molecular mechanism for their parasiticidal activity. The cysteine protease falcipain-2 and aspartic protease plasmepsin II have long been considered as important antimalarial drug targets, especially combined inhibition of these two proteases. In this study, we determined that myricetin and fisetin are dual inhibitors of falcipain-2 and plasmepsin II, which might account for their antimalarial properties. Overall, the dual inhibition of falcipain-2 and plasmepsin II by myricetin and fisetin has shed light on a possible mechanism for their antimalarial activity and provided a rationale for further development as antimalarial drugs.", 
+          "qas": [
+            {
+              "question": "RTS S AS01 vaccine was developed to prevent which disease?", 
+              "id": "56bc77a3ac7ad10019000015_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Aire promotes the self-renewal of embryonic stem cells through Lin28. Abstract  Autoimmune regulator (Aire) is one of the most well-characterized molecules in autoimmunity, but its function outside the immune system is largely unknown. The recent discovery of Aire expression in stem cells and early embryonic cells and its function in the self-renewal of embryonic stem (ES) cells highlight the importance of Aire in these cells. In this study, we present evidence that Aire promotes the expression of the pluripotent factor Lin28 and the self-renewal of ES cells. We presented the first evidence that the let-7 microRNA family contributed to the self-renewal promoting effect of Aire on ES cells. Moreover, we showed that Aire and Lin28 are co-expressed in the genital ridge, oocytes, and cleavage-stage embryos, and the expression level of Lin28 is correlated with the expression level of Aire. Although it is widely considered to be a promiscuous gene expression activator, these results indicated that Aire promotes the self-renewal of ES cells through a specific pathway (i.e., the activation of Lin28 and the inhibition of the let-7 microRNA family). The correlation between Aire and Lin28 expression in germ cells and early embryos indicated an in vivo function for Aire in toti- and pluripotent stem cells. This study presents the first molecular pathway that incorporates Aire into the pluripotency network. Moreover, it presents the first evidence that microRNAs contribute to the regulatory function of Aire and highlights a novel function of Aire in stem cell biology and reproduction. These functions reveal novel perspectives for studying the molecular mechanisms behind the establishment and sustenance of pluripotent identity.", 
+          "qas": [
+            {
+              "question": "What is the function of the AIRE gene at the embryonic stage?", 
+              "id": "56ed27012ac5ed145900000b_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Transcriptional regulation by AIRE: molecular mechanisms of central tolerance. The negative selection of T cells in the thymus is necessary for the maintenance of self tolerance. Medullary thymic epithelial cells have a key function in this process as they express a large number of tissue-specific self antigens that are presented to developing T cells. Mutations in the autoimmune regulator (AIRE) protein cause a breakdown of central tolerance that is associated with decreased expression of self antigens in the thymus. In this Review, we discuss the role of AIRE in the thymus and recent advances in our understanding of how AIRE might function at the molecular level to regulate gene expression.", 
+          "qas": [
+            {
+              "question": "What is the function of the AIRE gene at the embryonic stage?", 
+              "id": "56ed27012ac5ed145900000b_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Aire controls mesenchymal stem cell-mediated suppression in chronic colitis. Mesenchymal stem cells (MSCs) are emerging as a promising immunotherapeutic, based largely on their overt suppression of T lymphocytes under inflammatory and autoimmune conditions. While paracrine cross-talk between MSCs and T cells has been well-studied, an intrinsic transcriptional switch that programs MSCs for immunomodulation has remained undefined. Here we show that bone marrow-derived MSCs require the transcriptional regulator Aire to suppress T cell-mediated pathogenesis in a mouse model of chronic colitis. Surprisingly, Aire did not control MSC suppression of T cell proliferation in vitro. Instead, Aire reduced T cell mitochondrial reductase by negatively regulating a proinflammatory cytokine, early T cell activation factor (Eta)-1. Neutralization of Eta-1 enabled Aire(-/-) MSCs to ameliorate colitis, reducing the number of infiltrating effector T cells in the colon, and normalizing T cell reductase levels. We propose that Aire represents an early molecular switch imposing a suppressive MSC phenotype via regulation of Eta-1. Monitoring Aire expression in MSCs may thus be a critical parameter for clinical use.", 
+          "qas": [
+            {
+              "question": "What is the function of the AIRE gene at the embryonic stage?", 
+              "id": "56ed27012ac5ed145900000b_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Aire regulates the expression of differentiation-associated genes and self-renewal of embryonic stem cells. Embryonic stem cells (ESCs) are pluripotent stem cells from early embryos. It has been well recognized that ESC genomes are maintained in a globally transcriptional hyperactive state, which genetically poised ESCs to the high differentiation potential. However, the transcription factors regulating the global transcription activities in ESCs are not well defined. We show here that mouse and human ESCs express two transcription factors, Aire and Deaf1. Previously known to function in the thymus stromal cells and peripheral lymphoid organs respectively, Aire and Deaf1 help regulate the ectopic expression of diverse tissue-specific antigens to establish self-immune tolerance. Differentiation of ESCs greatly reduced Aire and Deaf1 expression, in a pattern similar to the pluripotent factors, Oct4 and Nanog. Knockdown of Aire in mouse ESCs resulted in significantly decreased clone-forming efficiency as well as attenuated cell cycle, suggesting Aire plays a role in ESC self-renewal. In addition, some differentiation-associated genes that are sporadically expressed in ESCs were reduced in expression upon Aire knockdown. These results suggest that transcription factors such as Aire and Deaf1, which exert global transcriptional regulatory functions, may play important roles in self-renewal of ESCs and maintaining ESC in a transcriptionally hyperactive state.", 
+          "qas": [
+            {
+              "question": "What is the function of the AIRE gene at the embryonic stage?", 
+              "id": "56ed27012ac5ed145900000b_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Matrix metalloproteinase-9 polymorphism 1562 C > T (rs3918242) associated with protection against placental malaria. Phagocytosis of malaria pigment (hemozoin) induces increased activity of matrix metalloproteinase (MMP)-9, an endopeptidase involved in cytokine regulation. In this study, we examined whether a common functional MMP-9 promoter polymorphism (rs3918242) affects Plasmodium falciparum infection in pregnancy. Eighteen percent of Ghanaian primiparae carried the minor T allele. It was associated with reduced odds of placental hemozoin and of placental as well as peripheral blood parasitemia. The results indicate that a common MMP-9 polymorphism protects against placental malaria indicating that this endopeptidase is involved in susceptibility to P. falciparum.", 
+          "qas": [
+            {
+              "question": "What is needed for MMP proteins to be functional?", 
+              "id": "56e857ae42442bac75000004_000"
+            }
+          ]
+        }, 
+        {
+          "context": "LMAN1 (ERGIC-53) is a potential carrier protein for matrix metalloproteinase-9 glycoprotein secretion. Matrix metalloproteinase-9 (MMP-9) is a secreted glycoprotein with a major role in shaping the extracellular matrix and a detailed understanding of the secretory mechanism could help identify methods to correct diseases resulting from dysregulation of secretion. MMP-9 appears to follow a canonical secretory pathway through a quality control cycle in the endoplasmic reticulum (ER) before transport of the properly folded protein to the Golgi apparatus and beyond for secretion. Through a complementation assay, we determined that LMAN1, a well-studied lectin-carrier protein, interacts with a secretion-competent N-glycosylated MMP-9 in the ER while N-glycosylation-deficient secretion-compromised MMP-9 does not. In contrast, co-immunoprecipitation demonstrated protein interaction between LMAN1 and secretion-compromised N-glycosylation-deficient MMP-9. MMP-9 secretion was reduced in the LMAN1 knockout cell line compared to control cells confirming the functional role of LMAN1. These observations support the role of LMAN1 as a lectin-carrier protein mediating efficient MMP-9 secretion.", 
+          "qas": [
+            {
+              "question": "What is needed for MMP proteins to be functional?", 
+              "id": "56e857ae42442bac75000004_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Neutrophil extracellular traps induce endothelial dysfunction in systemic lupus erythematosus through the activation of matrix metalloproteinase-2. RATIONALE: The structural and functional integrity of the endothelium is crucial in maintaining vascular homeostasis and preventing atherosclerosis. Patients with systemic lupus erythematosus (SLE) have an increased risk of developing endothelial dysfunction and premature cardiovascular disease. Neutrophil extracellular trap (NET) formation is increased in SLE and has been proposed to contribute to endothelial damage, but the mechanism remains unclear. OBJECTIVE: To determine the mechanism by which enhanced NET formation by low-density granulocytes (LDGs) in SLE contributes to endothelial damage and disrupts the endothelium. RESULTS: The putative role of NET-externalised matrix metalloproteinases (MMPs) in altering the functional integrity of the endothelium was examined. MMP-9 externalised by lupus LDGs during NET formation specifically impaired murine aortic endothelium-dependent vasorelaxation and induced endothelial cell apoptosis. Endothelial dysfunction correlated with the activation of endothelial MMP-2 by MMP-9 present in NETs, while inhibition of MMP-2 activation restored endothelium-dependent function and decreased NET-induced vascular cytotoxicity. Moreover, immunogenic complexes composed of MMP-9 and anti-MMP-9 were identified in SLE sera. These complexes, as well as anti-MMP-9 autoantibodies, induced NETosis and enhanced MMP-9 activity. CONCLUSIONS: These observations implicate activation of endothelial MMP-2 by MMP-9 contained in NETs as an important player in endothelial dysfunction, and MMP-9 as a novel self-antigen in SLE. These results further support that aberrant NET formation plays pathogenic roles in SLE.", 
+          "qas": [
+            {
+              "question": "What is needed for MMP proteins to be functional?", 
+              "id": "56e857ae42442bac75000004_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Circular trimers of gelatinase B/matrix metalloproteinase-9 constitute a distinct population of functional enzyme molecules differentially regulated by tissue inhibitor of metalloproteinases-1. Gelatinase B/matrix metalloproteinase-9 (MMP-9) (EC 3.4.24.35) cleaves many substrates and is produced by most cell types\u00a0as a zymogen, proMMP-9, in complex with the tissue inhibitor of metalloproteinases-1 (TIMP-1). Natural proMMP-9 occurs as monomers, homomultimers and heterocomplexes, but our knowledge about the overall structure of proMMP-9 monomers and multimers is limited. We investigated biochemical, biophysical and functional characteristics of zymogen and activated forms of MMP-9 monomers and multimers. In contrast with a conventional notion of a dimeric nature of MMP-9 homomultimers, we demonstrate that these are reduction-sensitive trimers. Based on the information from electrophoresis, AFM and TEM, we generated a 3D structure model of the proMMP-9 trimer. Remarkably, the proMMP-9 trimers possessed a 50-fold higher affinity for TIMP-1 than the monomers. In\u00a0vivo, this finding was reflected in a higher extent of TIMP-1 inhibition of angiogenesis induced by trimers compared with monomers. Our results show that proMMP-9 trimers constitute a novel structural and functional entity that is differentially regulated by TIMP-1.", 
+          "qas": [
+            {
+              "question": "What is needed for MMP proteins to be functional?", 
+              "id": "56e857ae42442bac75000004_003"
+            }
+          ]
+        }, 
+        {
+          "context": "MMP-2 selectivity in hydroxamate-type inhibitors. Extracellular matrix metalloproteinases (MMPs) are a family of zinc-dependent neutral endopeptidases involved in physiological and pathological processes, through the cleavage of extracellular matrix. MMPs are capable of degrading essentially all matrix components, which is crucial for malignant tumor growth, invasion, metastasis and angiogenesis. The vertebrates MMP family includes at least 26 enzymes (23 have been known in humans) with only MMP-1, 2, and 7 experimentally validated as targets for antitumoral drug design. However, inhibition of MMP-1 has been hypothesized to be the cause of the clinically observed musculoskeletal syndrome when broad spectrum inhibitors are used. On the other hand, MMP-9 is a tricky enzyme, since its inhibition might be useful in treating patients with early-stage cancers, but MMP-9 is an anti-target in patients with advanced disease. So, MMP-9 inhibition should also be prevented. Therefore, selective MMP-2 inhibition arises as a pursued profile for MMP binders. Among them, hydroxamates have been extensively studied as small molecule drug candidates characterized by an effective zinc-binding group plus additional side chains responsible for the selectivity. This article pays particular attention to MMP-2 selectivity on hydroxamate-type inhibitors, especially against MMP-9, and their chemical structure, SAR, general synthetic methods, and molecular modelling studies are here reviewed in order to inspire further design of new effective anticancer agents.", 
+          "qas": [
+            {
+              "question": "What is needed for MMP proteins to be functional?", 
+              "id": "56e857ae42442bac75000004_004"
+            }
+          ]
+        }, 
+        {
+          "context": "[Assessment of the role of matrix metalloproteinase-3 gene polymorphism in the development of chronic heart failure]. AIM: To study the impact of a polymorphic variant of the matrix metalloproteinase-3 (MMP-3) gene on the development and course of chronic heart failure (CHF) in patients with coronary heart disease. SUBJECTS AND METHODS: A total of 277 patients with New York Heart Association (NYHA) Functional Class (FC) II-IV CHF were examined. MMP-3 -1171 5A/6A genetic polymorphism was studied by polymerase chain reaction. A control group included 136 patients (mean age 53.6 \u00b1 4.8 years) with no signs of cardiovascular diseases, as evidenced by the examination. RESULTS: The frequency of the 5A allele and the 5A/5A genotype of the 1171 5A/6A polymorphic locus in the MMP-3 gene proved to be higher in the patients with CHF than that in the control group. Thus, the variability of the 5A allele (odds ratio (OR), 1.39; 95% confidence interval (CI): 1.033 to 1.869; p = 0.03) and the 5A/5A genotype (OR, 2.15; 95% CI: 1.131 to 4.070; p = 0.02) was associated with increased risk for CHF. There were significant differences in the frequency of MMP-3 alleles and genotypes in relation to FC of CHF. The frequency of the 5A/5A genotype was substantially higher in the patients with NYHA FC IV CHF than that in those with NYHA FC II CHF (32.8% versus 15.2%; p = 0.039). The frequency of the 5A allele was significantly higher in the patients with NYHA FC IV CHF than that in those with NYHA FC II CHF (55.5% and 39.3%; respectively; p = 0.019). Thus, the carriage of the 5A allele and the 5A/5A genotype of the 1171 5A/6A polymorphic locus in the MMP-3 gene is a risk factor of severe CHF. CONCLUSION: The determination of MMP-3 -1171 5A/6A polymorphism may be recommended for the early prediction of a risk for the development and severe course of CHF.", 
+          "qas": [
+            {
+              "question": "What is needed for MMP proteins to be functional?", 
+              "id": "56e857ae42442bac75000004_005"
+            }
+          ]
+        }, 
+        {
+          "context": "[The role of metalloproteinases in modification of extracellular matrix in invasive tumor growth, metastasis and angiogenesis]. Extracellular matrix metalloproteinases (MMPs) are a family of endopeptydases which recquire a zinc ion at their active site, for proteolityc activity. There are six members of the MMP family: matrilysins, collagenases, stromelysins, gelatinases, membrane MMPs and other MMPs. Activity of MMPs is regulated at the level of gene transcription, mRNA stability, zymogene proteolitic activation, inhibition of an active enzyme and MMP degradation. Tissue inhibitors of metalloproteinases (TIMPs) are main intracellular inhibitors of MMPs. Host cells can be stimulated by tumor cells to produce MMPs by secreted interleukins, interferons, growth factors and an extracellular matrix metalloproteinase inducer (EMMPRIN). MMPs are produced by tumor cells, fibroblasts, macrophages, mast cells, polimorphonuclear neutrophiles (PMNs) and endothelial cells (ECs). MMPs affect many stages of tumor development, facilitating its growth through promoting tumor cells proliferation, invasion and migration, new blood vessels formation and blocking tumor cells apoptosis. MMPs can promote tumor development in several ways. ECM degradation results in release of peptide growth factors. Growth factors linked with cell surface or binding proteins can also be liberated by MMPs. MMPs can indirectly regulate integrin signalling or cleave E-cadherins, facilitating cell migration. MMPs support metastasis inducing an epithelial to mesenchymal transition (EMT). MMP also support transendothelial migration. MMPs support angiogenesis by releasing pro-angiogenic factors and degrading ECM to support ECs migration. Cell surface growth factor receptors are also cleaved by MMPs, which results in inhibition of tumor development, so is release of anti-angiogenic factors from ECM.", 
+          "qas": [
+            {
+              "question": "What is needed for MMP proteins to be functional?", 
+              "id": "56e857ae42442bac75000004_006"
+            }
+          ]
+        }, 
+        {
+          "context": "Induction of nuclear lamins A/C in macrophages in in vitro cultures of rat bone marrow precursor cells and human blood monocytes, and in macrophages elicited in vivo by thioglycollate stimulation. Hemopoietic cells from blood and bone marrow of mammals usually do not express lamins A/C but only lamin B, and this feature distinguishes these cells from the vast majority of somatic cells of the adult animal, which reveal lamins A/C as well as lamin B. Here we have cultivated rat bone marrow precursor cells and human monocytes isolated from peripheral blood in tissue culture supplemented with certain growth factors. These conditions allow bone marrow precursor cells and monocytes to differentiate almost quantitatively into accessory cells and/or mature macrophages. The different cell types in the cultures can be identified both morphologically and by other assays. Antibodies specific for mouse A/C lamins, human A/C lamins, or B lamins have been used to define the lamin complement as a function of time in culture and of cell type. A dramatic increase in lamin A/C-positive cells was observed in the first 3 days of culture with both accessory cells and macrophages expressing lamins A/C as soon as such cell types could be identified. Parallel in vivo experiments showed that treatment with thioglycollate caused the percentage of lamin A/C-positive peritoneal macrophages to increase from 5 to 80% between Days 0 and 6.", 
+          "qas": [
+            {
+              "question": "In which cells are A-type lamins expressed?", 
+              "id": "56ed27202ac5ed145900000c_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Expression of nuclear lamins in human tissues and cancer cell lines and transcription from the promoters of the lamin A/C and B1 genes. We have examined the expression of lamins A, B1, and C in human tissues and cancer cell lines and the function of the lamin A/C and B1 gene promoters in transfected cells. Northern analysis and immunoblotting demonstrated that lamin A/C mRNA and protein were not detectable in some human cell lines whereas lamin B1 was always present. Sequencing of approximately 2.6 kb of the lamin A/C and 1.6 kb of the lamin B1 genes 5' to the translation initiation sites showed that they did not contain typical TATA boxes near the transcription start sites. The lamin B1 and A/C proximal promoter regions were transcribed in transfected HeLa, Raji, and NT2/D1 cell lines even if the cells did not contain detectable endogenous lamin A/C mRNA or protein. These results show that, similar to most cytoplasmic intermediate filament genes, transcriptional regulatory elements in the promoters of the human nuclear lamin A/C and B1 genes do not control their cell type-specific expression in culture lines.", 
+          "qas": [
+            {
+              "question": "In which cells are A-type lamins expressed?", 
+              "id": "56ed27202ac5ed145900000c_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Transfection of human lamins A and C into mouse embryonal carcinoma cells possessing only lamin B. The peripheral lamina of eukaryotic nuclei is composed of polypeptides called lamins that vary in number from one to four according to organism, cell type, and differentiated state of the cells. Early embryonic cells and stem cells of mammals generally possess only lamin B while lamins A and C appear later during differentiation. To study the role of the late appearance of lamins A and C in the differentiated phenotype, we have performed transfection of cDNAs coding for human lamins A or C into mouse embryonal carcinoma (EC) cell lines F9 and P19 lacking these two lamins. Transient transfections have shown that lamins A or C could be expressed, translocated to the peripheral lamina, and distributed into daughter cell nuclei after mitosis. These results demonstrated that EC cells devoid of lamins A and C nevertheless possessed the appropriate mechanisms for the localization and mitotic redistribution of exogenous lamins A and C.", 
+          "qas": [
+            {
+              "question": "In which cells are A-type lamins expressed?", 
+              "id": "56ed27202ac5ed145900000c_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Nuclear lamins are differentially expressed in retinal neurons of the adult rat retina. Lamins are type V intermediate filament proteins that support nuclear membranes. They are divided into A-type lamins, which include lamin A and C, and B-type lamins, which include lamin B1 and B2. In the rat brain, lamin A and C are expressed in relatively equal amounts, while the expressions of lamin B1 and B2 vary depending on the cell type. Lamins play important roles in normal morphogenesis and function. In the nervous system, their abnormal expression causes several neurodegenerative diseases such as peripheral neuropathy, leukodystrophy and lissencephaly. The retina belongs to the central nervous system (CNS) and has widely been used as a source of CNS neurons. We investigated the expression patterns of lamin subtypes in the adult rat retina by immunohistochemistry and found that the staining patterns differed when compared with the brain. All retinal neurons expressed lamin B1 and B2 in relatively equal amounts. In addition, horizontal cells and a subpopulation of retinal ganglion cells expressed lamin A and C, while photoreceptor cells expressed neither lamin A nor C, and all other retinal neurons expressed lamin C only. This differential expression pattern of lamins in retinal neurons suggests that they may be involved in cellular differentiation and expression of cell-specific genes in individual retinal neurons.", 
+          "qas": [
+            {
+              "question": "In which cells are A-type lamins expressed?", 
+              "id": "56ed27202ac5ed145900000c_003"
+            }
+          ]
+        }, 
+        {
+          "context": "TAF10 Interacts with the GATA1 Transcription Factor and Controls Mouse Erythropoiesis. The ordered assembly of a functional preinitiation complex (PIC), composed of general transcription factors (GTFs), is a prerequisite for the transcription of protein-coding genes by RNA polymerase II. TFIID, comprised of the TATA binding protein (TBP) and 13 TBP-associated factors (TAFs), is the GTF that is thought to recognize the promoter sequences allowing site-specific PIC assembly. Transcriptional cofactors, such as SAGA, are also necessary for tightly regulated transcription initiation. The contribution of the two TAF10-containing complexes (TFIID, SAGA) to erythropoiesis remains elusive. By ablating TAF10 specifically in erythroid cells in vivo, we observed a differentiation block accompanied by deregulated GATA1 target genes, including Gata1 itself, suggesting functional cross talk between GATA1 and TAF10. Additionally, we analyzed by mass spectrometry the composition of TFIID and SAGA complexes in mouse and human cells and found that their global integrity is maintained, with minor changes, during erythroid cell differentiation and development. In agreement with our functional data, we show that TAF10 interacts directly with GATA1 and that TAF10 is enriched on the GATA1 locus in human fetal erythroid cells. Thus, our findings demonstrate a cross talk between canonical TFIID and SAGA complexes and cell-specific transcription activators during development and differentiation.", 
+          "qas": [
+            {
+              "question": "What is the outcome of TAF10 interacting with the GATA1 transcription factor?", 
+              "id": "56a8b8b5a17756b72f000005_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Current strategies for treatment of relapsed/refractory multiple myeloma. In spite of significant advances in the management of multiple myeloma (MM), the disease remains incurable and nearly all patients ultimately relapse and require salvage chemotherapy. As such, relapsed and relapsed-refractory MM remains a critical area of research pertaining to biological mechanisms of progression and chemotherapy resistance, as well as to the development of new pharmacologic agents and immunologic approaches for the disease. The immunomodulatory agents and proteasome inhibitors represent the cornerstone of treatment in this setting, with combination regimens incorporating these drugs demonstrating encouraging rates and duration of response, including the newer agents, pomalidomide and carfilzomib. In addition, novel drug classes have shown promising activity in RR MM, including the orally-administered proteasome inhibitors ixazomib and oprozomib; monoclonal antibodies such as the anti-CS1 monoclonal antibody elotuzumab and anti-CD38 monoclonal antibody daratumumab; and histone deacetylase inhibitors such as panobinostat and rocilinostat.", 
+          "qas": [
+            {
+              "question": "Which type of myeloma is ixazomib being evaluated for?", 
+              "id": "56ed0ffe2ac5ed1459000008_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Proteasome inhibitors. Proteasome inhibitors have a 20 year history in cancer therapy. The first proteasome inhibitor, bortezomib (Velcade, PS-341), a break-through multiple myeloma treatment, moved rapidly through development from bench in 1994 to first approval in 2003. Bortezomib is a reversible boronic acid inhibitor of the chymotrypsin-like activity of the proteasome. Next generation proteasome inhibitors include carfilzomib and oprozomib which are irreversible epoxyketone proteasome inhibitors; and ixazomib and delanzomib which are reversible boronic acid proteasome inhibitors. Two proteasome inhibitors, bortezomib and carfilzomib are FDA approved drugs and ixazomib and oprozomib are in late stage clinical trials. All of the agents are potent cytotoxics. The disease focus for all the proteasome inhibitors is multiple myeloma. This focus arose from clinical observations made in bortezomib early clinical trials. Later preclinical studies confirmed that multiple myeloma cells were indeed more sensitive to proteasome inhibitors than other tumor cell types. The discovery and development of the proteasome inhibitor class of anticancer agents has progressed through a classic route of serendipity and scientific investigation. These agents are continuing to have a major impact in their treatment of hematologic malignancies and are beginning to be explored as potential treatment agent for non-cancer indications.", 
+          "qas": [
+            {
+              "question": "Which type of myeloma is ixazomib being evaluated for?", 
+              "id": "56ed0ffe2ac5ed1459000008_001"
+            }
+          ]
+        }, 
+        {
+          "context": "An integrative analysis of colon cancer identifies an essential function for PRPF6 in tumor growth. The spliceosome machinery is composed of multimeric protein complexes that generate a diverse repertoire of mRNA through coordinated splicing of heteronuclear RNAs. While somatic mutations in spliceosome components have been discovered in several cancer types, the molecular bases and consequences of spliceosome aberrations in cancer are poorly understood. Here we report for the first time that PRPF6, a member of the tri-snRNP (small ribonucleoprotein) spliceosome complex, drives cancer proliferation by preferential splicing of genes associated with growth regulation. Inhibition of PRPF6 and other tri-snRNP complex proteins, but not other snRNP spliceosome complexes, selectively abrogated growth in cancer cells with high tri-snRNP levels. High-resolution transcriptome analyses revealed that reduced PRPF6 alters the constitutive and alternative splicing of a discrete number of genes, including an oncogenic isoform of the ZAK kinase. These findings implicate an essential role for PRPF6 in cancer via splicing of distinct growth-related gene products.", 
+          "qas": [
+            {
+              "question": "What is the function of the spliceosome complex?", 
+              "id": "56f553e309dd18d46b000006_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Visualizing the splicing of single pre-mRNA molecules in whole cell extract. The excision of introns from nascent eukaryotic transcripts is catalyzed by the spliceosome, a highly complex and dynamic macromolecular machine composed of RNA and protein. Because of its complexity, biochemical analysis of the spliceosome has been previously limited to bulk assays in largely unfractionated cell extracts. We now report development of methodologies for studying the splicing of isolated single pre-mRNA molecules in real time. In this system, a fluorescently tagged pre-mRNA is tethered to a glass surface via its 3'-end. Splicing can be observed in Saccharomyces cerevisiae whole cell extract by monitoring loss of intron-specific fluorescence with a multi-wavelength total internal reflection fluorescence (TIRF) microscope. To prolong fluorophore lifetime, two enzyme-based O2 scavenging systems compatible with splicing were also developed. This work provides a powerful new approach for elucidating the mechanisms of spliceosome function and demonstrates the feasibility of utilizing TIRF microscopy for biochemical studies of single molecules in highly complex environments.", 
+          "qas": [
+            {
+              "question": "What is the function of the spliceosome complex?", 
+              "id": "56f553e309dd18d46b000006_001"
+            }
+          ]
+        }, 
+        {
+          "context": "The spliceosome: caught in a web of shifting interactions. Splicing is a crucial, ubiquitous and highly complex step in eukaryotic gene expression. The daunting complexity of the splicing reaction, although fascinating, has severely limited our understanding of its mechanistic details. Recent advances have begun to provide exciting new insights into the dynamic interactions that govern the function of the spliceosome, the multi-megadalton complex that performs splicing. An emerging paradigm is the presence of a succession of distinct conformational states, which are stabilized by an intricate network of interactions. Recent data suggest that even subtle changes in the composition of the interaction network can result in interconversion of the different conformational states, providing opportunities for regulation and proofreading of spliceosome function. Significant progress in proteomics has elucidated the protein composition of the spliceosome at different stages of assembly. Also, the increased sophistication and resolution of cryo-electron microscopy techniques, combined with high-resolution structural studies on a smaller scale, promise to create detailed images of the global structure of the spliceosome and its main components, which in turn will provide a plethora of mechanistic insights. Overall, the past two years have seen a convergence of data from different lines of research into what promises to become a holistic picture of spliceosome function.", 
+          "qas": [
+            {
+              "question": "What is the function of the spliceosome complex?", 
+              "id": "56f553e309dd18d46b000006_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Organization of Plasmodium falciparum spliceosomal core complex and role of arginine methylation in its assembly. BACKGROUND: Splicing and alternate splicing are the two key biological processes that result in the generation of diverse transcript and protein isoforms in Plasmodium falciparum as well as in other eukaryotic organisms. Not much is known about the organization of splicing machinery and mechanisms in human malaria parasite. Present study reports the organization and assembly of Plasmodium spliceosome Sm core complex. METHODS: Presence of all the seven Plasmodium Sm-like proteins in the intra-erythrocytic stages was assessed based on the protein(s) expression analysis using immuno-localization and western blotting. Localization/co-localization studies were performed by immunofluorescence analysis on thin parasite smear using laser scanning confocal microscope. Interaction studies were carried out using yeast two-hybrid analysis and validated by in vitro pull-down assays. PfPRMT5 (arginine methyl transferase) and PfSmD1 interaction analysis was performed by pull-down assays and the interacting proteins were identified by MALDI-TOF spectrometry. RESULTS: PfSm proteins are expressed at asexual blood stages of the parasite and show nucleo-cytoplasmic localization. Protein-protein interaction studies showed that PfSm proteins form a heptameric complex, typical of spliceosome core complex as shown in humans. Interaction of PfSMN (survival of motor neuron, tudor domain containing protein) or PfTu-TSN (Tudor domain of Tudor Staphylococcal nuclease) with PfSmD1 proteins was found to be methylation dependent. Co-localization by immunofluorescence and co-immunoprecipitation studies suggested an association between PfPRMT5 and PfSmD1, indicating the role of arginine methylation in assembly of Plasmodium spliceosome complex. CONCLUSIONS: Plasmodium Sm-like proteins form a heptameric ring-like structure, although the arrangement of PfSm proteins slightly differs from human splicing machinery. The data shows the interaction of PfSMN with PfSmD1 and this interaction is found to be methylation dependent. PfPRMT5 probably exists as a part of methylosome complex that may function in the cytoplasmic assembly of Sm proteins at asexual blood stages of P. falciparum.", 
+          "qas": [
+            {
+              "question": "What is the function of the spliceosome complex?", 
+              "id": "56f553e309dd18d46b000006_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Exhaustive analysis of the modular structure of the spliceosomal assembly network: a Petri net approach. Spliceosomes are macro-complexes involving hundreds of proteins with many functional interactions. Spliceosome assembly belongs to the key processes that enable splicing of mRNA and modulate alternative splicing. A detailed list of factors involved in spliceosomal reactions has been assorted over the past decade, but, their functional interplay is often unknown and most of the present biological models cover only parts of the complete assembly process. It is a challenging task to build a computational model that integrates dispersed knowledge and combines a multitude of reaction schemes proposed earlier.Because for most reactions involved in spliceosome assembly kinetic parameters are not available, we propose a discrete modeling using Petri nets, through which we are enabled to get insights into the system's behavior via computation of structural and dynamic properties. In this paper, we compile and examine reactions from experimental reports that contribute to a functional spliceosome. All these reactions form a network, which describes the inventory and conditions necessary to perform the splicing process. The analysis is mainly based on system invariants. Transition invariants (T-invariants) can be interpreted as signaling routes through the network. Due to the huge number of T-invariants that arise with increasing network size and complexity, maximal common transition sets (MCTS) and T-clusters were used for further analysis. Additionally, we introduce a false color map representation, which allows a quick survey of network modules and the visual detection of single reactions or reaction sequences, which participate in more than one signaling route. We designed a structured model of spliceosome assembly, which combines the demands on a platform that i) can display involved factors and concurrent processes, ii) offers the possibility to run computational methods for knowledge extraction, and iii) is successively extendable as new insights into spliceosome function are reported by experimental reports. The network consists of 161 transitions (reactions) and 140 places (reactants). All reactions are part of at least one of the 71 T-invariants. These T-invariants define pathways, which are in good agreement with the current knowledge and known hypotheses on reaction sequences during spliceosome assembly, hence contributing to a functional spliceosome. We demonstrate that present knowledge, in particular of the initial part of the assembly process, describes parallelism and interaction of signaling routes, which indicate functional redundancy and reflect the dependency of spliceosome assembly initiation on different cellular conditions. The complexity of the network is further increased by two switches, which introduce alternative routes during A-complex formation in early spliceosome assembly and upon transition from the B-complex to the C-complex. By compiling known reactions into a complete network, the combinatorial nature of invariant computation leads to pathways that have previously not been described as connected routes, although their constituents were known. T-clusters divide the network into modules, which we interpret as building blocks in spliceosome maturation. We conclude that Petri net representations of large biological networks and system invariants, are well-suited as a means for validating the integration of experimental knowledge into a consistent model. Based on this network model, the design of further experiments is facilitated.", 
+          "qas": [
+            {
+              "question": "What is the function of the spliceosome complex?", 
+              "id": "56f553e309dd18d46b000006_004"
+            }
+          ]
+        }, 
+        {
+          "context": "High-throughput screens in mammalian cells using the CRISPR-Cas9 system. As a powerful genome-editing tool, the clustered regularly interspaced short palindromic repeats (CRISPR)-clustered regularly interspaced short palindromic repeats-associated protein 9 (Cas9) system has been quickly developed into a large-scale function-based screening strategy in mammalian cells. This new type of genetic library is constructed through the lentiviral delivery of single-guide RNA collections that direct Cas9 or inactive dead Cas9 fused with effectors to interrogate gene function or regulate gene transcription in targeted cells. Compared with RNA interference screening, the CRISPR-Cas9 system demonstrates much higher levels of effectiveness and reliability with respect to both loss-of-function and gain-of-function screening. Unlike the RNA interference strategy, a CRISPR-Cas9 library can target both protein-coding sequences and regulatory elements, including promoters, enhancers and elements transcribing microRNAs and long noncoding RNAs. This powerful genetic tool will undoubtedly accelerate the mechanistic discovery of various biological processes. In this mini review, we summarize the general procedure of CRISPR-Cas9 library mediated functional screening, system optimization strategies and applications of this new genetic toolkit.", 
+          "qas": [
+            {
+              "question": "Is single guide RNA part of the CRISPR/Cas9 tool or an inhibitor of its function?", 
+              "id": "56f146db2ac5ed145900000f_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Enhanced specificity and efficiency of the CRISPR/Cas9 system with optimized sgRNA parameters in Drosophila. The CRISPR/Cas9 system has recently emerged as a\u00a0powerful tool for functional genomic studies in Drosophila melanogaster. However, single-guide RNA (sgRNA) parameters affecting the specificity and efficiency of the system in flies are still not clear. Here, we found that off-target effects did not occur in regions of genomic DNA with three or more nucleotide mismatches to sgRNAs. Importantly, we document for a strong positive correlation between mutagenesis efficiency and sgRNA GC content of the six protospacer-adjacent motif-proximal nucleotides (PAMPNs). Furthermore, by injecting well-designed sgRNA plasmids at the optimal concentration we determined, we could efficiently generate mutations in four genes in one step. Finally, we generated null alleles of HP1a using optimized parameters through homology-directed repair and achieved an overall mutagenesis rate significantly higher than previously reported. Our work demonstrates a comprehensive optimization of sgRNA and promises to vastly simplify CRISPR/Cas9 experiments in Drosophila.", 
+          "qas": [
+            {
+              "question": "Is single guide RNA part of the CRISPR/Cas9 tool or an inhibitor of its function?", 
+              "id": "56f146db2ac5ed145900000f_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Rational design of a split-Cas9 enzyme complex. Cas9, an RNA-guided DNA endonuclease found in clustered regularly interspaced short palindromic repeats (CRISPR) bacterial immune systems, is a versatile tool for genome editing, transcriptional regulation, and cellular imaging applications. Structures of Streptococcus pyogenes Cas9 alone or bound to single-guide RNA (sgRNA) and target DNA revealed a bilobed protein architecture that undergoes major conformational changes upon guide RNA and DNA binding. To investigate the molecular determinants and relevance of the interlobe rearrangement for target recognition and cleavage, we designed a split-Cas9 enzyme in which the nuclease lobe and \u03b1-helical lobe are expressed as separate polypeptides. Although the lobes do not interact on their own, the sgRNA recruits them into a ternary complex that recapitulates the activity of full-length Cas9 and catalyzes site-specific DNA cleavage. The use of a modified sgRNA abrogates split-Cas9 activity by preventing dimerization, allowing for the development of an inducible dimerization system. We propose that split-Cas9 can act as a highly regulatable platform for genome-engineering applications.", 
+          "qas": [
+            {
+              "question": "Is single guide RNA part of the CRISPR/Cas9 tool or an inhibitor of its function?", 
+              "id": "56f146db2ac5ed145900000f_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Semi-synthesis of cyclosporins. BACKGROUND: Since its isolation in 1970, and discovery of its potent inhibitory activity on T-cell proliferation, cyclosporin A (CsA) has been shown to play a significant role in diverse fields of biology. Furthermore, chemical modification of CsA has led to analogs with distinct biological activities associated with its protein receptor family, cyclophilins. SCOPE OF REVIEW: This review systematically collates the synthetic chemistry performed at each of the eleven amino acids, and provides examples of the utility of such transformations. The various modifications of CsA are traced from early, modest chemistry performed at the unique Bmt residue, through the remarkable use of a polyanion enolate that can be stereoselectively manipulated, and onto application of more recently developed olefin metathesis chemistry to prepare new CsA derivatives with unexpected biological activity. MAJOR CONCLUSIONS: The myriad biological activities of CsA and its synthetic derivatives have inspired the development of new approaches to modify the CsA ring. In turn, these new CsA derivatives have served as tools in the discovery of new roles for cyclophilins. GENERAL SIGNIFICANCE: This review provides information on the types of cyclosporin derivatives that are available to the many biologists working in this field, and should be of value to the medicinal chemist trying to discover drugs based on CsA. This article is part of a Special Issue entitled Proline-directed foldases: Cell signaling catalysts and drug targets.", 
+          "qas": [
+            {
+              "question": "Which is the receptor for the immunosuppressive drug cyclosporin A (CsA)?", 
+              "id": "56f6c11109dd18d46b00000e_000"
+            }
+          ]
+        }, 
+        {
+          "context": "A receptor for the immunosuppressant FK506 is a cis-trans peptidyl-prolyl isomerase. The structurally novel macrolide FK506 (refs 1,2) has recently been demonstrated to have potent immunosuppressive activity at concentrations several hundredfold lower than cyclosporin A (CsA). Cyclosporin A, a cyclic peptide, has found widespread clinical use in the prevention of graft rejection following bone marrow and organ transplantation. The mechanisms of immunosuppression mediated by FK506 and CsA appear to be remarkably similar, suggesting that these unrelated structures act on a common receptor or on similar molecular targets, perhaps the CsA receptor, cyclophilin, which has recently been shown by Fischer et al. and Takahashi et al. to have cis-trans peptidyl-prolyl isomerase activity. We have prepared an FK506 affinity matrix and purified a binding protein for FK506 from bovine thymus and from human spleen. This FK506-binding protein (FKBP) has a relative molecular mass (Mr) of approximately 14,000(14K), a pI of 8.8-8.9, and does not cross-react with antisera against cyclophilin. The first 40 N-terminal residues of the bovine and 16 residues of the human FKBP were determined; the 16-residue fragments are identical to each other and unrelated to any known sequences. This protein catalyses the cis-trans isomerization of the proline amide in a tetrapeptide substrate and FK506 inhibits the action of this new isomerase. The FKBP and cyclophilin appear to be members of an emerging class of novel proteins that regulate T cell activation and other metabolic processes, perhaps by the recognition (and possibly the isomerization) of proline-containing epitopes in target proteins.", 
+          "qas": [
+            {
+              "question": "Which is the receptor for the immunosuppressive drug cyclosporin A (CsA)?", 
+              "id": "56f6c11109dd18d46b00000e_001"
+            }
+          ]
+        }, 
+        {
+          "context": "A comparison of cyclosporine binding by cyclophilin and calmodulin and the identification of a novel 45 KD cyclosporine-binding phosphoprotein in Jurkat cells. Cyclosporine mediates its immunosuppressive effect by preventing the synthesis of lymphokine mRNA during the process of T lymphocyte activation. Although the detailed molecular mechanism by which CsA achieves this effect is unknown, two proteins have been identified as putative intracellular CsA-receptor proteins. One of these, calmodulin, is an important Ca++-binding protein and enzyme cofactor and the other, cyclophilin, is a novel protein that is reported to have protein kinase activity. In this study the CsA-binding capacity of both these proteins has been assessed using CsA-coated ELISA plates and CsA-affinity gel matrices. CsA binding was shown by cyclophilin whereas no CsA-calmodulin binding could be detected under identical conditions. However, it was not possible to demonstrate any cyclophilin-associated protein kinase activity. Jurkat cells were probed for the presence of CsA-binding proteins using the CsA-affinity gel matrix; a 17 KD protein, most probably cyclophilin, was identified as the major CsA-binding protein. In addition, a previously unidentified CsA-binding 45 KD phosphoprotein was precipitated from 32P-labeled Jurkat cells. These results would support cyclophilin as the major, if not only, intracellular receptor protein for CsA. However, the relationship between binding of CsA to cyclophilin and/or the 45 KD phosphoprotein and the immunosuppressive effects of CsA is still unknown.", 
+          "qas": [
+            {
+              "question": "Which is the receptor for the immunosuppressive drug cyclosporin A (CsA)?", 
+              "id": "56f6c11109dd18d46b00000e_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Transcription-factor occupancy at HOT regions quantitatively predicts RNA polymerase recruitment in five human cell lines. BACKGROUND: High-occupancy target (HOT) regions are compact genome loci occupied by many different transcription factors (TFs). HOT regions were initially defined in invertebrate model organisms, and we here show that they are a ubiquitous feature of the human gene-regulation landscape. RESULTS: We identified HOT regions by a comprehensive analysis of ChIP-seq data from 96 DNA-associated proteins in 5 human cell lines. Most HOT regions co-localize with RNA polymerase II binding sites, but many are not near the promoters of annotated genes. At HOT promoters, TF occupancy is strongly predictive of transcription preinitiation complex recruitment and moderately predictive of initiating Pol II recruitment, but only weakly predictive of elongating Pol II and RNA transcript abundance. TF occupancy varies quantitatively within human HOT regions; we used this variation to discover novel associations between TFs. The sequence motif associated with any given TF's direct DNA binding is somewhat predictive of its empirical occupancy, but a great deal of occupancy occurs at sites without the TF's motif, implying indirect recruitment by another TF whose motif is present. CONCLUSIONS: Mammalian HOT regions are regulatory hubs that integrate the signals from diverse regulatory pathways to quantitatively tune the promoter for RNA polymerase II recruitment.", 
+          "qas": [
+            {
+              "question": "What is the link between HOT regions and RNA polymerase recruitment?", 
+              "id": "56ae2fab0a360a5e45000006_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Alternative splicing of AMPA subunits in prefrontal cortical fields of cynomolgus monkeys following chronic ethanol self-administration. Functional impairment of the orbital and medial prefrontal cortex underlies deficits in executive control that characterize addictive disorders, including alcohol addiction. Previous studies indicate that alcohol alters glutamate neurotransmission and one substrate of these effects may be through the reconfiguration of the subunits constituting ionotropic glutamate receptor (iGluR) complexes. Glutamatergic transmission is integral to cortico-cortical and cortico-subcortical communication and alcohol-induced changes in the abundance of the receptor subunits and/or their splice variants may result in critical functional impairments of prefrontal cortex in alcohol dependence. To this end, the effects of chronic ethanol self-administration on glutamate receptor ionotropic AMPA (GRIA) subunit variant and kainate (GRIK) subunit mRNA expression were studied in the orbitofrontal cortex (OFC), dorsolateral prefrontal cortex (DLPFC), and anterior cingulate cortex (ACC) of male cynomolgus monkeys. In DLPFC, total AMPA splice variant expression and total kainate receptor subunit expression were significantly decreased in alcohol drinking monkeys. Expression levels of GRIA3 flip and flop and GRIA4 flop mRNAs in this region were positively correlated with daily ethanol intake and blood ethanol concentrations (BEC) averaged over the 6 months prior to necropsy. In OFC, AMPA subunit splice variant expression was reduced in the alcohol treated group. GRIA2 flop mRNA levels in this region were positively correlated with daily ethanol intake and BEC averaged over the 6 months prior to necropsy. Results from these studies provide further evidence of transcriptional regulation of iGluR subunits in the primate brain following chronic alcohol self-administration. Additional studies examining the cellular localization of such effects in the framework of primate prefrontal cortical circuitry are warranted.", 
+          "qas": [
+            {
+              "question": "Which is the protein encoded by the human gene GRIK?", 
+              "id": "56f6d11c09dd18d46b00000f_000"
+            }
+          ]
+        }, 
+        {
+          "context": "1p34.3 deletion involving GRIK3: Further clinical implication of GRIK family glutamate receptors in the pathogenesis of developmental delay. A growing body of evidence suggests an association between microdeletion/microduplication and schizophrenia/intellectual disability. Abnormal neurogenesis and neurotransmission have been implicated in the pathogenesis of these neuropsychiatric and neurodevelopmental disorders. The kainate/AMPA-type ionotropic glutamate receptor (GRIK = glutamate receptor, ionotropic, kainate) plays a critical role in synaptic potentiation, which is an essential process for learning and memory. Among the five known GRIK family members, haploinsufficiency of GRIK1, GRIK2, and GRIK4 are known to cause developmental delay, whereas the roles of GRIK3 and GRIK5 remain unknown. Herein, we report on a girl who presented with a severe developmental delay predominantly affecting her language and fine motor skills. She had a 2.6-Mb microdeletion in 1p34.3 involving GRIK3, which encodes a principal subunit of the kainate-type ionotropic glutamate receptor. Given its strong expression pattern in the central nervous system and the biological function of GRIK3 in presynaptic neurotransmission, the haploinsufficiency of GRIK3 is likely to be responsible for the severe developmental delay in the proposita. A review of genetic alterations and the phenotypic effects of all the GRIK family members support this hypothesis. The current observation of a microdeletion involving GRIK3, a kainate-type ionotropic glutamate receptor subunit, and the neurodevelopmental manifestation in the absence of major dysmorphism provides further clinical implication of the possible role of GRIK family glutamate receptors in the pathogenesis of developmental delay.", 
+          "qas": [
+            {
+              "question": "Which is the protein encoded by the human gene GRIK?", 
+              "id": "56f6d11c09dd18d46b00000f_001"
+            }
+          ]
+        }, 
+        {
+          "context": "PD-1 Blockade in Advanced Melanoma in Patients with Hepatitis C and/or HIV. On the basis of remarkable antitumor activity, programmed death receptor-1 (PD-1) inhibitors pembrolizumab and nivolumab were approved for the treatment of advanced melanoma in the second-line setting following progression on either CTLA-4 inhibitor ipilimumab or BRAF/MEK inhibitors (for BRAF mutated melanoma). Given hypothesized risk of triggering exacerbations of autoimmune diseases and/or chronic viral infections, clinical trials (including regulatory studies) evaluating checkpoint blocking antibodies PD-1 and CTLA-4 have excluded patients with autoimmune diseases, chronic hepatitis B/C virus (HBV/HCV), and/or human immunodeficiency virus (HIV) infections. Herein, we describe two patients with advanced melanoma and concomitant HCV/HIV infections treated with PD-1 inhibitor pembrolizumab. Patient 2 with HIV/HCV coinfection progressed after 2 doses of pembrolizumab. Patient 1 who had HCV alone was treated with pembrolizumab with initial partial response. HCV viral load remained stable after 9 cycles of pembrolizumab following which 12-week course of HCV-directed therapy was commenced, resulting in prompt reduction of HCV viral load below detectable levels. Response is ongoing and HCV viral load remains undetectable. In both patients, no significant toxicities were observed when pembrolizumab was initiated. We argue for the further investigation of checkpoint inhibition in cancer patients with underlying chronic viral infections in the context of carefully designed clinical trials.", 
+          "qas": [
+            {
+              "question": "Which is the target protein of the drug nivolumab?", 
+              "id": "56f780cb09dd18d46b000011_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Overall Survival and Long-Term Safety of Nivolumab (Anti-Programmed Death 1 Antibody, BMS-936558, ONO-4538) in Patients With Previously Treated Advanced Non-Small-Cell Lung Cancer. PURPOSE: Programmed death 1 is an immune checkpoint that suppresses antitumor immunity. Nivolumab, a fully human immunoglobulin G4 programmed death 1 immune checkpoint inhibitor antibody, was active and generally well tolerated in patients with advanced solid tumors treated in a phase I trial with expansion cohorts. We report overall survival (OS), response durability, and long-term safety in patients with non-small-cell lung cancer (NSCLC) receiving nivolumab in this trial. PATIENTS AND METHODS: Patients (N = 129) with heavily pretreated advanced NSCLC received nivolumab 1, 3, or 10 mg/kg intravenously once every 2 weeks in 8-week cycles for up to 96 weeks. Tumor burden was assessed by RECIST (version 1.0) after each cycle. RESULTS: Median OS across doses was 9.9 months; 1-, 2-, and 3-year OS rates were 42%, 24%, and 18%, respectively, across doses and 56%, 42%, and 27%, respectively, at the 3-mg/kg dose (n = 37) chosen for further clinical development. Among 22 patients (17%) with objective responses, estimated median response duration was 17.0 months. An additional six patients (5%) had unconventional immune-pattern responses. Response rates were similar in squamous and nonsquamous NSCLC. Eighteen responding patients discontinued nivolumab for reasons other than progressive disease; nine (50%) of those had responses lasting > 9 months after their last dose. Grade 3 to 4 treatment-related adverse events occurred in 14% of patients. Three treatment-related deaths (2% of patients) occurred, each associated with pneumonitis. CONCLUSION: Nivolumab monotherapy produced durable responses and encouraging survival rates in patients with heavily pretreated NSCLC. Randomized clinical trials with nivolumab in advanced NSCLC are ongoing.", 
+          "qas": [
+            {
+              "question": "Which is the target protein of the drug nivolumab?", 
+              "id": "56f780cb09dd18d46b000011_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Combined Nivolumab and Ipilimumab or Monotherapy in Untreated Melanoma. BACKGROUND: Nivolumab (a programmed death 1 [PD-1] checkpoint inhibitor) and ipilimumab (a cytotoxic T-lymphocyte-associated antigen 4 [CTLA-4] checkpoint inhibitor) have been shown to have complementary activity in metastatic melanoma. In this randomized, double-blind, phase 3 study, nivolumab alone or nivolumab plus ipilimumab was compared with ipilimumab alone in patients with metastatic melanoma. METHODS: We assigned, in a 1:1:1 ratio, 945 previously untreated patients with unresectable stage III or IV melanoma to nivolumab alone, nivolumab plus ipilimumab, or ipilimumab alone. Progression-free survival and overall survival were coprimary end points. Results regarding progression-free survival are presented here. RESULTS: The median progression-free survival was 11.5 months (95% confidence interval [CI], 8.9 to 16.7) with nivolumab plus ipilimumab, as compared with 2.9 months (95% CI, 2.8 to 3.4) with ipilimumab (hazard ratio for death or disease progression, 0.42; 99.5% CI, 0.31 to 0.57; P<0.001), and 6.9 months (95% CI, 4.3 to 9.5) with nivolumab (hazard ratio for the comparison with ipilimumab, 0.57; 99.5% CI, 0.43 to 0.76; P<0.001). In patients with tumors positive for the PD-1 ligand (PD-L1), the median progression-free survival was 14.0 months in the nivolumab-plus-ipilimumab group and in the nivolumab group, but in patients with PD-L1-negative tumors, progression-free survival was longer with the combination therapy than with nivolumab alone (11.2 months [95% CI, 8.0 to not reached] vs. 5.3 months [95% CI, 2.8 to 7.1]). Treatment-related adverse events of grade 3 or 4 occurred in 16.3% of the patients in the nivolumab group, 55.0% of those in the nivolumab-plus-ipilimumab group, and 27.3% of those in the ipilimumab group. CONCLUSIONS: Among previously untreated patients with metastatic melanoma, nivolumab alone or combined with ipilimumab resulted in significantly longer progression-free survival than ipilimumab alone. In patients with PD-L1-negative tumors, the combination of PD-1 and CTLA-4 blockade was more effective than either agent alone. (Funded by Bristol-Myers Squibb; CheckMate 067 ClinicalTrials.gov number, NCT01844505.).", 
+          "qas": [
+            {
+              "question": "Which is the target protein of the drug nivolumab?", 
+              "id": "56f780cb09dd18d46b000011_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Nivolumab versus Docetaxel in Advanced Squamous-Cell Non-Small-Cell Lung Cancer. BACKGROUND: Patients with advanced squamous-cell non-small-cell lung cancer (NSCLC) who have disease progression during or after first-line chemotherapy have limited treatment options. This randomized, open-label, international, phase 3 study evaluated the efficacy and safety of nivolumab, a fully human IgG4 programmed death 1 (PD-1) immune-checkpoint-inhibitor antibody, as compared with docetaxel in this patient population. METHODS: We randomly assigned 272 patients to receive nivolumab, at a dose of 3 mg per kilogram of body weight every 2 weeks, or docetaxel, at a dose of 75 mg per square meter of body-surface area every 3 weeks. The primary end point was overall survival. RESULTS: The median overall survival was 9.2 months (95% confidence interval [CI], 7.3 to 13.3) with nivolumab versus 6.0 months (95% CI, 5.1 to 7.3) with docetaxel. The risk of death was 41% lower with nivolumab than with docetaxel (hazard ratio, 0.59; 95% CI, 0.44 to 0.79; P<0.001). At 1 year, the overall survival rate was 42% (95% CI, 34 to 50) with nivolumab versus 24% (95% CI, 17 to 31) with docetaxel. The response rate was 20% with nivolumab versus 9% with docetaxel (P=0.008). The median progression-free survival was 3.5 months with nivolumab versus 2.8 months with docetaxel (hazard ratio for death or disease progression, 0.62; 95% CI, 0.47 to 0.81; P<0.001). The expression of the PD-1 ligand (PD-L1) was neither prognostic nor predictive of benefit. Treatment-related adverse events of grade 3 or 4 were reported in 7% of the patients in the nivolumab group as compared with 55% of those in the docetaxel group. CONCLUSIONS: Among patients with advanced, previously treated squamous-cell NSCLC, overall survival, response rate, and progression-free survival were significantly better with nivolumab than with docetaxel, regardless of PD-L1 expression level. (Funded by Bristol-Myers Squibb; CheckMate 017 ClinicalTrials.gov number, NCT01642004.).", 
+          "qas": [
+            {
+              "question": "Which is the target protein of the drug nivolumab?", 
+              "id": "56f780cb09dd18d46b000011_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Nivolumab versus Everolimus in Advanced Renal-Cell Carcinoma. BACKGROUND: Nivolumab, a programmed death 1 (PD-1) checkpoint inhibitor, was associated with encouraging overall survival in uncontrolled studies involving previously treated patients with advanced renal-cell carcinoma. This randomized, open-label, phase 3 study compared nivolumab with everolimus in patients with renal-cell carcinoma who had received previous treatment. METHODS: A total of 821 patients with advanced clear-cell renal-cell carcinoma for which they had received previous treatment with one or two regimens of antiangiogenic therapy were randomly assigned (in a 1:1 ratio) to receive 3 mg of nivolumab per kilogram of body weight intravenously every 2 weeks or a 10-mg everolimus tablet orally once daily. The primary end point was overall survival. The secondary end points included the objective response rate and safety. RESULTS: The median overall survival was 25.0 months (95% confidence interval [CI], 21.8 to not estimable) with nivolumab and 19.6 months (95% CI, 17.6 to 23.1) with everolimus. The hazard ratio for death with nivolumab versus everolimus was 0.73 (98.5% CI, 0.57 to 0.93; P=0.002), which met the prespecified criterion for superiority (P < 0.0148). The objective response rate was greater with nivolumab than with everolimus (25% vs. 5%; odds ratio, 5.98 [95% CI, 3.68 to 9.72]; P<0.001). The median progression-free survival was 4.6 months (95% CI, 3.7 to 5.4) with nivolumab and 4.4 months (95% CI, 3.7 to 5.5) with everolimus (hazard ratio, 0.88; 95% CI, 0.75 to 1.03; P=0.11). Grade 3 or 4 treatment-related adverse events occurred in 19% of the patients receiving nivolumab and in 37% of the patients receiving everolimus; the most common event with nivolumab was fatigue (in 2% of the patients), and the most common event with everolimus was anemia (in 8%). CONCLUSIONS: Among patients with previously treated advanced renal-cell carcinoma, overall survival was longer and fewer grade 3 or 4 adverse events occurred with nivolumab than with everolimus. (Funded by Bristol-Myers Squibb; CheckMate 025 ClinicalTrials.gov number, NCT01668784.).", 
+          "qas": [
+            {
+              "question": "Which is the target protein of the drug nivolumab?", 
+              "id": "56f780cb09dd18d46b000011_004"
+            }
+          ]
+        }, 
+        {
+          "context": "Nivolumab in the treatment of malignant melanoma: review of the literature. Nivolumab was developed as a monoclonal antibody against programmed death receptor-1, an immune checkpoint inhibitor which negatively regulates T-cell proliferation and activation. Intravenous administration of nivolumab was approved for the treatment of unresectable malignant melanoma in 2014 in Japan. When advanced melanoma patients were treated with nivolumab, median overall survival became longer. Overall survival rate was significantly better in nivolumab-treated melanoma patients than dacarbazine-treated melanoma patients. Nivolumab had an acceptable long-term tolerability profile, with 22% of patients experiencing grade 3 or 4 adverse events related to the drug. Therefore, nivolumab can become an alternative therapy for advanced malignant melanoma.", 
+          "qas": [
+            {
+              "question": "Which is the target protein of the drug nivolumab?", 
+              "id": "56f780cb09dd18d46b000011_005"
+            }
+          ]
+        }, 
+        {
+          "context": "Viroids: unusual small pathogenic RNAs. Viroids are small (about 300 nucleotides), single-stranded, circular, non-encapsidated pathogenic RNA molecules. They do not code for proteins and thus depend on plant host enzymes for their replication and other functions. They induce plant diseases by direct interaction with host factors but the mechanism of pathogenicity is still unknown. They can alter the expression of selected plant genes important for growth and development. Viroids belong to two families, the Avsunviroidae and the Pospiviroidae. Viroids of the Avsunviroidae family adopt a branched or quasi rod-like secondary structure in their native state. Members of the Pospiviroidae family adopt a rod-like secondary structure. In such native structures five structural/functional domains have been identified: central (C), pathogenicity, variable and two terminal domains. The central conserved region (CCR) within the C domain characterizes viroids of the Pospiviroidae. Specific secondary structures of this region play an important role in viroid replication and processing. Viroids of the Avsunviroidae family lack a CCR but possess self-cleaving properties by forming hammerhead ribozyme structures; they accumulate and replicate in chloroplasts, whereas members of the Pospiviroidae family have a nuclear localization. Viroid replication occurs via a rolling circle mechanism using either a symmetric or asymmetric pathway in three steps, RNA transcription, processing and ligation.", 
+          "qas": [
+            {
+              "question": "What is the mechanism of viroid replication?", 
+              "id": "56f3faed09dd18d46b000002_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Analysis of viroid replication. Viroids, as a consequence of not encoding any protein, are extremely dependent on their hosts. Replication of these minimal genomes, composed exclusively by a circular RNA of 246-401 nt, occurs in the nucleus (family Pospiviroidae) or in the chloroplast (family Avsunviroidae) by an RNA-based rolling-circle mechanism with three steps: (1) synthesis of longer-than-unit strands catalyzed by host DNA-dependent RNA polymerases recruited and redirected to transcribe RNA templates, (2) cleavage to unit-length, which in family Avsunviroidae is mediated by hammerhead ribozymes, and (3) circularization through an RNA ligase or autocatalytically. This consistent but still fragmentary picture has emerged from a combination of studies with in vitro systems (analysis of RNA preparations from infected plants, transcription assays with nuclear and chloroplastic fractions, characterization of enzymes and ribozymes mediating cleavage and ligation of viroid strands, dissection of 5' terminal groups of viroid strands, and in situ hybridization and microscopy of subcellular fractions and tissues), and in vivo systems (tissue infiltration studies, protoplasts, studies in planta and use of transgenic plants expressing viroid RNAs).", 
+          "qas": [
+            {
+              "question": "What is the mechanism of viroid replication?", 
+              "id": "56f3faed09dd18d46b000002_001"
+            }
+          ]
+        }, 
+        {
+          "context": "The peach latent mosaic viroid replication initiation site is located at a universal position that appears to be defined by a conserved sequence. Viroids replicate through a rolling circle mechanism that is exclusively RNA dependent. In this study, we initially revisited the determination of the replication initiation sites of peach latent mosaic viroid (PLMVd). A universal initiation site for each of the PLMVd polarities (position A50/C51 and U284 for the plus and minus strands, respectively) that is shared by a relatively wide repertoire of viroid variants was identified, in agreement with a previous report based on a different methodology. Subsequently, an in vitro selection procedure based on a model rolling circle replication assay was developed. This latter experiment led to the identification of a highly conserved CAGACG box which is reminiscent of the sequence found in the vicinity of the PLMVd initiation sites. The conserved sequence contributes to delineating the initiation site and provides an explanation for the presence of a specific universal initiation site on the PLMVd molecule.", 
+          "qas": [
+            {
+              "question": "What is the mechanism of viroid replication?", 
+              "id": "56f3faed09dd18d46b000002_002"
+            }
+          ]
+        }, 
+        {
+          "context": "DNA-dependent RNA polymerase II of plant origin transcribes viroid RNA into full-length copies. DNA-dependent RNA polymerase II purified from healthy plant tissue is capable of synthesizing linear (-)-viroid RNA copies of full length from (+)-viroid RNA templates in vitro. Together with the specific alpha-amanitin sensitivity of viroid replication observed in vivo, these findings suggest that viroids replicate by an entirely novel mechanism in which infecting viroid RNA molecules are copied by the host enzyme which is normally responsible for the synthesis of nuclear precursors to messenger RNA.", 
+          "qas": [
+            {
+              "question": "What is the mechanism of viroid replication?", 
+              "id": "56f3faed09dd18d46b000002_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Analysis and application of viroid-specific small RNAs generated by viroid-inducing RNA silencing. Viroids are noncoding RNA pathogens inducing severe to mild disease symptoms on agriculturally important crop plants. Viroid replication is entirely dependent on host transcription machinery, and their replication/accumulation in the infected cells can activate RNA silencing-a host defense mechanism that targets the viroid itself. RNA silencing produces in the cell large amounts of viroid-specific small RNAs of 21-24-nucleotides by cleaving (or \"dicing\") entire molecules of viroid RNA. However, viroid replication is resistant to the effects of RNA silencing and disrupts the normal regulation of host gene expression, finally resulting in the development of disease symptoms on infected plant. The molecular mechanisms of biological processes involving RNA silencing and underlying various aspects of viroid-host interaction, such as symptom expression, are of special interests to both basic and applied areas of viroid research. Here we present a method to create infectious viroid cDNA clones and RNA transcripts, the starting material for such analyses, using Hop stunt viroid as an example. Next we describe methods for the preparation and analysis of viroid-specific small RNAs by deep sequencing using tomato plants infected with Potato spindle tuber viroid as an example. Finally we introduce bioinformatics tools and methods necessary to process, analyze, and characterize these viroid-specific small RNAs. These bioinformatic methods provide a powerful new tool for the detection and discovery of both known and new viroid species.", 
+          "qas": [
+            {
+              "question": "What is the mechanism of viroid replication?", 
+              "id": "56f3faed09dd18d46b000002_004"
+            }
+          ]
+        }, 
+        {
+          "context": "Domains in viroids: evidence of intermolecular RNA rearrangements and their contribution to viroid evolution. On the basis of sequence homology a model is proposed for five structural and functional domains in viroids. These domains include (i) a conserved central region capable of forming two alternative structures that may regulate two phases of the viroid replication cycle, (ii) a region associated with pathogenicity, (iii) a domain with high sequence variability, (iv and v) two terminal domains that are interchangeable between viroids. That the evolution of viroids has involved RNA rearrangements of domains is supported by the partial duplication of coconut cadang cadang viroid, which arises de novo during each infection. Similar RNA rearrangements have been established for animal viral defective interfering RNAs, which arise by some form of discontinuous transcription. This mechanism could account for the origin of viroids and also RNA viruses, whereby modules of genetic information may have undergone repeated exchange between RNA pathogens and the RNA of their hosts.", 
+          "qas": [
+            {
+              "question": "What is the mechanism of viroid replication?", 
+              "id": "56f3faed09dd18d46b000002_005"
+            }
+          ]
+        }, 
+        {
+          "context": "Viroid RNA is accepted as a template for in vitro transcription by DNA-dependent DNA polymerase I and RNA polymerase from Escherichia coli. The RNA genome of potato spindle tuber viroid (PSTV) is transcribed in vitro into complementary DNA and RNA by DNA-dependent DNA polymerase I and RNA polymerase, respectively, from Escherichia coli. In vitro synthesis of complementary RNA produces distinct transcripts larger than unit length thus reflecting the in vivo mechanism of viroid replication. The influence of varying experimental conditions on the transcription process is studied; actinomycin D is found to drastically reduce complementary RNA synthesis from the PSTV RNA template by RNA polymerase.", 
+          "qas": [
+            {
+              "question": "What is the mechanism of viroid replication?", 
+              "id": "56f3faed09dd18d46b000002_006"
+            }
+          ]
+        }, 
+        {
+          "context": "Viroid replication: rolling-circles, enzymes and ribozymes. Viroids, due to their small size and lack of protein-coding capacity, must rely essentially on their hosts for replication. Intriguingly, viroids have evolved the ability to replicate in two cellular organella, the nucleus (family Pospiviroidae) and the chloroplast (family Avsunviroidae). Viroid replication proceeds through an RNA-based rolling-circle mechanism with three steps that, with some variations, operate in both polarity strands: i) synthesis of longer-than-unit strands catalyzed by either the nuclear RNA polymerase II or a nuclear-encoded chloroplastic RNA polymerase, in both instances redirected to transcribe RNA templates, ii) cleavage to unit-length, which in the family Avsunviroidae is mediated by hammerhead ribozymes embedded in both polarity strands, while in the family Pospiviroidae the oligomeric RNAs provide the proper conformation but not the catalytic activity, and iii) circularization. The host RNA polymerases, most likely assisted by additional host proteins, start transcription from specific sites, thus implying the existence of viroid promoters. Cleavage and ligation in the family Pospiviroidae is probably catalyzed by an RNase III-like enzyme and an RNA ligase able to circularize the resulting 5' and 3' termini. Whether a chloroplastic RNA ligase mediates circularization in the family Avsunviroidae, or this reaction is autocatalytic, remains an open issue.", 
+          "qas": [
+            {
+              "question": "What is the mechanism of viroid replication?", 
+              "id": "56f3faed09dd18d46b000002_007"
+            }
+          ]
+        }, 
+        {
+          "context": "Precisely full length, circularizable, complementary RNA: an infectious form of potato spindle tuber viroid. The replication of many viral and subviral pathogens as well as the amplification of certain cellular genes proceeds via a rolling circle mechanism. For potato spindle tuber (PSTVd) and related viroids, the possible role of a circular (-)strand RNA as a template for synthesis of (+)strand progeny is unclear. Infected plants appear to contain only multimeric linear (-)strand RNAs, and attempts to initiate infection with multimeric (-)PSTVd RNAs generally have failed. To examine critically the infectivity of monomeric (-)strand viroid RNAs, we have developed a ribozyme-based expression system for the production of precisely full length (-)strand RNAs whose termini are capable of undergoing facile circularization in vitro. Mechanical inoculation of tomato seedlings with electrophoretically purified (-)PSTVd RNA led to a small fraction of plants becoming infected whereas parallel assays with an analogous tomato planta macho viroid (-)RNA resulted in a much larger fraction of infected plants. Ribozyme-mediated production of (-)PSTVd RNA in transgenic plants led to the appearance of monomeric circular (-)PSTVd RNA and large amounts of (+)PSTVd progeny. No monomeric circular (-)PSTVd RNA could be detected in naturally infected plants by using either ribonuclease protection or electrophoresis under partially denaturing conditions. Although not a component of the normal replicative pathway, precisely full length (-)PSTVd RNA appears to contain all of the structural and regulatory elements necessary for initiation of viroid replication.", 
+          "qas": [
+            {
+              "question": "What is the mechanism of viroid replication?", 
+              "id": "56f3faed09dd18d46b000002_008"
+            }
+          ]
+        }, 
+        {
+          "context": "The physiological target for LeuRS translational quality control is norvaline. The fidelity of protein synthesis depends on the capacity of aminoacyl-tRNA synthetases (AARSs) to couple only cognate amino acid-tRNA pairs. If amino acid selectivity is compromised, fidelity can be ensured by an inherent AARS editing activity that hydrolyses mischarged tRNAs. Here, we show that the editing activity of Escherichia coli leucyl-tRNA synthetase (EcLeuRS) is not required to prevent incorrect isoleucine incorporation. Rather, as shown by kinetic, structural and in vivo approaches, the prime biological function of LeuRS editing is to prevent mis-incorporation of the non-standard amino acid norvaline. This conclusion follows from a reassessment of the discriminatory power of LeuRS against isoleucine and the demonstration that a LeuRS editing-deficient E. coli strain grows normally in high concentrations of isoleucine but not under oxygen deprivation conditions when norvaline accumulates to substantial levels. Thus, AARS-based translational quality control is a key feature for bacterial adaptive response to oxygen deprivation. The non-essential role for editing under normal bacterial growth has important implications for the development of resistance to antimicrobial agents targeting the LeuRS editing site.", 
+          "qas": [
+            {
+              "question": "Which is the physiological target for LeuRS translational quality control?", 
+              "id": "56ae57350a360a5e4500000a_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Arf6-GEF BRAG1 regulates JNK-mediated synaptic removal of GluA1-containing AMPA receptors: a new mechanism for nonsyndromic X-linked mental disorder. Activity-dependent modifications of excitatory synapses contribute to synaptic maturation and plasticity, and are critical for learning and memory. Consequently, impairments in synapse formation or synaptic transmission are thought to be responsible for several types of mental disabilities. BRAG1 is a guanine nucleotide exchange factor for the small GTP-binding protein Arf6 that localizes to the postsynaptic density of excitatory synapses. Mutations in BRAG1 have been identified in families with X-linked intellectual disability (XLID). These mutations mapped to either the catalytic domain or an IQ-like motif; however, the pathophysiological basis of these mutations remains unknown. Here, we show that the BRAG1 IQ motif binds apo-calmodulin (CaM), and that calcium-induced CaM release triggers a reversible conformational change in human BRAG1. We demonstrate that BRAG1 activity, stimulated by activation of NMDA-sensitive glutamate receptors, depresses AMPA receptor (AMPA-R)-mediated transmission via JNK-mediated synaptic removal of GluA1-containing AMPA-Rs in rat hippocampal neurons. Importantly, a BRAG1 mutant that fails to activate Arf6 also fails to depress AMPA-R signaling, indicating that Arf6 activity is necessary for this process. Conversely, a mutation in the BRAG1 IQ-like motif that impairs CaM binding results in hyperactivation of Arf6 signaling and constitutive depression of AMPA transmission. Our findings reveal a role for BRAG1 in response to neuronal activity with possible clinical relevance to nonsyndromic XLID.", 
+          "qas": [
+            {
+              "question": "Which disease is linked to mutations within BRAG1?", 
+              "id": "56f7fe3709dd18d46b000015_000"
+            }
+          ]
+        }, 
+        {
+          "context": "[Images in cardiology after clinical observation - aortic dissection in Marfan syndrome]. INTRODUCTION: Stanford type A aortic dissection is a rare phenomenon with high short-term mortality and clinical manifestations that can make differential diagnosis a lengthy process requiring several diagnostic examinations. OBJECTIVES: Based on a case report, the aim is to highlight the importance of physical examination in the initial management of these patients and of rapid access to a surgical center. A brief review follows on the diagnosis and treatment of ascending aortic dissection, and its specific nature in Marfan syndrome. CASE REPORT: A 33-year-old man was admitted to the emergency department of a district hospital with chest and back pain associated with vomiting, 20 hours after symptom onset. Initial physical examination revealed an aortic systolic murmur and musculoskeletal morphological abnormalities compatible with Marfan syndrome. Given suspected aortic dissection, a transthoracic echocardiogram was immediately performed, which showed an extensive intimal flap originating at the sinotubular junction. He was transferred to the cardiothoracic surgery department of a referral hospital where he was treated by a Bentall procedure. CONCLUSION: In this case, careful physical examination during initial assessment raised the suspicion that this patient was in a high-risk group for aortic dissection, thus avoiding unnecessary and lengthy exams. This diagnosis requires emergent surgical treatment, and so direct contact in real time between those making in the diagnosis and the surgeon is essential, as well as protocols governing immediate access to a surgical center.", 
+          "qas": [
+            {
+              "question": "What is the main symptom of Marfan syndrome patients?", 
+              "id": "56f4011709dd18d46b000003_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Marfan syndrome and symptomatic sacral cyst: report of two cases. CONTEXT: Meningeal abnormalities such as dural ectasia are seen in Marfan syndrome, but spinal meningeal cysts are rarely seen. These cysts usually asymptomatic and often found incidentally on magnetic resonance imaging, large cysts may cause neurological deficits and pain secondary to nerve root compression. DESIGN: Case reports. FINDINGS: Two patients with Marfan syndrome presented with urinary symptoms secondary to dural ectasia and sacral cysts. Patient 1 had a history of low back pain, erectile dysfunction, and occasional urinary incontinence and groin pain with recent symptom worsening. He underwent L5 partial laminectomy and S1-S2 laminectomy with sacral cyst decompression. Nine weeks later, he underwent drainage of a sacral pseudomeningocele. Pain and urinary symptoms resolved, and he remains neurologically normal 2 years after surgery. Patient 2 presented after a fall on his tailbone, complaining of low back pain and difficulty urinating. Physical therapy was implemented, but after 4 weeks, urinary retention had not improved. He then underwent resection of the sacral cyst and S1-S3 laminectomy. Pain and paresthesias resolved and bowel function returned to normal. Other than needing intermittent self-catheterization, all other neurologic findings were normal 30 months after surgery. CONCLUSION/CLINICAL RELEVANCE: Surgical goals for sacral cysts include resection as well as closure of the dura, which can be challenging due to thinning from ectasia. Neurosurgical intervention in Marfan syndrome is associated with a high risk of dural tears and osseous complications, and should be performed only when symptoms are severe.", 
+          "qas": [
+            {
+              "question": "What is the main symptom of Marfan syndrome patients?", 
+              "id": "56f4011709dd18d46b000003_001"
+            }
+          ]
+        }, 
+        {
+          "context": "[Marfan syndrome and cystic kidneys of the adult type]. For the first time Bernhard Marfan described the Marfan-Syndrome in 1896; it is a meso- and ectodermed variety with the conducting symptom of \"arachnodactyly\". Marfan-Syndrome is an autosomal dominant hereditary disorder with high penetrance and variable expressivity. In our opinion this case of a 41-year-old patient with kidney cysts and aneurysma dissecans of the arteria ascendens by Marfan-Syndrome was described in the literature only twice. The casuistics of this Marfan-Syndrome patient shows a particular rare associated organ-change--the kidney cysts--and illustrate the frequency of this hereditary disease.", 
+          "qas": [
+            {
+              "question": "What is the main symptom of Marfan syndrome patients?", 
+              "id": "56f4011709dd18d46b000003_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Color flow and conventional echocardiography of the Marfan syndrome. Imaging and color flow Doppler echocardiography are an integral part of any evaluation of a patient with the Marfan syndrome. The major cardiovascular manifestations of this condition are aortic dilation, which may involve the proximal and distal aorta, aortic regurgitation, aortic dissection, mitral valve prolapse, and mitral regurgitation. Patients who have the Marfan syndrome should have serial echocardiograms to measure aortic root diameter carefully at the sinuses of Valsalva and subsequent levels (sinotubular junction, arch, descending and abdominal aorta). Additionally, color Doppler echocardiography assists in the diagnosis of aortic dissection and facilitates evaluation of the severity of aortic and mitral regurgitation that commonly complicate the Marfan syndrome. The risk of aortic dissection, which is the most serious manifestation of the Marfan syndrome, increases as the aorta enlarges. Therefore, elective composite graft surgery is recommended when the aortic root size reaches 60 mm, regardless of symptom status, or 55 mm in the presence of severe aortic regurgitation. Surgical replacement of the aortic root with a composite graft does not end the disease process. Color flow Doppler is useful in the diagnosis of dehiscence of the conduit sewing ring, coronary artery aneurysm, distal aortic dissections, and prosthetic valve dysfunction.", 
+          "qas": [
+            {
+              "question": "What is the main symptom of Marfan syndrome patients?", 
+              "id": "56f4011709dd18d46b000003_003"
+            }
+          ]
+        }, 
+        {
+          "context": "[Marfan syndrome: clinical and pathomorphological restructurings after surgical treatment of aortic aneurysm]. The authors examined the state of patients suffering from Marfan syndrome (MS) who endured operation for ascending aorta aneurysm with replacement of the ascending aorta and aortic valve (Bentall operation), studying alterations of the skeleton, face, heart and eyes, as well as pathomorphological restructurings in the aortic wall. The study was carried out 7.0 \u00b1 4.2 years after the operation. We examined a total of 39 patients with MS - 27 (69.2%) men and 12 (30.8%) women aged from 22 to 70 years old (average age - 42.1 \u00b1 13.4 years). All patients were operated on for dissecting aneurysm of the ascending aorta accompanied by a considerable degree of aortic valve insufficiency or aortic ostium stenosis. The mean diameter of the aorta at the level of the sinuses of Valsalva amounted to 7.0 \u00b1 1.3 cm (minimal - 5.0 cm, maximal - 12.0 cm), the Z-score prior to operation was 12.7 \u00b1 6.5. The time form making the diagnosis of MS to surgical intervention for aortic aneurysm amounted to 9.6 \u00b1 5.9 years. The condition after operative treatment in all patients was satisfactory, with the haemodynamic indices stable: systolic AP - 133.5 \u00b1 19.1 mm Hg, diastolic AP 85.1 \u00b1 12.9 mm Hg, heart rate 74.8 \u00b1 7.2 bpm. The average systemic score for the symptoms and tests of MS patients amounted to 8.2 \u00b1 3.3 points. Pathohistological alterations of the aorta in patients with Marfan syndrome consisted in pronounced restructuring of the wall with deep irreversible alternative changes. The pathological process extended in the middle aortic layer all alone the length, but not only in the portions of rupture and dissection. The main pathomorphological signs in MS were as follows: focal accumulations of mucoid substances, dystrophic alterations of smooth-muscle cells, ribbon-like anuclear zones, formation of cystlike cavities, alterations of elastic fibres - fragmentation, hyperelastosis, multiplication, thinning and straightening, zones of elastolysis.", 
+          "qas": [
+            {
+              "question": "What is the main symptom of Marfan syndrome patients?", 
+              "id": "56f4011709dd18d46b000003_004"
+            }
+          ]
+        }, 
+        {
+          "context": "Current and future pharmacological treatment strategies with regard to aortic disease in Marfan syndrome. INTRODUCTION: Marfan syndrome is a multisystemic connective tissue disorder caused mainly by mutations in the fibrillin-1 gene. The entire cardiovascular system is affected in patients with Marfan syndrome. Aortic root dilatation, aortic valve regurgitation or - the most feared and life-threatening symptom - aortic root dissection are the most common manifestations. Therapeutic strategies, such as prophylactic aortic root surgery and pharmacological therapy, focus on the prevention of aortic dissection. Currently, the standard medicinal treatments targeting aortic dilatation and dissection consist of agents generally used to lower blood pressure and/or the inotropic state of the heart. By these means, the cyclic repetitive forces exerted on the aortic wall are diminished and thus the onset of aortic dilatation is potentially prevented. Although these pharmacological agents may offer some benefit in reduction of aortic aneurysm expansion rate, they do not target the underlying cause of the progressive aortic degradation. AREAS COVERED: This review discusses the effectiveness of frequently prescribed medications used to prevent and delay aortic complications in Marfan syndrome. New insights on the biochemical pathways leading to aortic disease are also discussed to highlight new targets for pharmacological therapy. EXPERT OPINION: Recent insights in the transforming growth factor beta signaling pathway and inflammatory mechanisms in a well-established mouse model of Marfan syndrome, have led to studies exploring new pharmacological treatment strategies with doxycycline, statins and angiotensin II receptor blockers. Pharmacological therapy is focused more on prevention than on delay of aortic wall pathology in Marfan syndrome. Of the new pharmacological treatment strategies targeting aortic pathology in Marfan syndrome, angiotensin receptor type 1 blockers are promising candidates, with several clinical trials currently ongoing.", 
+          "qas": [
+            {
+              "question": "What is the main symptom of Marfan syndrome patients?", 
+              "id": "56f4011709dd18d46b000003_005"
+            }
+          ]
+        }, 
+        {
+          "context": "Dural ectasia and the Marfan syndrome. The not-uncommon spinal abnormalities associated with Marfan's syndrome rarely undergird clinical problems, and neurological features accompanying such bone abnormalities are rare. In such unusual circumstances it is a widened vertebral canal that attracts attention: the substrate of such widening is dural ectasia with bone erosion, presumably due to hydraulic forces operating via the cerebrospinal fluid (CSF). When neural symptoms or findings do occur they may be related to stretching and traction mechanisms. This study of a symptomatic patient defined with reasonable clarity the abnormal anatomy, and some neurological symptom relief was achieved by attempting to alter the CSF dynamics. The relevant literature has been sampled to elucidate the condition.", 
+          "qas": [
+            {
+              "question": "What is the main symptom of Marfan syndrome patients?", 
+              "id": "56f4011709dd18d46b000003_006"
+            }
+          ]
+        }, 
+        {
+          "context": "[ The new 2010 Ghent criteria for the indication to surgical treatment of patients affected by Marfan syndrome. Experience of a single cardiac surgery center]. BACKGROUND: The diagnosis and surgical treatment of patients with Marfan syndrome remain controversial. It is of utmost importance to identify patients at risk for acute aortic events to establish the correct surgical timing and the appropriate surgical treatment. METHODS: From May 2008 to December 2012, 500 patients were screened at the Marfan Presidium of the Tor Vergata University Hospital of Rome (Italy). Patients were evaluated by a cardiac surgeon, including echocardiographic, orthopedic, ophthalmologic and dental examinations. All patients received genetic counseling, and genetic sampling was performed if appropriate. RESULTS: The diagnosis of Marfan syndrome was confirmed in 146 patients (29.2%). Fifty-four patients (37%) underwent cardiac surgery on the aortic root, 4 patients had surgery on the mitral valve, 13 patients had combined surgery; 11 cases were emergent surgery for acute aortic dissection. Twenty-eight patients (52%) were operated on at our Division: 13 underwent valve-sparing aortic root replacement (David procedure), 1 underwent Yacoub remodeling procedure and 14 underwent Bentall procedure. Following the establishment of the Marfan Center, the David aortic valve-sparing operation was the most frequently performed procedure compared to the previous period of surgical activity (63 vs 22%, p<0.0001). CONCLUSIONS: Regular follow-up twice a year may allow to identify patients at risk for acute aortic syndromes. Early surgical treatment is recommended in these patients to achieve optimal results of valve-sparing procedures and life-saving management, especially for patients who live far away from a cardiac surgery center.", 
+          "qas": [
+            {
+              "question": "What is the main symptom of Marfan syndrome patients?", 
+              "id": "56f4011709dd18d46b000003_007"
+            }
+          ]
+        }, 
+        {
+          "context": "Atypical Ch\u00e9diak-Higashi syndrome with attenuated phenotype: three adult siblings homozygous for a novel LYST deletion and with neurodegenerative disease. BACKGROUND: Mutations in LYST, a gene encoding a putative lysosomal trafficking protein, cause Ch\u00e9diak-Higashi syndrome (CHS), an autosomal recessive disorder typically characterized by infantile-onset hemophagocytic syndrome and immunodeficiency, and oculocutaneous albinism. A small number of reports of rare, attenuated forms of CHS exist, with affected individuals exhibiting progressive neurodegenerative disease beginning in early adulthood with cognitive decline, parkinsonism, features of spinocerebellar degeneration, and peripheral neuropathy, as well as subtle pigmentary abnormalities and subclinical or absent immune dysfunction. METHODS: In a consanguineous Pakistani kindred with clinical phenotypes consistent with attenuated CHS, we performed SNP array-based homozygosity mapping and whole gene sequencing of LYST. RESULTS: We identified three individuals homozygous for a novel six base pair in-frame deletion in LYST (c.9827_9832ATACAA), predicting the loss of asparagine and threonine residues from the LYST transcript (p.Asn3276_Thr3277del), and segregating with the phenotype in this family. CONCLUSIONS: We further characterize the neurologic features of the attenuated form of CHS, and discuss pathophysiologic mechanisms underlying the neurodegenerative components of CHS. Attenuated CHS is phenotypically heterogenous and should be considered when young adults develop neurodegenerative disease and have pigmentary abnormalities. We briefly discuss surveillance and management of patients with CHS-related neurodegeneration.", 
+          "qas": [
+            {
+              "question": "Which syndrome is associated with mutations in the LYST gene?", 
+              "id": "56f564f909dd18d46b000009_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Two novel CHS1 (LYST) mutations: clinical correlations in an infant with Chediak-Higashi syndrome. Chediak-Higashi syndrome (CHS) is a rare autosomal recessive disease characterized by variable degrees of oculocutaneous albinism, recurrent infections, and a mild bleeding tendency, with late neurologic dysfunction. Most patients also undergo an accelerated phase of lymphohistiocytosis and die at an early age unless they receive an allogeneic hematopoietic stem cell transplant (SCT). Mutations in the CHS1 (LYST) gene result in CHS. Here, we describe an adopted infant who is compound heterozygous for two novel CHS1 gene mutations, both of which are predicted to result in truncated proteins. The two mutations are a nonsense mutation (c.1540 C>T, CGA>TGA, R514X) in exon 5 and a one base pair deletion (del c.9893T, F3298fsX3304) in exon 43, coding for part of the CHS1 protein's BEACH domain. These two newly described mutations are expected to give rise to a severe phenotype and, indeed, the patient had absolutely no cytotoxicity by natural killer cells or cytotoxic lymphocytes prior to his allogeneic SCT.", 
+          "qas": [
+            {
+              "question": "Which syndrome is associated with mutations in the LYST gene?", 
+              "id": "56f564f909dd18d46b000009_001"
+            }
+          ]
+        }, 
+        {
+          "context": "OikoBase: a genomics and developmental transcriptomics resource for the urochordate Oikopleura dioica. We report the development of OikoBase (http://oikoarrays.biology.uiowa.edu/Oiko/), a tiling array-based genome browser resource for Oikopleura dioica, a metazoan belonging to the urochordates, the closest extant group to vertebrates. OikoBase facilitates retrieval and mining of a variety of useful genomics information. First, it includes a genome browser which interrogates 1260 genomic sequence scaffolds and features gene, transcript and CDS annotation tracks. Second, we annotated gene models with gene ontology (GO) terms and InterPro domains which are directly accessible in the browser with links to their entries in the GO (http://www.geneontology.org/) and InterPro (http://www.ebi.ac.uk/interpro/) databases, and we provide transcript and peptide links for sequence downloads. Third, we introduce the transcriptomics of a comprehensive set of developmental stages of O. dioica at high resolution and provide downloadable gene expression data for all developmental stages. Fourth, we incorporate a BLAST tool to identify homologs of genes and proteins. Finally, we include a tutorial that describes how to use OikoBase as well as a link to detailed methods, explaining the data generation and analysis pipeline. OikoBase will provide a valuable resource for research in chordate development, genome evolution and plasticity and the molecular ecology of this important marine planktonic organism.", 
+          "qas": [
+            {
+              "question": "Mention the only available genomics and developmental transcriptomics resource for the urochordate Oikopleura dioica", 
+              "id": "56ae6e650a360a5e4500000e_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Homozygous mutations in LPIN2 are responsible for the syndrome of chronic recurrent multifocal osteomyelitis and congenital dyserythropoietic anaemia (Majeed syndrome). BACKGROUND: Majeed syndrome is an autosomal recessive, autoinflammatory disorder characterised by chronic recurrent multifocal osteomyelitis and congenital dyserythropoietic anaemia. The objectives of this study were to map, identify, and characterise the Majeed syndrome causal gene and to speculate on its function and role in skin and bone inflammation. METHODS: Six individuals with Majeed syndrome from two unrelated families were identified for this study. Homozygosity mapping and parametric linkage analysis were employed for the localisation of the gene responsible for Majeed syndrome. Direct sequencing was utilised for the identification of mutations within the genes contained in the region of linkage. Expression studies and in silico characterisation of the identified causal gene and its protein were carried out. RESULTS: The phenotype of Majeed syndrome includes inflammation of the bone and skin, recurrent fevers, and dyserythropoietic anaemia. The clinical picture of the six affected individuals is briefly reviewed. The gene was mapped to a 5.5 cM interval (1.8 Mb) on chromosome 18p. Examination of genes in this interval led to the identification of homozygous mutations in LPIN2 in affected individuals from the two families. LPIN2 was found to be expressed in almost all tissues. The function of LPIN2 and its role in inflammation remains unknown. CONCLUSIONS: We conclude that homozygous mutations in LPIN2 result in Majeed syndrome. Understanding the aberrant immune response in this condition will shed light on the aetiology of other inflammatory disorders of multifactorial aetiology including isolated chronic recurrent multifocal osteomyelitis, Sweet syndrome, and psoriasis.", 
+          "qas": [
+            {
+              "question": "Which gene has been implicated in Majeed Syndrome?", 
+              "id": "56f7c15a09dd18d46b000012_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Biofoams and natural protein surfactants. Naturally occurring foam constituent and surfactant proteins with intriguing structures and functions are now being identified from a variety of biological sources. The ranaspumins from tropical frog foam nests comprise a range of proteins with a mixture of surfactant, carbohydrate binding and antimicrobial activities that together provide a stable, biocompatible, protective foam environment for developing eggs and embryos. Ranasmurfin, a blue protein from a different species of frog, displays a novel structure with a unique chromophoric crosslink. Latherin, primarily from horse sweat, but with similarities to salivary, oral and upper respiratory tract proteins, illustrates several potential roles for surfactant proteins in mammalian systems. These proteins, together with the previously discovered hydrophobins of fungi, throw new light on biomolecular processes at air-water and other interfaces. This review provides a perspective on these recent findings, focussing on structure and biophysical properties.", 
+          "qas": [
+            {
+              "question": "What is the color of the protein Ranasmurfin?", 
+              "id": "56f961b3cf1c325851000003_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Crystallization of Ranasmurfin, a blue-coloured protein from Polypedates leucomystax. Ranasmurfin, a previously uncharacterized approximately 13 kDa blue protein found in the nests of the frog Polypedates leucomystax, has been purified and crystallized. The crystals are an intense blue colour and diffract to 1.51 A with P2(1) symmetry and unit-cell parameters a = 40.9, b = 59.9, c = 45.0 A, beta = 93.3 degrees . Self-rotation function analysis indicates the presence of a dimer in the asymmetric unit. Biochemical data suggest that the blue colour of the protein is related to dimer formation. Sequence data for the protein are incomplete, but thus far have identified no model for molecular replacement. A fluorescence scan shows a peak at 9.676 keV, indicating that the protein binds zinc and suggesting a route for structure solution.", 
+          "qas": [
+            {
+              "question": "What is the color of the protein Ranasmurfin?", 
+              "id": "56f961b3cf1c325851000003_001"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

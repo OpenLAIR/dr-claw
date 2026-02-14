@@ -1,0 +1,79 @@
+{
+  "instance_id": "med_skills_agent_001",
+  "source_papers": [
+    {
+      "reference": "SkillRL: Skill-Based Reinforcement Learning for LLM Agents with Automatic Skill Discovery",
+      "rank": 1,
+      "type": "methodology",
+      "justification": "Core framework for automatic skill abstraction and hierarchical skill library construction from agent experiences via RL",
+      "usage": "Key methodological reference for skill discovery, SKILLBANK organization, and recursive skill evolution",
+      "url": "https://arxiv.org/abs/2602.08234"
+    },
+    {
+      "reference": "ToolLLM: Facilitating Large Language Models to Master 16000+ Real-world APIs",
+      "rank": 2,
+      "type": "methodology",
+      "justification": "Established framework for LLM tool-use with large-scale API integration, neural API retriever (ToolRetriever), and DFSDT reasoning",
+      "usage": "Reference for tool/skill retrieval architecture and standardized tool API format",
+      "url": "https://arxiv.org/abs/2307.16789"
+    },
+    {
+      "reference": "AgentSkillOS: Leveraging, Managing, and Scaling the Agent Skill Ecosystem",
+      "rank": 3,
+      "type": "methodology",
+      "justification": "OS for discovering, composing, and running skill pipelines from 90K+ skills using skill tree construction, LLM-guided retrieval, and DAG orchestration",
+      "usage": "Reference for skill organization, retrieval, and pipeline composition architecture",
+      "url": "https://github.com/ynulihao/AgentSkillOS"
+    },
+    {
+      "reference": "SkillsBench: Evaluating How Agent Skills Improve AI Agent Performance",
+      "rank": 4,
+      "type": "evaluation",
+      "justification": "First benchmark for evaluating agent skill effectiveness across 11 domains (86 tasks, 7300+ trials). Shows +16pp average, +51.9pp in healthcare",
+      "usage": "Evidence that skills are especially beneficial in healthcare; evaluation methodology reference",
+      "url": "https://www.skillsbench.ai/"
+    },
+    {
+      "reference": "TxAgent: An AI Agent for Therapeutic Reasoning Across a Universe of Tools",
+      "rank": 5,
+      "type": "methodology",
+      "justification": "Medical agent with ToolUniverse (211 biomedical tools), ToolGen (multi-agent tool construction from API docs), and ToolRAG (adaptive tool retrieval). Achieves 92.1% accuracy on drug reasoning",
+      "usage": "Key reference for automated medical tool construction (ToolGen) and domain-specific tool universe design",
+      "url": "https://arxiv.org/abs/2503.10970"
+    },
+    {
+      "reference": "MCP-Zero: Active Tool Discovery for Autonomous LLM Agents",
+      "rank": 6,
+      "type": "methodology",
+      "justification": "Active agent framework enabling LLMs to autonomously discover tools on-demand via MCP. Uses hierarchical semantic routing across 2797 tools with 98% token reduction",
+      "usage": "Reference for MCP-based active tool discovery and iterative capability extension",
+      "url": "https://arxiv.org/abs/2506.01056"
+    },
+    {
+      "reference": "HuggingGPT: Solving AI Tasks with ChatGPT and its Friends in Hugging Face",
+      "rank": 7,
+      "type": "methodology",
+      "justification": "Foundational work on LLM-as-controller connecting to expert models via API. Four-stage pipeline: task planning, model selection, task execution, response generation",
+      "usage": "Foundational reference for wrapping ML models as callable tools for an LLM controller",
+      "url": "https://arxiv.org/abs/2303.17580"
+    },
+    {
+      "reference": "MedAgentGym: Training LLM Agents for Code-Based Medical Reasoning at Scale",
+      "rank": 8,
+      "type": "methodology",
+      "justification": "ICLR 2026 paper on training medical LLM agents with code-based tool use. Demonstrates SFT and DPO for medical agent training",
+      "usage": "Reference for medical agent training methodology and code-based medical reasoning",
+      "url": "https://arxiv.org/abs/2506.04405"
+    },
+    {
+      "reference": "MedSAM-Agent: Empowering Interactive Medical Image Segmentation with Multi-turn Agentic Reinforcement Learning",
+      "rank": 9,
+      "type": "application",
+      "justification": "Direct intersection of medical segmentation and agentic RL. Multi-turn interaction with MedSAM via reinforcement learning for iterative refinement",
+      "usage": "Template for how Medical Agent invokes segmentation skills with iterative agentic refinement",
+      "url": "https://github.com/CUHK-AIM-Group/MedSAM-Agent"
+    }
+  ],
+  "task2": "Build a universal Medical Model-to-Skill wrapping pipeline and an LLM-powered Medical Agent that can discover, select, and compose Medical Skills for complex clinical workflows, targeting MICCAI 2026.\n\nCore Idea: Design a generic wrapping framework that can automatically convert any medical AI model (segmentation, classification, detection, registration, report generation, VQA, etc.) into a standardized Medical Skill using the Model Context Protocol (MCP) as the interoperability layer. The pipeline takes a medical model (with its code, weights, and API documentation) as input and produces a self-describing MCP-compatible Medical Skill as output — complete with structured input/output schemas, medical metadata (modality, anatomy, task type), safety constraints, and validation checks.\n\nKey Components:\n(1) Med-SkillGen: A universal wrapping pipeline (inspired by TxAgent's ToolGen) that auto-generates MCP-compatible Medical Skills from existing medical AI models. This includes: (a) automatic API analysis and schema extraction from model code/documentation, (b) medical metadata annotation (imaging modality, anatomical region, clinical task type, safety level), (c) standardized I/O interface generation following MCP tool specification, and (d) validation test generation to ensure skill correctness.\n(2) Med-SkillLib: A curated Medical Skills library built by applying Med-SkillGen to existing open-source medical models (MedSAM, MedSAM2, CheXagent, etc.) and existing Medical MCP servers (DICOM-MCP, healthcare-mcp-public, medical-calculator-MCP, etc.). The library organizes skills hierarchically by modality, anatomy, and task type.\n(3) Med-Agent: An LLM-powered agent that uses active skill discovery (inspired by MCP-Zero) to dynamically retrieve and compose Medical Skills from Med-SkillLib for multi-step clinical workflows. The agent performs task planning, skill selection via hierarchical semantic routing, execution graph construction, and result integration.\n\nThe key innovation bridges two worlds: (a) general-purpose agent skill frameworks (ToolLLM, AgentSkillOS, SkillRL, MCP-Zero) that lack medical domain expertise, and (b) isolated medical AI tools that lack interoperability and composability. By using MCP as the universal protocol, any medical model can be 'plugged in' as a skill, enabling the agent to solve complex clinical scenarios (e.g., 'Given this chest CT, segment the lungs, detect nodules, measure their size, assess malignancy risk, and generate a structured report') through dynamic skill composition.\n\nThis aligns with MICCAI 2026's theme 'From Algorithms to Clinical Translation' by making individual medical AI algorithms composable and deployable through a unified agent framework.",
+  "task1": ""
+}

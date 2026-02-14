@@ -1,0 +1,16 @@
+% \newpage
+\subsection*{A4: Multi-Agent Coding}
+\label{sec:app:optiguide}
+
+In this subsection, we use \libName to build a multi-agent coding system based on OptiGuide~\cite{li2023large}, a system that excels at writing code to interpret optimization solutions and answer user questions, such as exploring the implications of changing a supply-chain decision or understanding why the optimizer made a particular choice. 
+The second sub-figure of Figure~\ref{fig:app_summary} shows the \libName-based implementation.  The workflow is as follows:
+the end user sends questions, such as ``\emph{What if we prohibit shipping from supplier 1 to roastery 2?}" to the Commander agent.  
+The Commander coordinates with two assistant agents, including the Writer and the Safeguard, to answer the question. The Writer will craft code 
+and send the code to the Commander. 
+After receiving the code, the Commander checks the code safety with the Safeguard; if cleared, the Commander will use external tools (e.g., Python) to execute the code, and request the Writer to interpret the execution results. For instance, the writer may say ``\emph{if we prohibit shipping from supplier 1 to roastery 2, the total cost would increase by 10.5\%.}" The Commander then provides this concluding answer to the end user.  If, at a particular step, there is an exception, e.g., security red flag raised by Safeguard, the Commander redirects the issue back to the Writer with debugging information.
+The process might be repeated multiple times until the user's question is answered or timed-out. 
+
+With \libName the core workflow code for OptiGuide was reduced from over 430 lines to 100 lines, leading to significant productivity improvement. We provide a detailed comparison of user experience with ChatGPT+Code Interpreter and \libName-based OptiGuide in Appendix~\ref{appendix:app:optiguide}, where we show that \libName-based OptiGuide could save around 3x of user's time and reduce user interactions by 3 - 5 times on average.  We also conduct an ablation showing that multi-agent abstraction is necessary. Specifically, we construct a single-agent approach where a single agent conducts both the code-writing and safeguard processes. We tested the single- and multi-agent approaches on a dataset of 100 coding tasks, which is crafted to include equal numbers of safe and unsafe tasks.
+Evaluation results as reported in Figure \ref{fig:res:sageguard}
+show that the multi-agent design boosts the F-1 score in identifying unsafe code by 8\% (with GPT-4) and 35\% (with GPT-3.5-turbo). 
+

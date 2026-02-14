@@ -1,0 +1,51 @@
+% \newpage
+\section{Applications of \libName} \label{sec:app}
+We demonstrate six applications using \libName (see Figure~\ref{fig:app_summary}) to illustrate its potential in simplifying the development of high-performance multi-agent applications. These applications are selected based on their real-world relevance (A1, A2, A4, A5, A6),  problem difficulty and solving capabilities enabled by \libName (A1, A2, A3, A4), and innovative potential (A5, A6). Together, these criteria showcase \libName's role in advancing the LLM-application landscape.
+
+\begin{figure}[thb]
+\centering
+\includegraphics[width = \hsize]{figures/app_horizontal_6.pdf}
+\caption{Six examples of diverse applications built using \libName. Their conversation patterns show \libName's flexibility and power. 
+}
+\label{fig:app_summary}
+\end{figure}
+
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}[b]{0.43\textwidth}
+        \includegraphics[width=\textwidth]{figures/math_plot.pdf}
+        \caption{A1: Performance on MATH (w/ GPT-4).}
+        \label{fig:res:math}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.43\textwidth}
+    \includegraphics[width=\textwidth]{figures/ret_plot.pdf}
+    \caption{A2: Q\&A tasks (w/ GPT-3.5).}
+    \label{fig:res:retri}
+    \end{subfigure}
+     \begin{subfigure}[b]{0.43\textwidth}
+    \includegraphics[width=\textwidth]{figures/alfworld_plot.pdf}
+        \caption{A3: Performance on ALFWorld.}
+        \label{fig:res:alf}
+    \end{subfigure}
+        \begin{subfigure}[b]{0.43\textwidth}
+    \includegraphics[width=\textwidth]{figures/safeguard.pdf}
+        \caption{A4: Performance on OptiGuide. 
+        }
+        \label{fig:res:sageguard}
+    \end{subfigure}
+    \hfill 
+    \caption{ Performance on four applications A1-A4. 
+    (a) shows that \libName agents can be used out of the box to achieve the most competitive performance on math problem solving tasks; (b) shows that \libName can be used to realize effective retrieval augmentation and realize a novel interactive retrieval feature to boost performance on Q\&A tasks; (c) shows that \libName can be used to introduce a three-agent system with a grounding agent to improve performance on ALFWorld; (d) shows that a multi-agent design is helpful in boosting performance in coding tasks that need safeguards. 
+    }
+    \label{fig:results_all}
+\end{figure}
+
+
+\input{sec_iclr/__app_math}
+\input{sec_iclr/__app_retrievechat}
+\input{sec_iclr/__app_alfworld}
+\input{sec_iclr/__app_optiguide}
+\input{sec_iclr/__app_groupchat}
+\input{sec_iclr/__app_chess}
+

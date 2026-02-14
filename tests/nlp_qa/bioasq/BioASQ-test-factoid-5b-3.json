@@ -1,0 +1,802 @@
+{
+  "version": "BioASQ6b", 
+  "data": [
+    {
+      "title": "BioASQ6b", 
+      "paragraphs": [
+        {
+          "context": "Direct Activation of Bax Protein for Cancer Therapy. Bax, a central cell death regulator, is an indispensable gateway to mitochondrial dysfunction and a major proapoptotic member of the B-cell lymphoma 2 (Bcl-2) family proteins that control apoptosis in normal and cancer cells. Dysfunction of apoptosis renders the cancer cell resistant to treatment as well as promotes tumorigenesis. Bax activation induces mitochondrial membrane permeabilization, thereby leading to the release of apoptotic factor cytochrome c and consequently cancer cell death. A number of drugs in clinical use are known to indirectly activate Bax. Intriguingly, recent efforts demonstrate that Bax can serve as a promising direct target for small-molecule drug discovery. Several direct Bax activators have been identified to hold promise for cancer therapy with the advantages of specificity and the potential of overcoming chemo- and radioresistance. Further investigation of this new class of drug candidates will be needed to advance them into the clinic as a novel means to treat cancer.", 
+          "qas": [
+            {
+              "question": "What is the function of BAX", 
+              "id": "58bde18b02b8c60953000014_000"
+            }
+          ]
+        }, 
+        {
+          "context": "In vitro anti-tumor activity of the tanshinone IIA against SKOV3 cells. The aim of this study was to determine the anti-tumour activity of tanshinone IIA in SKOV3 cells. Results suggested that tanshinone IIA could significantly inhibit (IC50 value \u00a0=\u00a0 19.6\u00a0\u03bcM) the proliferation and induce apoptosis of SKOV3 cells as demonstrated by flow cytometry analysis. In addition, tanshinone IIA treatment induced G2/M phase cell cycle arrest in SKOV3 cells. The results of Western blotting indicated that tanshinone IIA can suppress the expression of anti-apoptotic protein Bcl-2, increase (0.28 vs. 0.62) the expression of pro-apoptotic protein Bax (0.83 vs. 0.24) in SKOV3 cells. It can be concluded that the tanshinone IIA may be a possible therapeutic candidate having cytotoxic and anti-tumour potential.", 
+          "qas": [
+            {
+              "question": "What is the function of BAX", 
+              "id": "58bde18b02b8c60953000014_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Inverse Relationship between Coffee Consumption and Cerebral Microbleeds in Men, but Not Women. BACKGROUND: Studies evaluating the association between coffee consumption and neurovascular diseases have frequently yielded contradictory results. The aim of this study was to investigate the association of coffee consumption with small-vessel disease (SVD) incidence in a healthy urban population while accounting for multiple demographic and lifestyle risk factors. METHODS: This prospective study conducted from May 2013 through March 2014 included 455 participants (314 men and 141 women) aged 25 to 92 years. All subjects completed a questionnaire on coffee consumption and received a comprehensive neurologic examination, including magnetic resonance imaging, at St. Luke's International Hospital (Tokyo, Japan). RESULTS: Incidence of SVD was lower in male daily coffee drinkers than male nondrinkers and occasional drinkers, whereas incidence of white matter lesions was lower in female daily coffee drinkers than female nondrinkers or occasional drinkers. In multivariate analyses including age, sex, smoking status, and BMI, as well as coffee consumption, incidence of microbleeds was significantly lower in male daily coffee drinkers compared to nondrinkers. CONCLUSIONS: Daily coffee consumption is associated with reduced risk of cerebral microbleeds in men.", 
+          "qas": [
+            {
+              "question": "Which is the relation between coffee consumption and stroke risk?", 
+              "id": "58ce363b02b8c60953000046_000"
+            }
+          ]
+        }, 
+        {
+          "context": "The coffee paradox in stroke: Increased consumption linked with fewer strokes. OBJECTIVE: To determine the association in amount of daily coffee consumption with incidence of stroke in a broad cohort, considering other vascular risk factors. METHODS: We utilized the Third National Health and Nutrition Examination Survey (1988-1994; NHANES III) data on participants aged > 17 years old to examine coffee consumption and stroke. Multivariate logistic regression models related the amount of coffee use reported in a food frequency questionnaire with stroke, controlling for other vascular risk factors. RESULTS: Of 33 994 NHANES III subjects, coffee consumption and stroke data in adults > 17 years old were available in 19 994. Daily coffee consumption ranged from 0 to 20 (median 1) cups and 644 (3.2%) participants had a stroke diagnosed by a physician. Coffee intake varied with age, gender, and ethnicity (P < 0.001). Interestingly, heart failure, diabetes, and hypertension were less frequent, and high cholesterol more frequent in those consuming > 3 cups per day (P < 0.001). Smoking was more frequent in all coffee drinkers (P < 0.0001). Multivariate analyses revealed an independent effect of heavier coffee consumption ( > 3 cups/day) on reduced stroke (OR 0.44, 95% CI 0.22-0.87, P < 0.02) in healthy subjects that was attenuated by vascular risk factors (OR 0.78, 95% CI 0.58-1.07, P = 0.12). CONCLUSION: Heavier daily coffee consumption is associated with decreased stroke prevalence, despite smoking tendency in heavy coffee drinkers.", 
+          "qas": [
+            {
+              "question": "Which is the relation between coffee consumption and stroke risk?", 
+              "id": "58ce363b02b8c60953000046_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Coffee, tea, and cocoa and risk of stroke. Current evidence from experimental studies in animals and humans along with findings from prospective studies indicates beneficial effects of green and black tea as well as chocolate on cardiovascular health, and that tea and chocolate consumption may reduce the risk of stroke. The strongest evidence exists for beneficial effects of tea and cocoa on endothelial function, total and LDL cholesterol (tea only), and insulin sensitivity (cocoa only). The majority of prospective studies have reported a weak inverse association between moderate consumption of coffee and risk of stroke. However, there are yet no clear biological mechanisms whereby coffee might provide cardiovascular health benefits. Awaiting the results from further long-term RCTs and prospective studies, moderate consumption of filtered coffee, tea, and dark chocolate seems prudent.", 
+          "qas": [
+            {
+              "question": "Which is the relation between coffee consumption and stroke risk?", 
+              "id": "58ce363b02b8c60953000046_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Coffee and tea: perks for health and longevity? PURPOSE OF REVIEW: Tea and coffee, after water, are the most commonly consumed beverages in the world and are the top sources of caffeine and antioxidant polyphenols in the American diet. The purpose of this review is to assess the health effects of chronic tea and/or coffee consumption. RECENT FINDINGS: Tea consumption, especially green tea, is associated with significantly reduced risks for stroke, diabetes and depression, and improved levels of glucose, cholesterol, abdominal obesity and blood pressure. Habitual coffee consumption in large epidemiological studies is associated with reduced mortality, both for all-cause and cardiovascular deaths. In addition, coffee intake is associated with risks of heart failure, stroke, diabetes mellitus and some cancers in an inverse dose-dependent fashion. Surprisingly, coffee is associated with neutral to reduced risks for both atrial and ventricular arrhythmias. However, caffeine at high doses can increase anxiety, insomnia, calcium loss and possibly the risk of fractures. SUMMARY: Coffee and tea can generally be recommended as health-promoting additions to an adult diet. Adequate dietary calcium intake may be particularly important for tea and coffee drinkers.", 
+          "qas": [
+            {
+              "question": "Which is the relation between coffee consumption and stroke risk?", 
+              "id": "58ce363b02b8c60953000046_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Coffee consumption and cardiovascular health: getting to the heart of the matter. As coffee-consumption is a widespread tradition, its possible impact on health has been of considerable interest. This review examines the effects of coffee on cardiovascular risk, outlines underlying biological mechanisms, and discusses implications for public health. In the past, coffee was often viewed as a cardiovascular risk-factor. However, in meta-analyses of recent well-controlled prospective epidemiologic studies, coffee-consumption was not associated with risk of coronary heart disease and weakly associated with a lower risk of stroke and heart failure. Also, available evidence largely suggests that coffee-consumption is not associated with a higher risk of fatal cardiovascular events. In randomized trials coffee-consumption resulted in small increases in blood pressure. Unfiltered coffee increased circulating LDL cholesterol and triglycerides concentrations, but filtered coffee had no substantial effects on blood lipids. In summary, for most healthy people, moderate coffee consumption is unlikely to adversely affect cardiovascular health. Future work should prioritize understanding the effects of coffee in at-risk populations.", 
+          "qas": [
+            {
+              "question": "Which is the relation between coffee consumption and stroke risk?", 
+              "id": "58ce363b02b8c60953000046_004"
+            }
+          ]
+        }, 
+        {
+          "context": "methylKit: a comprehensive R package for the analysis of genome-wide DNA methylation profiles. DNA methylation is a chemical modification of cytosine bases that is pivotal for gene regulation, cellular specification and cancer development. Here, we describe an R package, methylKit, that rapidly analyzes genome-wide cytosine epigenetic profiles from high-throughput methylation and hydroxymethylation sequencing experiments. methylKit includes functions for clustering, sample quality visualization, differential methylation analysis and annotation features, thus automating and simplifying many of the steps for discerning statistically significant bases or regions of DNA methylation. Finally, we demonstrate methylKit on breast cancer data, in which we find statistically significant regions of differential methylation and stratify tumor subtypes. methylKit is available at http://code.google.com/p/methylkit.", 
+          "qas": [
+            {
+              "question": "Which R package is used for the analysis of genome-wide DNA methylation profiles?", 
+              "id": "588f8e9794c1512c50000005_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Birth of a metabolic gene cluster in yeast by adaptive gene relocation. Although most eukaryotic genomes lack operons, they contain some physical clusters of genes that are related in function despite being unrelated in sequence. How these clusters are formed during evolution is unknown. The DAL cluster is the largest metabolic gene cluster in yeast and consists of six adjacent genes encoding proteins that enable Saccharomyces cerevisiae to use allantoin as a nitrogen source. We show here that the DAL cluster was assembled, quite recently in evolutionary terms, through a set of genomic rearrangements that happened almost simultaneously. Six of the eight genes involved in allantoin degradation, which were previously scattered around the genome, became relocated to a single subtelomeric site in an ancestor of S. cerevisiae and Saccharomyces castellii. These genomic rearrangements coincided with a biochemical reorganization of the purine degradation pathway, which switched to importing allantoin instead of urate. This change eliminated urate oxidase, one of several oxygen-consuming enzymes that were lost by yeasts that can grow vigorously in anaerobic conditions. The DAL cluster is located in a domain of modified chromatin involving both H2A.Z histone exchange and Hst1-Sum1-mediated histone deacetylation, and it may be a coadapted gene complex formed by epistatic selection.", 
+          "qas": [
+            {
+              "question": "Which is the largest metabolic gene cluster in yeast?", 
+              "id": "58d0dc878acda34529000004_000"
+            }
+          ]
+        }, 
+        {
+          "context": "X-linked adrenoleukodystrophy: the Australasian experience. Our objective was to review the Australasian experience of X-linked adrenoleukodystrophy (ALD), to compare the spectrum of disease seen in Australasia with previously published data from elsewhere, and to assess the reliability of carrier testing. Study design was a retrospective review of records collected over a 15-year period, the setting was an international referral laboratory for the study of metabolic disease, and the subjects were all known cases of ALD diagnosed in Australia and New Zealand between 1981 and 1996 and their families. We estimate that the combined incidence of ALD and its variants in Australasia is at least 1.6 per 100,000. Of 95 affected males, 51 had cerebral adrenoleukodystrophy, 24 had adrenomyeloneuropathy, 15 had Addison's disease only, and 5 remained asymptomatic when last examined. However, the distribution of phenotypes among newly diagnosed patients has changed substantially over the last 15 years, with cerebral forms of the disease forming a decreasing proportion of new diagnoses. The measurement of plasma very long chain fatty acids (VLCFAs) alone detects 93% of women who can be proven to be carriers. The addition of genetic linkage studies or assay of VLCFAs in cultured fibroblasts improved this detection rate to the point that there were no obligate carriers who could not be detected using a combination of two or more techniques.", 
+          "qas": [
+            {
+              "question": "What is the incidence of new cases of X-linked adrenoleukodystrophy (ALD) in Australian and New Zealand in the late 1990's?", 
+              "id": "58cc5bae02b8c60953000037_000"
+            }
+          ]
+        }, 
+        {
+          "context": "New findings in a global approach to dissect the whole phenotype of PLA2G6 gene mutations. Mutations in PLA2G6 gene have variable phenotypic outcome including infantile neuroaxonal dystrophy, atypical neuroaxonal dystrophy, idiopathic neurodegeneration with brain iron accumulation and Karak syndrome. The cause of this phenotypic variation is so far unknown which impairs both genetic diagnosis and appropriate family counseling. We report detailed clinical, electrophysiological, neuroimaging, histologic, biochemical and genetic characterization of 11 patients, from 6 consanguineous families, who were followed for a period of up to 17 years. Cerebellar atrophy was constant and the earliest feature of the disease preceding brain iron accumulation, leading to the provisional diagnosis of a recessive progressive ataxia in these patients. Ultrastructural characterization of patients' muscle biopsies revealed focal accumulation of granular and membranous material possibly resulting from defective membrane homeostasis caused by disrupted PLA2G6 function. Enzyme studies in one of these muscle biopsies provided evidence for a relatively low mitochondrial content, which is compatible with the structural mitochondrial alterations seen by electron microscopy. Genetic characterization of 11 patients led to the identification of six underlying PLA2G6 gene mutations, five of which are novel. Importantly, by combining clinical and genetic data we have observed that while the phenotype of neurodegeneration associated with PLA2G6 mutations is variable in this cohort of patients belonging to the same ethnic background, it is partially influenced by the genotype, considering the age at onset and the functional disability criteria. Molecular testing for PLA2G6 mutations is, therefore, indicated in childhood-onset ataxia syndromes, if neuroimaging shows cerebellar atrophy with or without evidence of iron accumulation.", 
+          "qas": [
+            {
+              "question": "Which gene is mutated in the Karak syndrome?", 
+              "id": "588f9950ed9bbee70d000002_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Phenotypic spectrum of patients with PLA2G6 mutation and PARK14-linked parkinsonism. BACKGROUND: PLA2G6 is the causative gene for infantile neuroaxonal dystrophy, neurodegeneration associated with brain iron accumulation, and Karak syndrome. Based on previous reports, patients with PLA2G6 mutations could show axonal dystrophy, dystonia, dementia, and cerebellar signs. Recently, PLA2G6 was also reported as the causative gene for early-onset PARK14-linked dystonia-parkinsonism. METHODS: To clarify the role of PLA2G6 mutation in parkinsonism, we conducted mutation analysis in 29 selected patients with very early-onset ( < 30, mean 21.2 \u00b1 8.4 years, \u00b1 SD) parkinsonism. These patients had other clinical features (e.g., mental retardation/dementia [14/29], psychosis [15/29], dystonia [11/29], and hyperreflexia [11/29]). RESULTS: Two novel compound heterozygous PLA2G6 mutations were detected (patient A: p.F72L/p.R635Q; patients B1 and B2: p.Q452X/p.R635Q). All 3 patients had early-onset l-dopa-responsive parkinsonism with dementia and frontotemporal lobar atrophy. Disease progression was relatively rapid. SPECT in patient B1 showed frontotemporal lobar hypoperfusion. MRI in patient A showed iron accumulation in the substantia nigra and striatum. CONCLUSIONS: Although the clinical presentation of PLA2G6-associated neurodegeneration was reported to be homogeneous, our findings suggest patients with PLA2G6 mutation could show heterogeneous phenotype such as dystonia-parkinsonism, dementia, frontotemporal atrophy/hypoperfusion, with or without brain iron accumulation. Based on the clinical heterogeneity, the functional roles of PLA2G6 and the roles of PLA2G6 variants including single heterozygous mutations should be further elucidated in patients with atypical parkinsonism, dementia, or Parkinson disease. PLA2G6 mutations should be considered in patients with early-onset l-dopa-responsive parkinsonism and dementia with frontotemporal lobar atrophy.", 
+          "qas": [
+            {
+              "question": "Which gene is mutated in the Karak syndrome?", 
+              "id": "588f9950ed9bbee70d000002_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Loss of PLA2G6 leads to elevated mitochondrial lipid peroxidation and mitochondrial dysfunction. The PLA2G6 gene encodes a group VIA calcium-independent phospholipase A2 beta enzyme that selectively hydrolyses glycerophospholipids to release free fatty acids. Mutations in PLA2G6 have been associated with disorders such as infantile neuroaxonal dystrophy, neurodegeneration with brain iron accumulation type II and Karak syndrome. More recently, PLA2G6 was identified as the causative gene in a subgroup of patients with autosomal recessive early-onset dystonia-parkinsonism. Neuropathological examination revealed widespread Lewy body pathology and the accumulation of hyperphosphorylated tau, supporting a link between PLA2G6 mutations and parkinsonian disorders. Here we show that knockout of the Drosophila homologue of the PLA2G6 gene, iPLA2-VIA, results in reduced survival, locomotor deficits and organismal hypersensitivity to oxidative stress. Furthermore, we demonstrate that loss of iPLA2-VIA function leads to a number of mitochondrial abnormalities, including mitochondrial respiratory chain dysfunction, reduced ATP synthesis and abnormal mitochondrial morphology. Moreover, we show that loss of iPLA2-VIA is strongly associated with increased lipid peroxidation levels. We confirmed our findings using cultured fibroblasts taken from two patients with mutations in the PLA2G6 gene. Similar abnormalities were seen including elevated mitochondrial lipid peroxidation and mitochondrial membrane defects, as well as raised levels of cytoplasmic and mitochondrial reactive oxygen species. Finally, we demonstrated that deuterated polyunsaturated fatty acids, which inhibit lipid peroxidation, were able to partially rescue the locomotor abnormalities seen in aged flies lacking iPLA2-VIA gene function, and restore mitochondrial membrane potential in fibroblasts from patients with PLA2G6 mutations. Taken together, our findings demonstrate that loss of normal PLA2G6 gene activity leads to lipid peroxidation, mitochondrial dysfunction and subsequent mitochondrial membrane abnormalities. Furthermore we show that the iPLA2-VIA knockout fly model provides a useful platform for the further study of PLA2G6-associated neurodegeneration.", 
+          "qas": [
+            {
+              "question": "Which gene is mutated in the Karak syndrome?", 
+              "id": "588f9950ed9bbee70d000002_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Novel mutations in PAX6, OTX2 and NDP in anophthalmia, microphthalmia and coloboma. Anophthalmia and microphthalmia (A/M) are developmental ocular malformations defined as the complete absence or reduction in size of the eye. A/M is a highly heterogeneous disorder with SOX2 and FOXE3 playing major roles in dominant and recessive pedigrees, respectively; however, the majority of cases lack a genetic etiology. We analyzed 28 probands affected with A/M spectrum (without mutations in SOX2/FOXE3) by whole-exome sequencing. Analysis of 83 known A/M factors identified pathogenic/likely pathogenic variants in PAX6, OTX2 and NDP in three patients. A novel heterozygous likely pathogenic variant in PAX6, c.767T>C, p.(Val256Ala), was identified in two brothers with bilateral microphthalmia, coloboma, primary aphakia, iris hypoplasia, sclerocornea and congenital glaucoma; the unaffected mother appears to be a mosaic carrier. While A/M has been reported as a rare feature, this is the first report of congenital primary aphakia in association with PAX6 and the identified allele represents the first variant in the PAX6 homeodomain to be associated with A/M. A novel pathogenic variant in OTX2, c.651delC, p.(Thr218Hisfs*76), in a patient with syndromic bilateral anophthalmia and a hemizygous pathogenic variant in NDP, c.293 C>T, p.(Pro98Leu), in two brothers with isolated bilateral microphthalmia and sclerocornea were also identified. Pathogenic/likely pathogenic variants were not discovered in the 25 remaining A/M cases. This study underscores the utility of whole-exome sequencing for identification of causative mutations in highly variable ocular phenotypes as well as the extreme genetic heterogeneity of A/M conditions.", 
+          "qas": [
+            {
+              "question": "Which disease is associated with mutated Sox2?", 
+              "id": "58ce9bf1d46b5c2951000002_000"
+            }
+          ]
+        }, 
+        {
+          "context": "SOX2 anophthalmia syndrome and dental anomalies. SOX2 anophthalmia syndrome is an uncommon autosomal dominant syndrome caused by mutations in the SOX2 gene and clinically characterized by severe eye malformations (anophthalmia/microphthalmia) and extraocular anomalies mainly involving brain, esophagus, and genitalia. In this work, a patient with the SOX2 anophthalmia syndrome and exhibiting a novel dental anomaly is described. SOX2 genotyping in this patient revealed an apparently de novo c.70del20 deletion, a commonly reported SOX2 mutation. A review of the phenotypic variation observed in patients carrying the recurrent SOX2 c.70del20 mutation is presented. Although dental anomalies are uncommonly reported in the SOX2 anophthalmia syndrome, we suggest that a dental examination should be performed in patients with SOX2 mutations.", 
+          "qas": [
+            {
+              "question": "Which disease is associated with mutated Sox2?", 
+              "id": "58ce9bf1d46b5c2951000002_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Targeted resequencing identifies PTCH1 as a major contributor to ocular developmental anomalies and extends the SOX2 regulatory network. Ocular developmental anomalies (ODA) such as anophthalmia/microphthalmia (AM) or anterior segment dysgenesis (ASD) have an estimated combined prevalence of 3.7 in 10,000 births. Mutations in SOX2 are the most frequent contributors to severe ODA, yet account for a minority of the genetic drivers. To identify novel ODA loci, we conducted targeted high-throughput sequencing of 407 candidate genes in an initial cohort of 22 sporadic ODA patients. Patched 1 (PTCH1), an inhibitor of sonic hedgehog (SHH) signaling, harbored an enrichment of rare heterozygous variants in comparison to either controls, or to the other candidate genes (four missense and one frameshift); targeted resequencing of PTCH1 in a second cohort of 48 ODA patients identified two additional rare nonsynonymous changes. Using multiple transient models and a CRISPR/Cas9-generated mutant, we show physiologically relevant phenotypes altering SHH signaling and eye development upon abrogation of ptch1 in zebrafish for which in vivo complementation assays using these models showed that all six patient missense mutations affect SHH signaling. Finally, through transcriptomic and ChIP analyses, we show that SOX2 binds to an intronic domain of the PTCH1 locus to regulate PTCH1 expression, findings that were validated both in vitro and in vivo. Together, these results demonstrate that PTCH1 mutations contribute to as much as 10% of ODA, identify the SHH signaling pathway as a novel effector of SOX2 activity during human ocular development, and indicate that ODA is likely the result of overactive SHH signaling in humans harboring mutations in either PTCH1 or SOX2.", 
+          "qas": [
+            {
+              "question": "Which disease is associated with mutated Sox2?", 
+              "id": "58ce9bf1d46b5c2951000002_002"
+            }
+          ]
+        }, 
+        {
+          "context": "SOX2, OTX2 and PAX6 analysis in subjects with anophthalmia and microphthalmia. Anophthalmia (A) and microphthalmia (M) are rare developmental anomalies that have significant effects on visual activity. In fraction of A/M subjects, single genetic defects have been identified as causative. In this study we analysed 65 Italian A/M patients, 21 of whom are syndromic, for mutations in SOX2, OTX2 and PAX6 genes. In syndromic patients the presence of genome imbalances through array CGH was also investigated. No mutations were found for OTX2 and PAX6 genes. Three causative SOX2 mutations were found in subjects with syndromic A. In a subject with syndromic signs and monolateral M, two de novo 6.26\u00a0Mb and 1.37\u00a0Mb deletions in 4q13.2q13.3 have been identified. A SOX2 missense (p.Ala161Ser) mutation was found in 1 out of 39 a subject with non-syndromic monolateral M. Alanine at position 161 is conserved along phylogeny and the p.Ala161Ser mutation is estimated pathogenic by in silico analysis. However, this mutation was also present in the unaffected patient's daughter.", 
+          "qas": [
+            {
+              "question": "Which disease is associated with mutated Sox2?", 
+              "id": "58ce9bf1d46b5c2951000002_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Discovering conserved insect microRNAs from expressed sequence tags. MicroRNAs (miRNA) participate in regulating diverse biological pathways by translational repression in animals. They have attracted increasing attention recently. However, little work has been done on the miRNA genes in agriculturally important pests. Because the transcripts of most miRNA genes are the products of type-II RNA polymerase, pri-miRNA has a poly(A) tail and appears in expressed sequence tags (EST). We developed a computational pipeline to identify miRNA genes from insect ESTs. First, 980,697 ESTs from 63 insects were collected and used to search the nr database. The ESTs which did not share significant similarities with any known protein-coding genes were treated as non-coding ESTs. Next, known mature miRNAs were used to align with non-coding ESTs. The ESTs which contain the sequence of mature miRNA were treated as candidate ESTs. Finally, putative precursors were extracted flanking the mature miRNA region in candidate ESTs and evaluated by the Triplet-SVM algorithm. As a result, 86 miRNAs from 30 insect species were found based on a strict criterion while 330 miRNAs from 51 species were found based on a loose criterion. Evolution analysis indicated that mir-467, mir-297 and mir-466 were the highest conserved miRNA families in insects. To confirm the reliability of putative insect miRNAs, the expression profile of nine predicted miRNAs in Locusta migratoria was investigated. Eight miRNAs were successfully detected by RT-PCR. Most miRNAs were expressed ubiquitously at all examined tissues and developmental stages whereas Lmi-mir-509 was specifically expressed in the thorax of the 2nd, 4th and 5th instars and adult locust. In all, our work reported an efficient computational strategy for predicting miRNA genes from insect ESTs and presented tens of miRNAs in diverse insect species which are expected to participate in many important physiological processes.", 
+          "qas": [
+            {
+              "question": "Which polymerase transcribes pri-miRNAs?", 
+              "id": "589d965a78275d0c4a000049_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Primary microRNA processing is functionally coupled to RNAP II transcription in vitro. Previous studies in vivo reported that processing of primary microRNA (pri-miRNA) is coupled to transcription by RNA polymerase II (RNAP II) and can occur co-transcriptionally. Here we have established a robust in vivo system in which pri-miRNA is transcribed by RNAP II and processed to pre-miRNA in HeLa cell nuclear extracts. We show that both the kinetics and efficiency of pri-miRNA processing are dramatically enhanced in this system compared to that of the corresponding naked pri-miRNA. Moreover, this enhancement is general as it occurs with multiple pri-miRNAs. We also show that nascent pri-miRNA is efficiently processed before it is released from the DNA template. Together, our work directly demonstrates that transcription and pri-miRNA processing are functionally coupled and establishes the first in vivo model systems for this functional coupling and for co-transcriptional processing.", 
+          "qas": [
+            {
+              "question": "Which polymerase transcribes pri-miRNAs?", 
+              "id": "589d965a78275d0c4a000049_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Two cap-binding proteins CBP20 and CBP80 are involved in processing primary MicroRNAs. MicroRNAs (miRNAs) are 21 nt RNAs that regulate many biological processes in plants by mediating translational inhibition or cleavage of target transcripts. Arabidopsis mutants defective in miRNA biogenesis have overlapping and highly pleiotropic phenotypes including serrated leaves and ABA hypersensitivity. Recent evidence indicates that miRNA genes are transcribed by RNA polymerase II (Pol II). Since Pol II transcripts are capped, we hypothesized that CBP (cap-binding protein) 20 and 80 may bind to capped primary miRNA (pri-miRNA) transcripts and play a role in their processing. Here, we show that cbp20 and cbp80 mutants have reduced miRNA levels and increased pri-miRNA levels. Co-immunoprecipitation experiments revealed that pri-miRNAs 159, 166, 168 and 172 could be associated with CBP20 and CBP80. We found that CBP20 and CBP80 are stabilized by ABA by a post-translational mechanism, and these proteins are needed for ABA induction of miR159 during seed germination. The lack of miR159 accumulation in ABA-treated seeds of cbp20/80 mutants leads to increased MYB33 and MYB101 transcript levels, and presumably higher levels of these positive regulators result in ABA hypersensitivity. Genetic and molecular analyses show that CBP20 and 80 have overlapping function in the same developmental pathway as SE and HYL1. Our results identify new components in miRNA biogenesis.", 
+          "qas": [
+            {
+              "question": "Which polymerase transcribes pri-miRNAs?", 
+              "id": "589d965a78275d0c4a000049_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Chromatin structure characteristics of pre-miRNA genomic sequences. BACKGROUND: MicroRNAs (miRNAs) are non-coding RNAs with important roles in regulating gene expression. Recent studies indicate that transcription and cleavage of miRNA are coupled, and that chromatin structure may influence miRNA transcription. However, little is known about the relationship between the chromatin structure and cleavage of pre-miRNA from pri-miRNA. RESULTS: By analysis of genome-wide nucleosome positioning data sets from human and Caenorhabditis elegans (C. elegans), we found an enrichment of positioned nucleosome on pre-miRNA genomic sequences, which is highly correlated with GC content within pre-miRNA. In addition, obvious enrichments of three histone modifications (H2BK5me1, H3K36me3 and H4K20me1) as well as RNA Polymerase II (RNAPII) were observed on pre-miRNA genomic sequences corresponding to the active-promoter miRNAs and expressed miRNAs. CONCLUSION: Our results revealed the chromatin structure characteristics of pre-miRNA genomic sequences, and implied potential mechanisms that can recognize these characteristics, thus improving pre-miRNA cleavage.", 
+          "qas": [
+            {
+              "question": "Which polymerase transcribes pri-miRNAs?", 
+              "id": "589d965a78275d0c4a000049_003"
+            }
+          ]
+        }, 
+        {
+          "context": "MicroRNAs and cancer. MicroRNAs (miRNAs) are a recently discovered group of small RNA molecules involved in the regulation of gene expression. Analogously to mRNAs, the non-protein-encoding pri-miRNAs are synthesized by RNA polymerase II and post-transcriptionally modified by addition of a 5'-cap and a 3'-poly (A) tail. Subsequently, the pri-miRNA undergoes a number of processing steps in the nucleus and cytoplasm, and ends up as a mature approximately 22 nt miRNA, which can exert its function by binding to the 3'-untranslated region of a subset of mRNAs. Binding of the miRNA to the mRNA results in a reduced translation rate and/or increased degradation of the mRNA. In this way a large number of cellular pathways, such as cellular proliferation, differentiation, and apoptosis, are regulated by mi-RNAs. As corruption of these pathways is the hallmark of many cancers, dysregulation of miRNA biogenesis or expression levels may lead to tumorigenesis. The mechanisms that alter the expression of miRNAs are similar to those that change the expression levels of mRNAs of tumor suppressor- and oncogenes, i.e. gross genomic aberrations, epigenetic changes, and minor mutations affecting the expression level, processing, or target-interaction potential of the miRNA. Furthermore, expression profiling of miRNAs has been found to be useful for classification of different tumor types. Taken together, miRNAs can be classified as onco-miRs or tumor suppressor-miRs, and may turn out to be potential targets for cancer therapy.", 
+          "qas": [
+            {
+              "question": "Which polymerase transcribes pri-miRNAs?", 
+              "id": "589d965a78275d0c4a000049_004"
+            }
+          ]
+        }, 
+        {
+          "context": "Mutations at critical N-glycosylation sites reduce tyrosinase activity by altering folding and quality control. Tyrosinase is a copper-containing enzyme that regulates melanin biosynthesis in mammals. Mutations at a single N-glycosylation sequon of tyrosinase have been reported to be responsible for oculocutaneous albinism type IA in humans, characterized by inactive tyrosinase and the total absence of pigmentation. To probe the role that each N-glycosylation site plays in the synthesis of biologically active tyrosinase, we analyzed the calnexin mediated folding of tyrosinase N-glycosylation mutants. We have determined that four of the six potential N-glycosylation sites, including that associated with albinism, are occupied. Analysis of the folding pathway and activity of 15 tyrosinase mutants lacking one or more of the occupied N-glycosylation sites shows that glycans at any two N-glycosylation sites are sufficient to interact with calnexin and give partial activity, but a specific pair of sites (Asn(86) and Asn(371)) is required for full activity. The mutants with less than two N-glycosylation sites do not interact with calnexin and show a complete absence of enzyme activity. Copper analysis of selected mutants suggests that the observed partial activity is due to two populations with differential copper content. By correlating the degree of folding with the activity of tyrosinase, we propose a local folding mechanism for tyrosinase that can explain the mechanism of inactivation of tyrosinase N-glycosylation mutants found in certain pigmentation disorders.", 
+          "qas": [
+            {
+              "question": "Which mutated enzyme is responsible for oculocutaneous 1 (OCA1)-type albinism?", 
+              "id": "58cbb98c02b8c60953000034_000"
+            }
+          ]
+        }, 
+        {
+          "context": "[An overview of oculocutaneous albinism: TYR gene mutations in five Colombian individuals]. INTRODUCTION: Oculocutaneus albinism is a pigment-related inherited disorder characterized by hypopigmentation of the skin, hair and eyes, foveal hypoplasia and low vision. To date, 230 mutations in the TYR gene have been reported as responsible for oculocutaneus albinism type 1 worldwide. TYR gene encodes the enzyme tyrosinase involved in the metabolic pathway of melanin synthesis. OBJECTIVES: Mutations were identified in the TYR gene as responsible for oculocutaneous albinism type 1 in five Colombian individuals, and a new ophthalmic system was tested that corrected visual defects and symptoms in a patient with oculocutaneous albinism. MATERIALS AND METHODS: Samples were taken from 5 individuals, four of whom belong to a single family, along with a fifth individual not related to the family. Five exons in the TYR gene were sequenced to search for the gene carriers in the family and in the non-related individual. In addition, clinical ophthalmological evaluation and implementation of an new oculo-visual system was undertaken. RESULTS: A G47D and 1379delTT mutation was identified in the family. The unrelated individual carried a compound heterozygote for the G47D and D42N mutations. The oculo-visual corrective system was able to increase visual acuity and to diminish the nystagmus and photophobia. CONCLUSIONS: This is the first study in Colombia where albinism mutations are reported. The methods developed will enable future molecular screening studies in Colombian populations.", 
+          "qas": [
+            {
+              "question": "Which mutated enzyme is responsible for oculocutaneous 1 (OCA1)-type albinism?", 
+              "id": "58cbb98c02b8c60953000034_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Mutations of the human tyrosinase gene associated with tyrosinase related oculocutaneous albinism (OCA1). Mutations in brief no. 204. Online. Mutations in the human tyrosinase gene produce tyrosinase-related oculocutaneous albinism (OCA1, MIM #203100). Tyrosinase is a copper containing enzyme and is responsible for catalyzing the rate limiting step in melanin biosynthesis, the hydroxylation of tyrosine to dopaquinone. We report 13 new mutations in the tyrosinase gene associated with OCA1A (without pigment) and OCA1B (with pigment) including 9 missense mutations (H19Q, R521, R77C, G97R, C289R, L312V, P313R, F340L and H404P), two nonsense mutations (W80X and R116X) and two frameshift mutations (53delG and 223 delG). Our previous work has defined clusters of missense mutations that appear to represent functional domains of the enzyme, and three of the missense mutations fall into these clusters including two (F340L and H404P) that flank the copper B bindng site and the missense mutation R52I that is located in the amino terminal end cluster of the protein. The G97R missense mutation is the first identified within the epidermal growth factor (EGF)-like sequence and the H19Q missense mutation alters the cleavage site of the signal peptide sequence. Mutational analysis can provide a definitive diagnosis of the type of OCA as well as help structure/function analysis.", 
+          "qas": [
+            {
+              "question": "Which mutated enzyme is responsible for oculocutaneous 1 (OCA1)-type albinism?", 
+              "id": "58cbb98c02b8c60953000034_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Tyrosinase processing and intracellular trafficking is disrupted in mouse primary melanocytes carrying the underwhite (uw) mutation. A model for oculocutaneous albinism (OCA) type 4. Oculocutaneous albinism (OCA) type 4 is a newly identified human autosomal recessive hypopigmentary disorder that disrupts pigmentation in the skin, hair and eyes. Three other forms of OCA have been previously characterized, each resulting from the aberrant processing and/or sorting of tyrosinase, the enzyme critical to pigment production in mammals. The disruption of tyrosinase trafficking occurs at the level of the endoplasmic reticulum (ER) in OCA1 and OCA3, but at the post-Golgi level in OCA2. The gene responsible for OCA4 is the human homologue of the mouse underwhite (uw) gene, which encodes the membrane-associated transporter protein (MATP). To characterize OCA4, we investigated the processing and sorting of melanogenic proteins in primary melanocytes derived from uw/uw mice and from wild-type mice. OCA4 melanocytes were found to be constantly secreted into the medium dark vesicles that contain tyrosinase and two other melanogenic enzymes, Tyrp1 (tyrosinase-related protein 1) and Dct (DOPAchrome tautomerase); this secretory process is not seen in wild-type melanocytes. Although tyrosinase was synthesized at comparable rates in wild-type and in uw-mutant melanocytes, tyrosinase activity in uw-mutant melanocytes was only about 20% of that found in wild-type melanocytes, and was enriched only about threefold in melanosomes compared with the ninefold enrichment in wild-type melanocytes. OCA4 melanocytes showed a marked difference from wild-type melanocytes in that tyrosinase was abnormally secreted from the cells, a process similar to that seen in OCA2 melanocytes, which results from a mutation of the pink-eyed dilution (P) gene. The P protein and MATP have 12 transmembrane regions and are predicted to function as transporters. Ultrastructural analysis shows that the vesicles secreted from OCA4 melanocytes are mostly early stage melanosomes. Taken together, our results show that in OCA4 melanocytes, tyrosinase processing and intracellular trafficking to the melanosome is disrupted and the enzyme is abnormally secreted from the cells in immature melanosomes, which disrupts the normal maturation process of those organelles. This mechanism explains the hypopigmentary phenotype of these cells and provides new insights into the involvement of transporters in the normal physiology of melanocytes.", 
+          "qas": [
+            {
+              "question": "Which mutated enzyme is responsible for oculocutaneous 1 (OCA1)-type albinism?", 
+              "id": "58cbb98c02b8c60953000034_003"
+            }
+          ]
+        }, 
+        {
+          "context": "The R402Q tyrosinase variant does not cause autosomal recessive ocular albinism. Mutations in the gene for tyrosinase, the key enzyme in melanin synthesis, are responsible for oculocutaneous albinism type 1, and more than 100 mutations of this gene have been identified. The c.1205G > A variant of the tyrosinase gene (rs1126809) predicts p.R402Q and expression studies show thermolabile enzyme activity for the variant protein. The Q402 allele has been associated with autosomal recessive ocular albinism when it is in trans with a tyrosinase gene mutation associated with oculocutaneous albinism type 1. We have identified 12 families with oculocutaneous albinism type 1 that exhibit segregation of the c.1205G > A variant with a known pathologic mutation on the homologous chromosome, and demonstrate no genetic association between autosomal recessive oculocutaneous albinism and the Q402 variant. We conclude that the codon 402 variant of the tyrosinase gene is not associated with albinism.", 
+          "qas": [
+            {
+              "question": "Which mutated enzyme is responsible for oculocutaneous 1 (OCA1)-type albinism?", 
+              "id": "58cbb98c02b8c60953000034_004"
+            }
+          ]
+        }, 
+        {
+          "context": "Histone variant H2A.Z functions in sister chromatid cohesion in Saccharomyces cerevisiae. H2A.Z is a highly conserved variant of histone H2A with well-characterized roles in transcriptional regulation. We previously reported that H2A.Z and Mcd1, a subunit of the cohesin complex, regulate the establishment of transcriptional silencing at telomeres in Saccharomyces cerevisiae and that H2A.Z broadly dissociated from chromatin during the anaphase-to-telophase transition, coincident with the dissociation of Mcd1 from chromosomes and dissolution of cohesion. In this study, we show that depletion of H2A.Z causes precocious loss of sister chromatid cohesion in yeast without loss of Mcd1 from chromosomes. H2A.Z is deposited into chromatin by the SWR1 complex and is subject to acetylation of its four N-terminal tail lysine residues by the NuA4 and SAGA histone acetyltransferase complexes. We found that cells compromised for function of the SWR1 complex were defective in cohesion, as were cells expressing a form of H2A.Z not subject to acetylation. Finally, inactivation of H2A.Z in metaphase-blocked cells led immediately to cohesion defects, suggesting a direct role for H2A.Z in the maintenance of sister chromatid cohesion.", 
+          "qas": [
+            {
+              "question": "Which protein mediates the replacement of H2A by H2A.Z in the yeast Saccharomyces cerevisiae?", 
+              "id": "58a6db8660087bc10a00002c_000"
+            }
+          ]
+        }, 
+        {
+          "context": "The catalytic subunit of the SWR1 remodeler is a histone chaperone for the H2A.Z-H2B dimer. Histone variant H2A.Z-containing nucleosomes exist at most eukaryotic promoters and play important roles in gene transcription and genome stability. The multisubunit nucleosome-remodeling enzyme complex SWR1, conserved from yeast to mammals, catalyzes the ATP-dependent replacement of histone H2A in canonical nucleosomes with H2A.Z. How SWR1 catalyzes the replacement reaction is largely unknown. Here, we determined the crystal structure of the N-terminal region (599-627) of the catalytic subunit Swr1, termed Swr1-Z domain, in complex with the H2A.Z-H2B dimer at 1.78 \u00c5 resolution. The Swr1-Z domain forms a 310 helix and an irregular chain. A conserved LxxLF motif in the Swr1-Z 310 helix specifically recognizes the \u03b1C helix of H2A.Z. Our results show that the Swr1-Z domain can deliver the H2A.Z-H2B dimer to the DNA-(H3-H4)2 tetrasome to form the nucleosome by a histone chaperone mechanism.", 
+          "qas": [
+            {
+              "question": "Which protein mediates the replacement of H2A by H2A.Z in the yeast Saccharomyces cerevisiae?", 
+              "id": "58a6db8660087bc10a00002c_001"
+            }
+          ]
+        }, 
+        {
+          "context": "H2A histone-fold and DNA elements in nucleosome activate SWR1-mediated H2A.Z replacement in budding yeast. The histone variant H2A.Z is a universal mark of gene promoters, enhancers, and regulatory elements in eukaryotic chromatin. The chromatin remodeler SWR1 mediates site-specific incorporation of H2A.Z by a multi-step histone replacement reaction, evicting histone H2A-H2B from the canonical nucleosome and depositing the H2A.Z-H2B dimer. Binding of both substrates, the canonical nucleosome and the H2A.Z-H2B dimer, is essential for activation of SWR1. We found that SWR1 primarily recognizes key residues within the \u03b12 helix in the histone-fold of nucleosomal histone H2A, a region not previously known to influence remodeler activity. Moreover, SWR1 interacts preferentially with nucleosomal DNA at superhelix location 2 on the nucleosome face distal to its linker-binding site. Our findings provide new molecular insights on recognition of the canonical nucleosome by a chromatin remodeler and have implications for ATP-driven mechanisms of histone eviction and deposition.", 
+          "qas": [
+            {
+              "question": "Which protein mediates the replacement of H2A by H2A.Z in the yeast Saccharomyces cerevisiae?", 
+              "id": "58a6db8660087bc10a00002c_002"
+            }
+          ]
+        }, 
+        {
+          "context": "A histone acetylation switch regulates H2A.Z deposition by the SWR-C remodeling enzyme. The histone variant H2A.Z plays key roles in gene expression, DNA repair, and centromere function. H2A.Z deposition is controlled by SWR-C chromatin remodeling enzymes that catalyze the nucleosomal exchange of canonical H2A with H2A.Z. Here we report that acetylation of histone H3 on lysine 56 (H3-K56Ac) alters the substrate specificity of SWR-C, leading to promiscuous dimer exchange in which either H2A.Z or H2A can be exchanged from nucleosomes. This result was confirmed in vivo, where genome-wide analysis demonstrated widespread decreases in H2A.Z levels in yeast mutants with hyperacetylated H3K56. Our work also suggests that a conserved SWR-C subunit may function as a \"lock\" that prevents removal of H2A.Z from nucleosomes. Our study identifies a histone modification that regulates a chromatin remodeling reaction and provides insights into how histone variants and nucleosome turnover can be controlled by chromatin regulators.", 
+          "qas": [
+            {
+              "question": "Which protein mediates the replacement of H2A by H2A.Z in the yeast Saccharomyces cerevisiae?", 
+              "id": "58a6db8660087bc10a00002c_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Biochemical assay for histone H2A.Z replacement by the yeast SWR1 chromatin remodeling complex. The evolutionarily conserved histone variant H2A.Z has an important role in the regulation of gene expression and the establishment of a buffer to the spread of silent heterochromatin. Saccharomyces cerevisiae Swr1, a Swi2/Snf2-related ATPase, is the catalytic core of a multisubunit chromatin remodeling enzyme, called the SWR1 complex, that efficiently replaces conventional histone H2A in nucleosomes with histone H2A.Z. Swr1 is required for the deposition of histone H2A.Z at stereotypical promoter locations in vivo, and Swr1 and H2A.Z commonly regulate a subset of yeast genes. Here, we describe an integrated nucleosome assembly-histone replacement system whereby histone exchange by chromatin remodeling activities may be analyzed in vitro. The system demonstrates ATP- and SWR1-complex-dependent replacement of histone H2A for histone H2A.Z on a preassembled nucleosome array. This system may also be adapted to analyze dynamic interactions between chromatin remodeling and modifying enzymes, histone chaperones, and nucleosome substrates containing canonical, variant, or covalently modified histones.", 
+          "qas": [
+            {
+              "question": "Which protein mediates the replacement of H2A by H2A.Z in the yeast Saccharomyces cerevisiae?", 
+              "id": "58a6db8660087bc10a00002c_004"
+            }
+          ]
+        }, 
+        {
+          "context": "The SWR1 histone replacement complex causes genetic instability and genome-wide transcription misregulation in the absence of H2A.Z. The SWR1 complex replaces the canonical histone H2A with the variant H2A.Z (Htz1 in yeast) at specific chromatin regions. This dynamic alteration in nucleosome structure provides a molecular mechanism to regulate transcription, gene silencing, chromosome segregation and DNA repair. Here we show that genetic instability, sensitivity to drugs impairing different cellular processes and genome-wide transcriptional misregulation in htz1Delta can be partially or totally suppressed if SWR1 is not formed (swr1Delta), if it forms but cannot bind to chromatin (swc2Delta) or if it binds to chromatin but lacks histone replacement activity (swc5Delta and the ATPase-dead swr1-K727G). These results suggest that in htz1Delta the nucleosome remodelling activity of SWR1 affects chromatin integrity because of an attempt to replace H2A with Htz1 in the absence of the latter. This would impair transcription and, either directly or indirectly, other cellular processes. Specifically, we show that in htz1Delta, the SWR1 complex causes an accumulation of recombinogenic DNA damage by a mechanism dependent on phosphorylation of H2A at Ser129, a modification that occurs in response to DNA damage, suggesting that the SWR1 complex impairs the repair of spontaneous DNA damage in htz1Delta. In addition, SWR1 causes DSBs sensitivity in htz1Delta; consistently, in the absence of Htz1 the SWR1 complex bound near an endonuclease HO-induced DSB at the mating-type (MAT) locus impairs DSB-induced checkpoint activation. Our results support a stepwise mechanism for the replacement of H2A with Htz1 and demonstrate that a tight control of this mechanism is essential to regulate chromatin dynamics but also to prevent the deleterious consequences of an incomplete nucleosome remodelling.", 
+          "qas": [
+            {
+              "question": "Which protein mediates the replacement of H2A by H2A.Z in the yeast Saccharomyces cerevisiae?", 
+              "id": "58a6db8660087bc10a00002c_005"
+            }
+          ]
+        }, 
+        {
+          "context": "A protein complex containing the conserved Swi2/Snf2-related ATPase Swr1p deposits histone variant H2A.Z into euchromatin. The conserved histone variant H2A.Z functions in euchromatin to antagonize the spread of heterochromatin. The mechanism by which histone H2A is replaced by H2A.Z in the nucleosome is unknown. We identified a complex containing 13 different polypeptides associated with a soluble pool of H2A.Z in Saccharomyces cerevisiae. This complex was designated SWR1-Com in reference to the Swr1p subunit, a Swi2/Snf2-paralog. Swr1p and six other subunits were found only in SWR1-Com, whereas six other subunits were also found in the NuA4 histone acetyltransferase and/or the Ino80 chromatin remodeling complex. H2A.Z and SWR1 were essential for viability of cells lacking the EAF1 component of NuA4, pointing to a close functional connection between these two complexes. Strikingly, chromatin immunoprecipitation analysis of cells lacking Swr1p, the presumed ATPase of the complex, revealed a profound defect in the deposition of H2A.Z at euchromatic regions that flank the silent mating type cassette HMR and at 12 other chromosomal sites tested. Consistent with a specialized role for Swr1p in H2A.Z deposition, the majority of the genome-wide transcriptional defects seen in swr1Delta cells were also found in htz1Delta cells. These studies revealed a novel role for a member of the ATP-dependent chromatin remodeling enzyme family in determining the region-specific histone subunit composition of chromatin in vivo and controlling the epigenetic state of chromatin. Metazoan orthologs of Swr1p (Drosophila Domino; human SRCAP and p400) may have analogous functions.", 
+          "qas": [
+            {
+              "question": "Which protein mediates the replacement of H2A by H2A.Z in the yeast Saccharomyces cerevisiae?", 
+              "id": "58a6db8660087bc10a00002c_006"
+            }
+          ]
+        }, 
+        {
+          "context": "Expression, localization, and function of MRP5 (ABCC5), a transporter for cyclic nucleotides, in human placenta and cultured human trophoblasts: effects of gestational age and cellular differentiation. The placenta functions both as site for nutrition and protection of the fetus. Transport proteins, including members of the multidrug resistance protein (MRP)/ABCC subfamily, have been recognized to contribute to the latter function. MRP5 (ABCC5) was identified as transmembrane transport protein for cyclic nucleotides, especially 3',5'-cyclic GMP (cGMP), indicating an additional role in signal transduction and a potential role in placenta development. We therefore studied expression, localization, and function of MRP5 in placenta of different gestational ages. Quantitative real-time polymerase chain reaction revealed expression of MRP5 in all 60 samples from pre-term and term placenta, with a decreasing mean expression with gestational age (MRP5/18S-ratio x 1000; < 32 weeks: 2.91 +/- 0.73, n = 15; 32 to 37 weeks: 2.10 +/- 0.87, n = 15; > 37 weeks: 0.46 +/- 0.08, n = 30; P < 0.01). Immunofluorescence microscopy with an anti-MRP5 antibody indicated localization of MRP5 preferentially in the basal membrane of syncytiotrophoblasts and in and around fetal vessels. ATP-dependent [(3)H]cGMP transport as evidence for MRP5 function could be demonstrated in isolated basal membrane vesicles. Moreover, the influence of cellular differentiation on MRP5 expression was studied in isolated trophoblasts, revealing an increase of the MRP5 expression in parallel with the hCG production (MRP5/18S-ratio x 1000 was 2.4 +/- 0.5 at day 5 of culture and 1.45 +/- 0.5 at day 0 of culture, n = 3 preparations, significant difference with P < 0.05). In conclusion, MRP5 expression depends on gestational age and varies throughout the differentiation process. In view of the important role of cGMP for cellular differentiation, MRP5 may play a role in placental development in context with a specific need for cellular cGMP export.", 
+          "qas": [
+            {
+              "question": "What does the human ABCC gene  product do?", 
+              "id": "58c99fcc02b8c60953000029_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Structure, function, expression, genomic organization, and single nucleotide polymorphisms of human ABCB1 (MDR1), ABCC (MRP), and ABCG2 (BCRP) efflux transporters. The ATP-binding cassette (ABC) transporters constitute a large family of membrane proteins, which transport a variety of compounds through the membrane against a concentration gradient at the cost of ATP hydrolysis. Substrates of the ABC transporters include lipids, bile acids, xenobiotics, and peptides for antigen presentation. As they transport exogenous and endogenous compounds, they reduce the body load of potentially harmful substances. One by-product of such protective function is that they also eliminate various useful drugs from the body, causing drug resistance. This review is a brief summary of the structure, function, and expression of the important drug resistance-conferring members belonging to three subfamilies of the human ABC family; these are ABCB1 (MDR1/P-glycoprotein of subfamily ABCB), subfamily ABCC (MRPs), and ABCG2 (BCRP of subfamily ABCG), which are expressed in various organs. In the text, the transporter symbol that carries the subfamily name (such as ABCB1, ABCC1, etc.) is used interchangeably with the corresponding original names, such as MDR1P-glycoprotein, MRP1, etc., respectively. Both nomenclatures are maintained in the text because both are still used in the transporter literature. This helps readers relate various names that they encounter in the literature. It now appears that P-glycoprotein, MRP1, MRP2, and BCRP can explain the phenomenon of multidrug resistance in all cell lines analyzed thus far. Also discussed are the gene structure, regulation of expression, and various polymorphisms in these genes. Because genetic polymorphism is thought to underlie interindividual differences, including their response to drugs and other xenobiotics, the importance of polymorphism in these genes is also discussed.", 
+          "qas": [
+            {
+              "question": "What does the human ABCC gene  product do?", 
+              "id": "58c99fcc02b8c60953000029_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Fulminant hepatic failure attributed to ackee fruit ingestion in a patient with sickle cell trait. We report a case of fulminant liver failure resulting in emergent liver transplantation following 3 weeks of nausea, vomiting, and malaise from Jamaican Vomiting Sickness. Jamaican Vomiting Sickness is caused by ingestion of the unripe arils of the Ackee fruit, its seeds and husks. It is characterized by acute gastrointestinal illness and hypoglycemia. In severe cases, central nervous system depression can occur. In previous studies, histologic sections taken from patients with Jamaican Vomiting Sickness have shown hepatotoxicity similar to that seen in Reye syndrome and/or acetaminophen toxicity. We highlight macroscopic and microscopic changes in the liver secondary to hepatoxicity of Ackee fruit versus those caused by a previously unknown sickle cell trait. We discuss the clinical variables and the synergistic hepatotoxic effect of Ackee fruit and ischemic injury from sickled red blood cells, causing massive hepatic necrosis in this patient.", 
+          "qas": [
+            {
+              "question": "What fruit causes Jamaican vomiting sickness?", 
+              "id": "5895f7e978275d0c4a000001_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Ackee Fruit Poisoning in Eight Siblings: Implications for Public Health Awareness. Ackee apple fruit is a native fruit to Jamaica and some parts of west Africa. Its toxicity known as \"Jamaican vomiting sickness\" dates back to the nineteenth century. However, there is a dearth of reported published data on toxicity from Nigeria where it is popularly known in the southwest as \"ishin.\" We report a case series of eight previously well Nigerian siblings who presented at various intervals after ingestion of roasted seeds and aril of the ackee fruit.", 
+          "qas": [
+            {
+              "question": "What fruit causes Jamaican vomiting sickness?", 
+              "id": "5895f7e978275d0c4a000001_001"
+            }
+          ]
+        }, 
+        {
+          "context": "A validated method for quantifying hypoglycin A in whole blood by UHPLC-HRMS/MS. Hypoglycin A (HGA) is the toxic principle in ackee (Blighia sapida Koenig), a nutritious and readily available fruit which is a staple of the Jamaican working-class and rural population. The aril of the unripe fruit has high concentrations of HGA, the cause of Jamaican vomiting sickness, which is very often fatal. HGA is also present in the samara of several species of maple (Acer spp.) which are suspected to cause seasonal pasture myopathy in North America and equine atypical myopathy in Europe, often fatal for horses. The aim of this study was to develop a method for quantifying HGA in blood that would be sensitive enough to provide toxicological evidence of ackee or maple poisoning. Analysis was carried out using solid-phase extraction (HILIC cartridges), dansyl derivatization and UHPLC-HRMS/MS detection. The method was validated in whole blood with a detection limit of 0.35 \u03bcg/L (range: 0.8-500 \u03bcg/L). This is the first method applicable in forensic toxicology for quantifying HGA in whole blood. HGA was quantified in two serum samples from horses suffering from atypical myopathy. The concentrations were 446.9 and 87.8 \u03bcg/L. HGA was also quantified in dried arils of unripe ackee fruit (Suriname) and seeds of sycamore maple (Acer pseudoplatanus L.) (France). The concentrations were 7.2 and 0.74 mg/g respectively.", 
+          "qas": [
+            {
+              "question": "What fruit causes Jamaican vomiting sickness?", 
+              "id": "5895f7e978275d0c4a000001_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Quantification of metabolites for assessing human exposure to soapberry toxins hypoglycin A and methylenecyclopropylglycine. Ingestion of soapberry fruit toxins hypoglycin A and methylenecyclopropylglycine has been linked to public health challenges worldwide. In 1976, over 100 years after Jamaican vomiting sickness (JVS) was first reported, the cause of JVS was linked to the ingestion of the toxin hypoglycin A produced by ackee fruit. A structural analogue of hypoglycin A, methylenecyclopropylglycine (MCPG), was implicated as the cause of an acute encephalitis syndrome (AES). Much of the evidence linking hypoglycin A and MCPG to these diseases has been largely circumstantial due to the lack of an analytical method for specific metabolites. This study presents an analytical approach to identify and quantify specific urine metabolites for exposure to hypoglycin A and MCPG. The metabolites are excreted in urine as glycine adducts methylenecyclopropylacetyl-glycine (MCPA-Gly) and methylenecyclopropylformyl-glycine (MCPF-Gly). These metabolites were processed by isotope dilution, separated by reverse-phase liquid chromatography, and monitored by electrospray ionization tandem mass spectrometry. The analytical response ratio was linearly proportional to the concentration of MCPF-Gly and MCPA-Gly in urine from 0.10 to 20 \u03bcg/mL with a correlation coefficient of r > 0.99. The assay demonstrated accuracy > 80% and precision < 20% RSD across the calibration range. This method has been applied to assess exposure to hypoglycin A and MCPG as part of a larger public health initiative and was used to provide the first reported identification of MCPF-Gly and MCPA-Gly in human urine.", 
+          "qas": [
+            {
+              "question": "What fruit causes Jamaican vomiting sickness?", 
+              "id": "5895f7e978275d0c4a000001_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Pharmaceutical induction of ApoE secretion by multipotent mesenchymal stromal cells (MSCs). BACKGROUND: Apolipoprotein E (ApoE) is a molecular scavenger in the blood and brain. Aberrant function of the molecule causes formation of protein and lipid deposits or \"plaques\" that characterize Alzheimer's disease (AD) and atherosclerosis. There are three human isoforms of ApoE designated epsilon2, epsilon3, and epsilon4. Each isoform differentially affects the structure and function of the protein and thus the development of disease. Homozygosity for ApoE epsilon4 is associated with atherosclerosis and Alzheimer's disease whereas ApoE epsilon2 and epsilon3 tend to be protective. Furthermore, the epsilon2 form may cause forms of hyperlipoproteinemia. Therefore, introduction of ApoE epsilon3 may be beneficial to patients that are susceptible to or suffering from these diseases. Mesenchymal stem cells or multipotent mesenchymal stromal cells (MSCs) are adult progenitor cells found in numerous tissues. They are easily expanded in culture and engraft into host tissues when administered appropriately. Furthermore, MSCs are immunosuppressive and have been reported to engraft as allogeneic transplants. In our previous study, mouse MSCs (mMSCs) were implanted into the brains of ApoE null mice, resulting in production of small amounts of ApoE in the brain and attenuation of cognitive deficits. Therefore human MSCs (hMSCs) are a promising vector for the administration of ApoE epsilon3 in humans. RESULTS: Unlike mMSCs, hMSCs were found not to express ApoE in culture; therefore a molecular screen was performed for compounds that induce expression. PPARgamma agonists, neural stem cell conditioned medium, osteo-inductive media, dexamethasone, and adipo-inductive media (AIM) were tested. Of the conditions tested, only AIM or dexamethasone induced sustained secretion of ApoE in MSCs and the duration of secretion was only limited by the length of time MSCs could be sustained in culture. Upon withdrawal of the inductive stimuli, the ApoE secretion persisted for a further 14 days. CONCLUSION: The data demonstrated that pre-treatment and perhaps co-administration of MSCs homozygous for ApoE epsilon3 and dexamethasone may represent a novel therapy for severe instances of AD, atherosclerosis and other ApoE-related diseases.", 
+          "qas": [
+            {
+              "question": "Which ApoE isoform is associated with atherosclerosis and Alzheimer's disease?", 
+              "id": "58b6cd3222d300530900000d_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Role of ApoE in conformation-prone diseases and atherosclerosis. Three isoforms of human plasma apolipoprotein E (apoE) are ligands to lipoprotein receptors and influence in different manner the synthesis and catabolism of pro-atherogenic triglyceride-rich lipoproteins. Among three isoforms, the apoE4 isoform is associated with increased frequency of atherosclerosis and Alzheimer's disease (AD). The conformational transitions of beta-amyloid (Abeta) influenced by apoE and serum amyloid P (SAP) component are key events in AD development, the accumulation of intermediate diffusible and soluble oligomers of Abeta being of particular significance. SAP and apoE, in a different manner for the three isoforms, serve as \"pathological\" chaperones during the aggregation of Abeta considered as a conformation-prone process. In turn, apoE consisting of two domains self-associates in solution and intermediate structures differently populated for the three isoforms exist. The different structures of the three isoforms determine their different distribution among various plasma lipoproteins. The structural and metabolic consideration of the common apoE pathway(s) in two pathologies assumes four molecular targets for AD correction: (i) inhibition of the accumulation of diffusible soluble Abeta oligomers; (ii) inhibition of apoE synthesis and secretion by astrocytes, in particular, under lipid-lowering therapy; (iii) inhibition of the binding of apoE and/or SAP to Abeta; (iv) stimulation of the expression of cholesterol transporter ABCA1.", 
+          "qas": [
+            {
+              "question": "Which ApoE isoform is associated with atherosclerosis and Alzheimer's disease?", 
+              "id": "58b6cd3222d300530900000d_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Apolipoprotein E: far more than a lipid transport protein. First recognized as a major determinant in lipoprotein metabolism and cardiovascular disease, apolipoprotein (apo) E has emerged as an important molecule in several biological processes not directly related to its lipid transport function, including Alzheimer's disease and cognitive function, immunoregulation, and possibly even infectious diseases. ApoE is a polymorphic protein arising from three alleles at a single gene locus. The three major isoforms, apoE4, apoE3, and apoE2, differ from one another only by single amino acid substitutions, yet these changes have profound functional consequences at both the cellular and molecular levels. ApoE3 seems to be the normal isoform in all known functions, while apoE4 and apoE2 can each be dysfunctional. Isoform (allele)-specific effects include the association of apoE2 with the genetic disorder type III hyperlipoproteinemia and with both increased and decreased risk for atherosclerosis and the association of apoE4 with increased risk for both atherosclerosis and Alzheimer's disease, impaired cognitive function, and reduced neurite outgrowth; isoform-specific differences in cellular signaling events may also exist. Functional differences in the apoE isoforms that affect (or did affect) survival before the reproductive years probably account, at least in part, for the allele frequencies of the present day.", 
+          "qas": [
+            {
+              "question": "Which ApoE isoform is associated with atherosclerosis and Alzheimer's disease?", 
+              "id": "58b6cd3222d300530900000d_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Bioactive TGF-beta can associate with lipoproteins and is enriched in those containing apolipoprotein E3. Transforming growth factor-beta1 (TGF-beta1) has central functions in development, tissue maintenance, and repair and has been implicated in major diseases. We discovered that TGF-beta1 contains several amphipathic helices and hydrophobic domains similar to apolipoprotein E (apoE), a protein involved in lipoprotein metabolism. Indeed, TGF-beta1 associates with lipoproteins isolated from human plasma, cultured liver cells, or astrocytes, and its bioactivity was highest in high-density lipoprotein preparations. Importantly, lipoproteins containing the apoE3 isoform had higher TGF-beta levels and bioactivity than those containing apoE4, a major genetic risk factor for atherosclerosis and Alzheimer's disease. Because TGF-beta1 can be protective in these diseases an association with apoE3 may be beneficial. Association of TGF-beta with different types of lipoproteins may facilitate its diffusion, regulate signaling, and offer additional specificity for this important growth factor.", 
+          "qas": [
+            {
+              "question": "Which ApoE isoform is associated with atherosclerosis and Alzheimer's disease?", 
+              "id": "58b6cd3222d300530900000d_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Structural variation in human apolipoprotein E3 and E4: secondary structure, tertiary structure, and size distribution. Human apolipoprotein E (apoE) is a 299-amino-acid protein with a molecular weight of 34 kDa. The difference between the apoE3 and apoE4 isoforms is a single residue substitution involving a Cys-Arg replacement at residue 112. ApoE4 is positively associated with atherosclerosis and late-onset and sporadic Alzheimer's disease (AD). ApoE4 and its C-terminal truncated fragments have been found in the senile plaques and neurofibrillary tangles in the brain of AD patients. However, detail structural information regarding isoform and domain interaction remains poorly understood. We prepared full-length, N-, and C-terminal truncated apoE3 and apoE4 proteins and studied their structural variation. Sedimentation velocity and continuous size distribution analysis using analytical ultracentrifugation revealed apoE3(72-299) as consisting of a major species with a sedimentation coefficient of 5.9. ApoE4(72-299) showed a wider and more complicated species distribution. Both apoE3 and E4 N-terminal domain (1-191) existed with monomers as the major component together with some tetramer. The oligomerization and aggregation of apoE protein increased when the C-terminal domain (192-271) was incorporated. The structural influence of the C-terminal domain on apoE is to assist self-association with no significant isoform preference. Circular dichroism and fluorescence studies demonstrated that apoE4(72-299) possessed a more alpha-helical structure with more hydrophobic residue exposure. The structural variation of the N-terminal truncated apoE3 and apoE4 protein provides useful information that helps to explain the greater aggregation of the apoE4 isoform and thus has implication for the involvement of apoE4 in AD.", 
+          "qas": [
+            {
+              "question": "Which ApoE isoform is associated with atherosclerosis and Alzheimer's disease?", 
+              "id": "58b6cd3222d300530900000d_004"
+            }
+          ]
+        }, 
+        {
+          "context": "The history of woolsorters' disease: a Yorkshire beginning with an international future? Woolsorters' disease was a feared industrial disease associated primarily with Yorkshire's textile industry of the nineteenth and early twentieth centuries. Early occupational health methods were attempted locally before concerted national efforts produced legislative measures. When its link with anthrax was established, attention in prevention focused upon chemical disinfection methods. Together, these factors were instrumental in decreasing the incidence of woolsorters' disease. However, by the beginning of the Second World War, the lack of treatment options for anthrax meant that the bacterium was experimented upon as a potential war-winning weapon. Today, woolsorters' disease and other industrial manifestations of anthrax are extremely rare, but the increasing threat of bioterrorism means that the international dread and historical lessons of this significant condition should never be forgotten. Consequently, this paper reveals the history of woolsorters' disease in order to remind those involved in occupational medicine today of the dread it caused both physicians and workers in previous generations.", 
+          "qas": [
+            {
+              "question": "What organism causes woolsorter's disease", 
+              "id": "58caf0be02b8c6095300002f_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Pregnancy outcome after oocyte donation in patients with Turner's syndrome: Clinical experience and management. Turner's syndrome (TS) is a chromosomal defect with partial or total absence of the X chromosome. Our objective is to report our experience in Greece with patients suffering from TS and trying to conceive; therefore, we present four patients with TS, who underwent In vitro fertilization (ICSI) with donor oocytes in order to get pregnant. Three out of four patients managed to conceive and bring pregnancy to completion. It was shown that patients diagnosed in childhood or adolescence with TS have the possibility to undergo hormone replacement therapy (HRT) and thus, secondary sexual characteristics as well as uterus of almost normal size can develop. Assisted reproduction techniques (ART), predominantly with donated oocytes, could give these patients the possibility to have children.", 
+          "qas": [
+            {
+              "question": "What chromosome is affected in Turner's syndrome?", 
+              "id": "58bca2f302b8c6095300000c_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Assessment and quantification of telomerase enzyme activity. The enzyme telomerase is activated in 80-90% of all human malignancies and immortal cell lines, where it functions to maintain the integrity of chromosomal-end structures called telomeres. Telomerase enzyme activity can be detected in whole cell lysates by a polymerase chain reaction (PCR)-based method referred to as the telomeric repeat amplification protocol (TRAP). The TRAP assay involves extension of an oligonucleotide through telomerase-mediated enzymatic addition of telomeric DNA repeats and subsequent PCR amplification of the extension products. While the TRAP assay as originally developed utilizes radioactively labelled nucleotides, protocols are provided herein for nonradioactive versions of the TRAP assay, with options for either qualitative assessment of TRAP products by polyacrylamide gel electrophoresis (standard TRAP), or quantitative analysis by real-time PCR (Q-TRAP). The Q-TRAP method poses the additional advantages of exquisite sensitivity, rapidity, and potential for adoption to a high-throughput format.", 
+          "qas": [
+            {
+              "question": "What is the aim of the TRAP assay?", 
+              "id": "58cd7af402b8c6095300003e_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Studying the enucleation process, DNA breakdown and telomerase activity of the K562 cell lines during erythroid differentiation in vitro. During erythropoiesis, some organelles such as mitochondria and nucleus are lost by autophagy and enucleation processes in the presence of macrophages in vivo. In vitro production of erythrocytes has raised many questions about the mechanism of enucleation. The aim of this work was to study the DNA breakdown, enucleation, hemoglobin synthesis and telomerase activity of K562 cells during erythroid differentiation. For these purposes, K562 cells were induced to differentiate by erythropoietin + rhGM-CSF, DMSO, and sodium butyrate separately up to 14 d. In different time intervals, hemoglobin synthesis was evaluated by benzidine staining and RT-PCR for \u03b3-globin gene expression. DNA breakdown was analyzed by 4',6-diamidino-2-phenylindole (DAPI) staining, DNA ladder electrophoresis and comet assay. The telomerase activity was evaluated by TRAP assay. Our result indicated that, sodium butyrate and DMSO inhibited K562 cell growth about 50-60% in comparison to untreated control cells. The percentage of benzidine-positive cells was about 45% in the presence of sodium butyrate after 10 d. Densitometric analysis of RT-PCR and calculated data indicated a 1.5-fold increase in relative \u03b3-globin gene expression at 96 h, in the presence of 1 mM sodium butyrate in comparison with untreated cells. DAPI staining did not reveal any evidence of internal lysis of the nucleus during erythroid differentiation at first wk, but this was obvious in the second wk. DNA laddering pattern was not observed in differentiated cells during 14 d. In comet assay, the percentage of DNA in tail, tail length, and tail moment were significantly different between untreated and treated cells (p < 0.05). Telomerase activity was inhibited up to 90.3% during erythroid differentiation of these cells.", 
+          "qas": [
+            {
+              "question": "What is the aim of the TRAP assay?", 
+              "id": "58cd7af402b8c6095300003e_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Telomerase repeat amplification protocol (TRAP) activity upon recombinant expression and purification of human telomerase in a bacterial system. Telomerase biogenesis is a highly regulated process that solves the DNA end-replication problem. Recombinant expression has so far been accomplished only within a eukaryotic background. Towards structural and functional analyses, we developed bacterial expression of human telomerase. Positive activity by the telomerase repeat amplification protocol (TRAP) was identified in cell extracts of Escherichia coli expressing a sequence-optimized hTERT gene, the full-length hTR RNA with a self-splicing hepatitis delta virus ribozyme, and the human heat shock complex of Hsp90, Hsp70, p60/Hop, Hsp40, and p23. The Hsp90 inhibitor geldanamycin did not affect post-assembly TRAP activity. By various purification methods, TRAP activity was also obtained upon expression of only hTERT and hTR. hTERT was confirmed by tandem mass spectrometry in a \u223c120\u00a0kDa SDS-PAGE fragment from a TRAP-positive purification fraction. TRAP activity was also supported by hTR constructs lacking the box H/ACA small nucleolar RNA domain. End-point TRAP indicated expression levels within 3-fold of that from HeLa carcinoma cells, which is several orders of magnitude below detection by the direct assay. These results represent the first report of TRAP activity from a bacterium and provide a facile system for the investigation of assembly factors and anti-cancer therapeutics independently of a eukaryotic setting.", 
+          "qas": [
+            {
+              "question": "What is the aim of the TRAP assay?", 
+              "id": "58cd7af402b8c6095300003e_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Using PCR coupled to PAGE for detection and semiquantitative evaluation of telomerase activity. Telomerase is the enzyme that extends the chromosome ends, thereby contributing to eukaryotic cell genome stability. Telomerase is expressed in the majority of cells that have an unlimited proliferation such as stem cells and cancer cells. The increased interest in telomerase in cancer research, challenged by the low cellular abundance of the enzyme, has led to the development of a reliable and at the same time very sensitive approach to detect telomerase activity. The telomeric repeat amplification protocol (TRAP) represents an easy and rapid method for detection of telomerase activity in cells. A non-telomeric TS primer is extended by telomerase in the first step followed by the PCR amplification of the products. The PCR step renders this protocol very sensitive to detect telomerase activity at the single cell level making it compatible with the analysis of tumor samples. When run on a polyacrylamide gel, the PCR product is a characteristic ladder of bands due to the repetitive nature of telomeric DNA sequence. The densitometric analysis of the ladder allows the TRAP assay to be used for comparative quantification of telomerase activity in different samples.", 
+          "qas": [
+            {
+              "question": "What is the aim of the TRAP assay?", 
+              "id": "58cd7af402b8c6095300003e_003"
+            }
+          ]
+        }, 
+        {
+          "context": "PCDH10 Interacts With hTERT and Negatively Regulates Telomerase Activity. Telomerase catalyzes telomeric DNA synthesis, an essential process to maintain the length of telomere for continuous cell proliferation and genomic stability. Telomerase is activated in gametes, stem cells, and most tumor cells, and its activity is tightly controlled by a catalytic human telomerase reverse transcriptase (hTERT) subunit and a collection of associated proteins. In the present work, normal human testis tissue was used for the first time to identify proteins involved in the telomerase regulation under normal physiological conditions. Immunoprecipitation was performed using total protein lysates from the normal testis tissue and the proteins of interest were identified by microfluidic high-performance liquid chromatography and tandem mass spectrometry (HPLC-Chip-MS/MS). The regulatory role of PCDH10 in telomerase activity was confirmed by a telomeric repeat amplification protocol (TRAP) assay, and the biological functions of it were characterized by in vitro proliferation, migration, and invasion assays. A new in vivo hTERT interacting protein, protocadherin 10 (PCDH10), was identified. Overexpression of PCDH10 in pancreatic cancer cells impaired telomere elongation by inhibiting telomerase activity while having no obvious effect on hTERT expression at mRNA and protein levels. As a result of this critical function in telomerase regulation, PCDH10 was found to inhibit cell proliferation, migration, and invasion, suggesting a tumor suppressive role of this protein. Our data suggested that PCDH10 played a critical role in cancer cell growth, by negatively regulating telomerase activity, implicating a potential value in future therapeutic development against cancer.", 
+          "qas": [
+            {
+              "question": "What is the aim of the TRAP assay?", 
+              "id": "58cd7af402b8c6095300003e_004"
+            }
+          ]
+        }, 
+        {
+          "context": "Poly (ADP-ribose) polymerase 3 (PARP3), a potential repressor of telomerase activity. BACKGROUND: Considering previous result in Non-Small Cell Lung Cancer (NSCLC), we investigated in human cancer cells the role of PARP3 in the regulation of telomerase activity. METHODS: We selected A549 (lung adenocarcinoma cell line) and Saos-2 (osteosarcoma cell line), with high and low telomerase activity levels, respectively. The first one was transfected using a plasmid construction containing a PARP3 sequence, whereas the Saos-2 cells were submitted to shRNA transfection to get PARP3 depletion. PARP3 expression on both cell systems was evaluated by real-time quantitative PCR and PARP3 protein levels, by Western-blot. Telomerase activity was determined by TRAP assay. RESULTS: In A549 cells, after PARP3 transient transfection, data obtained indicated that twenty-four hours after transfection, up to 100-fold increased gene expression levels were found in the transfected cells with pcDNA/GW-53/PARP3 in comparison to transfected cells with the empty vector. Moreover, 48\u00a0hours post-transfection, telomerase activity decreased around 33%, and around 27%, 96\u00a0hours post-transfection. Telomerase activity average ratio was 0.67 \u00b1 0.05, and 0.73 \u00b1 0.06, respectively, with significant differences. In Saos-2 cells, after shRNA-mediated PARP3 silencing, a 2.3-fold increase in telomerase activity was detected in relation to the control. CONCLUSION: Our data indicated that, at least in some cancer cells, repression of PARP3 could be responsible for an increased telomerase activity, this fact contributing to telomere maintenance and, therefore, avoiding genome instability.", 
+          "qas": [
+            {
+              "question": "What is the aim of the TRAP assay?", 
+              "id": "58cd7af402b8c6095300003e_005"
+            }
+          ]
+        }, 
+        {
+          "context": "Telomerase activity in the various regions of mouse brain: non-radioactive telomerase repeat amplification protocol (TRAP) assay. Telomerase, a ribonucleoprotein, is responsible for maintaining the telomere length and therefore promoting genomic integrity, proliferation, and lifespan. In addition, telomerase protects the mitochondria from oxidative stress and confers resistance to apoptosis, suggesting its possible importance for the surviving of non-mitotic, highly active cells such as neurons. We previously demonstrated the ability of novel telomerase activators to increase telomerase activity and expression in the various mouse brain regions and to protect motor neurons cells from oxidative stress. These results strengthen the notion that telomerase is involved in the protection of neurons from various lesions. To underline the role of telomerase in the brain, we here compare the activity of telomerase in male and female mouse brain and its dependence on age. TRAP assay is a standard method for detecting telomerase activity in various tissues or cell lines. Here we demonstrate the analysis of telomerase activity in three regions of the mouse brain by non-denaturing protein extraction using CHAPS lysis buffer followed by modification of the standard TRAP assay. In this 2-step assay, endogenous telomerase elongates a specific telomerase substrate (TS primer) by adding TTAGGG 6 bp repeats (telomerase reaction). The telomerase reaction products are amplified by PCR reaction creating a DNA ladder of 6 bp increments. The analysis of the DNA ladder is made by 4.5% high resolution agarose gel electrophoresis followed by staining with highly sensitive nucleic acid stain. Compared to the traditional TRAP assay that utilize (32)P labeled radioactive dCTP's for DNA detection and polyacrylamide gel electrophoresis for resolving the DNA ladder, this protocol offers a non-toxic time saving TRAP assay for evaluating telomerase activity in the mouse brain, demonstrating the ability to detect differences in telomerase activity in the various female and male mouse brain region.", 
+          "qas": [
+            {
+              "question": "What is the aim of the TRAP assay?", 
+              "id": "58cd7af402b8c6095300003e_006"
+            }
+          ]
+        }, 
+        {
+          "context": "RADAR: a rigorously annotated database of A-to-I RNA editing. We present RADAR--a rigorously annotated database of A-to-I RNA editing (available at http://RNAedit.com). The identification of A-to-I RNA editing sites has been dramatically accelerated in the past few years by high-throughput RNA sequencing studies. RADAR includes a comprehensive collection of A-to-I RNA editing sites identified in humans (Homo sapiens), mice (Mus musculus) and flies (Drosophila melanogaster), together with extensive manually curated annotations for each editing site. RADAR also includes an expandable listing of tissue-specific editing levels for each editing site, which will facilitate the assignment of biological functions to specific editing sites.", 
+          "qas": [
+            {
+              "question": "Which annotated database of A-to-I RNA editing is available?", 
+              "id": "587e1a01fc7e8dd84f000001_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Reciprocal regulation of two G protein-coupled receptors sensing extracellular concentrations of Ca2+ and H. G protein-coupled receptors (GPCRs) are cell surface receptors that detect a wide range of extracellular messengers and convey this information to the inside of cells. Extracellular calcium-sensing receptor (CaSR) and ovarian cancer gene receptor 1 (OGR1) are two GPCRs that sense extracellular Ca(2+) and H(+), respectively. These two ions are key components of the interstitial fluid, and their concentrations change in an activity-dependent manner. Importantly, the interstitial fluid forms part of the microenvironment that influences cell function in health and disease; however, the exact mechanisms through which changes in the microenvironment influence cell function remain largely unknown. We show that CaSR and OGR1 reciprocally inhibit signaling through each other in central neurons, and that this is lost in their transformed counterparts. Furthermore, strong intracellular acidification impairs CaSR function, but potentiates OGR1 function. Thus, CaSR and OGR1 activities can be regulated in a seesaw manner, whereby conditions promoting signaling through one receptor simultaneously inhibit signaling through the other receptor, potentiating the difference in their relative signaling activity. Our results provide insight into how small but consistent changes in the ionic microenvironment of cells can significantly alter the balance between two signaling pathways, which may contribute to disease progression.", 
+          "qas": [
+            {
+              "question": "What is the function of calcium-sensing receptor (CaSR)?", 
+              "id": "58cd7fed02b8c6095300003f_000"
+            }
+          ]
+        }, 
+        {
+          "context": "The calcium-sensing receptor and the hallmarks of cancer. The calcium-sensing receptor (CaSR) plays a pivotal role in systemic calcium metabolism by regulating parathyroid hormone secretion and urinary calcium excretion. The CaSR is ubiquitously expressed, implying a wide range of functions regulated by this receptor. Abnormal CaSR function affects the development of both calciotropic disorders such as hyperparathyroidism, and non-calciotropic disorders such as cardiovascular disease and cancer, which are the leading causes of mortality worldwide. The CaSR is able to bind a plethora of ligands; it interacts with multiple G protein subtypes, and regulates highly divergent downstream signalling pathways, depending on the cellular context. The CaSR is a key regulator for such diverse processes as hormone secretion, gene expression, inflammation, proliferation, differentiation, and apoptosis. Due to this pleiotropy, the CaSR is able to regulate cell fate and is implicated in the development of many types of benign or malignant tumours of the breast, prostate, parathyroid, and colon. In cancer, the CaSR appears to have paradoxical roles, and depending on the tissue involved, it is able to prevent or promote tumour growth. In tissues like the parathyroid or colon, the CaSR inhibits proliferation and induces terminal differentiation of the cells. Therefore, loss of the receptor, as seen in colorectal or parathyroid tumours, confers malignant potential, suggestive of a tumour suppressor role. In contrast, in prostate and breast tumours the expression of the CaSR is increased and it seems that it favours metastasis to the bone, acting as an oncogene. Deciphering the molecular mechanism driving the CaSR in the different tissues could lead to development of new allosteric drug compounds that selectively target the CaSR and have therapeutic potential for cancer. This article is part of a Special Issue entitled: Calcium and Cell Fate. Guest Editors: Jacques Haiech, Claus Heizmann, Joachim Krebs, Thierry Capiod and Olivier Mignen.", 
+          "qas": [
+            {
+              "question": "What is the function of calcium-sensing receptor (CaSR)?", 
+              "id": "58cd7fed02b8c6095300003f_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Mutations of calcium-sensing receptor gene: two novel mutations and overview of impact on calcium homeostasis. OBJECTIVE: Genetic disorders of calcium metabolism arise in a familial or sporadic setting. The calcium-sensing receptor (CASR) plays a key role in maintaining calcium homeostasis and study of the CASR gene can be clinically useful in determining etiology and appropriate therapeutic approaches. We report two cases of novel CASR gene mutations that illustrate the varying clinical presentations and discuss these in terms of the current understanding of CASR function. PATIENTS AND METHODS: A 16-year-old patient had mild hypercalcemia associated with low-normal urinary calcium excretion and normal-to-high parathyroid hormone (PTH) levels. Because of negative family history, familial hypocalciuric hypercalcemia was originally excluded. The second patient was a 54-year-old man with symptomatic hypocalcemia, hyperphosphatemia, low PTH, and mild hypercalciuria. Familial investigation revealed the same phenotype in the patient's sister. The coding region of the CASR gene was sequenced in both probands and their available first-degree relatives. RESULTS: The first patient had a novel heterozygous inactivating CASR mutation in exon 4, which predicted a p.A423K change; genetic analysis was negative in the parents. The second patient had a novel heterozygous activating CASR mutation in exon 6, which predicted a p.E556K change; the affected sister of the proband was also positive. CONCLUSIONS: We reported two novel heterozygous mutations of the CASR gene, an inactivating mutation in exon 4 and the first activating mutation reported to date in exon 6. These cases illustrate the importance of genetic testing of CASR gene to aid correct diagnosis and to assist in clinical management.", 
+          "qas": [
+            {
+              "question": "What is the function of calcium-sensing receptor (CaSR)?", 
+              "id": "58cd7fed02b8c6095300003f_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Identification and functional analysis of a novel CaSR mutation in a family with familial hypocalciuric hypercalcemia. The calcium-sensing receptor (CaSR) is a G-protein-coupled receptor that plays an essential role in maintaining calcium homeostasis. In the present study, we analyzed the CaSR gene in a Korean family with familial hypocalciuric hypercalcemia (FHH). Genetic studies were performed by direct sequence analysis of the CaSR gene in genomic DNA obtained from peripheral leukocytes. A novel heterozygous G to T substitution at nucleotide position 1711 in exon 6, resulting in the G571W mutation, was identified in the CaSR gene in a 26-year-old female with asymptomatic hypercalcemia, a low calcium/creatinine clearance ratio, and normal intact parathyroid hormone. To study CaSR expression, the mutation was introduced by site-directed mutagenesis into a wild-type (WT) CaSR-expressing pCR3.1 vector, and COS-7 cells were transfected with either the WT or mutant CaSR-containing vector. Transfected cells loaded with Fura-2/AM, a fluorescent indicator of Ca, were assessed for CaSR function by the change in intracellular calcium [as measured by the 340\u00a0nm/380\u00a0nm fluorescence intensity ratio (F340/F380)] made in response to challenge with extracellular Ca. Both WT and G571W cells had equivalent amounts of CaSR protein in the cell membrane. However, after challenge with extracellular Ca, cells transfected with G571W CaSR responded with a lower F340/F380 ratio than those transfected with WT CaSR and showed decreased sensitivity to extracellular Ca concentrations. The G571W mutation had therefore impaired the CaSR function. In conclusion, we identified a novel loss-of-function mutation, G571W, in the CaSR gene in a Korean family with FHH.", 
+          "qas": [
+            {
+              "question": "What is the function of calcium-sensing receptor (CaSR)?", 
+              "id": "58cd7fed02b8c6095300003f_003"
+            }
+          ]
+        }, 
+        {
+          "context": "traseR: an R package for performing trait-associated SNP enrichment analysis in genomic intervals. UNLABELLED: Genome-wide association studies (GWASs) have successfully identified many sequence variants that are significantly associated with common diseases and traits. Tens of thousands of such trait-associated SNPs have already been cataloged, which we believe form a great resource for genomic research. Recent studies have demonstrated that the collection of trait-associated SNPs can be exploited to indicate whether a given genomic interval or intervals are likely to be functionally connected with certain phenotypes or diseases. Despite this importance, currently, there is no ready-to-use computational tool able to connect genomic intervals to phenotypes. Here, we present traseR, an easy-to-use R Bioconductor package that performs enrichment analyses of trait-associated SNPs in arbitrary genomic intervals with flexible options, including testing method, type of background and inclusion of SNPs in LD. AVAILABILITY AND IMPLEMENTATION: The traseR R package preloaded with up-to-date collection of trait-associated SNPs are freely available in Bioconductor CONTACT: zhaohui.qin@emory.edu SUPPLEMENTARY INFORMATION: Supplementary data are available at Bioinformatics online.", 
+          "qas": [
+            {
+              "question": "Which R / bioconductor package is used for performing SNP enrichment analysis?", 
+              "id": "587e3129c32c812009000002_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Interleukin 18--binding protein ameliorates liver ischemia--reperfusion injury. BACKGROUND: The aim of this study was to investigate the possible protective effect of interleukin 18-binding protein (IL-18BP) on ischemia-reperfusion (I/R)-induced liver injury in experimental rat models. Liver is one of the most affected organs from I/R process. IL-18 is an important proinflammatory cytokine, which may induce some events such as production of reactive oxygen substances and release of various cytokines. IL-18BP acts as an inhibitor of IL-18. The relationship between IL-18 and IL-18BP has an important place in inflammatory process. MATERIALS AND METHODS: Rats were equally divided into three groups as follows: sham: Hepatic pedicle dissection was done, but hepatic pedicle clamping was not used. I/R: Sixty minutes of ischemia and 2 h of reperfusion were applied. IR + IL-18BP: Recombinant human IL-18BP (100 \u03bcg/kg) was administered 30 min before the surgery. Hepatic pedicle was clamped during 60 min of ischemia and 2 h of reperfusion was achieved. RESULTS: Liver enzyme levels were significantly lower in the IR + IL-18BP group, when compared with the I/R group. Serum and tissue levels of tumor necrosis factor-\u03b1, IL-6, and IL-18 were considerably lower in the IR + IL-18BP group, when compared with the I/R group, but hepatic interferon-\u03b3 and IL1\u03b2 levels were not significant. Serum oxidative stress index level was significantly higher in the I/R group, when compared with the IR + IL-18BP group. In immunostaining, it was observed that pathologic changes were lower in IR + IL-18BP group than the I/R group. CONCLUSIONS: IL-18BP exhibited anti-inflammatory, antioxidant, and protective effects in I/R-mediated hepatic injury via regulating some liver enzyme activities and cytokine levels. Additionally, these effects have been verified by histomorphologic examination and oxidative stress markers.", 
+          "qas": [
+            {
+              "question": "What is the role of IL-18BP?", 
+              "id": "58cd90c202b8c60953000040_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Effect of IL-18 binding protein on hepatic ischemia-reperfusion injury induced by infrarenal aortic occlusion. PURPOSE: Severe local and systemic tissue damage called ischemia/reperfusion (IR) injury occurs during the period of reperfusion. Free oxygen radicals and proinflammatory cytokines are responsible for reperfusion injury. IL-18 binding protein (IL-18BP) is a natural inhibitor of IL-18. The balance between IL-18 and IL-18BP has an important role in the inflammatory setting. The present study aimed to investigate whether IL-18BP had a protective role in remote organ hepatic IR injury. METHODS: Wistar-Albino rats were divided into three groups that contained seven rats. Group I (sham): Laparotomy and infrarenal abdominal aorta (AA) dissection were done but no clamping was done. Group II (I/R): The infrarenal AA was clamped by atraumatic microvascular clamp for 30 minutes and then was exposed to 90 minutes of reperfusion. Group III (IR + IL-18BP): 75 \u00b5g/kg of IL-18BP in 0.9% saline (1 mL) was administered 30 minutes before infrarenal AA dissection and clamping; 30 minutes of ischemia was applied and then was exposed to 90 minutes of reperfusion. RESULTS: Serum AST, ALT, and LDH levels were remarkably higher in IR group and returned to normal levels in treatment group. The proinflammatory cytokine levels had decreased in treatment group, and was statistically significant compared with the IR group. Serum levels of total oxidant status and oxidative stress index decreased and levels of total antioxidant status increased by IL-18BP. CONCLUSION: This study suggested that IL-18BP has antioxidant, anti-inflammatory and hepatoprotective effects in cases of IR with infrarenal AA induced liver oxidative damage.", 
+          "qas": [
+            {
+              "question": "What is the role of IL-18BP?", 
+              "id": "58cd90c202b8c60953000040_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Differential synthesis and release of IL-18 and IL-18 Binding Protein from human platelets and their implications for HIV infection. IL-18 is a pro-inflammatory cytokine belonging to the IL-1 family and is produced in the body from macrophages, epithelial and dendritic cells, keratinocytes, adrenal cortex etc. The cytokine is produced as an inactive precursor that is cleaved inside cells into its mature form by activated caspase 1, which exists as an inactive precursor in human cells and requires assembly of an inflammasomes for its activation. We show here for the first time that human platelets contain transcripts for the IL-18 gene. They synthesize the cytokine de novo, process and release it upon activation. The activation also results in the assembly of an inflammasome and activation of caspase-1. Platelets also contain the IL-18 antagonist, the IL-18-Binding Protein (IL-18BP); however, it is not synthesized in them de novo, is present in pre-made form and is released irrespective of platelet activation. IL-18 and IL-18BP co-localize to \u03b1 granules inside platelets and are secreted out with different kinetics. Platelet activation contributes to plasma concentrations in healthy individuals, as their plasma samples contain abundant IL-18, while their platelet-poor plasma samples contain very little amounts of the cytokine. The plasma and PPP samples from these donors, however, contain comparable amounts of IL-18BP. Unlike healthy individuals, the platelet-poor plasma from HIV-infected individuals contains significant amounts of IL-18. Our findings have important implications for viral infections and other human diseases that are accompanied by platelet activation.", 
+          "qas": [
+            {
+              "question": "What is the role of IL-18BP?", 
+              "id": "58cd90c202b8c60953000040_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Context-dependent role of IL-18 in cancer biology and counter-regulation by IL-18BP. IL-18 is a proinflammatory and immune regulatory cytokine, member of the IL-1 family. IL-18 was initially identified as an IFN-\u03b3-inducing factor in T and NK cells, involved in Th1 responses. IL-18 is produced as an inactive precursor (pro-IL-18) that is enzymatically processed into a mature form by Casp1. Different cells, such as macrophages, DCs, microglial cells, synovial fibroblasts, and epithelial cells, express pro-IL-18, and the production of bioactive IL-18 is mainly regulated at the processing level. PAMP or DAMP molecules activate inflammasomes, which trigger Casp1 activation and IL-18 conversion. The natural inhibitor IL-18BP , whose production is enhanced by IFN-\u03b3 and IL-27, further regulates IL-18 activity in the extracellular environment. Inflammasomes and IL-18 represent double-edged swords in cancer, as their activation may promote tumor development and progression or oppositely, enhance anti-tumor immunity and limit tumor growth. IL-18 has shown anti-tumor activity in different preclinical models of cancer immunotherapy through the activation of NK and/or T cell responses and has been tested in clinical studies in cancer patients. However, the dual role of IL-18 in different experimental tumor models and human cancers raises critical issues on its therapeutic use in cancer. This review will summarize the biology of the IL-18/IL-18R/IL-18BP system and will address the role of IL-18 and its inhibitor, IL-18BP, in cancer biology and immunotherapy.", 
+          "qas": [
+            {
+              "question": "What is the role of IL-18BP?", 
+              "id": "58cd90c202b8c60953000040_003"
+            }
+          ]
+        }, 
+        {
+          "context": "IL-18 neutralization during alveolar hypoxia improves left ventricular diastolic function in mice. AIM: In patients, an association exists between pulmonary diseases and diastolic dysfunction of the left ventricle (LV). We have previously shown that alveolar hypoxia in mice induces LV diastolic dysfunction and that mice exposed to hypoxia have increased levels of circulating interleukin-18 (IL-18), suggesting involvement of IL-18 in development of diastolic dysfunction. IL-18 binding protein (IL-18BP) is a natural inhibitor of IL-18. In this study, we hypothesized that neutralization of IL-18 during alveolar hypoxia would improve LV diastolic function. METHODS: Mice were exposed to 10% oxygen for 2 weeks while treated with IL-18BP or vehicle. Cardiac function and morphology were measured using echocardiography, intraventricular pressure measurements and magnetic resonance imaging (MRI). For characterization of molecular changes in the heart, both real-time PCR and Western blotting were performed. ELISA technique was used to measure levels of circulating cytokines. RESULTS: As expected, exposure to hypoxia-induced LV diastolic dysfunction, as shown by prolonged time constant of isovolumic relaxation (\u03c4). Improved relaxation with IL-18BP treatment was demonstrated by a significant reduction towards control \u03c4 values. Decreased levels of phosphorylated phospholamban (P-PLB) in hypoxia, but normalization by IL-18BP treatment suggest a role for IL-18 in regulation of calcium-handling proteins in hypoxia-induced diastolic dysfunction. In addition, MRI showed less increase in right ventricular (RV) wall thickness in IL-18BP-treated animals exposed to hypoxia, indicating an effect on RV hypertrophy. CONCLUSION: Neutralization of IL-18 during alveolar hypoxia improves LV diastolic function and partly prevents RV hypertrophy.", 
+          "qas": [
+            {
+              "question": "What is the role of IL-18BP?", 
+              "id": "58cd90c202b8c60953000040_004"
+            }
+          ]
+        }, 
+        {
+          "context": "Imbalance of interleukin-18 and interleukin-18 binding protein in patients with IgA nephropathy implicating renal vasculopathy. BACKGROUND: Interleukin-18 (IL-18) is a proinflammatory cytokine which induces interferon-\u03b3 production and plays a crucial role in immune systems. IL-18 binding protein (IL-18BP) is a naturally occurring inhibitor of IL-18. The aim was to investigate the involvement of IL-18 and IL-18BP in IgA nephropathy (IgAN). METHODS: Serum samples from 21 IgAN patients and 16 idiopathic membranous nephropathy (MN) patients and 32 healthy controls were assayed by an enzyme-linked immunosorbent method. RESULTS: Compared to the controls, IgAN patients showed significantly higher levels of IL-18 and the increased IL-18/IL-18BP ratio. Despite IL-18 elevation, the levels of IL-18BP did not parallel the increase of IL-18, which resulted in an increased IL-18/IL-18BP ratio. Furthermore, the ratio in patients with renal vasculopathy was significantly increased compared to those without arteriolar lesions. CONCLUSIONS: These findings provide the first evidence that there is an imbalance of IL-18/IL-18BP ratio in IgAN patients, which may be associated with the pathophysiology of renal vasculopathy.", 
+          "qas": [
+            {
+              "question": "What is the role of IL-18BP?", 
+              "id": "58cd90c202b8c60953000040_005"
+            }
+          ]
+        }, 
+        {
+          "context": "Imbalanced production of IL-18 and its antagonist in human diseases, and its implications for HIV-1 infection. IL-18 is a pleiotropic and multifunctional cytokine that belongs to the IL-1 family. It is produced as a biologically inactive precursor, which is cleaved into its active mature form mainly by caspase-1. The caspase becomes active from its inactive precursor (procaspase-1) upon assembly of an inflammasome. Because of IL-18's potential pro-inflammatory and tissue destructive effects, its biological activities are tightly controlled in the body by its naturally occurring antagonist called IL-18BP. The antagonist is produced in the body both constitutively and in response to an increased production of IL-18 as a negative feedback mechanism. Under physiological conditions, most of IL-18 in the circulation is bound with IL-18BP and is inactive. However, an imbalance in the production of IL-18 and its antagonist (an increase in the production of IL-18 with a decrease, no increase or an insufficient increase in the production of IL-18BP) has been described in many chronic inflammatory diseases in humans. The imbalance results in an increase in the concentrations of free IL-18 (unbound with its antagonist) resulting in increased biological activities of the cytokine that contribute towards pathogenesis of the disease. In this article, we provide an overview of the current biology of IL-18 and its antagonist, discuss how the imbalance occurs in HIV infections and how it contributes towards development of AIDS and other non-AIDS-associated clinical conditions occurring in HIV-infected individuals undergoing combination anti-retroviral therapy (cART). Finally, we discuss challenges facing immunotherapeutic strategies aimed at restoring balance between IL-18 and its antagonist in these patients.", 
+          "qas": [
+            {
+              "question": "What is the role of IL-18BP?", 
+              "id": "58cd90c202b8c60953000040_006"
+            }
+          ]
+        }, 
+        {
+          "context": "Mechanism of start site selection by RNA polymerase II: interplay between TFIIB and Ssl2/XPB helicase subunit of TFIIH. TFIIB is essential for transcription initiation by RNA polymerase II. TFIIB also cross-links to terminator regions and is required for gene loops that juxtapose promoter-terminator elements in a transcription-dependent manner. The Saccharomyces cerevisiae sua7-1 mutation encodes an altered form of TFIIB (E62K) that is defective for both start site selection and gene looping. Here we report the isolation of an ssl2 mutant, encoding an altered form of TFIIH, as a suppressor of the cold-sensitive growth defect of the sua7-1 mutation. Ssl2 (Rad25) is orthologous to human XPB and is a member of the SF2 family of ATP-dependent DNA helicases. The ssl2 suppressor allele encodes an arginine replacement of the conserved histidine residue (H508R) located within the DEVH-containing helicase domain. In addition to suppressing the TFIIB E62K growth defect, Ssl2 H508R partially restores both normal start site selection and gene looping. Moreover, Ssl2, like TFIIB, associates with promoter and terminator regions, and the diminished association of TFIIB E62K with the PMA1 terminator is restored by the Ssl2 H508R suppressor. These results define a novel, functional interaction between TFIIB and Ssl2 that affects start site selection and gene looping.", 
+          "qas": [
+            {
+              "question": "Which protein mediates gene loop formation in the yeast S. cerevisiae?", 
+              "id": "58adc1ff9ef3c34033000006_000"
+            }
+          ]
+        }, 
+        {
+          "context": "The pattern and evolution of looped gene bendability. Gene looping, defined as the physical interaction between the promoter and terminator regions of a RNA polymerase II-transcribed gene, is widespread in yeast and mammalian cells. Gene looping has been shown to play important roles in transcription. Gene-loop formation is dependent on regulatory proteins localized at the 5' and 3' ends of genes, such as TFIIB. However, whether other factors contribute to gene looping remains to be elucidated. Here, we investigated the contribution of intrinsic DNA and chromatin structures to gene looping. We found that Saccharomyces cerevisiae looped genes show high DNA bendability around middle and 3/4 regions in open reading frames (ORFs). This bendability pattern is conserved between yeast species, whereas the position of bendability peak varies substantially among species. Looped genes in human cells also show high DNA bendability. Nucleosome positioning around looped ORF middle regions is unstable. We also present evidence indicating that this unstable nucleosome positioning is involved in gene looping. These results suggest a mechanism by which DNA bendability and unstable nucleosome positioning could assist in the formation of gene loops.", 
+          "qas": [
+            {
+              "question": "Which protein mediates gene loop formation in the yeast S. cerevisiae?", 
+              "id": "58adc1ff9ef3c34033000006_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Gene looping is conferred by activator-dependent interaction of transcription initiation and termination machineries. Gene looping juxtaposes the promoter and terminator regions of RNA polymerase II-transcribed genes in yeast and mammalian cells. Here we report an activator-dependent interaction of transcription initiation and termination factors during gene looping in budding yeast. Chromatin analysis revealed that MET16, INO1, and GAL1p-BUD3 are in a stable looped configuration during activated transcription. Looping was nearly abolished in the absence of transcription activators Met28, Ino2, and Gal4 of MET16, INO1, and GAL1p-BUD3 genes, respectively. The activator-independent increase in transcription was not accompanied by loop formation, thereby suggesting an essential role for activators in gene looping. The activators did not facilitate loop formation directly because they did not exhibit an interaction with the 3' end of the genes. Instead, activators physically interacted with the general transcription factor TFIIB when the genes were activated and in a looped configuration. TFIIB cross-linked to both the promoter and the terminator regions during the transcriptionally activated state of a gene. The presence of TFIIB on the terminator was dependent on the Rna15 component of CF1 3' end processing complex. Coimmunoprecipitation revealed a physical interaction of Rna15 with TFIIB. We propose that the activators facilitate gene looping through their interaction with TFIIB during transcriptional activation of genes.", 
+          "qas": [
+            {
+              "question": "Which protein mediates gene loop formation in the yeast S. cerevisiae?", 
+              "id": "58adc1ff9ef3c34033000006_002"
+            }
+          ]
+        }, 
+        {
+          "context": "A barrier nucleosome model for statistical positioning of nucleosomes throughout the yeast genome. Most nucleosomes are well-organized at the 5' ends of S. cerevisiae genes where \"-1\" and \"+1\" nucleosomes bracket a nucleosome-free promoter region (NFR). How nucleosomal organization is specified by the genome is less clear. Here we establish and inter-relate rules governing genomic nucleosome organization by sequencing DNA from more than one million immunopurified S. cerevisiae nucleosomes (displayed at http://atlas.bx.psu.edu/). Evidence is presented that the organization of nucleosomes throughout genes is largely a consequence of statistical packing principles. The genomic sequence specifies the location of the -1 and +1 nucleosomes. The +1 nucleosome forms a barrier against which nucleosomes are packed, resulting in uniform positioning, which decays at farther distances from the barrier. We present evidence for a novel 3' NFR that is present at >95% of all genes. 3' NFRs may be important for transcription termination and anti-sense initiation. We present a high-resolution genome-wide map of TFIIB locations that implicates 3' NFRs in gene looping.", 
+          "qas": [
+            {
+              "question": "Which protein mediates gene loop formation in the yeast S. cerevisiae?", 
+              "id": "58adc1ff9ef3c34033000006_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Evidence for a complex of transcription factor IIB with poly(A) polymerase and cleavage factor 1 subunits required for gene looping. Gene looping, defined as the interaction of the promoter and the terminator regions of a gene during transcription, requires transcription factor IIB (TFIIB). We have earlier demonstrated association of TFIIB with the distal ends of a gene in an activator-dependent manner (El Kaderi, B., Medler, S., Raghunayakula, S., and Ansari, A. (2009) J. Biol. Chem. 284, 25015-25025). The presence of TFIIB at the 3' end of a gene required its interaction with cleavage factor 1 (CF1) 3' end processing complex subunit Rna15. Here, employing affinity chromatography and glycerol gradient centrifugation, we show that TFIIB associates with poly(A) polymerase and the entire CF1 complex in yeast cells. The factors required for general transcription such as TATA-binding protein, RNA polymerase II, and TFIIH are not a component of the TFIIB complex. This holo-TFIIB complex was resistant to MNase digestion. The complex was observed only in the looping-competent strains, but not in the looping-defective sua7-1 strain. The requirement of Rna15 in gene looping has been demonstrated earlier. Here we provide evidence that poly(A) polymerase (Pap1) as well as CF1 subunits Rna14 and Pcf11 are also required for loop formation of MET16 and INO1 genes. Accordingly, cross-linking of TFIIB to the 3' end of genes was abolished in the mutants of Pap1, Rna14, and Pcf11. We further show that in sua7-1 cells, where holo-TFIIB complex is not formed, the kinetics of activated transcription is altered. These results suggest that a complex of TFIIB, CF1 subunits, and Pap1 exists in yeast cells. Furthermore, TFIIB interaction with the CF1 complex and Pap1 is crucial for gene looping and transcriptional regulation.", 
+          "qas": [
+            {
+              "question": "Which protein mediates gene loop formation in the yeast S. cerevisiae?", 
+              "id": "58adc1ff9ef3c34033000006_004"
+            }
+          ]
+        }, 
+        {
+          "context": "A transcription-independent role for TFIIB in gene looping. Recent studies demonstrated the existence of gene loops that juxtapose the promoter and terminator regions of genes with exceptionally long ORFs in yeast. Here we report that looping is not idiosyncratic to long genes but occurs between the distal ends of genes with ORFs as short as 1 kb. Moreover, looping is dependent upon the general transcription factor TFIIB: the E62K (glutamic acid 62 --> lysine) form of TFIIB adversely affects looping at every gene tested, including BLM10, SAC3, GAL10, SEN1, and HEM3. TFIIB crosslinks to both the promoter and terminator regions of the PMA1 and BLM10 genes, and its association with the terminator, but not the promoter, is adversely affected by E62K and by depletion of the Ssu72 component of the CPF 3' end processing complex, and is independent of TBP. We propose a model suggesting that TFIIB binds RNAP II at the terminator, which in turn associates with the promoter scaffold.", 
+          "qas": [
+            {
+              "question": "Which protein mediates gene loop formation in the yeast S. cerevisiae?", 
+              "id": "58adc1ff9ef3c34033000006_005"
+            }
+          ]
+        }, 
+        {
+          "context": "Use of human embryonic stem cells to model pediatric gliomas with H3.3K27M histone mutation. Over 70% of diffuse intrinsic pediatric gliomas, an aggressive brainstem tumor, harbor heterozygous mutations that create a K27M amino acid substitution (methionine replaces lysine 27) in the tail of histone H3.3. The role of the H3.3K27M mutation in tumorigenesis is not fully understood. Here, we use a human embryonic stem cell system to model this tumor. We show that H3.3K27M expression synergizes with p53 loss and PDGFRA activation in neural progenitor cells derived from human embryonic stem cells, resulting in neoplastic transformation. Genome-wide analyses indicate a resetting of the transformed precursors to a developmentally more primitive stem cell state, with evidence of major modifications of histone marks at several master regulator genes. Drug screening assays identified a compound targeting the protein menin as an inhibitor of tumor cell growth in vitro and in mice.", 
+          "qas": [
+            {
+              "question": "Which histone mutation is associated with gliomas?", 
+              "id": "58bac71222d3005309000013_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Mutations in chromatin machinery and pediatric high-grade glioma. Pediatric central nervous system tumors are the most common solid tumor of childhood. Of these, approximately one-third are gliomas that exhibit diverse biological behaviors in the unique context of the developing nervous system. Although low-grade gliomas predominate and have favorable outcomes, up to 20% of pediatric gliomas are high-grade. These tumors are a major contributor to cancer-related morbidity and mortality in infants, children, and adolescents, with long-term survival rates of only 10 to 15%. The recent discovery of somatic oncogenic mutations affecting chromatin regulation in pediatric high-grade glioma has markedly improved our understanding of disease pathogenesis, and these findings have stimulated the development of novel therapeutic approaches targeting epigenetic regulators for disease treatment. We review the current perspective on pediatric high-grade glioma genetics and epigenetics, and discuss the emerging and experimental therapeutics targeting the unique molecular abnormalities present in these deadly childhood brain tumors.", 
+          "qas": [
+            {
+              "question": "Which histone mutation is associated with gliomas?", 
+              "id": "58bac71222d3005309000013_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Molecular pathology of paediatric central nervous system tumours. Advances in our understanding of the biology of paediatric central nervous system (CNS) tumours have encouraged pathologists to use molecular markers alongside histopathological analysis for disease classification or prognostication and treatment stratification. In this article, we review molecular genetic alterations in paediatric CNS tumours, including those in low-grade and high-grade gliomas, ependymomas, and embryonal tumours. Some of these molecular changes with clinicopathological utility have been used for the first time in the most recent edition of the World Health Organization (WHO) classification of CNS tumours to define entities like ependymoma, RELA fusion-positive or diffuse midline glioma, H3 K27M-mutant. The classification of paediatric CNS tumours is entering a new era when histopathologists must work with molecular genetic data and their molecular pathology colleagues to provide an optimal diagnostic evaluation for their patients and clinical colleagues. Copyright \u00a9 2012 Pathological Society of Great Britain and Ireland. Published by John Wiley & Sons, Ltd.", 
+          "qas": [
+            {
+              "question": "Which histone mutation is associated with gliomas?", 
+              "id": "58bac71222d3005309000013_002"
+            }
+          ]
+        }, 
+        {
+          "context": "DNA contacts by protein domains of the molluscum contagiosum virus type-1B topoisomerase. All poxviruses studied encode a type 1B topoisomerase that introduces transient nicks into DNA and thereby relaxes DNA supercoils. Here we present a study of the protein domains of the topoisomerase of the poxvirus molluscum contagiosum (MCV), which allows us to specify DNA contacts made by different domains. Partial proteolysis of the enzyme revealed two stable domains separated by a protease-sensitive linker. A fragment encoding the linker and carboxyl-terminal domain (residues 82-323) was overexpressed in Escherichia coli and purified. MCV topoisomerase (MCV-TOP)(82-323) could relax supercoiled plasmids in vitro, albeit with a slower rate than the wild-type enzyme. MCV-TOP(82-323) was sensitive to sequences in the favored 5'-(T/C)CCTT-3' recognition site and also flanking DNA, indicating that some of the sequence-specific contacts are made by residues 82-323. Assays of initial binding and covalent catalysis by MCV-TOP(82-323) identified the contacts flanking the 5'-CCCTT-3' sequence at +10, +9, -2, and -3 to be important. Tests with substrates containing a 5-bridging phosphorothiolate that trap the cleaved complex revealed that correct contacts to the flanking sequences were important in the initial cleavage step. MCV-TOP(82-323) differed from the full-length protein in showing reduced sensitivity to mutations at a position within the 5'-(T/C)CCTT-3' recognition site, consistent with a model in which the amino-terminal domain contacts this region. These findings provide insight into the division of labor within the MCV-TOP enzyme.", 
+          "qas": [
+            {
+              "question": "Which virus type causes Molluscum contagiosum?", 
+              "id": "58bfd0db02b8c60953000017_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Role for the conserved N-terminal cysteines in the anti-chemokine activities by the chemokine-like protein MC148R1 encoded by Molluscum contagiosum virus. Molluscum contagiosum poxvirus (MCV) type 1 and type 2 encode two chemokine-like proteins MC148R1 and MC148R2. It is believed that MC148R proteins function by blocking the inflammatory response. However, the mechanism of the proposed biological activities of MC148R proteins and the role of the additional C-terminal cysteines that do not exist in other chemokines are not understood. Here, we demonstrated in two different assay systems that His-tagged MC148R1 displaces the interaction between CXCL12\u03b1 and CXCR4. The N-terminal cysteines but not the additional C-terminal cysteines modulate this displacement. His-tagged MC148R1 blocked both CXCL12\u03b1-mediated and MIP-1\u03b1-mediated chemotaxis. In contrast, MC148R2 blocked MIP-1\u03b1-mediated but not CXCL12\u03b1-mediated chemotaxis. Immunoprecipitation by antibodies to MC148R1 or CXCL12\u03b1 followed by immunoblotting and detection by antibodies to the other protein demonstrated physical interaction of His-tagged CXCL12\u03b1 and His-tagged MC148R1. Interaction with chemokines might mask the receptor interaction site resulting in decreased binding and impairment of the biological activities.", 
+          "qas": [
+            {
+              "question": "Which virus type causes Molluscum contagiosum?", 
+              "id": "58bfd0db02b8c60953000017_001"
+            }
+          ]
+        }, 
+        {
+          "context": "New method for the assessment of molluscum contagiosum virus infectivity. Molluscum contagiosum virus (MCV), a poxvirus pathogenic for humans, replicates well in human skin in vivo, but not in vitro in standard monolayer cell cultures. In order to determine the nature of the replication deficiency in vitro, the MCV infection process in standard culture has to be studied step by step. The method described in this chapter uses luciferase and GFP reporter constructs to measure poxviral mRNA transcription activity in cells in standard culture infected with known quantities of MCV or vaccinia virus. Briefly, MCV isolated from human tissue specimen is quantitated by PCR and used to infect human HEK293 cells, selected for ease of transfection. The cells are subsequently transfected with a reporter plasmid encoding firefly luciferase gene under the control of a synthetic early/late poxviral promoter and a control plasmid encoding a renilla luciferase reporter under the control of a eukaryotic promoter. After 16 h, cells are harvested and tested for expression of luciferase. MCV genome units are quantitated by PCR targeting a genome area conserved between MCV and vaccinia virus. Using a GFP reporter plasmid, this method can be further used to infect a series of epithelial and fibroblast-type cell lines of human and animal origin to microscopically visualize MCV-infected cells, to assess late promoter activation, and, using these parameters, to optimize MCV infectivity and gene expression in more complex eukaryotic cell culture models.", 
+          "qas": [
+            {
+              "question": "Which virus type causes Molluscum contagiosum?", 
+              "id": "58bfd0db02b8c60953000017_002"
+            }
+          ]
+        }, 
+        {
+          "context": "IL-18 binding and inhibition of interferon gamma induction by human poxvirus-encoded proteins. Molluscum contagiosum virus (MCV) is a common, human poxvirus that causes small papular skin lesions that persist for long periods without signs of inflammation. Previous studies revealed that MCV encodes a family of proteins with homology to mammalian IL-18 binding proteins. IL-18 is a proinflammatory cytokine that induces synthesis of interferon gamma, activates NK cells, and is required for a T-lymphocyte helper type 1 response. We expressed and purified the proteins encoded by the MC53L and MC54L genes of MCV, as well as their human and murine homologs. All four recombinant proteins were able to bind with high affinity to human and murine IL-18 molecules and inhibited IL-18 mediated interferon gamma production in a dose-dependent manner. The pirating of IL-18 binding proteins by poxviruses and their use as decoy receptors is consistent with the critical role of IL-18 in defense against virus infections and provides a mechanism for evasion of the immune system by MCV.", 
+          "qas": [
+            {
+              "question": "Which virus type causes Molluscum contagiosum?", 
+              "id": "58bfd0db02b8c60953000017_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Disparate antiviral responses in Molluscum contagiosum virus-induced skin lesions. Molluscum contagiosum virus (MCV) is a poxvirus that causes tumor-like skin lesions. New evidence indicates that plasmacytoid dendritic cells, type I interferon production, and interferon-induced dendritic cells have prominent roles in anti-MCV responses, and these features characterize the inflammatory response in lesions that will likely undergo spontaneous regression.", 
+          "qas": [
+            {
+              "question": "Which virus type causes Molluscum contagiosum?", 
+              "id": "58bfd0db02b8c60953000017_004"
+            }
+          ]
+        }, 
+        {
+          "context": "Perisigmoid Abscess Leading to a Diagnosis of Ehlers-Danlos Syndrome Type IV. The Ehlers-Danlos syndromes (EDS) are a group of connective tissue disorders characterized by triad of joint hypermobility, skin extensibility, and tissue fragility. Ehlers-Danlos syndrome type IV places patients at risk for life-threatening, spontaneous, vascular or visceral rupture due to reduced or abnormal secretion of type III collagen. We present an adolescent male who was found to have a perisigmoid abscess with a fistula connecting to adjacent sigmoid colon secondary to undiagnosed EDS type IV. Conservative management with antibiotics and bowel rest was pursued to allow for elective resection for his acute complicated diverticulitis at a safer time.", 
+          "qas": [
+            {
+              "question": "What tissue is most affected in Ehlers-Danlos syndromes?", 
+              "id": "58cdb41302b8c60953000042_000"
+            }
+          ]
+        }, 
+        {
+          "context": "libFLASM: a software library for fixed-length approximate string matching. BACKGROUND: Approximate string matching is the problem of finding all factors of a given text that are at a distance at most k from a given pattern. Fixed-length approximate string matching is the problem of finding all factors of a text of length n that are at a distance at most k from any factor of length \u2113 of a pattern of length m. There exist bit-vector techniques to solve the fixed-length approximate string matching problem in time [Formula: see text] and space [Formula: see text] under the edit and Hamming distance models, where w is the size of the computer word; as such these techniques are independent of the distance threshold k or the alphabet size. Fixed-length approximate string matching is a generalisation of approximate string matching and, hence, has numerous direct applications in computational molecular biology and elsewhere. RESULTS: We present and make available libFLASM, a free open-source C++ software library for solving fixed-length approximate string matching under both the edit and the Hamming distance models. Moreover we describe how fixed-length approximate string matching is applied to solve real problems by incorporating libFLASM into established applications for multiple circular sequence alignment as well as single and structured motif extraction. Specifically, we describe how it can be used to improve the accuracy of multiple circular sequence alignment in terms of the inferred likelihood-based phylogenies; and we also describe how it is used to efficiently find motifs in molecular sequences representing regulatory or functional regions. The comparison of the performance of the library to other algorithms show how it is competitive, especially with increasing distance thresholds. CONCLUSIONS: Fixed-length approximate string matching is a generalisation of the classic approximate string matching problem. We present libFLASM, a free open-source C++ software library for solving fixed-length approximate string matching. The extensive experimental results presented here suggest that other applications could benefit from using libFLASM, and thus further maintenance and development of libFLASM is desirable.", 
+          "qas": [
+            {
+              "question": "Which library is used for fixed-length approximate string matching?", 
+              "id": "587f7a69d8d850a152000001_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Effectiveness of platelet-rich plasma in healing necrobiosis lipoidica diabeticorum ulcers. Necrobiosis lipoidica diabeticorum (NLD) is a chronic condition, which is characterized by single or multiple lesions on the legs, and occurs in 0.3% of patients with diabetes. Recently, platelet-rich plasma (PRP) has been used in several clinical settings to promote sustained healing and better outcome. We propose the use of PRP for the treatment of NLD-associated recalcitrant wounds. In this study, 15 patients were treated with homologous PRP; all showed marked enhancement in wound healing without any adverse effects. After PRP application, advanced dressings were used until closure of the lesion was obtained, which was complete for all our patients. We therefore propose the use of PRP for recalcitrant wounds in patients with NLD.", 
+          "qas": [
+            {
+              "question": "Which disease the skin condition Necrobiosis lipoidica diabeticorum is associated to?", 
+              "id": "58bfd8e902b8c60953000018_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Miescher's granulomatosis (granulomatosis disciformis chronica et progressiva) in a non-diabetic patient--case report. INTRODUCTION: Necrobiosis lipoidica diabeticorum is a rare disease of unclear etiology, that occurs in about 1% of diabetic patients. CASE REPORT: We present case of granulomatosis disciformis chronica et progressiva Miescher with good response to systemic corticosteroids therapy.Patient 45 years old woman, with primary yellow-brown areas skin lesions, with foci well separated from surroundings on both lower legs, that occurred 5 years ago. In laboratory tests there was no abnormalities. Because of advance suggestion (after last admit in dermatological ward) of observation according to xantogranuloma necrobioticum tests for paraproteinemia were made. Immunoelectrophoresis, IgG, IgM, IgA levels, kappa light chain, lambda heavy chain; were correct, Bence-Johns protein-negative. During hospitalization in Clinic methylprednisolone in dose of 32 mg od, vascular drugs and local steroidotherapy was applied with good therapeutic response. CONCLUSION: We described case of typical clinical and histological characters of necrobiosis lipoidica. without diabetes-granulomatosis disciformis chronica et progressiva Miescher that despite of suspicion of proper diagnosis for a long time was not treat effective.", 
+          "qas": [
+            {
+              "question": "Which disease the skin condition Necrobiosis lipoidica diabeticorum is associated to?", 
+              "id": "58bfd8e902b8c60953000018_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Treatment of refractory ulcerative necrobiosis lipoidica diabeticorum with infliximab: report of a case. BACKGROUND: Necrobiosis lipoidica diabeticorum (NLD) is a rare, granulomatous inflammatory skin disease of unknown origin, sometimes associated with diabetes mellitus. Skin lesions usually develop on the lower extremities and can progress toward ulceration and scarring. Many treatments have been proposed, but few have demonstrated consistent efficacy, and no standard regimens have emerged to date. OBSERVATIONS: An 84-year-old woman with type 1 diabetes mellitus presented with a 3-year history of chronic right-lower-extremity erythematous papules and plaques that had developed into confluent ulcers with prominent granulation tissue and an orange-yellow hue. The results of a biopsy of the lesion was consistent with a diagnosis of NLD. The wound did not respond to 4 months of intensive local wound care. After the first intravenous infusion of infliximab (5 mg/kg), there was rapid reduction in wound size, pain, and drainage. There was complete wound healing with excellent cosmesis at 6 weeks (total of 3 infusions). CONCLUSIONS: Infliximab should be considered in the treatment of refractory, ulcerative NLD. Its anti-tumor necrosis factor activity may underlie its efficacy in targeting this granulomatous process, and further investigation should be undertaken to confirm these results.", 
+          "qas": [
+            {
+              "question": "Which disease the skin condition Necrobiosis lipoidica diabeticorum is associated to?", 
+              "id": "58bfd8e902b8c60953000018_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Necrobiosis Lipoidica Diabeticorum: A pediatric case report. INTRODUCTION: Necrobiosis lipoidica (NL) is a rare chronic granulomatous dermatitis that usually appears in the lower extremities. It affects about 0.3-1.2% of diabetic patients, the majority of whom have type 1 diabetes. The etiology and pathogenesis of this disorder are still unclear. NL is characterized by skin rash that usually affects the shins. The average onset is 30 years, with females being affected more commonly. There are very few reported cases of necrobiosis lipoidica in children. CASE REPORT: We report a case of a 16 year old girl affected by type 1 diabetes mellitus (15 years disease duration) who developed an erythematous nodular rash on the lower extremities and interscapular area. In the suspect of necrobiosis lipoidica, a skin biopsy was performed (lower extremities and interscapular area). The microscopic evaluation of the pretibial lesions was suggestive of necrobiosis lipoidica. The smaller lesions in the interscapular area showed signs of perivascular dermatitis which could be consistent with early stages of necrobiosis lipoidica. Local treatment with tacrolimus determined a progressive improvement of the lesions. CONCLUSION: In patients with T1DM, diagnosis of NL of the lower legs is usually unequivocal. However, diagnosis may be more challenging in the presence of lesions with recent onset and/or atypical clinical presentation and unusual site. In these cases, NL must always be taken in consideration in order to avoid misdiagnosis, wrong/late treatment decisions and progression to ulceration.", 
+          "qas": [
+            {
+              "question": "Which disease the skin condition Necrobiosis lipoidica diabeticorum is associated to?", 
+              "id": "58bfd8e902b8c60953000018_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Remission of ulcerated necrobiosis lipoidica diabeticorum after bariatric surgery. A 32-year-old woman with type 2 diabetes mellitus suffering from morbid obesity with BMI 45,14 kg/m(2) was operated on. Not only the type 2DM but also one of its complication known as necrobiosis lipoidica diabeticorum remitted postoperatively. Obesity should no longer be regarded simply as a cosmetic problem affecting certain individuals but an epidemic that threatens global well-being. It causes or exacerbates many health problems, and in particular, it is associated with the type 2 diabetes. Necrobiosis lipoidica is a granulomatous skin disease of unknown etiology, associated mainly with diabetes mellitus. We presented in this paper a morbid obese case of necrobiosis lipoidica diabeticorum with dramatic good response to bariatric surgery.", 
+          "qas": [
+            {
+              "question": "Which disease the skin condition Necrobiosis lipoidica diabeticorum is associated to?", 
+              "id": "58bfd8e902b8c60953000018_004"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

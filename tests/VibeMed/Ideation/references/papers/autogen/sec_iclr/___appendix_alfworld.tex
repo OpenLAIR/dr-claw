@@ -1,0 +1,55 @@
+\clearpage
+\subsection*{A3: Decision Making in Text World Environments} 
+\label{appendix:app:alfworld}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width = 1\hsize]{figures/app_alfchat.pdf}
+\caption{
+We use \libName to solve tasks in the ALFWorld benchmark, which contains household tasks described in natural language. We propose two designs: a two-agent design where the assistant agent suggests the next step, and the Executor executes actions and provides feedback. The three-agent design adds a grounding agent that supplies commonsense facts to the executor when needed.
+}
+\label{fig:alfchat}
+\end{figure}
+
+ALFWorld~\cite{ALFWorld20} is a synthetic language-based interactive decision-making task. It comprises textual environments that aim to simulate real-world household scenes. Given a high-level goal (e.g., putting a hot apple in the fridge) and the description of the household environment, the agent needs to explore and interact with the simulated household environment through a textual interface. A typical task environment contains various types of locations and could require more than 40 steps to finish, which highlights the need for agents to decompose the goal into subtasks and tackle them one by one, while effectively exploring the environments.
+
+\textbf{Detailed Workflow.} We first propose a straightforward two-agent system with \libName, illustrated on the left-hand side of Figure \ref{fig:alfchat}, to tackle tasks from this benchmark. The system consists of an assistant agent and an executor agent. The assistant agent generates plans and makes action decisions to solve the tasks. The executor agent is tailored specifically for ALFWorld. It performs actions proposed by the assistant and reports action execution results in the household environment as feedback to the assistant. Due to the strict format requirements for the output format, we use the BLEU metric to evaluate the similarity of the output to all valid action options. The option with the highest similarity will be chosen as the action for this round.
+
+
+One major challenge encompassed in ALFWorld is commonsense reasoning. The agent needs to extract patterns from the few-shot examples provided and combine them with the agent's general knowledge of household environments to fully understand task rules. More often than not, the assistant tends to neglect some basic knowledge of the household environment.
+Thanks to the easy-to-implement multi-agent conversational feature of \libName, enhancing the assistant agent's reasoning ability by adding a new grounding agent to provide commonsense facts for the decision-making agent's reference becomes straightforward.
+By scrutinizing the failed attempts and summarizing the reasons for failure, we obtained a holistic understanding of the commonsense knowledge that the assistant agent lacks. Then, we set a grounding agent to provide this general knowledge when the task begins and whenever the assistant outputs the same action three times in a row. This ensures the assistant takes this commonsense knowledge into consideration and prevents it from getting stuck in outputting the same content or constantly apologizing.
+
+\begin{figure}[]
+\centering
+\includegraphics[width=1\textwidth]{figures/app_alfchat_react.pdf}
+\caption{
+Comparison of results from two designs: (a) Two-agent design which consists of an assistant and an executor, (b) Three-agent design which adds a grounding agent that serves as a knowledge source. For simplicity, we omit the in-context examples and part of the exploration trajectory, and only show parts contributing to the failure/success of the attempt.}
+\label{fig:alfchat_comparison}
+\end{figure}
+
+
+We compare our system's performance with ReAct, which treats ALFWorld as a text-completion task. ReAct~\cite{yao2022react} is a few-shot prompting technique that interleaves reasoning and acting, allowing for greater synergy between the two and significantly improving performance on both language and decision-making tasks. We integrate ReAct into \libName by modifying the prompts in a conversational manner. Following ReAct, we employ a two-shot setting. The few-shot prompts are obtained from the corresponding repository. As shown in Table \ref{tab:alfworld}, the two-agent design matches the performance of ReAct, while the three-agent design significantly outperforms ReAct. We surmise that the performance discrepancy is caused by the inherent difference between dialogue-completion and text-completion tasks. On the other hand, introducing a grounding agent as a knowledge source remarkably advances performance on all types of tasks.
+
+\textbf{Case study}. Figure \ref{fig:alfchat_comparison} exemplifies how a three-agent design eliminates one root cause for failure cases. Most of the tasks involve taking an object and then performing a specific action with it (e.g., finding a vase and placing it on a cupboard). Without a grounding agent, the assistant frequently conflates finding an object with taking it, as illustrated in Figure \ref{fig:alfchat_comparison}a). This leads to most of the failure cases in 'pick' and 'look' type tasks. With the introduction of a grounding agent, the assistant can break out of this loop and successfully complete the task
+
+
+\textbf{Takeaways.} We introduced a grounding agent to serve as an external commonsense knowledge source, which significantly enhanced the assistant's ability to make informed decisions. This proves that providing necessary commonsense facts to the decision-making agent can assist it in making more informed decisions, thus effectively boosting the task success rate. \libName brings both simplicity and modularity when adding the grounding agent. 
+
+
+
+\begin{table}[]
+\centering
+\begin{tabular}{c|cccccc|c}
+\hline
+Method                      & Pick & Clean & Heat & Cool & Look & Pick 2 & All \\ \hline
+ReAct (avg)                  & 63   & 52    & 48   & 71   & 61   & 24     & 54  \\ 
+ALFChat (2 agents)(avg)       & 61   & 58    & 57   & 67   & 50   & 19     & 54  \\
+ALFChat (3 agents)(avg) & 79   & 64    & 70   & 76   & 78  & 41     & 69  \\ \hline
+ReAct (best of 3)            & 75   & 62    & 61   & 81   & 78   & 35     & 66  \\ 
+ALFChat (2 agents)(best of 3) & 71   & 61    & 65   & 76   & 67   & 35     & 63  \\ 
+AFLChat (3 agents)(best of 3) & 92   & 74    & 78   & 86   & 83  & 41     & 77  \\ \hline
+\end{tabular}
+\caption{Comparisons between ReAct and the two variants of ALFChat on the ALFWorld benchmark. For each task, we report the success rate out of 3 attempts. Success rate denotes the number of tasks successfully completed by the agent divided by the total number of tasks. The results show that adding a grounding agent significantly improves the task success rate in ALFChat.}
+\label{tab:alfworld}
+\end{table}

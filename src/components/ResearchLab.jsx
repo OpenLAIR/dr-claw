@@ -138,12 +138,16 @@ const BADGE_COLORS = {
 
 /** Overview card: target paper, task, mode */
 function OverviewCard({ instance, config }) {
+  const [isExpanded, setIsExpanded] = useState(false);
   const mode = config?.task_level === 'task1' ? 'Plan' : 'Idea';
   const modeColor = mode === 'Plan'
     ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300'
     : 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300';
   const taskText = instance?.task2 || instance?.task1 || '';
-  const truncated = taskText.length > 400 ? taskText.slice(0, 400) + '…' : taskText;
+  const shouldTruncate = taskText.length > 400;
+  const displayedText = (shouldTruncate && !isExpanded)
+    ? taskText.slice(0, 400) + '…'
+    : taskText;
 
   return (
     <div className="rounded-lg border border-border bg-card p-4 space-y-3">
@@ -174,10 +178,52 @@ function OverviewCard({ instance, config }) {
           {config?.category && <span>Category: <code className="bg-muted px-1 rounded">{config.category}</code></span>}
         </div>
       )}
-      {truncated && (
+      {taskText && (
         <div>
           <p className="text-xs text-muted-foreground mb-0.5">Task Description</p>
-          <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-line">{truncated}</p>
+          <div className="text-sm text-foreground/80 leading-relaxed markdown-body">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm, remarkMath]}
+              rehypePlugins={[rehypeKatex]}
+              components={{
+                p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />,
+                ul: ({node, ...props}) => <ul className="list-disc pl-4 mb-2" {...props} />,
+                ol: ({node, ...props}) => <ol className="list-decimal pl-4 mb-2" {...props} />,
+                li: ({node, ...props}) => <li className="mb-0.5" {...props} />,
+                code: ({node, inline, className, children, ...props}) => {
+                  return inline ? (
+                    <code className="bg-muted px-1 py-0.5 rounded text-xs font-mono" {...props}>
+                      {children}
+                    </code>
+                  ) : (
+                    <code className="block bg-muted p-2 rounded text-xs font-mono whitespace-pre-wrap my-2" {...props}>
+                      {children}
+                    </code>
+                  );
+                }
+              }}
+            >
+              {displayedText}
+            </ReactMarkdown>
+          </div>
+          {shouldTruncate && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 px-0 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 mt-1"
+              onClick={() => setIsExpanded(!isExpanded)}
+            >
+              {isExpanded ? (
+                <span className="flex items-center">
+                  <ChevronDown className="w-3 h-3 mr-1" /> Show less
+                </span>
+              ) : (
+                <span className="flex items-center">
+                  <ChevronRight className="w-3 h-3 mr-1" /> Show more
+                </span>
+              )}
+            </Button>
+          )}
         </div>
       )}
     </div>

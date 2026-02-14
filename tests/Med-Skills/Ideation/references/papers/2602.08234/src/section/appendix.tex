@@ -1,0 +1,561 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% APPENDIX
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\appendix
+\onecolumn
+\startcontents[appendix]
+\printcontents[appendix]{ }{0}{\section*{Appendix}}
+
+\section{Prompts}
+\label{app:prompts}
+In this section, we provide the full prompt templates used throughout the different phases of our framework. These templates are designed to ensure consistent agent behavior and structured data generation across various environments.
+
+\subsection{Agent Execution Prompts}
+The following prompts are used during the online inference phase. These templates provide the agent with the current task description, a history of previous interactions, and a set of retrieved skills (experiences) to guide its decision-making process. The prompts explicitly enforce a Chain-of-Thought (CoT) reasoning step before action selection.
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{|X|}
+\hline
+\rowcolor[gray]{0.9} \textbf{Prompt A.1: ALFWorld Agent Execution with Skills} \\ \hline
+\textbf{System Prompt:} \\
+You are an expert agent operating in the ALFRED Embodied Environment. Your task is to: \texttt{\{task\_description\}} \\
+\\
+\textbf{\#\# Retrieved Relevant Experience} \\
+\texttt{\{retrieved\_memories\}} \\
+\\
+\textbf{\#\# Current Progress} \\
+Prior to this step, you have already taken \texttt{\{step\_count\}} step(s). Below are the most recent \texttt{\{history\_length\}} observations and the corresponding actions you took: \texttt{\{action\_history\}} \\
+You are now at step \texttt{\{current\_step\}} and your current observation is: \texttt{\{current\_observation\}} \\
+Your admissible actions of the current situation are: [\texttt{\{admissible\_actions\}}]. \\
+\\
+Now it's your turn to take an action. You should first reason step-by-step about the current situation. This reasoning process \textbf{MUST} be enclosed within \texttt{<think> </think>} tags. Once you've finished your reasoning, you should choose an admissible action for current step and present it within \texttt{<action> </action>} tags. \\ \hline
+\end{tabularx}
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{|X|}
+\hline
+\rowcolor[gray]{0.9} \textbf{Prompt A.2: WebShop Agent Execution with Skills} \\ \hline
+\textbf{System Prompt:} \\
+You are an expert autonomous agent operating in the WebShop e-commerce environment. Your task is to: \texttt{\{task\_description\}}. \\
+\\
+\textbf{\#\# Retrieved Relevant Experience} \\
+\texttt{\{retrieved\_memories\}} \\
+\\
+\textbf{\#\# Current Progress} \\
+Prior to this step, you have already taken \texttt{\{step\_count\}} step(s). Below are the most recent \texttt{\{history\_length\}} observations and the corresponding actions you took: \texttt{\{action\_history\}} \\
+You are now at step \texttt{\{current\_step\}} and your current observation is: \texttt{\{current\_observation\}} \\
+Your admissible actions of the current situation are: [ \texttt{\{available\_actions\}} ]. \\
+\\
+Now it's your turn to take one action for the current step. You should first reason step-by-step about the current situation, then think carefully which admissible action best advances the shopping goal. This reasoning process \textbf{MUST} be enclosed within \texttt{<think> </think>} tags. Once you've finished your reasoning, you should choose an admissible action for current step and present it within \texttt{<action> </action>} tags. \\ \hline
+\end{tabularx}
+\end{table}
+
+\subsection{Skill Generation and Distillation Prompts}
+These prompts are utilized during the skill discovery and library initialization phases. They guide a high-capability teacher model to analyze interaction trajectories, identify failure modes, and distill reusable, actionable skills into a structured JSON format.
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{|X|}
+\hline
+\rowcolor[gray]{0.9} \textbf{Prompt B.1: Dynamic Skill Discovery from Failures} \\ \hline
+Analyze these failed \texttt{\{env\_description\}} agent trajectories and suggest NEW skills to add. \\
+\\
+\textbf{FAILED TRAJECTORIES:} \texttt{\{failure\_examples\}} \\
+\textbf{EXISTING SKILL TITLES:} \texttt{\{existing\_titles\}} \\
+\\
+Generate 1-3 NEW actionable skills that would help avoid these failures. Each skill must have: \texttt{skill\_id}, \texttt{title} (3-5 words), \texttt{principle} (1-2 sentences), \texttt{when\_to\_apply}. The \texttt{skill\_id} should be unique and follow the pattern: "dyn\_001", "dyn\_002", etc. \\
+\\
+Return ONLY a JSON array of skills, no other text. \\ \hline
+\end{tabularx}
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{|X|}
+\hline
+\rowcolor[gray]{0.9} \textbf{Prompt B.2: Initial Skill Distillation (ALFWorld)} \\ \hline
+You are an expert at distilling agent behavior patterns into concise, actionable skills. Analyze these successful and failed trajectories from an embodied AI agent operating in household environments (ALFWorld). \\
+\\
+\textbf{SUCCESSFUL TRAJECTORIES:} \texttt{\{success\_patterns\}} \\
+\textbf{FAILED TRAJECTORIES:} \texttt{\{failure\_patterns\}} \\
+\\
+Generate 8-12 GENERAL SKILLS that apply across ALL task types. These should be: 1. \textbf{Concise}; 2. \textbf{Actionable}; 3. \textbf{Transferable}; 4. \textbf{Failure-aware}. Focus on: Navigation, object manipulation, state tracking, error recovery, and container interaction rules. \\
+\\
+Return ONLY the JSON array, no other text. \\ \hline
+\end{tabularx}
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{|X|}
+\hline
+\rowcolor[gray]{0.9} \textbf{Prompt B.3: Initial Skill Distillation (WebShop)} \\ \hline
+You are an expert at distilling agent behavior patterns into concise, actionable skills. Analyze these successful and failed trajectories from an AI agent operating in an online shopping environment (WebShop). \\
+\\
+\textbf{SUCCESSFUL TRAJECTORIES:} \texttt{\{success\_patterns\}} \\
+\textbf{FAILED TRAJECTORIES:} \texttt{\{failure\_patterns\}} \\
+\\
+Generate 10-15 GENERAL SKILLS. Focus on: Search query formulation, product selection heuristics, option configuration (size, color, etc.), constraint verification, navigation patterns, and price handling. \\
+\\
+Return ONLY the JSON array, no other text. \\ \hline
+\end{tabularx}
+\end{table}
+
+\subsection{Cold-start Trajectory Generation Prompts}
+To bridge the gap between a base model and the target performance, we use the following prompts to generate high-quality synthetic trajectories for Supervised Fine-Tuning (SFT). These prompts instruct the teacher model to solve tasks while explicitly demonstrating the application of specific skills, thereby providing a clear learning signal for the student model.
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{|X|}
+\hline
+\rowcolor[gray]{0.9} \textbf{Prompt C.1: Synthetic Trajectory Generation (ALFWorld)} \\ \hline
+You are an expert agent in the ALFRED embodied environment. You will be given a task and relevant skills to apply. Your goal is to generate a successful trajectory that demonstrates proper use of these skills. \\
+\\
+You should generate a step-by-step trajectory that: \\
+1. Uses the provided skills appropriately; \\
+2. Takes realistic actions in the environment; \\
+3. Completes the task successfully; \\
+4. Demonstrates good planning and systematic exploration. \\
+\\
+For each step, you should: \\
+$\bullet$ Think through the current situation using \texttt{<think></think>} tags. \\
+$\bullet$ Choose an appropriate action using \texttt{<action></action>} tags. \\
+$\bullet$ The action should be a simple command like "go to cabinet 1", "open drawer 2", "take apple 1", "put apple 1 in/on countertop 1". \\
+\\
+Generate a complete trajectory from start to finish. Stop when the task is complete. \\ \hline
+\end{tabularx}
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{|X|}
+\hline
+\rowcolor[gray]{0.9} \textbf{Prompt C.2: Synthetic Trajectory Generation (WebShop)} \\ \hline
+You are an expert shopping agent in the WebShop e-commerce environment. You will be given a shopping task and relevant skills to apply. Your goal is to generate a successful trajectory that demonstrates proper use of these skills. \\
+\\
+You should generate a step-by-step trajectory that: \\
+1. Uses the provided skills appropriately; \\
+2. Takes realistic actions in the WebShop environment; \\
+3. Successfully finds and purchases the requested product; \\
+4. Demonstrates good search strategies and product evaluation. \\
+\\
+For each step, you should: \\
+$\bullet$ Think through the current situation using \texttt{<think></think>} tags. \\
+$\bullet$ Choose an appropriate action using \texttt{<action></action>} tags. \\
+$\bullet$ Actions can be: \texttt{search[query]}, \texttt{click[element]}, or \texttt{buy now}. \\
+\\
+Generate a complete trajectory from start to finish. Stop when the purchase is complete. \\ \hline
+\end{tabularx}
+\end{table}
+
+
+\section{Additional Experimental Details}
+\label{app:details}
+
+\subsection{Hyperparameters}
+\label{app:hyp}
+
+\begin{table}[h]
+    \caption{Hyperparameters for \method{}.}
+    \begin{center}
+    \begin{tabular}{ll}
+        \toprule
+        Hyperparameter & Value \\
+        \midrule
+        \multicolumn{2}{l}{\textit{Cold-Start SFT}} \\
+        Learning rate & $1 \times 10^{-4}$ \\
+        Batch size & 16 \\
+        Epochs & 3 \\
+        SFT examples & 7,500 (AlfWorld) / 2,400 (WebShop) \\
+        \midrule
+        \multicolumn{2}{l}{\textit{RL Training}} \\
+        Learning rate & $1 \times 10^{-6}$ \\
+        Batch size & 64 \\
+        KL loss Coef & 0.01 \\
+        Invalid Action Penalty Coef & 0.1 \\
+        Max Prompt Length & 6,000 \\
+        Max Response Length & 1,024 \\
+        Epoch & 150 \\
+        \midrule
+        \multicolumn{2}{l}{\textit{Skill Retrieval}} \\
+        Top-K retrieval & 6 \\
+        Validation interval & 5 Steps \\
+        Update Threshold $\delta$ & 0.4 \\
+        Max failures analyzed & 10 (SR $<$ 0.4) / 5 (SR $>$ 0.4) \\
+        Max new skills per evolution & 3 \\
+        \bottomrule
+    \end{tabular}
+    \end{center}
+\end{table}
+
+\subsection{Compute Resources}
+
+All experiments were conducted on a cluster with 8 NVIDIA H100 80GB GPUs. Training times:
+\begin{itemize}
+    \item Trajectory collection: 3 hours
+    \item Skill distillation: 0.5 hours
+    \item Cold-start SFT: 2 hour
+    \item RL training: 24 hours
+\end{itemize}
+Total wall-clock time: approximately 30 hours per experiment.
+
+\section{Illustration of Skill Library}
+\label{app:skills}
+In this section, we provide some example catalog of distilled skills and error taxonomies for both the ALFWorld and WebShop environments. Tables~\ref{tab:agent_skills} and~\ref{tab:webshop_general_skills} detail the general skills distilled for embodied manipulation and web-based shopping, respectively, highlighting the actionable principles required for systematic exploration and constraint satisfaction. Furthermore, we provide a structured analysis of failure cases in Table~\ref{tab:common_mistakes} and Table~\ref{tab:webshop_mistakes}, which categorizes common mistakes, ranging from spatial reasoning loops in ALFWorld to price-shift oversights in WebShop, alongside their root causes and proposed mitigation strategies. 
+\begin{table*}[t]
+\centering
+\caption{Example distilled skills from \skillbank{} for ALFWorld~\cite{shridharalfworld}. This table summarizes general patterns and application logic derived from raw trajectories.}
+\label{tab:agent_skills}
+\footnotesize
+\begin{tabularx}{\textwidth}{@{} l p{3cm} X p{4cm} @{}}
+\toprule
+\textbf{ID} & \textbf{Skill Title} & \textbf{Principle (Actionable Pattern)} & \textbf{When to Apply} \\
+\midrule
+\rowcolor[gray]{0.95} \multicolumn{4}{l}{\textit{General Exploration \& Acquisition Skills}} \\ 
+gen\_001 & Systematic Exploration & Search every plausible surface or container exactly once before revisiting; prioritize unseen locations. & Anytime the goal count is not met and unexplored areas remain. \\
+gen\_002 & Immediate Acquisition & As soon as a required object becomes visible and reachable, take it immediately. & Upon first visual confirmation of a goal-relevant object. \\
+gen\_003 & Destination First Policy & After picking up a goal object, navigate directly to the known target receptacle and place it. & Holding any goal object while target location is identified. \\
+\midrule
+\rowcolor[gray]{0.95} \multicolumn{4}{l}{\textit{State-Changing \& Spatial Relation Skills}} \\
+gen\_005 & Use State-Changing Tools Early & Acquire the object, then immediately use the nearest suitable appliance (heat/cool/clean) before placement. & After picking up an object requiring temperature or cleanliness change. \\
+gen\_006 & Establish Spatial Relations & First locate the reference object, adjust its state if needed, then search or place in the specified region. & Tasks containing prepositions like ``under'', ``inside'', or ``on''. \\
+\midrule
+\rowcolor[gray]{0.95} \multicolumn{4}{l}{\textit{Reliability \& Error Recovery}} \\
+gen\_014 & Loop Escape Trigger & If the last 3--5 actions do not change the state, switch to an untried search branch or action type. & After several consecutive no-progress observations. \\
+gen\_015 & Pre-Action Sanity Check & Confirm prerequisites (hand free, capacity, power) before executing manipulative commands. & Right before issuing any command that could legally fail. \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\begin{table*}[t]
+\centering
+\caption{Common Agent Failures and Mitigation Strategies for ALFWorld.}
+\label{tab:common_mistakes}
+\small
+\begin{tabularx}{\textwidth}{@{} l p{3.5cm} X X @{}}
+\toprule
+\textbf{ID} & \textbf{Failure Description} & \textbf{Root Cause (Why it happens)} & \textbf{Mitigation (How to avoid)} \\
+\midrule
+err\_001 & Redundant Revisit & Lacks explicit memory of explored areas; strategy degenerates into local loops. & Maintain an exploration map; prioritize unvisited candidates. \\
+err\_006 & Skipping State Changes & Conflates object presence with goal satisfaction; omits cleanliness/temp checks. & Integrate state precondition checks into the planner before placement. \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\begin{table*}[t]
+\centering
+\caption{Example distilled skills for WebShop Navigation~\cite{yao2022webshop}. These skills represent the strategic patterns used by the agent to handle large-scale product search and constraint satisfaction.}
+\label{tab:webshop_general_skills}
+\small
+\begin{tabularx}{\textwidth}{@{} l p{3.5cm} X p{4.5cm} @{}}
+\toprule
+\textbf{ID} & \textbf{Skill Title} & \textbf{Principle (Actionable Pattern)} & \textbf{When to Apply} \\
+\midrule
+\rowcolor[gray]{0.95} \multicolumn{4}{l}{\textit{Search \& Query Engineering}} \\ 
+gen\_001 & Prioritize Core Keywords & Include product type, 1-2 functional attributes, and hard constraints; omit secondary descriptors. & Before issuing the first search or refining over-specific queries. \\
+gen\_002 & Iterative Refinement & Adjust keywords or apply site filters instead of repeating the same failed query. & When results are irrelevant or repeat despite multiple searches. \\
+\midrule
+\rowcolor[gray]{0.95} \multicolumn{4}{l}{\textit{Product Evaluation \& Verification}} \\
+gen\_003 & Scan Before You Click & Read titles, thumbnails, and prices in results to ensure plausibility before opening a link. & On search results pages when choosing the next product to inspect. \\
+gen\_004 & Verify Early, Abort Fast & Immediately check category, attributes, and price on the product page; leave if any constraint is violated. & Within the first observation on every product detail page. \\
+gen\_006 & Confirm Hidden Attributes & Open Description/Features sections to ensure non-visible specs (e.g., material) meet constraints. & When constraints are not evident from the title or variant list. \\
+\midrule
+\rowcolor[gray]{0.95} \multicolumn{4}{l}{\textit{Configuration \& Transaction}} \\
+gen\_005 & Set Mandatory Variants & Always select required options (size, color, etc.) before evaluating price or purchasing. & After confirming product match but before any purchase action. \\
+gen\_007 & Check Variant Pricing & For price ranges, select the exact variant combination to verify the specific price is within budget. & Whenever price changes with variant selection or shows as a range. \\
+gen\_013 & Purchase Decisively & Execute 'Buy Now' immediately once all constraints and prices are confirmed on a variant. & After validating every constraint on the current product variant. \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\begin{table*}[t]
+\centering
+\caption{Common Failures in Web-based Shopping Tasks.}
+\label{tab:webshop_mistakes}
+\small
+\begin{tabularx}{\textwidth}{@{} l p{3.5cm} X X @{}}
+\toprule
+\textbf{ID} & \textbf{Failure Description} & \textbf{Root Cause} & \textbf{Mitigation Strategy} \\
+\midrule
+err\_001 & Missing Constraints in Query & Omits size or price caps, leading to overwhelming or irrelevant result sets. & Assemble full requirement list first; ensure every hard constraint is in the query string. \\
+err\_004 & Price Shift Oversight & Fails to notice price changes after selecting a specific size or color variant. & Re-read the price element after every option change before proceeding to checkout. \\
+err\_005 & Premature Purchase & Clicks ``Buy Now'' without setting mandatory variants, leading to errors or wrong items. & Validate that every required dropdown/radio option is explicitly selected before buying. \\
+err\_009 & Ignoring Stock Status & Attempts to purchase out-of-stock items by ignoring disabled buttons or stock labels. & Verify that the 'Add to Cart' button is enabled and no 'Out of Stock' message is present post-selection. \\
+err\_011 & Sponsored Link Distraction & Clicks loosely matched ads, diverting the workflow from organic, suitable products. & Implement ad-label detection; prioritize organic listings for higher constraint reliability. \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\section{Additional Cases}
+\definecolor{lightgray}{RGB}{245, 245, 245}
+\definecolor{darkblue}{RGB}{30, 60, 100}
+\definecolor{successgreen}{RGB}{0, 100, 0}
+
+\begin{tcolorbox}[
+    colback=white, 
+    colframe=darkblue, 
+    width=\textwidth, 
+    sharp corners, 
+    boxrule=0.8pt,
+    title=\textbf{Case 1: WebShop Footwear (Functional Constraints)},
+    fonttitle=\sffamily\bfseries,
+    colbacktitle=lightgray,
+    coltitle=black,
+    left=5pt, right=5pt, top=5pt, bottom=5pt
+]
+\small
+
+\textbf{Task:} I want a pair of men's black slip-resistant work shoes, size 10, rubber sole, price lower than \$50.00.
+
+\vspace{5pt}
+\begin{tabularx}{\linewidth}{l X}
+    \toprule
+    \textbf{Skills} & \textbf{[foo\_002]} Verify features in description; \textbf{[foo\_004]} Confirm price after variant selection. \\
+    \textbf{Avoid} & \textbf{[err\_001]} Omitting price cap; \textbf{[err\_003]} Selecting wrong product category. \\
+    \bottomrule
+\end{tabularx}
+
+\vspace{8pt}
+\begin{tcolorbox}[colback=lightgray!50, colframe=lightgray!50, boxrule=0pt, left=2pt, right=2pt, top=2pt, bottom=2pt]
+    \centering\textbf{\textsf{Agent Trajectory with Skill-Guided Reasoning}}
+\end{tcolorbox}
+
+\begin{tabularx}{\linewidth}{p{1.4cm} X}
+    \textbf{Step 1} & \textbf{Obs:} WebShop homepage. \\
+    & \textbf{Think:} Per [gen\_001], I'll include key constraints (type, function, color, price) in the query. \\
+    & \textbf{Action:} \texttt{search[men black slip resistant work shoes rubber sole under 50]} \\
+    \midrule
+
+    \textbf{Step 2} & \textbf{Obs:} Results: [1] Chef Shoes \$38.99; [2] Kitchen Shoes \$42.50; [3] Steel Toe Boots \$55.99. \\
+    & \textbf{Think:} [gen\_003] Item [1] is under budget and matches function. Item [3] is over budget (skip). \\
+    & \textbf{Action:} \texttt{click[Item 1]} \\
+    \midrule
+
+    \textbf{Step 3} & \textbf{Obs:} Product page. Price: \$35.99-\$45.99. Colors: Black, White. Sizes: 7-12. \\
+    & \textbf{Think:} [foo\_002] Description confirms rubber sole. Now selecting Black and Size 10 [foo\_003]. \\
+    & \textbf{Action:} \texttt{click[Black]} $\rightarrow$ \texttt{click[10]} \\
+    \midrule
+
+    \textbf{Step 5} & \textbf{Obs:} Selected: Black, Size 10. Price updated to \$38.99. \\
+    & \textbf{Think:} [foo\_004] \$38.99 < \$50. All constraints (color, size, function, price) are satisfied. \\
+    & \textbf{Action:} \texttt{click[Buy Now]} \\
+\end{tabularx}
+
+\vspace{5pt}
+\hrule
+\vspace{5pt}
+\textbf{\textcolor{successgreen}{Result: SUCCESS}} --- Purchased at \$38.99. 
+\textbf{Key Skills:} [foo\_002] (Verification), [foo\_004] (Price Check).
+\end{tcolorbox}
+
+\definecolor{lightgray}{RGB}{245, 245, 245}
+\definecolor{techblue}{RGB}{25, 50, 120}
+\definecolor{successgreen}{RGB}{0, 100, 0}
+\definecolor{errorred}{RGB}{180, 0, 0}
+
+\begin{tcolorbox}[
+    colback=white, 
+    colframe=techblue, 
+    width=\textwidth, 
+    sharp corners, 
+    boxrule=0.8pt,
+    title=\textbf{Case 2: Electronics (Speaker with Abort-and-Retry)},
+    fonttitle=\sffamily\bfseries,
+    colbacktitle=lightgray,
+    coltitle=black,
+    left=5pt, right=5pt, top=5pt, bottom=5pt
+]
+\small
+
+\textbf{Task:} I need a portable bluetooth speaker, waterproof, black color, price lower than \$30.00.
+
+\vspace{5pt}
+\begin{tabularx}{\linewidth}{l X}
+    \toprule
+    \textbf{Skills} & \textbf{[ele\_001]} Constraint-rich search; \textbf{[ele\_004]} Bail on mismatch fast; \textbf{[gen\_002]} Iterative refinement. \\
+    \textbf{Avoid} & \textbf{[err\_002]} Overly specific variant names in search; \textbf{[ele\_006]} Avoid click loops. \\
+    \bottomrule
+\end{tabularx}
+
+\vspace{8pt}
+\begin{tcolorbox}[colback=lightgray!50, colframe=lightgray!50, boxrule=0pt, left=2pt, right=2pt, top=2pt, bottom=2pt]
+    \centering\textbf{\textsf{Agent Trajectory: Handling Missing Constraints}}
+\end{tcolorbox}
+
+\begin{tabularx}{\linewidth}{p{1.4cm} X}
+    \textbf{Step 1} & \textbf{Obs:} WebShop homepage. \\
+    & \textbf{Think:} [ele\_001] Packing all mandatory attributes: portable, bluetooth, waterproof, black, <\$30. \\
+    & \textbf{Action:} \texttt{search[portable bluetooth speaker waterproof black under 30]} \\
+    \midrule
+
+    \textbf{Step 2} & \textbf{Obs:} Results: [1] Waterproof Speaker \$28.99; [2] Mini LED Speaker \$19.99; [3] 20W Speaker \$35.50. \\
+    & \textbf{Think:} [ele\_005] Item [1] matches most keywords and price. \\
+    & \textbf{Action:} \texttt{click[Item 1]} \\
+    \midrule
+
+    \textbf{Step 3} & \textbf{Obs:} Product page (Item 1). Colors: Blue, Red, Green, Army Green. \textbf{\textcolor{errorred}{Black unavailable.}} \\
+    & \textbf{Think:} \textbf{[gen\_004] Verify Early, Abort Fast:} No black option! [ele\_004] Bail immediately to find another candidate. \\
+    & \textbf{Action:} \texttt{click[Back to Search]} \\
+    \midrule
+
+    \textbf{Step 4} & \textbf{Obs:} Back on search results. \\
+    & \textbf{Think:} [gen\_002] Iterative refinement. Item [2] \$19.99 is the next best candidate. \\
+    & \textbf{Action:} \texttt{click[Item 2]} \\
+    \midrule
+
+    \textbf{Step 5} & \textbf{Obs:} Product page (Item 2). Colors: Black, Blue, Red. Specs: IPX5 Waterproof. \\
+    & \textbf{Think:} [ele\_002] Black is available! IPX5 confirms waterproof. Selecting Black. \\
+    & \textbf{Action:} \texttt{click[Black]} \\
+    \midrule
+
+    \textbf{Step 6} & \textbf{Obs:} Black selected. Final price: \$19.99. \\
+    & \textbf{Think:} [ele\_003] \$19.99 < \$30. All specs (black, portable, waterproof) verified. \\
+    & \textbf{Action:} \texttt{click[Buy Now]} \\
+\end{tabularx}
+
+\vspace{5pt}
+\hrule
+\vspace{5pt}
+\textbf{\textcolor{successgreen}{Result: SUCCESS}} --- Efficiently handled attribute mismatch via early exit. 
+\textbf{Key Skills Applied:} [gen\_004] (Abort Fast), [ele\_004] (Bail on Mismatch).
+\end{tcolorbox}
+
+
+\definecolor{clean-green}{RGB}{34, 139, 34}
+\definecolor{heat-red}{RGB}{178, 34, 34}
+\definecolor{box-gray}{RGB}{248, 249, 250}
+
+\newtcolorbox{alfcase}[2]{
+    colback=white, 
+    colframe=#1, 
+    width=\textwidth, 
+    sharp corners, 
+    boxrule=0.8pt,
+    title=\textbf{#2},
+    fonttitle=\sffamily\bfseries,
+    colbacktitle=box-gray,
+    coltitle=black,
+    left=5pt, right=5pt, top=5pt, bottom=5pt,
+    before skip=10pt, after skip=10pt
+}
+
+% --- ALFWorld Case 1: Clean Task ---
+\begin{alfcase}{clean-green}{Case 1: ALFWorld Clean Task (Lettuce $\rightarrow$ Sink $\rightarrow$ Countertop)}
+\small
+\textbf{Task:} Clean some lettuce and put it in countertop.
+
+\vspace{5pt}
+\begin{tabularx}{\linewidth}{l X}
+    \toprule
+    \textbf{Core Skills} & \textbf{[cle\_001]} Phase-ordered plan (Locate $\rightarrow$ Clean $\rightarrow$ Place); \textbf{[cle\_006]} Use location priors (Fridge for food). \\
+    \textbf{Mistakes Avoided} & \textbf{[err\_002]} Skipping closed containers; \textbf{[err\_003]} Ignoring visible target objects. \\
+    \bottomrule
+\end{tabularx}
+
+\vspace{8pt}
+\begin{tabularx}{\linewidth}{p{1.4cm} X}
+    \rowcolor{clean-green!10} \textbf{Step 1-3} & \textbf{Obs:} Fridge 1 is closed. \textbf{Action:} \texttt{open fridge 1} $\rightarrow$ \texttt{take lettuce 1} \\
+    & \textbf{Reasoning:} Per \textbf{[cle\_006]}, food is likely in the fridge. \textbf{[gen\_002]} Grab lettuce immediately on sight. \\
+    \midrule
+    \rowcolor{clean-green!5} \textbf{Step 4-6} & \textbf{Obs:} Arrive at sinkbasin 1. \textbf{Action:} \texttt{clean lettuce 1 with sinkbasin 1} \\
+    & \textbf{Reasoning:} Per \textbf{[cle\_001]} Phase 2: bring to water source. \textbf{[cle\_003]} Go straight to sink. \\
+    \midrule
+    \rowcolor{clean-green!10} \textbf{Step 7} & \textbf{Obs:} Arrive at countertop 1. \textbf{Action:} \texttt{put lettuce 1 in/on countertop 1} \\
+    & \textbf{Reasoning:} Per \textbf{[gen\_003]} Destination First: place cleaned object immediately to finish. \\
+\end{tabularx}
+
+\vspace{5pt}
+\textbf{\textcolor{clean-green}{Result: SUCCESS (7 Steps)}} --- Skills used: [gen\_010] (Decomposition), [cle\_003] (Sink First).
+\end{alfcase}
+
+% --- ALFWorld Case 2: Heat Task ---
+\begin{alfcase}{heat-red}{Case 2: ALFWorld Heat Task (Egg $\rightarrow$ Microwave $\rightarrow$ Countertop)}
+\small
+\textbf{Task:} Heat some egg and put it in countertop.
+
+\vspace{5pt}
+\begin{tabularx}{\linewidth}{l X}
+    \toprule
+    \textbf{Core Skills} & \textbf{[hea\_001]} Secure exact target first; \textbf{[hea\_003]} Open-Place-Heat sequence; \textbf{[hea\_004]} No appliance before object. \\
+    \bottomrule
+\end{tabularx}
+
+\vspace{8pt}
+\begin{tabularx}{\linewidth}{p{1.4cm} X}
+    \rowcolor{heat-red!10} \textbf{Step 1-3} & \textbf{Obs:} Countertop 1 (no egg) $\rightarrow$ Countertop 2 (egg found). \textbf{Action:} \texttt{take egg 1} \\
+    & \textbf{Reasoning:} \textbf{[hea\_004]} Avoid microwave until object is held. \textbf{[hea\_002]} Systematic search of surfaces. \\
+    \midrule
+    \rowcolor{heat-red!5} \textbf{Step 4-6} & \textbf{Obs:} Microwave 1 is closed. \textbf{Action:} \texttt{open microwave 1} $\rightarrow$ \texttt{heat egg 1} \\
+    & \textbf{Reasoning:} \textbf{[hea\_003]} Correct sequence: open door first, then initiate state change. \\
+    \midrule
+    \rowcolor{heat-red!10} \textbf{Step 7-8} & \textbf{Obs:} Egg is heated. \textbf{Action:} \texttt{go to countertop 1} $\rightarrow$ \texttt{put egg 1} \\
+    & \textbf{Reasoning:} \textbf{[hea\_005]} Direct Post-Heat Placement: move to target without detours. \\
+\end{tabularx}
+
+\vspace{5pt}
+\textbf{\textcolor{heat-red}{Result: SUCCESS (8 Steps)}} --- Skills used: [hea\_001] (Target First), [hea\_004] (Sequence Control).
+\end{alfcase}
+
+\definecolor{examine-purple}{RGB}{102, 51, 153}
+\definecolor{box-gray}{RGB}{248, 249, 250}
+
+\begin{tcolorbox}[
+    colback=white, 
+    colframe=examine-purple, 
+    width=\textwidth, 
+    sharp corners, 
+    boxrule=0.8pt,
+    title=\textbf{Case 3: ALFWorld Examine Task (Pencil $\oplus$ Desklamp $\rightarrow$ Success)},
+    fonttitle=\sffamily\bfseries,
+    colbacktitle=box-gray,
+    coltitle=black,
+    left=5pt, right=5pt, top=5pt, bottom=5pt
+]
+\small
+\textbf{Task:} Look at pencil under the desklamp.
+
+\vspace{5pt}
+\begin{tabularx}{\linewidth}{l X}
+    \toprule
+    \textbf{Core Skills} & \textbf{[loo\_001]} Seek lamp surfaces (Desk/Sidetable); \textbf{[loo\_002]} Switch lamp on; \textbf{[exa\_001]} Pair objects early (Target \& Tool co-location). \\
+    \textbf{Mistakes Avoided} & \textbf{[err\_003]} Ignoring reachable targets; \textbf{[loo\_005]} Preventing action loops (Toggle only once). \\
+    \bottomrule
+\end{tabularx}
+
+\vspace{8pt}
+\begin{tcolorbox}[colback=examine-purple!5, colframe=examine-purple!5, boxrule=0pt, left=2pt, right=2pt, top=2pt, bottom=2pt]
+    \centering\textbf{\textsf{Agent Trajectory: High-Efficiency Co-location Handling}}
+\end{tcolorbox}
+
+\begin{tabularx}{\linewidth}{p{1.4cm} X}
+    \rowcolor{examine-purple!10} \textbf{Step 1} & \textbf{Obs:} Mid-room. Visible: desk 1/2, drawer 1-3, sidetable 1, etc. \\
+    & \textbf{Reasoning:} \textbf{[loo\_001]} Desklamps usually sit on desks. Prioritizing \texttt{desk 1} to find both pencil and lamp in one go. \\
+    & \textbf{Action:} \texttt{go to desk 1} \\
+    \midrule
+    \rowcolor{examine-purple!5} \textbf{Step 2} & \textbf{Obs:} On \texttt{desk 1}: \textbf{alarmclock 1, desklamp 1, pencil 1}. \\
+    & \textbf{Reasoning:} \textbf{[exa\_001]} Successful co-location! Both objects are present. \textbf{[exa\_002]} Pick up target first before interacting with the tool. \\
+    & \textbf{Action:} \texttt{take pencil 1 from desk 1} \\
+    \midrule
+    \rowcolor{examine-purple!10} \textbf{Step 3} & \textbf{Obs:} Holding pencil 1. \\
+    & \textbf{Reasoning:} \textbf{[loo\_002]} Toggle the lamp state to satisfy the "under light" condition. \textbf{[exa\_004]} Single toggle rule ensures no repeated actions. \\
+    & \textbf{Action:} \texttt{use desklamp 1} \\
+\end{tabularx}
+
+\vspace{5pt}
+\hrule
+\vspace{5pt}
+\textbf{\textcolor{examine-purple}{Result: SUCCESS (Optimal 3 Steps)}} --- Demonstrates superior spatial reasoning and zero-waste navigation. 
+\textbf{Key Skills:} [exa\_001] (Object Pairing), [loo\_001] (Spatial Priors).
+\end{tcolorbox}
+
+

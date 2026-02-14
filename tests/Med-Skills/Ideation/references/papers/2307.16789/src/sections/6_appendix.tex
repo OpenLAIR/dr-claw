@@ -1,0 +1,465 @@
+\clearpage
+\appendix
+\section*{Appendix}
+
+\section{Implementation Details}
+
+\subsection{Details for Filtering RapidAPI}
+\label{sec:detail_filtering_api}
+We perform a rigorous filtering process to ensure that the ultimate tool set of \ourdata is reliable and functional.
+The filtering process is as follows: (1) \textit{initial testing}: we begin by testing the basic functionality of each API to ascertain whether they are operational. We discard any APIs that do not meet this basic criterion; 
+% (2) \textit{request method}: we filter out all the APIs that utilize request method other than GET since other methods such as POST are hard to be parsed into a unified request format due to various kinds of request body schemas;
+(2) \textit{example response evaluation}: we make API calls to obtain an example response. Then we evaluate their effectiveness by response time and quality. APIs that consistently exhibit a long response time are omitted. Also, we filter out the APIs with low-quality responses, such as HTML source codes or other error messages.
+
+\subsection{API Response Compression}
+When examining the response returned by each API, we discover that some responses may contain redundant information and are too long to be fed into LLMs. This may lead to problems due to the limited context length of LLMs.
+Therefore, we perform a response compression to reduce the length of API responses while maintaining their critical information.
+
+Since each API has a fixed response format, we use \turbo to analyze one response example and remove unimportant keys within the response to reduce its length. The prompt of \turbo contains the following information for each API: (1) tool documentation, which includes tool name, tool description, API name, API description, parameters, and an example API response. This gives \turbo a hint of the API’s functionality; (2) $3$ in-context learning examples, each containing an original API response and a compressed response schema written by experts.
+In this way, we obtain the response compression strategies for all APIs.
+During inference, when the API response length exceeds $1024$ tokens, we compress the response by removing unimportant information. If the compressed response is still longer than $1024$, we only retain the first $1024$ tokens. Through human evaluation, we find that this compression retains important information contained in the API response and successfully removes the noises.
+
+\subsection{Details for Training ToolLLaMA}
+\label{details_training_toolllama}
+We train the model in a multi-round conversation mode. For the training data format, we keep the input and output the same as those of \turbo. Since it is unclear how \turbo organizes the function call field, we just concatenate this information into the input as part of the prompt for ToolLLaMA. For the training hyper parameters, we use a learning rate of $5\times10^{-5}$, a warmup ratio of $4\times10^{-2}$, a total batch size of $64$, a maximum sequence length of $8192$, and use a position interpolation ratio of $2$. We train the model for two epochs and select the model checkpoint
+with the best performance on the development set
+and then evaluate it on the test set.
+
+\subsection{Details for \dfs}
+\label{DFS_implementation}
+
+In practice, it is essential to balance effectiveness with costs (the number of OpenAI API calls). Classical DFS algorithms generate multiple child nodes at each step, then sort all the child nodes, and select the highest-scoring node for expansion. After greedily expanding to the terminal node, DFS backtracks to explore nearby nodes, expanding the search space. Throughout the algorithm, the most resource-intensive part is the sorting process of child nodes. If we use an LLM to evaluate two nodes at a time, it requires approximately $O(n\log n)$ complexity of OpenAI API calls, where $n$ is the number of child nodes.
+
+In fact, we find empirically that in most cases, the nodes ranked highest are often the node generated at first.
+Therefore, we skip the sorting process of child nodes and choose a pre-order traversal (a variant for DFS) for the tree search. This design has the following advantages:
+
+\begin{itemize}
+    \item If the model does not retract an action (e.g., for the case of simple instructions), then \dfs degrades to ReACT, which makes it as efficient as ReACT.
+    \item After the algorithm finishes, the nodes explored by this method are almost the same as those found by a classical DFS search. Hence, it can also handle complex instructions that only DFS can solve.
+\end{itemize}
+
+Overall, this design achieves a similar performance as DFS while significantly reducing costs.
+
+It should also be noted that ReACT can be viewed as a degraded version of \dfs. Therefore, although \ourmodel is trained on data created by \dfs, the model can be used either through ReACT or \dfs during inference.
+
+\subsection{Details for ToolEval}
+\label{sec:details_tooleval}
+
+We adopt two metrics for automatic tool-use capability evaluation: pass rate and win rate.
+
+\paragraph{Details for Pass Rate}
+To assess whether a solution path completes the tasks outlined in the original instruction and successfully passes it, we need to first consider the solvability of the instruction. In principle, an instruction can be classified as either (1) solvable: for example, at least one of the provided tools is potentially helpful in solving the original instruction; or (2) unsolvable: for example, all APIs are irrelevant to the instruction or the instruction provides invalid information such as invalid email address.
+
+To determine whether a solution path is deemed passed or not, we need to consider whether the instruction is solvable or unsolvable. In our evaluation, three types of labels can be given to each solution path, i.e., \texttt{Pass}, \texttt{Fail}, and \texttt{Unsure}. Specifically, we define different rules as follows:
+
+If the instruction is solvable:
+\begin{enumerate}
+    \item If the model gives finish type ``Finish by Giving Up'',
+    \begin{enumerate}
+    \item After trying all the APIs extensively during and receiving no helpful information from APIs, the solution path is deemed a \texttt{Pass}.
+    \item If the model only calls a few API or receiving valid information from the APIs, the solution path is deemed a \texttt{Fail}.
+    \end{enumerate}
+    \item If the model gives finish type ``Finish with Final Answer'',
+    \begin{enumerate}
+    \item If the APIs provide no valid information, and the model has tried all the APIs to retrieve useful information, but the final answer still does not resolve the original instruction or conveys a refusal (such as ``I'm sorry, but I can't provide you with this, because the tools are unavailable''), the solution path is deemed a \texttt{Pass}.
+    \item If the tools provide valid information, and the final answer does not completely resolve the instruction or is a refusal, the solution path is deemed a \texttt{Fail}.
+    \item If the final answer completely resolves the original instruction, the solution path is deemed a \texttt{Pass}.
+    \item If it is unable to determine if the instruction is resolved based on the content of the final answer, the solution path is deemed an \texttt{Unsure}.
+    \end{enumerate}
+\end{enumerate}
+
+If the instruction is unsolvable:
+\begin{enumerate}
+    \item If the model gives finish type ``Finish with Final Answer'',
+    \begin{enumerate}
+        \item If the final answer resolves an instruction that was initially considered unresolvable, the solution path is deemed a \texttt{Pass}.
+        \item If the final answer is a refusal, the solution path is deemed a \texttt{Pass}.
+        \item If the final answer is hallucinated by the model itself and provides a false positive response (such as ``I've completed the task, the final answer is *''), the solution path is deemed a \texttt{Fail}.
+    \end{enumerate}
+    \item If the model gives finish type ``Finish by Giving Up",
+    \begin{enumerate}
+        \item Under this case, the solution path is deemed a \texttt{Pass}.
+    \end{enumerate}
+\end{enumerate}
+
+For every solution path, we instruct the \turbo evaluator to generate multiple ($\ge 4$) predictions and perform a majority vote to derive the final pass rate.
+
+\paragraph{Details for Win Rate}
+
+Since pass rate only measures whether an instruction is completed or not, instead of how well it is completed, we adopt another metric: win rate. It is measured by comparing two solution paths for a given instruction. We assume that a passed candidate is better than a failed candidate and only compare those solution paths that are both ``\texttt{Pass}'', or both ``\texttt{Failed}'' annotated by the \turbo evaluator. Note that compared with another solution path, one solution path will be annotated with one of the following: \texttt{win}, \texttt{lose}, or \texttt{tie}. We build rules for the evaluator's behavior to decide which solution path is better, and the criteria are listed as follows:
+\begin{enumerate}
+    \item Information richness: whether the final answer contains all the necessary information to answer the original instruction. A significantly richer answer is better, while a similar level of richness that is sufficient to answer the question ties.
+    \item Factuality: whether it accurately describes what has been done, and what failed in the end. A more accurate description in the final answer is better.
+    \item Reasoning: whether a detailed and accurate reason for failure is provided if the query remains unresolved. A more detailed reason is better.
+    \item Milestone: calculating the number of milestones reached during execution.
+    \item  Exploration: whether more potentially useful APIs were attempted during the execution process. The use of a greater number of APIs is better.
+    \item Cost: Having fewer repeated (redundant) API calls is better if the number of APIs used is the same.
+\end{enumerate}
+
+For every solution path, we also generate multiple ($\ge 4$) predictions and then perform a majority vote to derive the final win rate. In Table~\ref{tab:main_exp}, for ease of reading, we split the ratio of \texttt{tie} into two pieces and add them to \texttt{win} and \texttt{lose}, respectively. In Table~\ref{tab:main_exp_all}, we report the original numbers as a reference.
+
+\paragraph{Comparing Human Evaluation and ToolEval}
+To validate the reliability of \turbo evaluator in both pass rate and win rate, we sample among four different methods (ChatGPT+ReACT, ChatGPT+\dfs, ToolLLaMA+\dfs and GPT4+\dfs) to obtain solution pairs for $300$ test instructions for \textbf{each} method. Then we engage humans to annotate the pass rate for ChatGPT+\dfs, ToolLLaMA+\dfs and GPT4+\dfs, and the win rate among ChatGPT+ReACT and ChatGPT+\dfs.
+Our \turbo evaluator demonstrates a high agreement of $\textbf{87.1\%}$ in pass rate and $\textbf{80.3\%}$ in win rate with human annotators. This result shows that our evaluator generates highly similar evaluation results to humans and can be viewed as a credible evaluator who simulates human evaluation on pass rate and win rate.
+
+It should also be noted that the evaluation for tool learning is far more intricate than traditional tasks such as dialogue. The reason is that there may exist infinite ``correct'' solution paths for each instruction.
+In our initial investigations, we surprisingly found that even human experts often disagree with each other in deciding which solution path is better, leading to a relatively low agreement. For instance, one may prefer a solution path that uses only a few APIs to derive the final answer quickly; while another may prefer a solution path that extensively tries all the APIs to cross-validate specific information. In this regard, we believe there is still a long way to go for a fair evaluation of the tool-use domain, and we believe this work has paved the way for it. We expect more future works to explore this interesting research problem.
+% We also find that our automatic evaluator achieves lower variance ($\textbf{3.47\%}$) than humans ($\textbf{3.97\%}$) when annotating multiple times for the same instruction. This indicates that our evaluator is more consistent than humans.
+
+\begin{table}[!t]
+    \centering
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{ccrrrrrrrrrrrrrr}
+    \toprule
+    \multicolumn{1}{c}{\multirow{2}{*}{Model}} & \multicolumn{1}{c}{\multirow{2}{*}{Method}} &\multicolumn{2}{c}{\underline{\textbf{I1-Inst.}}} & \multicolumn{2}{c}{\underline{\textbf{I1-Tool}}} & \multicolumn{2}{c}{\underline{\textbf{I1-Cat.}}} & \multicolumn{2}{c}{\underline{\textbf{I2-Inst.}}} & \multicolumn{2}{c}{\underline{\textbf{I2-Cat.}}} & \multicolumn{2}{c}{\underline{\textbf{I3-Inst.}}} & \multicolumn{2}{c}{\underline{\textbf{Average}}} \\
+    \multicolumn{1}{c}{} & \multicolumn{1}{c}{} & Win & Tie & Win & Tie & Win & Tie & Win & Tie & Win & Tie & Win & Tie & Win & Tie \\
+    \toprule
+    % \ourmodel & $75.0$ & $\textbf{50.0}$ & $68.0$ & $45.0$ & $80.0$ & $45.0$ & $56.0$ & $\textbf{59.0}$ & $47.0$ & $48.0$ & $40.0$ & $46.0$ & $61.0$ & $48.8$ \\
+    % \midrule
+    ChatGPT & DFSDT & $52.5$ & $16.0$ & $\underline{55.0}$ & $14.0$ & $47.5$ & $19.5$ & $\textbf{67.0}$ & $10.0$ & $\textbf{58.5}$ & $12.5$ & $61.0$ & $16.0$ & $56.9$ & $14.7$  \\
+    \midrule
+    Claude-2 & ReACT & $27.0$ & $8.0$ & $24.0$ & $7.5$ & $29.5$ & $8.5$ & $32.0$ & $6.0$ & $28.5$ & $6.0$ & $43.0$ & $9.5$ & $30.7$ & $7.5$  \\
+    & DFSDT & $34.0$ & $8.0$ & $41.0$ & $6.5$ & $39.5$ & $7.5$ & $32.5$ & $9.5$ & $33.5$ & $0.0$ & $65.0$ & $0.0$ & $40.8$ & $5.3$  \\
+    \midrule
+    Text-Davinci-003 & ReACT & $23.5$ & $10.0$ & $28.5$ & $13.5$ & $27.0$ & $8.0$ & $26.5$ & $6.5$ & $25.5$ & $8.5$ & $41.0$ & $8.0$ & $28.7$ & $9.1$  \\
+    & DFSDT & $35.0$ & $10.5$ & $37.5$ & $12.5$ & $40.0$ & $13.5$ & $36.5$ & $8.0$ & $40.0$ & $6.5$ & $60.0$ & $6.0$ & $41.5$ & $9.5$  \\
+    \midrule
+    GPT4 & ReACT & $52.5$ & $15.0$ & $53.5$ & $10.5$ & $\underline{56.0}$ & $15.0$ & $59.5$ & $12.5$ & $52.5$ & $15.5$ & $\underline{76.0}$ & $4.0$ & $58.3$ & $12.1$  \\
+     & DFSDT & $\textbf{60.5}$ & $14.0$ & $\textbf{62.5}$ & $10.5$ & $\textbf{58.0}$ & $17.0$ & $\textbf{67.0}$ & $12.5$ & $\underline{57.0}$ & $12.5$ & $\textbf{80.0}$ & $8.0$ & $\textbf{64.2}$ & $12.4$  \\
+    \midrule
+    Vicuna & (ReACT \& DFSDT) & $0.0$ & 0.0 & $0.0$ & 0.0 & $0.0$ & 0.0 & $0.0$ & 0.0 & $0.0$ & 0.0 & $0.0$ & 0.0 & $0.0$ & 0.0  \\
+    Alpaca & (ReACT \& DFSDT) & $0.0$ & 0.0 & $0.0$ & 0.0 & $0.0$ & 0.0 & $0.0$ & 0.0 & $0.0$ & 0.0 & $0.0$ & 0.0 & $0.0$ & 0.0  \\
+    \midrule
+     & ReACT & $40.0$ & $10.0$ & $36.5$ & $11.0$ & $42.0$ & $11.0$ & $45.5$ & $10.5$ & $37.5$ & $8.5$ & $51.0$ & $8.0$ & $42.1$ & $9.8$\\
+     ToolLLaMA & DFSDT & $48.5$ & $13.0$ & $50.5$ & $9.5$ & $49.5$ & $10.0$ & $62.5$ & $12.0$ & $52.0$ & $12.0$ & $68.0$ & $2.0$ & $55.2$ & $9.8$ \\
+      & Retriever & $\underline{58.0}$ & $8.5$ & $54.5$ & $9.0$ & $51.0$ & $8.0$ & $64.5$ & $8.0$ & $56.0$ & $9.5$ & $71.0$ & $4.0$ & $\underline{59.2}$ & $7.8$ \\
+    
+    \bottomrule
+    \end{tabular}%
+    }
+    \caption{
+    \small{Win rate results before merging the tie label. Win rate is calculated by comparing each model with ChatGPT-ReACT. A win rate higher than $50\%$ means the model performs better than ChatGPT-ReACT. Apart from ToolLLaMA-DFSDT-Retriever, all methods use the oracle API retriever (i.e., ground truth API).
+    }
+    }
+    \label{tab:main_exp_all}
+    \end{table}
+
+% \subsection{Details of Performance Metrics for Automatic Evaluator}
+% \label{sec:details_of_metrics_for_evaluator}
+
+% Here we describe details of computing metrics used to assert automatic evaluators.
+
+% \paragraph{Human Agreement}\label{exp:human_agreement} 
+% To estimate the agreement between the automatic evaluator and humans, we first sample 4 win rate results for each query in human annotations data set from the automatic evaluator.
+% Then we check each sample whether agrees with the major human preference on 600 queries, giving scores of one if agree and zero if disagree.
+% If there are multiple major preference, we give scores of $\frac{1}{n}$ (where n is the count of major preference) if one major preference of the evaluator agree with humans and zero if not.
+% We finally average the averaged scores of the automatic evaluator samples for all query to get the human agreement.
+
+% \paragraph{Bias}
+% To estimate the bias, we sample 4 preference results as in calculating Human Agreement.
+% Then we check the disagreement between the major evaluator preference and major human preference, giving scores of one if disagree and zero if agree.
+% For multiple major preference, we have a initial score of one and subtract scores of $\frac{1}{n}$ (where n is the count of major preference) if one major preference of the evaluator agree with humans and zero if not.
+% We finally average the scores for all query to get the bias.
+
+% \paragraph{Variance}
+% We estimate variance like the way we estimate Human Agreement, but subtract the score from one for each sample and calculate variance for each query,
+% We then average the variance across the annotated data set to get variance.
+
+\subsection{Details for Experiments on APIBench}
+
+When generalizing \ourmodel to APIBench, no training updates were made to \ourmodel, but instead of treating each API in the prompt as a function call. We define one function that represents selecting an API, providing the code for invoking it, and describing the generated output in natural language. We do not consider the zero-shot setting of APIBench where the prompts do not contain any API descriptions because the APIs from the three tested domains were never encountered during training.
+
+\subsection{Prompts for Instruction Generation}
+\label{sec:inst_prompt}
+Below we list the detailed prompt for instruction generation, which consists of four parts: task description, in-context learning examples, sampled API list, and other requirements.
+
+\noindent\makebox[\linewidth]{\rule{\linewidth}{0.4pt}}
+\textit{Task Description of Single-tool Instructions}:\\
+You will be provided with a tool, its description, all of the tool's available API functions, the descriptions of these API functions, and the parameters required for each API function. Your task involves creating 10 varied, innovative, and detailed user queries that employ multiple API functions of a tool. For instance, if the tool `climate news' has three API calls - `get\_all\_climate\_change\_news', `look\_up\_climate\_today', and `historical\_climate', your query should articulate something akin to: first, determine today's weather, then verify how often it rains in Ohio in September, and finally, find news about climate change to help me understand whether the climate will change anytime soon. This query exemplifies how to utilize all API calls of `climate news'. A query that only uses one API call will not be accepted. Additionally, you must incorporate the input parameters required for each API call. To achieve this, generate random information for required parameters such as IP address, location, coordinates, etc. For instance, don't merely say `an address', provide the exact road and district names. Don't just mention `a product', specify wearables, milk, a blue blanket, a pan, etc. Don't refer to `my company', invent a company name instead. The first seven of the ten queries should be very specific. Each single query should combine all API call usages in different ways and include the necessary parameters. Note that you shouldn't ask `which API to use', rather, simply state your needs that can be addressed by these APIs. You should also avoid asking for the input parameters required by the API call, but instead directly provide the parameter in your query. The final three queries should be complex and lengthy, describing a complicated scenario where all the API calls can be utilized to provide assistance within a single query. You should first think about possible related API combinations, then give your query. Related\_apis are apis that can be used for a give query; those related apis have to strictly come from the provided api names. For each query, there should be multiple related\_apis; for different queries, overlap of related apis should be as little as possible. Deliver your response in this format: [{Query1: ......, `related\_apis':[api1, api2, api3...]},{Query2: ......, `related\_apis':[api4, api5, api6...]},{Query3: ......, `related\_apis':[api1, api7, api9...]}, ...] \\
+
+\textit{Task Description of Multi-tool Instructions}:\\
+You will be provided with several tools, tool descriptions, all of each tool's available API functions, the descriptions of these API functions, and the parameters required for each API function. Your task involves creating 10 varied, innovative, and detailed user queries that employ API functions of multiple tools. For instance, given three tools `nba\_news', `cat-facts', and `hotels': `nba\_news' has API functions `Get individual NBA source news' and `Get all NBA news', `cat-facts' has API functions `Get all facts about cats' and `Get a random fact about cats', `hotels' has API functions `properties/get-details (Deprecated)', `properties/list (Deprecated)' and `locations/v3/search'. Your query should articulate something akin to: `I want to name my newborn cat after Kobe and host a party to celebrate its birth. Get me some cat facts and NBA news to gather inspirations for the cat name. Also, find a proper hotel around my house in Houston Downtown for the party.' This query exemplifies how to utilize API calls of all the given tools. A query that uses API calls of only one tool will not be accepted. Additionally, you must incorporate the input parameters required for each API call. To achieve this, generate random information for required parameters such as IP address, location, coordinates, etc. For instance, don't merely say `an address', provide the exact road and district names. Don't just mention `a product', specify wearables, milk, a blue blanket, a pan, etc. Don't refer to `my company', invent a company name instead. The first seven of the ten queries should be very specific. Each single query should combine API calls of different tools in various ways and include the necessary parameters. Note that you shouldn't ask `which API to use', rather, simply state your needs that can be addressed by these APIs. You should also avoid asking for the input parameters required by the API call, but instead directly provide the parameters in your query. The final three queries should be complex and lengthy, describing a complicated scenario where all the provided API calls can be utilized to provide assistance within a single query. You should first think about possible related API combinations, then give your query. Related APIs are APIs that can be used for a given query; those related APIs have to strictly come from the provided API names. For each query, there should be multiple related APIs; for different queries, overlap of related APIs should be as little as possible. Deliver your response in this format: [{Query1: ......, `related\_apis':[[tool name, api name], [tool name, api name], [tool name, api name]...]},{Query2: ......, `related\_apis':[[tool name, api name], [tool name, api name], [tool name, api name]...]},{Query3: ......, `related\_apis':[[tool name, api name], [tool name, api name], [tool name, api name]...]}, ...] \\
+\noindent\makebox[\linewidth]{\rule{\linewidth}{0.4pt}}
+\textit{In-context Seed Examples}. In the following, we show one single-tool instruction seed example and one multi-tool instruction seed example.
+
+For example, with tool ASCII Art, the given api\_names are `figlet', `list figlet styles', `cowsay', `list\_cowsay\_styles', `matheq'. \\
+Some sample queries and related\_apis would be: \\
+``Query": ``Need to create an ASCII art representation of a mathematical equation. The equation is `y = mx + c', where m and c are constants. Help me generate the ASCII art for this equation. Also please generate an ASCII art representation of the text `Newton's Second Law of Motion'.", ``related\_apis": ['figlet', `list figlet styles', `matheq'] \\
+``Query": ``Working on a research paper on cows and need to include ASCII art representations of various cows. Can you first retrieve available ASCII art styles for cows? Then, can you generate ASCII art for cows like the Jersey, Holstein, and Guernsey? Finally, I want the cow to say `Moo!' in the ASCII art.", ``related\_apis": ['figlet', `list figlet styles', `cowsay', `list\_cowsay\_styles'] \\
+``Query": ``I'm writing a blog post on ASCII art and need to include some examples. Can you generate ASCII art for the following strings: `ASCII', `art', and `gallery'? You can first retrieve available figlet styles and then generate ASCII art for the strings using the styles.", ``related\_apis": ['figlet', `list figlet styles'] \\
+``Query": ``Greetings! I'm putting together a quirky slideshow about our furry friends and need your help to sprinkle some ASCII art goodness. Could you kindly fetch me the catalog of ASCII art styles available for animals? Also, I'm particularly keen on featuring ASCII art for creatures like pandas, cows, elephants, and penguins. And if they could say something cute like `Hello!' or `Hugs!' in the ASCII art, that would be purr-fect!", ``related\_apis": ['figlet', `list figlet styles', `cowsay', `list\_cowsay\_styles'] \\
+
+For example, with tool ['Entrepreneur Mindset Collection', `Random Words', `thedigitalnewsfeederapi', `Chemical Elements'], the given api\_names are (tool `Entrepreneur Mindset Collection')'Random Quote in JSON format', (tool `Random Words')'Get multiple random words', (tool `Random Words')'Get a random word', (tool `thedigitalnewsfeederapi')'getting specific cricket articles', (tool `thedigitalnewsfeederapi')'Getting Cricket Articles', (tool `thedigitalnewsfeederapi')'getting specific news articles', (tool `thedigitalnewsfeederapi')'Getting News Articles', (tool `thedigitalnewsfeederapi')'getting all news articles', (tool `Chemical Elements')'Get All Chemical Elements'. \\
+Some sample queries and related\_apis would be: \\
+``Query": ``For my best friend's surprise birthday party, I require inspiration for party games and decorations. Kindly suggest some random words that can serve as themes for the party. Furthermore, I'm interested in gathering news articles about the latest party trends to ensure a modern celebration. Also, I would appreciate details about the local hotels in my area for accommodation options. Your assistance is greatly appreciated.", ``related\_apis": [['Random Words', `Get multiple random words'], ['thedigitalnewsfeederapi', `Getting News Articles'], ['thedigitalnewsfeederapi', `Getting all news articles']] \\
+``Query": ``In the midst of organizing a team-building event for my esteemed company, I eagerly seek your valued input for invigorating activities. Might I kindly request a collection of random quotes that encapsulate the essence of teamwork and motivation? Additionally, I am keen on exploring news articles that showcase triumphant team-building events, as they serve as a wellspring of inspiration.", ``related\_apis": [['Entrepreneur Mindset Collection', `Random Quote in JSON format'], ['thedigitalnewsfeederapi', `Getting News Articles']]
+``Query": ``I need specific cricket articles that discuss the health benefits of sports for my research paper on exercise. I also want to know which chemical elements are associated with exercising, like increased iron (Fe) and its impact on bone marrow.", ``related\_apis": [['thedigitalnewsfeederapi', `getting specific cricket articles'], ['Chemical Elements', `Get All Chemical Elements']] \\
+``Query": ``I'm starting a new business venture and I need to make a speech announcing the new dawn. Provide me some quotes and words for me to start with. I would like to gather news articles about successful entrepreneurs for inspiration.", ``related\_apis": [['Entrepreneur Mindset Collection', `Random Quote in JSON format'], ['Random Words', `Get multiple random words'], ['thedigitalnewsfeederapi', `getting specific news articles']] \\
+These are only examples to show you how to write the query. Do not use APIs listed in the above examples, but rather, use the ones listed below in the INPUT. \\
+\noindent\makebox[\linewidth]{\rule{\linewidth}{0.4pt}}
+\textit{Sampled API List} (An example)
+\begin{lstlisting}[basicstyle=\ttfamily, breaklines=true]
+{
+    "tool_description": "EntreAPI Faker is used to dynamically create mock, demo, test and sample data for your application",
+    "name": "EntreAPI Faker",
+    "api_list": [
+        {
+            "name": "Longitute",
+            "url": "https://entreapi-faker.p.rapidapi.com/address/longitude",
+            "description": "Generate a random longitude.",
+            "method": "GET",
+            "required_parameters": [],
+            "optional_parameters": [
+                {
+                    "name": "max",
+                    "type": "NUMBER",
+                    "description": "Maximum value for latitude.",
+                    "default": ""
+                },
+                {
+                    "name": "min",
+                    "type": "NUMBER",
+                    "description": "Minimum value for latitude.",
+                    "default": ""
+                },
+                {
+                    "name": "precision",
+                    "type": "NUMBER",
+                    "description": "Precision for latitude.",
+                    "default": ""
+                }
+            ],
+            "tool_name": "EntreAPI Faker",
+            "category_name": "Data"
+        },
+        {
+            "name": "Boolean",
+            "url": "https://entreapi-faker.p.rapidapi.com/datatype/boolean",
+            "description": "Randomly generate a boolean value.",
+            "method": "GET",
+            "required_parameters": [],
+            "optional_parameters": [],
+            "tool_name": "EntreAPI Faker",
+            "category_name": "Data"
+        },
+        {
+            "name": "Past",
+            "url": "https://entreapi-faker.p.rapidapi.com/date/past",
+            "description": "Randomly generate a date value in the past.",
+            "method": "GET",
+            "required_parameters": [],
+            "optional_parameters": [
+                {
+                    "name": "refDate",
+                    "type": "STRING",
+                    "description": "Starting reference date",
+                    "default": ""
+                },
+                {
+                    "name": "years",
+                    "type": "NUMBER",
+                    "description": "Number of years for the range of dates.",
+                    "default": ""
+                }
+            ],
+            "tool_name": "EntreAPI Faker",
+            "category_name": "Data"
+        },
+        {
+            "name": "Image Url",
+            "url": "https://entreapi-faker.p.rapidapi.com/image/imageUrl",
+            "description": "Randomly generate an image URL.",
+            "method": "GET",
+            "required_parameters": [],
+            "optional_parameters": [
+                {
+                    "name": "width",
+                    "type": "NUMBER",
+                    "description": "Width of the image. Default is 640.",
+                    "default": ""
+                },
+                {
+                    "name": "height",
+                    "type": "NUMBER",
+                    "description": "Height of the image. Default is 480.",
+                    "default": ""
+                },
+                {
+                    "name": "useRandomize",
+                    "type": "BOOLEAN",
+                    "description": "Add a random number parameter to the returned URL.",
+                    "default": ""
+                },
+                {
+                    "name": "category",
+                    "type": "STRING",
+                    "description": "The category for the image. Can be one: abstract, animal, avatar, business, cats, city, fashion, food, nature, nightlife, people, sports, technics, transport",
+                    "default": ""
+                }
+            ],
+            "tool_name": "EntreAPI Faker",
+            "category_name": "Data"
+        },
+        {
+            "name": "Sentence",
+            "url": "https://entreapi-faker.p.rapidapi.com/lorem/sentence",
+            "description": "Randomly generate a sentence of Lorem Ipsum.",
+            "method": "GET",
+            "required_parameters": [],
+            "optional_parameters": [
+                {
+                    "name": "wordCount",
+                    "type": "NUMBER",
+                    "description": "Number of words in the sentence.",
+                    "default": ""
+                }
+            ],
+            "tool_name": "EntreAPI Faker",
+            "category_name": "Data"
+        },
+        {
+            "name": "Gender",
+            "url": "https://entreapi-faker.p.rapidapi.com/name/gender",
+            "description": "Randomly select a gender.",
+            "method": "GET",
+            "required_parameters": [],
+            "optional_parameters": [
+                {
+                    "name": "useBinary",
+                    "type": "BOOLEAN",
+                    "description": "Use binary genders only.",
+                    "default": ""
+                }
+            ],
+            "tool_name": "EntreAPI Faker",
+            "category_name": "Data"
+        },
+        {
+            "name": "Prefix",
+            "url": "https://entreapi-faker.p.rapidapi.com/name/prefix",
+            "description": "Randomly generate a prefix (e.g., Mr., Mrs., etc.)",
+            "method": "GET",
+            "required_parameters": [],
+            "optional_parameters": [
+                {
+                    "name": "gender",
+                    "type": "STRING",
+                    "description": "Optional gender.",
+                    "default": ""
+                }
+            ],
+            "tool_name": "EntreAPI Faker",
+            "category_name": "Data"
+        },
+        {
+            "name": "Array Element",
+            "url": "https://entreapi-faker.p.rapidapi.com/random/arrayElement",
+            "description": "Randomly select an array element.",
+            "method": "GET",
+            "required_parameters": [],
+            "optional_parameters": [
+                {
+                    "name": "array",
+                    "type": "ARRAY",
+                    "description": "The list of elements to choose from. Default is [\"a\", \"b\", \"c\"].",
+                    "default": ""
+                }
+            ],
+            "tool_name": "EntreAPI Faker",
+            "category_name": "Data"
+        },
+        {
+            "name": "Number Value",
+            "url": "https://entreapi-faker.p.rapidapi.com/random/number",
+            "description": "Randomly generate a number value.",
+            "method": "GET",
+            "required_parameters": [],
+            "optional_parameters": [
+                {
+                    "name": "min",
+                    "type": "NUMBER",
+                    "description": "Minimum value.",
+                    "default": ""
+                },
+                {
+                    "name": "max",
+                    "type": "NUMBER",
+                    "description": "Maximum value.",
+                    "default": ""
+                },
+                {
+                    "name": "precision",
+                    "type": "NUMBER",
+                    "description": "Precision of the number.",
+                    "default": ""
+                }
+            ],
+            "tool_name": "EntreAPI Faker",
+            "category_name": "Data"
+        },
+        {
+            "name": "URL",
+            "url": "https://entreapi-faker.p.rapidapi.com/internet/url",
+            "description": "Randomly generate a URL.",
+            "method": "GET",
+            "required_parameters": [],
+            "optional_parameters": [],
+            "tool_name": "EntreAPI Faker",
+            "category_name": "Data"
+        }
+    ]
+}
+\end{lstlisting}
+\noindent\makebox[\linewidth]{\rule{\linewidth}{0.4pt}}
+\textit{Other Requirements:}\\
+Please produce ten queries in line with the given requirements and inputs. These ten queries should display a diverse range of sentence structures: some queries should be in the form of imperative sentences, others declarative, and yet others interrogative. Equally, they should encompass a variety of tones, with some being polite, others straightforward. Ensure they vary in length and contain a wide range of subjects: myself, my friends, family, and company. Aim to include a number of engaging queries as long as they relate to API calls. Keep in mind that for each query, invoking just one API won't suffice; each query should call upon two to five APIs. However, try to avoid explicitly specifying which API to employ in the query. Each query should consist of a minimum of thirty words.
+\noindent\makebox[\linewidth]{\rule{\linewidth}{0.4pt}}
+
+
+\subsection{Prompts for Solution Path Annotation}
+\label{sec:answer_prompt}
+We use the following prompt when searching for the solution path. When expanding the child nodes, we use diversity\_user\_prompt, showing the information of previous child nodes.
+
+\begin{lstlisting}[basicstyle=\ttfamily, breaklines=true]
+------------------------------------------------------------------
+system_prompt: 
+You are Tool-GPT, capable of utilizing numerous tools and functions to complete the given task. 
+1.First, I will provide you with the task description, and your task will commence. 
+2.At each step, you need to analyze the current status and determine the next course of action by executing a function call. 
+3.Following the call, you will receive the result, transitioning you to a new state. Subsequently, you will analyze your current status, make decisions about the next steps, and repeat this process. 
+4.After several iterations of thought and function calls, you will ultimately complete the task and provide your final answer. 
+Remember: 
+1.The state changes are irreversible, and you cannot return to a previous state.
+2.Keep your thoughts concise, limiting them to a maximum of five sentences.
+3.You can make multiple attempts. If you plan to try different conditions continuously, perform one condition per try.
+4.If you believe you have gathered enough information, call the function "Finish: give_answer" to provide your answer for the task.
+5.If you feel unable to handle the task from this step, call the function "Finish: give_up_and_restart".
+Let's Begin!
+Task description: {task_description}
+---------------------------------------------------------
+diversity_user_prompt: 
+This is not the first time you try this task, all previous trails failed.
+Before you generate your thought for this state, I will first show you your previous actions for this state, and then you must generate actions that is different from all of them. Here are some previous actions candidates:
+{previous_candidate}
+Remember you are now in the intermediate state of a trail, you will first analyze the now state and previous action candidates, then make actions that is different from all the previous.
+---------------------------------------------------------
+Finish_function_description: 
+{
+    "name": "Finish",
+    "description": "If you believe that you have obtained a result that can answer the task, please call this function to provide the final answer. Alternatively, if you recognize that you are unable to proceed with the task in the current state, call this function to restart. Remember: you must ALWAYS call this function at the end of your attempt, and the only part that will be shown to the user is the final answer, so it should contain sufficient information.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "return_type": {
+                "type": "string",
+                "enum": ["give_answer","give_up_and_restart"],
+            },
+            "final_answer": {
+                "type": "string",
+                "description": "The final answer you want to give the user. You should have this field if \"return_type\"==\"give_answer\"",
+            }
+        },
+        "required": ["return_type"],
+    }
+}
+\end{lstlisting}

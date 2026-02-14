@@ -1,0 +1,55 @@
+I have a task related to machine learning:
+Build a universal Medical Model-to-Skill wrapping pipeline and an LLM-powered Medical Agent that can discover, select, and compose Medical Skills for complex clinical workflows, targeting MICCAI 2026.
+
+Core Idea: Design a generic wrapping framework that can automatically convert any medical AI model (segmentation, classification, detection, registration, report generation, VQA, etc.) into a standardized Medical Skill using the Model Context Protocol (MCP) as the interoperability layer. The pipeline takes a medical model (with its code, weights, and API documentation) as input and produces a self-describing MCP-compatible Medical Skill as output — complete with structured input/output schemas, medical metadata (modality, anatomy, task type), safety constraints, and validation checks.
+
+Key Components:
+(1) Med-SkillGen: A universal wrapping pipeline (inspired by TxAgent's ToolGen) that auto-generates MCP-compatible Medical Skills from existing medical AI models. This includes: (a) automatic API analysis and schema extraction from model code/documentation, (b) medical metadata annotation (imaging modality, anatomical region, clinical task type, safety level), (c) standardized I/O interface generation following MCP tool specification, and (d) validation test generation to ensure skill correctness.
+(2) Med-SkillLib: A curated Medical Skills library built by applying Med-SkillGen to existing open-source medical models (MedSAM, MedSAM2, CheXagent, etc.) and existing Medical MCP servers (DICOM-MCP, healthcare-mcp-public, medical-calculator-MCP, etc.). The library organizes skills hierarchically by modality, anatomy, and task type.
+(3) Med-Agent: An LLM-powered agent that uses active skill discovery (inspired by MCP-Zero) to dynamically retrieve and compose Medical Skills from Med-SkillLib for multi-step clinical workflows. The agent performs task planning, skill selection via hierarchical semantic routing, execution graph construction, and result integration.
+
+The key innovation bridges two worlds: (a) general-purpose agent skill frameworks (ToolLLM, AgentSkillOS, SkillRL, MCP-Zero) that lack medical domain expertise, and (b) isolated medical AI tools that lack interoperability and composability. By using MCP as the universal protocol, any medical model can be 'plugged in' as a skill, enabling the agent to solve complex clinical scenarios through dynamic skill composition.
+
+This aligns with MICCAI 2026's theme 'From Algorithms to Clinical Translation' by making individual medical AI algorithms composable and deployable through a unified agent framework.
+
+And a list of papers for your reference:
+1. [Rank 1, methodology] SkillRL: Skill-Based Reinforcement Learning for LLM Agents with Automatic Skill Discovery (arXiv:2602.08234) — Automatic skill abstraction and hierarchical SKILLBANK organization via recursive RL evolution.
+2. [Rank 2, methodology] ToolLLM: Facilitating Large Language Models to Master 16000+ Real-world APIs (arXiv:2307.16789, ICLR'24 Spotlight) — Tool-use framework with ToolBench, neural API retriever (ToolRetriever), and DFSDT reasoning.
+3. [Rank 3, methodology] AgentSkillOS: Leveraging, Managing, and Scaling the Agent Skill Ecosystem — 90K+ skills via skill tree construction, LLM-guided retrieval, and DAG-based orchestration.
+4. [Rank 4, evaluation] SkillsBench: Evaluating How Agent Skills Improve AI Agent Performance — First benchmark for agent skill effectiveness across 11 domains. +51.9pp in healthcare.
+5. [Rank 5, methodology] TxAgent: An AI Agent for Therapeutic Reasoning Across a Universe of Tools (arXiv:2503.10970) — ToolUniverse (211 tools), ToolGen (auto tool construction from API docs), ToolRAG (adaptive retrieval). 92.1% accuracy.
+6. [Rank 6, methodology] MCP-Zero: Active Tool Discovery for Autonomous LLM Agents (arXiv:2506.01056) — Active MCP-based tool discovery with hierarchical semantic routing across 2797 tools. 98% token reduction.
+7. [Rank 7, methodology] HuggingGPT: Solving AI Tasks with ChatGPT and its Friends in Hugging Face (arXiv:2303.17580) — LLM-as-controller wrapping ML models: task planning → model selection → execution → response.
+8. [Rank 8, methodology] MedAgentGym: Training LLM Agents for Code-Based Medical Reasoning at Scale (ICLR 2026) — Medical agent training with SFT and DPO for code-based reasoning.
+9. [Rank 9, application] MedSAM-Agent: Empowering Interactive Medical Image Segmentation with Multi-turn Agentic RL — Agentic interaction with MedSAM via multi-turn RL.
+
+I have carefully gone through these papers' github repositories and found download some of them in my local machine, with the following information:
+Reference codebases selected:
+- aiming-lab/SkillRL (276★) — Skill discovery and hierarchical organization via RL
+- OpenBMB/ToolBench (5524★) — ICLR'24 spotlight, tool learning platform with ToolRetriever and DFSDT
+- ynulihao/AgentSkillOS (128★) — 90K+ skills via skill retrieval and DAG orchestration
+- mims-harvard/TxAgent (596★) — Therapeutic agent with ToolGen (auto tool construction) and 211 biomedical tools
+- xfey/MCP-Zero (446★) — Active MCP-based tool discovery with hierarchical semantic routing
+- microsoft/JARVIS (23600+★) — LLM-as-controller connecting to expert models (HuggingGPT)
+- wshi83/MedAgentGym (78★) — ICLR'26, medical agent training with code-based reasoning
+- CUHK-AIM-Group/MedSAM-Agent (30★) — Agentic RL for interactive medical image segmentation
+- bowang-lab/MedSAM (4071★) — Segment Anything in Medical Images
+- bowang-lab/MedSAM2 (542★) — 3D medical image and video segmentation
+- Stanford-AIMI/CheXagent (213★) — Foundation model for chest X-ray interpretation
+- Cicatriiz/healthcare-mcp-public (87★) — MCP server with FDA, PubMed, DICOM, ICD-10, medical calculator
+- ChristianHinge/dicom-mcp — DICOM MCP server for PACS interactions
+- sunanhe/awesome-medical-mcp-servers — Collection of Medical MCP servers
+
+And I have also downloaded the corresponding paper (LaTeX sources, markdown, txt), with the following information:
+Downloaded 2/4 papers successfully.
+
+1. SkillRL (arXiv:2602.08234) — SUCCESS: PDF (13MB) + LaTeX source extracted (ICML 2026 submission)
+2. ToolLLM (arXiv:2307.16789) — SUCCESS: PDF (2MB) + LaTeX source extracted (ICLR'24 spotlight)
+3. AgentSkillOS — NOT FOUND on arXiv (searched with multiple queries)
+4. SkillsBench — NOT FOUND on arXiv (searched with multiple queries)
+
+Papers saved to: Ideation/references/papers/{arxiv_id}/
+
+Your task is to thoroughly review research papers and generate innovative ideas for the given task.
+
+Note that the math formula should be as complete as possible.

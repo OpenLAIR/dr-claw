@@ -1,0 +1,237 @@
+\begin{thebibliography}{46}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Anil et~al.(2023)Anil, Dai, Firat, Johnson, Lepikhin, Passos, Shakeri, Taropa, Bailey, Chen, et~al.]{anil2023palm}
+Rohan Anil, Andrew~M Dai, Orhan Firat, Melvin Johnson, Dmitry Lepikhin, Alexandre Passos, Siamak Shakeri, Emanuel Taropa, Paige Bailey, Zhifeng Chen, et~al.
+\newblock Palm 2 technical report.
+\newblock \emph{arXiv preprint arXiv:2305.10403}, 2023.
+
+\bibitem[Anonymous(2023)]{iclr2023customizable}
+Anonymous.
+\newblock Customizable combination of parameter-efficient modules for multi-task learning.
+\newblock In \emph{Submitted to The Twelfth International Conference on Learning Representations}, 2023.
+\newblock URL \url{https://openreview.net/forum?id=G1Hlubz1fR}.
+\newblock under review.
+
+\bibitem[Arora \& Arora(2023)Arora and Arora]{arora2023promise}
+Anmol Arora and Ananya Arora.
+\newblock The promise of large language models in health care.
+\newblock \emph{The Lancet}, 401\penalty0 (10377):\penalty0 641, 2023.
+
+\bibitem[Brown et~al.(2020)Brown, Mann, Ryder, Subbiah, Kaplan, Dhariwal, Neelakantan, Shyam, Sastry, Askell, et~al.]{brown2020language}
+Tom Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared~D Kaplan, Prafulla Dhariwal, Arvind Neelakantan, Pranav Shyam, Girish Sastry, Amanda Askell, et~al.
+\newblock Language models are few-shot learners.
+\newblock \emph{Advances in neural information processing systems}, 33:\penalty0 1877--1901, 2020.
+
+\bibitem[Canese \& Weis(2013)Canese and Weis]{canese2013pubmed}
+Kathi Canese and Sarah Weis.
+\newblock Pubmed: the bibliographic database.
+\newblock \emph{The NCBI handbook}, 2\penalty0 (1), 2013.
+
+\bibitem[Chowdhery et~al.(2022)Chowdhery, Narang, Devlin, Bosma, Mishra, Roberts, Barham, Chung, Sutton, Gehrmann, et~al.]{chowdhery2022palm}
+Aakanksha Chowdhery, Sharan Narang, Jacob Devlin, Maarten Bosma, Gaurav Mishra, Adam Roberts, Paul Barham, Hyung~Won Chung, Charles Sutton, Sebastian Gehrmann, et~al.
+\newblock Palm: Scaling language modeling with pathways.
+\newblock \emph{arXiv preprint arXiv:2204.02311}, 2022.
+
+\bibitem[Chung et~al.(2022)Chung, Hou, Longpre, Zoph, Tay, Fedus, Li, Wang, Dehghani, Brahma, et~al.]{chung2022scaling}
+Hyung~Won Chung, Le~Hou, Shayne Longpre, Barret Zoph, Yi~Tay, William Fedus, Yunxuan Li, Xuezhi Wang, Mostafa Dehghani, Siddhartha Brahma, et~al.
+\newblock Scaling instruction-finetuned language models.
+\newblock \emph{arXiv preprint arXiv:2210.11416}, 2022.
+
+\bibitem[Dhuliawala et~al.(2023)Dhuliawala, Komeili, Xu, Raileanu, Li, Celikyilmaz, and Weston]{dhuliawala2023chain}
+Shehzaad Dhuliawala, Mojtaba Komeili, Jing Xu, Roberta Raileanu, Xian Li, Asli Celikyilmaz, and Jason Weston.
+\newblock Chain-of-verification reduces hallucination in large language models.
+\newblock \emph{arXiv preprint arXiv:2309.11495}, 2023.
+
+\bibitem[Du et~al.(2022)Du, Qian, Liu, Ding, Qiu, Yang, and Tang]{DBLP:conf/acl/DuQLDQY022}
+Zhengxiao Du, Yujie Qian, Xiao Liu, Ming Ding, Jiezhong Qiu, Zhilin Yang, and Jie Tang.
+\newblock {GLM:} general language model pretraining with autoregressive blank infilling.
+\newblock In Smaranda Muresan, Preslav Nakov, and Aline Villavicencio (eds.), \emph{Proceedings of the 60th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers), {ACL} 2022, Dublin, Ireland, May 22-27, 2022}, pp.\  320--335. Association for Computational Linguistics, 2022.
+\newblock \doi{10.18653/v1/2022.acl-long.26}.
+\newblock URL \url{https://doi.org/10.18653/v1/2022.acl-long.26}.
+
+\bibitem[Gao et~al.(2023)Gao, Deng, Niu, Rong, Chen, Gong, Zhang, Xiao, Li, Cao, et~al.]{gao2023ophglm}
+Weihao Gao, Zhuo Deng, Zhiyuan Niu, Fuju Rong, Chucheng Chen, Zheng Gong, Wenze Zhang, Daimin Xiao, Fang Li, Zhenjie Cao, et~al.
+\newblock Ophglm: Training an ophthalmology large language-and-vision assistant based on instructions and dialogue.
+\newblock \emph{arXiv preprint arXiv:2306.12174}, 2023.
+
+\bibitem[He et~al.(2023)He, Peng, Lu, Wang, Mei, Liu, Xu, Awadalla, Shi, Zhu, Xiong, Zeng, Gao, and Huang]{he2023zcode}
+Pengcheng He, Baolin Peng, Liyang Lu, Song Wang, Jie Mei, Yang Liu, Ruochen Xu, Hany~Hassan Awadalla, Yu~Shi, Chenguang Zhu, Wayne Xiong, Michael Zeng, Jianfeng Gao, and Xuedong Huang.
+\newblock Z-code++: A pre-trained language model optimized for abstractive summarization, 2023.
+
+\bibitem[Hendrycks et~al.(2020)Hendrycks, Burns, Basart, Zou, Mazeika, Song, and Steinhardt]{hendrycks2020measuring}
+Dan Hendrycks, Collin Burns, Steven Basart, Andy Zou, Mantas Mazeika, Dawn Song, and Jacob Steinhardt.
+\newblock Measuring massive multitask language understanding.
+\newblock \emph{arXiv preprint arXiv:2009.03300}, 2020.
+
+\bibitem[Hoffmann et~al.(2022)Hoffmann, Borgeaud, Mensch, Buchatskaya, Cai, Rutherford, Casas, Hendricks, Welbl, Clark, et~al.]{hoffmann2022training}
+Jordan Hoffmann, Sebastian Borgeaud, Arthur Mensch, Elena Buchatskaya, Trevor Cai, Eliza Rutherford, Diego de~Las Casas, Lisa~Anne Hendricks, Johannes Welbl, Aidan Clark, et~al.
+\newblock Training compute-optimal large language models.
+\newblock \emph{arXiv preprint arXiv:2203.15556}, 2022.
+
+\bibitem[Hu et~al.(2022)Hu, Shen, Wallis, Allen-Zhu, Li, Wang, Wang, and Chen]{hu2022lora}
+Edward~J Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean Wang, Lu~Wang, and Weizhu Chen.
+\newblock Lo{RA}: Low-rank adaptation of large language models.
+\newblock In \emph{International Conference on Learning Representations}, 2022.
+\newblock URL \url{https://openreview.net/forum?id=nZeVKeeFYf9}.
+
+\bibitem[Jin et~al.(2021)Jin, Pan, Oufattole, Weng, Fang, and Szolovits]{jin2021disease}
+Di~Jin, Eileen Pan, Nassim Oufattole, Wei-Hung Weng, Hanyi Fang, and Peter Szolovits.
+\newblock What disease does this patient have a large-scale open domain question answering dataset from medical exams?
+\newblock \emph{Applied Sciences}, 11\penalty0 (14):\penalty0 6421, 2021.
+
+\bibitem[Jin et~al.(2019)Jin, Dhingra, Liu, Cohen, and Lu]{jin-etal-2019-pubmedqa}
+Qiao Jin, Bhuwan Dhingra, Zhengping Liu, William Cohen, and Xinghua Lu.
+\newblock {P}ub{M}ed{QA}: A dataset for biomedical research question answering.
+\newblock In \emph{Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing and the 9th International Joint Conference on Natural Language Processing (EMNLP-IJCNLP)}, pp.\  2567--2577, Hong Kong, China, November 2019. Association for Computational Linguistics.
+\newblock \doi{10.18653/v1/D19-1259}.
+\newblock URL \url{https://aclanthology.org/D19-1259}.
+
+\bibitem[Kamble \& Alshikh(2023)Kamble and Alshikh]{kamble2023palmyra}
+Kiran Kamble and Waseem Alshikh.
+\newblock Palmyra-med: Instruction-based fine-tuning of llms enhancing medical domain performance, 2023.
+
+\bibitem[Kaplan et~al.(2020)Kaplan, McCandlish, Henighan, Brown, Chess, Child, Gray, Radford, Wu, and Amodei]{kaplan2020scaling}
+Jared Kaplan, Sam McCandlish, Tom Henighan, Tom~B Brown, Benjamin Chess, Rewon Child, Scott Gray, Alec Radford, Jeffrey Wu, and Dario Amodei.
+\newblock Scaling laws for neural language models.
+\newblock \emph{arXiv preprint arXiv:2001.08361}, 2020.
+
+\bibitem[Kenton \& Toutanova(2019)Kenton and Toutanova]{kenton2019bert}
+Jacob Devlin Ming-Wei~Chang Kenton and Lee~Kristina Toutanova.
+\newblock Bert: Pre-training of deep bidirectional transformers for language understanding.
+\newblock In \emph{Proceedings of NAACL-HLT}, pp.\  4171--4186, 2019.
+
+\bibitem[Korthikanti et~al.(2023)Korthikanti, Casper, Lym, McAfee, Andersch, Shoeybi, and Catanzaro]{korthikanti2023reducing}
+Vijay~Anand Korthikanti, Jared Casper, Sangkug Lym, Lawrence McAfee, Michael Andersch, Mohammad Shoeybi, and Bryan Catanzaro.
+\newblock Reducing activation recomputation in large transformer models.
+\newblock \emph{Proceedings of Machine Learning and Systems}, 5, 2023.
+
+\bibitem[Lakkaraju et~al.(2022)Lakkaraju, Slack, Chen, Tan, and Singh]{lakkaraju2022rethinking}
+Himabindu Lakkaraju, Dylan Slack, Yuxin Chen, Chenhao Tan, and Sameer Singh.
+\newblock Rethinking explainability as a dialogue: A practitioner's perspective.
+\newblock \emph{arXiv preprint arXiv:2202.01875}, 2022.
+
+\bibitem[Li et~al.(2023)Li, Wang, Wu, Zhang, Xu, Fu, Tiwari, Wan, and Wang]{li2023huatuo26m}
+Jianquan Li, Xidong Wang, Xiangbo Wu, Zhiyi Zhang, Xiaolong Xu, Jie Fu, Prayag Tiwari, Xiang Wan, and Benyou Wang.
+\newblock Huatuo-26m, a large-scale chinese medical qa dataset, 2023.
+
+\bibitem[Liang et~al.(2022)Liang, Bommasani, Lee, Tsipras, Soylu, Yasunaga, Zhang, Narayanan, Wu, Kumar, et~al.]{liang2022holistic}
+Percy Liang, Rishi Bommasani, Tony Lee, Dimitris Tsipras, Dilara Soylu, Michihiro Yasunaga, Yian Zhang, Deepak Narayanan, Yuhuai Wu, Ananya Kumar, et~al.
+\newblock Holistic evaluation of language models.
+\newblock \emph{arXiv preprint arXiv:2211.09110}, 2022.
+
+\bibitem[Liu et~al.(2023)Liu, Yang, Shen, Hu, Zhang, Gu, and Zhang]{liu2023thinkinmemory}
+Lei Liu, Xiaoyan Yang, Yue Shen, Binbin Hu, Zhiqiang Zhang, Jinjie Gu, and Guannan Zhang.
+\newblock Think-in-memory: Recalling and post-thinking enable llms with long-term memory.
+\newblock \emph{arXiv preprint arXiv:2311.08719}, 2023.
+\newblock URL \url{https://arxiv.org/abs/2311.08719}.
+
+\bibitem[Liévin et~al.(2023)Liévin, Hother, and Winther]{liévin2023large}
+Valentin Liévin, Christoffer~Egeberg Hother, and Ole Winther.
+\newblock Can large language models reason about medical questions?, 2023.
+
+\bibitem[Loshchilov \& Hutter(2016)Loshchilov and Hutter]{loshchilov2016sgdr}
+Ilya Loshchilov and Frank Hutter.
+\newblock Sgdr: Stochastic gradient descent with warm restarts.
+\newblock \emph{arXiv preprint arXiv:1608.03983}, 2016.
+
+\bibitem[Loshchilov \& Hutter(2017)Loshchilov and Hutter]{loshchilov2017decoupled}
+Ilya Loshchilov and Frank Hutter.
+\newblock Decoupled weight decay regularization.
+\newblock \emph{arXiv preprint arXiv:1711.05101}, 2017.
+
+\bibitem[Mao et~al.(2023)Mao, Chen, Zhang, Guerin, and Cambria]{mao2023gpteval}
+Rui Mao, Guanyi Chen, Xulang Zhang, Frank Guerin, and Erik Cambria.
+\newblock Gpteval: A survey on assessments of chatgpt and gpt-4.
+\newblock \emph{arXiv preprint arXiv:2308.12488}, 2023.
+
+\bibitem[Milano et~al.(2023)Milano, McGrane, and Leonelli]{milano2023large}
+Silvia Milano, Joshua~A McGrane, and Sabina Leonelli.
+\newblock Large language models challenge the future of higher education.
+\newblock \emph{Nature Machine Intelligence}, 5\penalty0 (4):\penalty0 333--334, 2023.
+
+\bibitem[Nori et~al.(2023)Nori, King, McKinney, Carignan, and Horvitz]{nori2023capabilities}
+Harsha Nori, Nicholas King, Scott~Mayer McKinney, Dean Carignan, and Eric Horvitz.
+\newblock Capabilities of gpt-4 on medical challenge problems, 2023.
+
+\bibitem[OpenAI(2022)]{chatgpt}
+OpenAI.
+\newblock Chatgpt.
+\newblock 2022.
+\newblock URL \url{https://chat.openai.com/chat.}
+
+\bibitem[OpenAI(2023)]{openai2023gpt4}
+OpenAI.
+\newblock Gpt-4 technical report, 2023.
+
+\bibitem[Pal et~al.(2022)Pal, Umapathi, and Sankarasubbu]{pal2022medmcqa}
+Ankit Pal, Logesh~Kumar Umapathi, and Malaikannan Sankarasubbu.
+\newblock Medmcqa: A large-scale multi-subject multi-choice dataset for medical domain question answering.
+\newblock In \emph{Conference on Health, Inference, and Learning}, pp.\  248--260. PMLR, 2022.
+
+\bibitem[Peng et~al.(2023)Peng, Yang, Chen, Smith, PourNejatian, Costa, Martin, Flores, Zhang, Magoc, Lipori, Mitchell, Ospina, Ahmed, Hogan, Shenkman, Guo, Bian, and Wu]{peng2023study}
+Cheng Peng, Xi~Yang, Aokun Chen, Kaleb~E Smith, Nima PourNejatian, Anthony~B Costa, Cheryl Martin, Mona~G Flores, Ying Zhang, Tanja Magoc, Gloria Lipori, Duane~A Mitchell, Naykky~S Ospina, Mustafa~M Ahmed, William~R Hogan, Elizabeth~A Shenkman, Yi~Guo, Jiang Bian, and Yonghui Wu.
+\newblock A study of generative large language model for medical research and healthcare, 2023.
+
+\bibitem[Schaekermann et~al.(2020)Schaekermann, Cai, Huang, and Sayres]{schaekermann2020expert}
+Mike Schaekermann, Carrie~J Cai, Abigail~E Huang, and Rory Sayres.
+\newblock Expert discussions improve comprehension of difficult cases in medical image assessment.
+\newblock In \emph{Proceedings of the 2020 CHI conference on human factors in computing systems}, pp.\  1--13, 2020.
+
+\bibitem[Singhal et~al.(2022)Singhal, Azizi, Tu, Mahdavi, Wei, Chung, Scales, Tanwani, Cole-Lewis, Pfohl, Payne, Seneviratne, Gamble, Kelly, Scharli, Chowdhery, Mansfield, y~Arcas, Webster, Corrado, Matias, Chou, Gottweis, Tomasev, Liu, Rajkomar, Barral, Semturs, Karthikesalingam, and Natarajan]{singhal2022large}
+Karan Singhal, Shekoofeh Azizi, Tao Tu, S.~Sara Mahdavi, Jason Wei, Hyung~Won Chung, Nathan Scales, Ajay Tanwani, Heather Cole-Lewis, Stephen Pfohl, Perry Payne, Martin Seneviratne, Paul Gamble, Chris Kelly, Nathaneal Scharli, Aakanksha Chowdhery, Philip Mansfield, Blaise~Aguera y~Arcas, Dale Webster, Greg~S. Corrado, Yossi Matias, Katherine Chou, Juraj Gottweis, Nenad Tomasev, Yun Liu, Alvin Rajkomar, Joelle Barral, Christopher Semturs, Alan Karthikesalingam, and Vivek Natarajan.
+\newblock Large language models encode clinical knowledge, 2022.
+
+\bibitem[Singhal et~al.(2023)Singhal, Tu, Gottweis, Sayres, Wulczyn, Hou, Clark, Pfohl, Cole-Lewis, Neal, Schaekermann, Wang, Amin, Lachgar, Mansfield, Prakash, Green, Dominowska, y~Arcas, Tomasev, Liu, Wong, Semturs, Mahdavi, Barral, Webster, Corrado, Matias, Azizi, Karthikesalingam, and Natarajan]{singhal2023expertlevel}
+Karan Singhal, Tao Tu, Juraj Gottweis, Rory Sayres, Ellery Wulczyn, Le~Hou, Kevin Clark, Stephen Pfohl, Heather Cole-Lewis, Darlene Neal, Mike Schaekermann, Amy Wang, Mohamed Amin, Sami Lachgar, Philip Mansfield, Sushant Prakash, Bradley Green, Ewa Dominowska, Blaise~Aguera y~Arcas, Nenad Tomasev, Yun Liu, Renee Wong, Christopher Semturs, S.~Sara Mahdavi, Joelle Barral, Dale Webster, Greg~S. Corrado, Yossi Matias, Shekoofeh Azizi, Alan Karthikesalingam, and Vivek Natarajan.
+\newblock Towards expert-level medical question answering with large language models, 2023.
+
+\bibitem[Taylor et~al.(2022)Taylor, Kardas, Cucurull, Scialom, Hartshorn, Saravia, Poulton, Kerkez, and Stojnic]{taylor2022galactica}
+Ross Taylor, Marcin Kardas, Guillem Cucurull, Thomas Scialom, Anthony Hartshorn, Elvis Saravia, Andrew Poulton, Viktor Kerkez, and Robert Stojnic.
+\newblock Galactica: A large language model for science, 2022.
+
+\bibitem[Touvron et~al.()Touvron, Lavril, Izacard, Martinet, Lachaux, Lacroix, Rozi{\`e}re, Goyal, Hambro, Azhar, et~al.]{touvron2302llama}
+Hugo Touvron, Thibaut Lavril, Gautier Izacard, Xavier Martinet, Marie-Anne Lachaux, Timoth{\'e}e Lacroix, Baptiste Rozi{\`e}re, Naman Goyal, Eric Hambro, Faisal Azhar, et~al.
+\newblock Llama: open and efficient foundation language models, 2023.
+\newblock \emph{URL https://arxiv. org/abs/2302.13971}.
+
+\bibitem[Vaswani et~al.(2017)Vaswani, Shazeer, Parmar, Uszkoreit, Jones, Gomez, Kaiser, and Polosukhin]{vaswani2017attention}
+Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan~N Gomez, {\L}ukasz Kaiser, and Illia Polosukhin.
+\newblock Attention is all you need.
+\newblock \emph{Advances in neural information processing systems}, 30, 2017.
+
+\bibitem[Wei et~al.(2022)Wei, Wang, Schuurmans, Bosma, Xia, Chi, Le, Zhou, et~al.]{wei2022chain}
+Jason Wei, Xuezhi Wang, Dale Schuurmans, Maarten Bosma, Fei Xia, Ed~Chi, Quoc~V Le, Denny Zhou, et~al.
+\newblock Chain-of-thought prompting elicits reasoning in large language models.
+\newblock \emph{Advances in Neural Information Processing Systems}, 35:\penalty0 24824--24837, 2022.
+
+\bibitem[Yang et~al.(2023)Yang, Liu, and Wang]{yang2023fingpt}
+Hongyang Yang, Xiao-Yang Liu, and Christina~Dan Wang.
+\newblock Fingpt: Open-source financial large language models.
+\newblock \emph{arXiv preprint arXiv:2306.06031}, 2023.
+
+\bibitem[Yim et~al.(2020)Yim, Chopra, Spitz, Winkens, Obika, Kelly, Askham, Lukic, Huemer, Fasler, et~al.]{yim2020predicting}
+Jason Yim, Reena Chopra, Terry Spitz, Jim Winkens, Annette Obika, Christopher Kelly, Harry Askham, Marko Lukic, Josef Huemer, Katrin Fasler, et~al.
+\newblock Predicting conversion to wet age-related macular degeneration using deep learning.
+\newblock \emph{Nature Medicine}, 26\penalty0 (6):\penalty0 892--899, 2020.
+
+\bibitem[Zhang et~al.(2023)Zhang, Chen, Jiang, Yu, Chen, Li, Chen, Wu, Zhang, Xiao, et~al.]{zhang2023huatuogpt}
+Hongbo Zhang, Junying Chen, Feng Jiang, Fei Yu, Zhihong Chen, Jianquan Li, Guiming Chen, Xiangbo Wu, Zhiyi Zhang, Qingying Xiao, et~al.
+\newblock Huatuogpt, towards taming language model to be a doctor.
+\newblock \emph{arXiv preprint arXiv:2305.15075}, 2023.
+
+\bibitem[Zhang et~al.(2022)Zhang, Roller, Goyal, Artetxe, Chen, Chen, Dewan, Diab, Li, Lin, et~al.]{zhang2022opt}
+Susan Zhang, Stephen Roller, Naman Goyal, Mikel Artetxe, Moya Chen, Shuohui Chen, Christopher Dewan, Mona Diab, Xian Li, Xi~Victoria Lin, et~al.
+\newblock Opt: Open pre-trained transformer language models.
+\newblock \emph{arXiv preprint arXiv:2205.01068}, 2022.
+
+\bibitem[Zhu et~al.(2023)Zhu, Wang, Zheng, Chen, and Tang]{zhu2023promptcblue}
+Wei Zhu, Xiaoling Wang, Huanran Zheng, Mosha Chen, and Buzhou Tang.
+\newblock Promptcblue: A chinese prompt tuning benchmark for the medical domain.
+\newblock \emph{arXiv preprint arXiv:2310.14151}, 2023.
+
+\end{thebibliography}

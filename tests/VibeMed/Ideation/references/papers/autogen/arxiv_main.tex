@@ -1,0 +1,246 @@
+
+\documentclass{article} % For LaTeX2e
+%\usepackage{arxiv,times}
+\usepackage[preprint]{neurips_2023}
+%\usepackage[preprint]{natbib}
+% Optional math commands from https://github.com/goodfeli/dlbook_notation.
+% \input{math_commands.tex}
+
+\usepackage{hyperref}
+\hypersetup{  
+    hidelinks  
+}  
+\usepackage{url}
+
+\usepackage{listings}
+\usepackage{xcolor} % for custom colors
+\usepackage{fontawesome}
+% Settings for the listings package
+\lstset{
+    language=Python,                     % Set your language
+    basicstyle=\small\ttfamily,         % Set your preferred font style
+    numbers=right,                       % Line numbers on the left
+    stepnumber=1,                       % Increment of line numbers
+    numbersep=8pt,                      % How far the line-numbers are from the code
+    tabsize=4,                          % Tab size
+    extendedchars=true,                 
+    breaklines=true,                    % Sets automatic line breaking
+    keywordstyle=\color[rgb]{0,0,1},
+    stringstyle=\color[rgb]{0.5,0,0.5},
+    commentstyle=\color[rgb]{0,0.5,0},
+    rulecolor=\color[rgb]{0.5,0.5,0.5},
+    xleftmargin=17pt,
+    framexleftmargin=17pt,
+    framexrightmargin=5pt,
+    framexbottommargin=4pt,
+    showstringspaces=false,             % No special string spaces
+    linewidth=0.8\textwidth, 
+}
+
+\newcommand{\circled}[1]{\tikz[baseline=(char.base)]{ \node[shape=circle,draw,inner sep=2pt] (char) {\scriptsize 
+ #1};}}
+\newcommand{\shadeCircled}[1]{\tikz[baseline=(char.base)]{ \node[shape=circle,draw,fill=black,inner sep=2pt,text=white] (char) {\scriptsize  #1};}}
+
+\usepackage{pgfplots, pgfplotstable}
+\usepackage{tikz}
+%\usepackage{dsfont}
+\usetikzlibrary{arrows,positioning}
+\usetikzlibrary{external}
+\usetikzlibrary{ calc, matrix, patterns, patterns.meta }
+\usetikzlibrary{shapes,arrows, fit, tikzmark}
+\usetikzlibrary{calc}
+\usetikzlibrary{arrows}
+\usetikzlibrary{decorations.pathreplacing}
+
+\tikzexternalize[prefix=tikz/]
+% \usetikzlibrary{ calc, matrix }
+\usetikzlibrary{ calc, matrix, patterns, patterns.meta }
+\definecolor{msdarkblue}{RGB}{36,58,94}
+\definecolor{msblue}{RGB}{0,120,215}
+\definecolor{msgreen}{RGB}{16,124,16}
+\definecolor{msred}{RGB}{216,59,1}
+\definecolor{purple}{RGB}{128,0,128}
+\definecolor{msgray}{HTML}{DFDFDF}
+\definecolor{Emerald}{HTML}{00A99D}
+\newcommand{\cmark}{\ding{51}}%
+\newcommand{\xmark}{\ding{55}}%
+
+\usepackage{natbib}
+\usepackage{booktabs}
+\usepackage{array}
+% Useful packages
+\usepackage{amssymb, amsthm}
+\usepackage{mathtools}
+\usepackage{tabularx} % for 'tabularx' environment and 'X' column type
+\usepackage{amsmath}
+\usepackage{bm,bbm}
+\usepackage{graphicx}
+% \usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{xspace}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{multirow}
+\usepackage{cancel}
+\usepackage[normalem]{ulem}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{amssymb}% http://ctan.org/pkg/amssymb
+\usepackage{pifont}% http://ctan.org/pkg/pifont
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\tiny,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\newcolumntype{P}[1]{>{\centering\arraybackslash}p{#1}}
+
+
+\usepackage{letltxmacro}
+\LetLtxMacro{\originaleqref}{\eqref}
+\renewcommand{\eqref}{Eq.\originaleqref}
+
+
+\newcommand{\ResponsiveAgent}{{\texttt{ConversableAgent}}\xspace}
+\newcommand{\UserProxyAgent}{{\texttt{UserProxyAgent}}\xspace}
+\newcommand{\AssistantAgent}{{\texttt{AssistantAgent}}\xspace}
+\newcommand{\AutogenAgent}{{\texttt{Autogen}}\xspace}
+\newcommand{\AgentChat}{{\texttt{AgentChat}}\xspace}
+\newcommand{\AutogenChat}{{\texttt{AgentChat}}\xspace}
+\newcommand{\ExecutionAgent}{{\texttt{ExecutionAgent}}\xspace}
+\newcommand{\RetrieveAssistantAgent}{{\texttt{RetrieveAssistantAgent}}\xspace}
+\newcommand{\RetrieveUserProxyAgent}{{\texttt{RetrieveUserProxyAgent}}\xspace}
+
+\newcommand{\groupchatmanager}{\texttt{GroupChatManager}\xspace}
+
+\newcommand{\AMath}{{\emph{A1: Math problem solving}}\xspace}
+\newcommand{\AOptiGuide}{{\emph{A2: Multi-agent coding}}\xspace}
+\newcommand{\AMiniWob}{{\emph{A3: Online decision making}}\xspace}
+\newcommand{\ARetrieval}{{\emph{A4: Retrieval-augmented chat}}\xspace}
+\newcommand{\AGroupchat}{{\emph{A5: Dynamic group chat}}\xspace}
+\newcommand{\AConvChess}{{\emph{A6: Conversational chess}}\xspace}
+
+
+\newcommand{\concern}{\textcolor{red}{\bf [Concern]}\xspace}
+
+
+% \newcommand{\comment}[1]{}
+
+
+
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\le}{\leqslant}
+\newcommand{\libName}{\texttt{AutoGen}\xspace}
+
+\renewcommand{\cite}{\citep}
+
+\title{\libName: Enabling Next-Gen LLM \\Applications via Multi-Agent Conversation}
+
+\author{Qingyun Wu$^{\dagger}$, Gagan Bansal$^{\ast}$, Jieyu Zhang$^{\pm}$, Yiran Wu$^{\dagger}$, Beibin Li$^{\ast}$  
+\\\\ 
+{\bf Erkang Zhu$^{\ast}$,  Li Jiang$^{\ast}$, Xiaoyun Zhang$^{\ast}$, Shaokun Zhang$^{\dagger}$, Jiale Liu$^{\mp}$}
+\\\\ 
+{\bf Ahmed Awadallah$^{\ast}$, Ryen W. White$^{\ast}$, Doug Burger$^{\ast}$, Chi Wang$^{\ast}$\thanks{Corresponding author. Email: \href{mailto:auto-gen@outlook.com}{auto-gen@outlook.com}} }
+\\\\
+{$^{\ast}$Microsoft Research, $^{\dagger}$Pennsylvania State University}
+\\\\ 
+{$^{\pm}$University of Washington,$^{\mp}$Xidian University}
+}%
+
+
+% The \author macro works with any number of authors. There are two commands
+% used to separate the names and addresses of multiple authors: \And and \AND.
+%
+% Using \And between authors leaves it to \LaTeX{} to determine where to break
+% the lines. Using \AND forces a linebreak at that point. So, if \LaTeX{}
+% puts 3 of 4 authors names on the first line, and the last on the second
+% line, try using \AND instead of \And before the third author name.
+
+\newcommand{\fix}{\marginpar{FIX}}
+\newcommand{\new}{\marginpar{NEW}}
+\makeatletter
+\let\@fnsymbol\@arabic
+\makeatother
+%\iclrfinalcopy % Uncomment for camera-ready version, but NOT for submission.
+\begin{document}
+
+
+\maketitle
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\linewidth]{figures/autogen_landing_full.pdf}
+    \caption{ \libName enables diverse LLM-based applications using multi-agent conversations. (Left) \libName agents are conversable, customizable, and can be based on LLMs, tools, humans, or even a combination of them. (Top-middle) Agents can converse to solve tasks. (Right) They can form a chat, potentially with humans in the loop. (Bottom-middle) The framework supports flexible conversation patterns.
+    }
+    \label{fig:landing}
+\end{figure}
+
+\begin{abstract}
+\libName\footnote{\url{https://github.com/microsoft/autogen}} is an open-source framework that allows developers to build LLM applications via 
+multiple {\em agents} that can converse with each other to accomplish tasks.
+\libName\  agents are customizable, {\em conversable}, and can operate in various modes that employ combinations of LLMs, human inputs, and tools.
+Using \libName, developers can also flexibly define agent interaction behaviors.
+Both natural language and computer code can be used to program flexible conversation patterns for different applications. \libName serves as a generic framework for building diverse applications of various complexities and LLM capacities.
+Empirical studies demonstrate the effectiveness of the framework in many example applications, with domains ranging from mathematics, coding,  question answering, operations research, online decision-making, entertainment, etc.
+\end{abstract}
+
+\input{sec_iclr/_sec_intro_arxiv}
+
+\input{sec_iclr/_sec_system}
+
+\input{sec_iclr/_sec_application}
+
+\input{sec_iclr/_sec_summary}
+
+% \newpage
+
+\section*{Ethics statement}
+ \label{append:ethical}
+There are several potential ethical considerations that could arise from the development and use of the \libName framework.
+\begin{itemize}[leftmargin=*]
+    \vspace{-1mm}
+    \setlength\itemsep{-0.1em}
+    \item Privacy and Data Protection: The framework allows for human participation in conversations between agents. It is important to ensure that user data and conversations are protected, and that developers use appropriate measures to safeguard privacy.
+
+\item Bias and Fairness: LLMs have been shown to exhibit biases present in their training data~\cite{navigli2023biases}. When using LLMs in the \libName framework, it is crucial to address and mitigate any biases that may arise in the conversations between agents. Developers should be aware of potential biases and take steps to ensure fairness and inclusivity.
+
+\item Accountability and Transparency: As discussed in the future work section, as the framework involves multiple agents conversing and cooperating, it is important to establish clear accountability and transparency mechanisms. Users should be able to understand and trace the decision-making process of the agents involved in order to ensure accountability and address any potential issues or biases.
+
+\item Trust and Reliance: \libName leverages human understanding and intelligence while providing automation through conversations between agents. It is important to consider the impact of this interaction on user experience, trust, and reliance on AI systems. Clear communication and user education about the capabilities and limitations of the system will be essential~\cite{Cai2019HelloAU}.
+
+\item Unintended Consequences: As discussed before, the use of multi-agent conversations and automation in complex tasks may have unintended consequences. In particular, allowing LLM agents to make changes in external environments through code execution or function calls, such as installing packages, could be risky. Developers should carefully consider the potential risks and ensure that appropriate safeguards are in place to prevent harm or negative outcomes.
+
+\end{itemize}
+
+\section*{Acknowledgements}
+The work presented in this report was made possible through discussions and feedback from Peter Lee, Johannes Gehrke, Eric Horvitz, Steven Lucco, Umesh Madan, Robin Moeur, Piali Choudhury, Saleema Amershi, Adam Fourney, Victor Dibia, Guoqing Zheng, Corby Rosset, Ricky Loynd, Ece Kamar, Rafah Hosn, John Langford, Ida Momennejad, Brian Krabach, Taylor Webb, Shanka Subhra Mondal, Wei-ge Chen, Robert Gruen, Yinan Li, Yue Wang, Suman Nath, Tanakorn Leesatapornwongsa, Xin Wang, Shishir Patil, Tianjun Zhang, Saehan Jo, Ishai Menache, Kontantina Mellou, Runlong Zhou, Feiran Jia, Hamed Khanpour, Hamid Palangi, Srinagesh Sharma, Julio Albinati Cortez, Amin Saied, Yuzhe Ma, Dujian Ding, Linyong Nan, Prateek Yadav, Shannon Shen, Ankur Mallick, Mark Encarnación, Lars Liden, Tianwei Yue, Julia Kiseleva, Anastasia Razdaibiedina, and Luciano Del Corro. Qingyun Wu would like to acknowledge the funding and research support from the College of Information Science and Technology at Penn State University.
+
+\clearpage
+\bibliography{agent_ref}
+\bibliographystyle{iclr2023_conference}
+\appendix
+\input{sec_iclr/_sec_relatedwork}
+\input{sec_iclr/_sec_summary_full}
+\input{sec_iclr/_appendix}
+\end{document}

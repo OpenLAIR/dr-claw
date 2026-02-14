@@ -1,0 +1,58 @@
+\clearpage
+\section{Related Work} \label{sec:related_work}
+
+We examine existing LLM-based agent systems or frameworks that can be used to build LLM applications. We categorize the related work into single-agent and multi-agent systems and specifically provide a summary of differentiators comparing \libName with existing multi-agent systems in Table~\ref{tab:relevant_work_compare}. Note that many of these systems are evolving open-source projects, so the remarks and statements about them may only be accurate as of the time of writing.
+We refer interested readers to detailed LLM-based agent surveys ~\cite{xi2023rise,wang2023survey}
+
+\paragraph{Single-Agent Systems:}
+\begin{itemize}[leftmargin=*]
+    \vspace{-1mm}
+    \setlength\itemsep{-0.1em}  
+    \item  \textbf{AutoGPT}: 
+    AutoGPT is an open-source implementation of an AI agent that attempts to autonomously achieve a given goal~\cite{autogpt}. It follows a single-agent paradigm in which it augments the AI model with many useful tools, and does not support multi-agent collaboration.
+    \item \textbf{ChatGPT+ (with code interpreter or plugin)}: ChatGPT, a conversational AI service or agent, can now be used alongside a code interpreter or plugin (currently available only under the premium subscription plan ChatGPT Plus)~\cite{gptPlugin}. The code interpreter enables ChatGPT to execute code, while the plugin enhances ChatGPT with a wide range of curated tools.
+
+    \item \textbf{LangChain Agents}: LangChain is a general framework for developing LLM-based applications~\cite{langchain}. LangChain Agents is a subpackage for using an LLM to choose a sequence of actions. There are various types of agents in LangChain Agents, with the ReAct agent being a notable example that combines reasoning and acting when using LLMs (mainly designed for LLMs prior to ChatGPT)~\cite{yao2022react}. All agents provided in LangChain Agents follow a single-agent paradigm and are not inherently designed for communicative and collaborative modes. A significant summary of its limitations can be found in~\cite{langchainproblem}. Due to these limitations, even the multi-agent systems in LangChain (e.g., re-implementation of CAMEL) are not based on LangChain Agents but are implemented from scratch. Their connection to LangChain lies in the use of basic orchestration modules provided by LangChain, such as AI models wrapped by LangChain and the corresponding interface.
+    
+    \item \textbf{Transformers Agent}: Transformers Agent~\cite{transformersagent} is an experimental natural-language API built on the transformers repository. It includes a set of curated tools and an agent to interpret natural language and use these tools. Similar to AutoGPT, it follows a single-agent paradigm and does not support agent collaboration.
+\end{itemize}
+
+\libName differs from the single-agent systems above by supporting multi-agent LLM applications.
+
+\paragraph{Multi-Agent Systems:}
+
+\begin{itemize}[leftmargin=*]
+    \vspace{-1mm}
+    \setlength\itemsep{-0.1em}
+    \item \textbf{BabyAGI}: BabyAGI~\cite{babyagi} is an example implementation of an AI-powered task management system in a Python script. In this implemented system, multiple LLM-based agents are used. For example, there is an agent for creating new tasks based on the objective and the result of the previous task, an agent for prioritizing the task list, and an agent for completing tasks/sub-tasks. As a multi-agent system, BabyAGI adopts a static agent conversation pattern, i.e., a predefined order of agent communication, while \libName supports both static and dynamic conversation patterns and additionally supports tool usage and human involvement. 
+    \item \textbf{CAMEL}: CAMEL~\cite{li2023camel} is a communicative agent framework. It demonstrates how role playing can be used to let chat agents communicate with each other for task completion. It also records agent conversations for behavior analysis and capability understanding. An Inception-prompting technique is used to achieve autonomous cooperation between agents. Unlike \libName, CAMEL does not natively support tool usage, such as code execution. Although it is proposed as an infrastructure for multi-agent conversation, it only supports static conversation patterns, while \libName additionally supports dynamic conversation patterns.
+     
+    
+    \item \textbf{Multi-Agent Debate:} Two recent works investigate and show that multi-agent debate is an effective way to encourage divergent thinking in LLMs~\cite{liang-arxiv2023} and to improve the factuality and reasoning of LLMs~\cite{du2023improving}. In both works, multiple LLM inference instances are constructed as multiple agents to solve problems with agent debate. 
+    Each agent is simply an LLM inference instance, while no tool or human is involved, and the inter-agent conversation needs to follow a pre-defined order.  These works attempt to build LLM applications with multi-agent conversation, while \libName, designed as a generic infrastructure, can be used to facilitate this development and enable more applications with dynamic conversation patterns. 
+
+    \item \textbf{MetaGPT}:  MetaGPT~\cite{hong2023metagpt} is a specialized LLM application based on a multi-agent conversation framework for automatic software development. They assign different roles to GPTs to collaboratively develop software. They differ from \libName by being specialized solutions to a certain scenario, while \libName is a generic infrastructure to facilitate building applications for various scenarios.
+\end{itemize}
+
+There are a few other specialized single-agent or multi-agent systems, such as Voyager~\cite{wang2023voyager} and Generative Agents~\cite{park2023generative}, which we skip due to lower relevance.
+In Table~\ref{tab:relevant_work_compare}, we summarize differences between \libName and the most relevant multi-agent systems.
+
+\begin{table}[h]
+    \caption{Summary of differences between \libName and other related multi-agent systems.  \textbf{infrastructure}: whether the system is designed as a generic infrastructure for building LLM applications. \textbf{conversation pattern}: the types of patterns supported by the implemented systems. Under the `static’ pattern, agent topology remains unchanged regardless of different inputs. \libName allows flexible conversation patterns, including both static and dynamic patterns that can be customized based on different application needs.  
+    \textbf{execution-capable}: whether the system can execute LLM-generated code; \textbf{human involvement}: whether (and how) the system allows human participation during the execution process of the system. \libName allows flexible human involvement in multi-agent conversation with the option for humans to skip providing inputs. 
+    }
+    \label{tab:relevant_work_compare}
+    % \small
+        \begin{tabular}{p{3cm}|P{1.3cm}P{2.8cm}P{1.3cm}P{1.3cm}P{1.7cm}}
+            \hline %\hline
+            Aspect & \libName & Multi-agent Debate & CAMEL &BabyAGI  & MetaGPT  \\ \hline
+            {Infrastructure} & \cmark  & \xmark &  \cmark   & \xmark & \xmark  \\
+            Conversation pattern & flexible  & static & static  & static & static  \\
+            Execution-capable & \cmark  & \xmark & \xmark & \xmark  & \cmark \\
+            Human involvement & chat/skip  & \xmark & \xmark   & \xmark & \xmark \\
+            \hline
+        \end{tabular}
+\end{table}
+\normalsize
+
+

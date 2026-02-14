@@ -1,0 +1,44 @@
+\clearpage
+\subsection*{A6: Conversational Chess}
+\label{appendix:app:chess}
+
+\begin{figure*}[th]
+    \vspace{5mm}
+    \centering
+    \includegraphics[width=0.8\linewidth]{figures/app_chess.pdf}
+    \caption{A6: Conversational Chess: Our conversational chess application can support various scenarios, as each player can be an LLM-empowered AI, a human, or a hybrid of the two. Here, the board agent maintains the rules of the game and supports the players with information about the board.
+Players and the board agent all use natural language for communication.}
+    \label{fig:chess}
+\end{figure*}
+In Conversational Chess, each player is a \libName agent and can be powered either by a human or an AI. A third party, known as the board agent, is designed to provide players with information about the board and ensure that players' moves adhere to legal chess moves. Figure~\ref{fig:chess} illustrates the scenarios supported by Conversational Chess: AI/human vs. AI/human, and demonstrates how players and the board agent interact. This setup fosters social interaction and allows players to express their moves creatively, employing jokes, meme references, and character-playing, thereby making chess games more entertaining for both players and observers (Figure~\ref{fig:conversational-chess-example} provides an example of conversational chess).
+
+To realize these scenarios, we constructed a player agent with LLM and human as back-end options. When human input is enabled, before sending the input to the board agent, it first prompts the human player to input the message that contains the move along with anything else the player wants to say (such as a witty comment). If human input is skipped or disabled, LLM is used to generate the message. The board agent is implemented with a custom reply function, which employs an LLM to parse the natural language input into a legal move in a structured format (e.g., UCI), and then pushes the move to the board. If the move is not legitimate, the board agent will reply with an error. Subsequently, the player agent needs to resend a message to the board agent until a legal move is made. Once the move is successfully pushed, the player agent sends the message to the opponent. As shown in Figure~\ref{fig:conversational-chess-example}, the conversation between AI players can be natural and entertaining. When the player agent uses LLM to generate a message, it utilizes the board state and the error message from the board agent. This helps reduce the chance of hallucinating an invalid move. The chat between one player agent and the board agent is invisible to the other player agent, which helps keep the messages used in chat completion well-managed.
+
+There are two notable benefits of using \libName to implement Conversational Chess. Firstly, the agent design in \libName facilitates the natural creation of objects and their interactions needed in our chess game. This makes development easy and intuitive. For example, the isolation of chat messages simplifies the process of making a proper LLM chat completion inference call. Secondly, \libName greatly simplifies the implementation of agent behaviors using composition. Specifically, we utilized the \texttt{register\_reply} method supported by \libName agents to instantiate player agents and a board agent with custom reply functions. Concentrating the extension work needed at a single point (the reply function) simplifies the reasoning processes, and development and maintenance effort.
+
+\begin{figure}[ht]
+    \vspace{4mm}
+    \centering
+    \begin{subfigure}{0.4\linewidth}
+        \includegraphics[width=\linewidth]{figures/chess_2.pdf}
+        \caption{Conversation between two AI players}
+    \end{subfigure}
+    \begin{subfigure}{0.4\linewidth}
+        \includegraphics[width=\linewidth]{figures/chess_3.pdf}
+        \caption{Conversation between the AI players (player white shown in blue) and the board agent for making a new move.}
+    \end{subfigure}
+    \caption{Example conversations during a game involving two AI player agents and a board agent.}
+    \label{fig:conversational-chess-example}
+\end{figure}
+
+
+\newpage
+To illustrate the effect facilitated by this board agent, we provide a demonstration of conversational chess without a board agent in Figure~\ref{fig:chess_comparison}. In this demonstration, instead of employing an additional board agent for grounding, the system utilizes prompting for grounding by including the sentence ``\textit{You should make sure both you and the opponent are making legal moves.}" in the system messages directed to both players.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=1\textwidth]{figures/chess_example.pdf}
+\caption{
+Comparison of two designs--(a) without a board agent, and (b) with a board agent--in Conversational Chess.}
+\label{fig:chess_comparison}
+\end{figure}

@@ -1,0 +1,48 @@
+\clearpage
+\subsection*{A2: Retrieval-Augmented Code Generation and Question Answering} \label{appendix_sec:app:retrive_chat}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width = 0.80\hsize]{figures/app_retrievechat.pdf}
+\caption{Overview of Retrieval-augmented Chat which involves two agents, including a Retrieval-augmented User Proxy and a Retrieval-augmented Assistant. Given a set of documents, the Retrieval-augmented User Proxy first automatically processes documents—splits, chunks, and stores them in a vector database. Then for a given user input, it retrieves relevant chunks as context and sends it to the Retrieval-augmented Assistant, which uses LLM to generate code or text to answer questions. Agents converse until they find a satisfactory answer.
+}
+\label{fig:retrievechat_framework}
+\end{figure}
+
+
+\paragraph{Detailed Workflow.} \label{sec:app:retrieve:workflow}
+ The workflow of Retrieval-Augmented Chat is illustrated in Figure~\ref{fig:retrievechat_framework}.  To use Retrieval-augmented Chat, one needs to initialize two agents including Retrieval-augmented User Proxy and Retrieval-augmented Assistant. Initializing the Retrieval-Augmented User Proxy necessitates specifying a path to the document collection. Subsequently, the Retrieval-Augmented User Proxy can download the documents, segment them into chunks of a specific size, compute embeddings, and store them in a vector database. Once a chat is initiated, the agents collaboratively engage in code generation or question-answering adhering to the procedures outlined below:
+\begin{enumerate}[leftmargin=*]
+    \vspace{-1mm}
+    \setlength\itemsep{-0.1em}
+    \item The Retrieval-Augmented User Proxy retrieves document chunks based on the embedding similarity, and sends them along with the question to the Retrieval-Augmented Assistant.
+    \item The Retrieval-Augmented Assistant employs an LLM to generate code or text as answers based on the question and context provided. If the LLM is unable to produce a satisfactory response, it is instructed to reply with ``Update Context'' to the Retrieval-Augmented User Proxy.
+    \item If a response includes code blocks, the Retrieval-Augmented User Proxy executes the code and sends the output as feedback. If there are no code blocks or instructions to update the context, it terminates the conversation. Otherwise, it updates the context and forwards the question along with the new context to the Retrieval-Augmented Assistant.
+    Note that if human input solicitation is enabled, individuals can proactively send any feedback, including Update Context'', to the Retrieval-Augmented Assistant. 
+\item If the Retrieval-Augmented Assistant receives ``Update Context'', it requests the next most similar chunks of documents as new context from the Retrieval-Augmented User Proxy. Otherwise, it generates new code or text based on the feedback and chat history. If the LLM fails to generate an answer, it replies with ``Update Context'' again. This process can be repeated several times. The conversation terminates if no more documents are available for the context.
+\end{enumerate}
+
+We utilize Retrieval-Augmented Chat in two scenarios. The first scenario aids in generating code based on a given codebase. While LLMs possess strong coding abilities, they are unable to utilize packages or APIs that are not included in their training data, e.g., private codebases, or have trouble using trained ones that are frequently updated post-training. Hence, Retrieval-Augmented Code Generation is considered to be highly valuable. The second scenario involves question-answering on the Natural Questions dataset~\cite{kwiatkowski2019natural}, enabling us to obtain comparative evaluation metrics for the performance of our system.
+
+
+\textbf{Scenario 1: Evaluation on Natural Questions QA dataset.}
+In this case, we evaluate the Retrieval-Augmented Chat's end-to-end question-answering performance using the Natural Questions dataset~\cite{kwiatkowski2019natural}. We collected 5,332 non-redundant context documents and 6,775 queries from HuggingFace. First, we create a document collection based on the entire context corpus and store it in the vector database. Then, we utilize Retrieval-Augmented Chat to answer the questions. An example (Figure~\ref{fig:retrievechat_update_context}) from the NQ dataset showcases the advantages of the \textit{interactive retrieval} feature: \textit{``who carried the usa flag in opening ceremony''}. When attempting to answer this question, the context with the highest similarity to the question embedding does not contain the required information for a response. As a result, the LLM assistant (GPT-3.5-turbo) replies \textit{``Sorry, I cannot find any information about who carried the USA flag in the opening ceremony. UPDATE CONTEXT.''} With the unique and innovative ability to update context in Retrieval-Augmented Chat, the user proxy agent automatically updates the context and forwards it to the assistant agent again. Following this process, the agent is able to generate the correct answer to the question.
+
+In addition, we conduct an experiment using the same prompt as illustrated in~\cite{adlakha2023evaluating} to investigate the advantages of \textit{\libName W/O interactive retrieval}. The F1 score and Recall for the first 500 questions are 23.40\% and 62.60\%, respectively, aligning closely with the results reported in Figure~\ref{fig:res:retri}. Consequently, we assert that \textit{\libName W/O interactive retrieval} outperforms \textit{DPR} due to differences in the retrievers employed. Specifically, we utilize a straightforward vector search retriever with the \textit{all-MiniLM-L6-v2} model for embeddings.
+
+Furthermore, we analyze the number of LLM calls in experiments involving both \textit{\libName} and \textit{\libName W/O interactive retrieval}, revealing that approximately 19.4\% of questions in the Natural Questions dataset trigger an ``Update Context'' operation, resulting in additional LLM calls.
+
+
+
+\textbf{Scenario 2: Code Generation Leveraging Latest APIs from the Codebase.}
+In this case, the question is \textit{``How can I use FLAML to perform a classification task and use Spark for parallel training? Train for 30 seconds and force cancel jobs if the time limit is reached.''}.
+FLAML (v1)~\cite{wang2021flaml} is an open-source Python library designed for efficient AutoML and tuning. It was open-sourced in December 2020, and is included in the training data of GPT-4. However, the question necessitates the use of Spark-related APIs, which were added in December 2022 and are not encompassed in the GPT-4 training data. Consequently, the original GPT-4 model is unable to generate the correct code, due to its lack of knowledge regarding Spark-related APIs. Instead, it erroneously creates a non-existent parameter, $spark$, and sets it to True'. Nevertheless, with Retrieval-Augmented Chat, we provide the latest reference documents as context. Then, GPT-4 generates the correct code blocks by setting $use\_spark$ and $force\_cancel$ to True'.
+
+
+\begin{figure}[]
+\centering
+\includegraphics[width=1\textwidth]{figures/interactive_retrieval_example.pdf}
+\caption{
+ Retrieval-augmented Chat without (W/O) and with (W/) \textit{interactive retrieval}.}
+\label{fig:retrievechat_update_context}
+\end{figure}

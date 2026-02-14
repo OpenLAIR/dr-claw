@@ -1,0 +1,69 @@
+% \newpage
+\clearpage
+\subsection*{A7: Online Decision Making for Browser interactions} 
+\label{appendix:app:miniwob}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width = 0.90\hsize]{figures/app_miniwob.pdf}
+\caption{
+We use \libName to build MiniWobChat, which solves tasks in the MiniWob++ benchmark. MiniWobChat consists of two agents: an assistant agent and an executor agent. The assistant agent suggests actions to manipulate the browser while the executor executes the suggested actions and returns rewards/feedback. The assistant agent records the feedback and continues until the feedback indicates task success or failure.
+}
+\label{fig:rl_miniwob}
+\end{figure}
+
+In practice, many applications require the presence of agents capable of interacting with environments and making decisions in an online context, such as in game playing~\cite{mnih2013playing,vinyals2017starcraft}, web interactions~\cite{liu2018reinforcement,shi2017world}, and robot manipulations~\cite{shen2021igibson}.
+With the multi-agent conversational framework in \libName, it becomes easy to decompose the automatic agent-environment interactions and the development of a decision-making agent by constructing an \emph{executor} agent responsible for handling the interaction with the environment, thereby delegating the decision-making part to other agents. Such a decomposition allows developers to reuse the decision-making agent for new tasks with minimal effort rather than building a specialized decision-making agent for every new environment.
+
+\paragraph{Workflow.}
+We demonstrate how to use \libName to build a working system for handling such scenarios with the MiniWoB++ benchmark~\cite{shi2017world}.
+MiniWoB++ comprises browser interaction tasks that involve utilizing mouse and keyboard actions to interact with browsers.
+The ultimate objective of each task is to complete the tasks described concisely in natural language, such as ``expand the web section below and click the submit button." Solving these tasks typically requires a sequence of web manipulation actions rather than a single action, and making action decisions at each time step requires access to the web status (in the form of HTML code) online. For the example above, clicking the submit button requires checking the web status after expanding the web section.
+We designed a straightforward two-agent system named MiniWobChat using \libName, as shown in Figure~\ref{fig:rl_miniwob}. The assistant agent is an instance of the built-in \AssistantAgent and is responsible for making action decisions for the given task. The second agent, the executor agent, is a customized \UserProxyAgent, which is responsible for interacting with the benchmark by executing the actions suggested by the \AssistantAgent and returning feedback.
+
+
+To assess the performance of the developed working system, we compare it with RCI~\cite{kim2023language}, a recent solution for the MiniWoB++ benchmark that employs a set of self-critiquing prompts and has achieved state-of-the-art performance.
+In our evaluation, we use all available tasks in the official RCI code, with varying degrees of difficulty, to conduct a comprehensive analysis against MiniWobChat. Figure~\ref{fig:miniwob_result} illustrates that MiniWobChat achieves competitive performance in this evaluation\footnote{We report the results of RCI by running its official code with default settings.}. Specifically, among the 49 available tasks, MiniWobChat achieves a success rate of $52.8\%$, which is only $3.6\%$ lower than RCI, a method specifically designed for the MiniWob++ benchmark. It is worth noting that in most tasks, the difference between the two methods is mirrored as shown in Figure~\ref{fig:miniwob_result}. If we consider 0.1 as a success rate tolerance for each task, i.e., two methods that differ within 0.1 are considered to have the same performance, both methods outperform the other on the same number of tasks. For illustration purposes, we provide a case analysis in Table~\ref{tab:miniwob} on four typical tasks.
+
+
+Additionally, we also explored the feasibility of using Auto-GPT for handling the same tasks.
+Auto-GPT faces challenges in handling tasks that involve complex rules due to its limited extensibility. It provides an interface for setting task goals using natural language. However, when dealing with the MiniWob++ benchmark, accurately instructing Auto-GPT to follow the instructions for using MiniWob++ proves challenging. There is no clear path to extend it in the manner of the two-agent chat facilitated by \libName.
+
+\paragraph{Takeaways:} For this application, \libName stood out as a more user-friendly option, offering modularity and programmability:
+It streamlined the process with autonomous conversations between the assistant and executor, and provided readily available solutions for agent-environment interactions. The built-in \AssistantAgent was directly reusable and exhibited strong performance without customization.
+Moreover, the decoupling of the execution and assistant agent ensures that modifications to one component do not adversely impact the other. This convenience simplifies maintenance and future updates.
+
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width = 0.9\hsize]{figures/miniwob_result.pdf}
+\caption{Comparisons between RCI (state-of-the-art prior work) and MiniWobChat on the MiniWob++ benchmark are elucidated herein. We utilize all available tasks in the official RCI code, each with varying degrees of difficulty, to conduct comprehensive comparisons. For each task, the success rate across ten different instances is reported. The results reveal that MiniWobChat attains a performance comparable to that of RCI. When a success rate tolerance of 0.1 is considered for each task, both methods outperform each other on an equal number of tasks.
+}
+\label{fig:miniwob_result}
+\end{figure}
+
+\begin{table}[h]
+    \caption{Cases analysis on four typical tasks from MiniWob++.}
+    \label{tab:miniwob}
+    \small
+    
+    % \begin{subtable}{\linewidth}
+        \centering
+        \begin{tabular}{p{3.0cm}|P{2.5cm}|P{7.5cm}}
+            \hline \hline
+             & Correctness & Main failure reason \\ \hline
+            \multirow{2}{*}{click-dialog} &  \libName: 10/10 & N/A.  \\
+             & RCI: 10/10 &   N/A. \\
+            \hline
+            \multirow{2}{*}{click-checkboxes-large} &  \libName: 5/10 & \AssistantAgent provides actions with infeasible characters.  \\ 
+             & RCI: 0/10 &  RCI performs actions that are out of its plan. \\
+            \hline
+            \multirow{2}{*}{count-shape} &  \libName: 2/10 &   \AssistantAgent provide actions with redundant content that can not convert to actions in the benchmark.\\
+             & RCI: 0/10 &  RCI provides a wrong plan in most cases. \\
+            \hline
+            \multirow{2}{*}{use-spinner} &  \libName: 0/10 &   \AssistantAgent return actions out of its plan. \\
+             & RCI: 1/10 &  RCI provides a wrong plan in most cases. \\
+            \hline
+        \end{tabular}
+    \vspace{1em}
+\end{table}

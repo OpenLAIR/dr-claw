@@ -1,0 +1,17 @@
+\section{Preliminaries}
+\label{sec:formulation}
+
+\textbf{LLM Agents.} We consider an agent operating in an interactive environment $\mathcal{E}$. At each timestep $t$, the agent observes a state $o_t \in \mathcal{O}$, selects an action $a_t \in \mathcal{A}$, and receives a reward $r_t$ and next observation $o_{t+1}$. A trajectory $\tau = (o_0, a_0, r_0, \ldots, o_T, a_T, r_T)$ captures one episode of interaction. Tasks are specified by natural language descriptions $d$.
+An LLM-based agent parameterized by $\theta$ implements a policy $\pi_\theta(a_t | o_{\leq t}, d, c)$ where $c$ represents additional context (e.g., skills, demonstrations). Our goal is to learn a policy that maximizes expected return $\small \max_\theta \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum_{t=0}^{T} \gamma^t r_t \right]$
+subject to context length constraints $|c| \leq L_{\max}$.
+
+\textbf{Group Relative Policy Optimization (GRPO).} GRPO~\cite{shao2024deepseekmath} is a reinforcement learning method that avoids training a critic by using intra-group relative rewards to optimize the policy. For each query $x$, the model samples $G$ responses $\{y^{(1)}, \ldots, y^{(G)}\}$, which are scored to obtain rewards $\{R_1, \ldots, R_G\}$. GRPO computes normalized advantages and updates the policy with a PPO-style clipped objective \cite{schulman2017proximal}:
+\begin{equation}
+\small
+\begin{aligned}
+\footnotesize
+    \mathcal{J}_{\text{GRPO}}(\theta) = \mathbb{E}_{x, \{y_i\}} \Bigg[ \frac{1}{G} \sum_{i=1}^{G} \min \Big( r_i A_i, \\
+    \text{clip}(r_i, 1-\epsilon, 1+\epsilon) A_i \Big) - \beta D_{\text{KL}}(\pi_\theta \| \pi_{\text{ref}}) \Bigg],
+\end{aligned}
+\end{equation}
+where \begin{small}$\small r_i = \frac{\pi_\theta(y_i | x)}{\pi_{\text{old}}(y_i | x)}$\end{small} is the importance ratio, \begin{small}$\small A_i = \frac{R_i - \text{mean}(\{R_j\}_{j=1}^G)}{\text{std}(\{R_j\}_{j=1}^G)}$\end{small} is the normalized advantage, $\epsilon$, $\beta$ are hyperparameters, and $\pi_{\text{old}}$ is the policy before the current update. 

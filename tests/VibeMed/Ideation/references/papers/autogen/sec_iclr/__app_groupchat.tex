@@ -1,0 +1,15 @@
+
+\subsection*{A5: Dynamic Group Chat 
+} \label{sec:app:groupchat}
+
+\newcommand{\alice}{\text{Alice}\xspace}
+\newcommand{\bob}{\text{Bob}\xspace}
+
+\newcommand{\userproxy}{\text{User Proxy}\xspace}
+
+
+\libName provides native support for a \emph{dynamic group chat} communication pattern, in which participating agents share the same context and converse with the others in a dynamic manner instead of following a pre-defined order. 
+Dynamic group chat relies on ongoing conversations to guide the flow of interaction among agents. 
+These make dynamic group chat ideal for situations where collaboration without strict communication order is beneficial.  
+In \libName, the \groupchatmanager class serves as the conductor of conversation among agents and repeats the following three steps: dynamically selecting a speaker, collecting responses from the selected speaker, and broadcasting the message (Figure~\ref{fig:app_summary}-A5). For the dynamic speaker-selection component, we use a role-play style prompt. 
+Through a pilot study on 12 manually crafted complex tasks, we observed that compared to a prompt that is purely based on the task, utilizing a role-play prompt often leads to more effective consideration of both conversation context and role alignment during the problem-solving and speaker-selection process. Consequently, this leads to a higher success rate and fewer LLM calls. We include detailed results in Appendix~\ref{appendix:app:groupchat}.

@@ -1,0 +1,1004 @@
+
+\newpage
+\section{Example outputs from applications}
+\label{sec:example}
+In this section, we include example outputs from the following applications and systems:
+
+ \begin{itemize}[leftmargin=*]
+    \vspace{-1mm}
+    \setlength\itemsep{-0.1em}
+    \item Application A1: autonomous solving process of one problem with: ChatGPT + Plugin (Table~\ref{tab:append_math_wolfram}), \libName (Table~\ref{tab:append_math_agentchat}), 
+    LangChain ReAct (Table~\ref{tab:append_math_langchain}),   
+    AutoGPT (Table~\ref{tab:append_math_autogpt}),
+    Multi-Agent Debate (Table~\ref{tab:debate_ex}), and 
+    ChatGPT + Code Interpreter (Table~\ref{tab:append_math_chatcode}).
+    \item Application A4: an OptiGuide problem with \libName (Table ~\ref{tab:optiguide_complex}) and ChatGPT + Code Interpreter (Table~\ref{tab:optiguide_gpt_complex}).
+    \item  Application A1: preliminary evaluation on several alternative multi-agent systems: BabyAGI (Table~\ref{tab:bayagi_ex}), CAMEL (Table~\ref{tab:camel_ex}), and MetaGPT (Table~\ref{tab:metagpt_ex}).
+\end{itemize}
+
+
+\begin{table*}[h!]
+\centering
+\caption{Application A1, Scenario 1: Autonomous math problem-solving. ChatGPT+ Plugin (Wolfram Alpha) on the first qualitative example. The response from Wolfram contains the correct answer, but ChatGPT selected the wrong one.}
+\label{tab:append_math_wolfram}
+\small
+\begin{tabular}{c|c|p{11cm}}
+\toprule
+ & \textbf{Action} & \textbf{ChatGPT + Plugin}     \\
+ \midrule
+
+\faUser & Input & Completely simplify and rationalize the denominator: $$\frac{\sqrt{160}}{\sqrt{252}}\times\frac{\sqrt{245}}{\sqrt{108}}$$ \\
+\midrule
+
+\faAndroid  & & 
+
+REQUEST TO WOLFRAM:
+
+\begin{lstlisting}
+{
+  "input": "simplify (sqrt(160)/sqrt(252))* 
+  (sqrt(245)/sqrt(108))"
+}
+\end{lstlisting}
+
+RESPONSE FROM WOLFRAM
+\begin{lstlisting}
+Query:
+"simplify (sqrt(160)/sqrt(252))*(sqrt(245)/sqrt(108))"
+
+Input interpretation:
+simplify | sqrt(160)/sqrt(252)x sqrt(245)/sqrt(108)
+
+Results:
+(5 sqrt(42))/27
+
+(5 sqrt(14/3))/9
+
+Decimal approximation:
+1.2001371663718259686974013770533327143898526494552...
+
+Wolfram|Alpha website result for "simplify 
+(sqrt(160)/sqrt(252))*(sqrt(245)/sqrt(108))":
+[link]
+\end{lstlisting}
+\\
+
+\faAndroid  & & 
+
+The completely simplified and rationalized form of the given expression is:
+
+$$\frac{5 \sqrt{14/3}}{9}$$
+
+In decimal form, this is approximately 1.200137166371825968697401377053332714...
+\\
+
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{table*}[h!]
+\caption{Application A1, Scenario 1: Autonomous math problem-solving. \libName on the first qualitative example. \libName solves the problem correctly.}
+\label{tab:append_math_agentchat}
+\small
+\begin{tabular}{c|c|p{11cm}}
+\toprule
+ & \textbf{Action} & \textbf{\libName}     \\
+
+\midrule
+\faUser & Init chat & Completely simplify and rationalize the denominator: $$\frac{\sqrt{160}}{\sqrt{252}}\times\frac{\sqrt{245}}{\sqrt{108}}$$ \\
+\midrule
+\faAndroid  & & We can simplify and rationalize this denominator using Python's symbolic mathematics library `sympy`. Here is the Python code to resolve this:
+
+\begin{lstlisting}
+from sympy import sqrt, Rational
+
+# Define the entire fraction as a rational number
+fraction = (sqrt(160)/sqrt(252))*(sqrt(245)/sqrt(108))
+
+# Simplify the fraction
+simplified = fraction.simplify()
+
+# Print the simplified fraction
+print(simplified)
+\end{lstlisting}
+
+This code performs the requested simplification by constructing the fraction using the `Rational()` function from the `sympy` module, which automatically simplifies fractions when possible. The `sqrt()` function from the `sympy` module enables square root calculations. Finally, the `simplify()` function simplifies expressions when possible.
+   \\
+
+
+
+\midrule
+\faUser & Auto Reply & exitcode: 0 (execution succeeded)
+Code output: 
+5*sqrt(42)/27 \\
+\midrule
+
+\faAndroid  & & TERMINATE \\
+
+\bottomrule
+\end{tabular}
+\end{table*}
+
+
+\begin{table*}[h!]
+\caption{Application A1, Scenario 1: Autonomous math problem-solving. LangChain ReAct on the first qualitative example. The generated code does not match the devised plan. The code returns a decimal number.}
+\label{tab:append_math_langchain}
+\small
+\begin{tabular}{c|c|p{12cm}}
+\toprule
+ & \textbf{Action} & \textbf{LangChain ReAct}     \\
+ \midrule
+
+\faUser & Input & Completely simplify and rationalize the denominator: $$\frac{\sqrt{160}}{\sqrt{252}}\times\frac{\sqrt{245}}{\sqrt{108}}$$ \\
+\midrule
+\faAndroid  & &  Entering new AgentExecutor chain...
+
+To simplify this expression, I will first simplify each square root individually, then multiply the fractions as normal. The result should be a rational number.
+Action: Python\_REPL
+Action Input: 
+
+\begin{lstlisting}
+import math
+
+# Calculate square roots
+sqrt_160 = math.sqrt(160)
+sqrt_252 = math.sqrt(252)
+sqrt_245 = math.sqrt(245)
+sqrt_108 = math.sqrt(108)
+
+# Multiply fractions
+numerator = sqrt_160 * sqrt_245
+denominator = sqrt_252 * sqrt_108
+result = numerator / denominator
+
+print(result)
+\end{lstlisting}
+
+Observation: 1.200137166371826
+
+Thought: I now know the final answer
+Final Answer: The simplified and rationalized form of the expression is approximately 1.200137166371826.
+
+Finished chain.
+\\
+
+\bottomrule
+\end{tabular}
+\end{table*}
+
+
+
+
+            
+                                                          
+
+
+
+\begin{table*}[h!]
+\caption{Application A1, Scenario 1: Autonomous math problem-solving.  AutoGPT on the first qualitative example. We abort as the code never prints the result, and the system does not rectify it after 2 turns. AutoGPT is much more verbose compared to other frameworks. We have shortened some unnecessary content.}
+\label{tab:append_math_autogpt}
+\tiny
+\begin{tabular}{c|c|p{12cm}}
+\toprule
+ & \textbf{Action} & \textbf{AutoGPT}     \\
+ 
+\midrule
+  & System & 
+Welcome back!  Would you like me to return to being MathSolverGPT?
+  Asking user via keyboard...
+Continue with the last settings?\newline
+Name:  MathSolverGPT\newline
+Role:  an intelligent math-solving AI that assists students, professionals,... \newline
+Goals: ['Provide step-by-step solutions to math problems, ensuring clarity and understanding for the user... \newline
+Continue (y/n): 
+\\
+\midrule
+\faUser & Human  & y
+\\
+\midrule
+& System & MathSolverGPT  has been created with the following details:
+Name:  MathSolverGPT\newline
+Role:  an intelligent math-solving AI that assists students, professionals, and enthusiasts in solving a wide range of math problems, from basic arithmetic to advanced calculus and beyond.\newline
+Goals: 
+-  Provide step-by-step solutions to math problems, ensuring clarity and understanding for the user.
+-  Offer explanations and insights into the underlying concepts and principles behind the solutions, fostering a deeper understanding of mathematics.
+-  Handle a variety of math problem types, including algebra, geometry, trigonometry, calculus, and more. ...
+\\
+\midrule
+
+\faAndroid  & & 
+MATHSOLVERGPT THOUGHTS:  Without a specific task or question, it's difficult to determine exactly one command to use. The user hasn't provided any context or problem to solve. \newline
+REASONING:  The user's request is too vague. They haven't specified what they want me to do or what problem they want me to solve.\newline
+PLAN: 
+-  Ask the user for more information or a specific task.\newline
+CRITICISM:  I should have asked the user for more information or a specific task in the first place.\newline
+SPEAK:  Could you please provide more information or specify a task?\newline
+NEXT ACTION:  COMMAND =  ARGUMENTS = \{\}
+\\
+\midrule
+& System &  Enter `y' to authorise command, `y -N' to run N continuous commands, `n' to exit program, or enter feedback for MathSolverGPT...
+  Asking user via keyboard...\\
+\midrule
+
+\faUser & Human & 
+Completely simplify and rationalize the denominator: $$\frac{\sqrt{160}}{\sqrt{252}}\times\frac{\sqrt{245}}{\sqrt{108}}$$
+\\
+\midrule
+
+\faAndroid  & & 
+
+MATHSOLVERGPT THOUGHTS:  To solve this problem, I need to simplify and rationalize the denominator of the given expression. This involves simplifying the square roots and then multiplying the fractions. I can use Python's math library to calculate the square roots and perform the multiplication. \newline
+REASONING:  The problem involves simplifying square roots and multiplying fractions. Python's math library provides functions for these operations.\newline
+PLAN: 
+-  Write a Python script to calculate the square roots and multiply the fractions.
+-  Execute the script to get the simplified expression.
+CRITICISM:  I need to ensure that I correctly calculate the square roots and perform the multiplication. I should also make sure to rationalize the denominator, as the problem specifies.\newline
+SPEAK:  Let's simplify and rationalize the denominator of the given expression.\newline
+NEXT ACTION:  COMMAND = execute\_python\_code ARGUMENTS = 
+
+
+%\begin{lstlisting}[basicstyle=\tiny]
+\begin{lstlisting}
+{'code': 'import math\n\n# Calculate the square roots\nsqrt_160 = math.sqrt(160)\nsqrt_252 = math.sqrt(252)\nsqrt_245 = math.sqrt(245)\nsqrt_108 = math.sqrt(108)\n\n# Multiply the fractions\nresult = (sqrt_160 / sqrt_252) * (sqrt_245 / sqrt_108)\n\n# Simplify the result\nsimplified_result = math.simplify(result)\n\nsimplified_result', 'name': 'simplify_expression'}
+\end{lstlisting}
+\\
+\midrule
+
+\faUser & Human  & y
+\\
+\midrule
+
+& System & 
+-=-=-=-=-=-=-= COMMAND AUTHORISED BY USER -=-=-=-=-=-=-= \newline
+Executing python file '/app/autogpt/workspa...
+
+SYSTEM:  Command execute\_python\_code returned: Error: Traceback (most recent call last): File ``...", line 13, in <module> simplified\_result = math.simplify(result) AttributeError: module 'math' has no attribute 'simplify'
+\\
+
+\midrule
+\faAndroid & & 
+MATHSOLVERGPT THOUGHTS:  The error message indicates that the `math' module in Python does not have a `simplify' function. I need to use the `sympy' library instead, which provides a function for simplifying expressions.\newline
+REASONING:  The `math' module in Python does not provide a function for simplifying expressions. The `sympy' library, on the other hand, does provide such a function.\newline
+PLAN: 
+-  Rewrite the Python script to use the `sympy' library instead of the `math' module.
+-  Execute the script to get the simplified expression.
+CRITICISM:  I should have known that the `math' module does not provide a function for simplifying expressions. I should have used the `sympy' library from the start.
+SPEAK:  Let's try again using the `sympy' library to simplify the expression.\newline
+
+NEXT ACTION:  COMMAND = execute\_python\_code ARGUMENTS = 
+%\begin{lstlisting}[basicstyle=\tiny]
+\begin{lstlisting}
+{'code': 'import sympy as sp\n\n# Calculate the square roots\nsqrt_160 = sp.sqrt(160)\nsqrt_252 = sp.sqrt(252)\nsqrt_245 = sp.sqrt(245)\nsqrt_108 = sp.sqrt(108)\n\n# Multiply the fractions\nresult = (sqrt_160 / sqrt_252) * (sqrt_245 / sqrt_108)\n\n# Simplify the result\nsimplified_result = sp.simplify(result)\n\nsimplified_result', 'name': 'simplify_expression'}
+\end{lstlisting}
+\\
+\midrule
+\faUser & Human & y
+\\
+\midrule
+
+& System  &
+SYSTEM:  Command execute\_python\_code returned:
+\\
+\midrule
+
+\faAndroid  & & 
+
+MATHSOLVERGPT THOUGHTS:  The command execution didn't return any output, which is unusual. It seems there might be an issue with the execution of the Python code. I need to debug this.\newline
+REASONING:  The Python code execution should have returned a result. The absence of a result suggests that there might be an issue with the code or its execution.\newline
+PLAN: 
+-  Review the Python code to identify any potential issues.
+-  If necessary, modify the code and execute it again.
+CRITICISM:  I should have ensured that the Python code was correct and would produce a result before executing it.
+SPEAK:  It seems there was an issue with the execution of the Python code. Let's try again.\newline
+NEXT ACTION:  COMMAND = execute\_python\_code ARGUMENTS = ... (Exact same code as last)
+\\
+\midrule
+
+
+ & System & 
+SYSTEM:  Command execute\_python\_code returned:\\
+\midrule
+\faAndroid & &
+MATHSOLVERGPT THOUGHTS:  The Python code execution still isn't returning any output. It's possible that the issue lies with the calculation of the square roots ...
+\\
+\midrule
+
+\faUser  & Human & 
+control + C (Aborted)
+\\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{table*}[h!]
+\centering
+\caption{Application A1, Scenario 1: Autonomous math problem-solving.  Multi-Agent Debate on the first qualitative problem. It gives a wrong final answer.}
+\label{tab:debate_ex}
+\tiny
+\begin{tabular}{c|c|p{11cm}}
+\toprule
+ & \textbf{Action} & \textbf{\libName}     \\
+ % \midrule
+ % & Setup & Setup OptiGuide. \\
+\midrule
+\faUser & Topic &  Completely simplify and rationalize the denominator: $$\frac{\sqrt{160}}{\sqrt{252}}\times\frac{\sqrt{245}}{\sqrt{108}}$$\\
+\midrule
+\faAndroid  & &
+===== Debate Round-1 =====
+
+----- Affirmative side -----
+
+Ok, let's simplify each square root separately. We want to find the simplest square root that can divide 160, 252, 245, and 108.
+
+1. $\sqrt{160}$: 160 can be decomposed as 16*10, where 16 is a perfect square, so $\sqrt{160} = \sqrt{16*10}=\sqrt{16}*\sqrt{10}=4\sqrt{10}$
+
+2. $\sqrt{252}$ : 252 can be decomposed as 36*7, where 36 is a perfect square, so  $\sqrt{252}=\sqrt{36*7}=6\sqrt{7}$
+
+3. $\sqrt{245} = \sqrt{49*5}$, where 49 is a perfect square, so $\sqrt{245}=7*\sqrt{5}$
+
+4. $\sqrt{108}$  : 108 can be decomposed as 36*3, where 36 is a perfect square, so $\sqrt{108} = \sqrt{36*3}=6\sqrt{3}$
+
+Then we substitute the simplified square roots back into the expression, we have:
+$$\frac{\sqrt{160}}{\sqrt{252}}\times\frac{\sqrt{245}}{\sqrt{108}}=\frac{4\sqrt{10}}{6\sqrt{7}}\times\frac{7\sqrt{5}}{6\sqrt{3}}=\frac{4*7}{6*6}\cdot\sqrt{\frac{10*5}{7*3}}=\frac{7}{9}\cdot\sqrt{\frac{50}{21}}$$
+
+We are almost done, but we still need to rationalize the square root part of expression. Let's multiply the square root part by $\sqrt{21}$ at both the top and bottom to get rid of the square root at the denominator: $$\frac{7}{9}\cdot\sqrt{\frac{50*21}{21*21}}=\frac{7\sqrt{1050}}{189}.$$
+
+Then this is the final answer! The expression $$\frac{\sqrt{160}}{\sqrt{252}}\times\frac{\sqrt{245}}{\sqrt{108}}$$ can be simplified to $\frac{7\sqrt{1050}}{189}$.
+
+----- Negative side -----
+
+I do disagree with your final answer, but I think we mostly agree on the steps. Your simplifications of the square roots are correct, but you made a mistake in the final simplification part. Let me explain how I would complete the problem:
+
+As stated, 
+$$\frac{\sqrt{160}}{\sqrt{252}}\times\frac{\sqrt{245}}{\sqrt{108}}=\frac{4\sqrt{10}}{6\sqrt{7}}\times\frac{7\sqrt{5}}{6\sqrt{3}}.$$  
+
+This should then simplify to: 
+$$ = \frac{28\sqrt{50}}{36\sqrt{21}} = \frac{7\sqrt{50}}{9\sqrt{21}}.$$ 
+
+You made a mistake in your calculation because you considered square root of $50/21$, and you should have considered the simplified square root of $50$ over the simplified square root of $21$. The rationalization would become:
+
+$$ = \frac{7\sqrt{50}}{9\sqrt{21}} \cdot \frac{\sqrt{21}}{\sqrt{21}} = \frac{7\sqrt{1050}}{189}.$$ 
+
+This seems to coincide with your final answer, but it's in fact a very different number, So, the original expression simplifies to $\frac{7\sqrt{1050}}{189}$.
+
+Let's now see if we disagree on this final answer.
+
+----- Moderator -----
+
+{``Whether there is a preference": ``Yes", ``Supported Side": ``Negative", ``Reason": ``Both sides of the debate came to the same final answer. However, the negative side correctly identified a mistake in the affirmative side's calculation, pointing out that the simplification should have been the square root of 50 over the square root of 21, not 50 over 21. The negative side shows a better understanding of the simplification process.", ``debate\_answer": ``$\frac{7\sqrt{1050}}{189}$"}
+
+
+
+===== Debate Done! =====
+
+----- Base Answer -----
+
+Ok, let's simplify each square root separately. We want to find the simplest square root that can divide 160, 252, 245, and 108.
+
+1. $\sqrt{160}$: 160 can be decomposed as 16*10, where 16 is a perfect square, so $\sqrt{160} = \sqrt{16*10}=\sqrt{16}*\sqrt{10}=4\sqrt{10}$
+
+2. $\sqrt{252}$ : 252 can be decomposed as 36*7, where 36 is a perfect square, so  $\sqrt{252}=\sqrt{36*7}=6\sqrt{7}$
+
+3. $\sqrt{245} = \sqrt{49*5}$, where 49 is a perfect square, so $\sqrt{245}=7*\sqrt{5}$
+
+4. $\sqrt{108}$  : 108 can be decomposed as 36*3, where 36 is a perfect square, so $\sqrt{108} = \sqrt{36*3}=6\sqrt{3}$
+
+Then we substitute the simplified square roots back into the expression, we have:
+$$\frac{\sqrt{160}}{\sqrt{252}}\times\frac{\sqrt{245}}{\sqrt{108}}=\frac{4\sqrt{10}}{6\sqrt{7}}\times\frac{7\sqrt{5}}{6\sqrt{3}}=\frac{4*7}{6*6}\cdot\sqrt{\frac{10*5}{7*3}}=\frac{7}{9}\cdot\sqrt{\frac{50}{21}}$$
+
+We are almost done, but we still need to rationalize the square root part of expression. Let's multiply the square root part by $\sqrt{21}$ at both the top and bottom to get rid of the square root at the denominator: $$\frac{7}{9}\cdot\sqrt{\frac{50*21}{21*21}}=\frac{7\sqrt{1050}}{189}.$$
+
+Then this is the final answer! The expression $$\frac{\sqrt{160}}{\sqrt{252}}\times\frac{\sqrt{245}}{\sqrt{108}}$$ can be simplified to $\frac{7\sqrt{1050}}{189}$.
+
+----- Debate Answer -----
+
+$$\frac{7\sqrt{1050}}{189}$$
+
+----- Debate Reason -----
+
+Both sides of the debate came to the same final answer. However, the negative side correctly identified a mistake in the affirmative side's calculation, pointing out that the simplification should have been the square root of 50 over the square root of 21, not 50 over 21. The negative side shows a better understanding of the simplification process.
+   \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+
+\begin{table*}[h!]
+\centering
+\caption{Application A3. ChatGPT+ Code Interpreter for OptiGuide. A sample question ``What if the roasting cost is increased by 5\% because of the potential salary increase?" is asked.}
+\label{tab:optiguide_gpt_complex}
+\tiny
+\begin{tabular}{c|c|p{11cm}}
+\toprule
+ & \textbf{Action} & \textbf{ChatGPT+ Code Interpreter}     \\
+\midrule
+\faUser & Prompt Writer & \begin{tabular}[t]{p{13cm}}Customer open Web browser.\\For the source code ``coffee.py",\\Can you tell me:\\\textit{What if the roasting cost is increased by 5\% because of the potential salary increase?}
+\end{tabular}     \\
+\midrule
+\faAndroid &   &   \begin{tabular}[t]{p{13cm}}
+Sure! Let's first take a look at the contents of the ``coffee.py" file to understand the code and how the roasting cost is calculated. \\
+This will allow us to determine the effect of a 5\% increase in the roasting cost.\\
+...\textit{several lines omitted}\\
+Would you like me to modify the code to reflect the 5\% increase in roasting costs and run the modified code to observe the impact?\\
+If the code requires any specific input or parameters, please let me know!
+\end{tabular} \\
+\midrule
+\faUser & Prompt Writer & Yes \\
+\midrule
+\faAndroid & & \begin{tabular}[t]{p{13cm}}
+Great! Before proceeding, I'll need to ensure that the Gurobi solver is not being used in this code, as my current environment  \\
+does not have access to Gurobi. 
+If the code does indeed use Gurobi, we can still analyze the effect of the change in roasting \\
+costs by understanding the structure of the code.\\
+...\textit{several lines omitted}\\
+Alternatively, if you have access to a Gurobi license, you can make the necessary changes in the code and run it \\ on your local machine. \\
+I can guide you through the process of making the necessary modifications to the code.\\
+Would you like me to proceed with the code analysis and explanation, or would you like guidance on making the changes yourself?
+\end{tabular} \\
+\midrule
+\faUser & Prompt Writer & You can give me the full code, and I can run the code locally myself. \\
+\midrule
+\faAndroid & & 
+\begin{tabular}[t]{p{13cm}}
+Certainly! I'll modify the code to reflect a 5\% increase in both the light and dark roasting costs, and then provide the full \\
+code for you to run locally.\\
+...\\
+Download Modified Coffee.py\\
+If you have any questions or need further assistance, please feel free to ask!
+\end{tabular}
+\\
+\midrule
+\faUser &  Prompt Safeguard &  \begin{tabular}[t]{p{13cm}} Hi GPT, can you safecheck the generated code for me? \\ \textit{Upload the generated code.} \end{tabular}  \\
+\midrule
+\faAndroid &   &  DANGER \\
+\midrule
+\faUser & Prompt Writer &  I have tried to run your code. However, the code triggered our safeguard, and it is not safe to run. Try again. Hint: don't change roasting\_cost\_light or roasting\_cost\_light  variables.  \\
+\midrule
+\faAndroid &   &   \begin{tabular}[t]{p{13cm}}
+I apologize for the oversight. It appears I made direct changes to the variables that could have led to issues with the code. Let's \\ take a different approach by analyzing the code to identify the appropriate place to apply the 5\% increase in roasting costs.\\
+...\\
+Download Modified Safe Coffee.py\\
+...
+\end{tabular} \\
+\midrule
+\faUser &  Prompt Safeguard &  \begin{tabular}[t]{p{13cm}} Hi GPT, can you safecheck the generated code for me one more time? \\ \textit{Upload the generated code.} \end{tabular}  \\
+\midrule
+\faAndroid &   & DANGER \\
+\midrule
+\faUser & Prompt Writer &  I have tried to run your code again. However, the code triggered our safeguard, and it is not safe to run. Try again. Hint: don't change roasting\_cost\_light or roasting\_cost\_light  variables.
+  \\
+\midrule
+\faAndroid &   &   \begin{tabular}[t]{p{13cm}}
+I apologize for the continued confusion. \\
+...\\
+Download Final Modified Safe Coffee.py\\
+...
+\end{tabular} \\
+\midrule
+\faUser &  Prompt Safeguard &  \begin{tabular}[t]{p{13cm}} Hi GPT, can you safecheck the generated code for me one more time? \\ \textit{Upload the generated code.} \end{tabular}  \\
+\midrule
+\faAndroid &   &   SAFE \\
+\midrule
+\faUser & Run Code & \begin{tabular}[t]{p{6.5cm}}Obtain the terminal results:\\Optimizer version 9.5.1 build v9.5.1rc2 (linux64)\\Thread count: 64 physical cores, 128 logical processors, using up to 32 threads\\{[}63 lines of output ignored{]}\\Optimal cost: 2526.5 \end{tabular}                              \\
+\midrule
+\faUser & Prompt Writer & Here is the execution result. [\textit{Copy + Paste the terminal output here.}] Can you extract the final answer to me? Remember to compare with the original cost of 2470. \\
+\midrule
+\faAndroid  & & \begin{tabular}[t]{p{6.5cm}}
+Certainly! The execution result you've provided indicates the optimal cost for the modified scenario, where the roasting costs were increased by 5\%. Here's the comparison: \\
+Original Cost: 2470 \\
+Modified Cost (with 5\% increase in roasting costs): 2526.5\\
+The increase in roasting costs has led to an increase in the overall cost by 56.5, reflecting the impact of the potential salary increase on the roasting cost. \\
+If you need any further insights or assistance, please let me know!  \end{tabular}   \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+
+
+
+\begin{table*}[h!]
+\caption{Application A1. Scenario 1: autonomous math solving. ChatGPT+ Code Interpreter on the first qualitative example.  The code generated does not match the devised plan. The code returns a decimal number.}
+\label{tab:append_math_chatcode}
+\small
+\begin{tabular}{c|c|p{12cm}}
+\toprule
+ & \textbf{Action} & \textbf{ChatGPT+ Code Interpreter}     \\
+ \midrule
+
+\faUser & Input & Completely simplify and rationalize the denominator: $$\frac{\sqrt{160}}{\sqrt{252}}\times\frac{\sqrt{245}}{\sqrt{108}}$$ \\
+\midrule
+\faAndroid  & & 
+
+To simplify and rationalize the expression, we first simplify the radicals in the numerator and denominator by factoring out the largest perfect squares from the numbers under the square root. 
+
+The perfect square factors of 160, 252, 245, and 108 are 16, 4, 1, and 36, respectively. Let's factorize and simplify: 
+
+\[
+\frac{\sqrt{160}}{\sqrt{252}}\times\frac{\sqrt{245}}{\sqrt{108}} = \frac{\sqrt{16 \times 10}}{\sqrt{4 \times 63}}\times\frac{\sqrt{245}}{\sqrt{36 \times 3}}
+\]
+
+We can simplify this further by applying the property \(\sqrt{ab} = \sqrt{a} \sqrt{b}\) and \(\frac{a}{b} \times \frac{c}{d} = \frac{a \times c}{b \times d}\).
+\\
+
+\faAndroid  & & 
+
+Python
+\begin{lstlisting}
+import math
+
+# factoring the square roots
+sqrt_160 = math.sqrt(16) * math.sqrt(10)
+sqrt_252 = math.sqrt(4) * math.sqrt(63)
+sqrt_245 = math.sqrt(245)
+sqrt_108 = math.sqrt(36) * math.sqrt(3)
+
+# simplify the fraction
+numerator = sqrt_160 * sqrt_245
+denominator = sqrt_252 * sqrt_108
+simplified_fraction = numerator / denominator
+
+simplified_fraction
+
+\end{lstlisting}
+
+Result:
+\begin{lstlisting}
+1.200137166371826
+\end{lstlisting} \\
+
+
+\faAndroid  & & 
+
+The completely simplified and rationalized form of the given expression is approximately \(1.200\). \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{table*}[h!]
+\centering
+\caption{Application A3. \libName with OptiGuide. The same question ``What if the roasting cost is increased by 5\% because of the potential salary increase?" is asked.}
+\label{tab:optiguide_complex}
+\small
+\begin{tabular}{c|c|p{11cm}}
+\toprule
+ & \textbf{Action} & \textbf{\libName}     \\
+\midrule
+\faUser & Prompt & \textit{What if the roasting cost is increased by 5\% because of the potential salary increase?} \\
+\midrule
+\faAndroid  & & After increasing the roasting costs by 5\%, I've re-calculated the optimal coffee distribution solution for the supply chain. As a result, the new optimal total cost has become 2526.5, compared to the initial cost of 2470.0. This indicates that the increased roasting costs have caused the overall distribution cost to rise by 56.5 units.
+   \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+
+
+\begin{table*}[h!]
+\centering
+\caption{Application A1. Scenario 1: autonomous math solving. Preliminary test with BabyAGI.}
+\label{tab:bayagi_ex}
+\tiny
+\begin{tabular}{c|c|p{11cm}}
+\toprule
+ & \textbf{Action} & \textbf{BabyAGI}     \\
+\midrule
+\faUser & Set .env & OBJECTIVE=Solve math problems
+
+INITIAL\_TASK=Completely simplify and rationalize the denominator: 
+$$\frac{\sqrt{160}}{\sqrt{252}}\times\frac{\sqrt{245}}{\sqrt{108}}$$
+\\
+\midrule
+\faAndroid  & & Solve math problems
+
+Initial task: Completely simplify and rationalize the denominator: $\frac{\sqrt{160}}{\sqrt{252}}\times\frac{\sqrt{245}}{\sqrt{108}}$
+
+*****TASK LIST*****
+
+ • Completely simplify and rationalize the denominator: $\frac{\sqrt{160}}{\sqrt{252}}\times\frac{\sqrt{245}}{\sqrt{108}}$
+
+*****NEXT TASK*****
+
+Completely simplify and rationalize the denominator: $\frac{\sqrt{160}}{\sqrt{252}}\times\frac{\sqrt{245}}{\sqrt{108}}$
+
+*****TASK RESULT*****
+
+First, let's simplify each square root separately:
+
+- $$\sqrt{160} = \sqrt{16*10} = \sqrt{16}*\sqrt{10} = 4*\sqrt{10}$$ 
+- $$\sqrt{252} = \sqrt{4*63}= \sqrt{4}\times\sqrt{63}= 2\sqrt{63}$$
+- $$\sqrt{245}= \sqrt{49*5}= \sqrt{49}\times\sqrt{5}= 7\sqrt{5}$$
+- $$\sqrt{108}= \sqrt{36*3}= \sqrt{36}\times\sqrt{3}= 6\sqrt{3}$$
+
+Now, substitute these values into the original expression which gives:
+
+$$ \frac{4*\sqrt{10}}{2\sqrt{63}}\times\frac{7\sqrt{5}}{6\sqrt{3}} = \frac{2*\sqrt{10}}{\sqrt{63}} \times \frac{7\sqrt{5}}{2\sqrt{3}}$$
+
+We get rid of the square root in the denominator by multiplying the fractions which gives:
+
+$$= \frac{2*7\sqrt{10*5}}{2*\sqrt{63*3}} =  \frac{14\sqrt{50}}{\sqrt{189}}
+= \frac{14*5\sqrt{2}}{7\sqrt{27}} = 2\sqrt{2}*\frac{10}{\sqrt{27}} = \frac{20\sqrt{2}}{\sqrt{27}}.$$
+
+To simplify further and rationalize the denominator, we multiply by $\frac{\sqrt{27}}{\sqrt{27}}$ which gives:
+
+$= \frac{20\sqrt{2}}{\sqrt{27}} * \frac{\sqrt{27}}{\sqrt{27}}
+=  \frac{20\sqrt{54}}{27} = \frac{20*3\sqrt{6}}{27}= \frac{60\sqrt{6}}{27}.$ 
+
+Simplifying further gives:
+
+$= \frac{20\sqrt{6}}{9}.$
+
+*****TASK CREATION AGENT PROMPT****
+
+You are to use the result from an execution agent to create new tasks with the following objective: Solve math problems.
+The last completed task has the result: 
+First, let's simplify each square root separately:
+
+- $$\sqrt{160} = \sqrt{16*10} = \sqrt{16}*\sqrt{10} = 4*\sqrt{10}$$ 
+$$\textbf{...Repeat after ``First, let’s simplify each square..''}$$
+
+Now, substitute these values into the original expression which gives:
+
+$$ \frac{4*\sqrt{10}}{2\sqrt{63}}\times\frac{7\sqrt{5}}{6\sqrt{3}} = \frac{2*\sqrt{10}}{\sqrt{63}} \times \frac{7\sqrt{5}}{2\sqrt{3}}$$
+
+We get rid of the square root in the denominator by multiplying the fractions which gives:
+
+$$= \frac{2*7\sqrt{10*5}}{2*\sqrt{63*3}} =  \frac{14\sqrt{50}}{\sqrt{189}}
+= \frac{14*5\sqrt{2}}{7\sqrt{27}} = 2\sqrt{2}*\frac{10}{\sqrt{27}} = \frac{20\sqrt{2}}{\sqrt{27}}.$$
+
+To simplify further and rationalize the denominator, we multiply by $\frac{\sqrt{27}}{\sqrt{27}}$ which gives:
+
+$$= \frac{20\sqrt{2}}{\sqrt{27}} * \frac{\sqrt{27}}{\sqrt{27}}
+=  \frac{20\sqrt{54}}{27} = \frac{20*3\sqrt{6}}{27}= \frac{60\sqrt{6}}{27}.$$ 
+
+Simplifying further gives:
+
+$= \frac{20\sqrt{6}}{9}.$
+This result was based on this task description: Completely simplify and rationalize the denominator: $\frac{\sqrt{160}}{\sqrt{252}}\times\frac{\sqrt{245}}{\sqrt{108}}$.
+Based on the result, return a list of tasks to be completed in order to meet the objective. 
+Return one task per line in your response. The result must be a numbered list in the format:
+
+\# First task
+\# Second task
+
+The number of each entry must be followed by a period. If your list is empty, write ``There are no tasks to add at this time.''
+Unless your list is empty, do not include any headers before your numbered list or follow your numbered list with any other output.
+
+
+****TASK CREATION AGENT RESPONSE****
+
+1. Simplify and rationalize the denominator for the expression $\frac{\sqrt{225}}{\sqrt{45}}\times\frac{\sqrt{200}}{\sqrt{125}}$
+2. Simplify and rationalize the denominator for the expression $\frac{\sqrt{289}}{\sqrt{361}}\times\frac{\sqrt{100}}{\sqrt{72}}$
+\textbf{...Until 10}
+
+Adding new tasks to task\_storage
+{`task\_name': `Simplify and rationalize the denominator for the expression fracsqrt225sqrt45timesfracsqrt200sqrt125', `task\_id': 2}
+
+{`task\_name': `Simplify and rationalize the denominator for the expression fracsqrt289sqrt361timesfracsqrt100sqrt72', `task\_id': 3}
+
+\textbf{...Until task id 11}
+
+****TASK PRIORITIZATION AGENT PROMPT****
+
+You are tasked with prioritizing the following tasks: 
+Simplify and rationalize the denominator for the expression fracsqrt225sqrt45timesfracsqrt200sqrt125
+Simplify and rationalize the denominator for the expression fracsqrt289sqrt361timesfracsqrt100sqrt72
+
+\textbf{...Aborted}
+   \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+
+\begin{table*}[h!]
+\centering
+\caption{Application A1, Scenario 1: Autonomous math problem-solving. Preliminary test with CAMEL. We constructed two roles: ``Math Solver'' and ``Python Programmer''. The resulting code cannot be executed. The conversation continues, and the roles are not keen on solving the problem and giving an answer.}
+\label{tab:camel_ex}
+\tiny
+\begin{tabular}{c|c|p{11cm}}
+\toprule
+ & \textbf{Action} & CAMEL   \\
+ % \midrule
+ % & Setup & Setup OptiGuide. \\
+\midrule
+\faUser & Set task prompt & Completely simplify and rationalize the denominator: $$\frac{\sqrt{160}}{\sqrt{252}}\times\frac{\sqrt{245}}{\sqrt{108}}$$ \\
+\midrule
+\faAndroid & System & **************Assistant sys message*************
+AI SystemMessage(role\_name=`Python Programmer', role\_type=$<$RoleType.ASSISTANT: `assistant'$>$, meta\_dict={`task': `Using Python programming language, write a program that accepts four integers as input, applies square root function to each, simplifies and rationalizes the denominator of the fraction resulting from the multiplication of two fractions: $\frac{\sqrt{160}}{\sqrt{252}}\times\frac{\sqrt{245}}{\sqrt{108}}$, and returns the simplified expression.', `assistant\_role': `Python Programmer', `user\_role': `Math Solver'}, role=`system', content=`Never forget you are a Python Programmer and I am a Math Solver. Never flip roles! ...)
+
+
+**************AI User sys message*************
+
+SystemMessage(role\_name=`Math Solver', role\_type=$<$RoleType.USER: `user'$>$, meta\_dict={`task': `Using Python programming language, write a program that accepts four integers as input, applies square root function to each, simplifies and rationalizes the denominator of the fraction resulting from the multiplication of two fractions: $\frac{\sqrt{160}}{\sqrt{252}}\times\frac{\sqrt{245}}{\sqrt{108}}$, and returns the simplified expression.', `assistant\_role': `Python Programmer', `user\_role': `Math Solver'}, role=`system', content=`Never forget you are a Math Solver and I am a Python Programmer. Never flip roles! You will always instruct me.We share a common interest in collaborating to successfully complete a task.I must help you to complete the task.Here is the task: Using Python programming language, write a program that accepts four integers as input, applies square root function to each, simplifies and rationalizes the denominator of the fraction resulting from the multiplication of two fractions: $\frac{\sqrt{160}}{\sqrt{252}}\times\frac{\sqrt{245}}{\sqrt{108}}$, and returns the simplified expression.. ...)
+
+**************Original task prompt*************
+
+Completely simplify and rationalize the denominator: $\frac{{\sqrt{{160}}}}{{\sqrt{{252}}}}\times\frac{{\sqrt{{245}}}}{{\sqrt{{108}}}}$
+
+
+**************Specified task prompt*************
+
+Using Python programming language, write a program that accepts four integers as input, applies square root function to each, simplifies and rationalizes the denominator of the fraction resulting from the multiplication of two fractions: $\frac{\sqrt{160}}{\sqrt{252}}\times\frac{\sqrt{245}}{\sqrt{108}}$, and returns the simplified expression.
+
+**************Final task prompt*************
+
+Using Python programming language, write a program that accepts ...
+\\
+\midrule
+
+
+
+
+
+\faUser & AI User & Instruction: Import the necessary libraries for the task.
+Input: None \\
+\midrule
+
+\faAndroid & AI Assistant & Solution: To solve this task, we will need the `math` library for the square root function and the `fractions` library to simplify the resulting fraction. Here is how to import these libraries:
+
+%\begin{lstlisting}[basicstyle=\tiny]
+\begin{lstlisting}
+import math
+from fractions import Fraction
+\end{lstlisting}
+
+The `math` library provides functions that deal with mathematical operations. The `sqrt` function, which we will use in this task, is part of this library.
+
+The `fractions` library provides functions for creating and manipulating rational numbers. The `Fraction` function, which we will use to simplify the resulting fraction, is part of this library.
+
+Next request. \\
+\midrule
+
+\faUser & AI User & Instruction: Define a function that accepts four integers as input.
+Input: None \\
+\midrule
+
+\faAndroid & AI Assistant & Solution: Let's define a function named `simplify\_fraction` that accepts four integers as input. These integers will represent the numbers under the square root in the fractions.
+
+%\begin{lstlisting}[basicstyle=\tiny]
+\begin{lstlisting}
+def simplify_fraction(a, b, c, d):
+    pass
+\end{lstlisting}
+
+In this function, `a', `b', `c', and `d' are the parameters that will accept the four integers as input. The `pass' statement is a placeholder and will be replaced with actual code in the next steps.
+
+Next request. \\
+\midrule
+
+\faUser & AI User & Instruction: Inside the function, apply the square root function to each of the input integers.
+Input: None \\
+\midrule
+
+\faAndroid & AI Assistant & Solution: We will use the `math.sqrt' function from the `math' library to apply the square root to each of the input integers. Here is how to do it:
+
+%\begin{lstlisting}[basicstyle=\tiny]
+\begin{lstlisting}
+def simplify_fraction(a, b, c, d):
+    sqrt_a = math.sqrt(a)
+    sqrt_b = math.sqrt(b)
+    sqrt_c = math.sqrt(c)
+    sqrt_d = math.sqrt(d)
+\end{lstlisting}
+
+In this code, `sqrt\_a', `sqrt\_b', `sqrt\_c', and `sqrt\_d' are variables that store the square root of the input integers `a', `b', `c', and `d' respectively.
+
+Next request. \\
+\midrule
+\faUser & Human & Abort \\
+\bottomrule
+
+\end{tabular}
+\end{table*}
+
+
+\begin{table*}[h!]
+\centering
+\caption{Application A1, Scenario 1: Autonomous math problem-solving.  Preliminary evaluation on MetaGPT. It does not solve the math problem but gives a product solution.}
+\label{tab:metagpt_ex}
+\small
+\begin{tabular}{c|c|p{11cm}}
+\toprule
+ & \textbf{Action} & MetaGPT     \\
+ % \midrule
+ % & Setup & Setup OptiGuide. \\
+\midrule
+\faUser & Prompt &  Completely simplify and rationalize the denominator: $$\frac{\sqrt{160}}{\sqrt{252}}\times\frac{\sqrt{245}}{\sqrt{108}}$$  \\
+\midrule
+\faAndroid  & & The boss has tasked me with creating a successful product that is efficient.
+
+\#\# Product Goals
+%\begin{lstlisting}[basicstyle=\tiny]
+\begin{lstlisting}
+[
+    ``Create a product that meets the needs of the target market",
+    ``Ensure the product is efficient and easy to use",
+    ``Achieve a high level of customer satisfaction"
+]
+\end{lstlisting}
+
+\#\# User Stories
+%\begin{lstlisting}[basicstyle=\tiny]
+\begin{lstlisting}
+[
+    ``As a user, I want a product that is easy to navigate so that I can find what I need quickly",
+    ``As a user, I want a product that is reliable and efficient so that I can depend on it",
+    ``As a user, I want a product that meets my needs so that I can get value for my money",
+    ``As a user, I want a product that is constantly updated and improved so that I can enjoy the best features",
+    ``As a user, I want a product that offers good customer support so that I can get help when I need it"
+]
+\end{lstlisting}
+\#\# Competitive Analysis
+%\begin{lstlisting}[basicstyle=\tiny]
+\begin{lstlisting}
+[
+    ``Product A: Offers similar features but lacks efficiency",
+    ``Product B: Highly efficient but does not meet all the needs of the target market",
+    ``Product C: Has a high level of customer satisfaction but is not easy to navigate",
+    ``Product D: Is constantly updated and improved but lacks reliability",
+    ``Product E: Offers good customer support but is not efficient",
+    ``Product F: Is reliable and efficient but does not offer good customer support",
+    ``Our Target Product: Aims to combine all the best features of the competitors while improving on their weaknesses"
+]
+\end{lstlisting}
+
+\#\# Competitive Quadrant Chart
+
+   \\
+   \midrule
+   \faUser & Human & Abort\\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+
+
+\begin{table*}[h!]
+ \caption{Application A7. Example output of MiniWobChat on one web manipulation task ``click-button-sequence.''}
+\label{tab:append_miniwobchat}
+\tiny
+\begin{tabular}{c|c|p{11cm}}
+\toprule
+ & \textbf{Action} & \textbf{\libName}     \\
+
+\midrule
+\faUser & Init chat & 
+
+Executor agent to AssistantAgent:
+
+We have an autonomous computer control agent that can perform atomic instructions specified by natural language to control computers. There are two types of instructions it can execute. 
+
+First, given the instruction that matches the regular expression \verb|``^type\s.{1,}$"|, it can type a list of characters via the keyboard. This instruction should specify the target keyboard input for the agent to type. Before this typing instruction, you should first locate the cursor by clicking the input box with click instruction.
+
+Second, given the instruction that matches the regular expression, \verb|``^clickxpath\s.{1,}$"|, it can click an HTML element with an xpath that is visible on the webpage. The target of this instruction should be a valid xpath.
+Below is the HTML code of the webpage where the agent should solve a task.
+\begin{lstlisting}
+<div id="wrap" data-wob_ref="2" data-wob_eps="e0">
+  <div id="query">Click button ONE, then click button TWO.</div>
+  <div id="area" data-wob_ref="3" data-wob_eps="e0">
+    <button id="subbtn" style="position:absolute; left:103px; top:87px" data-wob_ref="4" data-wob_eps="e0">ONE</button>
+    <button id="subbtn2" style="position:absolute; left:44px; top:97px" data-wob_ref="5" data-wob_eps="e0">TWO</button>
+  </div>
+</div>
+\end{lstlisting}
+
+task: Click button ONE, then click button TWO.
+
+plan:
+
+1. Click the button with xpath ``//button[@id=`subbtn']".
+
+2. Click the button with xpath ``//button[@id=`subbtn2']".
+
+Current task: Click button ONE, then click button TWO.
+
+plan:
+\\
+\midrule
+\faAndroid  & & 
+***************************************************************
+
+AssistantAgent to Executor agent:
+
+1. Click the button with xpath ``//button[@id=`subbtn']".
+
+2. Click the button with xpath ``//button[@id=`subbtn2']".
+
+***************************************************************
+
+Executor agent to AssistantAgent:
+
+Below is the HTML code of the webpage where the agent should solve a task.
+
+\begin{lstlisting}
+<div id="wrap" data-wob_ref="2" data-wob_eps="e0">
+  <div id="query">Click button ONE, then click button TWO.</div>
+  <div id="area" data-wob_ref="3" data-wob_eps="e0">
+    <button id="subbtn" style="position:absolute; left:103px; top:87px" data-wob_ref="4" data-wob_eps="e0">ONE</button>
+    <button id="subbtn2" style="position:absolute; left:44px; top:97px" data-wob_ref="5" data-wob_eps="e0">TWO</button>
+  </div>
+</div>
+\end{lstlisting}
+
+Current task: Click button ONE, then click button TWO.
+
+
+Here is a plan you are following now.
+
+1. Click the button with xpath ``//button[@id=`subbtn']".
+
+2. Click the button with xpath ``//button[@id=`subbtn2']".
+
+We have a history of instructions that have been already executed by the autonomous agent so far.
+
+No instruction has been executed yet.
+
+Based on the plan and the history of instructions executed so far, the first instruction should be `
+
+***************************************************************
+
+AssistantAgent to Executor agent:
+
+clickxpath //button[@id=`subbtn']
+
+***************************************************************
+
+Executor agent to AssistantAgent:
+
+Hold on, please wait for my next instruction.
+
+***************************************************************
+
+AssistantAgent to Executor agent:
+
+Sure, I'll be here when you're ready with your next instruction.
+
+
+***************************************************************
+
+Executor agent to AssistantAgent:
+
+Below is the HTML code of the webpage where the agent should solve a task.
+\begin{lstlisting}
+<div id="wrap" data-wob_ref="2" data-wob_eps="e0">
+  <div id="query">Click button ONE, then click button TWO.</div>
+  <div id="area" data-wob_ref="3" data-wob_eps="e0">
+    <button id="subbtn" style="position:absolute; left:103px; top:87px" data-wob_ref="4" data-wob_eps="e0" data-tampered="e0">ONE</button>
+    <button id="subbtn2" style="position:absolute; left:44px; top:97px" data-wob_ref="5" data-wob_eps="e0">TWO</button>
+  </div>
+</div> 
+\end{lstlisting}
+Current task: Click button ONE, then click button TWO.
+
+Here is a plan you are following now.
+
+1. Click the button with xpath ``//button[@id=`subbtn']".
+
+2. Click the button with xpath ``//button[@id=`subbtn2']".
+
+We have a history of instructions that have been already executed by the autonomous agent so far.
+
+1: clickxpath //button[@id=`subbtn']
+
+Based on the plan and the history of instructions executed so far, the next proper instruction should be `
+
+***************************************************************
+
+AssistantAgent to Executor agent:
+
+clickxpath //button[@id=`subbtn2']
+
+***************************************************************
+
+Executor agent to AssistantAgent:
+
+SUCCESS!!!!
+   \\
+
+\midrule
+
+\faAndroid  & & TERMINATE \\
+
+\bottomrule
+\end{tabular}
+\end{table*}

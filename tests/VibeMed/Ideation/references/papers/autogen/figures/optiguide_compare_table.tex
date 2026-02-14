@@ -1,0 +1,28 @@
+\begin{table}[]
+\caption{ChatGPT+ Code Interpreter vs. our autogen implementation of OptiGuide}
+\label{tab:optiguide}
+\begin{tabular}{c|p{7cm}|p{7cm}}
+\toprule
+\textbf{Action} & \textbf{ChatGPT+ Code Interpreter}          & \textbf{Autogen (ours)}      \\
+\midrule
+Setup & Customer open Web browser             & Setup OptiGuide service in 10 lines of code, and Customer open web browser    \\
+\midrule
+\faUser & \begin{tabular}[t]{p{6.5cm}}For the source code ``coffee.py",\\Can you tell me:\\What if we prohibit shipping from supplier 1 to roastery 2?\end{tabular}      & What if we prohibit shipping from supplier 1 to roastery 2? \\
+\midrule
+\faAndroid &   \begin{tabular}[t]{p{6.5cm}}
+Because of proprietary package is used, we can not run the code. Download the new code, and run locally.
+Copy + Paste the result to browser and query GPT again:\\ \\ Can you give me the explaination from the above execution results?\end{tabular}  & After adding the constraint to prohibit shipping from supplier 1 to roastery 2, the optimization problem was still solved successfully. The new objective value, which represents the minimum cost in this scenario, is 2760.0.  Compared to the original results without the constraint, where the optimal cost was 2470.0, the new solution is more expensive by 290 units. This shows that prohibiting shipping from supplier 1 to roastery 2 increases the total cost of the coffee distribution.\qed \\
+\midrule
+\faUser &  \begin{tabular}[t]{p{6.5cm}}Obtain the terminal results:\\Optimizer version 9.5.1 build v9.5.1rc2 (linux64)\\Thread count: 64 physical cores, 128 logical processors, using up to 32 threads\\{[}63 lines of output ignored{]}\\Best objective 2.760000000000e+03, best bound 2.760000000000e+03, gap 0.0000\%\\Wed Jul 26 09:49:59 2023\\Optimal cost: 2760.0\end{tabular}  &                              \\
+\midrule
+\faAndroid & After adding the constraint to prohibit shipping from supplier 1 to roastery 2, the optimization problem was still solved successfully. The new objective value, which represents the minimum cost in this scenario, is 2760.0.  Compared to the original results without the constraint, where the optimal cost was 2470.0, the new solution is more expensive by 290 units. This shows that prohibiting shipping from supplier 1 to roastery 2 increases the total cost of the coffee distribution.\qed  &   \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+
+
+
+
+

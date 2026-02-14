@@ -1,0 +1,51 @@
+\clearpage
+\subsection*{A5: Dynamic Group Chat}
+\label{appendix:app:groupchat}
+
+
+\begin{figure*}[h]
+    \centering
+    \includegraphics[width=0.6\linewidth]{figures/app_groupchat.pdf}
+    \caption{A5: Dynamic Group Chat: Overview of how \libName enables dynamic group chats to solve tasks. The Manager agent, which is an instance of the \texttt{GroupChatManager} class, performs the following three steps--select a single speaker (in this case \bob), ask the speaker to respond, and broadcast the selected speaker's message to all other agents}
+    \label{fig:groupchat}
+\end{figure*}
+
+
+
+To validate the necessity of multi-agent dynamic group chat and the effectiveness of the role-play speaker selection policy, we conducted a pilot study comparing a four-agent dynamic group chat system with two possible alternatives across 12 manually crafted complex tasks. An example task is \emph{``How much money would I earn if I bought 200 \$AAPL stocks at the lowest price in the last 30 days and sold them at the highest price? Save the results into a file."} 
+The four-agent group chat system comprised the following group members: a user proxy to take human inputs, an engineer to write code and fix bugs, a critic to review code and provide feedback, and a code executor for executing code.
+One of the possible alternatives is a two-agent system involving an LLM-based assistant and a user proxy agent, and another alternative is a group chat system with the same group members but a task-based speaker selection policy. In the task-based speaker selection policy, we simply append role information, chat history, and the next speaker's task into a single prompt.  Through the pilot study, we observed that compared with a task-style prompt, utilizing a role-play prompt in dynamic speaker selection often leads to more effective consideration of both conversation context and role alignment during the process of generating the subsequent speaker, and consequently a higher success rate as reported in Table~\ref{tab:ablation_groupchat}, fewer LLM calls and fewer termination failures, as reported in Table~\ref{tab:ablation_groupchat_average_llm_call}.
+
+\begin{table}[h] \caption{Number of successes on the 12 tasks (higher the better).}
+    \label{tab:ablation_groupchat}
+    \centering
+    \begin{tabular}{l|c|c|c}
+\toprule
+Model & Two Agent & Group Chat & Group Chat with a task-based speaker selection policy  \\
+\midrule 
+GPT-3.5-turbo & 8&  \textbf{9} &  7 \\ \midrule 
+GPT-4 & 9 &  \textbf{11} &  8 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h] \caption{Average \# LLM calls and number of termination failures on the 12 tasks (lower the better).}
+\label{tab:ablation_groupchat_average_llm_call}
+    \centering
+    \begin{tabular}{l|c|c|c}
+\toprule
+Model & Two Agent & Group Chat & Group Chat with a task-based speaker selection policy  \\
+\midrule 
+GPT-3.5-turbo & 9.9, 9 & 5.3, 0 &  4, 0 \\ \midrule 
+GPT-4 & 6.8, 3 & 4.5, 0 &  4, 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\textwidth]{figures/two-agent-vs-group-chat.png}
+    \caption{Comparison of two-agent chat (a) and group chat (b) on a given task. The group chat resolves the task successfully with a smoother conversation, while the two-agent chat fails on the same task and ends with a repeated conversation.}
+    \label{fig:two-agent-vs-group-chat}
+\end{figure}

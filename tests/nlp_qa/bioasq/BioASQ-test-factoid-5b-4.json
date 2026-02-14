@@ -1,0 +1,856 @@
+{
+  "version": "BioASQ6b", 
+  "data": [
+    {
+      "title": "BioASQ6b", 
+      "paragraphs": [
+        {
+          "context": "Universal, class-specific and drug-specific reversal agents for the new oral anticoagulants. Although there is controversy about the absolute need for a reversal agent for the new direct oral anticoagulants (DOACs), the absence of such an agent is a barrier to more widespread use of these agents. For the management of major life-threatening bleeding with the DOACs, most authorities recommend the use of four factor prothrombin complex concentrates, although the evidence to support their use in terms of improving outcomes is meager. At the present time, there are three antidotes in development and poised to enter the market. Idarucizumab is a drug-specific antidote targeted to reverse the direct thrombin inhibitor, dabigatran. Andexanet alfa is a class-specific antidote targeted to reverse the oral direct factor Xa inhibitors as well as the indirect inhibitor, enoxaparin. Ciraparantag is a universal antidote targeted to reverse the direct thrombin and factor Xa inhibitors as well as the indirect inhibitor, enoxaparin.", 
+          "qas": [
+            {
+              "question": "Andexanet Alfa is an antidote of which clotting factor inhibitors?", 
+              "id": "5880b073c872c95565000003_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Reversing the Effect of Oral Anticoagulant Drugs: Established and Newer Options. The vitamin K antagonists (VKAs) have been the standard (and only) oral anticoagulants used for the long-term treatment or prevention of venous thromboembolism or stroke in patients with atrial fibrillation. The coagulopathy induced by VKAs can be reversed with vitamin K, and in urgent situations, the vitamin K-dependent coagulation factors can be replaced by transfusion. In the last decade, a new class of oral anticoagulants has been developed, direct oral anticoagulants that bind to a specific coagulation factor and neutralize it. These compounds were shown to be effective and safe compared with the VKAs and were licensed for specific indications, but without a specific reversal agent. The absence of a reversal agent is a barrier to more widespread use of these agents. Currently, for the management of major life-threatening bleeding with the direct oral anticoagulants, most authorities recommend the use of four factor prothrombin complex concentrates. There are now three reversal agents in development and poised to enter the market. Idarucizumab is a specific antidote targeted to reverse the direct thrombin inhibitor, dabigatran, which was recently approved for use in the USA. Andexanet alfa is an antidote targeted to reverse the oral direct factor Xa inhibitors as well as the indirect inhibitor enoxaparin. Ciraparantag is an antidote targeted to reverse the direct thrombin and factor Xa inhibitors as well as the indirect inhibitor enoxaparin.", 
+          "qas": [
+            {
+              "question": "Andexanet Alfa is an antidote of which clotting factor inhibitors?", 
+              "id": "5880b073c872c95565000003_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Andexanet alfa for the reversal of Factor Xa inhibitor related anticoagulation. Andexanet alfa is a specific reversal agent for Factor Xa inhibitors. The molecule is a recombinant protein analog of factor Xa that binds to Factor Xa inhibitors and antithrombin:LMWH complex but does not trigger prothrombotic activity. In ex vivo, animal, and volunteer human studies, andexanet alfa (AnXa) was able to dose-dependently reverse Factor Xa inhibition and restore thrombin generation for the duration of drug administration. Further trials are underway to examine its safety and efficacy in the population of patients experiencing FXa inhibitor-related bleeding.", 
+          "qas": [
+            {
+              "question": "Andexanet Alfa is an antidote of which clotting factor inhibitors?", 
+              "id": "5880b073c872c95565000003_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Reversal agents for use with direct and indirect anticoagulants. PURPOSE: The properties of three oral anticoagulant-specific reversal agents are reviewed, and guidance is presented to assist pharmacists in planning for the agents' introduction to the market. SUMMARY: Idarucizumab, which received Food and Drug Administration approval in October 2015, is a humanized monoclonal antibody fragment that immediately neutralizes the anticoagulant effect of dabigatran, as evidenced by reduced unbound dabigatran concentrations and normalized coagulation tests. Preliminary Phase III trial results demonstrated a median maximum reversal of 100%, a median time to bleeding cessation of 11.4 hours, and normal intraoperative hemostasis in 92% of patients requiring anticoagulation reversal before an urgent procedure. Andexanet alfa is a factor Xa (FXa) decoy that binds to direct and indirect FXa inhibitors. In Phase III trials in healthy volunteers, andexanet alfa reduced anti-FXa activity by more than 90%, reduced the concentration of unbound direct FXa inhibitor, and inhibited thrombin generation. Ciraparantag is a reversal agent under development for reversal of anticoagulation with direct and indirect FXa inhibitors and certain factor IIa inhibitors; it exerts its effect through hydrogen bonding. Concerns for thromboembolic events directly related to administration of idarucizumab, andexanet alfa, or ciraparantag have not arisen. Pharmacists need to begin preparing for the introduction of these specific reversal agents through protocol development and provider education; in addition, pharmacy departments need to plan for procurement and storage. The specific reversal agents should be incorporated into antithrombotic stewardship or other clinical pharmacy programs for surveillance. CONCLUSION: As agents that provide rapid reversal of direct oral anticoagulant activity become available, advance planning will help hospitals to optimize their use.", 
+          "qas": [
+            {
+              "question": "Andexanet Alfa is an antidote of which clotting factor inhibitors?", 
+              "id": "5880b073c872c95565000003_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Who, when, and how to reverse non-vitamin K oral anticoagulants. Non-vitamin K oral anticoagulants (NOACs) have been a major addition to our therapeutic armamentarium. They are at least as effective as warfarin in the thromboprophylaxis of non-valvular atrial fibrillation and management of thromboembolic disease, with a more favorable safety profile. Their predictable pharmacokinetics and pharmacodynamics allow for a fixed oral dosing without the need for anticoagulation monitoring. A major concern regarding NOACs is the lack of a readily available antidote to reverse their anticoagulation effect in case of life-threatening bleeding or need for emergent surgery. In this review, we summarize preclinical and clinical data on (a) hemostatic agents used to reverse NOACs, and (b) novel, target-specific NOACs reversal agents under development. The prothrombin complex concentrates, activated prothrombin complex concentrates and recombinant activated factor VII are hemostatic agents that have been assessed in reversing NOACs. Preclinical studies with hemostatic agents report variable results and there is only limited clinical data available to date. Idarucizumab and andexanet alfa are NOAC-specific reversal agents designed to reverse dabigatran and factor Xa inhibitors accordingly. Aripazine is a universal anticoagulation reversal agent. Preclinical studies show promising results and these agents are already in different stages of clinical development. Phase I and II clinical trials demonstrate efficacy in reversing NOACs without major side effects. Until these agents become commercially available, management of patients receiving NOACs who present with major bleeding or require emergent surgery should focus on (a) immediate discontinuation of NOACs, (b) supportive measures or postponing surgery for 12-24\u00a0h after the last NOAC dose, and/or", 
+          "qas": [
+            {
+              "question": "Andexanet Alfa is an antidote of which clotting factor inhibitors?", 
+              "id": "5880b073c872c95565000003_004"
+            }
+          ]
+        }, 
+        {
+          "context": "DeepCAGE transcriptomics identify HOXD10 as a transcription factor regulating lymphatic endothelial responses to VEGF-C. Lymphangiogenesis plays a crucial role during development, in cancer metastasis and in inflammation. Activation of VEGFR-3 (also known as FLT4) by VEGF-C is one of the main drivers of lymphangiogenesis, but the transcriptional events downstream of VEGFR-3 activation are largely unknown. Recently, we identified a wave of immediate early transcription factors that are upregulated in human lymphatic endothelial cells (LECs) within the first 30 to 80 min after VEGFR-3 activation. Expression of these transcription factors must be regulated by additional pre-existing transcription factors that are rapidly activated by VEGFR-3 signaling. Using transcription factor activity analysis, we identified the homeobox transcription factor HOXD10 to be specifically activated at early time points after VEGFR-3 stimulation, and to regulate expression of immediate early transcription factors, including NR4A1. Gain- and loss-of-function studies revealed that HOXD10 is involved in LECs migration and formation of cord-like structures. Furthermore, HOXD10 regulates expression of VE-cadherin, claudin-5 and NOS3 (also known as e-NOS), and promotes lymphatic endothelial permeability. Taken together, these results reveal an important and unanticipated role of HOXD10 in the regulation of VEGFR-3 signaling in lymphatic endothelial cells, and in the control of lymphangiogenesis and permeability.", 
+          "qas": [
+            {
+              "question": "Which technique led to the elucidation of the role of HOXD10 in regulating lymphatic endothelial responses to VEGF-C?", 
+              "id": "5881f627713cbdfd3d000005_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Co-Occurence of Reciprocal Translocation and COL2A1 Mutation in a Fetus with Severe Skeletal Dysplasia: Implications for Genetic Counseling. Achondrogenesis type II is an autosomal-dominant disease leading to severe micromelic dwarfism. Here, we report on the postmortem identification of a de novo heterozygous mutation in the COL2A1 gene (c.1529G>A, p.Gly510Asp) in a fetus who presented with generalized hydrops fetalis and severe micromelia during prenatal sonographic examinations. Initially, a reciprocal translocation t(4;17)(q31;p13) was detected in this fetus by chorionic villus sampling. Subsequent chromosomal analysis of maternal and paternal blood showed that the patient's mother was carrier of the same reciprocal translocation. SNP array analysis of the fetus did not provide evidence for chromosomal imbalances or CNVs that could be associated with the fetal phenotype. The coexistence of a cytogenetic (reciprocal translocation) and a molecular genetic (COL2A1 mutation) abnormality in the fetus carries important implications for genetic counseling.", 
+          "qas": [
+            {
+              "question": "What is  Achondroplasia?", 
+              "id": "58cefcfb8acda34529000002_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Neurodevelopment. Parasympathetic neurons originate from nerve-associated peripheral glial progenitors. The peripheral autonomic nervous system reaches far throughout the body and includes neurons of diverse functions, such as sympathetic and parasympathetic. We show that the parasympathetic system in mice--including trunk ganglia and the cranial ciliary, pterygopalatine, lingual, submandibular, and otic ganglia--arise from glial cells in nerves, not neural crest cells. The parasympathetic fate is induced in nerve-associated Schwann cell precursors at distal peripheral sites. We used multicolor Cre-reporter lineage tracing to show that most of these neurons arise from bi-potent progenitors that generate both glia and neurons. This nerve origin places cellular elements for generating parasympathetic neurons in diverse tissues and organs, which may enable wiring of the developing parasympathetic nervous system.", 
+          "qas": [
+            {
+              "question": "What do nerve-associated peripheral glial progenitors give rise to?", 
+              "id": "5881f9b65bf093691f000001_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Characterization of three kindreds with familial combined hypolipidemia caused by loss-of-function mutations of ANGPTL3. BACKGROUND: Angiopoietin-like protein 3 (ANGPTL3) affects lipid metabolism by inhibiting the activity of lipoprotein and endothelial lipases. Angptl3 knockout mice have marked hypolipidemia, and heterozygous carriers of ANGPLT3, loss-of-function mutations were found among individuals in the lowest quartile of plasma triglycerides in population studies. Recently, 4 related individuals with primary hypolipidemia were found to be compound heterozygotes for ANGPTL3 loss-of-function mutations. METHODS AND RESULTS: We resequenced ANGPTL3 in 4 members of 3 kindreds originally identified for very low levels of low-density lipoprotein cholesterol and high-density lipoprotein cholesterol (0.97\u00b10.16 and 0.56\u00b10.20 mmol/L, respectively) in whom no mutations of known candidate genes for monogenic hypobetalipoproteinemia and hypoalphalipoproteinemia had been detected. These subjects were found to be homozygous or compound heterozygous for ANGPTL3 loss-of-function mutations (p.G400VfsX5, p.I19LfsX22/p.N147X) associated with the absence of ANGPTL3 in plasma. They had reduced plasma levels of triglyceride-containing lipoproteins and of HDL particles that contained only apolipoprotein A-I and pre-\u03b2-high-density lipoprotein. In addition, their apolipoprotein B-depleted sera had a reduced capacity to promote cell cholesterol efflux through the various pathways (ABCA1-, SR-BI-, and ABCG1-mediated efflux); however, these subjects had no clinical evidence of accelerated atherosclerosis. Heterozygous carriers of the ANGPTL3 mutations had low plasma ANGPTL3 and moderately reduced low-density lipoprotein cholesterol (2.52\u00b10.38 mmol/L) but normal plasma high-density lipoprotein cholesterol. CONCLUSIONS: Complete ANGPTL3 deficiency caused by loss-of-function mutations of ANGPTL3 is associated with a recessive hypolipidemia characterized by a reduction of apolipoprotein B and apolipoprotein A-I-containing lipoproteins, changes in subclasses of high-density lipoprotein, and reduced cholesterol efflux potential of serum. Partial ANGPTL3 deficiency is associated only with a moderate reduction of low-density lipoprotein.", 
+          "qas": [
+            {
+              "question": "What is the results of inactivated ANGPLT3?", 
+              "id": "58dfd70c6fddd3e83e000002_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Mining the genome for lipid genes. Mining of the genome for lipid genes has since the early 1970s helped to shape our understanding of how triglycerides are packaged (in chylomicrons), repackaged (in very low density lipoproteins; VLDL), and hydrolyzed, and also how remnant and low-density lipoproteins (LDL) are cleared from the circulation. Gene discoveries have also provided insights into high-density lipoprotein (HDL) biogenesis and remodeling. Interestingly, at least half of these key molecular genetic studies were initiated with the benefit of prior knowledge of relevant proteins. In addition, multiple important findings originated from studies in mouse, and from other types of non-genetic approaches. Although it appears by now that the main lipid pathways have been uncovered, and that only modulators or adaptor proteins such as those encoded by LDLRAP1, APOA5, ANGPLT3/4, and PCSK9 are currently being discovered, genome wide association studies (GWAS) in particular have implicated many new loci based on statistical analyses; these may prove to have equally large impacts on lipoprotein traits as gene products that are already known. On the other hand, since 2004 - and particularly since 2010 when massively parallel sequencing has become de rigeur - no major new insights into genes governing lipid metabolism have been reported. This is probably because the etiologies of true Mendelian lipid disorders with overt clinical complications have been largely resolved. In the meantime, it has become clear that proving the importance of new candidate genes is challenging. This could be due to very low frequencies of large impact variants in the population. It must further be emphasized that functional genetic studies, while necessary, are often difficult to accomplish, making it hazardous to upgrade a variant that is simply associated to being definitively causative. Also, it is clear that applying a monogenic approach to dissect complex lipid traits that are mostly of polygenic origin is the wrong way to proceed. The hope is that large-scale data acquisition combined with sophisticated computerized analyses will help to prioritize and select the most promising candidate genes for future research. We suggest that at this point in time, investment in sequence technology driven candidate gene discovery could be recalibrated by refocusing efforts on direct functional analysis of the genes that have already been discovered. This article is part of a Special Issue entitled: From Genome to Function.", 
+          "qas": [
+            {
+              "question": "What is the results of inactivated ANGPLT3?", 
+              "id": "58dfd70c6fddd3e83e000002_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Cardiovascular Outcomes of New Medications for Type 2 Diabetes. Cardiovascular (CV) disease remains the leading cause of death in people with diabetes, highlighting the importance of using treatment options that do not increase CV risk or possibly decrease CV outcomes. Since 2008, the Food and Drug Administration has required demonstration of CV safety for all new medications developed for the glycemic management of diabetes. Seven trials have been published that have established CV safety for three DPP-4 inhibitors (alogliptin, saxagliptin, and sitagliptin), three GLP-1 receptor agonists (liraglutide, lixisenatide, and semaglutide), and one sodium-glucose cotransporter-2 inhibitor (empagliflozin). Three of those studies also established superiority with liraglutide, empagliflozin, and semaglutide at reducing the composite primary endpoint of major CV events (CV death, nonfatal myocardial infarction, and nonfatal stroke). In addition, one trial found an increase in heart failure hospitalizations with saxagliptin. The findings of these trials must be compared and contrasted cautiously given the differences in patient populations and trial designs, but together they provide important information that can be used to shape our treatment guideline recommendations and patient-specific treatment decisions.", 
+          "qas": [
+            {
+              "question": "Which disease is treated with semaglutide?", 
+              "id": "5880c42fc872c95565000008_000"
+            }
+          ]
+        }, 
+        {
+          "context": "[Promising molecules for treatment of hyperglycemia in patients with type 2 diabetes]. New antidiabetic drugs are being developed today that expand the range of pharmacological intervention, in particular for patients with type 2 diabetes (imeglimin, semaglutide, dulaglutide, FGF 21 analogue). At the same time innovations take place that \"better\" the well-proven molecules, they offer new application forms we have no experience of diabetology (osmotic pump for exenatide, faster acting insulin aspart). New properties are brought by just the change of concentration (insulin glargine in a concentration of 300 U/ml), unexpected positive results are also brought by new fixed-ratio combinations of antidiabetics (fixed-ratio combination of insulin degludec and liraglutide, fixed-ratio combination of insulin glargine and lixisenatide). Also results of clinical studies appear that concern molecules already in use which facilitate the formulation of new recommendations regarding treatment type 2 diabetes.Key words: type 2 diabetes mellitus - dulaglutide - FGF 21 - imeglimin - insulin aspart - insulin degludek - insulin glargine - ITCA 650 - liraglutide - national information diabetes system - semaglutide.", 
+          "qas": [
+            {
+              "question": "Which disease is treated with semaglutide?", 
+              "id": "5880c42fc872c95565000008_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Semaglutide, a once-weekly human GLP-1 analog, does not reduce the bioavailability of the combined oral contraceptive, ethinylestradiol/levonorgestrel. The effect of semaglutide, a once-weekly human glucagon-like peptide-1 (GLP-1) analog in development for type 2 diabetes (T2D), on the bioavailability of a combined oral contraceptive was investigated. Postmenopausal women with T2D (n = 43) on diet/exercise \u00b1 metformin received ethinylestradiol (0.03 mg)/levonorgestrel (0.15 mg) once daily for 8 days before (semaglutide-free) and during (steady-state 1.0 mg) semaglutide treatment (subcutaneous once weekly; dose escalation: 0.25 mg 4 weeks; 0.5 mg 4 weeks; 1.0 mg 5 weeks). Bioequivalence of oral contraceptives was established if 90%CI for the ratio of pharmacokinetic parameters during semaglutide steady-state and semaglutide-free periods was within prespecified limits (0.80-1.25). The bioequivalence criterion was met for ethinylestradiol area under the curve (AUC0-24 h ) for semaglutide steady-state/semaglutide-free; 1.11 (1.06-1.15). AUC0-24 h was 20% higher for levonorgestrel at semaglutide steady-state vs. semaglutide-free (1.20 [1.15-1.26]). Cmax was within bioequivalence criterion for both contraceptives. Reductions (mean \u00b1 SD) in HbA1c (-1.1 \u00b1 0.6%) and weight (-4.3 \u00b1 3.1 kg) were observed. Semaglutide pharmacokinetics were compatible with once-weekly dosing; the semaglutide dose and dose-escalation regimen were well tolerated. Adverse events, mainly gastrointestinal, were mild to moderate in severity. Asymptomatic increases in mean amylase and lipase were observed. Three subjects had elevated alanine aminotransferase levels > 3x the upper limit of normal during semaglutide/oral contraceptive coadministration, which were reported as adverse events, but resolved during follow-up. Semaglutide did not reduce the bioavailability of ethinylestradiol and levonorgestrel.", 
+          "qas": [
+            {
+              "question": "Which disease is treated with semaglutide?", 
+              "id": "5880c42fc872c95565000008_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Novel Anti-glycemic Drugs and Reduction of Cardiovascular Risk in Diabetes: Expectations Realized, Promises Unmet. PURPOSE OF REVIEW: The purpose is to review evidence on cardiovascular risks and benefits of new treatments for type 2 diabetes mellitus. RECENT FINDINGS: In response to guidance issued by the Food and Drug Administration, thousands of patients have been enrolled in large randomized trials evaluating the cardiovascular effects of the three newest diabetes drug classes: glucagon-like peptide-1 (GLP-1) receptor agonists, sodium glucose cotransporter 2 (SGLT-2) inhibitors, and dipeptidyl peptidase-4 (DPP-4) inhibitors. Two studies of GLP-1 receptor agonists-one of liraglutide and one of semaglutide-have shown cardiovascular benefit relative to placebo, and one study of the SGLT-2 inhibitor empagliflozin has shown benefit. The other published cardiovascular outcome studies of the newest drug classes have generally supported safety, apart from an as-yet unresolved safety concern about increased rates of heart failure with DPP-4 inhibitors. Recent research suggests the thiazolidinedione pioglitazone may have beneficial effects on some cardiovascular outcomes as well, but these are counterbalanced by a known increase of the risk of heart failure with this drug. In general, more prospective randomized trial data is now available regarding the cardiovascular effects of the newer diabetes drugs than on the older drug classes. New evidence suggests that the newest diabetes drugs are safe from a cardiovascular perspective. Evidence on benefit from at least some members of the GLP-1 receptor agonist and SGLT-2 inhibitor classes is encouraging but not yet decisive.", 
+          "qas": [
+            {
+              "question": "Which disease is treated with semaglutide?", 
+              "id": "5880c42fc872c95565000008_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Glucagon-Like Peptide-1 Receptor Agonists for Type 2 Diabetes: A Clinical Update of Safety and Efficacy. INTRODUCTION: Glucagon-like peptide-1 receptor agonists (GLP-1 RAs) are increasingly being used for the treatment of type 2 diabetes mellitus, but consideration of benefits and potential adverse events is required. This review examines the state of glycemic control, weight loss, blood pressure, and tolerability, as well as the current debate about the safety of GLP-1 RAs, including risk of pancreatitis, pancreatic cancer, and thyroid cancer. METHODS: A MEDLINE search (2010-2015) identified publications that discussed longer-acting GLP-1 RAs. Search terms included GLP-1 receptor agonists, liraglutide, exenatide, lixisenatide, semaglutide, dulaglutide, albiglutide, efficacy, safety, pancreatitis, pancreatic cancer, and thyroid cancer. Abstracts from the American Diabetes Association, European Association for the Study of Diabetes, and American Association of Clinical Endocrinologists from 2010 to 2015 were also searched. Efficacy and safety studies, pooled analyses, and meta-analyses were prioritized. RESULTS: Research has confirmed that GLP-1 RAs provide robust glycemic control, weight loss, and blood pressure re-duction. Current studies do not prove increased risk of pancreatitis, pancreatic cancer, or thyroid cancer but more trials are needed since publications that indicate safety or suggest increased risk have methodological flaws that prevent firm conclusions to be drawn about these rare, long-term events. CONCLUSION: GLP-1 RA therapy in the context of individualized, patient-centered care continues to be supported by current literature. GLP-1 RA therapy provides robust glycemic control, blood pressure reduction, and weight loss, but studies are still needed to address concerns about tolerability and safety, including pancreatitis and cancer.", 
+          "qas": [
+            {
+              "question": "Which disease is treated with semaglutide?", 
+              "id": "5880c42fc872c95565000008_004"
+            }
+          ]
+        }, 
+        {
+          "context": "Glucose-6-phosphate dehydrogenase deficiency in India. Glucose-6-phosphate dehydrogenase (G6PD) deficiency is the commonest red cell enzymopathy in humans and has an X-linked inheritance. It has been reported from India more than 30 years ago and the prevalence varies from 0-27% in different caste, ethnic and linguistic groups. The major clinical manifestations are drug induced hemolytic anemia, neonatal jaundice and chronic non-spherocytic hemolytic anemia. Individuals with G6PD deficiency have a selective advantage against falciparum malaria. Thirteen biochemically characterized variants have been reported from India. At the molecular level, G6PD Mediterranean is the most common deficient variant in the caste groups whereas, G6PD Orissa is more prevalent among the tribal of India. The third common variant seen in India is G6PD Kerala-Kalyan.", 
+          "qas": [
+            {
+              "question": "What is the inheritance of the glucose-6-phosphate dehydrogenase (G6PD) deficiency?", 
+              "id": "58c6635f02b8c60953000023_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Erythrocytic glucose-6-phosphate dehydrogenase deficiency in the Bania community of Punjab. Five hundred members belonging to the Bania community of Punjab were screened for erythrocytic glucose-6-phosphate dehydrogenase (G-6-PD) deficiency. The incidence of enzyme deficiency in males was 2.84 per cent and in females 2.75 per cent, with an overall incidence of 2.80 per cent. No correlation between age and G-6-PD deficiency was found. The mean values for haemoglobin and haematocrit did not differ significantly in the normal and deficient subjects. Study of the deficiency pattern amongst family members of the enzyme deficient subjects confirmed the X-linked inheritance of G-6-PD deficiency.", 
+          "qas": [
+            {
+              "question": "What is the inheritance of the glucose-6-phosphate dehydrogenase (G6PD) deficiency?", 
+              "id": "58c6635f02b8c60953000023_001"
+            }
+          ]
+        }, 
+        {
+          "context": "[Glucose-6-phosphate dehydrogenase deficiency of the mediterranean type B minus. 2. Etiological basis for severe hyperbilirubinemia in the newborn]. After having described in detail the pathophysiology, symptomatology, X-chromosomal inheritance and some laboratory methods in detecting G-6-PD-deficiency by demonstrating a case of favism (Schulz et al. 1977), the authors now discuss the particularities of the enzyme deficiency in the newborn. These are complicated by additional physiological and transient deficiency of the enzymes catalase, NAD-diaphorase, glutathione peroxidase, and glucuronyl transferase. Several chemical substances, acidosis, hypoxia, hypoglycemia, and immaturity may cause a severe hyperbilirubinemia in G-6-PD-deficient newborns. The development of a kern-icterus in these cases may be prevented by early exchange transfusion. From clinical findings and some observations in different regions of Greece an additional factor influencing the liver function has been postulated which favors the development of hyperbilirubinemias in G-6-PD-deficient newborns. The nature of this possible factor is discussed. The authors emphasize the necessity of screening for G-6-PD-deficiency during pregnancy in families of mediterranian descent.", 
+          "qas": [
+            {
+              "question": "What is the inheritance of the glucose-6-phosphate dehydrogenase (G6PD) deficiency?", 
+              "id": "58c6635f02b8c60953000023_002"
+            }
+          ]
+        }, 
+        {
+          "context": "[Manifestation of glucose-6-phosphate dehydrogenase deficiency caused by primaquine in malaria therapy]. This is a report about a 9 year old turkish boy suffering from recurrent episodes of high fever caused by Plasmodium vivax-infection (Malaria tertiana), 12 months after returning from his malarious homeland. After a 3-day course of Chloroquin, we administrated Primaquin to eliminate residual extraerythrocyte forms of Plasmodium vivax. On the 7th day of treatment acute haemolysis developped. This was caused by Glucose-6-Phosphate-Dehydrogenase-Deficiency, which could be demonstrated by a red-cell-enzyme analysis. The investigation of the patient's whole family showed the typical recessive X-linked inheritance of this enzyme-defect. Frequency and clinical manifestations of this defect are discussed.", 
+          "qas": [
+            {
+              "question": "What is the inheritance of the glucose-6-phosphate dehydrogenase (G6PD) deficiency?", 
+              "id": "58c6635f02b8c60953000023_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Red cell glucose-6-phosphate dehydrogenase deficiency in Finland. Characterization of a new variant with severe enzyme deficiency. Severe red cell glucose-6-phosphate dehydrogenase (G-6-PD) deficiency has been found in an 'aboriginal' Finnish family. 2 male and 9 female carriers of the variant G-6-PD were studied. The genetic pattern is consistent with x-linked recessive inheritance and the defect is associated with drug (primaquine) induced haemolysis. This was demonstrated by enzyme deficient red cell (51Cr-labelled) survival studies on a normal volunteer recipient. In addition, one of the hemizygotes studied had a slight chronic nonspherocytic haemolytic disorder. The partially purified enzyme had many of the characteristics of G-6-PD Mediterranean. The occurrence of this G-6-PD Mediterranean type variant in the Finnish population, which differs greatly from Mediterranean ethnic groups, as well as the association of slight chronic haemolysis with severe G-6-PD deficiency is discussed.", 
+          "qas": [
+            {
+              "question": "What is the inheritance of the glucose-6-phosphate dehydrogenase (G6PD) deficiency?", 
+              "id": "58c6635f02b8c60953000023_004"
+            }
+          ]
+        }, 
+        {
+          "context": "Diversity in expression of glucose-6-phosphate dehydrogenase deficiency in females. The aims of this study were to determine the prevalence of glucose-6-phosphate dehydrogenase (G6PD) deficiency in the United Arab Emirates (UAE), to describe the different mutations in the population, to determine its prevalence, and to study inheritance patterns in families of G6PD-deficient individuals. All infants born at Tawam Hospital, Al-Ain, UAE from January 1994 to September 1996 were screened at birth for their G6PD status. In addition, those attending well-baby clinics during the period were also screened for the disorder. Families of 40 known G6PD-deficient individuals, selected randomly from the records of three hospitals in the country, were assessed for G6PD deficiency. Where appropriate, this was followed by definition of G6PD mutations. Of 8198 infants, 746 (9.1%), comprising 15% of males and 5% of females tested, were found to be G6PD deficient. A total of 27 families were further assessed: of these, all but one family had the nt563 Mediterranean mutation. In one family, two individuals had the nt202 African mutation. The high manifestation of G6PD deficiency in women may be due to the preferential expression of the G6PD-deficient gene and X-inactivation of the normal gene, and/or to the presence of an 'enhancer' gene that makes the expression of the G6PD deficiency more likely. The high level of consanguinity which, theoretically, should result in a high proportion of homozygotes and consequently a higher proportion of females with the deficiency, was not found to be a significant factor.", 
+          "qas": [
+            {
+              "question": "What is the inheritance of the glucose-6-phosphate dehydrogenase (G6PD) deficiency?", 
+              "id": "58c6635f02b8c60953000023_005"
+            }
+          ]
+        }, 
+        {
+          "context": "Molecular Pathways: Targeting the Cyclin D-CDK4/6 Axis for Cancer Treatment. Cancer cells bypass normal controls over mitotic cell-cycle progression to achieve a deregulated state of proliferation. The retinoblastoma tumor suppressor protein (pRb) governs a key cell-cycle checkpoint that normally prevents G1-phase cells from entering S-phase in the absence of appropriate mitogenic signals. Cancer cells frequently overcome pRb-dependent growth suppression via constitutive phosphorylation and inactivation of pRb function by cyclin-dependent kinase (CDK) 4 or CDK6 partnered with D-type cyclins. Three selective CDK4/6 inhibitors, palbociclib (Ibrance; Pfizer), ribociclib (Novartis), and abemaciclib (Lilly), are in various stages of development in a variety of pRb-positive tumor types, including breast cancer, melanoma, liposarcoma, and non-small cell lung cancer. The emerging, positive clinical data obtained to date finally validate the two decades-old hypothesis that the cyclin D-CDK4/6 pathway is a rational target for cancer therapy.", 
+          "qas": [
+            {
+              "question": "Which enzyme is inhibited by ribociclib?", 
+              "id": "5880dba9c872c95565000009_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Preclinical Therapeutic Synergy of MEK1/2 and CDK4/6 Inhibition in Neuroblastoma. Purpose: Neuroblastoma is treated with aggressive multimodal therapy, yet more than 50% of patients experience relapse. We recently showed that relapsed neuroblastomas frequently harbor mutations leading to hyperactivated ERK signaling and sensitivity to MEK inhibition therapy. Here we sought to define a synergistic therapeutic partner to potentiate MEK inhibition.Experimental Design: We first surveyed 22 genetically annotated human neuroblastoma-derived cell lines (from 20 unique patients) for sensitivity to the MEK inhibitor binimetinib. After noting an inverse correlation with sensitivity to ribociclib (CDK4/6 inhibitor), we studied the combinatorial effect of these two agents using proliferation assays, cell-cycle analysis, Ki67 immunostaining, time-lapse microscopy, and xenograft studies.Results: Sensitivity to binimetinib and ribociclib was inversely related (r = -0.58, P = 0.009). MYCN amplification status and expression were associated with ribociclib sensitivity and binimetinib resistance, whereas increased MAPK signaling was the main determinant of binimetinib sensitivity and ribociclib resistance. Treatment with both compounds resulted in synergistic or additive cellular growth inhibition in all lines tested and significant inhibition of tumor growth in three of four xenograft models of neuroblastoma. The augmented growth inhibition was attributed to diminished cell-cycle progression that was reversible upon removal of drugs.Conclusions: Here we demonstrate that combined binimetinib and ribociclib treatment shows therapeutic synergy across a broad panel of high-risk neuroblastoma preclinical models. These data support testing this combination therapy in relapsed high-risk neuroblastoma patients, with focus on cases with hyperactivated RAS-MAPK signaling. Clin Cancer Res; 23(7); 1785-96. \u00a92016 AACR.", 
+          "qas": [
+            {
+              "question": "Which enzyme is inhibited by ribociclib?", 
+              "id": "5880dba9c872c95565000009_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Ribociclib as First-Line Therapy for HR-Positive, Advanced Breast Cancer. BACKGROUND: The inhibition of cyclin-dependent kinases 4 and 6 (CDK4/6) could potentially overcome or delay resistance to endocrine therapy in advanced breast cancer that is positive for hormone receptor (HR) and negative for human epidermal growth factor receptor 2 (HER2). METHODS: In this randomized, placebo-controlled, phase 3 trial, we evaluated the efficacy and safety of the selective CDK4/6 inhibitor ribociclib combined with letrozole for first-line treatment in 668 postmenopausal women with HR-positive, HER2-negative recurrent or metastatic breast cancer who had not received previous systemic therapy for advanced disease. We randomly assigned the patients to receive either ribociclib (600 mg per day on a 3-weeks-on, 1-week-off schedule) plus letrozole (2.5 mg per day) or placebo plus letrozole. The primary end point was investigator-assessed progression-free survival. Secondary end points included overall survival, overall response rate, and safety. A preplanned interim analysis was performed on January 29, 2016, after 243 patients had disease progression or died. Prespecified criteria for superiority required a hazard ratio of 0.56 or less with P<1.29\u00d710. RESULTS: The duration of progression-free survival was significantly longer in the ribociclib group than in the placebo group (hazard ratio, 0.56; 95% CI, 0.43 to 0.72; P=3.29\u00d710 for superiority). The median duration of follow-up was 15.3 months. After 18 months, the progression-free survival rate was 63.0% (95% confidence interval [CI], 54.6 to 70.3) in the ribociclib group and 42.2% (95% CI, 34.8 to 49.5) in the placebo group. In patients with measurable disease at baseline, the overall response rate was 52.7% and 37.1%, respectively (P<0.001). Common grade 3 or 4 adverse events that were reported in more than 10% of the patients in either group were neutropenia (59.3% in the ribociclib group vs. 0.9% in the placebo group) and leukopenia (21.0% vs. 0.6%); the rates of discontinuation because of adverse events were 7.5% and 2.1%, respectively. CONCLUSIONS: Among patients receiving initial systemic treatment for HR-positive, HER2-negative advanced breast cancer, the duration of progression-free survival was significantly longer among those receiving ribociclib plus letrozole than among those receiving placebo plus letrozole, with a higher rate of myelosuppression in the ribociclib group. (Funded by Novartis Pharmaceuticals; ClinicalTrials.gov number, NCT01958021 .).", 
+          "qas": [
+            {
+              "question": "Which enzyme is inhibited by ribociclib?", 
+              "id": "5880dba9c872c95565000009_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Targeting CDK4/6 in patients with cancer. The cyclin D-cyclin dependent kinase (CDK) 4/6-inhibitor of CDK4 (INK4)-retinoblastoma (Rb) pathway controls cell cycle progression by regulating the G1-S checkpoint. Dysregulation of the cyclin D-CDK4/6-INK4-Rb pathway results in increased proliferation, and is frequently observed in many types of cancer. Pathway activation can occur through a variety of mechanisms, including gene amplification or rearrangement, loss of negative regulators, epigenetic alterations, and point mutations in key pathway components. Due to the importance of CDK4/6 activity in cancer cells, CDK4/6 inhibitors have emerged as promising candidates for cancer treatment. Moreover, combination of a CDK4/6 inhibitor with other targeted therapies may help overcome acquired or de novo treatment resistance. Ongoing studies include combinations of CDK4/6 inhibitors with endocrine therapy and phosphatidylinositol 3-kinase (PI3K) pathway inhibitors for hormone receptor-positive (HR+) breast cancers, and with selective RAF and MEK inhibitors for tumors with alterations in the mitogen activated protein kinase (MAPK) pathway such as melanoma. In particular, the combination of CDK4/6 inhibitors with endocrine therapy, such as palbociclib's recent first-line approval in combination with letrozole, is expected to transform the treatment of HR+ breast cancer. Currently, three selective CDK4/6 inhibitors have been approved or are in late-stage development: palbociclib (PD-0332991), ribociclib (LEE011), and abemaciclib (LY2835219). Here we describe the current preclinical and clinical data for these novel agents and discuss combination strategies with other agents for the treatment of cancer.", 
+          "qas": [
+            {
+              "question": "Which enzyme is inhibited by ribociclib?", 
+              "id": "5880dba9c872c95565000009_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Ribociclib Lengthens Breast Cancer Survival. The combination of antiestrogen therapy and ribociclib, an investigational CDK4/6 inhibitor, led to improved outcomes in women with metastatic HR-positive, HER2-negative breast cancer, according to findings presented at a meeting of the European Society for Medical Oncology. The combination significantly increased progression-free survival compared with letrozole alone in a large phase III trial-data that could lead to FDA approval.", 
+          "qas": [
+            {
+              "question": "Which enzyme is inhibited by ribociclib?", 
+              "id": "5880dba9c872c95565000009_004"
+            }
+          ]
+        }, 
+        {
+          "context": "Cyclin-Dependent Kinase 4/6 Inhibitors for the Treatment of Breast Cancer: A Review of Preclinical and Clinical Data. For millions of women, breast cancer remains a potentially life-endangering diagnosis. With advances in research, new therapies targeted to tumor biology are emerging to treat the most common form of this disease. Cyclin-dependent kinase (CDK) 4/6 inhibitors are a new class of therapeutic agents that have the potential to improve the outcomes of patients with hormone receptor-positive (HR(+)) breast cancer. Three CDK 4/6 inhibitors have been investigated for the treatment of HR(+) breast cancer, including palbociclib (PD 0332991), ribociclib (LEE011), and abemaciclib (LY2835219). Palbociclib recently received accelerated Food and Drug Administration approval for the treatment of HR(+) metastatic breast cancer in combination with letrozole, and recent data suggest improved outcome when combined with fulvestrant. In this article, the mechanism of action of CDK 4/6 inhibitors, preclinical studies on their efficacy, ongoing clinical trials in breast cancer, and toxicity profiles are reviewed.", 
+          "qas": [
+            {
+              "question": "Which enzyme is inhibited by ribociclib?", 
+              "id": "5880dba9c872c95565000009_005"
+            }
+          ]
+        }, 
+        {
+          "context": "Clinical Development of the CDK4/6 Inhibitors Ribociclib and Abemaciclib in Breast Cancer. Clinical and preclinical data support a significant role for inhibitors of the cyclin-dependent kinases (CDKs) 4 and 6 in the treatment of patients with breast cancer. Recently, based on data showing improvement in progression-free survival, the use of palbociclib (Ibrance; Pfizer, Inc.) in combination with endocrine agents was approved to treat patients with hormone receptor-positive advanced disease. Importantly, 2 other CDK4/6 inhibitors, abemaciclib (LY2835219; Lilly) and ribociclib (LEE011; Novartis), are in the late stage of clinical development. In this review, we will focus on clinical data on these 2 new drugs, highlighting their differences compared to palbociclib in terms of single-agent activity, central nervous system penetration, and common adverse events. In addition, we will present the ongoing clinical trials and discuss future directions in the field.", 
+          "qas": [
+            {
+              "question": "Which enzyme is inhibited by ribociclib?", 
+              "id": "5880dba9c872c95565000009_006"
+            }
+          ]
+        }, 
+        {
+          "context": "Ribociclib plus letrozole in early breast cancer: A presurgical, window-of-opportunity study. OBJECTIVES: Cyclin D-cyclin-dependent kinase (CDK) 4/6-inhibitor of CDK4/6-retinoblastoma (Rb) pathway hyperactivation is associated with hormone receptor-positive (HR+) breast cancer (BC). This study assessed the biological activity of ribociclib (LEE011; CDK4/6 inhibitor) plus letrozole compared with single-agent letrozole in the presurgical setting. MATERIALS AND METHODS: Postmenopausal women (N\u00a0=\u00a014) with resectable, HR+, human epidermal growth factor receptor 2-negative (HER2-) early BC were randomized 1:1:1 to receive 2.5\u00a0mg/day letrozole alone (Arm 1), or with 400 or 600\u00a0mg/day ribociclib (Arm 2 or 3). Circulating tumor DNA and tumor biopsies were collected at baseline and, following 14 days of treatment, prior to or during surgery. The primary objective was to assess antiproliferative response per Ki67 levels in Arms 2 and 3 compared with Arm 1. Additional assessments included safety, pharmacokinetics, and genetic profiling. RESULTS: Mean decreases in the Ki67-positive cell fraction from baseline were: Arm 1 69% (range 38-100%; n\u00a0=\u00a02), Arm 2 96% (range 78-100%; n\u00a0=\u00a06), Arm 3 92% (range 75-100%; n\u00a0=\u00a03). Decreased phosphorylated Rb levels and CDK4, CDK6, CCND2, CCND3, and CCNE1 gene expression were observed following ribociclib treatment. Ribociclib and letrozole pharmacokinetic parameters were consistent with single-agent data. The ribociclib plus letrozole combination was well tolerated, with no Grade 3/4 adverse events over the treatment. CONCLUSION: The results suggest absence of a drug-drug interaction between ribociclib and letrozole and indicate ribociclib plus letrozole may reduce Ki67 expression in HR+, HER2- BC (NCT01919229).", 
+          "qas": [
+            {
+              "question": "Which enzyme is inhibited by ribociclib?", 
+              "id": "5880dba9c872c95565000009_007"
+            }
+          ]
+        }, 
+        {
+          "context": "Cyclin-dependent kinase pathways as targets for women's cancer treatment. PURPOSE OF REVIEW: In this article, we not only review the preclinical and clinical studies of cyclin-dependent kinase (CDK) 4/6 inhibitors in breast cancer, liposarcoma, mantel cell lymphoma, melanoma and germ cell tumors, but also examine promising preclinical data in glioblastoma, renal and ovarian cancer models that may provide directions for future development. RECENT FINDINGS: Targeting CDKs has been the focus of considerable basic science and clinical research. The CDK 4/6 inhibitors are a novel class of therapeutics that target the CDK 4/6 kinases that promote transition through the cell cycle. Currently, palbociclib (PD0332991, Pfizer), abemaciclib (LY2835219, Lilly) and ribociclib (LEE011, Novartis) are being investigated in clinical trials. These oral agents offer the hope of clinical efficacy in many tumor types, and have been associated with minimal toxicity. Amplification/overexpression of cyclin D, loss of CDKN2A (p16) and amplification/overexpression of CDK4 are proposed biomarkers of improved response to CDK4/6 inhibition. SUMMARY: Palbociclib, abemaciclib and ribociclib have demonstrated very promising clinical activity in breast cancer, liposarcoma, mantel cell lymphoma and melanoma. Moreover, CDK4/6 inhibitors have shown promising preclinical activity in glioblastoma, renal and ovarian cancer models that may provide directions for their future clinical development. Further preclinical and clinical research is needed to better understand mechanisms of resistance and develop rational combination therapies with other targeted agents.", 
+          "qas": [
+            {
+              "question": "Which enzyme is inhibited by ribociclib?", 
+              "id": "5880dba9c872c95565000009_008"
+            }
+          ]
+        }, 
+        {
+          "context": "Marfan syndrome patient experiences as ascertained through postings on social media sites. Marfan syndrome (MS) is a connective tissue disorder that affects thousands of adolescents [Population Reference Bureau, 2013]. Some adolescent patients with MS may use social media to express their experiences and emotions, but little is known about what patients choose to share online. To investigate social media content related to Marfan syndrome we used search terms \"Marfan syndrome\" and \"Marfans\" on six different social media sites. The top five recent and popular posts for each site were collected and coded weekly for five weeks. Posts were excluded if they were reshared content or not in English. A codebook was developed using an iterative process to categorize posts and comments. Out of 300 posts collected 147 posts (49.0%) were included for evaluation. Categories of displayed content included personal pictures, memes and pictures featuring symptoms of MS (41.5%) and personal MS experiences (27.1% of posts). One quarter of the posts specifically mentioned a positive experience or how thankful the profile owner was for their life. A unique category of posts (13.7%) referenced Austin Carlile, a celebrity singer with MS, as a role model. Physicians and healthcare providers may consider using social media to understand common MS concerns and to place future health education materials.", 
+          "qas": [
+            {
+              "question": "What tissue is commonly affected in Marfan's syndrome", 
+              "id": "58dd0dde8acda34529000027_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Two-mAb cocktail protects macaques against the Makona variant of Ebola virus. The 2014-2015 Ebola virus (EBOV) outbreak in West Africa highlighted the urgent need for specific therapeutic interventions for infected patients. The human-mouse chimeric monoclonal antibody (mAb) cocktail ZMapp, previously shown to be efficacious in EBOV (variant Kikwit) lethally infected nonhuman primates (NHPs) when administration was initiated up to 5 days, was used in some patients during the outbreak. We show that a two-antibody cocktail, MIL77E, is fully protective in NHPs when administered at 50 mg/kg 3 days after challenge with a lethal dose of EBOV variant Makona, the virus responsible for the ongoing 2014-2015 outbreak, whereas a similar formulation of ZMapp protected two of three NHPs. The chimeric MIL77E mAb cocktail is produced in engineered Chinese hamster ovary cells and is based on mAbs c13C6 and c2G4 from ZMapp. The use of only two antibodies in MIL77E opens the door to a pan-ebolavirus cocktail.", 
+          "qas": [
+            {
+              "question": "Which disease is treated with ZMapp?", 
+              "id": "5880e417713cbdfd3d000001_000"
+            }
+          ]
+        }, 
+        {
+          "context": "The potential of plants as a system for the development and production of human biologics. The growing promise of plant-made biologics is highlighted by the success story of ZMapp\u2122 as a potentially life-saving drug during the Ebola outbreak of 2014-2016. Current plant expression platforms offer features beyond the traditional advantages of low cost, high scalability, increased safety, and eukaryotic protein modification. Novel transient expression vectors have been developed that allow the production of vaccines and therapeutics at unprecedented speed to control potential pandemics or bioterrorism attacks. Plant-host engineering provides a method for producing proteins with unique and uniform mammalian post-translational modifications, providing opportunities to develop biologics with increased efficacy relative to their mammalian cell-produced counterparts. Recent demonstrations that plant-made proteins can function as biocontrol agents of foodborne pathogens further exemplify the potential utility of plant-based protein production. However, resolving the technical and regulatory challenges of commercial-scale production, garnering acceptance from large pharmaceutical companies, and obtaining U.S. Food and Drug Administration approval for several major classes of biologics are essential steps to fulfilling the untapped potential of this technology.", 
+          "qas": [
+            {
+              "question": "Which disease is treated with ZMapp?", 
+              "id": "5880e417713cbdfd3d000001_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Discovery of an antibody for pan-ebolavirus therapy. During the latest outbreak of Ebola virus disease in West Africa, monoclonal antibody therapy (e.g., ZMapp) was utilized to treat patients. However, due to the antigenic differences among the five ebolavirus species, the current therapeutic monoclonal antibodies are only effective against viruses of the species Zaire ebolavirus. Although this particular species has indeed caused the majority of human infections in Central and, recently, West Africa, other ebolavirus species (e.g., Sudan ebolavirus and Bundibugyo ebolavirus) have also repeatedly caused outbreaks in Central Africa and thus should not be neglected in the development of countermeasures against ebolaviruses. Here we report the generation of an ebolavirus glycoprotein-specific monoclonal antibody that effectively inhibits cellular entry of representative isolates of all known ebolavirus species in vitro and show its protective efficacy in mouse models of ebolavirus infections. This novel neutralizing monoclonal antibody targets a highly conserved internal fusion loop in the glycoprotein molecule and prevents membrane fusion of the viral envelope with cellular membranes. The discovery of this highly cross-neutralizing antibody provides a promising option for broad-acting ebolavirus antibody therapy and will accelerate the design of improved vaccines that can selectively elicit cross-neutralizing antibodies against multiple species of ebolaviruses.", 
+          "qas": [
+            {
+              "question": "Which disease is treated with ZMapp?", 
+              "id": "5880e417713cbdfd3d000001_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Treatment with hyperimmune equine immunoglobulin or immunoglobulin fragments completely protects rodents from Ebola virus infection. Recent successes with monoclonal antibody cocktails ZMapp(TM) and MIL77 against Ebola virus (EBOV) infections have reignited interest in antibody-based therapeutics. Since the production process for monoclonal antibodies can be prolonged and costly, alternative treatments should be investigated. We produced purified equine antisera from horses hyperimmunized with EBOV virus-like particles, and tested the post-exposure efficacy of the antisera in a mouse model of infection. BALB/c mice were given up to 2 mg of purified equine antisera per animal, at 30 minutes, 1 or 2 days post-infection (dpi), in which all animals survived. To decrease the possibility of serum sickness, the equine antisera was digested with pepsin to generate F(ab')2 fragments, with in vitro neutralizing activity comparable to whole immunoglobulin. Full protection was achieved with when treatment was initiated at 1 dpi, but the suboptimal protection observed with the 30 minute and 2 dpi groups demonstrate that in addition to virus neutralization, other Fc-dependent antibody mechanisms may also contribute to survival. Guinea pigs given 20 mg of antisera or F(ab')2 at or starting at 1 or 2 dpi were also fully protected from EBOV infection. These results justify future efficacy studies for purified equine products in NHPs.", 
+          "qas": [
+            {
+              "question": "Which disease is treated with ZMapp?", 
+              "id": "5880e417713cbdfd3d000001_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Ebola Virus Infection: Review of the Pharmacokinetic and Pharmacodynamic Properties of Drugs Considered for Testing in Human Efficacy Trials. The 2014-2015 outbreak of Ebola virus disease is the largest epidemic to date in terms of the number of cases, deaths, and affected areas. In October 2015, no antiviral agents had proven antiviral efficacy in patients. However, in September 2014, the World Health Organization inventoried and has since regularly updated a list of potential drug candidates with demonstrated antiviral efficacy in in vitro or animal models. This includes agents belonging to various therapeutic classes, namely direct antiviral agents (favipiravir and BCX4430), a combination of antibodies (ZMapp), type I interferons, RNA interference-based drugs (TKM-Ebola and AVI-7537), and anticoagulant drugs (rNAPc2). Here, we review the pharmacokinetic and pharmacodynamic information presently available for these drugs, using data obtained in healthy volunteers for pharmacokinetics and data obtained in human clinical trials or animal models for pharmacodynamics. Future studies evaluating these drugs in clinical trials are critical to confirm their efficacy in humans, propose appropriate doses, and evaluate the possibility of treatment combinations.", 
+          "qas": [
+            {
+              "question": "Which disease is treated with ZMapp?", 
+              "id": "5880e417713cbdfd3d000001_004"
+            }
+          ]
+        }, 
+        {
+          "context": "Most hydrogen peroxide-induced histone H2AX phosphorylation is mediated by ATR and is not dependent on DNA double-strand breaks. The nuclear foci of phosphorylated histone H2AX (\u03b3H2AX) are frequently used as a marker for DNA double-strand breaks (DSBs) following ionizing radiation (IR). However, recent studies reported that \u03b3H2AX foci do not necessarily correlate with DSBs under other conditions. We showed that \u03b3H2AX foci induced by oxidative stress in hydrogen peroxide (H2O2)-treated cells displayed several different features from those induced by IR. The magnitude of \u03b3H2AX induction was heterogeneous among H2O2-treated cells. Some cells expressed small discrete \u03b3H2AX foci, whereas others expressed a gross \u03b3H2AX signal that was distributed throughout the nucleus. Oxidative stress-induced \u03b3H2AX was eliminated in DSB repair-deficient mutant cells as efficiently as in wild-type cells and was not necessarily accompanied by phosphorylated ataxia telangiectasia mutated (ATM) or 53BP1 foci. Analyses using specific inhibitors showed that ATM- and Rad3-related (ATR), rather than ATM, was the prominent kinase mediating the oxidative stress response. These results suggest that a major fraction of \u03b3H2AX induced by oxidative stress is not associated with DSBs. Single-stranded DNA arisen from stalled replication forks can cause the ATR-mediated induction of \u03b3H2AX. However, oxidative stress appeared to induce \u03b3H2AX in both S- and non-S-phase cells. These results suggest that there may be another pathway leading to the ATR-mediated induction of \u03b3H2AX in non-S-phase cells without DSBs.", 
+          "qas": [
+            {
+              "question": "What happens to H2AX upon DNA bouble strand breaks?", 
+              "id": "58af16ea717cd3f655000002_000"
+            }
+          ]
+        }, 
+        {
+          "context": "DNA double-strand breaks in heterochromatin elicit fast repair protein recruitment, histone H2AX phosphorylation and relocation to euchromatin. DNA double-strand breaks (DSBs) can induce chromosomal aberrations and carcinogenesis and their correct repair is crucial for genetic stability. The cellular response to DSBs depends on damage signaling including the phosphorylation of the histone H2AX (\u03b3H2AX). However, a lack of \u03b3H2AX formation in heterochromatin (HC) is generally observed after DNA damage induction. Here, we examine \u03b3H2AX and repair protein foci along linear ion tracks traversing heterochromatic regions in human or murine cells and find the DSBs and damage signal streaks bending around highly compacted DNA. Given the linear particle path, such bending indicates a relocation of damage from the initial induction site to the periphery of HC. Real-time imaging of the repair protein GFP-XRCC1 confirms fast recruitment to heterochromatic lesions inside murine chromocenters. Using single-ion microirradiation to induce localized DSBs directly within chromocenters, we demonstrate that H2AX is early phosphorylated within HC, but the damage site is subsequently expelled from the center to the periphery of chromocenters within \u223c 20 min. While this process can occur in the absence of ATM kinase, the repair of DSBs bordering HC requires the protein. Finally, we describe a local decondensation of HC at the sites of ion hits, potentially allowing for DSB movement via physical forces.", 
+          "qas": [
+            {
+              "question": "What happens to H2AX upon DNA bouble strand breaks?", 
+              "id": "58af16ea717cd3f655000002_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Histone H2AX phosphorylation as a measure of DNA double-strand breaks and a marker of environmental stress and disease activity in lupus. OBJECTIVE: Defective or inefficient DNA double-strand break (DSB) repair results in failure to preserve genomic integrity leading to apoptotic cell death, a hallmark of systemic lupus erythematosus (SLE). Compelling evidence linked environmental factors that increase oxidative stress with SLE risk and the formation of DSBs. In this study, we sought to further explore genotoxic stress sensitivity in SLE by investigating DSB accumulation as a marker linking the effect of environmental stressors and the chromatin microenvironment. METHODS: DSBs were quantified in peripheral blood mononuclear cell subsets from patients with SLE, healthy controls, and patients with rheumatoid arthritis (RA) by measuring phosphorylated H2AX (phospho-H2AX) levels with flow cytometry. Phospho-H2AX levels were assessed in G0/G1, S and G2 cell-cycle phases using propidium iodide staining, and after oxidative stress using 0.5 \u00b5M hydrogen peroxide exposure for 0, 2, 5, 10, 30 and 60 min. RESULTS: DSB levels were significantly increased in CD4+ T cells, CD8+ T cells and monocytes in SLE compared with healthy controls (p=2.16\u00d710(-4), 1.68\u00d710(-3) and 4.74\u00d710(-3), respectively) and RA (p=1.05\u00d710(-3), 1.78\u00d710(-3) and 2.43\u00d710(-2), respectively). This increase in DSBs in SLE was independent of the cell-cycle phase, and correlated with disease activity. In CD4+ T cells, CD8+ T cells and monocytes, oxidative stress exposure induced significantly higher DSB accumulation in SLE compared with healthy controls (60 min; p=1.64\u00d710(-6), 8.11\u00d710(-7) and 2.04\u00d710(-3), respectively). CONCLUSIONS: Our data indicate that SLE T cells and monocytes have increased baseline DSB levels and an increased sensitivity to acquiring DSBs in response to oxidative stress. Although the mechanism underlying DSB sensitivity in SLE requires further investigation, accumulation of DSB may serve a biomarker for disease activity in SLE and help explain increased apoptotic cell accumulation in this disease.", 
+          "qas": [
+            {
+              "question": "What happens to H2AX upon DNA bouble strand breaks?", 
+              "id": "58af16ea717cd3f655000002_002"
+            }
+          ]
+        }, 
+        {
+          "context": "H2AX phosphorylation at the sites of DNA double-strand breaks in cultivated mammalian cells and tissues. A sequence variant of histone H2A called H2AX is one of the key components of chromatin involved in DNA damage response induced by different genotoxic stresses. Phosphorylated H2AX (\u03b3H2AX) is rapidly concentrated in chromatin domains around DNA double-strand breaks (DSBs) after the action of ionizing radiation or chemical agents and at stalled replication forks during replication stress. \u03b3H2AX foci could be easily detected in cell nuclei using immunofluorescence microscopy that allows to use \u03b3H2AX as a quantitative marker of DSBs in various applications. H2AX is phosphorylated in situ by ATM, ATR, and DNA-PK kinases that have distinct roles in different pathways of DSB repair. The \u03b3H2AX serves as a docking site for the accumulation of DNA repair proteins, and after rejoining of DSBs, it is released from chromatin. The molecular mechanism of \u03b3H2AX dephosphorylation is not clear. It is complicated and requires the activity of different proteins including phosphatases and chromatin-remodeling complexes. In this review, we summarize recently published data concerning the mechanisms and kinetics of \u03b3H2AX loss in normal cells and tissues as well as in those deficient in ATM, DNA-PK, and DSB repair proteins activity. The results of the latest scientific research of the low-dose irradiation phenomenon are presented including the bystander effect and the adaptive response estimated by \u03b3H2AX detection in cells and tissues.", 
+          "qas": [
+            {
+              "question": "What happens to H2AX upon DNA bouble strand breaks?", 
+              "id": "58af16ea717cd3f655000002_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Direct interaction of Ikaros and Foxp1 modulates expression of the G protein-coupled receptor G2A in B-lymphocytes and acute lymphoblastic leukemia. Ikaros and Foxp1 are transcription factors that play key roles in normal lymphopoiesis and lymphoid malignancies. We describe a novel physical and functional interaction between the proteins, which requires the central zinc finger domain of Ikaros. The Ikaros-Foxp1 interaction is abolished by deletion of this region, which corresponds to the IK6 isoform that is commonly associated with high-risk acute lymphoblastic leukemia (ALL). We also identify the Gpr132 gene, which encodes the orphan G protein-coupled receptor G2A, as a novel target for Foxp1. Increased expression of Foxp1 enhanced Gpr132 transcription and caused cell cycle changes, including G2 arrest. Co-expression of wild-type Ikaros, but not IK6, displaced Foxp1 binding from the Gpr132 gene, reversed the increase in Gpr132 expression and inhibited G2 arrest. Analysis of primary ALL samples revealed a significant increase in GPR132 expression in IKZF1-deleted BCR-ABL negative patients, suggesting that levels of wild-type Ikaros may influence the regulation of G2A in B-ALL. Our results reveal a novel effect of Ikaros haploinsufficiency on Foxp1 functioning, and identify G2A as a potential modulator of the cell cycle in Ikaros-deleted B-ALL.", 
+          "qas": [
+            {
+              "question": "What is the effect of the direct interaction of Ikaros and Foxp1 in B-lymphocytes?", 
+              "id": "58853667e56acf5176000015_000"
+            }
+          ]
+        }, 
+        {
+          "context": "A Korean boy with 46,XX testicular disorder of sex development caused by SOX9 duplication. The 46,XX testicular disorder of sex development (DSD), also known as 46,XX male syndrome, is a rare form of DSD and clinical phenotype shows complete sex reversal from female to male. The sex-determining region Y (SRY) gene can be identified in most 46,XX testicular DSD patients; however, approximately 20% of patients with 46,XX testicular DSD are SRY-negative. The SRY-box 9 (SOX9) gene has several important functions during testis development and differentiation in males, and overexpression of SOX9 leads to the male development of 46,XX gonads in the absence of SRY. In addition, SOX9 duplication has been found to be a rare cause of 46,XX testicular DSD in humans. Here, we report a 4.2-year-old SRY-negative 46,XX boy with complete sex reversal caused by SOX9 duplication for the first time in Korea. He showed normal external and internal male genitalia except for small testes. Fluorescence in situ hybridization and polymerase chain reaction (PCR) analyses failed to detect the presence of SRY, and SOX9 intragenic mutation was not identified by direct sequencing analysis. Therefore, we performed real-time PCR analyses with specific primer pairs, and duplication of the SOX9 gene was revealed. Although SRY-negative 46,XX testicular DSD is a rare condition, an effort to make an accurate diagnosis is important for the provision of proper genetic counseling and for guiding patients in their long-term management.", 
+          "qas": [
+            {
+              "question": "Which is the main abnormality that arises with Sox9 locus duplication?", 
+              "id": "58af1cb3717cd3f655000003_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Autosomal XX sex reversal caused by duplication of SOX9. SOX9 is one of the genes that play critical roles in male sexual differentiation. Mutations of SOX9 leading to haploinsufficiency can cause campomelic dysplasia and XY sex reversal. We report here evidence supporting that SOX9 duplication can cause XX sex reversal. A newborn infant was referred for genetic evaluation because of abnormal male external genitalia. The infant had severe penile/scrotal hypospadias. Gonads were palpable. Cytogenetic analysis demonstrated a de novo mosaic 46,XX,dup(17)(q23.1q24.3)/46, XX karyotype. Fluorescent in situ hybridization (FISH) with a BAC clone containing the SOX9 gene demonstrated that the SOX9 gene is duplicated on the rearranged chromosome 17. The presence of SRY was ruled out by FISH with a probe containing the SRY gene and polymerase chain reaction with SRY-specific primers. Microsatellite analysis with 13 markers on 17q23-24 determined that the duplication is maternal in origin and defined the boundary of the duplication to be approximately 12 centimorgans (cM) proximal and 4 cM distal to the SOX9 gene. Thus, SOX9 duplication is the most likely cause for the sex reversal in this case because it plays an important role in male sex determination and differentiation. This study suggests that extra dose of SOX9 is sufficient to initiate testis differentiation in the absence of SRY. Other SRY-negative XX sex-reversed individuals deserve thorough investigation of SOX9 gene.", 
+          "qas": [
+            {
+              "question": "Which is the main abnormality that arises with Sox9 locus duplication?", 
+              "id": "58af1cb3717cd3f655000003_001"
+            }
+          ]
+        }, 
+        {
+          "context": "SOX9 duplication linked to intersex in deer. A complex network of genes determines sex in mammals. Here, we studied a European roe deer with an intersex phenotype that was consistent with a XY genotype with incomplete male-determination. Whole genome sequencing and quantitative real-time PCR analyses revealed a triple dose of the SOX9 gene, allowing insights into a new genetic defect in a wild animal.", 
+          "qas": [
+            {
+              "question": "Which is the main abnormality that arises with Sox9 locus duplication?", 
+              "id": "58af1cb3717cd3f655000003_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Loss of CD28 expression by liver-infiltrating T cells contributes to pathogenesis of primary sclerosing cholangitis. BACKGROUND & AIMS: T-cell-mediated biliary injury is a feature of primary sclerosing cholangitis (PSC). We studied the roles of CD28(-) T cells in PSC and their regulation by vitamin D. METHODS: Peripheral and liver-infiltrating mononuclear cells were isolated from blood or fresh liver tissue. We analyzed numbers, phenotypes, functions, and localization patterns of CD28(-) T cells, along with their ability to activate biliary epithelial cells. We measured levels of tumor necrosis factor (TNF)\u03b1 in liver tissues from patients with PSC and the effects of exposure to active vitamin D (1,25[OH]2D3) on expression of CD28. RESULTS: A significantly greater proportion of CD4(+) and CD8(+) T cells that infiltrated liver tissues of patients with PSC were CD28(-), compared with control liver tissue (CD4(+): 30.3% vs 2.5%, P < .0001; and CD8(+): 68.5% vs 31.9%, P < .05). The mean percentage of CD4(+)CD28(-) T cells in liver tissues from patients with PSC was significantly higher than from patients with primary biliary cirrhosis or nonalcoholic steatohepatitis (P\u00a0< .05). CD28(-) T cells were activated CD69(+)CD45RA(-) C-C chemokine receptor (CCR)7(-) effector memory and perforin(+) granzyme B(+) cytotoxic cells, which express CD11a, CX3CR1, C-X3-C motif receptor 6 (CXCR6), and CCR10-consistent with their infiltration of liver and localization around bile ducts. Compared with CD28(+) T cells, activated CD28(-) T cells produced significantly higher levels of interferon \u03b3 and TNF\u03b1 (P < .05), and induced up-regulation of intercellular cell adhesion molecule-1, HLA-DR, and CD40 by primary epithelial cells (3.6-fold, 1.5-fold, and 1.2-fold, respectively). Liver tissue from patients with PSC contained high levels of TNF\u03b1; TNF\u03b1 down-regulated the expression of CD28 by T cells in\u00a0vitro (P\u00a0<\u00a0.01); this effect was prevented by administration of 1,25(OH)2D3 (P < .05). CONCLUSIONS: Inflammatory CD28(-) T\u00a0cells accumulate in livers of patients with PSC and localize around bile ducts. The TNF\u03b1-rich microenvironment of this tissue promotes inflammation; these effects are reversed by vitamin D in\u00a0vitro.", 
+          "qas": [
+            {
+              "question": "To which disease does the loss of CD28 expression by liver-infiltrating T cells contribute?", 
+              "id": "58853922e56acf5176000016_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Long term management of patients with cryopyrin-associated periodic syndromes (CAPS): focus on rilonacept (IL-1 Trap). Cryopyrin-associated periodic syndromes (CAPS) are a group of inherited inflammatory disorders consisting of familial cold-induced autoinflammatory syndrome (FCAS), Muckle-Wells syndrome (MWS), and neonatal-onset multisystem inflammatory disease (NOMID; also known as chronic infantile neurologic, cutaneous, articular [CINCA] syndrome). These rare disorders are associated with heterozygous mutations in the NLRP3 (CIAS1) gene, which encodes the protein NALP3 or cryopyrin, and inflammation driven by excessive production of the cytokine interleukin-1beta (IL-1beta). Amyloidosis is a serious complication with 25% of MWS patients developing amyloidosis, with occasional fatal consequences, whilst up to 20% of CINCA/NOMID patients die from various complications, before reaching the early adulthood. In some CINCA/NOMID adult survivors amyloidosis can also occur. Prior to the discovery of the CIAS1 gene mutations and the advent of IL-1 targeted therapy, treatment was aimed at suppressing inflammation, with limited success. The selective blockade of IL-1beta, with anakinra (IL-1 receptor antagonist), not only provided supportive evidence for the role of IL-1beta in CAPS, but also demonstrated the efficacy of targeting IL-1beta for treatment of these conditions. In February, 2008, 'Orphan Drug' approval from the Food and Drug Administration (FDA) for rilonacept (IL-1 Trap/Arcalyst(), Regeneron Pharmaceuticals, Inc) was given for the treatment of two CAPS disorders, FCAS and MWS in adults and children 12 years and older, making rilonacept the first therapy approved for the treatment of CAPS.", 
+          "qas": [
+            {
+              "question": "What is the indication of ARCALYST?", 
+              "id": "58df47f08acda3452900002f_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Rilonacept in the management of cryopyrin-associated periodic syndromes (CAPS). Cryopyrin-associated periodic syndromes (CAPS) are a subgroup of the hereditary periodic fever syndromes, which are rare autoinflammatory and inherited disorders, characterized by recurrent inflammation and varying degrees of severity. CAPS are thought to be driven by excessive production of interleukin-1\u03b2 (IL-1\u03b2), through over-activation of the inflammasome by gain of function mutations in the gene encoding cryopyrin (NLRP3). This conclusion is supported by the remarkable efficacy of IL-1\u03b2 blockade in these conditions. Rilonacept (Arcalyst(TM); Regeneron) is the first us Food and Drug Administration-approved treatment for familial cold autoinflammatory syndrome and Muckle-Wells syndrome and the first in a new line of drugs designed for longer-acting IL-1 blockade. Rilonacept has been associated with a decrease in disease activity, high-sensitivity C-reactive protein (hsCRP) and serum amyloid A (SAA) in the treatment of CAPS. The clinical safety and efficacy of rilonacept in CAPS and non-CAPS populations will be summarized in this review. Rilonacept is also beneficial for patients who tolerate injections poorly, due to an extended half-life over the unapproved CAPS treatment, anakinra, requiring weekly rather than daily self-administration. Other autoinflammatory disorders may also benefit from rilonacept treatment, with clinical trials in progress for systemic onset juvenile idiopathic arthritis, gout and familial mediterranean fever.", 
+          "qas": [
+            {
+              "question": "What is the indication of ARCALYST?", 
+              "id": "58df47f08acda3452900002f_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Rilonacept in the treatment of chronic inflammatory disorders. Rilonacept (IL-1 Trap/Arcalyst) is a long-acting interleukin-1 (IL-1) blocker developed by Regeneron Pharmaceuticals. Initially, Regeneron entered into a joint development effort with Novartis to develop rilonacept for the treatment of rheumatoid arthritis (RA) but this was discontinued following the review of phase II clinical data showing that IL-1 blockade appeared to have limited benefit in RA. In February 2008, Regeneron received Orphan Drug approval from the Food and Drug Administration for rilonacept in the treatment of two cryopyrin-associated periodic syndromes (CAPS) disorders, namely, familial cold-induced autoinflammatory syndrome (FCAS) and Muckle-Wells syndrome (MWS), for children and adults 12 years and older. CAPS is a group of inherited inflammatory disorders consisting of FCAS, MWS, neonatal-onset multisystem inflammatory disease (NOMID), also known as chronic infantile neurologic, cutaneous and articular (CINCA) syndrome, all associated with heterozygous mutations in the NLRP3 (CIAS1) gene, which encodes the protein NLRP3 or cryopyrin. Prior to the discovery of the NLRP3 (CIAS1) mutations and the advent of IL-1-targeted therapy, treatment was aimed at suppressing inflammation but with limited success. The dramatic success of selective blockade of IL-1beta, initially with the IL-1 receptor antagonist (IL-1Ra; Kineret(R) or anakinra/ Amgen, Inc.), not only provided supportive evidence for the role of IL-1beta in CAPS but also demonstrated the efficacy of targeting IL-1beta for treatment of these conditions. A high-affinity protein called rilonacept has been produced by cytokine Trap technology and was developed by Regeneron. The desirable longer half-life of rilonacept offers potential alternatives to patients who do not tolerate daily injections very well or have difficulty with drug compliance. The initial evidence for the beneficial effects of rilonacept for MWS and FCAS suggests that it would also be a suitable treatment for CNICA/NOMID. It is yet to be determined whether rilonacept would be an effective treatment for other chronic inflammatory conditions such as gout, familial Mediterranean fever and systemic juvenile idiopathic arthritis.", 
+          "qas": [
+            {
+              "question": "What is the indication of ARCALYST?", 
+              "id": "58df47f08acda3452900002f_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Mice lacking sister chromatid cohesion protein PDS5B exhibit developmental abnormalities reminiscent of Cornelia de Lange syndrome. PDS5B is a sister chromatid cohesion protein that is crucial for faithful segregation of duplicated chromosomes in lower organisms. Mutations in cohesion proteins are associated with the developmental disorder Cornelia de Lange syndrome (CdLS) in humans. To delineate the physiological roles of PDS5B in mammals, we generated mice lacking PDS5B (APRIN). Pds5B-deficient mice died shortly after birth. They exhibited multiple congenital anomalies, including heart defects, cleft palate, fusion of the ribs, short limbs, distal colon aganglionosis, abnormal migration and axonal projections of sympathetic neurons, and germ cell depletion, many of which are similar to abnormalities found in humans with CdLS. Unexpectedly, we found no cohesion defects in Pds5B(-/-) cells and detected high PDS5B expression in post-mitotic neurons in the brain. These results, along with the developmental anomalies of Pds5B(-/-) mice, the presence of a DNA-binding domain in PDS5B in vertebrates and its nucleolar localization, suggest that PDS5B and the cohesin complex have important functions beyond their role in chromosomal dynamics.", 
+          "qas": [
+            {
+              "question": "Which syndrome is caused by deletion of Pds5b in mice?", 
+              "id": "5889eb503b87a8a73800000b_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Systemic RNAi in the small hive beetle Aethina tumida Murray (Coleoptera: Nitidulidae), a serious pest of the European honey bee Apis mellifera. BACKGROUND: Aethina tumida is a serious pest of the European honey bee (Apis mellifera) in North America and Australia. Here we investigate whether Laccase 2, the phenoloxidase gene essential for cuticle sclerotisation and pigmentation in many insects, and vacuolar-ATPase V-type subunit A, vital for the generation of proton gradients used to drive a range of transport processes, could be potential targets for RNAi-mediated control of A. tumida. RESULTS: Injection of V-ATPase subunit A (5 ng) and Laccase 2 (12.5 ng) dsRNAs resulted in 100% larval mortality, and qPCR confirmed significant decreases and enhanced suppression of transcript levels over time. Oral delivery of V-ATPase subunit A dsRNA in solutions resulted in 50% mortality; however, gene suppression could not be verified. We suggest that the inconsistent RNAi effect was a consequence of dsRNA degradation within the gut owing to the presence of extracellular nucleases. Target specificity was confirmed by a lack of effect on survival or gene expression in honey bees injected with A. tumida dsRNAs. CONCLUSION: This is the first study to show evidence for systemic RNAi in A. tumida in response to injected dsRNA, but further research is required to develop methods to induce RNAi effects via ingestion. \u00a9 2016 Crown copyright. Pest Management Science \u00a9 2016 Society of Chemical Industry.", 
+          "qas": [
+            {
+              "question": "What is the genus for the common European honey bee?", 
+              "id": "58e23ec66fddd3e83e000010_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Predicting acute contact toxicity of pesticides in honeybees (Apis mellifera) through a k-nearest neighbor model. Ecological risk assessment of plant protection products (PPPs) requires an understanding of both the toxicity and the extent of exposure to assess risks for a range of taxa of ecological importance including target and non-target species. Non-target species such as honey bees (Apis mellifera), solitary bees and bumble bees are of utmost importance because of their vital ecological services as pollinators of wild plants and crops. To improve risk assessment of PPPs in bee species, computational models predicting the acute and chronic toxicity of a range of PPPs and contaminants can play a major role in providing structural and physico-chemical properties for the prioritisation of compounds of concern and future risk assessments. Over the last three decades, scientific advisory bodies and the research community have developed toxicological databases and quantitative structure-activity relationship (QSAR) models that are proving invaluable to predict toxicity using historical data and reduce animal testing. This paper describes the development and validation of a k-Nearest Neighbor (k-NN) model using in-house software for the prediction of acute contact toxicity of pesticides on honey bees. Acute contact toxicity data were collected from different sources for 256 pesticides, which were divided into training and test sets. The k-NN models were validated with good prediction, with an accuracy of 70% for all compounds and of 65% for highly toxic compounds, suggesting that they might reliably predict the toxicity of structurally diverse pesticides and could be used to screen and prioritise new pesticides.", 
+          "qas": [
+            {
+              "question": "What is the genus for the common European honey bee?", 
+              "id": "58e23ec66fddd3e83e000010_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Functional and evolutionary implications of enhanced genomic analysis of rhomboid intramembrane proteases. Rhomboids are a recently discovered family of widely distributed intramembrane serine proteases. They have diverse biological functions, including the regulation of growth factor signaling, mitochondrial fusion, and parasite invasion. Despite their existence in all branches of life, the sequence identity between rhomboids is low. We have combined BLAST-based database mining with functional and structural data to generate a comprehensive genomic analysis of eukaryotic rhomboid-like proteins. We show that robust membrane topology models are necessary to classify active rhomboid proteases unambiguously, and we define rules for distinguishing predicted active proteases from the larger evolutionary group of rhomboid-like proteins. This leads to a revision of estimates of numbers of proteolytically active rhomboids. We identify three groups of eukaryotic rhomboid-like proteins: true active rhomboids, a tightly clustered group of novel inactive rhomboids that we name the iRhoms, and a small number of other inactive rhomboid-like proteins. The active proteases are themselves subdivided into secretase and PARL-type (mitochondrial) subfamilies; these have distinct transmembrane topologies. This enhanced genomic analysis leads to conclusions about rhomboid enzyme function. It suggests that a given rhomboid can only cleave a single orientation of substrate, and that both products of rhomboid catalyzed intramembrane cleavage can be released from the membrane. Our phylogeny predictions also have evolutionary implications: Despite the complex classification of rhomboids, our data suggest that a rhomboid-type intramembrane protease may have been present in the last eukaryotic common ancestor.", 
+          "qas": [
+            {
+              "question": "What is the enzymatic activity of PARL?", 
+              "id": "58dfe6b56fddd3e83e000004_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Variation in gene expression of presenilins-associated rhomboid-like protein and mitochondrial function in skeletal muscle of insulin-resistant rats. Multiple factors promote insulin resistance. In this study, we evaluated the mRNA levels of presenilins-associated rhomboid-like protein (PARL) and mitochondrial content and enzyme activity from skeletal muscle isolated from insulin-resistant rats. Rats fed a high-fat diet for 35\u00a0days developed moderate insulin resistance, which was determined by an increase in plasma glucose and insulin concentrations following an oral glucose tolerance test. The PARL mRNA level was lower in the insulin-resistant rats than in control animals, and is associated with low mitochondrial content and reduced mitochondrial enzyme activity in the skeletal muscle from the insulin-resistant rats. The results suggest that high-fat-diet-induced insulin resistance is associated with mitochondrial dysfunction in skeletal muscle, and may be the result of the decreased expression of the PARL gene, which encodes the protein with functional significance in mitochondria.", 
+          "qas": [
+            {
+              "question": "What is the enzymatic activity of PARL?", 
+              "id": "58dfe6b56fddd3e83e000004_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Functional alteration of PARL contributes to mitochondrial dysregulation in Parkinson's disease. Molecular genetics has linked mitochondrial dysfunction to the pathogenesis of Parkinson's disease by the discovery of rare, inherited mutations in gene products that associate with the mitochondria. Mutations in PTEN-induced kinase-1 (PINK1), which encodes a mitochondrial kinase, and PARKIN, encoding an E3 ubiquitin ligase, are the most frequent causes of recessive Parkinson's disease. Recent functional studies have revealed that PINK1 recruits PARKIN to mitochondria to initiate mitophagy, an important autophagic quality control mechanism that rids the cell of damaged mitochondria. PINK1 is post-translationally processed into a cleaved form whose levels are tightly regulated, although the significance of this processing is unknown. Here we demonstrate that the mitochondrial protease presenilin-associated rhomboid-like (PARL) can affect the proteolytic processing of PINK1 and that normal PINK1 localization and stability requires PARL's catalytic activity. PARL deficiency impairs PARKIN recruitment to mitochondria, suggesting PINK1's processing and localization are important in determining its interaction with PARKIN. We sequenced the PARL gene in Parkinson's disease patients and discovered a novel missense mutation in a functional domain of PARL's N-terminus. This PARL mutant is not sufficient to rescue PARKIN recruitment, suggesting that impaired mitophagy may be an underlying mechanism of disease pathogenesis in patients with PARL mutations.", 
+          "qas": [
+            {
+              "question": "What is the enzymatic activity of PARL?", 
+              "id": "58dfe6b56fddd3e83e000004_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Structural and mechanistic basis of Parl activity and regulation. The mitochondrial rhomboid protease Parl governs apoptosis, morphology, metabolism and might be implicated in Parkinson's disease, but the structural basis of its activity and complex regulation remain unknown. We report the discovery of \u03b3-cleavage, a proteolytic event on the loop connecting the first transmembrane helix (TMH) of Parl to the 6-TMH catalytic rhomboid domain of the protease. This cleavage disrupts the '1+6' structure that defines every mitochondrial rhomboid and generates a new form of Parl, PROD (Parl-rhomboid-domain). Structure-function analysis of Parl suggests that \u03b3-cleavage could be implicated in eliminating Parl proteolytic activity, and structural modeling of PROD reveals structural conservation with the bacterial rhomboid GlpG. However, unlike bacterial rhomboids, which employ a diad-based mechanism of catalysis, Parl appears to use a conserved mitochondrial rhomboid-specific Asp residue on TMH-5 in a triad-based mechanism of catalysis. This work provides unexpected insights into the structural determinants regulating Parl stability and activity in vivo, and reveals a complex cascade of proteolytic events controlling the function of the protease in the mitochondrion.", 
+          "qas": [
+            {
+              "question": "What is the enzymatic activity of PARL?", 
+              "id": "58dfe6b56fddd3e83e000004_003"
+            }
+          ]
+        }, 
+        {
+          "context": "MicroRNA-138 suppresses ovarian cancer cell invasion and metastasis by targeting SOX4 and HIF-1\u03b1. Metastasis is the major factor affecting patient survival in ovarian cancer. However, its molecular mechanisms remain unclear. Our study used isogenic pairs of low- and high-invasive ovarian cancer cell lines to demonstrate the downregulation of miRNA-138 in the highly invasive cells, and its functioning as an inhibitor of cell migration and invasion. An orthotopic xenograft mouse model further demonstrated that the expression of miRNA-138 inhibited ovarian cancer metastasis to other organs. Results indicated that miR-138 directly targeted SRY-related high mobility group box 4 (SOX4) and hypoxia-inducible factor-1\u03b1 (HIF-1\u03b1), and overexpression of SOX4 and HIF-1\u03b1 effectively reversed the miR-138-mediated suppression of cell invasion. Epidermal growth factor receptor acted as the downstream molecule of SOX4 by way of direct transcriptional control, whereas Slug was the downstream molecule of HIF-1\u03b1 by way of proteasome-mediated degradation. Analysis of human ovarian tumors further revealed downregulation of miR-138 and upregulation of SOX4 in late-stage tumors. Patients with miR-138(low)/SOX(high) signature are predominant in late stage and tend to have malignant phenotypes including lymph nodes metastasis, larger ascites volume and higher tumor grade. Our study demonstrates the role and clinical relevance of miR-138 in ovarian cancer cell invasion and metastasis, providing a potential therapeutic strategy for suppression of ovarian cancer metastasis by targeting SOX4 and HIF-1\u03b1 pathways.", 
+          "qas": [
+            {
+              "question": "Which miRNA is targeted by SRY/Sox9?", 
+              "id": "58de18e48acda3452900002a_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Natural RNA circles function as efficient microRNA sponges. MicroRNAs (miRNAs) are important post-transcriptional regulators of gene expression that act by direct base pairing to target sites within untranslated regions of messenger RNAs. Recently, miRNA activity has been shown to be affected by the presence of miRNA sponge transcripts, the so-called competing endogenous RNA in humans and target mimicry in plants. We previously identified a highly expressed circular RNA (circRNA) in human and mouse brain. Here we show that this circRNA acts as a miR-7 sponge; we term this circular transcript ciRS-7 (circular RNA sponge for miR-7). ciRS-7 contains more than 70 selectively conserved miRNA target sites, and it is highly and widely associated with Argonaute (AGO) proteins in a miR-7-dependent manner. Although the circRNA is completely resistant to miRNA-mediated target destabilization, it strongly suppresses miR-7 activity, resulting in increased levels of miR-7 targets. In the mouse brain, we observe overlapping co-expression of ciRS-7 and miR-7, particularly in neocortical and hippocampal neurons, suggesting a high degree of endogenous interaction. We further show that the testis-specific circRNA, sex-determining region Y (Sry), serves as a miR-138 sponge, suggesting that miRNA sponge effects achieved by circRNA formation are a general phenomenon. This study serves as the first, to our knowledge, functional analysis of a naturally expressed circRNA.", 
+          "qas": [
+            {
+              "question": "Which miRNA is targeted by SRY/Sox9?", 
+              "id": "58de18e48acda3452900002a_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Does the linear Sry transcript function as a ceRNA for miR-138? The sense of antisense. Recently, the sex determining region Y ( Sry) and the cerebellar degeneration-related protein 1 ( CDR1as) RNA transcripts have been described to function as a new class of post-transcriptional regulatory RNAs that behave as circular endogenous RNA sponges for the micro RNAs (miRNAs) miR-138 and miR-7, respectively. A special feature of the Sry gene is its ability to generate linear and circular transcripts, both transcribed in the sense orientation. Here we remark that both sense (e.g. Sry RNA) and antisense (e.g. CDR1as) transcripts could circularize and behave as miRNAs sponges, and importantly, that also protein-coding segments of mRNAs could also assume this role. Thus, it is reasonable to think that the linear Sry sense transcript could additionally act as a miRNA sponge, or as an endogenous competing RNA for miR-138.", 
+          "qas": [
+            {
+              "question": "Which miRNA is targeted by SRY/Sox9?", 
+              "id": "58de18e48acda3452900002a_002"
+            }
+          ]
+        }, 
+        {
+          "context": "No Promoter Left Behind (NPLB): learn de novo promoter architectures from genome-wide transcription start sites. UNLABELLED: Promoters have diverse regulatory architectures and thus activate genes differently. For example, some have a TATA-box, many others do not. Even the ones with it can differ in its position relative to the transcription start site (TSS). No Promoter Left Behind (NPLB) is an efficient, organism-independent method for characterizing such diverse architectures directly from experimentally identified genome-wide TSSs, without relying on known promoter elements. As a test case, we show its application in identifying novel architectures in the fly genome. AVAILABILITY AND IMPLEMENTATION: Web-server at http://nplb.ncl.res.in Standalone also at https://github.com/computationalBiology/NPLB/ (Mac OSX/Linux). CONTACT: l.narlikar@ncl.res.in SUPPLEMENTARY INFORMATION: Supplementary data are available at Bioinformatics online.", 
+          "qas": [
+            {
+              "question": "What is the applicability of the No Promoter Left Behind method?", 
+              "id": "588f341594c1512c50000002_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Difficulties in diagnosing Marfan syndrome using current FBN1 databases. PURPOSE: The diagnostic criteria of Marfan syndrome (MFS) highlight the importance of a FBN1 mutation test in diagnosing MFS. As genetic sequencing becomes better, cheaper, and more accessible, the expected increase in the number of genetic tests will become evident, resulting in numerous genetic variants that need to be evaluated for disease-causing effects based on database information. The aim of this study was to evaluate genetic variants in four databases and review the relevant literature. METHODS: We assessed background data on 23 common variants registered in ESP6500 and classified as causing MFS in the Human Gene Mutation Database (HGMD). We evaluated data in four variant databases (HGMD, UMD-FBN1, ClinVar, and UniProt) according to the diagnostic criteria for MFS and compared the results with the classification of each variant in the four databases. RESULTS: None of the 23 variants was clearly associated with MFS, even though all classifications in the databases stated otherwise. CONCLUSION: A genetic diagnosis of MFS cannot reliably be based on current variant databases because they contain incorrectly interpreted conclusions on variants. Variants must be evaluated by time-consuming review of the background material in the databases and by combining these data with expert knowledge on MFS. This is a major problem because we expect even more genetic test results in the near future as a result of the reduced cost and process time for next-generation sequencing.Genet Med 18 1, 98-102.", 
+          "qas": [
+            {
+              "question": "Which gene mutations cause the Marfan syndrome?", 
+              "id": "58d8e6818acda3452900000a_000"
+            }
+          ]
+        }, 
+        {
+          "context": "A marked decrease in heart rate variability in Marfan syndrome patients with confirmed FBN1 mutations. BACKGROUND: The studies on heart rate variability (HRV), a key predictor of all-cause mortality, in Marfan syndrome (MS), up to now have not been reported, especially in patients with FBN1 mutations. METHODS: Among 18 MS patients with the phenotype of MS meeting inclusion criteria 15 have had a FBN1 gene mutation. Short electrocardiography records were taken in the supine position and during orthostatic tests. The control group consisted of 30 apparently healthy nonathletes matched by age and gender. RESULTS: Heart rates in MS patients with the FBN1 mutation were increased in both the supine position and orthostatic test (p < 0.001). Most of the time-domain (standard deviation, pNN50) and frequency-domain (total power, very low, low, and high frequency) parameters of HRV were significantly reduced in the MS patients (p < 0.001). CONCLUSIONS: A marked decrease in HRV, documented in the study, may be an important clinical feature in MS patients with confirmed FBN1 gene mutations.", 
+          "qas": [
+            {
+              "question": "Which gene mutations cause the Marfan syndrome?", 
+              "id": "58d8e6818acda3452900000a_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Evaluating the quality of Marfan genotype-phenotype correlations in existing FBN1 databases. BACKGROUND: Genetic FBN1 testing is pivotal for confirming the clinical diagnosis of Marfan syndrome. In an effort to evaluate variant causality, FBN1 databases are often used. We evaluated the current databases regarding FBN1 variants and validated associated phenotype records with a new Marfan syndrome geno-phenotyping tool called the Marfan score. METHODS AND RESULTS: We evaluated four databases (UMD-FBN1, ClinVar, the Human Gene Mutation Database (HGMD), and Uniprot) containing 2,250 FBN1 variants supported by 4,904 records presented in 307 references. The Marfan score calculated for phenotype data from the records quantified variant associations with Marfan syndrome phenotype. We calculated a Marfan score for 1,283 variants, of which we confirmed the database diagnosis of Marfan syndrome in 77.1%. This represented only 35.8% of the total registered variants; 18.5-33.3% (UMD-FBN1 versus HGMD) of variants associated with Marfan syndrome in the databases could not be confirmed by the recorded phenotype. CONCLUSION: FBN1 databases can be imprecise and incomplete. Data should be used with caution when evaluating FBN1 variants. At present, the UMD-FBN1 database seems to be the biggest and best curated; therefore, it is the most comprehensive database. However, the need for better genotype-phenotype curated databases is evident, and we hereby present such a database.Genet Med advance online publication 01 December 2016.", 
+          "qas": [
+            {
+              "question": "Which gene mutations cause the Marfan syndrome?", 
+              "id": "58d8e6818acda3452900000a_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Novel FBN1 gene mutation and maternal germinal mosaicism as the cause of neonatal form of Marfan syndrome. Marfan syndrome (MFS) is an autosomal dominant disorder caused by mutations in the fibrillin 1 gene (FBN1). Neonatal form of MFS is rare and is associated with severe phenotype and a poor prognosis. We report on a newborn girl with neonatal MFS who displayed cyanosis and dyspnea on the first day of life. The main clinical features included mitral and tricuspid valve insufficiency, aortic root dilatation, arachnodactyly, and loose skin. Despite the presence of severe and inoperable heart anomalies, the girl was quite stable on symptomatic treatment and lived up to the 7th month of age when she died due to cardiorespiratory failure. Molecular-genetic studies revealed a novel intronic c.4211-32_-13del mutation in the FBN1 gene. Subsequent in vitro splicing analysis showed this mutation led to exon 35 skipping, presumably resulting in a deletion of 42 amino acids (p.Leu1405_Asp1446del). Interestingly, this mutation is localized outside the region of exons 24-32, whose mutation is responsible for the substantial majority of cases of neonatal MFS. Although the family history of MFS was negative, the subsequent molecular genetic examination documented a mosaicism of the same mutation in the maternal blood cells (10-25% of genomic DNA) and the detailed clinical examination showed unilateral lens ectopy.", 
+          "qas": [
+            {
+              "question": "Which gene mutations cause the Marfan syndrome?", 
+              "id": "58d8e6818acda3452900000a_003"
+            }
+          ]
+        }, 
+        {
+          "context": "PU.1 positively regulates GATA-1 expression in mast cells. Coexpression of PU.1 and GATA-1 is required for proper specification of the mast cell lineage; however, in the myeloid and erythroid lineages, PU.1 and GATA-1 are functionally antagonistic. In this study, we report a transcriptional network in which PU.1 positively regulates GATA-1 expression in mast cell development. We isolated a variant mRNA isoform of GATA-1 in murine mast cells that is significantly upregulated during mast cell differentiation. This isoform contains an alternatively spliced first exon (IB) that is distinct from the first exon (IE) incorporated in the major erythroid mRNA transcript. In contrast to erythroid and megakaryocyte cells, in mast cells we show that PU.1 and GATA-2 predominantly occupy potential cis-regulatory elements in the IB exon region in vivo. Using reporter assays, we identify an enhancer flanking the IB exon that is activated by PU.1. Furthermore, we observe that in PU.1(-/-) fetal liver cells, low levels of the IE GATA-1 isoform is expressed, but the variant IB isoform is absent. Reintroduction of PU.1 restores variant IB isoform and upregulates total GATA-1 protein expression, which is concurrent with mast cell differentiation. Our results are consistent with a transcriptional hierarchy in which PU.1, possibly in concert with GATA-2, activates GATA-1 expression in mast cells in a pathway distinct from that seen in the erythroid and megakaryocytic lineages.", 
+          "qas": [
+            {
+              "question": "Which gene controls the expression of GATA-1 isoforms?", 
+              "id": "58e75d483e8b6dc87c000005_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Loss of GATA-1 full length as a cause of Diamond-Blackfan anemia phenotype. Mutations in the hematopoietic transcription factor GATA-1 alter the proliferation/differentiation of hemopoietic progenitors. Mutations in exon 2 interfere with the synthesis of the full-length isoform of GATA-1 and lead to the production of a shortened isoform, GATA-1s. These mutations have been found in patients with Diamond-Blackfan anemia (DBA), a congenital erythroid aplasia typically caused by mutations in genes encoding ribosomal proteins. We sequenced GATA-1 in 23 patients that were negative for mutations in the most frequently mutated DBA genes. One patient showed a c.2T > C mutation in the initiation codon leading to the loss of the full-length GATA-1 isoform.", 
+          "qas": [
+            {
+              "question": "Which gene controls the expression of GATA-1 isoforms?", 
+              "id": "58e75d483e8b6dc87c000005_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Cardiac and clinical phenotype in Barth syndrome. OBJECTIVE: Barth syndrome, an X-linked disorder that is characterized by cardiomyopathy, neutropenia, skeletal myopathy, and growth delay, is caused by mutations in the taffazin gene at Xq28 that result in cardiolipin deficiency and abnormal mitochondria. The clinical phenotype in Barth syndrome has not been characterized systematically, and the condition may be underrecognized. We sought to evaluate extent of cardioskeletal myopathy, potential for arrhythmia, delays in growth, and biochemical correlates of disease severity in patients with this disorder. METHODS: We conducted an observational, cross-sectional study of the largest cohort of patients with Barth syndrome to date (n = 34; age range: 1.2-22.6 years). Evaluation included echocardiography, electrocardiography (standard and signal-averaged), microvolt T wave alternans analysis, biochemical and hematologic laboratory analyses, and physical therapy evaluation of skeletal myopathy. RESULTS: Family history was positive for confirmed or suspected Barth syndrome in 63%. Ninety percent of patients had a clinical history of cardiomyopathy (mean age at diagnosis of cardiomyopathy: 5.5 months; at genetic confirmation of Barth syndrome: 4.6 years). Echocardiography revealed a mean ejection fraction of 50% +/- 10%, mean fractional shortening of 28% +/- 5%, and mean left ventricular end-diastolic volume z score of 1.9 +/- 1.8. Left ventricular morphology demonstrated increased trabeculations or true noncompaction in 53%. Of 16 patients who were evaluated at > or = 11 years of age, 7 (43%) had documented ventricular arrhythmia. Growth deficiency was present (mean weight percentile: 15%; mean height percentile: 8%). Laboratory analysis revealed low total white blood cell count (absolute count: < 4000 cells per microL) in 25% of those who were not on granulocyte colony-stimulating factor. Hypocholesterolemia was present in 24%, decreased low-density lipoprotein cholesterol in 56%, low prealbumin in 79%, and mildly elevated creatine kinase in 15%. CONCLUSIONS: Our cohort demonstrated clinical variability, but most had cardiomyopathy and diminished growth velocity, with a propensity toward neutropenia and low cholesterol. There was increased incidence of ventricular arrhythmia, predominantly in adolescents and young adults. Barth syndrome should be considered when boys present with cardiomyopathy, especially when associated with increased left ventricular trabeculations, neutropenia, skeletal muscle weakness, or family history indicating an X-linked pattern of inheritance.", 
+          "qas": [
+            {
+              "question": "What is the inheritance of Barth syndrome?", 
+              "id": "58d900428acda3452900000c_000"
+            }
+          ]
+        }, 
+        {
+          "context": "A novel TAZ gene mutation and mosaicism in a Polish family with Barth syndrome. Barth syndrome (BTHS) is an X-linked recessive disease primarily affecting males. Clinically, the disease is characterized by hypertrophic or dilated cardiomyopathy, skeletal myopathy, chronic/cyclic neutropenia, 3-methylglutaconic aciduria, growth retardation and respiratory chain dysfunction. It is caused by mutations in the TAZ gene coding for the tafazzin protein which is responsible for cardiolipin remodeling. In this work, we present a novel pathogenic TAZ mutation c.83T>A, p.Val28Glu, found in mosaic form in almost all female members of a Polish family. Sanger sequencing of DNA from peripheral blood and from epithelial cells showed female mosaicism in three generations. This appears to be a new mechanism of inheritance and further research is required in order to understand the mechanism of this mosaicism. We conclude that BTHS genetic testing should include two or more tissues for women that appear to be noncarriers when blood DNA is initially tested. The results of our study should not only be applicable to BTHS families, but also to families with other X-linked diseases.", 
+          "qas": [
+            {
+              "question": "What is the inheritance of Barth syndrome?", 
+              "id": "58d900428acda3452900000c_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Isolated noncompaction of the left ventricular myocardium in the adult is an autosomal dominant disorder in the majority of patients. Isolated noncompaction of the ventricular myocardium (INVM, MIM 300183 and 604169) is a congenital unclassified cardiomyopathy with numerous prominent trabeculations and deep intertrabecular recesses in a hypertrophied and hypokinetic myocardium. Mutations in the G4.5 gene result in a wide spectrum of severe infantile X-linked cardiomyopathic phenotypes including Barth syndrome with dilated cardiomyopathy and INVM. Molecular genetic analysis of INVM has only been performed in pediatric patients. Although adult INVM patients show similar cardiac abnormalities, the influence of genetic factors, especially of mutations in G4.5, is unknown. We analyzed 25 adult INVM patients for the presence of mutations in the G4.5 gene and performed a pedigree analysis of probands. Mutations were not found in the coding sequence or splice sites of G4.5. Systematic analysis of relatives from seven of nine probands showed multiple affected members consistent with an autosomal dominant pattern of inheritance in the majority of cases. We conclude that INVM in the adult is an autosomal dominant disorder rarely caused by mutations in G4.5 and therefore genetically distinct from infantile X-linked cases.", 
+          "qas": [
+            {
+              "question": "What is the inheritance of Barth syndrome?", 
+              "id": "58d900428acda3452900000c_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Genetic counselling and prenatal diagnosis in disorders of the mitochondrial energy metabolism. Point mutations in mitochondrial DNA, as found in MELAS, MERRF, NARP and other syndromes, are inherited via the maternal lineage. Genetic counselling can be beneficial, but prenatal diagnosis is not advantageous in these syndromes. Empirical data about the recurrence risk can be applied in Leber disease (LHON). Mitochondrial disorders not associated with a point mutation have a sporadic nature (large deletions/duplications in mitochondrial DNA) or are transmitted according to Mendelian laws. Autosomal dominant inheritance is likely to be found in disorders with depletion of mitochondrial DNA. X-linked mode of inheritance is seen in Menkes disease, Barth syndrome, and in deficiencies of the E1 alpha subunit of the pyruvate dehydrogenase complex. Mutation analysis or linkage studies can be applied for carrier detection and prenatal diagnosis in these three types of mitochondriopathies. The majority of the disorders with a disturbed mitochondrial energy metabolism are likely inherited in an autosomal recessive mode. Prenatal diagnosis can be performed in the cases of cytochrome c oxidase and NADH dehydrogenase deficiencies in chorionic villi in selected families.", 
+          "qas": [
+            {
+              "question": "What is the inheritance of Barth syndrome?", 
+              "id": "58d900428acda3452900000c_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Quantitative Profiling of the Effects of Vanoxerine on Human Cardiac Ion Channels and its Application to Cardiac Risk. Vanoxerine has been in clinical trials for Parkinsonism, depression and cocaine addiction but lacked efficacy. Although a potent blocker of hERG, it produced no serious adverse events. We attributed the unexpected result to offsetting Multiple Ion Channel Effects (MICE). Vanoxerine's effects were strongly frequency-dependent and we repositioned it for treatment of atrial fibrillation and flutter. Vanoxerine terminated AF/AFL in an animal model and a dose-ranging clinical trial. Reversion to normal rhythm was associated with QT prolongation yet absent proarrhythmia markers for Torsade de Pointes (TdP). To understand the QT/TdP discordance, we used quantitative profiling and compared vanoxerine with dofetilide, a selective hERG-blocking torsadogen used for intractable AF, verapamil, a non-torsadogenic MICE comparator and bepridil, a torsadogenic MICE comparator. At clinically relevant concentrations, verapamil blocked hCav1.2 and hERG, as did vanoxerine and bepridil both of which also blocked hNav1.5. In acute experiments and simulations, dofetilide produced early after depolarizations (EADs) and arrhythmias, whereas verapamil, vanoxerine and bepridil produced no proarrhythmia markers. Of the MICE drugs only bepridil inhibited hERG trafficking following overnight exposure. The results are consistent with the emphasis on MICE of the CiPA assay. Additionally we propose that trafficking inhibition of hERG be added to CiPA.", 
+          "qas": [
+            {
+              "question": "What alternate indication has Vanoxerine been repositioned for?", 
+              "id": "58c9a8fe02b8c6095300002a_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Childhood ADHD symptoms are associated with lifetime and current illicit substance-use disorders and in-site health risk behaviors in a representative sample of Latino prison inmates. OBJECTIVE: This study aimed to explore retrospective childhood ADHD symptomatology, psychiatric comorbidity, rates of substance-use disorders (SUD), as well as their association with high-risk health behaviors in prison and adverse health outcomes. METHOD: A randomly selected representative sample of inmates in the Puerto Rico correctional system (N = 1,179) was assessed with the Spanish-language Wender Utah Rating Scale (WURS); the Composite International Diagnostic Interview (CIDI) modules for lifetime/current major depression disorder (MDD), generalized anxiety disorder (GAD), and SUD; the Davidson Trauma Scale (DTS; posttraumatic stress disorder [PTSD]); and self-reports of in-site high-risk behaviors. RESULTS: Wald \u03c7(2) tests revealed significant associations of ADHD with MDD and PTSD, as well as increased risk for overdosing and intravenous drug use in prison. A logistic regression model adjusted for mood and anxiety comorbidity predicted lifetime SUD diagnosis (odds ratio = 2.38; 95% confidence interval = [1.15, 4.94]). CONCLUSION: Our results provide further evidence on the association of drug dependence and ADHD symptoms, and their overrepresentation among prison inmates.", 
+          "qas": [
+            {
+              "question": "Symptoms of which disorder are evaluated with the Davidson Trauma Scale?", 
+              "id": "58861d413b87a8a738000002_000"
+            }
+          ]
+        }, 
+        {
+          "context": "The SF-36 Offers a Strong Measure of Mental Health Symptoms in Survivors of Acute Respiratory Failure. A Tri-National Analysis. RATIONALE: Survivors of acute respiratory failure commonly experience long-term psychological sequelae and impaired quality of life. For researchers interested in general mental health, using multiple condition-specific instruments may be unnecessary and inefficient when using the Medical Outcomes Study Short Form (SF)-36, a recommended outcome measure, may suffice. However, relationships between the SF-36 scores and commonly used measures of psychological symptoms in acute survivors of respiratory failure are unknown. OBJECTIVES: Our objective is to examine the relationship of the SF-36 mental health domain (MH) and mental health component summary (MCS) scores with symptoms of depression, anxiety, and post-traumatic stress disorder (PTSD) evaluated using validated psychological instruments. METHODS: We conducted a cross-sectional analysis of 1,229 participants at 6- and 12-month follow-up assessment using data from five studies from the United States, the United Kingdom, and Australia. MEASUREMENTS AND MAIN RESULTS: Symptoms were assessed using the Hospital Anxiety and Depression Scale (HADS), Depression Anxiety Stress Scales, the Davidson Trauma Scale, Impact of Event Scale (IES), and IES-Revised (IES-R). At 6-month assessment there were moderate to strong correlations of the SF-36 MH scores with HADS depression and anxiety symptoms (r = -0.74 and -0.79) and with IES-R PTSD symptoms (r = -0.60) in the pooled analyses. Using the normalized population mean of 50 on the SF-36 MH domain score as a cut-off, positive predictive values were 16 and 55% for substantial depression; 20 and 68% for substantial anxiety (Depression Anxiety Stress Scales and HADS, respectively); and 40, 44, and 67% for substantial PTSD symptoms (IES-R, IES, and Davidson Trauma Scale, respectively). Negative predictive values were high. The area under the receiver operating characteristics curve of the SF-36 MH score was high for depression, anxiety, and PTSD symptoms (0.88, 0.91, and 0.84, respectively). All results were consistent for the MCS, across the individual studies, and for the 12-month assessment. CONCLUSIONS: For researchers interested in general mental health status, the SF-36 MH or MCS offers a strong measure of psychological symptoms prevalent among survivors of acute respiratory failure. For researchers interested in specific conditions, validated psychological instruments should be considered.", 
+          "qas": [
+            {
+              "question": "Symptoms of which disorder are evaluated with the Davidson Trauma Scale?", 
+              "id": "58861d413b87a8a738000002_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Reliability and validity of the Brief Resilience Scale (BRS) Spanish Version. Resilience is defined as the ability to recover from stress. However, all resilience measures with exception of the Brief Resilience Scale (BRS) assess resources that make resilience possible instead of recovery. The purpose of this study was to translate the BRS to Spanish and to analyze the reliability and validity of its scores. The psychometric properties of its scores were examined in a heterogeneous sample of 620 Spanish adults. Confirmatory factor analyses were carried out to study its scores' evidence of structural validity. Besides, to study its scores' evidence of convergent, discriminant, and predictive validity in relation to other resilience questionnaires (Connor Davidson Resilience Scale 10-item version, Situated Subjective Resilience Questionnaire for Adults and Resiliency Questionnaire for Adults) and to variables such as emotions (Modified Differential Emotions Scale), coping (Person-situation Coping Questionnaire for Adults), anxiety and depression (Hospital Anxiety and Depression Scale), posttraumatic growth (Posttraumatic Growth Inventory), perceived stress (Perceived Stress Scale) and posttraumatic stress (Davidson Trauma Scale), correlation and regression analyses were conducted. To study its sensitivity, we assessed the effect of sociodemographics and the ability of the scale to identify high-risk populations by conducting analyses of variance and Pearson correlations. The BRS scores showed adequate reliability (\u03b1 = .83; intraclass coefficient = .69). Confirmatory factor analyses showed that the Spanish version of the BRS is mono-factorial (\u03c72/df = 2.36; standardized root mean square residual = .036; goodness-of-fit index = .980; comparative fit index = .984; incremental fit index = .984; root mean square error of approximation = .067). They also showed adequate evidence of the scores' convergent, concurrent and predictive validity. The Spanish version of the BRS is a reliable and valid means to assess resilience as the ability to bounce back. (PsycINFO Database Record", 
+          "qas": [
+            {
+              "question": "Symptoms of which disorder are evaluated with the Davidson Trauma Scale?", 
+              "id": "58861d413b87a8a738000002_002"
+            }
+          ]
+        }, 
+        {
+          "context": "EFFECT OF THE APOE \u03b54 ALLELE AND COMBAT EXPOSURE ON PTSD AMONG IRAQ/AFGHANISTAN-ERA VETERANS. BACKGROUND: The apolipoprotein E (APOE) \u03b54 allele has been implicated in a range of neuropsychiatric conditions. The present research examined if the \u03b54 allele of the APOE gene moderated the effect of combat exposure on posttraumatic stress disorder (PTSD) among Iraq/Afghanistan-era veterans. METHOD: Participants included 765 non-Hispanic White (NHW) and 859 non-Hispanic Black (NHB) Iraq/Afghanistan-era veterans. A structured interview established psychiatric diagnoses. Combat exposure and PTSD symptom severity were assessed via self-report. RESULTS: The most common lifetime diagnoses were depression (39.2%), PTSD (38.4%), and alcohol dependence (24.38%). After correcting for multiple comparisons, no significant effects were observed on any of the outcomes among the NHW sample; however, within the NHB sample, significant gene \u00d7 environment (G \u00d7 E) interactions were observed for lifetime PTSD (P = .0029) and PTSD symptom severity (P = .0009). In each case, the APOE \u03b54 allele had no effect on the outcomes when combat exposure was low; however, when combat exposure was high, an additive effect was observed such that \u03b54 homozygotes exposed to high levels of combat reported the highest rates of PTSD (92%) and the worst symptom severity scores on the Davidson Trauma Scale (M = 79.5). CONCLUSIONS: Although preliminary, these findings suggest that the APOE \u03b54 allele, in conjunction with exposure to high levels of combat exposure, may increase veterans' risk for developing PTSD.", 
+          "qas": [
+            {
+              "question": "Symptoms of which disorder are evaluated with the Davidson Trauma Scale?", 
+              "id": "58861d413b87a8a738000002_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Temporal dynamics and developmental memory of 3D chromatin architecture at Hox gene loci. Hox genes are essential regulators of embryonic development. Their step-wise transcriptional activation follows their genomic topology and the various states of activation are subsequently memorized into domains of progressively overlapping gene products. We have analyzed the 3D chromatin organization of Hox clusters during their early activation in vivo, using high-resolution circular chromosome conformation capture. Initially, Hox clusters are organized as single chromatin compartments containing all genes and bivalent chromatin marks. Transcriptional activation is associated with a dynamic bi-modal 3D organization, whereby the genes switch autonomously from an inactive to an active compartment. These local 3D dynamics occur within a framework of constitutive interactions within the surrounding Topological Associated Domains, indicating that this regulation process is mostly cluster intrinsic. The step-wise progression in time is fixed at various body levels and thus can account for the chromatin architectures previously described at a later stage for different anterior to posterior levels.DOI: http://dx.doi.org/10.7554/eLife.02557.001.", 
+          "qas": [
+            {
+              "question": "How many topological associated domains are contained in the human Hox cluster?", 
+              "id": "58e793f53e8b6dc87c000008_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Mis-sesnse mutations in Tafazzin (TAZ) that escort to mild clinical symptoms of Barth syndrome is owed to the minimal inhibitory effect of the mutations on the enzyme function: In-silico evidence. Tafazzin (EC 2.3.1.23) is a Phospholipid Transacylase involved in Cardiolipin remodeling on mitochondrial membrane and coded by TAZ gene (Cytogenetic Location: Xq28) in human. Its mutations cause Barth syndrome (MIM ID: #302060)/3-Methyl Glutaconyl Aciduria Type II, an inborn error of metabolism often leading to foetal or infantile fatality. Nevertheless, some mis-sense mutations result in mild clinical symptoms. To evaluate the rationale of mild symptoms and for an insight of Tafazzin active site, sequence based and structure based ramifications of wild and mutant Tafazzins were compared in-silico. Sequence based domain predictions, surface accessibilities on substitution & conserved catalytic sites with statistical drifts, as well as thermal stability changes for the mutations and the interaction analysis of Tafazzin were performed. Crystal structure of Tafazzin is not yet resolved experimentally, therefore 3D coordinates of Tafazzin and its mutants were spawned through homology modeling. Energetically minimized and structurally validated models were used for comparative docking simulations. We analyzed active site geometry of the models in addition to calculating overall substrate binding efficiencies for each of the enzyme-ligand complex deduced from binding energies instead of comparing only the docking scores. Also, individual binding energies of catalytic residues on conserved HX4D motif of Acyltransferase superfamily present in Tafazzins were estimated. This work elucidates the basis of mild symptoms in patients with mis-sense mutations, identifies the most pathogenic mutant among others in the study and also divulges the critical role of HX4D domain towards successful transacylation by Taffazin. The in-silico observations are in complete agreement with clinical findings reported for the patients with mutations.", 
+          "qas": [
+            {
+              "question": "Where is the TAZ (G4.5) is located in humans?", 
+              "id": "58d906b28acda3452900000d_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Mutation characterization and genotype-phenotype correlation in Barth syndrome. Barth syndrome is an X-linked cardiomyopathy with neutropenia and 3-methylglutaconic aciduria. Recently, mutations in the G4.5 gene, located in Xq28, have been described in four probands with Barth syndrome. We have now evaluated 14 Barth syndrome pedigrees for mutations in G4.5 and have identified unique mutations in all, including four splice-site mutations, three deletions, one insertion, five missense mutations, and one nonsense mutation. Nine of the 14 mutations are predicted to significantly disrupt the protein products of G4.5. The occurrence of missense mutations in exons 3 and 8 suggests that these exons encode essential portions of the G4. 5 proteins, whose functions remain unknown. We found no correlation between the location or type of mutation and any of the clinical or laboratory abnormalities of Barth syndrome, which suggests that additional factors modify the expression of the Barth phenotype. The characterization of mutations of the G4.5 gene will be useful for carrier detection, genetic counseling, and the identification of patients with Barth syndrome who do not manifest all of the cardinal features of this disorder.", 
+          "qas": [
+            {
+              "question": "Where is the TAZ (G4.5) is located in humans?", 
+              "id": "58d906b28acda3452900000d_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Lack of association of variants previously associated with anti-TNF medication response in rheumatoid arthritis patients: results from a homogeneous Greek population. Treatment strategies blocking tumor necrosis factor (anti-TNF) have proven very successful in patients with rheumatoid arthritis (RA), showing beneficial effects in approximately 50-60% of the patients. However, a significant subset of patients does not respond to anti-TNF agents, for reasons that are still unknown. The aim of this study was to validate five single nucleotide polymorphisms (SNPs) of PTPRC, CD226, AFF3, MyD88 and CHUK gene loci that have previously been reported to predict anti-TNF outcome. In addition, two markers of RA susceptibility, namely TRAF1/C5 and STAT4 were assessed, in a cohort of anti-TNF-treated RA patients, from the homogeneous Greek island of Crete, Greece. The RA patient cohort consisted of 183 patients treated with either of 3 anti-TNF biologic agents (infliximab, adalimumab and etanercept) from the Clinic of Rheumatology of the University Hospital of Crete. The SNPs were genotyped by TaqMan assays or following the Restriction Fragments Length Polymorphisms (RFLPs) approach. Disease activity score in 28 joints (DAS28) at baseline and after 6 months were available for all patients and analysis of good versus poor response at 6 months was performed for each SNP. None of the 7 genetic markers correlated with treatment response. We conclude that the gene polymorphisms under investigation are not strongly predictive of anti-TNF response in RA patients from Greece.", 
+          "qas": [
+            {
+              "question": "What percentage of rheumatoid arthritis patients are responsive to anti-TNF therapy?", 
+              "id": "58e79e703e8b6dc87c00000a_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Genetic and genomic predictors of anti-TNF response. The introduction of anti-TNF therapy has dramatically improved the outlook for patients suffering from a number of inflammatory conditions including rheumatoid arthritis and inflammatory bowel disease. Despite this, a substantial proportion of patients (approximately 30-40%) fail to respond to these potentially toxic and expensive therapies. Treatment response is likely to be multifactorial; however, variation in genes or their expression may identify those most likely to respond. By targeted testing of variants within candidate genes, potential predictors of anti-TNF response have been reported; however, very few markers have replicated consistently between studies. Emerging genome-wide association studies suggest that there may be a number of genes with modest effects on treatment response rather than a few genes of large effect. Other potential serum biomarkers of response have also been explored including cytokines and autoantibodies, with antibodies developing to the anti-TNF drugs themselves being correlated with treatment failure.", 
+          "qas": [
+            {
+              "question": "What percentage of rheumatoid arthritis patients are responsive to anti-TNF therapy?", 
+              "id": "58e79e703e8b6dc87c00000a_001"
+            }
+          ]
+        }, 
+        {
+          "context": "A population-based post mortem study of sudden unexpected death in epilepsy. The aim of this study was to review population autopsy data on epilepsy-related deaths (ERD) in Queensland, Australia, to establish the incidence of autopsy-confirmed sudden unexpected death in epilepsy (SUDEP), explore factors associated with SUDEP, and determine if complete autopsy examinations of SUDEP were performed. All autopsy reports for a 5year period in Queensland were electronically searched for the terms 'epilepsy' or 'seizure'. The identified reports were reviewed, and data were extracted for all ERD. In the study period, 175 ERD were identified from autopsy records (123 SUDEP, 34 accident-related, 3 due to status epilepticus). From data available on the prevalence of epilepsy in Queensland (National Health Survey), the incidence of autopsy-confirmed SUDEP was 0.7 per 1000 person years (95% confidence interval 0.5-1.2 per 1000 person years). The factors associated with SUDEP were male sex (for those >18 years) and subtherapeutic anticonvulsant medication levels (found in 55%). Where recorded, the majority of deaths happened in the person's usual residence (90%), were overnight (70%) and unwitnessed (87%), with the person found prone (74%), in or adjacent to their bed (49%) and with signs of proximate seizure (60%). A complete autopsy was undertaken for only 59% of cases, the majority in urban locations. This study provides support for an unwitnessed overnight seizure being a key factor in autopsy-confirmed SUDEP in Queensland.", 
+          "qas": [
+            {
+              "question": "What condition is usually represented by the acronym SUDEP?", 
+              "id": "58dbb8968acda3452900001b_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Cardiac arrhythmias during or after epileptic seizures. Seizure-related cardiac arrhythmias are frequently reported and have been implicated as potential pathomechanisms of Sudden Unexpected Death in Epilepsy (SUDEP). We attempted to identify clinical profiles associated with various (post)ictal cardiac arrhythmias. We conducted a systematic search from the first date available to July 2013 on the combination of two terms: 'cardiac arrhythmias' and 'epilepsy'. The databases searched were PubMed, Embase (OVID version), Web of Science and COCHRANE Library. We attempted to identify all case reports and case series. We identified seven distinct patterns of (post)ictal cardiac arrhythmias: ictal asystole (103 cases), postictal asystole (13 cases), ictal bradycardia (25 cases), ictal atrioventricular (AV)-conduction block (11 cases), postictal AV-conduction block (2 cases), (post)ictal atrial flutter/atrial fibrillation (14 cases) and postictal ventricular fibrillation (3 cases). Ictal asystole had a mean prevalence of 0.318% (95% CI 0.316% to 0.320%) in people with refractory epilepsy who underwent video-EEG monitoring. Ictal asystole, bradycardia and AV-conduction block were self-limiting in all but one of the cases and seen during focal dyscognitive seizures. Seizure onset was mostly temporal (91%) without consistent lateralisation. Postictal arrhythmias were mostly found following convulsive seizures and often associated with (near) SUDEP. The contrasting clinical profiles of ictal and postictal arrhythmias suggest different pathomechanisms. Postictal rather than ictal arrhythmias seem of greater importance to the pathophysiology of SUDEP.", 
+          "qas": [
+            {
+              "question": "What condition is usually represented by the acronym SUDEP?", 
+              "id": "58dbb8968acda3452900001b_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Exclusive endoscopic transcanal transpromontorial approach: a new perspective for internal auditory canal vestibular schwannoma treatment. OBJECTIVE The aim of this study was to describe the first case series in which an exclusive endoscopic transcanal transpromontorial approach (EETTA) was used to treat small vestibular schwannomas (VSs) and meningiomas of the internal auditory canal (IAC). METHODS The authors performed a retrospective review of patients who had undergone surgery using an EETTA to the IAC at 2 university tertiary care referral centers during the period from November 2011 to January 2015. RESULTS Ten patients underwent surgery via an EETTA for the treatment of VS in the IAC at the University Hospital of Modena or the University Hospital of Verona. The patients had Koos Grade I or II tumors and American Academy of Otolaryngology-Head and Neck Surgery (AAO-HNS) Class D hearing status preoperatively. Gross-total resection was achieved in all patients. No major complications such as cerebrospinal fluid leakage or hemorrhage were reported. In 7 of 10 (70%) patients, facial nerve function was normal immediately after surgery (Rough Grading System [RGS] Grade I). Two patients presented with a transitory facial palsy immediately after surgery (RGS Grade II-III) but experienced complete recovery during the follow-up period. The mean follow-up was 10 months. CONCLUSIONS The EETTA proved to be successful for the removal of VS or meningioma involving the cochlea, fundus, and IAC, with possible lower complication rates and less invasive procedures than those for traditional microscopic approaches. The potential for the extensive and routine use of this approach in lateral and posterior skull base surgery will depend on the development of technology and surgical refinements and on the diffusion of skull base endoscopic skills among the otolaryngological and neurosurgical communities.", 
+          "qas": [
+            {
+              "question": "Which disease can be categorized using the Koos grading system?", 
+              "id": "5886519c3b87a8a738000007_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Outcomes in Patients with Vestibular Schwannoma after Subtotal Resection and Adjuvant Radiosurgery. BACKGROUND: The debate continues with a limited number of publications describing outcomes in patients with vestibular schwannoma (VS) treated with planned subtotal resection (STR) plus stereotactic radiosurgery (SRS). Here we present our experience. METHODS: This is a retrospective review of 22 patients with VS Koos grade III and IV who were treated with STR followed by SRS. Tumor volumes, facial nerve function, hearing preservation, and the presence of trigeminal neuropathy were noted. Spearman's rank test was used to correlate facial nerve grade with postoperative tumor residual tumor volume. RESULTS: Tumor control was achieved in all patients with a mean follow-up of 28 months. No patient required other treatment beyond the original surgery and adjuvant SRS during this period. After a mean postoperative period of 28 months, 19/22 patients had excellent (House-Brackmann I or II) facial nerve function grading. Improved facial nerve function was positively correlated with larger residual tumor volume (rs = 0.63). Kaplan-Meier curve showed around 80% probability for regaining facial nerve function after initial deterioration. Four patients reported postoperative facial numbness at the side of surgery, with 3 cases showing improvement within a month. Temporary postoperative caudal cranial nerve dysfunction was observed in 2 patients. CONCLUSION: Hybrid strategy of STR and adjuvant SRS provides patients with large VS excellent tumor control and a good clinical outcome.", 
+          "qas": [
+            {
+              "question": "Which disease can be categorized using the Koos grading system?", 
+              "id": "5886519c3b87a8a738000007_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Prognostic Factors of Balance Quality After Transpetrosal Vestibular Schwannoma Microsurgery: An Instrumentally and DHI-based Prospective Cohort Study of 48 Patients. OBJECTIVES: To evaluate short- and mid-term level of imbalance after vestibular schwannoma (VS) microsurgery by the transpetrosal approach, to search for factors predictive of vestibular compensation, and to determine which patient categories need a postoperative vestibular rehabilitation program. STUDY DESIGN: Prospective cohort study at a tertiary referral center. METHODS: Between 2010 and 2011, patients aged 18 to 75 operated on for VS by transpetrosal approaches were included. VS was characterized by its size (Koos classification) and the presence or not of a cystic component. Hearing was classified according to the Gardner Robertson grading. The preoperative workup included an audiogram, computerized video nystagmography (VNG) with caloric testing, gaze study, rotatory tests, click-evoked cervical vestibular evoked myogenic potential measurements (cVEMPs), and subjective visual vertical test. Patients were asked to complete a Dizziness Handicap Inventory (DHI). Postoperatively, patients were reevaluated on D7 (clinical status), D90 (VNG and DHI), and D180 (DHI). Timing and duration of vestibular rehabilitation were also recorded. RESULTS: Forty-eight patients were included. Preoperatively, 77% experienced mild instability problems with a mean DHI score of 14.1 (range 4-32). Postoperatively, 71% reported stable or even improved perceived stability. Mean DHI scores were 28.1 on D90 and 19.8 on D180. Serviceable hearing, cystic transformation, normal cVEMPs, diplopia, and vestibular syndrome on D7 were found to be predictive of worse equilibrium outcome than when absent. A preoperative caloric deficit greater than 75% seemed to be a good prognostic factor. Vestibular rehabilitation was conducted in 56% of patients. Starting it early (<1 mo) seemed to be beneficial for final equilibrium outcome. CONCLUSION: VS microsurgery provides good stability results. Some preoperative parameters may be predictive of worse or improved balance recovery, as is clinical status on D7.", 
+          "qas": [
+            {
+              "question": "Which disease can be categorized using the Koos grading system?", 
+              "id": "5886519c3b87a8a738000007_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Stitchless fibrin glue-aided facial nerve grafting after cerebellopontine angle schwannoma removal: technique and results in 15 cases. AIM OF THE STUDY: To evaluate the results of facial nerve (FN) grafting using great auricular cable graft and fibrin glue without suturing to palliate FN disruption after removal of large cerebellopontine angle (CPA) vestibular schwannoma (VS) or facial nerve schwannoma (FNS). To assess whether tumor size and origin influenced the results. STUDY DESIGN AND SETTING: Retrospective review of all patients having undergone removal of FNS/VS and needing intraoperative FN repair between 2001 and 2011. INTERVENTION: FN was rehabilitated using great auricular nerve cable graft and fibrin glue (Tisseal) without stitching suture. MAIN OUTCOME MEASURES: All data recorded were reviewed to access age, sex, tumor type, and tumor size according to the Koos classification and presenting symptoms. FN function was evaluated preoperatively and at 18 months using the House-Brackmann (HB) grading system. RESULTS: Among the 595 patients operated for CPA schwannomas in this period, 15 patients (2.5%) underwent FN repair, including 7 cases of FNS and 8 cases of VS. Tumor removal was total in all cases. FN recovery was HB3 in 13 cases (86.7%) and HB4 in 2. The mean time to the first clinical signs of facial reinnervation was 10 months (6-12 mo). No significant relation was found between postoperative facial function and tumor size or type, even if all cases of preoperative FP were noted in FNS. CONCLUSION: Immediate FN reconstruction with fibrin glue-aided greater auricular nerve graft can effectively restore FN function with excellent outcomes. The results seem better than those observed by other authors using sutured grafts or delayed hypoglossal-facial nerve anastomosis.", 
+          "qas": [
+            {
+              "question": "Which disease can be categorized using the Koos grading system?", 
+              "id": "5886519c3b87a8a738000007_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Regulation of transcription termination by glucosylated hydroxymethyluracil, base J, in Leishmania major and Trypanosoma brucei. Base J, \u03b2-d-glucosyl-hydroxymethyluracil, is an epigenetic modification of thymine in the nuclear DNA of flagellated protozoa of the order Kinetoplastida. J is enriched at sites involved in RNA polymerase (RNAP) II initiation and termination. Reduction of J in Leishmania tarentolae via growth in BrdU resulted in cell death and indicated a role of J in the regulation of RNAP II termination. To further explore J function in RNAP II termination among kinetoplastids and avoid indirect effects associated with BrdU toxicity and genetic deletions, we inhibited J synthesis in Leishmania major and Trypanosoma brucei using DMOG. Reduction of J in L. major resulted in genome-wide defects in transcription termination at the end of polycistronic gene clusters and the generation of antisense RNAs, without cell death. In contrast, loss of J in T. brucei did not lead to genome-wide termination defects; however, the loss of J at specific sites within polycistronic gene clusters led to altered transcription termination and increased expression of downstream genes. Thus, J regulation of RNAP II transcription termination genome-wide is restricted to Leishmania spp., while in T. brucei it regulates termination and gene expression at specific sites within polycistronic gene clusters.", 
+          "qas": [
+            {
+              "question": "Where is base J found in the genome of Leishmania tarentolae?", 
+              "id": "58cf5c5a8acda34529000003_000"
+            }
+          ]
+        }, 
+        {
+          "context": "The modified base J is the target for a novel DNA-binding protein in kinetoplastid protozoans. DNA from Kinetoplastida contains the unusual modified base beta-D-glucosyl(hydroxymethyl)uracil, called J. Base J is found predominantly in repetitive DNA and correlates with epigenetic silencing of telomeric variant surface glycoprotein genes in Trypanosoma brucei. We have now identified a protein in nuclear extracts of bloodstream stage T.brucei that binds specifically to J-containing duplex DNA. J-specific DNA binding was also observed with extracts from the kinetoplastids Crithidia fasciculata and Leishmania tarentolae. We purified the 90 kDa C.fasciculata J-binding protein 50 000-fold and cloned the corresponding gene from C.fasciculata, T.brucei and L.tarentolae. Recombinant proteins expressed in Escherichia coli demonstrated J-specific DNA binding. The J-binding proteins show 43-63% identity and are unlike any known protein. The discovery of a J-binding protein suggests that J, like methylated cytosine in higher eukaryotes, functions via a protein intermediate.", 
+          "qas": [
+            {
+              "question": "Where is base J found in the genome of Leishmania tarentolae?", 
+              "id": "58cf5c5a8acda34529000003_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Defining the sequence requirements for the positioning of base J in DNA using SMRT sequencing. Base J (\u03b2-D-glucosyl-hydroxymethyluracil) replaces 1% of T in the Leishmania genome and is only found in telomeric repeats (99%) and in regions where transcription starts and stops. This highly restricted distribution must be co-determined by the thymidine hydroxylases (JBP1 and JBP2) that catalyze the initial step in J synthesis. To determine the DNA sequences recognized by JBP1/2, we used SMRT sequencing of DNA segments inserted into plasmids grown in Leishmania tarentolae. We show that SMRT sequencing recognizes base J in DNA. Leishmania DNA segments that normally contain J also picked up J when present in the plasmid, whereas control sequences did not. Even a segment of only 10 telomeric (GGGTTA) repeats was modified in the plasmid. We show that J modification usually occurs at pairs of Ts on opposite DNA strands, separated by 12 nucleotides. Modifications occur near G-rich sequences capable of forming G-quadruplexes and JBP2 is needed, as it does not occur in JBP2-null cells. We propose a model whereby de novo J insertion is mediated by JBP2. JBP1 then binds to J and hydroxylates another T 13 bp downstream (but not upstream) on the complementary strand, allowing JBP1 to maintain existing J following DNA replication.", 
+          "qas": [
+            {
+              "question": "Where is base J found in the genome of Leishmania tarentolae?", 
+              "id": "58cf5c5a8acda34529000003_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Identifying the genomic regions and regulatory factors that control the transcription of genes is an important, unsolved problem. The current method of choice predicts transcription factor (TF) binding sites using chromatin immunoprecipitation followed by sequencing (ChIP-seq), and then links the binding sites to putative target genes solely on the basis of the genomic distance between them. Evidence from chromatin conformation capture experiments shows that this approach is inadequate due to long-distance regulation via chromatin looping. We present CisMapper, which predicts the regulatory targets of a TF using the correlation between a histone mark at the TF's bound sites and the expression of each gene across a panel of tissues. Using both chromatin conformation capture and differential expression data, we show that CisMapper is more accurate at predicting the target genes of a TF than the distance-based approaches currently used, and is particularly advantageous for predicting the long-range regulatory interactions typical of tissue-specific gene expression. CisMapper also predicts which TF binding sites regulate a given gene more accurately than using genomic distance. Unlike distance-based methods, CisMapper can predict which transcription start site of a gene is regulated by a particular binding site of the TF. CisMapper: predicting regulatory interactions from transcription factor ChIP-seq data.", 
+          "qas": [
+            {
+              "question": "Which tool is available for predicting regulatory interactions from ChIP-seq data?", 
+              "id": "587e0116ae05ffb474000002_000"
+            }
+          ]
+        }, 
+        {
+          "context": "A girl with metopic synostosis and trisomy 13 mosaicism: case report and review of the literature. Trisomy 13, or Patau syndrome is a rare chromosomal disorder characterized by a triad of cleft lip and palate, postaxial polydactyly and microcephaly. Complete, partial, or mosaic forms of the disorder can occur. Mosaic trisomy 13 is very rare, it occurs in only 5% of all patients with trisomy 13 phenotype. Metopic synostosis (MS) is premature fusion of the metopic suture, which is part of the frontal suture. It results in a V-shaped abnormality at the front of the skull. MS may occur in a syndromic or nonsyndromic form. We report on a 24-day-old girl with hypotonia, MS, trigonocephaly, capillary hemangioma, hypotelorism, upward slanting palpebral fissures, epicanthal folds, small nose with anteverted nares, high palate, ankyloglossia, long philtrum, low-set ears, short neck, postaxial polydactyly of both hands and feet and congenital heart defect. Cytogenetic analysis demonstrated trisomy 13 mosaicism; 46,XX[58]/47,XX,+13[42]. Although MS has been previously reported in complete and partial forms of trisomy 13, it has not been reported in mosaic form of trisomy 13. Our report supports the evidence that trisomy 13 causes MS. It also emphasizes the need for cytogenetic investigations in patients presenting with MS and multiple congenital anomalies for providing accurate diagnosis, genetic counseling, and prenatal diagnosis.", 
+          "qas": [
+            {
+              "question": "Which is the main cause of the Patau syndrome?", 
+              "id": "58da111c8acda34529000010_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Trisomy 13: a rare case of congenital tarsal kink. We describe the management of the eyelid anomaly associated with Patau syndrome. Trisomy 13 is the genotype of the syndrome's phenotype. The eyelid anomaly was a tarsal kink, a congenital malformation of the tarsus that causes entropion. A 2-month-old white girl presented with unilateral upper eyelid entropion and central corneal ulceration. To correct this condition, two 6-0 polyglactin sutures were passed through the gray line of the upper and lower eyelids and tied. Correction of the entropion and improvement in the corneal condition were achieved after surgery. No recurrence of the entropion or corneal ulceration was noted after 2 months of follow-up. This simple technique, which corrected the eyelid malposition, providing an excellent cosmetic result without incision of the tarsus, has been previously reported in other cases of tarsal kink but not in a patient with Patau syndrome.", 
+          "qas": [
+            {
+              "question": "Which is the main cause of the Patau syndrome?", 
+              "id": "58da111c8acda34529000010_001"
+            }
+          ]
+        }, 
+        {
+          "context": "[Chromosomal aberrations as etiological factors of intrauterine growth retardation]. BACKGROUND/AIM: Intrauterine growth retardation (IUGR) is a pathological condition of pregnancy characterised by birth weight below the 10th centile. A number of fetal, placental and maternal causes can lead to IUGR; although, in most cases no specific causes can be identified. The aim of this study was to determine the part of chromosomal abnormalities in IUGR etiology. METHODS: Fetal blood karyotype taken by cordocentesis from 168 fetuses with diagnosed IUGR was analyzed. RESULTS: Chromosomal rearrangements both numerical and structural were detected in 14 cases (12.2%). Two cases were triploid. Patau syndrome, Edwards syndrome and Down syndrome were found in two cases each. There was one case of trisomy 7 (47, XY, +7) and one case of trisomy 16 (47, XX, +16); one translocation, 46, XY, t (2; 14)(q23; q32) and a deletion 46, XYdel (12) (p12) as well as two cases of sex chromosomes abnormalities, 45, X (Turner syndrome) and 47, XYY. CONCLUSION: These findings suggest that a consistent number of symmetrical IUGR cases (about 12%) can be associated with chromosomal rearrangements. Chromosomal aberrations that cause IUGR are heterogeneous, aberration of autosomes, mostly autosomal trisomies, being the most common.", 
+          "qas": [
+            {
+              "question": "Which is the main cause of the Patau syndrome?", 
+              "id": "58da111c8acda34529000010_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Autosomal trisomies: what neonatal nurses need to know. Autosomal trisomies are associated with major congenital malformations that may result in prolonged hospitalization of the newborn. Knowledge about these chromosomal abnormalities is important for nurses in neonatal practice. This article identifies the causes and manifestations of most of these trisomies: trisomy 13 (Patau syndrome), trisomy 18 (Edwards syndrome), and trisomy 21 (Down syndrome). More detailed description of the manifestations, associated abnormalities, and outcomes of the most common of these, trisomy 21, is provided.", 
+          "qas": [
+            {
+              "question": "Which is the main cause of the Patau syndrome?", 
+              "id": "58da111c8acda34529000010_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Specific transcriptional changes in human fetuses with autosomal trisomies. Among full autosomal trisomies, only trisomies of chromosome 21 (Down syndrome), 18 (Edwards syndrome) and 13 (Patau syndrome) are compatible with postnatal survival. But the mechanisms, how a supernumerary chromosome disrupts the normal development and causes specific phenotypes, are still not fully explained. As an alternative to gene dosage effect due to the trisomic chromosome a genome-wide transcriptional dysregulation has been postulated. The aim of this study was to define the transcriptional changes in trisomy 13, 18, and 21 during early fetal development in order to obtain more insights into the molecular etiopathology of aneuploidy. Using oligonucleotide microarrays, we analyzed whole genome expression profiles in cultured amniocytes (AC) and chorionic villus cells (CV) from pregnancies with a normal karyotype and with trisomies of human chromosomes 13, 18 and 21. We observed a low to moderate up-regulation for a subset of genes of the trisomic chromosomes. Transcriptional levels of most of the genes on the supernumerary chromosome appeared similar to the respective chromosomal pair in normal karyotypes. A subset of chromosome 21 genes including the DSCR1 gene involved in fetal heart development was consistently up-regulated in different prenatal tissues (AC, CV) of trisomy 21 fetuses whereas only minor changes were found for genes of all other chromosomes. In contrast, in trisomy 18 vigorous downstream transcriptional changes were found. Global transcriptome analysis for autosomal trisomies 13, 18, and 21 supported a combination of the two major hypotheses.", 
+          "qas": [
+            {
+              "question": "Which is the main cause of the Patau syndrome?", 
+              "id": "58da111c8acda34529000010_004"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

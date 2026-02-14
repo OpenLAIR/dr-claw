@@ -1,0 +1,829 @@
+{
+  "version": "BioASQ6b", 
+  "data": [
+    {
+      "title": "BioASQ6b", 
+      "paragraphs": [
+        {
+          "context": "The antibody aducanumab reduces A\u03b2 plaques in Alzheimer's disease. Alzheimer's disease (AD) is characterized by deposition of amyloid-\u03b2 (A\u03b2) plaques and neurofibrillary tangles in the brain, accompanied by synaptic dysfunction and neurodegeneration. Antibody-based immunotherapy against A\u03b2 to trigger its clearance or mitigate its neurotoxicity has so far been unsuccessful. Here we report the generation of aducanumab, a human monoclonal antibody that selectively targets aggregated A\u03b2. In a transgenic mouse model of AD, aducanumab is shown to enter the brain, bind parenchymal A\u03b2, and reduce soluble and insoluble A\u03b2 in a dose-dependent manner. In patients with prodromal or mild AD, one year of monthly intravenous infusions of aducanumab reduces brain A\u03b2 in a dose- and time-dependent manner. This is accompanied by a slowing of clinical decline measured by Clinical Dementia Rating-Sum of Boxes and Mini Mental State Examination scores. The main safety and tolerability findings are amyloid-related imaging abnormalities. These results justify further development of aducanumab for the treatment of AD. Should the slowing of clinical decline be confirmed in ongoing phase 3 clinical trials, it would provide compelling support for the amyloid hypothesis.", 
+          "qas": [
+            {
+              "question": "What disease is the drug aducanumab targeting?", 
+              "id": "58a95c711978bbde22000001_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Immunotherapy with Aducanumab Restores Calcium Homeostasis in Tg2576 Mice. Calcium homeostasis plays a major role in maintaining neuronal function under physiological conditions. Amyloid-\u03b2 (A\u03b2) initiates pathological processes that include disruption in intracellular calcium levels, so amelioration of the calcium alteration could serve as an indirect functional indicator of treatment efficacy. Therefore, calcium dynamics were used as a measure of functional outcome. We evaluated the effects of the anti-A\u03b2 antibody aducanumab on calcium homeostasis and plaque clearance in aged Tg2576 mice with in vivo multiphoton imaging. Acute topical application of aducanumab to the brain resulted in clearance of amyloid plaques. Although chronic systemic administration of aducanumab in 22-month-old mice did not clear existing plaques, calcium overload was ameliorated over time. Therefore, this antibody likely restores neuronal network function that possibly underlies cognitive deficits, indicating promise as a clinical treatment. In addition, functional readouts such as calcium overload may be a more useful outcome measure to monitor treatment efficacy in models of Alzheimer's disease compared with amyloid burden alone. SIGNIFICANCE STATEMENT: Alzheimer's disease (AD) is a progressive neurodegenerative disorder that is currently without a cure. Aducanumab is an anti-amyloid-\u03b2 antibody being developed for the treatment of AD. Interim analyses of a phase 1b clinical trial have suggested potential beneficial effects on amyloid pathology and cognitive status in patients treated with aducanumab (Sevigny et al., 2016). Here, we show that a murine analog of aducanumab clears amyloid plaques in an acute setting and restores calcium homeostasis disrupted in a mouse model of AD upon chronic treatment. Therefore, we demonstrate that aducanumab reverses a functional outcome measure reflective of neural network activity.", 
+          "qas": [
+            {
+              "question": "What disease is the drug aducanumab targeting?", 
+              "id": "58a95c711978bbde22000001_001"
+            }
+          ]
+        }, 
+        {
+          "context": "The amyloid hypothesis of Alzheimer's disease at 25\u00a0years. Despite continuing debate about the amyloid \u03b2-protein (or A\u03b2 hypothesis, new lines of evidence from laboratories and clinics worldwide support the concept that an imbalance between production and clearance of A\u03b242 and related A\u03b2 peptides is a very early, often initiating factor in Alzheimer's disease (AD). Confirmation that presenilin is the catalytic site of \u03b3-secretase has provided a linchpin: all dominant mutations causing early-onset AD occur either in the substrate (amyloid precursor protein, APP) or the protease (presenilin) of the reaction that generates A\u03b2. Duplication of the wild-type APP gene in Down's syndrome leads to A\u03b2 deposits in the teens, followed by microgliosis, astrocytosis, and neurofibrillary tangles typical of AD Apolipoprotein E4, which predisposes to AD in >\u00a040% of cases, has been found to impair A\u03b2 clearance from the brain. Soluble oligomers of A\u03b242 isolated from AD patients' brains can decrease synapse number, inhibit long-term potentiation, and enhance long-term synaptic depression in rodent hippocampus, and injecting them into healthy rats impairs memory. The human oligomers also induce hyperphosphorylation of tau at AD-relevant epitopes and cause neuritic dystrophy in cultured neurons. Crossing human APP with human tau transgenic mice enhances tau-positive neurotoxicity. In humans, new studies show that low cerebrospinal fluid (CSF) A\u03b242 and amyloid-PET positivity precede other AD manifestations by many years. Most importantly, recent trials of three different A\u03b2 antibodies (solanezumab, crenezumab, and aducanumab) have suggested a slowing of cognitive decline in post hoc analyses of mild AD subjects. Although many factors contribute to AD pathogenesis, A\u03b2 dyshomeostasis has emerged as the most extensively validated and compelling therapeutic target.", 
+          "qas": [
+            {
+              "question": "What disease is the drug aducanumab targeting?", 
+              "id": "58a95c711978bbde22000001_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Drug treatments in Alzheimer's disease. Despite the significant public health issue that it poses, only five medical treatments have been approved for Alzheimer's disease (AD) and these act to control symptoms rather than alter the course of the disease. Studies of potential disease-modifying therapy have generally been undertaken in patients with clinically detectable disease, yet evidence suggests that the pathological changes associated with AD begin several years before this. It is possible that pharmacological therapy may be beneficial in this pre-clinical stage before the neurodegenerative process is established. Techniques providing earlier diagnosis, such as cerebrospinal fluid biomarkers and amyloid positron emission tomography neuroimaging, are key to testing this theory in clinical trials. Recent results from trials of agents such as aducanumab are encouraging but must also be interpreted with caution. Such medicines could potentially delay the onset of dementia and would therefore markedly reduce its prevalence. However, we currently remain a good distance away from clinically available disease-modifying therapy.", 
+          "qas": [
+            {
+              "question": "What disease is the drug aducanumab targeting?", 
+              "id": "58a95c711978bbde22000001_003"
+            }
+          ]
+        }, 
+        {
+          "context": "JAMM: a peak finder for joint analysis of NGS replicates. MOTIVATION: Although peak finding in next-generation sequencing (NGS) datasets has been addressed extensively, there is no consensus on how to analyze and process biological replicates. Furthermore, most peak finders do not focus on accurate determination of enrichment site widths and are not widely applicable to different types of datasets. RESULTS: We developed JAMM (Joint Analysis of NGS replicates via Mixture Model clustering): a peak finder that can integrate information from biological replicates, determine enrichment site widths accurately and resolve neighboring narrow peaks. JAMM is a universal peak finder that is applicable to different types of datasets. We show that JAMM is among the best performing peak finders in terms of site detection accuracy and in terms of accurate determination of enrichment sites widths. In addition, JAMM's replicate integration improves peak spatial resolution, sorting and peak finding accuracy. AVAILABILITY AND IMPLEMENTATION: JAMM is available for free and can run on Linux machines through the command line: http://code.google.com/p/jamm-peak-finder.", 
+          "qas": [
+            {
+              "question": "Which peak calling algorithm employs mixture model clustering under the hood?", 
+              "id": "587f760792a5b8ad44000005_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Intestinal stem cells and their defining niche. The intestinal epithelium is a classic example of a rapidly self-renewing tissue fueled by dedicated resident stem cells. These stem cells reside at the crypt base, generating committed progeny that mature into the various functional epithelial lineages while following a rapid migratory path toward the villi. Two models of intestinal stem cell location were proposed half a century ago and data have been presented in support of both models, dividing the scientific community. Molecular markers have been identified and validated using new techniques such as in vivo lineage tracing and ex vivo organoid culture. The intestinal stem cell niche comprises both epithelial cells, in particular the Paneth cell, and the stromal compartment, where cell-associated ligands and soluble factors regulate stem cell behavior. This review highlights the recent advances in identifying and characterizing the intestinal stem cells and their defining niche.", 
+          "qas": [
+            {
+              "question": "Where are Paneth cells located?", 
+              "id": "58a9bbe81978bbde22000007_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Paneth cells in colonic adenomas: association with male sex and adenoma burden. Paneth cells have been reported in colorectal adenomas and adenocarcinomas; however, the frequency of colonic Paneth cell-containing adenomas is unknown as are their clinicopathologic features. A total of 152 consecutive colorectal adenomas from 103 patients (57 males and 46 females) were reviewed. The frequency of Paneth cells in this cohort of adenomas was determined and correlated with patient demographics. Twenty-six adenomas (17.1%) from 22 (21.4%) patients harbored Paneth cells, which were not limited to the base of the crypts but aberrantly located throughout the crypts. Patient age, adenoma size, villous features, and grade of dysplasia were not different between these 2 groups. Not surprisingly, Paneth cell-containing adenomas were more likely to occur in the proximal colon (84.6% vs. 55.6%; P=0.006). There was a strong association between male sex and Paneth cell-containing adenomas, as 23 of 26 (88.5%) of these adenomas occurred in male individuals compared with 71 of 126 (56.3%) non-Paneth cell-containing adenomas (P=0.002). Upon review of an additional 460 adenomas from 200 patients with varying numbers of adenomas (68 with 1 adenoma, 68 with 2 adenomas, and 64 with 3 or more adenomas), the risk of harboring synchronous adenomas was associated with villous morphology, proximal location, and the presence of a Paneth cell-containing adenoma. Thus, the presence of a Paneth cell-containing adenoma may be a marker for increased risk of developing colorectal neoplasia.", 
+          "qas": [
+            {
+              "question": "Where are Paneth cells located?", 
+              "id": "58a9bbe81978bbde22000007_001"
+            }
+          ]
+        }, 
+        {
+          "context": "The stem cells of small intestinal crypts: where are they? Recently, there has been resurgence of interest in the question of small intestinal stem cells, their precise location and numbers in the crypts. In this article, we attempt to re-assess the data, including historical information often omitted in recent studies on the subject. The conclusion we draw is that the evidence supports the concept that active murine small intestinal stem cells in steady state are few in number and are proliferative. There are two evolving, but divergent views on their location (which may be more related to scope of capability and reversibility than to location) several lineage labelling and stem cell self-renewing studies (based on Lgr5 expression) suggest a location intercalated between the Paneth cells (crypt base columnar cells (CBCCs)), or classical cell kinetic, label-retention and radiobiological evidence plus other recent studies, pointing to a location four cell positions luminally from the base of the crypt The latter is supported by recent lineage labelling of Bmi-1-expressing cells and by studies on expression of Wip-1 phosphatase. The situation in the human small intestine remains unclear, but recent mtDNA mutation studies suggest that the stem cells in humans are also located above the Paneth cell zone. There could be a distinct and as yet undiscovered relationship between these observed traits, with stem cell properties both in cells of the crypt base and those at cell position 4.", 
+          "qas": [
+            {
+              "question": "Where are Paneth cells located?", 
+              "id": "58a9bbe81978bbde22000007_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Paneth cells and necrotizing enterocolitis: a novel hypothesis for disease pathogenesis. Current models of necrotizing enterocolitis (NEC) propose that intraluminal microbes destroy intestinal mucosa and activate an inflammatory cascade that ends in necrosis. We suggest an alternate hypothesis wherein NEC is caused by injury to Paneth cells (PCs) in the intestinal crypts. PCs are specialized epithelia that protect intestinal stem cells from pathogens, stimulate stem cell differentiation, shape the intestinal microbiota, and assist in repairing the gut. Our novel model of NEC uses neonatal mice and ablates PCs followed by enteral infection. We contrast this model with other animal examples of NEC and the clinical disease. Selective destruction of PCs using dithizone likely releases tumor necrosis factor-\u03b1 and other inflammatory mediators. We propose that this event produces inflammation in the submucosa, generates platelet-activating factor, and induces a coagulopathy. The role of PCs in NEC is consistent with the onset of disease in preterm infants after a period of PC-related maturation, the central role of PCs in crypt-related homeostasis, the anatomic location of pneumatosis intestinalis close to the crypts, and the proximity of PCs to occluded blood vessels that cause coagulation necrosis of the intestinal villi. We offer this hypothesis to promote new thoughts about how NEC occurs and its potential prevention.", 
+          "qas": [
+            {
+              "question": "Where are Paneth cells located?", 
+              "id": "58a9bbe81978bbde22000007_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Paneth's disease. In about 70% of patients Crohn's disease (CD) affects the small intestine. This disease location is stable over time and associated with a genetic background different from isolated colonic disease. A characteristic feature of small intestinal host defense is the presence of Paneth cells at the bottom of the crypts of Lieberk\u00fchn. These cells produce different broad spectrum antimicrobial peptides (AMPs) most abundantly the \u03b1-defensins HD-5 and -6 (DEFA5 und DEFA6). In small intestinal Crohn's disease both these PC products are specifically reduced. As a functional consequence, ileal extracts from Crohn's disease patients are compromised in clearing bacteria and enteroadherent E. coli colonize the mucosa. Mechanisms for defective antimicrobial Paneth cell function are complex and include an association with a NOD2 loss of function mutation, a disturbance of the Wnt pathway transcription factor TCF7L2 (also known as TCF4), the autophagy factor ATG16L1, the endosomal stress protein XBP1, the toll-like receptor TLR9, the calcium mediated potassium channel KCNN4 as well as mutations or inactivation of HD5. Thus we conclude that small intestinal Crohn's disease is most likely a complex disease of the Paneth cell: Paneth's disease.", 
+          "qas": [
+            {
+              "question": "Where are Paneth cells located?", 
+              "id": "58a9bbe81978bbde22000007_004"
+            }
+          ]
+        }, 
+        {
+          "context": "Epithelial stem cell-related alterations in Trichinella spiralis-infected small intestine. OBJECTIVES: Infection of mice with the parasite Trichinella spiralis leads to small intestinal inflammation, characterized by changes in mucosal architecture and subpopulations of epithelial cells. This model has been used to explore changes in the epithelial proliferative cell population and expression of transforming growth factor-beta (TGF-beta). MATERIALS AND METHODS: Histochemical and immunohistochemical studies were undertaken in duodenal samples. Location and number of Ki-67-positive cells were assessed using Score and Wincrypts program. Changes in mRNA transcripts were studied by real-time RT-PCR. RESULTS: T. spiralis infection induced an increase in total number of proliferative (Ki-67-positive) cells per half crypt on day 2 post-infection. Transcription of Math1, a transcription factor required for secretory cell differentiation in the intestine, was up-regulated on days 6-18 post-infection. At these time points, numbers of Paneth cells at the crypt base were also increased and the epithelial proliferative zone was shifted up the crypt-villus axis. Transcription of TGF-beta isoforms within the small intestine was up-regulated on days 6 and 12 post-infection, but anti-TGF-beta antibody treatment had no effect on T. spiralis-induced changes in mucosal architecture or increase in Paneth/intermediate cells. CONCLUSIONS: T. spiralis infection promotes an initial increase in small intestinal epithelial proliferation and subsequent cell differentiation along the secretory cell lineage. The resulting increase in numbers of Paneth cells at the crypt base causes the proliferative zone to move up the crypt-villus axis. Further studies are required to determine the significance of an increase in the expression of TGF-beta transcripts.", 
+          "qas": [
+            {
+              "question": "Where are Paneth cells located?", 
+              "id": "58a9bbe81978bbde22000007_005"
+            }
+          ]
+        }, 
+        {
+          "context": "Low incidence of acute myocardial infarction in beta-thalassaemia trait carriers. The frequency of beta-thalassaemia trait was estimated in 209 consecutive patients hospitalized for acute myocardial infarction in order to answer the question of the possible protective effect of heterozygosity for beta-thalassaemia on the incidence of the disease. 212 patients hospitalized during the same period for various accidental bone fractures served as controls. Diagnosis of both, acute myocardial infarction and beta-thalassaemia trait, was based on the standard clinical and laboratory criteria. We found that patients with acute myocardial infarction had low frequency of beta-thalassaemia trait (4.31%), as compared with the mean incidence of heterozygosity for beta-thalassaemia in the whole Greek population (7.61%) (p < 0.02). This finding was more clear in the older age groups of the patients studied. No statistically significant differences were found in the frequency of beta-thalassaemia trait between control subjects (8.49%) and the whole Greek population. We concluded that the heterozygosity for beta-thalassaemia may protect the carrier from acute myocardial infarction. This effect is probably related to low serum cholesterol levels, slight anaemia, and microcytosis lowering the blood viscosity. These changes are usually present in the beta-thalassaemia trait carriers.", 
+          "qas": [
+            {
+              "question": "What is the incidence of beta-thalassemia in Greek population?", 
+              "id": "58a2df9c60087bc10a000006_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Avascular necrosis of the femoral head among children and adolescents with sickle cell disease in Greece. Hemoglobinopathies are very common in Greece, the incidence of beta-thalassemia trait being 8% and that of sickle cell trait ranging from 1 to 32% in various districts. In Greek populations, sickle cell disease (SCD) is mainly represented by S-beta thalassemia.", 
+          "qas": [
+            {
+              "question": "What is the incidence of beta-thalassemia in Greek population?", 
+              "id": "58a2df9c60087bc10a000006_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Naltrexone/bupropion for the treatment of obesity and obesity with Type 2 diabetes. Contrave(\u00ae) is a combination of naltrexone hydrochloride extended release and bupropion hydrochloride extended release for the treatment of obesity, and is used with lifestyle modification. Its safety and efficacy were assessed in four randomized, double-blind, placebo-controlled, 56-week Phase III clinical trials in 4536 adult subjects: COR-1, COR-II, COR-BMOD and COR-DM. All four studies demonstrated statistically significant and clinically meaningful weight loss following up to 52 weeks of treatment with naltrexone/bupropion compared with placebo. The average weight loss from baseline across the four studies was approximately 11-22 lbs (5-9 kg). Results show the efficacy of Contrave for weight loss, as well as significant improvements in cardiometabolic markers. This review focuses on the four studies, their outcomes and the mechanism of action of Contrave.", 
+          "qas": [
+            {
+              "question": "What is Contrave prescribed for?", 
+              "id": "58a32edd60087bc10a000012_000"
+            }
+          ]
+        }, 
+        {
+          "context": "CAFE: an R package for the detection of gross chromosomal abnormalities from gene expression microarray data. SUMMARY: The current methods available to detect chromosomal abnormalities from DNA microarray expression data are cumbersome and inflexible. CAFE has been developed to alleviate these issues. It is implemented as an R package that analyzes Affymetrix *.CEL files and comes with flexible plotting functions, easing visualization of chromosomal abnormalities. AVAILABILITY AND IMPLEMENTATION: CAFE is available from https://bitbucket.org/cob87icW6z/cafe/ as both source and compiled packages for Linux and Windows. It is released under the GPL version 3 license. CAFE will also be freely available from Bioconductor. CONTACT: sander.h.bollen@gmail.com or nancy.mah@mdc-berlin.de SUPPLEMENTARY INFORMATION: Supplementary data are available at Bioinformatics online.", 
+          "qas": [
+            {
+              "question": "Which R package is used for the detection of chromosomal abnormalities from microarray data?", 
+              "id": "5880a8ec0a76a87357000001_000"
+            }
+          ]
+        }, 
+        {
+          "context": "The industrial melanism mutation in British peppered moths is a transposable element. Discovering the mutational events that fuel adaptation to environmental change remains an important challenge for evolutionary biology. The classroom example of a visible evolutionary response is industrial melanism in the peppered moth (Biston betularia): the replacement, during the Industrial Revolution, of the common pale typica form by a previously unknown black (carbonaria) form, driven by the interaction between bird predation and coal pollution. The carbonaria locus has been coarsely localized to a 200-kilobase region, but the specific identity and nature of the sequence difference controlling the carbonaria-typica polymorphism, and the gene it influences, are unknown. Here we show that the mutation event giving rise to industrial melanism in Britain was the insertion of a large, tandemly repeated, transposable element into the first intron of the gene cortex. Statistical inference based on the distribution of recombined carbonaria haplotypes indicates that this transposition event occurred around 1819, consistent with the historical record. We have begun to dissect the mode of action of the carbonaria transposable element by showing that it increases the abundance of a cortex transcript, the protein product of which plays an important role in cell-cycle regulation, during early wing disc development. Our findings fill a substantial knowledge gap in the iconic example of microevolutionary change, adding a further layer of insight into the mechanism of adaptation in response to natural selection. The discovery that the mutation itself is a transposable element will stimulate further debate about the importance of 'jumping genes' as a source of major phenotypic novelty.", 
+          "qas": [
+            {
+              "question": "What type of mutation is causing the industrial melanism phenotype in peppered moths?", 
+              "id": "58a877cf38c171fb5b000004_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Multiple Myeloma Gets Three New Drugs. In the last few weeks, the FDA approved three new therapies for multiple myeloma: ixazomib, the first oral proteasome inhibitor; and daratumumab and elotuzumab, two monoclonal antibodies that target CD38 and SLAMF7, respectively.", 
+          "qas": [
+            {
+              "question": "What is the target of daratumumab?", 
+              "id": "5880aef4c872c95565000001_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Clinical efficacy and management of monoclonal antibodies targeting CD38 and SLAMF7 in multiple myeloma. Immunotherapeutic strategies are emerging as promising therapeutic approaches in multiple myeloma (MM), with several monoclonal antibodies in advanced stages of clinical development. Of these agents, CD38-targeting antibodies have marked single agent activity in extensively pretreated MM, and preliminary results from studies with relapsed/refractory patients have shown enhanced therapeutic efficacy when daratumumab and isatuximab are combined with other agents. Furthermore, although elotuzumab (anti-SLAMF7) has no single agent activity in advanced MM, randomized trials in relapsed/refractory MM have demonstrated significantly improved progression-free survival when elotuzumab is added to lenalidomide-dexamethasone or bortezomib-dexamethasone. Importantly, there has been no significant additive toxicity when these monoclonal antibodies are combined with other anti-MM agents, other than infusion-related reactions specific to the therapeutic antibody. Prevention and management of infusion reactions is important to avoid drug discontinuation, which may in turn lead to reduced efficacy of anti-MM therapy. Therapeutic antibodies interfere with several laboratory tests. First, interference of therapeutic antibodies with immunofixation and serum protein electrophoresis assays may lead to underestimation of complete response. Strategies to mitigate interference, based on shifting the therapeutic antibody band, are in development. Furthermore, daratumumab, and probably also other CD38-targeting antibodies, interfere with blood compatibility testing and thereby complicate the safe release of blood products. Neutralization of the therapeutic CD38 antibody or CD38 denaturation on reagent red blood cells mitigates daratumumab interference with transfusion laboratory serologic tests. Finally, therapeutic antibodies may complicate flow cytometric evaluation of normal and neoplastic plasma cells, since the therapeutic antibody can affect the availability of the epitope for binding of commercially available diagnostic antibodies.", 
+          "qas": [
+            {
+              "question": "What is the target of daratumumab?", 
+              "id": "5880aef4c872c95565000001_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Monoclonal antibodies - A new era in the treatment of multiple myeloma. Monoclonal antibodies (mAbs) are currently the most investigated therapeutic compounds in oncology, but there is no monoclonal antibody approved in the treatment of multiple myeloma (MM). Nevertheless several really promising molecules are under investigation in phase III clinical trials. Dominantly daratumumab (anti-CD38) and elotuzumab (anti-CS1) showed extraordinary effectiveness in phase I/II trials. The toxicity was acceptable which is important for their addition to standard anti-myeloma agents like proteasome inhibitors or immunomodulatory drugs. Monoclonal antibodies such as denosumab (anti-RANKL) or BHQ880 (anti-DKK-1) are investigated also in the management of myeloma bone disease. This review is focused on the most promising mAbs, their mechanisms of action and the rationale of use. Practically all available results have been described. If the ongoing trials confirm the efficacy and safety of mAbs, they would become an important part of MM treatment that would be translated in the further improvement of therapeutic outcomes.", 
+          "qas": [
+            {
+              "question": "What is the target of daratumumab?", 
+              "id": "5880aef4c872c95565000001_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Interference of daratumumab in monitoring multiple myeloma patients using serum immunofixation electrophoresis can be abrogated using the daratumumab IFE reflex assay (DIRA). Daratumumab is a fully human anti-CD38 IgG1-\u03ba monoclonal antibody (mAb) currently being evaluated in several Phase 2 and 3 clinical studies for the treatment of multiple myeloma (MM). In this clinical case study we demonstrate that daratumumab can be detected as an individual monoclonal band in serum immunofixation electrophoresis (IFE). M-protein follow-up by IFE is part of the International Myeloma Working Group (IMWG) criteria to assess treatment response. Therefore, it is crucial that the daratumumab band is not confused with the endogenous M-protein of the patient during IFE interpretation. Moreover, a significant number of IgG-\u03ba M-proteins co-migrate with daratumumab. Co-migration introduces a bias in the M-protein quantification since pharmacokinetic studies show that daratumumab peak plasma concentrations reach up to 1 g/L. More importantly, co-migration can mask clearance of the M-protein by IFE which is necessary for classification of complete response by IMWG criteria (negative serum IFE). For optimal M-protein monitoring the laboratory specialist needs to be informed when patients receive daratumumab, and it is essential that the laboratory specialist is aware that a slow migrating band in the \u03b3-region in those patients may be derived from the daratumumab. A daratumumab specific IFE reflex assay (DIRA) has been developed and can be utilized to abrogate interference. The here described mAb interference is not limited to daratumumab, and as therapeutic antibodies gain approval and enter into common clinical practice, laboratory specialists will need additional processes to characterize IFE interference and distinguish endogenous M-protein from therapeutic antibodies.", 
+          "qas": [
+            {
+              "question": "What is the target of daratumumab?", 
+              "id": "5880aef4c872c95565000001_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Antibody-Dependent Cellular Cytotoxicity Activity of a Novel Anti-PD-L1 Antibody Avelumab (MSB0010718C) on Human Tumor Cells. Several anti-PD-1/PD-L1 monoclonal antibodies (mAb) are currently providing evidence of clinical benefit in subsets of cancer patients. The mode of action of these mAbs is to inhibit PD-1 on immune cells interacting with PD-L1 on tumor cells. These mAbs are either designed or engineered to eliminate antibody-dependent cell-mediated cytotoxicity (ADCC), which, however, has been implicated as an important mechanism in several highly effective mAb-mediated cancer therapies. A fully human anti-PD-L1 mAb would potentially be able to block PD-1/PD-L1 interactions and also mediate the ADCC lysis of tumor cells. MSB0010718C (designated avelumab) is a fully human IgG1 anti-PD-L1 mAb. The studies reported here demonstrate (i) the ability of avelumab to lyse a range of human tumor cells in the presence of PBMC or NK effectors; (ii) IFN\u03b3 can enhance tumor cell PD-L1 expression and, in some cases, enhance ADCC tumor cell lysis; (iii) purified NK cells are potent effectors for avelumab; (iv) similar levels of avelumab-mediated ADCC lysis of tumor cells are seen using purified NK as effectors from either healthy donors or cancer patients; (v) very low levels of avelumab-mediated lysis are seen using whole PBMCs as targets; this finding complements results seen in analyses of PBMC subsets of patients receiving avelumab; and (vi) the addition of IL12 to NK cells greatly enhances avelumab-mediated ADCC. These studies thus provide an additional mode of action for an anti-PD-L1 mAb and support the rationale for further studies to enhance avelumab-mediated ADCC activity.", 
+          "qas": [
+            {
+              "question": "What molecule is targeted by Avelumab?", 
+              "id": "5884c72fe56acf517600000f_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Near infrared photoimmunotherapy with avelumab, an anti-programmed death-ligand 1 (PD-L1) antibody. Near Infrared-Photoimmunotherapy (NIR-PIT) is a highly selective tumor treatment that employs an antibody-photo-absorber conjugate (APC). Programmed cell death protein-1 ligand (PD-L1) is emerging as a molecular target. Here, we describe the efficacy of NIR-PIT, using fully human IgG1 anti-PD-L1 monoclonal antibody (mAb), avelumab, conjugated to the photo-absorber, IR700DX, in a PD-L1 expressing H441 cell line, papillary adenocarcinoma of lung. Avelumab-IR700 showed specific binding and cell-specific killing was observed after exposure of the cells to NIR in vitro. In the in vivo study, avelumab-IR700 showed high tumor accumulation and high tumor-background ratio. Tumor-bearing mice were separated into 4 groups: (1) no treatment; (2) 100 \u03bcg of avelumab-IR700 i.v.; (3) NIR light exposure only, NIR light was administered; (4) 100 \u03bcg of avelumab-IR700 i.v., NIR light was administered. Tumor growth was significantly inhibited by NIR-PIT treatment compared with the other groups (p < 0.001), and significantly prolonged survival was achieved (p < 0.01 vs other groups). In conclusion, the anti-PD-L1 antibody, avelumab, is suitable as an APC for NIR-PIT. Furthermore, NIR-PIT with avelumab-IR700 is a promising candidate of the treatment of PD-L1-expressing tumors that could be readily translated to humans.", 
+          "qas": [
+            {
+              "question": "What molecule is targeted by Avelumab?", 
+              "id": "5884c72fe56acf517600000f_001"
+            }
+          ]
+        }, 
+        {
+          "context": "PD-L1 testing for lung cancer in the UK: recognizing the challenges for implementation. A new approach to the management of non-small-cell lung cancer (NSCLC) has recently emerged that works by manipulating the immune checkpoint controlled by programmed death receptor 1 (PD-1) and its ligand programmed death ligand 1 (PD-L1). Several drugs targeting PD-1 (pembrolizumab and nivolumab) or PD-L1 (atezolizumab, durvalumab, and avelumab) have been approved or are in the late stages of development. Inevitably, the introduction of these drugs will put pressure on healthcare systems, and there is a need to stratify patients to identify those who are most likely to benefit from such treatment. There is evidence that responsiveness to PD-1 inhibitors may be predicted by expression of PD-L1 on neoplastic cells. Hence, there is considerable interest in using PD-L1 immunohistochemical staining to guide the use of PD-1-targeted treatments in patients with NSCLC. This article reviews the current knowledge about PD-L1 testing, and identifies current research requirements. Key factors to consider include the source and timing of sample collection, pre-analytical steps (sample tracking, fixation, tissue processing, sectioning, and tissue prioritization), analytical decisions (choice of biomarker assay/kit and automated staining platform, with verification of standardized assays or validation of laboratory-devised techniques, internal and external quality assurance, and audit), and reporting and interpretation of the results. This review addresses the need for integration of PD-L1 immunohistochemistry with other tests as part of locally agreed pathways and protocols. There remain areas of uncertainty, and guidance should be updated regularly as new information becomes available.", 
+          "qas": [
+            {
+              "question": "What molecule is targeted by Avelumab?", 
+              "id": "5884c72fe56acf517600000f_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Avelumab in patients with chemotherapy-refractory metastatic Merkel cell carcinoma: a multicentre, single-group, open-label, phase 2 trial. BACKGROUND: Merkel cell carcinoma is a rare, aggressive skin cancer with poor prognosis in patients with advanced disease. Current standard care uses various cytotoxic chemotherapy regimens, but responses are seldom durable. Tumour oncogenesis is linked to Merkel cell polyomavirus integration and ultraviolet-radiation-induced mutations, providing rationale for treatment with immunotherapy antibodies that target the PD-L1/PD-1 pathway. We assessed treatment with avelumab, an anti-PD-L1 monoclonal antibody, in patients with stage IV Merkel cell carcinoma that had progressed after cytotoxic chemotherapy. METHODS: In this multicentre, international, prospective, single-group, open-label, phase 2 trial, patients with stage IV chemotherapy-refractory, histologically confirmed Merkel cell carcinoma (aged > 18 years) were enrolled from 35 cancer treatment centres and academic hospitals in North America, Europe, Australia, and Asia. Key eligibility criteria were an ECOG performance status of 0 or 1, measurable disease by Response Evaluation Criteria in Solid Tumors (RECIST) version 1.1, adequate haematological, hepatic, and renal function, and immune-competent status (patients with HIV, immunosuppression, haematological malignancies, and previous organ transplantation were excluded). Patient selection was not based on PD-L1 expression or Merkel cell polyomavirus status. Collection of biopsy material or use of archival tissue for these assessments was mandatory. Avelumab was given intravenously at a dose of 10 mg/kg every 2 weeks. The primary endpoint was confirmed objective response (complete response or partial response) assessed according to RECIST version 1.1 by an independent review committee. Safety and clinical activity were assessed in all patients who received at least one dose of study drug (the modified intention-to-treat population). This trial is registered with ClinicalTrials.gov as NCT02155647. FINDINGS: Between July 25, 2014, and Sept 3, 2015, 88 patients were enrolled and received at least one dose of avelumab. Patients were followed up for a median of 10\u00b74 months (IQR 8\u00b76-13\u00b71). The proportion of patients who achieved an objective response was 28 (31\u00b78% [95\u00b79% CI 21\u00b79-43\u00b71]) of 88 patients, including eight complete responses and 20 partial responses. Responses were ongoing in 23 (82%) of 28 patients at the time of analysis. Five grade 3 treatment-related adverse events occurred in four (5%) patients: lymphopenia in two patients, blood creatine phosphokinase increase in one patient, aminotransferase increase in one patient, and blood cholesterol increase in one patient; there were no treatment-related grade 4 adverse events or treatment-related deaths. Serious treatment-related adverse events were reported in five patients (6%): enterocolitis, infusion-related reaction, aminotransferases increased, chondrocalcinosis, synovitis, and interstitial nephritis (n=1 each). INTERPRETATION: Avelumab was associated with durable responses, most of which are still ongoing, and was well tolerated; hence, avelumab represents a new therapeutic option for advanced Merkel cell carcinoma. FUNDING: Merck KGaA, Darmstadt, Germany.", 
+          "qas": [
+            {
+              "question": "What molecule is targeted by Avelumab?", 
+              "id": "5884c72fe56acf517600000f_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Programed death-1/programed death-ligand 1 expression in lymph nodes of HIV infected patients: results of a pilot safety study in rhesus macaques using anti-programed death-ligand 1 (Avelumab). OBJECTIVE: The programed death-1 (PD1)/programed death-ligand 1 (PD-L1) pathway plays a critical role in balancing immunity and host immunopathology. During chronic HIV/SIV infection, there is persistent immune activation accompanied by accumulation of virus-specific cells with terminally differentiated phenotypes and expression of regulatory receptors such as PD1. These observations led us to hypothesize that the PD1/PD-L1 pathway contributes to the functional dysregulation and ineffective viral control, and its blockade may be a potential immunotherapeutic target. METHODS: Lymph node biopsies from HIV-infected patients (n = 23) were studied for expression of PD1 and PD-L1. In addition, we assessed the safety and biological activity of a human anti-PD-L1 antibody (Avelumab) in chronically SIV-infected rhesus macaques. RESULTS: PD-L1 expression was observed in cells with myloid/macrophage morphology in HIV-infected lymph nodes. Administration of anti-PD-L1 was well tolerated, and no changes in body weights, hematologic, or chemistry parameters were observed during the study. Blockade of PD-L1 led to a trend of transient viral control after discontinuation of treatment. CONCLUSION: Administration of anti-PD-L1 in chronic SIV-infected rhesus macaques was well tolerated. Overall, these data warrant further investigation to assess the efficacy of anti-PD-L1 treatment on viral control in chronic SIV infection as a prelude to such therapy in humans.", 
+          "qas": [
+            {
+              "question": "What molecule is targeted by Avelumab?", 
+              "id": "5884c72fe56acf517600000f_004"
+            }
+          ]
+        }, 
+        {
+          "context": "Crystal clear: visualizing the intervention mechanism of the PD-1/PD-L1 interaction by two cancer therapeutic monoclonal antibodies. Antibody-based PD-1/PD-L1 blockade therapies have taken center stage in immunotherapies for cancer, with multiple clinical successes. PD-1 signaling plays pivotal roles in tumor-driven T-cell dysfunction. In contrast to prior approaches to generate or boost tumor-specific T-cell responses, antibody-based PD-1/PD-L1 blockade targets tumor-induced T-cell defects and restores pre-existing T-cell function to modulate antitumor immunity. In this review, the fundamental knowledge on the expression regulations and inhibitory functions of PD-1 and the present understanding of antibody-based PD-1/PD-L1 blockade therapies are briefly summarized. We then focus on the recent breakthrough work concerning the structural basis of the PD-1/PD-Ls interaction and how therapeutic antibodies, pembrolizumab targeting PD-1 and avelumab targeting PD-L1, compete with the binding of PD-1/PD-L1 to interrupt the PD-1/PD-L1 interaction. We believe that this structural information will benefit the design and improvement of therapeutic antibodies targeting PD-1 signaling.", 
+          "qas": [
+            {
+              "question": "What molecule is targeted by Avelumab?", 
+              "id": "5884c72fe56acf517600000f_005"
+            }
+          ]
+        }, 
+        {
+          "context": "\"Emplotted Narratives\" and Structured \"Behavioral Observations\" Supporting the Diagnosis of Willis-Ekbom Disease/Restless Legs Syndrome in Children with Neurodevelopmental Conditions. BACKGROUND: Willis-Ekbom disease/restless legs syndrome (WED/RLS) seems to be a frequent cause of intractable chronic insomnia (ICI) but is under-recognized in children/adolescents with neurodevelopmental conditions (NDCs), as many patients do not have the ability to express the underlying \"urge-to-move\". In light of this, we aim to develop a protocol for behavioral observations supporting the diagnosis of WED/RLS. METHODS: We investigated 26 pediatric patients (age 1-16 years, median 8) with NDCs, ICI and evidence of familial WED/RLS employing (1) \"emplotted narratives\" for description of the various \"urge-to-move\" presentations and (2) self-description and \"behavioral observations\" during a \"suggested clinical immobilization test\" (SCIT). RESULTS: Parental narratives reflected typical WED/RLS-related \"urge-to-move\" symptoms during day-, bed-, and nighttime in all patients. Fifteen out of 26 patients could describe the \"urge-to-move\" during the SCIT. Ten out of 26 patients, unable to describe their symptoms due to cognitive disabilities, showed patterns of \"relieving-movements\" upon observation. Sensory processing abnormalities were reported in all patients, with tactile sensitivities (26/26) (including shifted pain threshold) as the most common sensory domain. CONCLUSION: \"Emplotted narratives\" and structured \"behavioral observations\" support recognition of familial WED/RLS associated movement patterns and provide a useful tool for the diagnosis of WED/RLS in children with NDCs in a clinical office setting.", 
+          "qas": [
+            {
+              "question": "Willis-Ekbom disease is also known as?", 
+              "id": "5891f9e549702f2e01000002_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Defining the phenotype of restless legs syndrome/Willis-Ekbom disease (RLS/WED): a clinical and polysomnographic study. Clinical features variability between familial and sporadic restless legs syndrome/Willis-Ekbom disease (RLS/WED) has been previously reported. With this retrospective cohort study, we aimed to determine the clinical and polysomnographic characteristics of 400 RLS/WED patients. Patients with familial RLS/WED were significantly younger than sporadic RLS/WED, while clinical and polysomnographic characteristics were similar in both groups. No difference was found for the age-at-onset between idiopathic and secondary RLS/WED. Periodic limb movements (PLM) index and REM sleep time were higher in idiopathic RLS/WED. Time of onset of symptoms was in the evening or at bedtime in 28.04 and 37.80% of patients, respectively, while in 21.34% of patients onset was more than 1 h after sleep onset. Impulse control and compulsive behaviours (ICBs) were found in 13.29% patients on dopamine agonist therapy. Our analyses support the hypothesis that patients with a familial history of RLS/WED may have a genetic component. Nevertheless, the dichotomy between early and late onset disease seems to be less sharp than previously reported. A large proportion of RLS/WED patients can have atypical features, therefore making the diagnosis challenging. Some cases can be missed even when the patient refers to a sleep specialist, as revealed by the partial absence of daytime symptoms, the high comorbidity with insomnia and other sleep complaints and the high percentage of symptoms beginning after sleep onset. This draws attention on the importance of a careful evaluation of the patient, to recognize potentially treatable secondary forms of RLS/WED.", 
+          "qas": [
+            {
+              "question": "Willis-Ekbom disease is also known as?", 
+              "id": "5891f9e549702f2e01000002_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Restless legs syndrome. Restless legs syndrome (RLS), also known as Willis-Ekbom disease (WED), is a common movement disorder characterised by an uncontrollable urge to move because of uncomfortable, sometimes painful sensations in the legs with a diurnal variation and a release with movement. The pathophysiology is only partially known and a genetic component together with dopaminergic and brain iron dysregulation plays an important role. Secondary causes for RLS need to be excluded. Treatment depends on the severity and frequency of RLS symptoms, comprises non-pharmacological (eg lifestyle changes) and pharmacological interventions (eg dopaminergic medication, alpha-2-delta calcium channel ligands, opioids) and relieves symptoms only. Augmentation is the main complication of long-term dopaminergic treatment of RLS. This article will provide a clinically useful overview of RLS with provision of diagnostic criteria, differential diagnoses, possible investigations and different treatment strategies with their associated complications.", 
+          "qas": [
+            {
+              "question": "Willis-Ekbom disease is also known as?", 
+              "id": "5891f9e549702f2e01000002_002"
+            }
+          ]
+        }, 
+        {
+          "context": "PARP inhibitors in ovarian cancer. BACKGROUND: Slow progress in improving the outcome of ovarian cancer with chemotherapy over the last decade has stimulated research into molecularly targeted therapy. Poly(ADP-ribose) polymerase (PARP) inhibitors target DNA repair and are specifically active in cells that have impaired repair of DNA by the homologous recombination (HR) pathway. Cells with mutated BRCA function have HR deficiency (HRD), which is also present in a significant proportion of non-BRCA-mutated ovarian cancer. DESIGN: In the last decade, olaparib, the first and most-investigated oral PARP inhibitor, has undergone phase I-III trials as a single agent, in comparison with and in addition to chemotherapy, and as a maintenance therapy following chemotherapy. RESULTS: The greatest benefit to-date has been in the maintenance setting, prolonging the progression-free survival of high-grade serous ovarian cancer with a BRCA1/2 mutation. In this group of patients, olaparib has received approval as maintenance following chemotherapy from the EMA, and accelerated approval as a single agent in women who have had three or more lines of therapy. Olaparib can be given for a prolonged period with few significant side-effects in most patients. Similar trials with other PARP inhibitors (rucaparib, niraparib and veliparib) are in progress and include non-BRCA-mutated ovarian cancer. Second-generation studies are exploring the combination of PARP inhibitors with anti-angiogenic drugs. CONCLUSIONS: PARP inhibitors represent a step change in the management of ovarian cancer. BRCA mutations are the first genotypic predictive markers in ovarian cancer and can be used to select patients who will most likely benefit from PARP inhibitors. BRCA testing is now becoming a routine part of the evaluation of women with ovarian cancer, and tests for HRD are being used to evaluate PARP inhibitors in an extended population of non-BRCA-mutated ovarian cancer.", 
+          "qas": [
+            {
+              "question": "Which enzyme is inhibited by niraparib?", 
+              "id": "5880be1dc872c95565000007_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Progress in the treatment of ovarian cancer-lessons from homologous recombination deficiency-the first 10 years. For several years, a major obstacle in the systemic treatment of ovarian cancer has been the lack of a therapeutic strategy tailored to specific biomarkers present in the individual patient's tumour. However, considerable progress has been made recently through the development of drugs targeting cells deficient in the key mechanism of double-strand DNA repair, known as homologous recombination (HRD). These drugs, inhibitors of the enzyme poly (ADP) ribose polymerase (PARP), selectively kill HRD cells through a process known as tumour-selective synthetic lethality. Olaparib is the first such agent, now approved for the treatment of ovarian cancer associated with mutations in the BRCA 1/2 genes, since these are characterised by cells with HRD. Importantly, another group of patients with tumours bearing a similar repair deficiency but without BRCA mutations may also be susceptible to PARP inhibition and efforts to develop an HRD assay are therefore a priority so that these patients can be identified as PARPi candidates. In addition, combination strategies are an area of intense research; these include combinations with antiangiogenic agents and with inhibitors of the P13K/AKT pathway and others are likely to merit assessment since resistance to PARP inhibitors will certainly emerge as the next challenge. While olaparib is the first PARP inhibitor to receive approval for ovarian cancer treatment, others including rucaparib and niraparib are clearly effective in this disease and, within the next year or two, the results of ongoing randomised trials will clarify their respective roles. PARP inhibitors are generally well tolerated; regulatory approval at present supports their use as a maintenance therapy (in Europe) and as treatment for advanced recurrent disease (in the United States), but it is likely that these indications will extend as the results of ongoing trials become available. Ten years have elapsed between the first pre-clinical publications and the regulatory approval of PARP inhibitors and the next 10 years promise to be even more productive.", 
+          "qas": [
+            {
+              "question": "Which enzyme is inhibited by niraparib?", 
+              "id": "5880be1dc872c95565000007_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Niraparib: A Poly(ADP-ribose) Polymerase (PARP) Inhibitor for the Treatment of Tumors with Defective Homologous Recombination. Poly(ADP-ribose) polymerases (PARPs) are involved in DNA repair following damage by endogenous or exogenous processes. It has become clear over the past decade that inhibition of PARP in the context of defects in other DNA repair mechanisms provide a tumor specific way to kill cancer cells. We describe the rationale for this approach and the design and discovery of niraparib, a potent PARP-1/2 inhibitor with good cell based activity, selectivity for cancer over normal cells, and oral bioavailability. Niraparib was characterized in a number of preclinical models before moving to phase I clinical trials, where it showed excellent human pharmacokinetics suitable for once a day oral dosing, achieved its pharmacodynamic target for PARP inhibition, and had promising activity in cancer patients. It is currently being tested in phase 3 clinical trials as maintenance therapy in ovarian cancer and as a treatment for breast cancer.", 
+          "qas": [
+            {
+              "question": "Which enzyme is inhibited by niraparib?", 
+              "id": "5880be1dc872c95565000007_002"
+            }
+          ]
+        }, 
+        {
+          "context": "In vivo anti-tumor activity of the PARP inhibitor niraparib in homologous recombination deficient and proficient ovarian carcinoma. OBJECTIVE: Poly(ADP-ribose) polymerase (PARP) inhibitors have yielded encouraging responses in high-grade serous ovarian carcinomas (HGSOCs), but the optimal treatment setting remains unknown. We assessed the effect of niraparib on HGSOC patient-derived xenograft (PDX) models as well as the relationship between certain markers of homologous recombination (HR) status, including BRCA1/2 mutations and formation of RAD51 foci after DNA damage, and response of these PDXs to niraparib in vivo. METHODS: Massively parallel sequencing was performed on HGSOCs to identify mutations contributing to HR deficiency. HR pathway integrity was assessed using fluorescence microscopy-based RAD51 focus formation assays. Effects of niraparib (MK-4827) on treatment-na\u00efve PDX tumor growth as monotherapy, in combination with carboplatin/paclitaxel, and as maintenance therapy were assessed by transabdominal ultrasound. Niraparib responses were correlated with changes in levels of poly(ADP-ribose), PARP1, and repair proteins by western blotting. RESULTS: Five PDX models were evaluated in vivo. Tumor regressions were induced by single-agent niraparib in one of two PDX models with deleterious BRCA2 mutations and in a PDX with RAD51C promoter methylation. Diminished formation of RAD51 foci failed to predict response, but Artemis loss was associated with resistance. Niraparib generally failed to enhance responses to carboplatin/paclitaxel chemotherapy, but maintenance niraparib therapy delayed progression in a BRCA2-deficient PDX. CONCLUSIONS: Mutations in HR genes are neither necessary nor sufficient to predict response to niraparib. Assessment of repair status through multiple complementary assays is needed to guide PARP inhibitor therapy, design future clinical trials and identify ovarian cancer patients most likely to benefit from PARP inhibition.", 
+          "qas": [
+            {
+              "question": "Which enzyme is inhibited by niraparib?", 
+              "id": "5880be1dc872c95565000007_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Niraparib Maintenance Therapy in Platinum-Sensitive, Recurrent Ovarian Cancer. BACKGROUND: Niraparib is an oral poly(adenosine diphosphate [ADP]-ribose) polymerase (PARP) 1/2 inhibitor that has shown clinical activity in patients with ovarian cancer. We sought to evaluate the efficacy of niraparib versus placebo as maintenance treatment for patients with platinum-sensitive, recurrent ovarian cancer. METHODS: In this randomized, double-blind, phase 3 trial, patients were categorized according to the presence or absence of a germline BRCA mutation (gBRCA cohort and non-gBRCA cohort) and the type of non-gBRCA mutation and were randomly assigned in a 2:1 ratio to receive niraparib (300 mg) or placebo once daily. The primary end point was progression-free survival. RESULTS: Of 553 enrolled patients, 203 were in the gBRCA cohort (with 138 assigned to niraparib and 65 to placebo), and 350 patients were in the non-gBRCA cohort (with 234 assigned to niraparib and 116 to placebo). Patients in the niraparib group had a significantly longer median duration of progression-free survival than did those in the placebo group, including 21.0 vs. 5.5 months in the gBRCA cohort (hazard ratio, 0.27; 95% confidence interval [CI], 0.17 to 0.41), as compared with 12.9 months vs. 3.8 months in the non-gBRCA cohort for patients who had tumors with homologous recombination deficiency (HRD) (hazard ratio, 0.38; 95% CI, 0.24 to 0.59) and 9.3 months vs. 3.9 months in the overall non-gBRCA cohort (hazard ratio, 0.45; 95% CI, 0.34 to 0.61; P<0.001 for all three comparisons). The most common grade 3 or 4 adverse events that were reported in the niraparib group were thrombocytopenia (in 33.8%), anemia (in 25.3%), and neutropenia (in 19.6%), which were managed with dose modifications. CONCLUSIONS: Among patients with platinum-sensitive, recurrent ovarian cancer, the median duration of progression-free survival was significantly longer among those receiving niraparib than among those receiving placebo, regardless of the presence or absence of gBRCA mutations or HRD status, with moderate bone marrow toxicity. (Funded by Tesaro; ClinicalTrials.gov number, NCT01847274 .).", 
+          "qas": [
+            {
+              "question": "Which enzyme is inhibited by niraparib?", 
+              "id": "5880be1dc872c95565000007_004"
+            }
+          ]
+        }, 
+        {
+          "context": "Sirtuins are Unaffected by PARP Inhibitors Containing Planar Nicotinamide Bioisosteres. PARP-family ADP-ribosyltransferases (PARPs) and sirtuin deacetylases all use NAD(+) as cosubstrate for ADP-ribosyl transfer. PARP inhibitors are important research tools and several are being evaluated in cancer treatment. With the exception of a few tankyrase inhibitors, all current PARP inhibitors mimic the nicotinamide moiety in NAD(+) and block the nicotinamide binding pocket. We report here that while the activities of the four human sirtuin isoforms SIRT1, SIRT2, SIRT3 and SIRT6 are blocked by sirtuin inhibitor Ex527 in vitro, they are unaffected by the seven clinical and commonly used PARP inhibitors niraparib, olaparib, rucaparib, talazoparib, veliparib, PJ34, and XAV939. These findings indicate that PARP inhibitors containing planar nicotinamide mimetics do not bind to sirtuin cofactor sites. In conclusion, a simple commercially available assay can be used to rule out interference of novel PARP inhibitors with sirtuin NAD(+) binding.", 
+          "qas": [
+            {
+              "question": "Which enzyme is inhibited by niraparib?", 
+              "id": "5880be1dc872c95565000007_005"
+            }
+          ]
+        }, 
+        {
+          "context": "Niraparib Slows Ovarian Cancer Progression. Results from a phase III trial indicate that maintenance therapy with the PARP inhibitor niraparib is more effective than placebo in slowing the progression of recurrent platinum-sensitive ovarian cancer. Improved progression-free survival was seen regardless of the presence or absence of germline BRCA mutations, or of homologous recombination deficiency; however, patients who had these mutations or defective DNA repair did better.", 
+          "qas": [
+            {
+              "question": "Which enzyme is inhibited by niraparib?", 
+              "id": "5880be1dc872c95565000007_006"
+            }
+          ]
+        }, 
+        {
+          "context": "Trapping Poly(ADP-Ribose) Polymerase. Recent findings indicate that a major mechanism by which poly(ADP-ribose) polymerase (PARP) inhibitors kill cancer cells is by trapping PARP1 and PARP2 to the sites of DNA damage. The PARP enzyme-inhibitor complex \"locks\" onto damaged DNA and prevents DNA repair, replication, and transcription, leading to cell death. Several clinical-stage PARP inhibitors, including veliparib, rucaparib, olaparib, niraparib, and talazoparib, have been evaluated for their PARP-trapping activity. Although they display similar capacity to inhibit PARP catalytic activity, their relative abilities to trap PARP differ by several orders of magnitude, with the ability to trap PARP closely correlating with each drug's ability to kill cancer cells. In this article, we review the available data on molecular interactions between these clinical-stage PARP inhibitors and PARP proteins, and discuss how their biologic differences might be explained by the trapping mechanism. We also discuss how to use the PARP-trapping mechanism to guide the development of PARP inhibitors as a new class of cancer therapy, both for single-agent and combination treatments.", 
+          "qas": [
+            {
+              "question": "Which enzyme is inhibited by niraparib?", 
+              "id": "5880be1dc872c95565000007_007"
+            }
+          ]
+        }, 
+        {
+          "context": "The current status of PARP inhibitors in ovarian cancer. Recent advances in our understanding of the molecular biology of epithelial ovarian cancer have led to the development of a number of targeted therapies, including poly-ADP-ribose polymerase (PARP) inhibitors. PARP inhibitors are a novel class of therapeutic agents that target tumors with deficiencies in the homologous recombination DNA repair pathway. Early studies have shown significant efficacy for PARP inhibitors in patients with germline BRCA1/2 mutations. It has become evident that BRCA wild-type patients with other defects in the homologous recombination repair pathway benefit from this therapeutic approach. Importantly, companion homologous recombination deficiency scores are being developed to help guide the selection of patients most likely to gain clinical benefit from PARP inhibition. Olaparib, the first and most extensively investigated PARP inhibitor, is now licensed in Europe for maintenance treatment of patients with platinum-sensitive relapsed BRCA-mutated (germline or somatic) high-grade serous ovarian cancer who have responded to platinum-based chemotherapy. In the United States, olaparib is licensed for treatment of patients with germline BRCA-mutated ovarian cancer who have received 3 or more lines of chemotherapy. There are a number of other PARP inhibitors in late phase clinical development in ovarian cancer including rucaparib, niraparib, veliparib, and talazoparib. This review will focus on the current evidence for PARP inhibitors in ovarian cancer and discuss ongoing clinical trials and future research directions in this rapidly evolving area.", 
+          "qas": [
+            {
+              "question": "Which enzyme is inhibited by niraparib?", 
+              "id": "5880be1dc872c95565000007_008"
+            }
+          ]
+        }, 
+        {
+          "context": "Treatment with the PARP inhibitor, niraparib, sensitizes colorectal cancer cell lines to irinotecan regardless of MSI/MSS status. BACKGROUND: Cells with homologous recombination (HR) deficiency, most notably caused by mutations in the BRCA1 or BRCA2 genes, are sensitive to PARP inhibition. Microsatellite instability (MSI) accounts for 10-15% of colorectal cancer (CRC) and is hypothesized to lead to HR defects due to altered expression of Mre11, a protein required for double strand break (DSB) repair. Indeed, others have reported that PARP inhibition is efficacious in MSI CRC. METHODS: Here we examine the response to niraparib, a potent PARP-1/PARP-2 inhibitor currently under clinical evaluation, in MSI versus microsatellite stable (MSS) CRC cell lines in vitro and in vivo. We compiled a large panel of MSI and MSS CRC cell lines and evaluated the anti-proliferative activity of niraparib. In addition to testing single agent cytotoxic activity of niraparib, we also tested irinotecan (or SN-38, the active metabolite of irinotecan) activity alone and in combination with niraparib in vitro and in vivo. RESULTS: In contrast to earlier reports, MSI CRC cell lines were not more sensitive to niraparib than MSS CRC cell lines\u00b8 suggesting that the MSI phenotype does not sensitize CRC cell lines to PARP inhibition. Moreover, even the most sensitive MSI cell lines had niraparib EC50s greater than 10 fold higher than BRCA-deficient cell lines. However, MSI lines were more sensitive to SN-38 than MSS lines, consistent with previous findings. We have also demonstrated that combination of niraparib and irinotecan was more efficacious than either agent alone in both MSI and MSS cell lines both in vitro and in vivo, and that niraparib potentiates the effect of irinotecan regardless of MSI status. CONCLUSIONS: Our results support the clinical evaluation of this combination in all CRC patients, regardless of MSI status.", 
+          "qas": [
+            {
+              "question": "Which enzyme is inhibited by niraparib?", 
+              "id": "5880be1dc872c95565000007_009"
+            }
+          ]
+        }, 
+        {
+          "context": "Synchronization of HeLa Cells. HeLa is one of the oldest and most commonly used cell lines in biomedical research. Owing to the ease of which they can be effectively synchronized by various methods, HeLa cells have been used extensively for studying the cell cycle. Here, we describe several protocols for synchronizing HeLa cells from different phases of the cell cycle, including G phase using the HMG-CoA reductase inhibitor lovastatin, S phase with a double thymidine block procedure, and G phase with the CDK1 inhibitor RO-3306. Cells can also be enriched in mitosis using nocodazole and mechanical shake-off. Releasing the cells from these blocks enables researchers to follow gene expression and other events through the cell cycle. We also describe several protocols, including flow cytometry, BrdU labeling, immunoblotting, and time-lapse microscopy, for validating the synchrony of the cells and monitoring the progression of the cell cycle.", 
+          "qas": [
+            {
+              "question": "What is the effect of nocodazole cell treatment?", 
+              "id": "58a8903b38c171fb5b000006_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Synchronization and Desynchronization of Cells by Interventions on the Spindle Assembly Checkpoint. Cell cycle checkpoints are surveillance mechanisms that sequentially and continuously monitor cell cycle progression thereby contributing to the preservation of genetic stability. Among them, the spindle assembly checkpoint (SAC) prevents the occurrence of abnormal divisions by halting the metaphase to anaphase transition following the detection of erroneous microtubules-kinetochore attachment(s). Most synchronization strategies are based on the activation of cell cycle checkpoints to enrich the population of cells in a specific phase of the cell cycle. Here, we develop a two-step protocol of sequential cell synchronization and desynchronization employing antimitotic SAC-inducing agents (i.e., nocodazole or paclitaxel) in combination with the depletion of the SAC kinase MPS1. We describe cytofluorometric and time-lapse videomicroscopy methods to detect cell cycle progression, including the assessment of cell cycle distribution, quantification of mitotic cell fraction, and analysis of single cell fate profile of living cells. We applied these methods to validate the synchronization-desynchronization protocol and to qualitatively and quantitatively determine the impact of SAC inactivation on the activity of antimitotic agents.", 
+          "qas": [
+            {
+              "question": "What is the effect of nocodazole cell treatment?", 
+              "id": "58a8903b38c171fb5b000006_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Mitosis-specific phosphorylation of PML at T409 regulates spindle checkpoint. During mitosis, Promyelocytic leukemia nuclear bodies (PML NBs) change dramatically in morphology and composition, but little is known about function of PML in mitosis. Here, we show that PML is phosphorylated at T409 (PML p409) in a mitosis-specific manner. More importantly, PML p409 contributes to maintain the duration of pro-metaphase and regulates spindle checkpoint. Deficient PML p409 caused a shortening of pro-metaphase and challenged the nocodazole-triggered mitotic arrest. T409A mutation led to a higher frequency of misaligned chromosomes on metaphase plate, and subsequently death in late mitosis. In addition, inhibition of PML p409 repressed growth of tumor cells, suggesting that PML p409 is a potential target for cancer therapy. Collectively, our study demonstrated an important phosphorylated site of PML, which contributed to explore the role of PML in mitosis.", 
+          "qas": [
+            {
+              "question": "What is the effect of nocodazole cell treatment?", 
+              "id": "58a8903b38c171fb5b000006_002"
+            }
+          ]
+        }, 
+        {
+          "context": "TCR Triggering Induces the Formation of Lck-RACK1-Actinin-1 Multiprotein Network Affecting Lck Redistribution. The initiation of T-cell signaling is critically dependent on the function of the member of Src family tyrosine kinases, Lck. Upon T-cell antigen receptor (TCR) triggering, Lck kinase activity induces the nucleation of signal-transducing hubs that regulate the formation of complex signaling network and cytoskeletal rearrangement. In addition, the delivery of Lck function requires rapid and targeted membrane redistribution, but the mechanism underpinning this process is largely unknown. To gain insight into this process, we considered previously described proteins that could assist in this process via their capacity to interact with kinases and regulate their intracellular translocations. An adaptor protein, receptor for activated C kinase 1 (RACK1), was chosen as a viable option, and its capacity to bind Lck and aid the process of activation-induced redistribution of Lck was assessed. Our microscopic observation showed that T-cell activation induces a rapid, concomitant, and transient co-redistribution of Lck and RACK1 into the forming immunological synapse. Consistent with this observation, the formation of transient RACK1-Lck complexes were detectable in primary CD4 T-cells with their maximum levels peaking 10 s after TCR-CD4 co-aggregation. Moreover, RACK1 preferentially binds to a pool of kinase active pY394, which co-purifies with high molecular weight cellular fractions. The formation of RACK1-Lck complexes depends on functional SH2 and SH3 domains of Lck and includes several other signaling and cytoskeletal elements that transiently bind the complex. Notably, the F-actin-crosslinking protein, \u03b1-actinin-1, binds to RACK1 only in the presence of kinase active Lck suggesting that the formation of RACK1-pY394-\u03b1-actinin-1 complex serves as a signal module coupling actin cytoskeleton bundling with productive TCR/CD4 triggering. In addition, the treatment of CD4 T-cells with nocodazole, which disrupts the microtubular network, also blocked the formation of RACK1-Lck complexes. Importantly, activation-induced Lck redistribution was diminished in primary CD4 T-cells by an adenoviral-mediated knockdown of RACK1. These results demonstrate that in T cells, RACK1, as an essential component of the multiprotein complex which upon TCR engagement, links the binding of kinase active Lck to elements of the cytoskeletal network and affects the subcellular redistribution of Lck.", 
+          "qas": [
+            {
+              "question": "What is the effect of nocodazole cell treatment?", 
+              "id": "58a8903b38c171fb5b000006_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Zfp207 is a Bub3 binding protein regulating meiotic chromosome alignment in mouse oocytes. Zinc finger proteins are a massive, diverse family of proteins that serve a wide variety of biological functions. However, the roles of them during meiosis are not yet clearly defined. Here, we report that Zfp207 localizes at the kinetochores during mouse oocyte meiotic maturation. Depletion of Zfp207 leads to a significantly higher proportion of impaired spindle organization and misaligned chromosomes in oocytes. This is coupled with the defective kinetochore-microtubule attachments, and resultantly increasing incidence of aneuploid metaphase II eggs. The precocious polar body extrusion and escape of metaphase I arrest induced by nocodazole treatment in Zfp207-depleted oocytes indicates that Zfp207 is essential for activation of SAC (Spindle Assembly Checkpoint) activity. Notably, we find that Zfp207 binds to Bub3 to form a complex and maintains its protein level in oocytes, and that overexpression of Bub3 is able to partially rescue the occurrence of aneuploid eggs in Zfp207-depleted oocytes. Collectively, we identify Zfp207 as a novel Bub3 binding protein in oocytes which plays an important role in controlling meiotic chromosome alignment and SAC function.", 
+          "qas": [
+            {
+              "question": "What is the effect of nocodazole cell treatment?", 
+              "id": "58a8903b38c171fb5b000006_004"
+            }
+          ]
+        }, 
+        {
+          "context": "PHYLUCE is a software package for the analysis of conserved genomic loci. UNLABELLED: Targeted enrichment of conserved and ultraconserved genomic elements allows universal collection of phylogenomic data from hundreds of species at multiple time scales (<5 Ma to\u00a0> 300 Ma). Prior to downstream inference, data from these types of targeted enrichment studies must undergo preprocessing to assemble contigs from sequence data; identify targeted, enriched loci from the off-target background data; align enriched contigs representing conserved loci to one another; and prepare and manipulate these alignments for subsequent phylogenomic inference. PHYLUCE is an efficient and easy-to-install software package that accomplishes these tasks across hundreds of taxa and thousands of enriched loci. AVAILABILITY AND IMPLEMENTATION: PHYLUCE is written for Python 2.7. PHYLUCE is supported on OSX and Linux (RedHat/CentOS) operating systems. PHYLUCE source code is distributed under a BSD-style license from https://www.github.com/faircloth-lab/phyluce/ PHYLUCE is also available as a package (https://binstar.org/faircloth-lab/phyluce) for the Anaconda Python distribution that installs all dependencies, and users can request a PHYLUCE instance on iPlant Atmosphere (tag: phyluce). The software manual and a tutorial are available from http://phyluce.readthedocs.org/en/latest/ and test data are available from doi: 10.6084/m9.figshare.1284521. CONTACT: brant@faircloth-lab.org SUPPLEMENTARY INFORMATION: Supplementary data are available at Bioinformatics online.", 
+          "qas": [
+            {
+              "question": "Which software package is available for the analysis of conserved genomic loci?", 
+              "id": "587e07023ec846c24f000001_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Temperature-dependent sensitivity enhancement of solid-state NMR spectra of alpha-synuclein fibrils. The protein alpha-synuclein (AS) is the primary fibrillar component of Lewy bodies, the pathological hallmark of Parkinson's disease. Wild-type human AS and the three mutant forms linked to Parkinson's disease (A53T, A30P, and E46K) all form fibrils through a nucleation-dependent pathway; however, the biophysical details of these fibrillation events are not yet well understood. Atomic-level structural insight is required in order to elucidate the potential role of AS fibrils in Parkinson's disease. Here we show that low temperature acquisition of magic-angle spinning NMR spectra of wild type AS fibrils-greatly enhances spectral sensitivity, enabling the detection of a substantially larger number of spin systems. At 0 +/- 3 degrees C sample temperature, cross polarization (CP) experiments yield weak signals. Lower temperature spectra (-40 +/- 3 degrees C) demonstrated several times greater signal intensity, an effect further amplified in 3D 15N-13C-13C experiments, which are required to perform backbone assignments on this sample. Thus 3D experiments enabled assignments of most amino acids in the rigid part of the fibril (approximately residues 64 to 94), as well as tentative site-specific assignments for T22, V26, A27, Y39, G41, S42, H50, V52, A53, T54, V55, V63, A107, I112, and S129. Most of these signals were not observed in 2D or 3D spectra at 0 +/- 3 degrees C. Spectra acquired at low temperatures therefore permitted more complete chemical shift assignments. Observation of the majority of residues in AS fibrils represents an important step towards solving the 3D structure.", 
+          "qas": [
+            {
+              "question": "Which is the primary protein component of Lewy bodies?", 
+              "id": "58a2e5f760087bc10a000007_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Targeting alpha-synuclein for the treatment of Parkinson's disease. Parkinson's disease (PD) is characterized as a neurodegenerative movement disorder presenting with rigidity, resting tremor, disturbances in balance and slowness in movement. An important pathologic feature of PD is the presence of Lewy bodies. The primary structural component of Lewy bodies are fibrils composed primarily of alpha-synuclein, a highly conserved 140 amino acid protein that is predominantly expressed in neurons and which may play a role in synaptic plasticity and neurotransmission. Numerous studies suggest the aggregation and modification of alpha-synuclein as a key step leading to Lewy body formation and neuronal cell loss associated with PD. Because of the central role of alpha-synuclein in PD, it represents a novel drug target for the possible treatment of this disease. In this review, an overview of the role of alpha-synuclein in PD will be discussed with an emphasis on recent studies utilizing an immunization approach against alpha-synuclein as a possible treatment option for this debilitating disease.", 
+          "qas": [
+            {
+              "question": "Which is the primary protein component of Lewy bodies?", 
+              "id": "58a2e5f760087bc10a000007_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Design of an N-methylated peptide inhibitor of alpha-synuclein aggregation guided by solid-state NMR. Many neurodegenerative diseases are associated with the aggregation of misfolded proteins into amyloid oligomers or fibrils that are deposited as pathological lesions within areas of the brain. An attractive therapeutic strategy for preventing or ameliorating amyloid formation is to identify agents that inhibit the onset or propagation of protein aggregation. Here we demonstrate how solid-state nuclear magnetic resonance (ssNMR) may be used to identify key residues within amyloidogenic protein sequences that may be targeted to inhibit the aggregation of the host protein. For alpha-synuclein, the major protein component of Lewy bodies associated with Parkinson's disease, we have used a combination of ssNMR and biochemical data to identify the key region for self-aggregation of the protein as residues 77-82 (VAQKTV). We used our new structural information to design a peptide derived from residues 77 to 82 of alpha-synuclein with an N-methyl group at the C-terminal residue, which was able to disrupt the aggregation of alpha-synuclein. Thus, we have shown how structural data obtained from ssNMR can guide the design of modified peptides for use as amyloid inhibitors, as a primary step toward developing therapeutic compounds for prevention and/or treatment of amyloid diseases.", 
+          "qas": [
+            {
+              "question": "Which is the primary protein component of Lewy bodies?", 
+              "id": "58a2e5f760087bc10a000007_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Structural comparison of mouse and human \u03b1-synuclein amyloid fibrils by solid-state NMR. Fibrillar \u03b1-synuclein (AS) is the major component of Lewy bodies, the pathological hallmark of Parkinson's disease. Mouse AS (mAS) aggregates much faster than human AS (hAS), although mAS differs from hAS at only seven positions in its primary sequence. Currently, little is known about the site-specific structural differences between mAS and hAS fibrils. Here, we applied state-of-the-art solid-state nuclear magnetic resonance (ssNMR) methods to structurally characterize mAS fibrils. The assignment strategy employed a set of high-resolution 2D and 3D ssNMR spectra recorded on uniformly [(13)C, (15)N], [1-(13)C]glucose, and [2-(13)C]glucose labeled mAS fibrils. An almost complete resonance assignment (96% of backbone amide (15)N and 93% of all (13)C nuclei) was obtained for residues from Gly41 to Val95, which form the core of mAS fibrils. Six \u03b2-strands were identified to be within the fibril core of mAS based on a secondary chemical shift and NHHC analysis. Intermolecular (13)C:(15)N labeled restraints obtained from mixed 1:1 (13)C/(15)N-labeled mAS fibrils reveal a parallel, in-register supramolecular \u03b2-sheet arrangement. The results were compared in detail to recent structural studies on hAS fibrils and indicate the presence of a structurally conserved motif comprising residues Glu61-Lys80.", 
+          "qas": [
+            {
+              "question": "Which is the primary protein component of Lewy bodies?", 
+              "id": "58a2e5f760087bc10a000007_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Mechanistic insight into the relationship between N-terminal acetylation of \u03b1-synuclein and fibril formation rates by NMR and fluorescence. Aggregation of \u03b1-synuclein (\u03b1Syn), the primary protein component in Lewy body inclusions of patients with Parkinson's disease, arises when the normally soluble intrinsically disordered protein converts to amyloid fibrils. In this work, we provide a mechanistic view of the role of N-terminal acetylation on fibrillation by first establishing a quantitative relationship between monomer secondary structural propensity and fibril assembly kinetics, and secondly by demonstrating in the N-terminal acetylated form of the early onset A53T mutation, that N-terminal transient helices formed and/or inhibited by N-terminal acetylation modulate the fibril assembly rates. Using NMR chemical shifts and fluorescence experiments, we report that secondary structural propensity in residues 5-8, 14-31, and 50-57 are highly correlated to fibril growth rate. A four-way comparison of secondary structure propensity and fibril growth rates of N-terminally acetylated A53T and WT \u03b1Syn with non-acetylated A53T and WT \u03b1Syn present novel mechanistic insight into the role of N-terminal acetylation in amyloid fibril formation. We show that N-terminal acetylation inhibits the formation of the \"fibrillation promoting\" transient helix at residues 14-31 resulting from the A53T mutation in the non-acetylated variant and supports the formation of the \"fibrillation inhibiting\" transient helix in residues 1-12 thereby resulting in slower fibrillation rates relative to the previously studied non-acetylated A53T variant. Our results highlight the critical interplay of the region-specific transient secondary structure of the N-terminal region with fibrillation, and the inhibitory role of the N-terminal acetyl group in fibril formation.", 
+          "qas": [
+            {
+              "question": "Which is the primary protein component of Lewy bodies?", 
+              "id": "58a2e5f760087bc10a000007_004"
+            }
+          ]
+        }, 
+        {
+          "context": "Charge neutralization and collapse of the C-terminal tail of alpha-synuclein at low pH. Alpha-synuclein (alphaS) is the primary component of Lewy bodies, the pathological hallmark of Parkinson's Disease. Aggregation of alphaS is thought to proceed from a primarily disordered state with nascent secondary structure through intermediate conformations to oligomeric forms and finally to mature amyloid fibrils. Low pH conditions lead to conformational changes associated with increased alphaS fibril formation. Here we characterize these structural and dynamic changes using solution state NMR measurements of secondary chemical shifts, relaxation parameters, residual dipolar couplings, and paramagnetic relaxation enhancement. We find that the neutralization of negatively charged side-chains eliminates electrostatic repulsion in the C-terminal tail of alphaS and leads to a collapse of this region at low pH. Hydrophobic contacts between the compact C-terminal tail and the NAC (non-amyloid-beta component) region are maintained and may lead to the formation of a globular domain. Transient long-range contacts between the C-terminus of the protein and regions N-terminal to the NAC region are also preserved. Thus, the release of long-range contacts does not play a role in the increased aggregation of alphaS at low pH, which we instead attribute to the increased hydrophobicity of the protein.", 
+          "qas": [
+            {
+              "question": "Which is the primary protein component of Lewy bodies?", 
+              "id": "58a2e5f760087bc10a000007_005"
+            }
+          ]
+        }, 
+        {
+          "context": "Comparing outcomes from clinical studies of oral disease-modifying therapies (dimethyl fumarate, fingolimod, and teriflunomide) in relapsing MS: Assessing absolute differences using a number needed to treat analysis. Dimethyl fumarate (DMF), fingolimod, and teriflunomide are oral disease-modifying therapies (DMTs) indicated for the treatment of relapsing-remitting multiple sclerosis. Despite well-established limitations of cross-trial comparisons, DMTs are still frequently compared in terms of relative reductions in specific endpoints, most commonly annualized relapse rate. Consideration of absolute risk reduction and number needed to treat (NNT) provides an alternative approach to assess the magnitude of treatment effect and can provide valuable additional information on therapeutic gain. Using data from pivotal studies of DMF (DEFINE, NCT00420212; CONFIRM, NCT00451451), fingolimod (FREEDOMS, NCT00289978; FREEDOMS II, NCT00355134), and teriflunomide (TEMSO, NCT00134563; TOWER, NCT00751881), we calculated NNTs to prevent any relapse, more severe relapses (such as those leading to hospitalization or requiring intravenous corticosteroids), and disability worsening. Higher relative reductions were reported for DMF and fingolimod vs placebo on overall relapse and relapses requiring intravenous corticosteroids in both individual and pooled studies (pooled data unavailable for fingolimod). However, NNTs for each outcome were similar for DMF and teriflunomide, with marginally lower NNTs observed with fingolimod. By contrast, for relapses requiring hospitalization, relative reductions were higher and NNTs were substantially lower for teriflunomide compared with DMF. For fingolimod, there were inconsistent outcomes between the two studies for relapses requiring hospitalization; thus, comparative conclusions against DMF or teriflunomide cannot be clearly established. The risk of disability worsening was significantly reduced in both teriflunomide studies, but only in a single study for DMF (DEFINE) and fingolimod (FREEDOMS). NNTs to prevent one patient from experiencing disability worsening were similar in DEFINE, FREEDOMS, and TEMSO and TOWER but were higher in CONFIRM and FREEDOMS II. This NNT analysis demonstrates broadly comparable effects for DMF, fingolimod, and teriflunomide across key clinical outcomes. These observations are clinically relevant and may help to inform treatment decisions by providing additional information on therapeutic gain beyond informal assessments of relative reductions alone.", 
+          "qas": [
+            {
+              "question": "Which drug was tested in the TEMSO Trial for multiple sclerosis?", 
+              "id": "589a246078275d0c4a00002a_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Long-term safety and efficacy of teriflunomide: Nine-year follow-up of the randomized TEMSO study. OBJECTIVE: To report safety and efficacy outcomes from up to 9 years of treatment with teriflunomide in an extension (NCT00803049) of the pivotal phase 3 Teriflunomide Multiple Sclerosis Oral (TEMSO) trial (NCT00134563). METHODS: A total of 742 patients entered the extension. Teriflunomide-treated patients continued the original dose; those previously receiving placebo were randomized 1:1 to teriflunomide 14 mg or 7 mg. RESULTS: By June 2013, median (maximum) teriflunomide exposure exceeded 190 (325) weeks per patient; 468 patients (63%) remained on treatment. Teriflunomide was well-tolerated with continued exposure. The most common adverse events (AEs) matched those in the core study. In extension year 1, first AEs of transient liver enzyme increases or reversible hair thinning were generally attributable to patients switching from placebo to teriflunomide. Approximately 11% of patients discontinued treatment owing to AEs. Twenty percent of patients experienced serious AEs. There were 3 deaths unrelated to teriflunomide. Soon after the extension started, annualized relapse rates and gadolinium-enhancing T1 lesion counts fell in patients switching from placebo to teriflunomide, remaining low thereafter. Disability remained stable in all treatment groups (median Expanded Disability Status Scale score < 2.5; probability of 12-week disability progression < 0.48). CONCLUSIONS: In the TEMSO extension, safety observations were consistent with the core trial, with no new or unexpected AEs in patients receiving teriflunomide for up to 9 years. Disease activity decreased in patients switching from placebo and remained low in patients continuing on teriflunomide. CLASSIFICATION OF EVIDENCE: This study provides Class III evidence that long-term treatment with teriflunomide is well-tolerated and efficacy of teriflunomide is maintained long-term.", 
+          "qas": [
+            {
+              "question": "Which drug was tested in the TEMSO Trial for multiple sclerosis?", 
+              "id": "589a246078275d0c4a00002a_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Teriflunomide: a once-daily oral medication for the treatment of relapsing forms of multiple sclerosis. PURPOSE: The purpose was to summarize US prescribing information for teriflunomide in the treatment of patients with relapsing forms of multiple sclerosis (RMS), with reference to clinical efficacy and safety outcomes. METHODS: In September 2012, the US Food and Drug Administration granted approval for the use of teriflunomide, 14 mg and 7 mg once daily, to treat RMS on the basis of the results of a Phase II study and the Phase III TEMSO (Teriflunomide Multiple Sclerosis Oral) trial. After recent updates to the prescribing information (October 2014), key findings from these and 2 other Phase III clinical trials, TOWER (Teriflunomide Oral in People With Relapsing Multiple Sclerosis) and TOPIC (Oral Teriflunomide for Patients with a First Clinical Episode Suggestive of Multiple Sclerosis), and practical considerations for physicians are summarized. FINDINGS: Teriflunomide, 14 mg and 7 mg, significantly reduced mean number of unique active lesions on magnetic resonance imaging (MRI; P < 0.05 for both doses) in the Phase II study. In the TEMSO and TOWER studies, the 14-mg dose of teriflunomide significantly reduced annualized relapse rate (31% and 36% relative risk reduction compared with placebo, respectively; both P < 0.001) and risk of disability progression sustained for 12 weeks (hazard ratio vs placebo 0.70 and 0.69, respectively; both P < 0.05). The 7-mg dose significantly (P\u00a0<\u00a00.02) reduced annualized relapse rate in both studies, although the reduction in risk of disability progression was not statistically significant. Teriflunomide treatment was also associated with significant efficacy on MRI measures of disease activity in TEMSO; both doses significantly reduced total lesion volume and number of gadolinium-enhancing T1 lesions. TOPIC evaluated patients with a first clinical event consistent with acute demyelination and brain MRI lesions characteristic of multiple sclerosis. More patients were free of relapse in the teriflunomide 14-mg and 7-mg groups than in the placebo group (P < 0.05 for both comparisons). In safety data pooled from the 4 studies, adverse events occurring in > 2% of patients and > 2% higher than in the placebo group were headache, alanine aminotransferase increase, diarrhea, alopecia (hair thinning), nausea, paresthesia, arthralgia, neutropenia, and hypertension. Routine monitoring procedures before and on treatment are recommended to assess potential safety issues. Women of childbearing potential must use effective contraception and, in the event of pregnancy, undergo an accelerated elimination procedure to reduce plasma concentrations of teriflunomide. IMPLICATIONS: Clinical evidence suggests that teriflunomide is an effective therapeutic choice for patients with RMS, both as an initial treatment and as an alternative for patients who may have experienced intolerance or inadequate response to a previous or current disease-modifying therapy.", 
+          "qas": [
+            {
+              "question": "Which drug was tested in the TEMSO Trial for multiple sclerosis?", 
+              "id": "589a246078275d0c4a00002a_002"
+            }
+          ]
+        }, 
+        {
+          "context": "The Use of Oral Disease-Modifying Therapies in Multiple Sclerosis. Three oral disease-modifying drugs-fingolimod, teriflunomide, and dimethyl fumarate (DMF)-are available for treatment of relapsing forms of multiple sclerosis (MS). All three agents were approved in the last decade, primarily on the basis of a moderate to substantial reduction in the occurrence of MS relapses and central nervous system lesion formation detected by MRI. In the trials leading to approval, the first oral disease-modifying drug, fingolimod, reduced the annualized relapse rate (ARR) from 0.40 in placebo-treated patients to 0.18 (FREEDOMS) and from 0.33 in patients treated with interferon \u03b21a intramuscularly to 0.16 (TRANSFORMS). Teriflunomide, approved on the basis of the two placebo-controlled trials TEMSO and TOWER, demonstrated a reduction in the ARR from 0.54 to 0.37 and from 0.50 to 0.32 respectively. The latest oral MS medication, approved in 2014, is DMF, which had been used in a different formulation for treatment of psoriasis for decades. In the 2-year DEFINE study, the proportion of patients with a relapse was reduced to 27 %, compared with 46 % in placebo arm, whereas in the CONFIRM trial, the ARR was reduced from 0.40 (placebo) to 0.22 in the DMF-treated group of patients. In this review, we will elucidate the mechanisms of action of these three medications and compare their efficacy, safety, and tolerability as a practical guideline for their use. We will further discuss effects other than relapse reduction these small molecules may exert, including potential activities within the central nervous system, and briefly summarize emerging data on new oral MS drugs in clinical development.", 
+          "qas": [
+            {
+              "question": "Which drug was tested in the TEMSO Trial for multiple sclerosis?", 
+              "id": "589a246078275d0c4a00002a_003"
+            }
+          ]
+        }, 
+        {
+          "context": "The golden jubilee of vaccination against poliomyelitis. Inactivated poliovirus vaccine (IPV), developed in the USA by Jonas Salk in the early 1950s, was field tested in 1954, and found to be safe and effective. The year 2004 marks the golden jubilee of this breakthrough. From 1955 IPV was used extensively in the US and polio incidence declined by more than 95 per cent. However, in 1962, when oral poliovirus vaccine (OPV) became available, the national policy was shifted to its exclusive use, for reasons other than science and economics. The World Health Organisation (WHO) also adopted the policy of the exclusive use of OPV in developing countries. Thus IPV fell into disrepute in much of the world, while Northern European countries continued to use it. New research led to improving its potency, reducing its manufacturing costs and combining it with the diphtheria-tetanus-pertussis (DTP) vaccine to simplify its administration and reduce programmatic costs. All countries that chose to persist with IPV eliminated poliovirus circulation without OPV-induced polio or the risk of live vaccine viruses reverting to wild-like nature. IPV is highly immunogenic, confers mucosal immunity and exerts herd protective effect, all qualities of a good vaccine. It can be used in harmony with the extendend programme on immunization (EPI) schedule of infant immunisation with DTP, thus reducing programmatic costs. During the last ten years IPV has once again regained its popularity and some 25 industrialised countries use it exclusively. The demand is increasing from other countries and the supply has not caught up, leaving market forces to dictate the sale price of IPV. Anticipating such a turn of events India had launched its own IPV manufacturing programme in 1987, but the project was closed in 1992. Today it is not clear if we can complete the job of global polio eradication without IPV, on account of the genetic instability of OPV and the consequent tendency of vaccine viruses to revert to wild-like properties. The option to use IPV is complicated since it is not yet licensed in India, we do not manufacture it and imported vaccine would be prohibitively costly. However, in this golden jubilee year we have much to celebrate as the global eradication of wild polioviruses is within sight. Had we strictly followed the principles of science and health economics, perhaps we could have achieved success earlier and cheaper, with the absence of vaccine-induced polio as the bonus.", 
+          "qas": [
+            {
+              "question": "When did the polio vaccine becomes available?", 
+              "id": "58a1c0f178275d0c4a000056_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Molecular analyses of oral polio vaccine samples. It has been suggested that the human immunodeficiency virus (HIV), and thus the acquired immunodeficiency syndrome (AIDS) it causes, was inadvertently introduced to humans by the use of an oral polio vaccine (OPV) during a vaccination campaign launched by the Wistar Institute, Philadelphia, PA, USA, in the Belgian Congo in 1958 and 1959. The \"OPV/AIDS hypothesis\" suggests that the OPV used in this campaign was produced in chimpanzee kidney epithelial cell cultures rather than in monkey kidney cell cultures, as stated by H. Koprowski and co-workers, who produced the OPV. If chimpanzee cells were indeed used, this would lend support to the OPV/AIDS hypothesis, since chimpanzees harbor a simian immunodeficiency virus, widely accepted to be the origin of HIV-1. We analyzed several early OPV pools and found no evidence for the presence of chimpanzee DNA; by contrast, monkey DNA is present.", 
+          "qas": [
+            {
+              "question": "When did the polio vaccine becomes available?", 
+              "id": "58a1c0f178275d0c4a000056_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Food sharing is linked to urinary oxytocin levels and bonding in related and unrelated wild chimpanzees. Humans excel in cooperative exchanges between unrelated individuals. Although this trait is fundamental to the success of our species, its evolution and mechanisms are poorly understood. Other social mammals also build long-term cooperative relationships between non-kin, and recent evidence shows that oxytocin, a hormone involved in parent-offspring bonding, is likely to facilitate non-kin as well as kin bonds. In a population of wild chimpanzees, we measured urinary oxytocin levels following a rare cooperative event--food sharing. Subjects showed higher urinary oxytocin levels after single food-sharing events compared with other types of social feeding, irrespective of previous social bond levels. Also, urinary oxytocin levels following food sharing were higher than following grooming, another cooperative behaviour. Therefore, food sharing in chimpanzees may play a key role in social bonding under the influence of oxytocin. We propose that food-sharing events co-opt neurobiological mechanisms evolved to support mother-infant bonding during lactation bouts, and may act as facilitators of bonding and cooperation between unrelated individuals via the oxytocinergic system across social mammals.", 
+          "qas": [
+            {
+              "question": "Which is the \"bonding hormone\"?", 
+              "id": "58aa0c6f396a458e50000008_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Generation of Oxtr cDNA(HA)-Ires-Cre Mice for Gene Expression in an Oxytocin Receptor Specific Manner. The neurohypophysial hormone oxytocin (OXT) and its receptor (OXTR) have critical roles in the regulation of pro-social behaviors, including social recognition, pair bonding, parental behavior, and stress-related responses. Supporting this hypothesis, a portion of patients suffering from autism spectrum disorder have mutations, such as single nucleotide polymorphisms, or epigenetic modifications in their OXTR gene. We previously reported that OXTR-deficient mice exhibit pervasive social deficits, indicating the critical role of OXTR in social behaviors. In the present study, we generated Oxtr cDNA(HA)-Ires-Cre knock-in mice, expressing both OXTR and Cre recombinase under the control of the endogenous Oxtr promoter. Knock-in cassette of Oxtr cDNA(HA)-Ires-Cre consisted of Oxtr cDNA tagged with the hemagglutinin epitope at the 3' end (Oxtr cDNA(HA)), internal ribosomal entry site (Ires), and Cre. Cre was expressed in the uterus, mammary gland, kidney, and brain of Oxtr cDNA(HA)-Ires-Cre knock-in mice. Furthermore, the distribution of Cre in the brain was similar to that observed in Oxtr-Venus fluorescent protein expressing mice (Oxtr-Venus), another animal model previously generated by our group. Social behavior of Oxtr cDNA(HA)-Ires-Cre knock-in mice was similar to that of wild-type animals. We demonstrated that this construct is expressed in OXTR-expressing neurons specifically after an infection with the recombinant adeno-associated virus carrying the flip-excision switch vector. Using this system, we showed the transport of the wheat-germ agglutinin tracing molecule from the OXTR-expressing neurons to the innervated neurons in knock-in mice. This study might contribute to the monosynaptic analysis of neuronal circuits and to the optogenetic analysis of neurons expressing OXTR.", 
+          "qas": [
+            {
+              "question": "Which is the \"bonding hormone\"?", 
+              "id": "58aa0c6f396a458e50000008_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Oxytocin receptor gene sequences in owl monkeys and other primates show remarkable interspecific regulatory and protein coding variation. The oxytocin (OT) hormone pathway is involved in numerous physiological processes, and one of its receptor genes (OXTR) has been implicated in pair bonding behavior in mammalian lineages. This observation is important for understanding social monogamy in primates, which occurs in only a small subset of taxa, including Azara's owl monkey (Aotus azarae). To examine the potential relationship between social monogamy and OXTR variation, we sequenced its 5' regulatory (4936bp) and coding (1167bp) regions in 25 owl monkeys from the Argentinean Gran Chaco, and examined OXTR sequences from 1092 humans from the 1000 Genomes Project. We also assessed interspecific variation of OXTR in 25 primate and rodent species that represent a set of phylogenetically and behaviorally disparate taxa. Our analysis revealed substantial variation in the putative 5' regulatory region of OXTR, with marked structural differences across primate taxa, particularly for humans and chimpanzees, which exhibited unique patterns of large motifs of dinucleotide A+T repeats upstream of the OXTR 5' UTR. In addition, we observed a large number of amino acid substitutions in the OXTR CDS region among New World primate taxa that distinguish them from Old World primates. Furthermore, primate taxa traditionally defined as socially monogamous (e.g., gibbons, owl monkeys, titi monkeys, and saki monkeys) all exhibited different amino acid motifs for their respective OXTR protein coding sequences. These findings support the notion that monogamy has evolved independently in Old World and New World primates, and that it has done so through different molecular mechanisms, not exclusively through the oxytocin pathway.", 
+          "qas": [
+            {
+              "question": "Which is the \"bonding hormone\"?", 
+              "id": "58aa0c6f396a458e50000008_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Microbial lysate upregulates host oxytocin. Neuropeptide hormone oxytocin has roles in social bonding, energy metabolism, and wound healing contributing to good physical, mental and social health. It was previously shown that feeding of a human commensal microbe Lactobacillus reuteri (L. reuteri) is sufficient to up-regulate endogenous oxytocin levels and improve wound healing capacity in mice. Here we show that oral L. reuteri-induced skin wound repair benefits extend to human subjects. Further, dietary supplementation with a sterile lysate of this microbe alone is sufficient to boost systemic oxytocin levels and improve wound repair capacity. Oxytocin-producing cells were found to be increased in the caudal paraventricular nucleus [PVN] of the hypothalamus after feeding of a sterile lysed preparation of L. reuteri, coincident with lowered blood levels of stress hormone corticosterone and more rapid epidermal closure, in mouse models. We conclude that microbe viability is not essential for regulating host oxytocin levels. The results suggest that a peptide or metabolite produced by bacteria may modulate host oxytocin secretion for potential public or personalized health goals.", 
+          "qas": [
+            {
+              "question": "Which is the \"bonding hormone\"?", 
+              "id": "58aa0c6f396a458e50000008_003"
+            }
+          ]
+        }, 
+        {
+          "context": "The many faces of oxytocin: implications for psychiatry. Oxytocin is known as the 'love hormone' due its role in promoting mother-child and pair bonding. More recent research indicates that oxytocin may have broader pro-social effects on behavior and cognition, which points towards oxytocin's potential as an agent to help improve social cognition and functioning in psychiatric disorders such as schizophrenia and autism. However, new research on oxytocin has also uncovered a 'darker side', including oxytocin's possible role in social out-grouping and envy. Instead of a simple view of oxytocin as 'good' or 'bad', a more accurate depiction of oxytocin's role in social processing likely involves the presence of moderating factors. We review moderation effects in oxytocin and their implications for psychiatry. One implication is that, across diagnostic categories, oxytocin administration may have positive effects for patients with social cognitive deficits but negative effects for patients with social cognitive bias. We conclude that future intervention studies should use methods such as signal detection to measure both deficit and bias parameters of social cognition and to evaluate potential individual and contextual moderators both within and between psychiatric diagnoses in order to determine for whom oxytocin treatment may be beneficial and for whom it may actually be harmful.", 
+          "qas": [
+            {
+              "question": "Which is the \"bonding hormone\"?", 
+              "id": "58aa0c6f396a458e50000008_004"
+            }
+          ]
+        }, 
+        {
+          "context": "The first salamander defensin antimicrobial peptide. Antimicrobial peptides have been widely identified from amphibian skins except salamanders. A novel antimicrobial peptide (CFBD) was isolated and characterized from skin secretions of the salamander, Cynops fudingensis. The cDNA encoding CFBD precursor was cloned from the skin cDNA library of C. fudingensis. The precursor was composed of three domains: signal peptide of 17 residues, mature peptide of 41 residues and intervening propeptide of 3 residues. There are six cysteines in the sequence of mature CFBD peptide, which possibly form three disulfide-bridges. CFBD showed antimicrobial activities against Staphylococcus aureus, Bacillus subtilis, Candida albicans and Escherichia coli. This peptide could be classified into family of \u03b2-defensin based on its sequence similarity with \u03b2-defensins from other vertebrates. Evolution analysis indicated that CFBD was close to fish \u03b2-defensin. As far as we know, CFBD is the first \u03b2-defensin antimicrobial peptide from salamanders.", 
+          "qas": [
+            {
+              "question": "How many cysteines have alpha-defensins?", 
+              "id": "58a9c532396a458e50000002_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Conformational landscape and pathway of disulfide bond reduction of human alpha defensin. Human alpha defensins are a class of antimicrobial peptides with additional antiviral activity. Such antimicrobial peptides constitute a major part of mammalian innate immunity. Alpha defensins contain six cysteines, which form three well defined disulfide bridges under oxidizing conditions. Residues C3-C31, C5-C20, and C10-C30 form disulfide pairs in the native structure of the peptide. The major tissue in which HD5 is expressed is the crypt of the small intestine, an anaerobic niche that should allow for substantial pools of both oxidized and (partly) reduced HD5. We used ion mobility coupled to mass spectrometry to track the structural changes in HD5 upon disulfide bond reduction. We found evidence of stepwise unfolding of HD5 with sequential reduction of the three disulfide bonds. Alkylation of free cysteines followed by tandem mass spectrometry of the corresponding partially reduced states revealed a dominant pathway of reductive unfolding. The majority of HD5 unfolds by initial reduction of C5-C20, followed by C10-C30 and C3-C31. We find additional evidence for a minor pathway that starts with reduction of C3-C31, followed by C5-C20 and C10-C30. Our results provide insight into the pathway and conformational landscape of disulfide bond reduction in HD5.", 
+          "qas": [
+            {
+              "question": "How many cysteines have alpha-defensins?", 
+              "id": "58a9c532396a458e50000002_001"
+            }
+          ]
+        }, 
+        {
+          "context": "\u03b1-Defensins in human innate immunity. Defensins are small, multifunctional cationic peptides. They typically contain six conserved cysteines whose three intramolecular disulfides stabilize a largely \u03b2-sheet structure. This review of human \u03b1-defensins begins by describing their evolution, including their likely relationship to the Big Defensins of invertebrates, and their kinship to the \u03b2-defensin peptides of many if not all vertebrates, and the \u03b8-defensins found in certain non-human primates. We provide a short history of the search for leukocyte-derived microbicidal molecules, emphasizing the roles played by luck (good), preconceived notions (mostly bad), and proper timing (essential). The antimicrobial, antiviral, antitoxic, and binding properties of human \u03b1-defensins are summarized. The structural features of \u03b1-defensins are described extensively and their functional contributions are assessed. The properties of HD6, an enigmatic Paneth cell \u03b1-defensin, are contrasted with those of the four myeloid \u03b1-defensins (HNP1-4) and of HD5, the other \u03b1-defensin of human Paneth cells. The review ends with a decalogue that may assist researchers or students interested in \u03b1-defensins and related aspects of neutrophil function.", 
+          "qas": [
+            {
+              "question": "How many cysteines have alpha-defensins?", 
+              "id": "58a9c532396a458e50000002_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Evolution of primate \u03b1 and \u03b8 defensins revealed by analysis of genomes. Defensins are endogenous peptides with cysteine-rich antimicrobial ability that contribute to host defence against bacterial, fungal and viral infections. There are three subfamilies of defensins in primates: \u03b1, \u03b2 and \u03b8-defensins. \u03b1-defensins are most present in neutrophils and Paneth cells; \u03b2-defensins are involved in protecting the skin and the mucous membranes of the respiratory, genitourinary and gastrointestinal tracts; and \u03b8-defensins are physically distinguished as the only known fully-cyclic peptides of animal origin, which are first isolated from rhesus macaques. All three kinds of defensins have six conserved cysteines, three intramolecular disulfide bonds, a net positive charge, and \u03b2-sheet regions. \u03b1 and \u03b8-defensins are closely related, comparative amino acid sequences showed that the difference between them is that \u03b8-defensins have an additional stop codon limits the initial defensin domain peptides to 12 residues. Humans, chimpanzees and gorillas do not produce \u03b8-defensin peptides due to a premature stop codon present in the signal sequence of all \u03b8-defensin pseudogenes. By using comprehensive computational searches, here we report the discovery of complete repertoires of the \u03b1 and \u03b8-defensin gene family in ten primate species. Consistent with previous studies, our phylogenetic analyses showed all primate \u03b8-defensins evident formed one distinct clusters evolved from \u03b1-defensins. \u03b2-defensins are ancestors of both \u03b1 and \u03b8-defensins. Human has two copies of DEFA1 and DEFT1P, and two extra DEFA3 and DEFA10P genes compared with gorilla. As different primates inhabit in quite different ecological niches, the production of species-specific \u03b1 and \u03b8-defensins and these highly evolved \u03b8-defensins in old world monkeys would presumably allow them to better respond to the specific microbial challenges that they face.", 
+          "qas": [
+            {
+              "question": "How many cysteines have alpha-defensins?", 
+              "id": "58a9c532396a458e50000002_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Three Huntington's Disease Specific Mutation-Carrying Human Embryonic Stem Cell Lines Have Stable Number of CAG Repeats upon In Vitro Differentiation into Cardiomyocytes. Huntington disease (HD; OMIM 143100), a progressive neurodegenerative disorder, is caused by an expanded trinucleotide CAG (polyQ) motif in the HTT gene. Cardiovascular symptoms, often present in early stage HD patients, are, in general, ascribed to dysautonomia. However, cardio-specific expression of polyQ peptides caused pathological response in murine models, suggesting the presence of a nervous system-independent heart phenotype in HD patients. A positive correlation between the CAG repeat size and severity of symptoms observed in HD patients has also been observed in in vitro HD cellular models. Here, we test the suitability of human embryonic stem cell (hESC) lines carrying HD-specific mutation as in vitro models for understanding molecular mechanisms of cardiac pathology seen in HD patients. We have differentiated three HD-hESC lines into cardiomyocytes and investigated CAG stability up to 60 days after starting differentiation. To assess CAG stability in other tissues, the lines were also subjected to in vivo differentiation into teratomas for 10 weeks. Neither directed differentiation into cardiomyocytes in vitro nor in vivo differentiation into teratomas, rich in immature neuronal tissue, led to an increase in the number of CAG repeats. Although the CAG stability might be cell line-dependent, induced pluripotent stem cells generated from patients with larger numbers of CAG repeats could have an advantage as a research tool for understanding cardiac symptoms of HD patients.", 
+          "qas": [
+            {
+              "question": "What gene is mutated in Huntington's disease?", 
+              "id": "58a3428d60087bc10a00001b_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Dominant-Negative Effects of Adult-Onset Huntingtin Mutations Alter the Division of Human Embryonic Stem Cells-Derived Neural Cells. Mutations of the huntingtin protein (HTT) gene underlie both adult-onset and juvenile forms of Huntington's disease (HD). HTT modulates mitotic spindle orientation and cell fate in mouse cortical progenitors from the ventricular zone. Using human embryonic stem cells (hESC) characterized as carrying mutations associated with adult-onset disease during pre-implantation genetic diagnosis, we investigated the influence of human HTT and of an adult-onset HD mutation on mitotic spindle orientation in human neural stem cells (NSCs) derived from hESCs. The RNAi-mediated silencing of both HTT alleles in neural stem cells derived from hESCs disrupted spindle orientation and led to the mislocalization of dynein, the p150Glued subunit of dynactin and the large nuclear mitotic apparatus (NuMA) protein. We also investigated the effect of the adult-onset HD mutation on the role of HTT during spindle orientation in NSCs derived from HD-hESCs. By combining SNP-targeting allele-specific silencing and gain-of-function approaches, we showed that a 46-glutamine expansion in human HTT was sufficient for a dominant-negative effect on spindle orientation and changes in the distribution within the spindle pole and the cell cortex of dynein, p150Glued and NuMA in neural cells. Thus, neural derivatives of disease-specific human pluripotent stem cells constitute a relevant biological resource for exploring the impact of adult-onset HD mutations of the HTT gene on the division of neural progenitors, with potential applications in HD drug discovery targeting HTT-dynein-p150Glued complex interactions.", 
+          "qas": [
+            {
+              "question": "What gene is mutated in Huntington's disease?", 
+              "id": "58a3428d60087bc10a00001b_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Transgenic animal models for study of the pathogenesis of Huntington's disease and therapy. Huntington's disease (HD) is caused by a genetic mutation that results in polyglutamine expansion in the N-terminal regions of huntingtin. As a result, this polyQ expansion leads to the misfolding and aggregation of mutant huntingtin as well as age-dependent neurodegeneration. The genetic mutation in HD allows for generating a variety of animal models that express different forms of mutant huntingtin and show differential pathology. Studies of these animal models have provided an important insight into the pathogenesis of HD. Mouse models of HD include transgenic mice, which express N-terminal or full-length mutant huntingtin ubiquitously or selectively in different cell types, and knock-in mice that express full-length mutant Htt at the endogenous level. Large animals, such as pig, sheep, and monkeys, have also been used to generate animal HD models. This review focuses on the different features of commonly used transgenic HD mouse models as well as transgenic large animal models of HD, and also discusses how to use them to identify potential therapeutics. Since HD shares many pathological features with other neurodegenerative diseases, identification of therapies for HD would also help to develop effective treatment for different neurodegenerative diseases that are also caused by protein misfolding and occur in an age-dependent manner.", 
+          "qas": [
+            {
+              "question": "What gene is mutated in Huntington's disease?", 
+              "id": "58a3428d60087bc10a00001b_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Disruption of SMIM1 causes the Vel- blood type. Here, we report the biochemical and genetic basis of the Vel blood group antigen, which has been a vexing mystery for decades, especially as anti-Vel regularly causes severe haemolytic transfusion reactions. The protein carrying the Vel blood group antigen was biochemically purified from red blood cell membranes. Mass spectrometry-based de novo peptide sequencing identified this protein to be small integral membrane protein 1 (SMIM1), a previously uncharacterized single-pass membrane protein. Expression of SMIM1 cDNA in Vel- cultured cells generated anti-Vel cell surface reactivity, confirming that SMIM1 encoded the Vel blood group antigen. A cohort of 70 Vel- individuals was found to be uniformly homozygous for a 17 nucleotide deletion in the coding sequence of SMIM1. The genetic homogeneity of the Vel- blood type, likely having a common origin, facilitated the development of two highly specific DNA-based tests for rapid Vel genotyping, which can be easily integrated into blood group genotyping platforms. These results answer a 60-year-old riddle and provide tools of immediate assistance to all clinicians involved in the care of Vel- patients.", 
+          "qas": [
+            {
+              "question": "Which gene-defect causes the Vel-blood type?", 
+              "id": "58a872bd38c171fb5b000002_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Molecular Screening for Vel- Blood Donors in Southwestern Germany. BACKGROUND: The SMIM1 protein carries the Vel blood group antigen, and homozygosity for a 17 bp deletion in the coding region of the SMIM1 gene represents the molecular basis of the Vel- blood group phenotype. We developed PCR-based methods for typing the SMIM1 17 bp (64-80del) gene deletion and performed a molecular screening for the Vel- blood type in German blood donors. METHODS: For SMIM1 genotyping, TaqMan-PCR and PCR-SSP methods were developed and validated using reference samples. Both methods were used for screening of donors with blood group O from southwestern Germany. Heterozygotes and homozygotes for the SMIM1 64-80del allele were serologically typed for the Vel blood group antigen. In addition, the rs1175550 SNP in SMIM1 was typed and correlated to the results of the phenotyping. RESULTS: Both genotyping methods, TaqMan-PCR and PCR-SSP, represent reliable methods for the detection of the SMIM1 64-80del allele. Screening of 10,598 blood group O donors revealed 5 individuals homozygous for the deletional allele. They were confirmed Vel- by serological typing. Heterozygotes for the 64-80del allele showed different antigen expressions ranging from very weak to regular positive. CONCLUSION: Molecular screening of blood donors for the Vel- blood type is feasible and avoids the limitations of serological typing which might show false-negative results with heterozygous individuals. The identification of Vel- blood donors significantly contributes to the adequate blood supply of patients with anti-Vel.", 
+          "qas": [
+            {
+              "question": "Which gene-defect causes the Vel-blood type?", 
+              "id": "58a872bd38c171fb5b000002_001"
+            }
+          ]
+        }, 
+        {
+          "context": "X-linked Christianson syndrome: heterozygous female Slc9a6 knockout mice develop mosaic neuropathological changes and related behavioral abnormalities. Christianson syndrome (CS) is an X-linked neurodevelopmental and neurological disorder characterized in males by core symptoms that include non-verbal status, intellectual disability, epilepsy, truncal ataxia, postnatal microcephaly and hyperkinesis. CS is caused by mutations in the SLC9A6 gene, which encodes a multipass transmembrane sodium (potassium)-hydrogen exchanger 6 (NHE6) protein, functional in early recycling endosomes. The extent and variability of the CS phenotype in female heterozygotes, who presumably express the wild-type and mutant SLC9A6 alleles mosaically as a result of X-chromosome inactivation (XCI), have not yet been systematically characterized. Slc9a6 knockout mice (Slc9a6 KO) were generated by insertion of the bacterial lacZ/\u03b2-galactosidase (\u03b2-Gal) reporter into exon 6 of the X-linked gene. Mutant Slc9a6 KO male mice have been shown to develop late endosomal/lysosomal dysfunction associated with glycolipid accumulation in selected neuronal populations and patterned degeneration of Purkinje cells (PCs). In heterozygous female Slc9a6 KO mice, \u03b2-Gal serves as a transcriptional/XCI reporter and thus facilitates testing of effects of mosaic expression of the mutant allele on penetrance of the abnormal phenotype. Using \u03b2-Gal, we demonstrated mosaic expression of the mutant Slc9a6 allele and mosaically distributed lysosomal glycolipid accumulation and PC pathology in the brains of heterozygous Slc9a6 KO female mice. At the behavioral level, we showed that heterozygous female mice suffer from visuospatial memory and motor coordination deficits similar to but less severe than those observed in X-chromosome hemizygous mutant males. Our studies in heterozygous Slc9a6 KO female mice provide important clues for understanding the likely phenotypic range of Christianson syndrome among females heterozygous for SLC9A6 mutations and might improve diagnostic practice and genetic counseling by helping to characterize this presumably underappreciated patient/carrier group.", 
+          "qas": [
+            {
+              "question": "Mutation of which gene is implicated in the Christianson syndrome?", 
+              "id": "5895bc397d9090f35300000b_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Christianson syndrome: spectrum of neuroimaging findings. Christianson syndrome (CS) is caused by mutations in SLC9A6 and is characterized by severe intellectual disability, absent speech, microcephaly, ataxia, seizures, and behavioral abnormalities. The clinical phenotypes of CS and Angelman syndrome (AS) are similar. Differentiation between CS and AS is important in terms of genetic counseling. We report on two children with CS and confirmed mutations in SLC9A6 focusing on neuroimaging findings and review the available literature. Cerebellar atrophy (CA) occurs in approximately 60% of the patients with CS and develops after the age of 12 months. Hyperintense signal of the cerebellar cortex (CbC) is less common, and may be diffuse, patchy, or involve only the inferior part of the cerebellum and is best seen on coronal fluid attenuation inversion recovery images. CA and CbC-hyperintensity are not neuroimaging features of AS. In a child with the phenotype of AS, CA and/or CbC-hyperintensity are rather specific for CS and should prioritize sequencing of SLC9A6.", 
+          "qas": [
+            {
+              "question": "Mutation of which gene is implicated in the Christianson syndrome?", 
+              "id": "5895bc397d9090f35300000b_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Successful Treatment of Electrographic Status Epilepticus of Sleep With Felbamate in a Patient With SLC9A6 Mutation. BACKGROUND: Mutations of SLC9A6 may cause an X-linked clinical syndrome first described by Christianson in 1999 in which affected males exhibited profound intellectual disability, autism, drug-resistant epilepsy, ophthalmoplegia, mild craniofacial dysmorphism, microcephaly, and ataxia. METHODS: We describe a child with an SLC9A6 mutation and an electroencephalographic pattern consistent with electrographic status epilepticus of sleep. RESULTS: Our patient's electrographic status epilepticus of sleep resolved after treatment with felbamate. Following treatment, he remained seizure-free but did not make significant or lasting gains in language. CONCLUSION: Our report extends the clinical epilepsy phenotype in children with SLC9A6 mutations to include electrographic status epilepticus of sleep. In addition, felbamate was an effective treatment for electrographic status epilepticus of sleep in our patient.", 
+          "qas": [
+            {
+              "question": "Mutation of which gene is implicated in the Christianson syndrome?", 
+              "id": "5895bc397d9090f35300000b_002"
+            }
+          ]
+        }, 
+        {
+          "context": "A Christianson syndrome-linked deletion mutation (\u2206(287)ES(288)) in SLC9A6 disrupts recycling endosomal function and elicits neurodegeneration and cell death. BACKGROUND: Christianson Syndrome, a recently identified X-linked neurodevelopmental disorder, is caused by mutations in the human gene SLC9A6 encoding the recycling endosomal alkali cation/proton exchanger NHE6. The patients have pronounced limitations in cognitive ability, motor skills and adaptive behaviour. However, the mechanistic basis for this disorder is poorly understood as few of the more than 20 mutations identified thus far have been studied in detail. METHODS: Here, we examined the molecular and cellular consequences of a 6 base-pair deletion of amino acids Glu(287) and Ser(288) (\u2206ES) in the predicted seventh transmembrane helix of human NHE6 expressed in established cell lines (CHO/AP-1, HeLa and neuroblastoma SH-SY5Y) and primary cultures of mouse hippocampal neurons by measuring levels of protein expression, stability, membrane trafficking, endosomal function and cell viability. RESULTS: In the cell lines, immunoblot analyses showed that the nascent mutant protein was properly synthesized and assembled as a homodimer, but its oligosaccharide maturation and half-life were markedly reduced compared to wild-type (WT) and correlated with enhanced ubiquitination leading to both proteasomal and lysosomal degradation. Despite this instability, a measurable fraction of the transporter was correctly sorted to the plasma membrane. However, the rates of clathrin-mediated endocytosis of the \u2206ES mutant as well as uptake of companion vesicular cargo, such as the ligand-bound transferrin receptor, were significantly reduced and correlated with excessive endosomal acidification. Notably, ectopic expression of \u2206ES but not WT induced apoptosis when examined in AP-1 cells. Similarly, in transfected primary cultures of mouse hippocampal neurons, membrane trafficking of the \u2206ES mutant was impaired and elicited marked reductions in total dendritic length, area and arborization, and triggered apoptotic cell death. CONCLUSIONS: These results suggest that loss-of-function mutations in NHE6 disrupt recycling endosomal function and trafficking of cargo which ultimately leads to neuronal degeneration and cell death in Christianson Syndrome.", 
+          "qas": [
+            {
+              "question": "Mutation of which gene is implicated in the Christianson syndrome?", 
+              "id": "5895bc397d9090f35300000b_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Genetic and phenotypic diversity of NHE6 mutations in Christianson syndrome. OBJECTIVE: Recently, Christianson syndrome (CS) has been determined to be caused by mutations in the X-linked Na(+) /H(+) exchanger 6 (NHE6). We aimed to determine the diagnostic criteria and mutational spectrum for CS. METHODS: Twelve independent pedigrees (14 boys, age = 4-19 years) with mutations in NHE6 were administered standardized research assessments, and mutations were characterized. RESULTS: The mutational spectrum was composed of 9 single nucleotide variants, 2 indels, and 1 copy number variation deletion. All mutations were protein-truncating or splicing mutations. We identified 2 recurrent mutations (c.1498 c>t, p.R500X; and c.1710 g>a, p.W570X). Otherwise, all mutations were unique. In our study, 7 of 12 mutations (58%) were de novo, in contrast to prior literature wherein mutations were largely inherited. We also report prominent neurological, medical, and behavioral symptoms. All CS participants were nonverbal and had intellectual disability, epilepsy, and ataxia. Many had prior diagnoses of autism and/or Angelman syndrome. Other neurologic symptoms included eye movement abnormalities (79%), postnatal microcephaly (92%), and magnetic resonance imaging evidence of cerebellar atrophy (33%). Regression was noted in 50%, with recurrent presentations involving loss of words and/or the ability to walk. Medical symptoms, particularly gastrointestinal symptoms, were common. Height and body mass index measures were below normal ranges in most participants. Behavioral symptoms included hyperkinetic behavior (100%), and a majority exhibited high pain threshold. INTERPRETATION: This is the largest cohort of independent CS pedigrees reported. We propose diagnostic criteria for CS. CS represents a novel neurogenetic disorder with general relevance to autism, intellectual disability, Angelman syndrome, epilepsy, and regression.", 
+          "qas": [
+            {
+              "question": "Mutation of which gene is implicated in the Christianson syndrome?", 
+              "id": "5895bc397d9090f35300000b_004"
+            }
+          ]
+        }, 
+        {
+          "context": "A novel mutation in the endosomal Na+/H+ exchanger NHE6 (SLC9A6) causes Christianson syndrome with electrical status epilepticus during slow-wave sleep (ESES). Mutations in the solute carrier family 9, subfamily A member 6 (SLC9A6) gene, encoding the endosomal Na+/H+ exchanger 6 (NHE6) are associated with Christianson syndrome, a syndromic form of X-linked intellectual disability characterized by microcephaly, severe global developmental delay, autistic behavior, early onset seizures and ataxia. In a 7-year-old boy with characteristic clinical and neuroimaging features of Christianson syndrome and epileptic encephalopathy with continuous spikes and waves during sleep, we identified a novel splice site mutation (IVS10-1G>A) in SLC9A6. These findings expand the clinical spectrum of the syndrome and indicate NHE6 dysfunction as a new cause of electrical status epilepticus during slow-wave sleep (ESES).", 
+          "qas": [
+            {
+              "question": "Mutation of which gene is implicated in the Christianson syndrome?", 
+              "id": "5895bc397d9090f35300000b_005"
+            }
+          ]
+        }, 
+        {
+          "context": "IMPAIRED EXECUTIVE FUNCTIONING IN PEDIATRIC TRICHOTILLOMANIA (HAIR PULLING DISORDER). BACKGROUND: No neurocognitive examinations of pediatric trichotillomania (hair pulling disorder; HPD) have taken place. As a result, science's understanding of the underlying pathophysiology associated with HPD in youths is greatly lacking. The present study seeks to begin to address this gap in the literature via examination of executive functioning in a stimulant-free sample of children with HPD. METHODS: Sixteen and 23 children between 9 and 17 years of age meeting DSM-5 diagnostic criteria for HPD or classified as a healthy control, respectively, were recruited (N = 39) to complete structured interviews, self-reports, and a subset of tests from the Cambridge Automatic Neurocognitive Test Assessment Battery (CANTAB) assessing cognitive flexibility/reversal learning (intradimensional/extradimensional; IED), working memory (spatial span; SSP), and planning and organization (Stocking of Cambridge; SOC). RESULTS: Hierarchical regression analyses indicated that, after controlling for appropriate covariates, diagnostic status predicted impaired performance on both the IED (reversal learning only) and SOC (planning and organization) but failed to predict cognitive flexibility or working memory capacity. Correlational analyses revealed that pulling severity was strongly related to working memory capacity, while disparate relationships between pulling styles (automatic, focused pulling) were evident with respect to working memory and planning and organization. CONCLUSIONS: Children with HPD performed more poorly on tasks of executive functioning as compared to controls. Correlational analyses suggest potentially distinct pathophysiology underlying automatic and focused pulling warranting further research. Limitations and future areas of inquiry are discussed.", 
+          "qas": [
+            {
+              "question": "What is trichotillomania?", 
+              "id": "58a8045860087bc10a000035_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Comorbidity and quality of life in adults with hair pulling disorder. Hair pulling disorder (HPD; trichotillomania) is thought to be associated with significant psychiatric comorbidity and functional impairment. However, few methodologically rigorous studies of HPD have been conducted, rendering such conclusions tenuous. The following study examined comorbidity and psychosocial functioning in a well-characterized sample of adults with HPD (N=85) who met DSM-IV criteria, had at least moderate hair pulling severity, and participated in a clinical trial. Results revealed that 38.8% of individuals with HPD had another current psychiatric diagnosis and 78.8% had another lifetime (present and/or past) psychiatric diagnosis. Specifically, HPD showed substantial overlap with depressive, anxiety, addictive, and other body-focused repetitive behavior disorders. The relationships between certain comorbidity patterns, hair pulling severity, current mood and anxiety symptoms, and quality of life were also examined. Results showed that current depressive symptoms were the only predictor of quality of life deficits. Implications of these findings for the conceptualization and treatment of HPD are discussed.", 
+          "qas": [
+            {
+              "question": "What is trichotillomania?", 
+              "id": "58a8045860087bc10a000035_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Inhibitory Control in Pediatric Trichotillomania (Hair Pulling Disorder): The Importance of Controlling for Age and Symptoms of Inattention and Hyperactivity. Trichotillomania (hair pulling disorder, HPD) is characterized by significant psychological distress, childhood-onset, and, in adults, certain cognitive deficits such as inhibitory control. A total absence of such literature exists within pediatric HPD samples, including research investigating neurocognitive aspects of disparate pulling-styles. The present study aims to address these gaps in the literature. Youth with HPD and healthy controls (N = 45) were compared on an automated neurocognitive task--stop-signal task (SST)--assessing inhibitory control. Youth with HPD (n = 17), controlling for age and attention issues, were found to perform better on the stop-signal reaction time compared to controls (n = 28). No significant relationships between performance on the SST and HPD severity, distress/impairment, or pulling-styles were noted. Findings from the current study suggest that children with HPD may not exhibit deficits in motor inhibition as compared to controls when the effects of age and attentional problems are controlled.", 
+          "qas": [
+            {
+              "question": "What is trichotillomania?", 
+              "id": "58a8045860087bc10a000035_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Antimicrobial protein and Peptide concentrations and activity in human breast milk consumed by preterm infants at risk of late-onset neonatal sepsis. OBJECTIVE: We investigated the levels and antimicrobial activity of antimicrobial proteins and peptides (AMPs) in breast milk consumed by preterm infants, and whether deficiencies of these factors were associated with late-onset neonatal sepsis (LOS), a bacterial infection that frequently occurs in preterm infants in the neonatal period. STUDY DESIGN: Breast milk from mothers of preterm infants ( < 32 weeks gestation) was collected on days 7 (n = 88) and 21 (n = 77) postpartum. Concentrations of lactoferrin, LL-37, beta-defensins 1 and 2, and alpha-defensin 5 were measured by enzyme-linked immunosorbent assay. The antimicrobial activity of breast milk samples against Staphylococcus epidermidis, Staphylococcus aureus, Escherichia coli, and Streptococcus agalactiae was compared to the activity of infant formula, alone or supplemented with physiological levels of AMPs. Samples of breast milk fed to infants with and without subsequent LOS were compared for levels of AMPs and inhibition of bacterial growth. RESULTS: Levels of most AMPs and antibacterial activity in preterm breast milk were higher at day 7 than at day 21. Lactoferrin was the only AMP that limited pathogen growth >50% when added to formula at a concentration equivalent to that present in breast milk. Levels of AMPs were similar in the breast milk fed to infants with and without LOS, however, infants who developed LOS consumed significantly less breast milk and lower doses of milk AMPs than those who were free from LOS. CONCLUSIONS: The concentrations of lactoferrin and defensins in preterm breast milk have antimicrobial activity against common neonatal pathogens.", 
+          "qas": [
+            {
+              "question": "Which cells secretes alpha defensin 5?", 
+              "id": "58a9c152396a458e50000001_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Conformational landscape and pathway of disulfide bond reduction of human alpha defensin. Human alpha defensins are a class of antimicrobial peptides with additional antiviral activity. Such antimicrobial peptides constitute a major part of mammalian innate immunity. Alpha defensins contain six cysteines, which form three well defined disulfide bridges under oxidizing conditions. Residues C3-C31, C5-C20, and C10-C30 form disulfide pairs in the native structure of the peptide. The major tissue in which HD5 is expressed is the crypt of the small intestine, an anaerobic niche that should allow for substantial pools of both oxidized and (partly) reduced HD5. We used ion mobility coupled to mass spectrometry to track the structural changes in HD5 upon disulfide bond reduction. We found evidence of stepwise unfolding of HD5 with sequential reduction of the three disulfide bonds. Alkylation of free cysteines followed by tandem mass spectrometry of the corresponding partially reduced states revealed a dominant pathway of reductive unfolding. The majority of HD5 unfolds by initial reduction of C5-C20, followed by C10-C30 and C3-C31. We find additional evidence for a minor pathway that starts with reduction of C3-C31, followed by C5-C20 and C10-C30. Our results provide insight into the pathway and conformational landscape of disulfide bond reduction in HD5.", 
+          "qas": [
+            {
+              "question": "Which cells secretes alpha defensin 5?", 
+              "id": "58a9c152396a458e50000001_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Alpha-defensin HD5 inhibits furin cleavage of human papillomavirus 16 L2 to block infection. UNLABELLED: Human papillomavirus (HPV) is a significant oncogenic virus, but the innate immune response to HPV is poorly understood. Human \u03b1-defensin 5 (HD5) is an innate immune effector peptide secreted by epithelial cells in the genitourinary tract. HD5 is broadly antimicrobial, exhibiting potent antiviral activity against HPV at physiologic concentrations; however, the specific mechanism of HD5-mediated inhibition against HPV is unknown. During infection, the HPV capsid undergoes several critical cell-mediated viral protein processing steps, including unfolding and cleavage of the minor capsid protein L2 by host cyclophilin B and furin. Using HPV16 pseudovirus, we show that HD5 interacts directly with the virus and inhibits the furin-mediated cleavage of L2 at the cell surface during infection at a step downstream of the cyclophilin B-mediated unfolding of L2. Importantly, HD5 does not affect the enzymatic activity of furin directly. Thus, our data support a model in which HD5 prevents furin from accessing L2 by occluding the furin cleavage site via direct binding to the viral capsid. IMPORTANCE: Our study elucidates a new antiviral action for \u03b1-defensins against nonenveloped viruses in which HD5 directly interferes with a critical host-mediated viral processing step, furin cleavage of L2, at the cell surface. Blocking this key event has deleterious effects on the intracellular steps of virus infection. Thus, in addition to informing the antiviral mechanisms of \u03b1-defensins, our studies highlight the critical role of furin cleavage in HPV entry. Innate immune control, mediated in part by \u03b1-defensins expressed in the genital mucosa, may influence susceptibility to HPV infections that lead to cervical cancer. Moreover, understanding the mechanism of these natural antivirals may inform the design of therapeutics to limit HPV infection.", 
+          "qas": [
+            {
+              "question": "Which cells secretes alpha defensin 5?", 
+              "id": "58a9c152396a458e50000001_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Visualizing attack of Escherichia coli by the antimicrobial peptide human defensin 5. Human \u03b1-defensin 5 (HD5) is a 32-residue cysteine-rich host-defense peptide that exhibits broad-spectrum antimicrobial activity and contributes to innate immunity in the human gut and other organ systems. Despite many years of investigation, its antimicrobial mechanism of action remains unclear. In this work, we report that HD5ox, the oxidized form of this peptide that exhibits three regiospecific disulfide bonds, causes distinct morphological changes to Escherichia coli and other Gram-negative microbes. These morphologies include bleb formation, cellular elongation, and clumping. The blebs are up to \u223c1 \u03bcm wide and typically form at the site of cell division or cell poles. Studies with E. coli expressing cytoplasmic GFP reveal that HD5ox treatment causes GFP emission to localize in the bleb. To probe the cellular uptake of HD5ox and subsequent localization, we describe the design and characterization of a fluorophore-HD5 conjugate family. By employing these peptides, we demonstrate that fluorophore-HD5ox conjugates harboring the rhodamine and coumarin fluorophores enter the E. coli cytoplasm. On the basis of the fluorescence profiles, each of these fluorophore-HD5ox conjugates localizes to the site of cell division and cell poles. These studies support the notion that HD5ox, at least in part, exerts its antibacterial activity against E. coli and other Gram-negative microbes in the cytoplasm.", 
+          "qas": [
+            {
+              "question": "Which cells secretes alpha defensin 5?", 
+              "id": "58a9c152396a458e50000001_003"
+            }
+          ]
+        }, 
+        {
+          "context": "New role for human \u03b1-defensin 5 in the fight against hypervirulent Clostridium difficile strains. Clostridium difficile infection (CDI), one of the most common hospital-acquired infections, is increasing in incidence and severity with the emergence and diffusion of hypervirulent strains. CDI is precipitated by antibiotic treatment that destroys the equilibrium of the gut microbiota. Human \u03b1-defensin 5 (HD5), the most abundant enteric antimicrobial peptide, is a key regulator of gut microbiota homeostasis, yet it is still unknown if C. difficile, which successfully evades killing by other host microbicidal peptides, is susceptible to HD5. We evaluated, by means of viability assay, fluorescence-activated cell sorter (FACS) analysis, and electron microscopy, the antimicrobial activities of \u03b1-defensins 1 and 5 against a panel of C. difficile strains encompassing the most prevalent epidemic and hypervirulent PCR ribotypes in Europe (012, 014/020, 106, 018, 027, and 078). Here we show that (i) concentrations of HD5 within the intestinal physiological range produced massive C. difficile cell killing; (ii) HD5 bactericidal activity was mediated by membrane depolarization and bacterial fragmentation with a pattern of damage peculiar to C. difficile bacilli, compared to commensals like Escherichia coli and Enterococcus faecalis; and (iii) unexpectedly, hypervirulent ribotypes were among the most susceptible to both defensins. These results support the notion that HD5, naturally present at very high concentrations in the mucosa of the small intestine, could indeed control the very early steps of CDI by killing C. difficile bacilli at their germination site. As a consequence, HD5 can be regarded as a good candidate for the containment of hypervirulent C. difficile strains, and it could be exploited in the therapy of CDI and relapsing C. difficile-associated disease.", 
+          "qas": [
+            {
+              "question": "Which cells secretes alpha defensin 5?", 
+              "id": "58a9c152396a458e50000001_004"
+            }
+          ]
+        }, 
+        {
+          "context": "Antimicrobial activity of human \u03b1-defensin 5 and its linear analogs: N-terminal fatty acylation results in enhanced antimicrobial activity of the linear analogs. Human \u03b1-defensin 5 (HD5) exhibits broad spectrum antimicrobial activity and plays an important role in mucosal immunity of the small intestine. Although there have been several studies, the structural requirements for activity and mechanism of bacterial killing is yet to be established unequivocally. In this study, we have investigated the antimicrobial activity of HD5 and linear analogs. Cysteine deletions attenuated the antibacterial activity considerably. Candidacidal activity was affected to a lesser extent. Fatty acid conjugated linear analogs showed antimicrobial activity comparable activity to HD5. Effective surface charge neutralization of bacteria was observed for HD5 as compared to the non-fatty acylated linear analogs. Our results show that HD5 and non-fatty acylated linear analogs enter the bacterial cytoplasm without causing damage to the bacterial inner membrane. Although fatty acylated peptides exhibited antimicrobial activity comparable to HD5, their mechanism of action involved permeabilization of the Escherichia coli inner membrane. HD5 and analogs had the ability to bind plasmid DNA. HD5 had greater binding affinity to plasmid DNA as compared to the analogs. The three dimensional structure of HD5 favors greater interaction with the bacterial cell surface and also with DNA. Antibacterial activity of HD5 involves entry into bacterial cytoplasm and binding to DNA which would result in shut down of the bacterial metabolism leading to cell death. We show how a moderately active linear peptide derived from the \u03b1-defensin HD5 can be engineered to enhance antimicrobial activity almost comparable to the native peptide.", 
+          "qas": [
+            {
+              "question": "Which cells secretes alpha defensin 5?", 
+              "id": "58a9c152396a458e50000001_005"
+            }
+          ]
+        }, 
+        {
+          "context": "Regulation of human enteric \u03b1-defensins by NOD2 in the Paneth cell lineage. Human enteric \u03b1-defensins (HD5 and HD6), major antimicrobial peptides produced by Paneth cells in the intestine, play important roles in intestinal innate immunity. Since their expression is decreased in Crohn's disease (CD), with decreased expression being more pronounced in the presence of NOD2 mutations, it would be extremely interesting to investigate the mechanism by which NOD2 may regulate expression of human enteric \u03b1-defensins. Here we show that although NOD2 by itself can slightly up-regulate expression of enteric \u03b1-defensins mainly through activation of the NF-\u03baB pathway, it can strongly down-regulates their expression during differentiation of the Paneth cell lineage mainly by inhibiting activation of the MAPK pathway. Since NOD2 is over-expressed in CD and mutant NOD2 cannot result in NF-\u03baB activity, our finding can provide an explanation of the previous observation showing decreased expression of human enteric \u03b1-defensin in CD and even more so in the presence of NOD2 mutations. In addition, this finding provides a new view on the function of NOD2 in regulating intestinal innate immunity.", 
+          "qas": [
+            {
+              "question": "Which cells secretes alpha defensin 5?", 
+              "id": "58a9c152396a458e50000001_006"
+            }
+          ]
+        }, 
+        {
+          "context": "INCA: synonymous codon usage analysis and clustering by means of self-organizing map. UNLABELLED: INteractive Codon usage Analysis (INCA) provides an array of features useful in analysis of synonymous codon usage in whole genomes. In addition to computing codon frequencies and several usage indices, such as 'codon bias', effective Nc and CAI, the primary strength of INCA has numerous options for the interactive graphical display of calculated values, thus allowing visual detection of various trends in codon usage. Finally, INCA includes a specific unsupervised neural network algorithm, the self-organizing map, used for gene clustering according to the preferred utilization of codons. AVAILABILITY: INCA is available for the Win32 platform and is free of charge for academic use. For details, visit the web page http://www.bioinfo-hr.org/inca or contact the author directly. SUPPLEMENTARY INFORMATION: Software is accompanied with a user manual and a short tutorial.", 
+          "qas": [
+            {
+              "question": "Which tool employs self organizing maps for analyzing synonymous codon usage?", 
+              "id": "5891c90949702f2e01000001_000"
+            }
+          ]
+        }, 
+        {
+          "context": "A genome-wide scan for attention-deficit/hyperactivity disorder in 155 German sib-pairs. Three groups have previously performed genome scans in attention-deficit/hyperactivity disorder (ADHD); linkage to chromosome 5p13 was detected in all of the respective studies. In the current study, we performed a whole-genome scan with 102 German families with two or more offspring who currently fulfilled the diagnostic criteria for ADHD. Including subsequent fine mapping on chromosome 5p, a total of 523 markers were genotyped. The highest nonparametric multipoint LOD score of 2.59 (empirical genome-wide significance 0.1) was obtained for chromosome 5p at 17 cM (according to the Marshfield map). Subsequent analyses revealed (a) a higher LOD score of 3.37 at 39 cM for a quantitative severity score based on symptoms of inattention than for hyperactivity/impulsivity (LOD score of 1.11 at 59 cM), and (b) an HLOD of 4.75 (empirical genome-wide significance 0.001) based on a parametric model assuming dominant inheritance. The locus of the solute carrier 6A3 (SLC6A3; dopamine transporter 1; DAT1) localizes to 5p15.33; the gene has repeatedly been implicated in the etiology of ADHD. However, in our sample the DAT1 VNTR did not show association with ADHD. We additionally identified nominal evidence for linkage to chromosomes 6q, 7p, 9q, 11 q, 12q and 17p, which had also been identified in previous scans. Despite differences in ethnicity, ascertainment and phenotyping schemes, linkage results in ADHD appear remarkably consistent.", 
+          "qas": [
+            {
+              "question": "Which is the chromosome area that the human gene coding for the dopamine transporter (DAT1) is located to?", 
+              "id": "58a2ced760087bc10a000004_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Dopamine transporter (DAT1) VNTR polymorphism in 12 Indian populations. The dopamine transporter (DAT1) is a membrane spanning protein that binds the neurotransmitter dopamine and performs re-uptake of dopamine from the synapse into a neuron. The gene encoding DAT1 consists of 15 exons spanning 60 kb on chromosome 5p15.32. Several studies have investigated the possible associations between variants in DAT1 gene and psychiatric disorders. The present study aimed to determine the distribution of the variable number of tandem repeat (VNTR) polymorphism in the 3' untranslated region of DAT1 in 12 Indian populations. A total of 471 healthy unrelated individuals in 12 Indian populations from 3 linguistic groups were included in the present study. The analysis was carried out using PCR and electrophoresis. Overall, 4 alleles of the DAT1 40-bp VNTR, ranging from 7 to 11 repeats were detected. Heterozygosity indices were low and varied from 0.114 to 0.406. The results demonstrate the variability of the DAT1 40-bp VNTR polymorphism in Indian populations and revealed a high similarity with East Asian populations.", 
+          "qas": [
+            {
+              "question": "Which is the chromosome area that the human gene coding for the dopamine transporter (DAT1) is located to?", 
+              "id": "58a2ced760087bc10a000004_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Striatal dopamine transporter availability and DAT-1 gene in adults with ADHD: no higher DAT availability in patients with homozygosity for the 10-repeat allele. In 29 adults with attention deficit hyperactivity disorder (ADHD) striatal dopamine transporter (DAT) availability was assessed by [(99m)Tc]TRODAT-1 SPECT and correlated with 3' VNTR polymorphism of the DAT gene on chromosome 5p15.3. Seventeen patients showed homozygosity for the 10-repeat allele, two homozygosity of the 9 allele and 10 were heterozygous (9-10). No statistically significant difference in DAT availability was found between patients with 10-10 carriers (DAT 1.28 +/- 0.34) and with at least one 9 allele (DAT 1.31 +/- 0.27); when smokers were excluded, DAT availability was 1.38 +/- 0.28 in the 10-10 carriers (n = 12) and 1.42 +/- 0.19 in the 9-10 and 9-9 carriers (n = 7). In conclusion, no higher striatal DAT was found in patients with homozygosity of the 10 allele of the DAT gene in this study. These results differ from a study in 11 Korean children with ADHD, in which 10-10 carriers showed higher DAT availability in [(123)I]IPT SPECT. Discrepancies may be explained by differences in patient's age, ethnical differences, different imaging techniques or the limited number of patients included in both studies.", 
+          "qas": [
+            {
+              "question": "Which is the chromosome area that the human gene coding for the dopamine transporter (DAT1) is located to?", 
+              "id": "58a2ced760087bc10a000004_002"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,348 @@
+\begin{thebibliography}{47}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Ahn et~al.(2022)Ahn, Brohan, Brown, Chebotar, Cortes, David, Finn,
+  Gopalakrishnan, Hausman, Herzog, et~al.]{ahn2022can}
+Michael Ahn, Anthony Brohan, Noah Brown, Yevgen Chebotar, Omar Cortes, Byron
+  David, Chelsea Finn, Keerthana Gopalakrishnan, Karol Hausman, Alex Herzog,
+  et~al.
+\newblock Do as i can, not as i say: Grounding language in robotic affordances.
+\newblock \emph{ArXiv preprint}, abs/2204.01691, 2022.
+
+\bibitem[Bach et~al.(2022)Bach, Sanh, Yong, Webson, Raffel, Nayak, Sharma, Kim,
+  Bari, F{\'e}vry, et~al.]{bach2022promptsource}
+Stephen Bach, Victor Sanh, Zheng~Xin Yong, Albert Webson, Colin Raffel, Nihal~V
+  Nayak, Abheesht Sharma, Taewoon Kim, M~Saiful Bari, Thibault F{\'e}vry,
+  et~al.
+\newblock Promptsource: An integrated development environment and repository
+  for natural language prompts.
+\newblock In \emph{Proceedings of the 60th Annual Meeting of the Association
+  for Computational Linguistics: System Demonstrations}, pp.\  93--104, 2022.
+
+\bibitem[Bubeck et~al.(2023)Bubeck, Chandrasekaran, Eldan, Gehrke, Horvitz,
+  Kamar, Lee, Lee, Li, Lundberg, et~al.]{bubeck2023sparks}
+S{\'e}bastien Bubeck, Varun Chandrasekaran, Ronen Eldan, Johannes Gehrke, Eric
+  Horvitz, Ece Kamar, Peter Lee, Yin~Tat Lee, Yuanzhi Li, Scott Lundberg,
+  et~al.
+\newblock Sparks of artificial general intelligence: Early experiments with
+  gpt-4.
+\newblock \emph{arXiv preprint arXiv:2303.12712}, 2023.
+
+\bibitem[Chen et~al.(2023)Chen, Wong, Chen, and Tian]{chen2023extending}
+Shouyuan Chen, Sherman Wong, Liangjian Chen, and Yuandong Tian.
+\newblock Extending context window of large language models via positional
+  interpolation.
+\newblock \emph{arXiv preprint arXiv:2306.15595}, 2023.
+
+\bibitem[Chiang et~al.(2023)Chiang, Li, Lin, Sheng, Wu, Zhang, Zheng, Zhuang,
+  Zhuang, Gonzalez, Stoica, and Xing]{vicuna2023}
+Wei-Lin Chiang, Zhuohan Li, Zi~Lin, Ying Sheng, Zhanghao Wu, Hao Zhang, Lianmin
+  Zheng, Siyuan Zhuang, Yonghao Zhuang, Joseph~E. Gonzalez, Ion Stoica, and
+  Eric~P. Xing.
+\newblock Vicuna: An open-source chatbot impressing gpt-4 with 90\%* chatgpt
+  quality, March 2023.
+\newblock URL \url{https://lmsys.org/blog/2023-03-30-vicuna/}.
+
+\bibitem[Devlin et~al.(2019)Devlin, Chang, Lee, and Toutanova]{devlin2018bert}
+Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova.
+\newblock {BERT}: Pre-training of deep bidirectional transformers for language
+  understanding.
+\newblock In \emph{Proceedings of the 2019 Conference of the North {A}merican
+  Chapter of the Association for Computational Linguistics: Human Language
+  Technologies, Volume 1 (Long and Short Papers)}, pp.\  4171--4186,
+  Minneapolis, Minnesota, 2019. Association for Computational Linguistics.
+\newblock \doi{10.18653/v1/N19-1423}.
+\newblock URL \url{https://aclanthology.org/N19-1423}.
+
+\bibitem[Ding et~al.(2023)Ding, Chen, Xu, Qin, Zheng, Hu, Liu, Sun, and
+  Zhou]{ding2023enhancing}
+Ning Ding, Yulin Chen, Bokai Xu, Yujia Qin, Zhi Zheng, Shengding Hu, Zhiyuan
+  Liu, Maosong Sun, and Bowen Zhou.
+\newblock Enhancing chat language models by scaling high-quality instructional
+  conversations.
+\newblock \emph{arXiv preprint arXiv:2305.14233}, 2023.
+
+\bibitem[Gao et~al.(2023)Gao, Ji, Zhou, Lin, Chen, Fan, and
+  Shou]{gao2023assistgpt}
+Difei Gao, Lei Ji, Luowei Zhou, Kevin~Qinghong Lin, Joya Chen, Zihan Fan, and
+  Mike~Zheng Shou.
+\newblock Assistgpt: A general multi-modal assistant that can plan, execute,
+  inspect, and learn.
+\newblock \emph{arXiv preprint arXiv:2306.08640}, 2023.
+
+\bibitem[Gupta \& Kembhavi(2023)Gupta and Kembhavi]{gupta2023visual}
+Tanmay Gupta and Aniruddha Kembhavi.
+\newblock Visual programming: Compositional visual reasoning without training.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision
+  and Pattern Recognition}, pp.\  14953--14962, 2023.
+
+\bibitem[Hao et~al.(2023)Hao, Liu, Wang, and Hu]{hao2023toolkengpt}
+Shibo Hao, Tianyang Liu, Zhen Wang, and Zhiting Hu.
+\newblock Toolkengpt: Augmenting frozen language models with massive tools via
+  tool embeddings.
+\newblock \emph{arXiv preprint arXiv:2305.11554}, 2023.
+
+\bibitem[Huang et~al.(2022{\natexlab{a}})Huang, Abbeel, Pathak, and
+  Mordatch]{huang2022language}
+Wenlong Huang, Pieter Abbeel, Deepak Pathak, and Igor Mordatch.
+\newblock Language models as zero-shot planners: Extracting actionable
+  knowledge for embodied agents.
+\newblock In Kamalika Chaudhuri, Stefanie Jegelka, Le~Song, Csaba
+  Szepesv{\'{a}}ri, Gang Niu, and Sivan Sabato (eds.), \emph{International
+  Conference on Machine Learning, {ICML} 2022, 17-23 July 2022, Baltimore,
+  Maryland, {USA}}, volume 162 of \emph{Proceedings of Machine Learning
+  Research}, pp.\  9118--9147. {PMLR}, 2022{\natexlab{a}}.
+
+\bibitem[Huang et~al.(2022{\natexlab{b}})Huang, Xia, Xiao, Chan, Liang,
+  Florence, Zeng, Tompson, Mordatch, Chebotar, et~al.]{huang2022inner}
+Wenlong Huang, Fei Xia, Ted Xiao, Harris Chan, Jacky Liang, Pete Florence, Andy
+  Zeng, Jonathan Tompson, Igor Mordatch, Yevgen Chebotar, et~al.
+\newblock Inner monologue: Embodied reasoning through planning with language
+  models.
+\newblock \emph{ArXiv preprint}, abs/2207.05608, 2022{\natexlab{b}}.
+
+\bibitem[J{\"a}rvelin \& Kek{\"a}l{\"a}inen(2002)J{\"a}rvelin and
+  Kek{\"a}l{\"a}inen]{jarvelin2002cumulated}
+Kalervo J{\"a}rvelin and Jaana Kek{\"a}l{\"a}inen.
+\newblock Cumulated gain-based evaluation of ir techniques.
+\newblock \emph{ACM Transactions on Information Systems (TOIS)}, 20\penalty0
+  (4):\penalty0 422--446, 2002.
+
+\bibitem[Jin et~al.(2023)Jin, Yang, Chen, and Lu]{jin2023genegpt}
+Qiao Jin, Yifan Yang, Qingyu Chen, and Zhiyong Lu.
+\newblock Genegpt: Augmenting large language models with domain tools for
+  improved access to biomedical information.
+\newblock \emph{ArXiv}, 2023.
+
+\bibitem[Li et~al.(2023{\natexlab{a}})Li, Song, Yu, Yu, Li, Huang, and
+  Li]{li2023api}
+Minghao Li, Feifan Song, Bowen Yu, Haiyang Yu, Zhoujun Li, Fei Huang, and
+  Yongbin Li.
+\newblock Api-bank: A benchmark for tool-augmented llms.
+\newblock \emph{arXiv preprint arXiv:2304.08244}, 2023{\natexlab{a}}.
+
+\bibitem[Li et~al.(2023{\natexlab{b}})Li, Zhang, Dubois, Taori, Gulrajani,
+  Guestrin, Liang, and Hashimoto]{alpaca_eval}
+Xuechen Li, Tianyi Zhang, Yann Dubois, Rohan Taori, Ishaan Gulrajani, Carlos
+  Guestrin, Percy Liang, and Tatsunori~B. Hashimoto.
+\newblock Alpacaeval: An automatic evaluator of instruction-following models.
+\newblock \url{https://github.com/tatsu-lab/alpaca_eval}, 2023{\natexlab{b}}.
+
+\bibitem[Mishra et~al.(2022)Mishra, Khashabi, Baral, and
+  Hajishirzi]{mishra2022cross}
+Swaroop Mishra, Daniel Khashabi, Chitta Baral, and Hannaneh Hajishirzi.
+\newblock Cross-task generalization via natural language crowdsourcing
+  instructions.
+\newblock In \emph{Proceedings of the 60th Annual Meeting of the Association
+  for Computational Linguistics (Volume 1: Long Papers)}, pp.\  3470--3487,
+  2022.
+
+\bibitem[Nakano et~al.(2021)Nakano, Hilton, Balaji, Wu, Ouyang, Kim, Hesse,
+  Jain, Kosaraju, Saunders, et~al.]{nakano2021webgpt}
+Reiichiro Nakano, Jacob Hilton, Suchir Balaji, Jeff Wu, Long Ouyang, Christina
+  Kim, Christopher Hesse, Shantanu Jain, Vineet Kosaraju, William Saunders,
+  et~al.
+\newblock Webgpt: Browser-assisted question-answering with human feedback.
+\newblock \emph{ArXiv preprint}, abs/2112.09332, 2021.
+
+\bibitem[OpenAI(2022)]{openaichatgptblog}
+OpenAI.
+\newblock Open{AI}: Introducing {ChatGPT}, 2022.
+\newblock URL \url{https://openai.com/blog/chatgpt}.
+
+\bibitem[OpenAI(2023)]{openai2023gpt4}
+OpenAI.
+\newblock Gpt-4 technical report, 2023.
+
+\bibitem[Patil et~al.(2023)Patil, Zhang, Wang, and Gonzalez]{patil2023gorilla}
+Shishir~G Patil, Tianjun Zhang, Xin Wang, and Joseph~E Gonzalez.
+\newblock Gorilla: Large language model connected with massive apis.
+\newblock \emph{arXiv preprint arXiv:2305.15334}, 2023.
+
+\bibitem[Penedo et~al.(2023)Penedo, Malartic, Hesslow, Cojocaru, Cappelli,
+  Alobeidli, Pannier, Almazrouei, and Launay]{penedo2023refinedweb}
+Guilherme Penedo, Quentin Malartic, Daniel Hesslow, Ruxandra Cojocaru,
+  Alessandro Cappelli, Hamza Alobeidli, Baptiste Pannier, Ebtesam Almazrouei,
+  and Julien Launay.
+\newblock The refinedweb dataset for falcon llm: outperforming curated corpora
+  with web data, and web data only.
+\newblock \emph{arXiv preprint arXiv:2306.01116}, 2023.
+
+\bibitem[Qian et~al.(2023)Qian, Han, Fung, Qin, Liu, and Ji]{qian2023creator}
+Cheng Qian, Chi Han, Yi~R Fung, Yujia Qin, Zhiyuan Liu, and Heng Ji.
+\newblock Creator: Disentangling abstract and concrete reasonings of large
+  language models through tool creation.
+\newblock \emph{arXiv preprint arXiv:2305.14318}, 2023.
+
+\bibitem[Qin et~al.(2023{\natexlab{a}})Qin, Cai, Jin, Yan, Liang, Zhu, Lin,
+  Han, Ding, Wang, et~al.]{qin2023webcpm}
+Yujia Qin, Zihan Cai, Dian Jin, Lan Yan, Shihao Liang, Kunlun Zhu, Yankai Lin,
+  Xu~Han, Ning Ding, Huadong Wang, et~al.
+\newblock Webcpm: Interactive web search for chinese long-form question
+  answering.
+\newblock \emph{arXiv preprint arXiv:2305.06849}, 2023{\natexlab{a}}.
+
+\bibitem[Qin et~al.(2023{\natexlab{b}})Qin, Hu, Lin, Chen, Ding, Cui, Zeng,
+  Huang, Xiao, Han, et~al.]{qin2023tool}
+Yujia Qin, Shengding Hu, Yankai Lin, Weize Chen, Ning Ding, Ganqu Cui, Zheni
+  Zeng, Yufei Huang, Chaojun Xiao, Chi Han, et~al.
+\newblock Tool learning with foundation models.
+\newblock \emph{arXiv preprint arXiv:2304.08354}, 2023{\natexlab{b}}.
+
+\bibitem[Reimers \& Gurevych(2019)Reimers and Gurevych]{reimers2019sentence}
+Nils Reimers and Iryna Gurevych.
+\newblock Sentence-bert: Sentence embeddings using siamese bert-networks.
+\newblock \emph{arXiv preprint arXiv:1908.10084}, 2019.
+
+\bibitem[Robertson et~al.(2009)Robertson, Zaragoza,
+  et~al.]{robertson2009probabilistic}
+Stephen Robertson, Hugo Zaragoza, et~al.
+\newblock The probabilistic relevance framework: Bm25 and beyond.
+\newblock \emph{Foundations and Trends{\textregistered} in Information
+  Retrieval}, 3\penalty0 (4):\penalty0 333--389, 2009.
+
+\bibitem[Schick et~al.(2023)Schick, Dwivedi-Yu, Dess{\`\i}, Raileanu, Lomeli,
+  Zettlemoyer, Cancedda, and Scialom]{schick2023toolformer}
+Timo Schick, Jane Dwivedi-Yu, Roberto Dess{\`\i}, Roberta Raileanu, Maria
+  Lomeli, Luke Zettlemoyer, Nicola Cancedda, and Thomas Scialom.
+\newblock Toolformer: Language models can teach themselves to use tools.
+\newblock \emph{ArXiv preprint}, abs/2302.04761, 2023.
+
+\bibitem[Shen et~al.(2023)Shen, Song, Tan, Li, Lu, and
+  Zhuang]{shen2023hugginggpt}
+Yongliang Shen, Kaitao Song, Xu~Tan, Dongsheng Li, Weiming Lu, and Yueting
+  Zhuang.
+\newblock Hugginggpt: Solving ai tasks with chatgpt and its friends in
+  huggingface, 2023.
+
+\bibitem[Shinn et~al.(2023)Shinn, Cassano, Labash, Gopinath, Narasimhan, and
+  Yao]{shinn2023reflexion}
+Noah Shinn, Federico Cassano, Beck Labash, Ashwin Gopinath, Karthik Narasimhan,
+  and Shunyu Yao.
+\newblock Reflexion: Language agents with verbal reinforcement learning, 2023.
+
+\bibitem[Song et~al.(2023)Song, Xiong, Zhu, Li, Wang, Tian, and
+  Li]{song2023restgpt}
+Yifan Song, Weimin Xiong, Dawei Zhu, Cheng Li, Ke~Wang, Ye~Tian, and Sujian Li.
+\newblock Restgpt: Connecting large language models with real-world
+  applications via restful apis.
+\newblock \emph{arXiv preprint arXiv:2306.06624}, 2023.
+
+\bibitem[Tang et~al.(2023)Tang, Deng, Lin, Han, Liang, and
+  Sun]{tang2023toolalpaca}
+Qiaoyu Tang, Ziliang Deng, Hongyu Lin, Xianpei Han, Qiao Liang, and Le~Sun.
+\newblock Toolalpaca: Generalized tool learning for language models with 3000
+  simulated cases.
+\newblock \emph{arXiv preprint arXiv:2306.05301}, 2023.
+
+\bibitem[Taori et~al.(2023)Taori, Gulrajani, Zhang, Dubois, Li, Guestrin,
+  Liang, and Hashimoto]{alpaca}
+Rohan Taori, Ishaan Gulrajani, Tianyi Zhang, Yann Dubois, Xuechen Li, Carlos
+  Guestrin, Percy Liang, and Tatsunori~B. Hashimoto.
+\newblock Stanford alpaca: An instruction-following llama model.
+\newblock \url{https://github.com/tatsu-lab/stanford_alpaca}, 2023.
+
+\bibitem[Touvron et~al.(2023{\natexlab{a}})Touvron, Lavril, Izacard, Martinet,
+  Lachaux, Lacroix, Rozi{\`e}re, Goyal, Hambro, Azhar, Rodriguez, Joulin,
+  Grave, and Lample]{touvron2023llama}
+Hugo Touvron, Thibaut Lavril, Gautier Izacard, Xavier Martinet, Marie-Anne
+  Lachaux, Timoth{\'e}e Lacroix, Baptiste Rozi{\`e}re, Naman Goyal, Eric
+  Hambro, Faisal Azhar, Aurelien Rodriguez, Armand Joulin, Edouard Grave, and
+  Guillaume Lample.
+\newblock Llama: Open and efficient foundation language models.
+\newblock \emph{arXiv preprint arXiv:2302.13971}, 2023{\natexlab{a}}.
+
+\bibitem[Touvron et~al.(2023{\natexlab{b}})Touvron, Martin, Stone, Albert,
+  Almahairi, Babaei, Bashlykov, Batra, Bhargava, Bhosale,
+  et~al.]{touvron2023llama2}
+Hugo Touvron, Louis Martin, Kevin Stone, Peter Albert, Amjad Almahairi, Yasmine
+  Babaei, Nikolay Bashlykov, Soumya Batra, Prajjwal Bhargava, Shruti Bhosale,
+  et~al.
+\newblock Llama 2: Open foundation and fine-tuned chat models.
+\newblock \emph{arXiv preprint arXiv:2307.09288}, 2023{\natexlab{b}}.
+
+\bibitem[Vemprala et~al.(2023)Vemprala, Bonatti, Bucker, and
+  Kapoor]{vemprala2023chatgpt}
+Sai Vemprala, Rogerio Bonatti, Arthur Bucker, and Ashish Kapoor.
+\newblock Chatgpt for robotics: Design principles and model abilities.
+\newblock Technical Report MSR-TR-2023-8, Microsoft, February 2023.
+
+\bibitem[Wang et~al.(2022)Wang, Kordi, Mishra, Liu, Smith, Khashabi, and
+  Hajishirzi]{wang2022self}
+Yizhong Wang, Yeganeh Kordi, Swaroop Mishra, Alisa Liu, Noah~A Smith, Daniel
+  Khashabi, and Hannaneh Hajishirzi.
+\newblock Self-instruct: Aligning language model with self generated
+  instructions.
+\newblock \emph{arXiv preprint arXiv:2212.10560}, 2022.
+
+\bibitem[Wei et~al.(2021)Wei, Bosma, Zhao, Guu, Yu, Lester, Du, Dai, and
+  Le]{wei2021finetuned}
+Jason Wei, Maarten Bosma, Vincent~Y Zhao, Kelvin Guu, Adams~Wei Yu, Brian
+  Lester, Nan Du, Andrew~M Dai, and Quoc~V Le.
+\newblock Finetuned language models are zero-shot learners.
+\newblock \emph{arXiv preprint arXiv:2109.01652}, 2021.
+
+\bibitem[Wei et~al.(2023)Wei, Wang, Schuurmans, Bosma, Ichter, Xia, Chi, Le,
+  and Zhou]{wei2023chainofthought}
+Jason Wei, Xuezhi Wang, Dale Schuurmans, Maarten Bosma, Brian Ichter, Fei Xia,
+  Ed~Chi, Quoc Le, and Denny Zhou.
+\newblock Chain-of-thought prompting elicits reasoning in large language
+  models, 2023.
+
+\bibitem[Wu et~al.(2023)Wu, Yin, Qi, Wang, Tang, and Duan]{wu2023visual}
+Chenfei Wu, Shengming Yin, Weizhen Qi, Xiaodong Wang, Zecheng Tang, and Nan
+  Duan.
+\newblock Visual chatgpt: Talking, drawing and editing with visual foundation
+  models.
+\newblock \emph{ArXiv preprint}, abs/2303.04671, 2023.
+
+\bibitem[Xu et~al.(2023{\natexlab{a}})Xu, Sun, Zheng, Geng, Zhao, Feng, Tao,
+  and Jiang]{xu2023wizardlm}
+Can Xu, Qingfeng Sun, Kai Zheng, Xiubo Geng, Pu~Zhao, Jiazhan Feng, Chongyang
+  Tao, and Daxin Jiang.
+\newblock Wizardlm: Empowering large language models to follow complex
+  instructions, 2023{\natexlab{a}}.
+
+\bibitem[Xu et~al.(2023{\natexlab{b}})Xu, Hong, Li, Hu, Chen, and
+  Zhang]{xu2023tool}
+Qiantong Xu, Fenglu Hong, Bo~Li, Changran Hu, Zhengyu Chen, and Jian Zhang.
+\newblock On the tool manipulation capability of open-source large language
+  models.
+\newblock \emph{arXiv preprint arXiv:2305.16504}, 2023{\natexlab{b}}.
+
+\bibitem[Yang et~al.(2023)Yang, Chen, Li, Ding, and Wu]{yang2023chatgpt}
+Linyao Yang, Hongyang Chen, Zhao Li, Xiao Ding, and Xindong Wu.
+\newblock Chatgpt is not enough: Enhancing large language models with knowledge
+  graphs for fact-aware language modeling.
+\newblock \emph{arXiv preprint arXiv:2306.11489}, 2023.
+
+\bibitem[Yao et~al.(2022)Yao, Zhao, Yu, Du, Shafran, Narasimhan, and
+  Cao]{yao2022react}
+Shunyu Yao, Jeffrey Zhao, Dian Yu, Nan Du, Izhak Shafran, Karthik Narasimhan,
+  and Yuan Cao.
+\newblock React: Synergizing reasoning and acting in language models.
+\newblock \emph{ArXiv preprint}, abs/2210.03629, 2022.
+
+\bibitem[Yao et~al.(2023)Yao, Yu, Zhao, Shafran, Griffiths, Cao, and
+  Narasimhan]{yao2023tree}
+Shunyu Yao, Dian Yu, Jeffrey Zhao, Izhak Shafran, Thomas~L Griffiths, Yuan Cao,
+  and Karthik Narasimhan.
+\newblock Tree of thoughts: Deliberate problem solving with large language
+  models.
+\newblock \emph{arXiv preprint arXiv:2305.10601}, 2023.
+
+\bibitem[Ye et~al.(2023)Ye, Cong, Qin, Lin, Liu, and Sun]{ye2023large}
+Yining Ye, Xin Cong, Yujia Qin, Yankai Lin, Zhiyuan Liu, and Maosong Sun.
+\newblock Large language model as autonomous decision maker.
+\newblock \emph{arXiv preprint arXiv:2308.12519}, 2023.
+
+\bibitem[Zhuang et~al.(2023)Zhuang, Yu, Wang, Sun, and Zhang]{zhuang2023toolqa}
+Yuchen Zhuang, Yue Yu, Kuan Wang, Haotian Sun, and Chao Zhang.
+\newblock Toolqa: A dataset for llm question answering with external tools.
+\newblock \emph{arXiv preprint arXiv:2306.13304}, 2023.
+
+\end{thebibliography}

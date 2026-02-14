@@ -1,0 +1,316 @@
+\section{Experiments}
+\label{sec:exp_toolllama}
+In this section, we investigate the performance of ToolLLM framework. We first introduce the evaluation metric and evaluate the efficacy of API retriever and \dfs in \cref{sec:prelim_exp}. Then we present the main experiments in \cref{sec:main_exp}, followed by a generalization experiment in \cref{sec:ood_exp}.
+
+\subsection{Preliminary Experiments}
+\label{sec:prelim_exp}
+
+\textbf{ToolEval} \quad
+Considering the API's temporal variability on RapidAPI and the infinite potential solution paths for an instruction, it is infeasible to annotate a fixed ground-truth solution path for each test instruction. Moreover, when comparing different models, it is crucial to ensure they employ the same version of APIs during evaluation.
+Considering that human evaluation can be time-consuming, we follow AlpacaEval~\citep{alpaca_eval} to develop an efficient evaluator \textbf{ToolEval} based on \turbo, which incorporates two evaluation metrics (details in \cref{sec:details_tooleval}): (1) \textbf{Pass Rate}: it calculates the proportion of successfully completing an instruction within limited budgets. The metric measures the executability of instructions for an LLM and can be seen as a basic requirement for ideal tool use; and (2) \textbf{Win Rate}: we provide an instruction and two solution paths to \turbo evaluator and obtain its preference (i.e., which one is better). We pre-define a set of criteria for both metrics and these criteria are organized as prompts for our \turbo evaluator. We evaluate multiple times based on \turbo to improve the reliability. Then we calculate the average results from the evaluator.
+
+Through rigorous testing (details in \cref{sec:details_tooleval}), we find that ToolEval demonstrates a high agreement of $87.1\%$ in pass rate and $80.3\%$ in win rate with human annotators. This shows that ToolEval can reflect and represent human evaluation to a large extent.
+% We also obtain the agreement (see Appendix \ref{sec:details_of_metrics_for_evaluator}) among different human annotators ($\textbf{83.54\%}$), and the agreement between humans and our evaluator ($\textbf{80.21\%}$).
+
+\textbf{Efficacy of API Retriever} \quad
+The API retriever aims to retrieve relevant APIs to an instruction. We employ Sentence-BERT~\citep{reimers2019sentence} to train a dense retriever based on BERT-BASE~\citep{devlin2018bert}. The API retriever encodes the instruction and API document into two embeddings, and 
+calculates their relevance with embedding similarity. For training, we regard the relevant APIs of each instruction generated in \cref{sec:instruction_generation} as positive examples and sample a few other APIs as negative examples for contrastive learning.
+% We chose bert-base as our base model for the dense passage retrieval method. We set the sequence length as 256, batch size as 32, and trained 5 epochs. 
+For baselines, we choose BM25~\citep{robertson2009probabilistic} and OpenAI's \textit{text-embedding-ada-002} (\textcolor{blue}{\href{https://openai.com/blog/new-and-improved-embedding-model}{link}}). We evaluate the retrieval performance using NDCG~\citep{jarvelin2002cumulated}.
+We train and evaluate our model on single-tool instructions (I1), intra-category multi-tool instructions (I2), and intra-collection multi-tool instructions (I3).
+
+
+
+% \begin{table}[!t]
+% \centering
+% \resizebox{\textwidth}{!}{%
+% \begin{tabular}{c|ccc|ccc|ccc}
+% \hline
+% \multicolumn{1}{c|}{\multirow{2}{*}{Instruction}} & \multicolumn{3}{c|}{\underline{API Retriever (ours)}} & \multicolumn{3}{c|}{\underline{BM25}} & \multicolumn{3}{c}{\underline{Ada Embedding}} \\
+% \multicolumn{1}{c|}{} & NDCG1 & NDCG3 & NDCG5 & NDCG1 & NDCG3 & NDCG5 & NDCG1 & NDCG3 & NDCG5 \\
+% \hline
+% Single-tool (I1) & $88.83$ & $91.54$ & $92.31$ & $24.59$ & $20.66$ & $19.86$ & $64.49$ & $60.74$ & $60.49$ \\
+% Category (I2) & $78.32$ & $86.31$ & $85.84$ & $15.46$ & $11.63$ & $10.20$ & $46.42$ & $34.98$ & $30.71$ \\
+% Collection (I3) & $69.72$ & $80.68$ & $81.72$ & $26.38$ & $20.34$ & $17.08$ & $59.17$ & $49.72$ & $44.22$ \\
+% All & $82.42$ & $87.06$ & $87.18$ & $19.78$ & $15.96$ & $14.83$ & $53.34$ & $46.72$ & $44.30$ \\
+% \hline
+% \end{tabular}%
+% }
+% \caption{
+% \small{We compare our API retriever with two baselines (BM25 and Ada Embeddings) on single-tool, intra-category multi-tool, intra-collection multi-tool instructions, and the whole data,respectively.}
+% }
+% \label{tab:IR}
+% \end{table}
+
+
+\begin{table}[!t]
+\centering
+% Start the first minipage
+\begin{minipage}[t]{0.57\linewidth}  % Adjust the width of this minipage as required
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{ccccccccc}
+\toprule
+\multicolumn{1}{c}{\multirow{2}{*}{\textbf{Method}}} & \multicolumn{2}{c}{\underline{\textbf{I1}}} & \multicolumn{2}{c}{\underline{\textbf{I2}}} & \multicolumn{2}{c}{\underline{\textbf{I3}}} & \multicolumn{2}{c}{\underline{\textbf{Average}}} \\
+\multicolumn{1}{c}{} & \multicolumn{2}{c}{\textbf{NDCG}} & \multicolumn{2}{c}{\textbf{NDCG}} & \multicolumn{2}{c}{\textbf{NDCG}} & \multicolumn{2}{c}{\textbf{NDCG}} \\
+% NDCG5 & NDCG1 & NDCG5 & NDCG1 & NDCG5 
+\multicolumn{1}{c}{} & \textbf{@1} & \textbf{@5} & \textbf{@1} & \textbf{@5} & \textbf{@1} & \textbf{@5} & \textbf{@1} & \textbf{@5} \\
+\toprule
+BM25 & $18.4$ & $19.7$ & $12.0$ & $11.0$ & $25.2$ & $20.4$ & $18.5$ & $17.0$ \\
+Ada & $\underline{57.5}$ & $\underline{58.8}$ & $\underline{36.8}$ & $\underline{30.7}$ & $\underline{54.6}$  & $\underline{46.8}$ & $\underline{49.6}$ & $\underline{45.4}$ \\
+Ours & $\textbf{84.2}$ & $\textbf{89.7}$ & $\textbf{68.2}$ & $\textbf{77.9}$ & $\textbf{81.7}$ & $\textbf{87.1}$ & $\textbf{78.0}$ &  $\textbf{84.9}$\\
+\bottomrule
+\end{tabular}%
+}
+\caption{
+\small{Our API retriever v.s. two baselines for three types of instructions (I1, I2, I3). We report NDCG@1 and NDCG@5.}
+}
+\label{tab:IR}
+\end{minipage}
+\hfill  % Creates a space between the two minipages
+% Start the second minipage
+\begin{minipage}[t]{0.39\linewidth}  % Adjust the width of this minipage as required
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{crrrr}
+\toprule
+Method                  & \underline{\textbf{I1}}    & \underline{\textbf{I2}}    & \underline{\textbf{I3}}    & \underline{\textbf{Average}}   \\ \toprule
+ReACT                     & $37.8$ & $40.6$ & $27.6$ & $35.3$ \\
+ReACT@N & $\underline{49.4}$ & $\underline{49.4}$ & $\underline{34.6}$ & $\underline{44.5}$ \\
+\dfs           & $\textbf{58.0}$ & $\textbf{70.6}$ & $\textbf{62.8}$ & $\textbf{63.8}$ \\ \bottomrule
+\end{tabular}
+}
+\caption{
+\small{Pass rate of different reasoning strategies for three types of instructions (I1, I2, I3) based on \turbo. 
+% ReACT@N and \dfs consume nearly the same budgets.
+}
+}
+\label{tab:dfsdt_vs_react}
+\end{minipage}
+\end{table}
+
+% \begin{table}[!t]
+% \centering
+% \resizebox{\textwidth}{!}{%
+% \begin{tabular}{c|ccc|ccc|ccc}
+% \hline
+% \multicolumn{1}{c|}{\multirow{2}{*}{Instruction}} & \multicolumn{3}{c|}{\underline{API Retriever (ours)}} & \multicolumn{3}{c|}{\underline{BM25}} & \multicolumn{3}{c}{\underline{Ada Embedding}} \\
+% \multicolumn{1}{c|}{} & NDCG1 & NDCG3 & NDCG5 & NDCG1 & NDCG3 & NDCG5 & NDCG1 & NDCG3 & NDCG5 \\
+% \hline
+% Single-tool (I1) & $84.20$ & $89.59$ & $89.65$ & $18.37$ & $17.97$ & $19.65$ & $57.52$ & $54.90$ & $58.83$ \\
+% Category (I2) & $68.24$ & $77.43$ & $77.90$ & $11.97$ & $9.85$ & $10.95$ & $36.82$ & $28.83$ & $30.68$ \\
+% Collection (I3) & $81.65$ & $87.24$ & $87.13$ & $25.23$ & $18.95$ & $20.37$ & $54.59$ & $42.55$ & $46.83$ \\
+% % All & $75.73$ & $83.19$ & $83.06$ & $15.84$ & $13.98$ & $15.63$ & $46.59$ & $41.06$ & $43.95$ \\
+% \hline
+% \end{tabular}%
+% }
+% \caption{
+% \small{We compare our API retriever with two baselines (BM25 and Ada Embeddings) on single-tool, intra-category multi-tool, and intra-collection multi-tool instructions, respectively.}
+% }
+% \label{tab:IR}
+% \end{table}
+
+% \begin{table}[!t]
+% \centering
+% \small
+% \begin{tabular}{lcccc}
+% \hline
+% Method                  & Single-tool (I1)    & Category (I2)    & Collection (I3)    & Average   \\ \hline
+% ReACT                     & $43.98$ & $23.62$ & $20.42$ & $29.34$ \\
+% ReACT@N & $50.80$ & $36.14$ & $32.87$ & $39.94$ \\
+% \dfs           & $\textbf{54.10}$ & $\textbf{47.35}$ & $\textbf{44.80}$ & $\textbf{48.75}$ \\ \hline
+% \end{tabular}
+% \caption{
+% \small{Pass rate of different reasoning strategies for three types of instructions (I1, I2, I3) based on \turbo. ReACT@N and \dfs consume nearly the same OpenAI API calls per instruction.}
+% }
+% \label{tab:dfsdt_vs_react}
+% \end{table}
+
+As shown in Table~\ref{tab:IR}, our API retriever consistently outperforms baselines across all settings, indicating its feasibility in real-world scenarios with massive APIs. Also, the NDCG score of I1 is generally higher than I2 and I3, which means single-tool instruction retrieval is simpler than multi-tool setting.
+
+\textbf{Superiority of \dfs over ReACT} \quad
+Before solution path annotation, we validate the efficacy of \dfs.
+Based on \turbo, we compare \dfs and ReACT using the pass rate metric. Since \dfs consumes more OpenAI API calls than ReACT, for a fairer comparison, we also establish a ``ReACT@N'' baseline, which conducts multiple times of ReACT until the total costs reach the same level of \dfs. 
+Once a valid solution is found by ReACT@N, we deem it a pass.
+
+From Table~\ref{tab:dfsdt_vs_react}, it can be observed that \dfs significantly outperforms the two baselines in all scenarios. Since we only retain those passed annotations as the training data, given the same budgets, using \dfs could annotate more instructions. This makes \dfs a more efficient way that saves the total annotation cost.
+We also find that the performance improvement of \dfs is more evident for harder instructions (i.e., I2 and I3) than those simpler instructions (I1). This means that by expanding the search space, \dfs can better solve those difficult, complex instructions that are unanswerable by the vanilla ReACT no matter how many times it is performed. Involving such ``hard examples'' in our dataset can fully elicit the tool-use capabilities for those complex scenarios.
+
+\subsection{Main Experiments}
+\label{sec:main_exp}
+
+\textbf{ToolLLaMA} \quad
+We fine-tune LLaMA-2 7B model~\citep{touvron2023llama2} using the instruction-solution pairs. The original LLaMA-2 model has a sequence length of $4096$, which is not enough under our setting since the API response can be very long. To this end, we use positional interpolation~\citep{chen2023extending} to extend the context length to $8192$ (training details in \cref{details_training_toolllama}).
+
+\textbf{Settings} \quad
+Ideally, by scaling the number and diversity of instructions and unique tools in the training data, \ourmodel is expected to generalize to new instructions and APIs unseen during training. This is meaningful since users can define customized APIs and expect \ourmodel to adapt according to the documentation.
+To this end, we strive to evaluate the \textbf{generalization ability} of \ourmodel at three levels: (1) \textbf{Inst.}: \textbf{unseen instructions} for the same set of tools in the training data, (2) \textbf{Tool}: \textbf{unseen tools} that belong to the \textbf{same (seen) category} of the tools in the training data, and (3) \textbf{Cat.}: \textbf{unseen tools} that belong to a \textbf{different (unseen) category} of tools in the training data.
+
+We perform experiments on three scenarios: single-tool instructions (I1), intra-category multi-tool instructions (I2), and intra-collection multi-tool instructions (I3). For I1, we conduct the evaluation for the aforementioned three levels (I1-Inst., I1-Tool, and I1-Cat.); for I2, since the training instructions already involve different tools of the same category, we only perform level 1 and level 3 for the generalization evaluation (I2-Inst. and I2-Cat.); similarly, we only perform level 1 generalization for I3 (I3-Inst.) since it already covers instructions that involve various combinations of tools from different categories (the tools in a RapidAPI collection may come from different RapidAPI categories).
+For each test instruction, we feed the ground-truth (oracle) APIs $\sS_\text{N}^{\text{sub}}$ to each model. This simulates the scenario where the user specifies the API set they prefer.
+% After that, we incorporate the documentation of each API into the input prompt of different models. The models would perform multiple rounds of reasoning and API call and ultimately derive the final response.
+% For I1 and I2, we randomly select $6$ categories as the testing categories, leaving the remaining $43$ categories for training.
+
+% Specifically, in the I1 scenario, where only one tool is used in one instance, we adopt an 8:1:1 ratio to divide the tools within each training category into training, validation, and testing tools. 
+% Subsequently, the instances in each training tool is further split in a 1:1:1 ratio to form the training, validation, and testing instances. 
+% The \textit{I1-training set} is composed by gathering the training instances from all training tools across all training categories. 
+% To test the instruction generalization ability of Tool-LLaMA, we construct \textit{I1-instruction-generalization} test set, which is formed by sampling 100 testing instances from the training tools within the training categories.
+% To test the model's generalization abilities on unseen tools from seen categories, we construct the \textit{I1-tool-generalization} test set which consists of 100 instances from the testing tools within the training categories. 
+% And to test on unseen tools from unseen categories, we construct \textit{I1-category-generalization} test set, which comprises 100 testing instances from the testing categories.
+
+% In the I2 scenario, where several tools within the same category are used to construct an instance, we opt not to distinguish between training, validation, and testing tools in the training categories.
+% Instead, we merge all data from the training categories and split it in a 30:1 ratio to create the training and validation sets. 
+% For the test set in this scenario, we sample 100 instances from the testing categories, referred to as the \textit{I2-category-generalization} test set.
+% In I3, since each instance includes APIs from different tools and categories, we do not designate specific training and testing categories. Instead, we directly split all the instances approximately in an 8:1:1 ratio to construct the training, validation, and test set. We consider the test set as \textit{I3-instruction-generalization} test set
+\textbf{Baselines} \quad
+We choose two LLaMA variants that have been fine-tuned for general-purpose dialogue, i.e., Vicuna~\citep{vicuna2023} and Alpaca~\citep{alpaca}. 
+We also choose the ``teacher model'' \turbo, Text-Davinci-003, GPT-4, and Claude-2 as baselines, and apply both \dfs and ReACT to them. When calculating the win rate, each model is compared with \turbo-ReACT.
+% We conduct sophisticated prompt engineering for both models to elicit the best of their tool-use abilities.
+% Since the original LLaMA checkpoint is not fine-tuned toward any downstream task, it cannot be leveraged to use tools directly. 
+% Both models have shown strong instruction-following capabilities.
+
+\definecolor{themegreen}{HTML}{C5E0B4}
+\definecolor{themeblue}{HTML}{CFE2F3}
+\definecolor{themeyellow}{HTML}{FFE699}
+\definecolor{themedarkyellow}{HTML}{FFBF87}
+
+\newcommand{\femph}[1]{\cellcolor[HTML]{C5E0B4}{#1}}
+\newcommand{\semph}[1]{\cellcolor[HTML]{CFE2F3}{#1}}
+
+\newcommand{\crect}[1]{{\begin{tikzpicture}
+\node[rectangle,
+    draw = themeyellow,
+    fill = themedarkyellow,
+    inner sep=0pt,
+    line width = 0.03cm,
+    minimum width = #1 cm, 
+    minimum height = 0.25 cm] at (0,0) {};
+\end{tikzpicture}} 
+}
+
+\begin{table}[!t]
+    \centering
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{cc|rr|rr|rr|rr|rr|rr|rr}
+    % {c@{~~~}c@{~~~}r@{~~~}r@{~~~}r@{~~~}r@{~~~}r@{~~~}r@{~~~}r@{~~~}r@{~~~}r@{~~~}r@{~~~}r@{~~~}r@{~~~}r@{~~~}r}
+    \toprule
+    \multicolumn{1}{c}{\multirow{2}{*}{\textbf{Model}}} & \multicolumn{1}{c|}{\multirow{2}{*}{\textbf{Method}}} &\multicolumn{2}{c|}{\underline{\textbf{I1-Inst.}}} & \multicolumn{2}{c|}{\underline{\textbf{I1-Tool}}} & \multicolumn{2}{c|}{\underline{\textbf{I1-Cat.}}} & \multicolumn{2}{c|}{\underline{\textbf{I2-Inst.}}} & \multicolumn{2}{c|}{\underline{\textbf{I2-Cat.}}} & \multicolumn{2}{c|}{\underline{\textbf{I3-Inst.}}} & \multicolumn{2}{c}{\underline{\textbf{Average}}} \\
+    \multicolumn{1}{c}{} & \multicolumn{1}{c|}{} & Pass & Win & Pass & Win & Pass & Win & Pass & Win & Pass & Win & Pass & Win & Pass & Win \\
+    \toprule
+    % \ourmodel & $75.0$ & $\textbf{50.0}$ & $68.0$ & $45.0$ & $80.0$ & $45.0$ & $56.0$ & $\textbf{59.0}$ & $47.0$ & $48.0$ & $40.0$ & $46.0$ & $61.0$ & $48.8$ \\
+    % \midrule
+    ChatGPT & ReACT & $41.5$ & - & $44.0$ & - & $44.5$ & - & $42.5$ & - & $46.5$ & - & $22.0$ & - & $40.2$ & -  \\
+    & DFSDT & $54.5$ & $60.5$ & $\underline{65.0}$ & $\underline{62.0}$ & $60.5$ & $57.3$ & $75.0$ & $\underline{72.0}$ & $71.5$ & $\textbf{64.8}$ & $62.0$ & $69.0$ & $64.8$ & $64.3$  \\
+    % \hline
+    Claude-2 & ReACT & $5.5$ & $31.0$ & $3.5$ & $27.8$ & $5.5$ & $33.8$ & $6.0$ & $35.0$ & $6.0$ & $31.5$ & $14.0$ & $47.5$ & $6.8$ & $34.4$  \\
+    & DFSDT & $20.5$ & $38.0$ & $31.0$ & $44.3$ & $18.5$ & $43.3$ & $17.0$ & $36.8$ & $20.5$ & $33.5$ & $28.0$ & $65.0$ & $22.6$ & $43.5$  \\
+    % \hline
+    Text-Davinci-003 & ReACT & $12.0$ & $28.5$ & $20.0$ & $35.3$ & $20.0$ & $31.0$ & $8.5$ & $29.8$ & $14.5$ & $29.8$ & $24.0$ & $45.0$ & $16.5$ & $33.2$  \\
+    & DFSDT & $43.5$ & $40.3$ & $44.0$ & $43.8$ & $46.0$ & $46.8$ & $37.0$ & $40.5$ & $42.0$ & $43.3$ & $46.0$ & $63.0$ & $43.1$ & $46.3$  \\
+    % \hline
+    GPT4 & ReACT & $53.5$ & $60.0$ & $50.0$ & $58.8$ & $53.5$ & $\underline{63.5}$ & $67.0$ & $65.8$ & $72.0$ & $60.3$ & $47.0$ & $\underline{78.0}$ & $57.2$ & $\underline{64.4}$  \\
+    & DFSDT & $\underline{60.0}$ & $\textbf{67.5}$ & $\textbf{71.5}$ & $\textbf{67.8}$ & $\textbf{67.0}$ & $\textbf{66.5}$ & $\underline{79.5}$ & $\textbf{73.3}$ & $\textbf{77.5}$ & $\underline{63.3}$ & $\textbf{71.0}$ & $\textbf{84.0}$ & $\textbf{71.1}$ & $\textbf{70.4}$  \\
+    \midrule
+    Vicuna & ReACT \& DFSDT & $0.0$ & 0.0 & $0.0$ & 0.0 & $0.0$ & 0.0 & $0.0$ & 0.0 & $0.0$ & 0.0 & $0.0$ & 0.0 & $0.0$ & 0.0  \\
+    % \hline
+    Alpaca & ReACT \& DFSDT & $0.0$ & 0.0 & $0.0$ & 0.0 & $0.0$ & 0.0 & $0.0$ & 0.0 & $0.0$ & 0.0 & $0.0$ & 0.0 & $0.0$ & 0.0  \\
+    % \midrule
+     & ReACT & $25.0$ & $45.0$ & $29.0$ & $42.0$ & $33.0$ & $47.5$ & $30.5$ & $50.8$ & $31.5$ & $41.8$ & $25.0$ & $55.0$ & $29.0$ & $47.0$\\
+    ToolLLaMA & DFSDT & $57.0$ & $55.0$ & $61.0$ & $55.3$ & $\underline{62.0}$ & $54.5$ & $77.0$ & $68.5$ & $\underline{77.0}$ & $58.0$ & $\underline{66.0}$ & $69.0$ & $66.7$ & $60.0$ \\
+    & DFSDT-Retriever  & $\textbf{64.0}$ & $\underline{62.3}$ & $64.0$ & $59.0$ & $60.5$ & $55.0$ & $\textbf{81.5}$ & $68.5$ & $68.5$ & $60.8$ & $65.0$ & $73.0$ & $\underline{67.3}$ & $63.1$ \\
+    
+    \bottomrule
+    \end{tabular}%
+    }
+    \caption{
+    \small{Main experiments of \ourdata. Win rate is calculated by comparing each model with ChatGPT-ReACT. A win rate higher than $50\%$ means the model performs better than ChatGPT-ReACT. Apart from ToolLLaMA-DFSDT-Retriever, all methods use the oracle API retriever (i.e., ground truth API).
+    }
+    }
+    \label{tab:main_exp}
+    \end{table}
+
+% , except in the case of ToolLLaMA-DFSDT-Retriever and ToolLLaMA-ReACT, which are compared with ToolLLaMA-DFSDT
+
+\textbf{Main Results} \quad
+The results are placed in Table~\ref{tab:main_exp}, from which we derive that: 
+\begin{enumerate}[topsep=1pt, partopsep=1pt, leftmargin=12pt, itemsep=-1pt]
+    \item Although we conduct prompt engineering extensively, both Vicuna and Alpaca fail to pass any instruction (pass rate \& win rate = 0), which means their instruction-following abilities do not cover the tool-use domain. This underscores \textbf{the deficiency of current instruction tuning attempts}, which largely focus on language skills;
+    \item For all LLMs, using \dfs significantly outperforms ReACT in both pass rate and win rate. Notably, \turbo+\dfs surpasses GPT-4+ReACT in pass rate and performs comparably in win rate. This underscores \textbf{the superiority of \dfs over ReACT} in decision-making;
+    \item When using DFSDT, \ourmodel performs much better than Text-Dainci-003 and Claude-2, and achieves a result almost on par with \turbo (the teacher model). In general, despite generalizing to unseen instructions and tools, \ourmodel+\dfs demonstrates \textbf{competitive generalization performance} in all scenarios, achieving a pass rate second to GPT4+\dfs.
+\end{enumerate}
+Overall, these results demonstrate that \ourdata can sufficiently elicit the tool-use capabilities within LLMs and empower them to skillfully master even unseen APIs for various instructions.
+
+% From Table~\ref{tab:main_exp}, it can be derived that \dfs achieves a significantly higher pass rate and is more preferred across all the scenarios.
+% Besides, compared with the results in Table~\ref{tab:dfsdt_vs_react}, we find that the improvements brought by \dfs over ReACT are more evident for \ourmodel than \turbo, which demonstrates that expanding the search space is more important for LLMs with inferior reasoning capabilities. This finding reveals the potential of applying \dfs to small-scale models in practice.
+
+
+
+
+
+% For the win rate, \ourmodel generally matches ChatGPT+\dfs's capability and even surpasses the latter in the \textbf{I2-Cat.} setting. 
+
+% \begin{table}[!t]
+% \centering
+% \resizebox{\textwidth}{!}{%
+% \begin{tabular}{l|cc|cc|cc|cc|cc|cc|cc}
+% \toprule
+% \multicolumn{1}{c}{\multirow{2}{*}{Model}} & \multicolumn{2}{c|}{\textbf{I1-Inst.}} & \multicolumn{2}{c|}{\textbf{I1-Tool}} & \multicolumn{2}{c|}{\textbf{I1-Cat.}} & \multicolumn{2}{c|}{\textbf{I2-Inst.}} & \multicolumn{2}{c|}{\textbf{I2-Cat.}} & \multicolumn{2}{c|}{\textbf{I3-Inst.}} & \multicolumn{2}{c}{\textbf{Average}} \\
+% \multicolumn{1}{c|}{} & Pass & Win & Pass & Win & Pass & Win & Pass & Win & Pass & Win & Pass & Win & Pass & Win \\
+% \toprule
+% ToolLLaMA & $\underline{57.0}$ & 0.0 & $\underline{61.0}$ & 0.0 & $\textbf{62.0}$ & 0.0 & $\underline{77.0}$ & 0.0 & $\textbf{77.0}$ & 0.0 & $\textbf{66.0}$ & 0.0 & $\underline{66.7}$ & - \\
+% \midrule
+% $\rightarrow$API Retriever  & $\textbf{64.0}$ & $47.0$ & $\textbf{64.0}$ & $42.5$ & $\underline{60.5}$ & $45.0$ & $\textbf{81.5}$ & $43.0$ & $\underline{68.5}$ & $45.0$ & $\underline{65.0}$ & $45.0$ & $\textbf{67.3}$ & $44.6$ \\
+% $\rightarrow$ReACT & $25.0$ & $33.0$ & $29.0$ & $32.5$ & $33.0$ & $31.5$ & $30.5$ & $25.5$ & $31.5$ & $26.5$ & $25.0$ & $29.0$ & $29.0$ & $29.7$\\
+% % $\rightarrow$LoRA & $51.0$ & $\underline{34.0}$ & $\underline{63.0}$ & $\textbf{44.0}$ & $61.0$ & $\underline{39.0}$ & $38.0$ & $\underline{38.0}$ & $42.0$ & $\underline{42.0}$ & $\underline{45.0}$ & $\textbf{54.0}$ & $50.0$ & $\underline{41.8}$\\
+
+% \bottomrule
+% \end{tabular}%
+% }
+% \caption{
+% \small{Additional analyses of \ourmodel: (1) replacing the ground truth APIs with those recommended by our API retriever and (2) degrading the reasoning method from \dfs to ReACT. We compare each variant with the default \ourmodel for win rate.}
+% }
+% \label{tab:sub_exp}
+% \end{table}
+
+\textbf{Integrating API Retriever with \ourmodel} \quad
+In real-world scenarios, asking users to manually recommend APIs from a large pool may not be practical.
+%users may not be able to manually recommend APIs from a large pool. 
+To emulate this practical setting and test the efficiency of our API retriever, we feed the top $5$ APIs (instead of the ground truth APIs $\sS_\text{N}^{\text{sub}}$) recommended by our API retriever to \ourmodel. As shown in Table~\ref{tab:main_exp}, using retrieved APIs even improves the performance (both pass rate and win rate) compared to the ground truth API set.
+This is because many APIs in the ground truth API set can be replaced by other similar APIs with better functionalities, which our API retriever can successfully identify. In other words, \textbf{our retriever expands the search space of relevant APIs and finds more appropriate ones for the current instruction}.
+It provides robust evidence of the excellent ability of our API retriever to retrieve relevant APIs, especially considering the vast pool ($16,000$+) of APIs from which our API retriever selects. 
+
+
+\subsection{Out-of-Distribution (OOD) Generalization to APIBench~\citep{patil2023gorilla}}
+\label{sec:ood_exp}
+
+\textbf{Settings} \quad
+We further extend \ourmodel to an OOD dataset APIBench to validate its generalization ability. To assess the generalization ability of ToolLLaMA in these new domains, we equip \ourmodel with two retrievers: our trained API retriever and the oracle retriever. We evaluate three domains of APIBench, i.e., TorchHub, TensorHub, and HuggingFace. We compare \ourmodel with Gorilla, a LLaMA-7B model fine-tuned using the training data of APIBench. Following the original paper, we adopt two official settings for Gorilla: zero-shot setting (ZS) and retrieval-aware setting (RS). The latter means (RS) the retrieved APIs are sent to the model as part of the prompts; while the former (ZS) does not incorporate the APIs in the prompts when training the model. We adopt the official evaluation metric and report the AST accuracy along with the hallucination rates.
+
+\textbf{Results} \quad
+The results are shown in Table~\ref{gorilla-results}. In general, \ourmodel achieves \textbf{remarkable OOD generalization performance} on all three datasets, despite being trained on a completely different API domain and instruction domain. Specifically, ToolLLaMA+our API retriever outperforms Gorilla+BM25 from both training settings (ZS / RS) in terms of AST accuracy on HuggingFace and TorchHub. With the same oracle retriever, ToolLLaMA is consistently superior when compared to Gorilla-ZS. It should be noted that Gorilla model cannot be generalized to our ToolBench dataset due to our more complex settings, such as the multi-tool use and multi-step reasoning.
+
+% also achieves lower hallucination rates than Gorilla-ZS on all three datasets. When the oracle retriever is employed by both models, ToolLLaMA 
+
+\begin{table}[!t]
+\centering
+\small
+\begin{tabular}{c@{~~~}r@{~~~}r@{~~~}r@{~~~}r@{~~~}r@{~~~}r}
+\midrule
+\multicolumn{1}{c}{\multirow{2}{*}{Method}} & \multicolumn{2}{c} {\underline{HuggingFace}} & \multicolumn{2}{c}{\underline{TorchHub}} & \multicolumn{2}{c}{\underline{TensorHub}} \\
+\multicolumn{1}{c}{} & Hallu. ($\downarrow$) & AST ($\uparrow$) & Hallu. ($\downarrow$) & AST ($\uparrow$) & Hallu. ($\downarrow$) & AST ($\uparrow$) \\
+\midrule 
+ToolLLaMA + Our Retriever & \underline{10.60} &	\textbf{16.77} &	\underline{15.70} &	\textbf{51.16} &	\underline{6.48} &	\underline{40.59} \\
+Gorilla-ZS + BM25 &	46.90 &	10.51 &	17.20 &	44.62 &	20.58 &	34.31 \\
+Gorilla-RS + BM25 & \textbf{6.42} & \underline{15.71} & \textbf{5.91} & \underline{50.00} & \textbf{2.77} & \textbf{41.90} \\
+\midrule
+ToolLLaMA + Oracle & \underline{8.66} &	\underline{88.80} &	\underline{14.12} &	\underline{85.88} &	\underline{7.44} &	\underline{88.62} \\
+Gorilla-ZS + Oracle &	52.88 &	44.36 &	39.25 &	59.14 &	12.99 &	83.21 \\
+Gorilla-RS + Oracle &	\textbf{6.97} &	\textbf{89.27} &	\textbf{6.99} &	\textbf{93.01} &	\textbf{2.04} &	\textbf{94.16} \\
+% ChatGPT-DFSDT + Oracle &	\textbf{4.20} &	\textbf{93.25} &	\textbf{0.00} &	\textbf{100.00} &	\textbf{1.61} &	\textbf{94.45} \\
+\hline
+\end{tabular}
+\caption{
+\small{OOD generalization experiments on APIBench. For the Gorilla entries, ZS / RS means that Gorilla was trained in a zero-shot / retrieval-aware setting on APIBench. We report hallucination rate and AST accuracy.}}
+\label{gorilla-results}
+\end{table}
+% We follow the original paper to include BM25 here.

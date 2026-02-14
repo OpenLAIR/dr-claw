@@ -1,0 +1,222 @@
+% This is based on the LLNCS.DEM the demonstration file of
+% the LaTeX macro package from Springer-Verlag
+% for Lecture Notes in Computer Science,
+% version 2.4 for LaTeX2e as of 16. April 2010
+%
+% See http://www.springer.com/computer/lncs/lncs+authors?SGWID=0-40209-0-0-0
+% for the full guidelines.
+%
+
+
+\documentclass{templates/llncs} %look for file llncs.cls
+
+
+\usepackage{IEEEtrantools}
+
+
+\usepackage{etoolbox}
+\newcommand{\repthanks}[1]{\textsuperscript{\ref{#1}}}
+\makeatletter
+\patchcmd{\maketitle}
+  {\def\thanks}
+  {\let\repthanks\repthanksunskip\def\thanks}
+  {}{}
+\patchcmd{\@maketitle}
+  {\def\thanks}
+  {\let\repthanks\@gobble\def\thanks}
+  {}{}
+\newcommand\repthanksunskip[1]{\unskip{}}
+\makeatother
+\usepackage{hyperref}
+\usepackage{physics}
+%\usepackage{amssymb}
+%\setcounter{tocdepth}{3}
+\usepackage{graphicx}
+\usepackage{gensymb}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{floatrow}
+
+\usepackage{IEEEtrantools}
+\bstctlcite{IEEEexample:BSTcontrol}
+
+\usepackage{multirow}
+% Table float box with bottom caption, box width adjusted to content
+\newfloatcommand{capbtabbox}{table}[][\FBwidth]
+
+\begin{document}
+
+\bstctlcite{IEEEexample:BSTcontrol}
+
+
+	\title{No New-Net}
+
+	
+	
+  \author{Fabian Isensee \inst{1} \and
+    Philipp Kickingereder \inst{2} \and
+    Wolfgang Wick \inst{3} \and
+    Martin Bendszus \inst{2} \and
+    Klaus H. Maier-Hein \inst{1}}
+  \authorrunning{Fabian Isensee et al.} % abbreviated author list (for running head)
+  %
+  %%%% list of authors for the TOC (use if author list has to be modified) 123
+  \tocauthor{**************, **************, **************}
+  %
+    \institute{Division of Medical Image Computing, German Cancer Research Center (DKFZ),\\ Heidelberg, Germany  
+    \and Department of Neuroradiology, University of Heidelberg Medical Center,\\ Heidelberg, Germany
+    \and Neurology Clinic, University of Heidelberg Medical Center,\\ Heidelberg, Germany
+    }
+	
+	\maketitle   % typeset the title of the contribution
+	
+	
+	\begin{abstract}
+	    In this paper we demonstrate the effectiveness of a well trained U-Net in the context of the BraTS 2018 challenge. This endeavour is particularly interesting given that researchers are currently besting each other with architectural modifications that are intended to improve the segmentation performance. We instead focus on the training process, argue that a well trained U-Net is hard to beat and intend to back up this assumption with a strong participation in this years BraTS challenge. Our baseline U-Net, which has only minor modifications and is trained with a large patch size and a dice loss function already achieves competitive dice scores on the BraTS2018 validation data. By incorporating region based training, additional training data and a simple postprocessing technique, we obtain dice scores of 81.01, 90.83 and 85.44 and Hausdorff Distances (95th percentile) of 2.54, 4.97 and 7.04 for the enhancing tumor, whole tumor and tumor core, respectively.
+
+%
+\keywords{CNN, Brain Tumor, Glioblastoma, U-Net, dice loss} 
+\end{abstract}
+	%
+	%
+	\section{Introduction}
+	Quantitative assessment of brain tumors provides valuable information and therefore constitutes an essential part of diagnostic procedures. Automatic segmentation is attractive in this context, as it allows for faster, more objective and potentially more accurate description of relevant tumor parameters, such as the volume of its subregions. Due to the irregular nature of tumors, however, the development of algorithms capable of automatic segmentation remains challenging.
+	
+	The brain tumor segmentation challenge (BraTS) \cite{menze2015multimodal} aims at encouraging the development of state of the art methods for tumor segmentation by providing a large dataset of annotated low grade gliomas (LGG) and high grade glioblastomas (HGG). The BraTS 2018 training dataset, which consists of 210 HGG and 75 LGG cases, was annotated manually by one to four raters and all segmentations were approved by expert raters \cite{bakas_data,bakas_data_2,bakas_data_3}. For each patient a T1 weighted, a post-contrast T1-weighted, a T2-weighted and a FLAIR MRI was provided. The MRI originate from 19 institutions and were acquired with different protocols, magnetic field strengths and MRI scanners. Each tumor was segmented into edema, necrosis and non-enhancing tumor and active/enhancing tumor. The segmentation performance of participating algorithms is measured based on the DICE coefficient, sensitivity, specificity and 95th percentile of Hausdorff distance.
+	
+	It is unchallenged by now that convolutional neural networks (CNNs) dictate the state of the art in biomedical image segmentation \cite{kamnitsas2017efficient,isensee2017brain,li2017h,isensee2017automatic,kamnitsas2017ensembles,wang2017automatic}. As a consequence, all winning contributions to recent BraTS challenges were exclusively build around CNNs. One of the first notably successful neural network for brain tumor segmentation was DeepMedic, a 3D CNN introduced by Kamnitsas et al. \cite{kamnitsas2017efficient}. It comprises a low and a high resolution pathway that capture semantic information at different scales and recombines them to predict a segmentation based on precise local as well as global image information. Kamnitsas et al. later enhanced their architectures with residual connections for BraTS 2016 \cite{kamnitsas2016deepmedic}. 
+	With the success of encoder-decoder architectures for semantic segmentation, such as FCN \cite{long2015fully,chen2018deeplab} and most notably the U-Net \cite{ronneberger2015u}, it is unsurprising that these architectures are used in the context of brain tumor segmentation as well. In BraTS 2017, all winning contributions were at least partially based on encoder-decoder networks. Kamnitsas et al. \cite{kamnitsas2017ensembles}, who were the clear winner of the challenge, created an ensemble by combining three different network architectures, namely 3D FCN \cite{long2015fully}, 3D U-Net \cite{cciccek20163d,ronneberger2015u} and DeepMedic \cite{kamnitsas2017efficient}, trained with different loss functions (dice loss \cite{drozdzal2016importance,milletari2016v} and crossentropy) and different normalization schemes. Wang et al. \cite{wang2017automatic} used a FCN inspired architecture, enhanced with dilated convolutions \cite{chen2018deeplab} and residual connections \cite{he2016identity}. Instead of directly learning to predict the regions of interest, they trained a cascade of networks that would first segment the whole tumor, then given the whole tumor the tumor core and finally given the tumor core the enhancing tumor. Isensee et al. \cite{isensee2017brain} employed a U-Net inspired architecture that was trained on large input patches to allow the network to capture as much contextual information as possible. This architecture made use of residual connections \cite{he2016identity} in the encoder only, while keeping the decoder part of the network as simple as possible. The network was trained with a multiclass dice loss and deep supervision to improve the gradient flow.
+	
+	Recently, a growing number of architectural modifications to encoder-decoder networks have been proposed that are designed to improve the performance of the networks for their specific tasks \cite{milletari2016v,jegou2017one,oktay2018attention,roy2018concurrent,wang2017automatic,isensee2017brain,kayalibay2017cnn,li2017h}. Due to the sheer number of such variants, it becomes increasingly difficult for researchers to keep track of which modifications extend their usefulness over the few datasets they are typically demonstrated on. We have implemented a number of these variants and found that they provide no additional benefit if integrated into a well trained U-Net. In this context, our contribution to the BraTS 2018 challenge is intended to demonstrate that such a U-Net, without using significant architectural alterations, is capable of generating competitive state of the art segmentations.
+
+	\section{Methods}
+	In the following we present the network architecture and training schemes used for our submission. As hinted in the previous paragraph, we will use a 3D U-Net architecture that is very close to its original publication \cite{cciccek20163d} and optimize the training procedure to maximize its performance on the BraTS 2018 training and validation data.
+	
+	\label{methods}	
+
+	\subsection{Preprocessing}
+	With MRI intensity values being non standardized, normalization is critical to allow for data from different institutes, scanners and acquired with varying protocols to be processed by one single algorithm. This is particularly true for neural networks where imaging modalities are typically treated as color channels. Here we need to ensure that the value ranges match not only between patients but between the modalities as well in order to avoid initial biases of the network. We found the following workflow to work well. We normalize each modality of each patient independently by subtracting the mean and dividing by the standard deviation of the brain region. The region outside the brain is set to 0.
+	
+	\subsection{Network architecture} 
+
+	
+	U-Net \cite{ronneberger2015u} is a successful encoder-decoder network that has received a lot of attention in the recent years. Its encoder part works similarly to a traditional classification CNN in that it successively aggregates semantic information at the expense of reduced spatial information. Since in segmentation, both semantic as well as spatial information are crucial for the success of a network, the missing spatial information must somehow be recovered. U-Net does this through the decoder, which receives semantic information from the bottom of the 'U' (refer to Fig. \ref{fig:architecture}) and recombines it with higher resolution feature maps obtained directly from the encoder through skip connections. Unlike other segmentation networks, such as FCN \cite{long2015fully} and previous iterations of DeepLab \cite{chen2018deeplab} this allows U-Net to segment fine structures particularly well.
+	
+   \begin{figure}[t!]
+    	\begin{center}
+    		\includegraphics[width=\textwidth]{network_architecture.png}
+    	\end{center}
+      \caption{We use a 3D U-Net architecture with minor modifications. It instance normalization \cite{ulyanov2016instance} and leaky ReLU nonlinearities and reduces the number of feature maps before upsampling. Feature map dimensionality is noted next to the convolutional blocks, with the first number being the number of feature channels.}
+	\label{fig:architecture}
+    \end{figure}	
+	
+	Our network architecture is an instantiation of the 3D U-Net \cite{cciccek20163d} with minor modifications. Following our successful participation in 2017 \cite{isensee2017brain}, we stick with our design choice to process patches of size 128x128x128 with a batch size of two. Due to the high memory consumption of 3D convolutions with large patch sizes, we implemented our network carefully to still allow for an adequate number of feature maps. By reducing the number of filters right before upsampling and by using inplace operations whenever possible, this results in a network with 30 feature channels at the highest resolution, which is nearly double the number we could train with in our previous model (on a 12 GB NVIDIA Titan X GPU). Due to our choice of loss function, traditional ReLU activation functions did not reliably produce the desired results, which is why we replaced them with leaky ReLUs (leakiness $10^{-2}$) throughout the entire network. With a small batch size of 2, the exponential moving averages of mean and variance within a batch learned by batch normalization \cite{ioffe2015batch} are unstable and do not reflect the feature map activations at test time very well. We found instance normalization \cite{ulyanov2016instance} to provide more consistent results and therefore used it to normalize all feature map activations (between convolution and nonlinearity). For an overview over our segmentation architecture, please refer to Fig. \ref{fig:architecture}.
+
+	\subsection{Training Procedure}
+	\label{training_procedure}
+	Our network architecture is trained with randomly sampled patches of size 128x128x128 voxels and batch size 2. We refer to an epoch as an iteration over 250 batches and train for a maximum of 500 epochs. The training is terminated early if the exponential moving average of the validation loss ($\alpha = 0.95$) has not improved within the last 60 epochs. Training is done using the ADAM optimizer with an initial learning rate $\mathrm{lr_{init}} = 1 \cdot 10^{-4}$, which is reduced by factor 5 whenever the above mentioned moving average of the validation loss has not improved in the last 30 epochs. We regularize with a l2 weight decay of $10^{-5}$.
+	
+	One of the main challenges with brain tumor segmentation is the class imbalance in the dataset. While networks will train with crossentropy loss function, the resulting segmentations may not be ideal in the sense of the dice score they obtain. Since the dice scores is one of the most important metrics based upon which contributions are ranked, it is imperative to optimize this metric. We achieve that by using a soft dice loss for the training of our network. While several formulations of the dice loss exist in the literature \cite{sudre2017generalised,drozdzal2016importance,milletari2016v}, we prefer to use a multi-class adaptation of \cite{drozdzal2016importance} which has given us good results in segmentation challenges in the past \cite{isensee2017automatic,isensee2017brain}. This multiclass Dice loss function is differentiable and can be easily integrated into deep learning frameworks:
+
+	\begin{equation}
+	  \mathcal{L}_\mathrm{dc} = - \frac{2}{|K|} \sum_{k\in K}\frac{\sum_i u_i^k v_i^k}{\sum_i u_i^k + \sum_i v_i^k}
+	\end{equation}
+	
+	where $u$ is the softmax output of the network and $v$ is a one hot encoding of the ground truth segmentation map. Both $u$ and $v$ have shape $i$ by $c$ with $i$ being the number of pixels in the training patch and $k\in K$ being the classes.
+	
+  When training large neural networks from limited training data, special care has to be taken to prevent overfitting. We address this problem by utilizing a large variety of data augmentation techniques. The following augmentation techniques were applied on the fly during training: random rotations, random scaling, random elastic deformations, gamma correction augmentation and mirroring. Data augmentation was done with our own in-house framework which is publically available at \href{https://github.com/MIC-DKFZ/batchgenerators}{https://github.com/MIC-DKFZ/batchgenerators}.
+  
+  The fully convolutional nature of our network allows to process arbitrarily sized inputs. At test time we therefore segment an entire patient at once, alleviating problems that may arise when computing the segmentation in tiles with a network that has padded convolutions. We furthermore use test time data augmentation by mirroring the images and averaging the softmax outputs.
+  
+  \subsection{Region based prediction}
+  Wang et al. \cite{wang2017automatic} use a cascade of CNNs to segment first the whole tumor, then the tumor core and finally the enhancing tumor. We believe the cascade and their rather complicated network architecture to be of lesser importance, but the fact that they did not learn the labels (enhancing tumor, edema, necrosis) but instead optimized the regions that are finally evaluated in the challenge directly to be key to their good performance in last years challenge. For this reason we will also train a version of our model where we replace the final softmax with a sigmoid and optimize the three (overlapping) regions (whole tumor, tumor core and enhancong tumor) directly with the dice loss.
+  
+  \subsection{Cotraining}
+  285 training cases is a lot for medical image segmentation, but may still not be enough to prevent overfitting entirely. We therefore also experiment with cotraining on institutional data. Since the label definitions between the BraTS dataset and our own differ slightly, we add a second segmentation layer (1x1x1 convolution) at the end, which acts as a supervised version of m heads \cite{lee2015m}. During training, the BraTS segmentation layer only receives gradients from BraTS examples and the other segmentation layer is trained only on institutional data. The losses of both layers are averages to obtain the total loss of a minibatch. The rest of the network weights are shared.
+  
+  \subsection{Postprocessing}
+  One of the most challenging parts in the BraTS challenge data is distinguishing small blood vessels in the tumor core region (that must be labeled either as edema of as necrosis) from enhancing tumor. Since this is particularly detrimental for LGG patients that may have no enhancing tumor at all we replace all enhancing tumor voxels with necrosis if less than 500 enhancing tumor voxels are present in a patient.
+  
+
+\section{Experiments and Results}
+  We designed our training scheme by running a five fold cross-validation on the 285 training cases of BraTS 2018. Training set results are summarized in Table \ref{tab:results}, validation set results can be found in table \ref{tab:val}. Validation set results were obtained by using the five networks from the training cross-validation as an ensemble. For consistency with other publications, all reported values were computed by the online evaluation platform (\href{}{https://ipp.cbica.upenn.edu/}).
+  
+  Due to the relatively small size of the validation set (66 cases vs 285 training cases) we base our main analysis on the cross-validation results. We are confident that conclusions drawn from the training set are more robust and will generalize well to the test set. The vast majority of observations we draw from the training set translate into the validation set as well.
+  
+  
+\begin{table}[]
+\label{tab:results}
+\caption{Results on BraTS 2018 training data (285 cases). All results were obtained by running a five fold cross-validation. Metrics were computed by the online evaluation platform.}
+\begin{tabular}{lccclll}
+    & \multicolumn{3}{c}{Dice}     & \multicolumn{3}{c}{HD95}  \\
+\multicolumn{1}{c}{}    & enh.  & whole & core  & enh. & whole   & core \\
+\hline
+baseline     & 73.43 & 89.76 & 82.17 & 4.88 & 5.86 & 7.11 \\
+baseline + postprocess  & 77.11 & 89.76 & 82.17 & 3.99 & 5.86 & 7.11 \\
+baseline + regions    & 73.81 & 90.02 & 82.87 & 5.01 & 6.26 & 6.48 \\
+baseline + regions + postprocess   & \textbf{77.82} & 90.02 & 82.87 & 3.93 & 6.26 & 6.48 \\
+baseline + regions + cotraining  & \multicolumn{1}{l}{74.62} & \multicolumn{1}{l}{\textbf{90.08}} & \multicolumn{1}{l}{\textbf{84.30}} & 4.68 & \textbf{5.61} & \textbf{6.00} \\
+baseline + regions + cotraining + postprocess & \multicolumn{1}{l}{77.17} & \multicolumn{1}{l}{\textbf{90.08}} & \multicolumn{1}{l}{\textbf{84.30}} & \textbf{3.68} & \textbf{5.61} & \textbf{6.00}
+\end{tabular}
+\end{table}
+
+\begin{table}[]
+\caption{Results on BraTS2018 validation data (66 cases). Results were obtained by using the five models from the training set cross-validation as an ensemble. Metrics were computed by the online evaluation platform.}
+\begin{tabular}{lccclll}
+    & \multicolumn{3}{c}{Dice}     & \multicolumn{3}{c}{HD95}  \\
+\multicolumn{1}{c}{}    & enh.  & whole & core  & enh. & whole   & core \\
+\hline
+baseline     & 79.59 & 90.80 & 84.32 & 3.12 & \textbf{4.79} & 8.02 \\
+baseline + postprocess     & 80.36 & 90.80 & 84.32 & 2.55 & \textbf{4.79} & 8.02 \\
+baseline + regions    & 79.25 & 90.72 & 85.14 & 3.80 & 5.23 & 7.23 \\
+baseline + regions + postprocess & 80.48 & 90.72 & 85.14 & 2.81 & 5.23 & 7.23 \\
+baseline + regions + cotraining  & \multicolumn{1}{l}{80.45} & \multicolumn{1}{l}{\textbf{90.83}} & \multicolumn{1}{l}{\textbf{85.44}} & 3.12 & 4.97 & \textbf{7.04} \\
+baseline + regions + cotraining + postprocess & \multicolumn{1}{l}{\textbf{81.01}} & \multicolumn{1}{l}{\textbf{90.83}} & \multicolumn{1}{l}{\textbf{85.44}} & \textbf{2.54} & 4.97 & \textbf{7.04}
+\end{tabular}
+\label{tab:val}
+\end{table}
+
+  We refer to our U-Net trained on the BraTS labels and training data as \textit{baseline}. With Dice scores of 73.43/89.76/82.17 (enh/whole/core) on the training set and 79.59/90.80/84.32 (enh/whole/core) on the validation set this baseline model is by itself already strong. 
+  Adding region based training (\textit{regions}) improved the dice scores of both the enhancing tumor as well as the tumor core. 
+  When training with our institutional data (\textit{cotraining}), we gain an additional dice point on enhancing tumor and tumor core. 
+  Our postprocessing, which is targeted at fixing false positive enhancing tumor predictions in LGG patients has a substantial impact on enhancing tumor dice. On the training set it increases the mean dice by up to 4.01 points (baseline+regions vs baseline+regions+postprocess). However, its impact on the best performing model is less pronounced, resulting in only an increase of 2.55 dice points (baseline+ regions+cotraining+postprocess on train set). This is most likely due to an increase in segmentation quality which partly removes the neccessity for postprocessing. Especially the inclusion of institutional data seems to have resolved many false positives in LGG patients by itself.
+  Comparing baseline+regions+postprocess vs baseline+regions+cotraining+postprocess we notice that training with additional training data only yiels marginal improvements. In the training data, inclusing institutional data reduced the enh. tumor dice scores by 0.65 but increased the tumor core dice by 1.43.
+  On the validation set, the impact of our postprocessing is lower, yielding only a minor improvement on in dice score (0.56) for our best model. We believe this is caused by a discrepancy in data distribution between the training and validation set resulting in the validation set having relatively few patients with no enhancing tumor label. With enhancing tumor dice scores on the test set being generally lower than validation and training set scores for almost all participants in recent BraTS challenges, we believe the test set to contain many LGG cases without enhancing tumor label therefore our postprocessing to be a promising approach to maximize our dice scores.
+  
+  \begin{figure}[t!]
+	\begin{center}
+		\includegraphics[width=\textwidth]{results.png}
+	\end{center}
+  \caption{Qualitative results. The case shown here is patient CBICA\_AZA\_1 from the validation set. Left: flair, middle: t1ce, right: our segmentation. Enhancing tumor is shown in yellow, necrosis in turquoise and edema in violet. }
+	\label{fig:results}
+\end{figure}
+
+  Figure \ref{fig:results} shows a qualitative example generated from our best performing model. The patient shown is taken from the validation set (CBICA\_AZA\_1). As can be seen in the middle (t1ce), there are several blood vessels close to the enhancing tumor. Segmentation CNNs typically struggle to correctly differentiate between such vessels and actual enhancing tumor. This is most likely due to a) a difficulty in detecting tube-like structures b) few training cases where these vessels are an issue c) the use of dice loss functions that does not sufficiently penalize false segmentations of vessels due to their relatively small size. In the case shown here, our model correctly segmented the vessels as background.
+  
+  Finally we compare our best model (baseline+regions+cotraining+ postprocess) with other entries in the validation leaderboard  \href{https://www.cbica.upenn.edu/BraTS18/lboardValidation.html}{https://www.cbica.upenn.edu/\\BraTS18/lboardValidation.html} (accessed on July 14th 2018, see Table \ref{tab:val_comp}).
+  
+\begin{table}[]
+\begin{tabular}{lccclll}
+\caption{Comparison with other teams (validation leaderboard).}
+ & \multicolumn{3}{c}{Dice}     & \multicolumn{3}{c}{HD95}  \\
+\multicolumn{1}{c}{} & enh.  & whole & core  & enh. & whole   & core \\
+\hline
+xuhuaren  & \textbf{83.70} & 90.76 & \textbf{87.40} & 3.35 & 5.20 & \textbf{5.55} \\
+SCAN    & 79.65 & 90.01 & 85.13 & 3.60 & \textbf{4.41} & 5.58 \\
+ETS\_livia  & 79.26 & 90.29 & 85.42 & 3.32 & 5.38 & 6.59 \\
+NVDLMED & 82.33 & \textbf{91.00} & 86.68 & 3.92 & 4.52 & 6.85 \\
+\hline
+MIC-DKFZ  & \multicolumn{1}{l}{81.01} & \multicolumn{1}{l}{90.83} & \multicolumn{1}{l}{85.44} & \textbf{2.54} & 4.97 & 7.04   
+\end{tabular}
+\label{tab:val_comp}
+\end{table}
+
+
+
+\section{Discussion}
+  In this paper we demonstrated that a generic U-Net architecture that has only minor modifications can obtain very competitive segmentation, if trained correctly. Our baseline model is already strong on the BraTS 2018 validation data with dice scores of 79.59, 90.80 and 84.32 for enhancing tumor, whole tumor and tumor core, respectively. Using region based training improved results for the tumor core by about one dice point. Additional training data yielded some improvements for the enhancing tumor dice. Our simple postprocessing technique of removing enhancing tumor entirely from a patient if the total number of predicted enhancing tumor voxels was below 500 proved to be effective. Overall our current best model achieves dice scores 81.01, 90.83 and 85.44 and 95th percentiles of Hausdorff Distance of 2.54, 4.97 and 7.04 for enhancing tumor, whole tumor and tumor core, respectively. We will continue to improve our model until the release of the testing data and look forward to test our model on new, unseen patients.
+  
+	
+\bibliographystyle{IEEEtran}
+\bibliography{bibliography}
+\end{document}

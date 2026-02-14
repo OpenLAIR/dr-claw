@@ -1,0 +1,712 @@
+{
+  "version": "BioASQ6b", 
+  "data": [
+    {
+      "title": "BioASQ6b", 
+      "paragraphs": [
+        {
+          "context": "A randomized controlled study of 5 and 10\u00a0days treatment with phenoxymethylpenicillin for pharyngotonsillitis caused by streptococcus group A - a protocol study. BACKGROUND: In 2014 the Swedish government assigned to The Public Health Agency of Sweden to conduct studies to evaluate optimal use of existing antibiotic agents. The aim is to optimize drug use and dosing regimens to improve the clinical efficacy. The present study was selected following a structured prioritizing process by independent experts. METHODS: This phase IV study is a randomized, open-label, multicenter study with non-inferiority design regarding the therapeutic use of penicillin V with two parallel groups. The overall aim is to study if the total exposure with penicillin V can be reduced from 1000\u00a0mg three times daily for 10\u00a0days to 800\u00a0mg four times daily for 5\u00a0days when treating Streptococcus pyogenes (Lancefield group A) pharyngotonsillitis. Patients will be recruited from 17 primary health care centers in Sweden. Adult men and women, youth and children > 6\u00a0years of age who consult for sore throat and is judged to have a pharyngotonsillitis, with 3-4 Centor criteria and a positive rapid test for group A streptococci, will be included in the study. The primary outcome is clinical cure 5-7 days after discontinuation of antibiotic treatment. Follow-up controls will be done by telephone after 1 and 3 months. Throat symptoms, potential relapses and complications will be monitored, as well as adverse events. Patients (n = 432) will be included during 2\u00a0years. DISCUSSION: In the era of increasing antimicrobial resistance and the shortage of new antimicrobial agents it is necessary to revisit optimal usage of old antibiotics. Old antimicrobial drugs are often associated with inadequate knowledge on pharmacokinetics and pharmacodynamics and lack of optimized dosing regimens based on randomized controlled clinical trials. If a shorter and more potent treatment regimen is shown to be equivalent with the normal 10\u00a0day regimen this can imply great advantages for both patients (adherence, adverse events, resistance) and the community (resistance, drug costs). TRIAL REGISTRATION: EudraCT number 2015-001752-30 . Protocol FoHM/Tonsillit2015 date 22 June 2015, version 2. Approved by MPA of Sweden 3 July 2015, Approved by Regional Ethical Review Board in Lund, 25 June 2015.", 
+          "qas": [
+            {
+              "question": "Centor criteria are used for which disease?", 
+              "id": "5a6f960fb750ff445500005c_000"
+            }
+          ]
+        }, 
+        {
+          "context": "A feasibility service evaluation of screening and treatment of group A streptococcal pharyngitis in community pharmacies. OBJECTIVES: The UK 5 year antimicrobial resistance strategy recognizes the role of point-of-care diagnostics to identify where antimicrobials are required, as well as to assess the appropriateness of the diagnosis and treatment. A sore throat test-and-treat service was introduced in 35 community pharmacies across two localities in England during 2014-15. METHODS: Trained pharmacy staff assessed patients presenting with a sore throat using the Centor scoring system and patients meeting three or all four of the criteria were offered a throat swab test for Streptococcus pyogenes, Lancefield group A streptococci. Patients with a positive throat swab test were offered antibiotic treatment. RESULTS: Following screening by pharmacy staff, 149/367 (40.6%) patients were eligible for throat swab testing. Of these, only 36/149 (24.2%) were positive for group A streptococci. Antibiotics were supplied to 9.8% (n = 36/367) of all patients accessing the service. Just under half of patients that were not showing signs of a bacterial infection (60/123, 48.8%) would have gone to their general practitioner if the service had not been available. CONCLUSIONS: This study has shown that it is feasible to deliver a community-pharmacy-based screening and treatment service using point-of-care testing. This type of service has the potential to support the antimicrobial resistance agenda by reducing unnecessary antibiotic use and inappropriate antibiotic consumption.", 
+          "qas": [
+            {
+              "question": "Centor criteria are used for which disease?", 
+              "id": "5a6f960fb750ff445500005c_001"
+            }
+          ]
+        }, 
+        {
+          "context": "A Study to Determine if Addition of Palatal Petechiae to Centor Criteria Adds More Significance to Clinical Diagnosis of Acute Strep Pharyngitis in Children. Objective. A study to determine if addition of palatal petechiae to Centor criteria adds more value for clinical diagnosis of acute strep pharyngitis in children. Hypothesis. In children, Centor Criteria does not cover all the symptoms and signs of acute strep pharyngitis. We hypothesize that addition of palatal petechiae to Centor Criteria will increase the possibility of clinical diagnosis of group A streptococcal pharyngitis in children. Methods. One hundred patients with a complaint of sore throat were enrolled in the study. All the patients were examined clinically using the Centor Criteria. They were also examined for other signs and symptoms like petechial lesions over the palate, abdominal pain, and skin rash. All the patients were given rapid strep tests, and throat cultures were sent. No antibiotics were given until culture results were obtained. Results. The sample size was 100 patients. All 100 had fever, sore throat, and erythema of tonsils. Twenty of the 100 patients had tonsillar exudates, 85/100 had tender anterior cervical lymph nodes, and 86/100 had no cough. In total, 9 out of the 100 patients had positive throat cultures. We observed that petechiae over the palate, a very significant sign, is not included in the Centor Criteria. Palatal petechiae were present in 8 out of the 100 patients. Six out of these 8 with palatal petechiae had positive throat culture for strep (75%). Only 7 out of 20 with exudates had positive strep culture. Sixteen out of the 100 patients had rapid strep test positive. Those 84/100 who had negative rapid strep also had negative throat culture. Statistics. We used Fisher's exact test, comparing throat culture positive and negative versus presence of exudates and palatal hemorrhages with positive and negative throat cultures and the resultant P value <.0001. Conclusion. Our study concludes that addition of petechiae over the palate to Centor Criteria will increase the possibility of diagnosing acute group A streptococcal pharyngitis in children.", 
+          "qas": [
+            {
+              "question": "Centor criteria are used for which disease?", 
+              "id": "5a6f960fb750ff445500005c_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Signs and symptoms of Group A versus Non-Group A strep throat: A meta-analysis. Introduction: Both non-Group A streptococcal (non-GAS) pharyngitis and Group A streptococcal (GAS) pharyngitis are commonly found in patients with sore throat. It is not known whether or not they present with similar signs and symptoms compared to patients with non-streptococcal pharyngitis. Methods: MEDLINE was searched for prospective studies that reported throat culture for both GAS and non-GAS as a reference standard, and reported at least one sign, symptom, or the Centor score. Summary estimates of sensitivity, specificity, likelihood ratios (LR+ and LR-), and diagnostic odds ratios (DOR) were calculated using a bivariate random effects model. Summary receiver operating characteristic (ROC) curves were created for key signs and symptoms. Results: Eight studies met our inclusion criteria. Tonsillar exudate had the highest LR+ for both GAS and non-GAS pharyngitis (1.53 versus 1.71). The confidence intervals of sensitivity, LR+, LR-, and DOR for all signs, symptoms, and the Centor score between two groups overlapped, with the relative difference between sensitivities within 15% for arthralgia or myalgia, fever, injected throat, tonsillar enlargement, and tonsillar exudate. Larger differences in sensitivities were observed for sore throat, cervical adenopathy, and lack of a cough, although the difference for lack of a cough largely due to a single outlier. Discussion: Signs and symptoms of patients with GAS and non-GAS pharyngitis are generally similar. No signs or symptoms clearly distinguish GAS from non-GAS infection. Further work is needed to determine whether Group C streptococcus is a pathogen that should be treated.", 
+          "qas": [
+            {
+              "question": "Centor criteria are used for which disease?", 
+              "id": "5a6f960fb750ff445500005c_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Point of care testing for group A streptococci in patients presenting with pharyngitis will improve appropriate antibiotic prescription. OBJECTIVE: History, clinical examination and throat culture may be inadequate to rule in or out the presence of group A streptococci (GAS) infection in patients with sore throat in a remote location. We correlated the diagnostic accuracy for guiding antibiotic prescription of clinical decision and physiological scoring systems to a rapid diagnostic point of care (POC) test result in paediatric patients presenting with sore throat. METHODS: Prospective diagnostic accuracy study conducted between 30 June 2014 and 27 February 2015 in a remote Australian ED using a convenience sample. Among paediatric patients presenting with sore throat, the Centor criteria and clinical decision were documented. Simultaneously, patients without sore throat or respiratory tract infection were tested to determine the number of carriers. A throat swab on all patients was tested using a POC test (Alere TestPack +Plus Strep A with on board control), considered as reference standard to detect GAS infection. RESULTS: A total of 101 patients with sore throat were tested with 26 (25.7%) positive for GAS. One hundred and forty-seven patients without sore throat were tested with one positive POC test result (specificity 99%; 95% CI 96-100). Positive predictive value for clinician decision-making for a positive GAS swab (bacterial infection) was 29% (95% CI 17-43), negative predictive value 78% (95% CI 63-88). Area under ROC for the Centor score was 0.70 (95% CI 0.58-0.81). CONCLUSION: Clinician judgement and Centor score are inadequate tools for clinical decision-making for children presenting with sore throat. Adjunctive POC testing provides sufficient accuracy to guide antibiotic prescription on first presentation.", 
+          "qas": [
+            {
+              "question": "Centor criteria are used for which disease?", 
+              "id": "5a6f960fb750ff445500005c_004"
+            }
+          ]
+        }, 
+        {
+          "context": "Near-patient tests and the clinical gaze in decision-making of Swedish GPs not following current guidelines for sore throat - a qualitative interview study. BACKGROUND: Excessive antibiotics use increases the risk of resistance. Previous studies have shown that the Centor score combined with Rapid Antigen Detection Test (RADT) for Group A Streptococci can reduce unnecessary antibiotic prescribing in patients with sore throat. According to the former Swedish guidelines RADT was recommended with 2-4 Centor criteria present and antibiotics were recommended if the test was positive. C- reactive protein (CRP) was not recommended for sore throats. Inappropriate use of RADT and CRP has been reported in several studies. METHODS: From a larger project 16 general practitioners (GPs) who stated management of sore throats not according to the guidelines were identified. Half-hour long semi-structured interviews were conducted. The topics were the management of sore throats and the use of near-patient tests. Qualitative content analysis was used. RESULTS: The use of the near-patient test interplayed with the clinical assessment and the perception that all infections caused by bacteria should be treated with antibiotics. The GPs expressed a belief that the clinical picture was sufficient for diagnosis in typical cases. RADT was not believed to be relevant since it detects only one bacterium, while CRP was considered as a reliable numerical measure of bacterial infection. CONCLUSIONS: Inappropriate use of near-patient test can partly be understood as remnants of outdated knowledge. When new guidelines are introduced the differences between them and the former need to be discussed more explicitly.", 
+          "qas": [
+            {
+              "question": "Centor criteria are used for which disease?", 
+              "id": "5a6f960fb750ff445500005c_005"
+            }
+          ]
+        }, 
+        {
+          "context": "Appropriateness of diagnosis of streptococcal pharyngitis among Thai community pharmacists according to the Centor criteria. Background Inappropriate use of antibiotic treatment for pharyngitis by community pharmacists is prevalent in developing countries. Little is known about how the pharmacists identify patients with bacterial pharyngitis. Objective To ascertain the appropriateness of diagnosis of streptococcal pharyngitis among Thai community pharmacists according to the Centor criteria and to identify factors related to antibiotic dispensing. Setting 1040 Thai community pharmacists. Method A cross-sectional survey of community pharmacists was conducted in November 2012 to March 2013. The self-administered questionnaires were mailed to 57\u00a0% of community pharmacists in the south of Thailand (n\u00a0=\u00a01040). The survey included questions on diagnosis of streptococcal pharyngitis, knowledge on pharyngitis, and attitudes and control beliefs regarding antibiotic dispensing. Main outcome measure The appropriateness of diagnosis of streptococcal pharyngitis according to the original and modified Centor criteria and determinants of antibiotic dispensing including demographic characteristics of pharmacists, knowledge on pharyngitis, and attitudes and control beliefs on antibiotic dispensing. Results Approximately 68\u00a0% completed the questionnaires (n\u00a0=\u00a0703). Compared to the pharmacists who reported not dispensing antibiotics in the hypothetical case with common cold, those reported dispensing antibiotics were more likely to consider the following conditions-presence of cough, mild sore throat and patients with age >60\u00a0years as cues for diagnosis of streptococcal pharyngitis (p\u00a0<\u00a00.05). The use of fewer scores of the clinical prediction rules for diagnosis was observed in antibiotic dispensers, compared to who did not do so (p\u00a0<\u00a00.005). Antibiotic dispensing was positively associated with period of dispensing experience (>5\u00a0years) [odds ratio (OR) 1.52; 95\u00a0% confidence interval (CI) 1.03-2.23], belief that antibiotics could shorten duration of pharyngitis (OR 1.48; 95\u00a0% CI 1.11-1.99), belief that antibiotics could prevent the complications (OR 1.44; 95\u00a0% CI 1.09-1.91) and belief that dispensing antibiotics could satisfy the patients (OR 1.31; 95\u00a0% CI 1.01-1.71). Nonetheless, antibiotic dispensing was negatively associated with knowledge about pharyngitis (OR 0.83; 95\u00a0% CI 0.75-0.93). Conclusion Pharmacists who are knowledgeable on the Centor criteria are more likely to appropriately diagnose streptococcal pharyngitis and less likely to dispense antibiotics in such case.", 
+          "qas": [
+            {
+              "question": "Centor criteria are used for which disease?", 
+              "id": "5a6f960fb750ff445500005c_006"
+            }
+          ]
+        }, 
+        {
+          "context": "Comparing the incidence of bone tumors in rats chronically exposed\u00a0to the selective PTH type 1 receptor agonist abaloparatide\u00a0or\u00a0PTH(1-34). Prolonged treatment with human parathyroid hormone (hPTH) in rats results in development of bone tumors, though this finding has not been supported by clinical experience. The PTH type 1 receptor agonist abaloparatide, selected for its bone anabolic activity, is under clinical development to treat postmenopausal women with osteoporosis. To determine the carcinogenic potential of abaloparatide, Fischer (F344) rats were administered SC daily abaloparatide at doses of 0, 10, 25, and 50\u00a0\u03bcg/kg or 30\u00a0\u03bcg/kg hPTH(1-34) as a positive control for up to 2 years. Robust increases in bone density were achieved at all abaloparatide doses and with hPTH(1-34). Comprehensive histopathological analysis reflected a comparable continuum of proliferative changes in bone, mostly osteosarcoma, in both abaloparatide and hPTH(1-34) treated rats. Comparing the effects of abaloparatide and hPTH(1-34) at the 25 and 30\u00a0\u03bcg/kg respective doses, representing similar exposure multiples to the human therapeutic doses, revealed similar osteosarcoma-associated mortality, tumor incidence, age at first occurrence, and metastatic potential. There were no increases in the incidence of non-bone tumors with abaloparatide compared to vehicle. Thus, near life-long treatment with abaloparatide in rats resulted in dose and time dependent formation of osteosarcomas, with a comparable response to hPTH(1-34) at similar exposure.", 
+          "qas": [
+            {
+              "question": "What is a potential side effect for Tymlos?", 
+              "id": "5a551a8fb750ff4455000002_000"
+            }
+          ]
+        }, 
+        {
+          "context": "ALK: a tyrosine kinase target for cancer therapy. The anaplastic lymphoma kinase (ALK) gene plays an important physiologic role in the development of the brain and can be oncogenically altered in several malignancies, including non-small-cell lung cancer (NSCLC) and anaplastic large cell lymphomas (ALCL). Most prevalent ALK alterations are chromosomal rearrangements resulting in fusion genes, as seen in ALCL and NSCLC. In other tumors, ALK copy-number gains and activating ALK mutations have been described. Dramatic and often prolonged responses are seen in patients with ALK alterations when treated with ALK inhibitors. Three of these-crizotinib, ceritinib, and alectinib-are now FDA approved for the treatment of metastatic NSCLC positive for ALK fusions. However, the emergence of resistance is universal. Newer ALK inhibitors and other targeting strategies are being developed to counteract the newly emergent mechanism(s) of ALK inhibitor resistance. This review outlines the recent developments in our understanding and treatment of tumors with ALK alterations.", 
+          "qas": [
+            {
+              "question": "Which disorder has been approved for treatment with Alk inhibitors?", 
+              "id": "5a87f44061bb38fb2400000f_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Sequential Therapy with Crizotinib and Alectinib in ALK-Rearranged Non-Small Cell Lung Cancer-A Multicenter Retrospective Study. INTRODUCTION: Alectinib and crizotinib have been approved for the therapy of NSCLC caused by anaplastic lymphoma kinase gene (ALK) rearrangement. The effect of alectinib or crizotinib on overall survival (OS) in patients with ALK-rearranged NSCLC remains unknown. METHODS: A multicenter retrospective study was conducted to compare OS between patients receiving alectinib and crizotinib and between patients treated with alectinib and\u00a0those treated sequentially with crizotinib and then alectinib after crizotinib failure. The time to treatment failure (TTF), progression-free survival (PFS), and OS were compared. RESULTS: Sixty-one patients with ALK-rearranged NSCLC were enrolled. Forty-six patients were treated with anaplastic lymphoma kinase (ALK) inhibitors (31 with crizotinib, 28 with alectinib, and 13 with both ALK inhibitors). The response rate was 66.7% for the crizotinib-treated group and 80.8% for the alectinib-treated group. Among all patients, TTF and PFS were significantly prolonged in the alectinib-treated group compared with in the crizotinib-treated group. Subgroup analyses revealed significantly prolonged TTF for alectinib compared with crizotinib therapy in the ALK inhibitor-naive population. OS was significantly longer in the alectinib-treated group than in the crizotinib-treated group. The TTF and OS of patients treated sequentially with crizotinib and then with alectinib after crizotinib failure tended to be longer than those of patients treated with alectinib alone. CONCLUSIONS: Therapy with alectinib alone was significantly superior to therapy with crizotinib alone in terms of TTF, PFS, and OS, and sequential therapy with crizotinib and alectinib after crizotinib failure tended to provide a better OS benefit than did therapy with alectinib alone in patients with ALK-positive NSCLC. However, large-scale prospective studies are needed to confirm these observations.", 
+          "qas": [
+            {
+              "question": "Which disorder has been approved for treatment with Alk inhibitors?", 
+              "id": "5a87f44061bb38fb2400000f_001"
+            }
+          ]
+        }, 
+        {
+          "context": "W'ALK' Into the Next Stage. In 2007, the rearrangement of anaplastic lymphoma kinase (ALK) was identified to be associated with the pathogenesis of a subset of patients with non-small-cell lung cancer (NSCLC). Surprisingly, approximately 4 years after the discovery of ALK rearrangement in lung cancer, the first-in-class ALK inhibitor (ALKi), crizotinib, was approved for metastatic ALK-rearranged NSCLC by the US Food and Drug Administration. Subsequently, next-generation ALKis, such as alectinib and ceritinib, have been developed, and some of them have been applied in the clinical setting. Furthermore, various resistance mechanisms against ALKis have been gradually elucidated, and treatment strategies according to such resistance have been proposed. In addition, novel ALKis exhibit good antitumor efficacy for brain metastases. Thus, we now know much about ALK-rearranged NSCLC; however, is it enough? Several concerns, such as the optimal sequence of ALKis, significance of antiangiogenic therapy, immune checkpoint therapy, and cytotoxic chemotherapy in ALK-rearranged NSCLC, should be clearly addressed, which would lead to the establishment of optimal treatment strategies and a more prolonged survival in patients with ALK rearrangement. Thus, we should w'ALK' into the next stage.", 
+          "qas": [
+            {
+              "question": "Which disorder has been approved for treatment with Alk inhibitors?", 
+              "id": "5a87f44061bb38fb2400000f_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Overcoming EGFR Bypass Signal-Induced Acquired Resistance to ALK Tyrosine Kinase Inhibitors in ALK-Translocated Lung Cancer. Activation of the EGFR pathway is one of the mechanisms inducing acquired resistance to anaplastic lymphoma kinase (ALK) tyrosine kinase inhibitors (TKI) such as crizotinib and alectinib. Ceritinib is a highly selective ALK inhibitor and shows promising efficacy in non-small cell lung cancers (NSCLC) harboring the ALK gene rearrangement. However, the precise mechanism underlying acquired resistance to ceritinib is not well-defined. This study set out to clarify the mechanism in ALK-translocated lung cancer and to find the preclinical rationale overcoming EGFR pathway-induced acquired resistance to ALK-TKIs. To this end, ceritinib-resistant cells (H3122-CER) were established from the H3122 NSCLC cell line harboring the ALK gene rearrangement via long-term exposure to ceritinib. H3122-CER cells acquired resistance to ceritinib through EGFR bypass pathway activation. Furthermore, H3122 cells that became resistant to ceritinib or alectinib through EGFR pathway activation showed cross-resistance to other ALK-TKIs. Ceritinib and afatinib combination treatment partially restored the sensitivity to ceritinib. IMPLICATIONS: This study proposes a preclinical rationale to use ALK-TKIs and afatinib combination therapy for ALK-translocated lung cancers that have acquired resistance to ALK-TKIs through EGFR pathway activation. Mol Cancer Res; 15(1); 106-14. \u00a92016 AACR.", 
+          "qas": [
+            {
+              "question": "Which disorder has been approved for treatment with Alk inhibitors?", 
+              "id": "5a87f44061bb38fb2400000f_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Effect of Food and Esomeprazole on the Pharmacokinetics of Alectinib, a Highly Selective ALK Inhibitor, in Healthy Subjects. Alectinib, an anaplastic lymphoma kinase (ALK) inhibitor, is approved for treatment of patients with ALK+ non-small cell lung cancer who have progressed, on or are intolerant to, crizotinib. This study assessed the effect of a high-fat meal and the proton pump inhibitor, esomeprazole, on the pharmacokinetics (PK) of alectinib. This was an open-label, 2-group study in healthy subjects. In group\u00a01 (n = 18), subjects were randomly assigned to a 2-treatment (A, fasted conditions; B, following a high-fat meal), 2-sequence (AB or BA) crossover assessment, separated by a 10-day washout. In group\u00a02 (n = 24), subjects were enrolled in a 2-period, fixed-sequence crossover assessment to evaluate the effect of esomeprazole. PK parameters were evaluated for alectinib, its major similarly active metabolite, M4, and the combined exposure of alectinib and M4. Administration of alectinib following a high-fat meal substantially increased the combined exposure of alectinib and M4 to 331% (90%CI, 279%-393%) and 311% (90%CI, 273%-355%) for C and AUC , respectively, versus fasted conditions. Coadministration of esomeprazole had no clinically relevant effect on the combined exposure of alectinib and M4. Alectinib should be administered under fed conditions to maximize its bioavailability, whereas no restrictions are required with antisecretory agents.", 
+          "qas": [
+            {
+              "question": "Which disorder has been approved for treatment with Alk inhibitors?", 
+              "id": "5a87f44061bb38fb2400000f_004"
+            }
+          ]
+        }, 
+        {
+          "context": "Treating patients with ALK-rearranged non-small-cell lung cancer: mechanisms of resistance and strategies to overcome it. Anaplastic lymphoma kinase (ALK) rearrangement is detected in 3-7% of patients with non-small-cell lung cancer. Crizotinib is an ALK inhibitor, which was approved in 2011 for the treatment of ALK-positive lung cancer. Despite the initial enthusiasm, most of the patients develop resistance within the first year of treatment. The main mechanisms are secondary mutations and bypass track activation. Moreover, crizotinib has low penetration into the central nervous system. The need to overcome these limitations has led to the development of second-generation inhibitors that have better effectiveness against crizotinib-resistant mutations and brain metastases. Ceritinib and alectinib are the only approved drugs of this group. Many ongoing trials try to define the most appropriate agent for the treatment of ALK-positive lung cancer depending on the responsible mechanism. This review focuses on the current data regarding the potential mechanisms of resistance to ALK inhibitors and the strategies to overcome it.", 
+          "qas": [
+            {
+              "question": "Which disorder has been approved for treatment with Alk inhibitors?", 
+              "id": "5a87f44061bb38fb2400000f_005"
+            }
+          ]
+        }, 
+        {
+          "context": "Diagnostic accuracy of the Berlin questionnaire, STOP-BANG, STOP, and Epworth sleepiness scale in detecting obstructive sleep apnea: A bivariate meta-analysis. Obstructive sleep apnea (OSA) is a highly prevalent sleep disorder; however, it remains underdiagnosed and undertreated. Although screening tools such as the Berlin questionnaire (BQ), STOP-BANG questionnaire (SBQ), STOP questionnaire (STOP), and Epworth sleepiness scale (ESS) are widely used for OSA, the findings regarding their diagnostic accuracy are controversial. Therefore, this meta-analysis investigated and compared the summary sensitivity, specificity, and diagnostic odds ratio (DOR) among the BQ, SBQ, STOP, and ESS according to the severity of OSA. Electronic databases, namely the Embase, PubMed, PsycINFO, ProQuest dissertations and theses A&I databases, and China knowledge resource integrated database, were searched from their inception to July 15, 2016. We included studies examining the sensitivity and specificity of the BQ, SBQ, STOP, and ESS against the apnea-hypopnea index (AHI) or respiratory disturbance index (RDI). The revised quality assessment of diagnostic accuracy studies was used to evaluate the methodological quality of studies. A random-effects bivariate model was used to estimate the summary sensitivity, specificity, and DOR of the tools. We identified 108 studies including a total of 47 989 participants. The summary estimates were calculated for the BQ, SBQ, STOP, and ESS in detecting mild (AHI/RDI\u00a0 > \u00a05 events/h), moderate (AHI/RDI\u00a0 > \u00a015 events/h), and severe OSA (AHI/RDI\u00a0 > \u00a030 events/h). The performance levels of the BQ, SBQ, STOP, and ESS in detecting OSA of various severity levels are outlined as follows: for mild OSA, the pooled sensitivity levels were 76%, 88%, 87%, and 54%; pooled specificity levels were 59%, 42%, 42%, and 65%; and pooled DORs were 4.30, 5.13, 4.85, and 2.18, respectively. For moderate OSA, the pooled sensitivity levels were 77%, 90%, 89%, and 47%; pooled specificity levels were 44%, 36%, 32%, and 621%; and pooled DORs were 2.68, 5.05, 3.71, and 1.45, respectively. For severe OSA, the pooled sensitivity levels were 84%, 93%, 90%, and 58%; pooled specificity levels were 38%, 35%, 28%, and 60%; and pooled DORs were 3.10, 6.51, 3.37, and 2.10, respectively. Therefore, for mild, moderate, and severe OSA, the pooled sensitivity and DOR of the SBQ were significantly higher than those of other screening tools (P\u00a0<\u00a0.05); however, the specificity of the SBQ was lower than that of the ESS (P\u00a0<\u00a0.05). Moreover, age, sex, body mass index, study sample size, study populations, presence of comorbidities, PSG or portable monitoring performance, and risk of bias in the domains of the index test and reference standard were significant moderators of sensitivity and specificity (P\u00a0<\u00a0.05). Compared with the BQ, STOP, and ESS, the SBQ is a more accurate tool for detecting mild, moderate, and severe OSA. Sleep specialists should use the SBQ to conduct patient interviews for the early diagnosis of OSA in clinical settings, particularly in resource-poor countries and sleep clinics where PSG is unavailable.", 
+          "qas": [
+            {
+              "question": "Which disease risk can be estimated with the Stop-Bang questionnaire?", 
+              "id": "5a742d620384be9551000002_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Assessing the likelihood of obstructive sleep apnea: a comparison of nine screening questionnaires. PURPOSE: Several questionnaires are available for the screening of obstructive sleep apnea (OSA). Herein, we compare the performance characteristics of nine available questionnaires for assessing the likelihood of OSA. METHODS: Consecutive subjects who underwent polysomnography at the sleep laboratory of the unit were included. Subjects with obstructive events and apnea hypopnea index (AHI) > 5 were considered to have OSA. The likelihood ratios (LRs) and other performance characteristics were calculated for the following nine questionnaires: Berlin, modified Berlin, STOP, STOP-Bang and OSA50 questionnaires, sleep apnea clinical score (SACS), Epworth sleepiness scale (ESS), American Society of Anesthesiologists (ASA) checklist, and the elbow sign questionnaire. RESULTS: Two-hundred and ten subjects (mean age, 46.5\u00a0years; mean body mass index [BMI], 31.9\u00a0kg/m; 27.1% women) were included. OSA was diagnosed in 78.1% of patients; 49.5% had severe OSA (AHI > 30). The SACS questionnaire had the highest positive LR (LR+, 5.6) and positive predictive value (95.2%). The modified Berlin questionnaire had the best negative LR (LR-, 0.2) and the highest negative predictive value (57.1%). The STOP-Bang questionnaire also had an LR- of 0.2 if BMI threshold of 25\u00a0kg/m (like that in the modified Berlin questionnaire) was used. Among individual items of various sleep questionnaires, the highest LR+ was obtained for neck circumference >43\u00a0cm (LR+, 4.9), while the best LR- was obtained for snoring and BMI >25\u00a0kg/m (LR-, 0.2). CONCLUSIONS: The SACS and the STOP-Bang questionnaires (BMI threshold of 25\u00a0kg/m) were found to provide the best positive and negative LRs, respectively, for the prediction of OSA. We believe that information from these questionnaires may help in prioritizing patients for sleep studies in high-volume centers.", 
+          "qas": [
+            {
+              "question": "Which disease risk can be estimated with the Stop-Bang questionnaire?", 
+              "id": "5a742d620384be9551000002_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Incorporating body-type (apple vs. pear) in STOP-BANG questionnaire improves its validity to detect OSA. STUDY OBJECTIVE: The aim of this study is to evaluate whether adding the item of \"apple body type\" to the STOP-BANG questionnaire enhances diagnostic performance of the questionnaire for detecting obstructive sleep apnea (OSA). DESIGN: Cross-sectional study. SETTING: Sleep center setting. PATIENTS: Two hundred and eight subjects who were referred for an evaluation of possible OSA at Tulane Comprehensive Sleep Center. The exclusion criteria were age<18years old, incomplete or absent questionnaire, incomplete body type identification, polysomnography (PSG) refusal, and pregnant women. INTERVENTIONS: STOP-BANG items and body type data were collected on the initial clinic visit. An overnight PSG was performed on every participant. MEASUREMENTS: Descriptive analyses of the demographic data and PSG variables were performed. The predictive parameters of STOP and STOP-BANG without and with body type score (STOP-Apple and STOPBANG-Apple) were compared. MAIN RESULTS: The STOP questionnaire's sensitivity/specificity/positive likelihood ratio (+LR) (cut-off=2) was 96%/11%/1.1, respectively whereas the STOP-Apple questionnaire (cut-off=3) was 88%/39%/1.5. The STOP-BANG's sensitivity/specificity/+LR (cut-off=3) was 96%/19%/1.2, respectively whereas the STOP-BANG-Apple questionnaire (cut-off=4) was 90%/39%/1.5. The area under the Receiver Operating Characteristic (ROC) curve of STOP-Apple was comparable to the STOP-BANG (P=0.25). The addition of the apple body type item to the STOP-BANG questionnaire in participants with a score > 3 led to increased specificity (67.4%), increased the odds ratio of having OSA of 2.5 (95% CI, 1.2-5.3) and odds ratio of having moderate-severe OSA of 4.7 (95% CI, 2.5-8.7). CONCLUSION: In the sleep center setting, adding the body type item to the STOP-BANG questionnaire improves not only clinical prediction for PSG confirmed OSA but also predicts moderate to severe of OSA.", 
+          "qas": [
+            {
+              "question": "Which disease risk can be estimated with the Stop-Bang questionnaire?", 
+              "id": "5a742d620384be9551000002_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Association of Obstructive Sleep Apnea with Episodic Memory and Cerebral Microvascular Pathology: A Preliminary Study. OBJECTIVES: To evaluate the impact of obstructive sleep apnea (OSA) on neurocognitive function and brain morphology in older adults with depression and cognitive impairment. METHODS: We prospectively screened OSA with the STOP-Bang questionnaire in the last 25 patients enrolled into the Donepezil Treatment of Cognitive Impairment and Depression (DOTCODE) trial. High and low probability of OSA were defined as a STOP-Bang score of > 5 (h-OSA) and of <5 (l-OSA), respectively. Baseline magnetic resonance imaging (MRI) was used to evaluate brain morphology. The initial 16 weeks of antidepressant treatment were part of the DOTCODE trial. RESULTS: After 16 weeks of antidepressant treatment, the h-OSA group performed significantly worse on the Selective Reminding Test delayed recall task than the l-OSA group, controlling for baseline performance (F = 19.1, df = 1,22, p < 0.001). In 19 of 25 participants who underwent brain MRI, the h-OSA group had significantly greater volumes of MRI hyperintensities in deep white matter, periventricular white matter, and subcortical gray matter compared with the l-OSA group. There was no significant association between OSA and hippocampal or entorhinal cortex volumes in our sample, even after controlling for intracranial volume. CONCLUSIONS: OSA is associated with impaired verbal episodic memory and microvascular damage in older adults with depression and cognitive impairment. One possibility is that by contributing to cerebral microvascular damage, OSA may exacerbate progressive memory decline.", 
+          "qas": [
+            {
+              "question": "Which disease risk can be estimated with the Stop-Bang questionnaire?", 
+              "id": "5a742d620384be9551000002_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Prevalence and Predictors of Sleep Apnea Risk among Ghanaian Stroke Survivors. BACKGROUND AND PURPOSE: Sleep apnea (SA) has emerged as a potent risk factor for stroke recurrence and mortality. The burden of SA among stroke survivors in sub-Saharan Africa where stroke incidence and mortality are escalating is unknown. We sought to assess the prevalence of SA risk and its clinical correlates and predictors among Ghanaian stroke survivors. METHODS: This cross-sectional study involved 200 consecutive stroke survivors attending a neurology clinic in a tertiary medical center in Kumasi, Ghana. The validated Berlin, STOP-BANG, and Epworth Sleepiness Scale questionnaires were administered to all eligible subjects to assess SA risk and daytime somnolence, and their demographic and clinical information, health-related quality of life, and symptoms of depression were collected using the questionnaires. RESULTS: The median (interquartile range) age of stroke survivors was 62 (52-72) years and 52.5% were male. Ninety-nine (49.5%) subjects were identified as high risk for SA using the Berlin questionnaire, whereas 26 (13%), 137 (68.5%), and 37 (18.5%) subjects were classified as low, intermediate, and high risk for SA, respectively, using the STOP-BANG questionnaire. Patients at high risk of SA were significantly older, used excess alcohol, and were less able to perform activities of daily living, although their mean National Institutes of Health Stroke Scale scores were significantly lower than those with low risk for SA. None of the stroke survivors had ever been screened for SA. CONCLUSIONS: One out of every 2 stroke survivors attending a neurology clinic in Ghana is at high risk for undiagnosed SA. Greater regional awareness about SA presence and outcomes among patients and providers is warranted.", 
+          "qas": [
+            {
+              "question": "Which disease risk can be estimated with the Stop-Bang questionnaire?", 
+              "id": "5a742d620384be9551000002_004"
+            }
+          ]
+        }, 
+        {
+          "context": "The STOP-BANG questionnaire improves the detection of epilepsy patients at risk for obstructive sleep apnea. Patients with epilepsy and obstructive sleep apnea (OSA) are at risk for worsened seizure control and quality of life. We performed a quality improvement project, evaluating for improvements in the screening of OSA in epilepsy patients using the STOP-BANG questionnaire. The electronic medical records of patients seen in our epilepsy clinic were screened for 4 months prior to the intervention. We subsequently implemented the STOP-BANG questionnaire for 3 months. Only 22/664 patients (3.3%) had their sleeping habits explored during the pre-intervention period; 11 (1.7%) were referred to sleep medicine. Following implementation of the STOP-BANG questionnaire, the percentage of patients screened for OSA increased to 41.6% (269/647, Chi-square Fisher's Exact test 2-sided p<0.001). Of the 269 patients screened, 84 (31.2%) met criteria for elevated OSA risk. Forty-one patients were referred to sleep medicine during the subsequent 3 month period, including 33 who met STOP-BANG criteria for OSA. This represented 6.3% and 5.1% (respectively) of all 647 patients, a significant improvement over the percentage referred prior to the intervention (Chi-square Fisher's Exact test 2-sided p<0.001). Twelve of the 33 patients referred based on the STOP-BANG questionnaire saw sleep medicine; 11 (91.7%) were referred for polysomnography (PSG). Of the 10 patients who underwent PSG, 9 (90%) were diagnosed with OSA and offered treatment with continuous positive airway pressure (CPAP).", 
+          "qas": [
+            {
+              "question": "Which disease risk can be estimated with the Stop-Bang questionnaire?", 
+              "id": "5a742d620384be9551000002_005"
+            }
+          ]
+        }, 
+        {
+          "context": "Modified Mallampati Score Improves Specificity of STOP-BANG Questionnaire for Obstructive Sleep Apnea. BACKGROUND: An accurate, clinical screening tool for obstructive sleep apnea (OSA) that identifies patients for further diagnostic testing would assist in the diagnosis of this comorbidity. One example, the STOP-BANG questionnaire (SBQ), has been validated as a screening tool with high sensitivity. However, its specificity may result in a high false-positive rate. The aim of this study to determine if addition of the Modified Mallampati score to the SBQ improves its specificity. METHODS: The authors studied 162 patients referred to the Sleep Disorders Clinic at Yedikule Chest Disease Education and Research Hospital. All patients were prospectively screened for risk of OSA using the SBQ, their oral anatomy was assessed by Modified Mallampati scoring, and sleep quality characterized by polysomnography. Polysomnography results were reviewed when available and the predictive performance of the SBQ and the modified SBQ scoring models were compared. RESULTS: In the authors' study an SBQ score > 3 yielded sensitivities of 0.85, 0.86, and 0.91 for Apnea-Hypopnea Index (AHI) > 5/h, AHI > 15/h, and AHI > 30/h, respectively, and specificities of 0.09, 0.10, and 0.18. The modified SBQ with a cutoff of > 4 (>3) points for AHI levels of >5, >15, and >30 yielded respective sensitivities of 0.84, 0.86, and 0.91 and specificities of 0.25, 0.26, and 0.27. CONCLUSIONS: The author's results from indicated the modified SBQ with a cutoff of >3 points in this study was more specific than the standard SBQ but no less sensitive, and may be used in identifying OSA patients for further diagnostic evaluation or avoiding unnecessary testing.", 
+          "qas": [
+            {
+              "question": "Which disease risk can be estimated with the Stop-Bang questionnaire?", 
+              "id": "5a742d620384be9551000002_006"
+            }
+          ]
+        }, 
+        {
+          "context": "Embryonic signature distinguishes pediatric and adult rhabdoid tumors from other SMARCB1-deficient cancers. Extra-cranial rhabdoid tumors (RT) are highly aggressive malignancies of infancy, characterized by undifferentiated histological features and loss of SMARCB1 expression. The diagnosis is all the more challenging that other poorly differentiated cancers lose SMARCB1 expression, such as epithelioid sarcomas (ES), renal medullary carcinomas (RMC) or undifferentiated chordomas (UC). Moreover, late cases occurring in adults are now increasingly reported, raising the question of differential diagnoses and emphasizing nosological issues. To address this issue, we have analyzed the expression profiles of a training set of 32 SMARCB1-deficient tumors (SDT), with ascertained diagnosis of RT (n = 16, all < 5 years of age), ES (n = 8, all > 10 years of age), UC (n = 3) and RMC (n = 5). As compared with other SDT, RT are characterized by an embryonic signature, and up-regulation of key-actors of de novo DNA methylation processes. Using this signature, we then analysed the expression profiling of 37 SDT to infer the appropriate diagnosis. Thirteen adult onset tumors showed strong similarity with pediatric RT, in spite of older age; by exome sequencing, these tumors also showed genomic features indistinguishable from pediatric RT. In contrary, 8 tumors were reclassified within carcinoma, ES or UC categories, while the remaining could not be related to any of those entities. Our results demonstrate that embryonic signature is shared by all RT, whatever the age at diagnosis; they also illustrate that many adult-onset SDT of ambiguous histological diagnosis are clearly different from RT. Finally, our study paves the way for the routine use of expression-based signatures to give accurate diagnosis of SDT.", 
+          "qas": [
+            {
+              "question": "With which cancers has the loss of SMARCB1 been associated?", 
+              "id": "5a86f074faa1ab7d2e00003a_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Poorly differentiated chordoma with loss of SMARCB1/INI1 expression in pediatric patients: A report of two cases and review of the literature. Identification of loss of SMARCB1/INI1 expression in poorly differentiated (PD) chordoma in pediatric patients suggests that PD chordoma is an entity molecularly distinct from conventional chordoma or atypical teratoid/rhabdoid tumor, which is also characterized by loss of SMARCB1/INI1 expression by inactivating mutation of the SMARCB1/INI gene. So far, around 20 cases of pediatric PD chordoma with loss of SMARCB1/INI1 expression have been reported. Here, we report two cases of pediatric PD chordoma with loss of SMARCB1/INI1 expression, which is very rare among the pediatric chordoma types. Both patients presented clival masses on preoperative MRI. Histologically, both tumors had nonclassic histologic features for conventional chordoma: sheets of large epithelioid to spindle cells with vesicular nuclei and prominent nucleoli. Both cases revealed nuclear expression of brachyury, loss of SMARCB1/INI1 expression and lack of embryonal, neuroectodermal, or epithelial component. One case showed heterozygous loss of EWSR1 gene by break-apart fluorescence in situ hybridization that reflected loss of SMARCB1/INI1 gene. Based on the clival location and histologic findings along with the loss of SMARCB1/INI1 expression and positivity for nuclear brachyury staining, the final pathologic diagnosis for both cases was PD chordoma.", 
+          "qas": [
+            {
+              "question": "With which cancers has the loss of SMARCB1 been associated?", 
+              "id": "5a86f074faa1ab7d2e00003a_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Genotyping cancer-associated genes in chordoma identifies mutations in oncogenes and areas of chromosomal loss involving CDKN2A, PTEN, and SMARCB1. The molecular mechanisms underlying chordoma pathogenesis are unknown. We therefore sought to identify novel mutations to better understand chordoma biology and to potentially identify therapeutic targets. Given the relatively high costs of whole genome sequencing, we performed a focused genetic analysis using matrix-assisted laser desorption/ionization-time of flight mass spectrometer (Sequenom iPLEX genotyping). We tested 865 hotspot mutations in 111 oncogenes and selected tumor suppressor genes (OncoMap v. 3.0) of 45 human chordoma tumor samples. Of the analyzed samples, seven were identified with at least one mutation. Six of these were from fresh frozen samples, and one was from a paraffin embedded sample. These observations were validated using an independent platform using homogeneous mass extend MALDI-TOF (Sequenom hME Genotyping). These genetic alterations include: ALK (A877S), CTNNB1 (T41A), NRAS (Q61R), PIK3CA (E545K), PTEN (R130), CDKN2A (R58*), and SMARCB1 (R40*). This study reports on the largest comprehensive mutational analysis of chordomas performed to date. To focus on mutations that have the greatest chance of clinical relevance, we tested only oncogenes and tumor suppressor genes that have been previously implicated in the tumorigenesis of more common malignancies. We identified rare genetic changes that may have functional significance to the underlying biology and potential therapeutics for chordomas. Mutations in CDKN2A and PTEN occurred in areas of chromosomal copy loss. When this data is paired with the studies showing 18 of 21 chordoma samples displaying copy loss at the locus for CDKN2A, 17 of 21 chordoma samples displaying copy loss at PTEN, and 3 of 4 chordoma samples displaying deletion at the SMARCB1 locus, we can infer that a loss of heterozygosity at these three loci may play a significant role in chordoma pathogenesis.", 
+          "qas": [
+            {
+              "question": "With which cancers has the loss of SMARCB1 been associated?", 
+              "id": "5a86f074faa1ab7d2e00003a_002"
+            }
+          ]
+        }, 
+        {
+          "context": "SMARCB1/INI1 Involvement in Pediatric Chordoma: A Mutational and Immunohistochemical Analysis. Chordomas arise in the skull base and spine and usually occur in adults and are rare in the pediatric population. Cases of chordoma in pediatric age are often poorly differentiated, showing cytologic atypia, increased cellularity, and mitosis, and their aggressive behavior is associated with a high incidence of metastatic spread and a short patient survival. Recent studies have described loss of SMARCB1/INI1 protein in poorly differentiated chordomas associated not with point mutations but with SMARCB1/INI1 gene deletions instead. In this study, we considered immunohistochemistry and SMARCB1/INI1 mutational status to examine SMARCB1 status in a series of pediatric chordomas (7 classic and 1 poorly differentiated). We performed immunohistochemical tests for INI1, brachyury, S100, and cytokeratins and conducted a genetic analysis on the SMARCB1 coding sequence (NM_003073) using the Sanger method and multiplex ligation-dependent probe amplification to detect abnormal copy numbers of the gene locus. All 8 cases were positive for brachyury, whereas there was no nuclear SMARCB1/INI1 expression in 4 of the 8 cases, including the poorly differentiated chordoma. Genetic analysis identified a missense mutation in 2 cases and a nonsense mutation associated with loss of SMARCB1/INI1 protein and features of poorly differentiated tumor in 1. These mutations were novel variants occurring in heterozygosity, and they were judged to be pathogenic by 3 different bioinformatic tools. In 7 of 8 cases we performed multiplex ligation-dependent probe amplification, and 3 cases showed deletions at the SMARCB1 locus. Our results confirm the pathogenic involvement of SMARCB1/INI1 in childhood chordoma. We also describe 3 novel pathogenic mutations.", 
+          "qas": [
+            {
+              "question": "With which cancers has the loss of SMARCB1 been associated?", 
+              "id": "5a86f074faa1ab7d2e00003a_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Downregulation of SMARCB1/INI1 expression in pediatric chordomas correlates with upregulation of miR-671-5p and miR-193a-5p expressions. Loss of SMARCB1/INI1 expression is considered to be a hallmark for childhood chordomas (CCs). Although mutation/loss of 22q has strongly established the loss of SMARCB1/INI1 in cancers, the cause in CCs remains elusive. Recent studies suggest role of miRNAs in regulation of SMARCB1/INI1 expressions. We examined 5 reported/target predicted miRNAs to SMARCB1/INI1 in SMARCB1/INI1 immunonegative and immunopositive cases, and found upregulation of miR-671-5p and miR-193a-5p in SMARCB1/INI1-immunonegative cases. Notably, these two miRNAs were significantly predicted to target TGF-\u03b2 signaling, suggestive of dysregulation of developmental and osteoblast regulation pathway in CCs. Overall, we suggest miR-671-5p- and miR-193a-5p-mediated epigenetic mode of SMARCB1/INI1 loss and downregulated TGF-\u03b2 pathway in CCs.", 
+          "qas": [
+            {
+              "question": "With which cancers has the loss of SMARCB1 been associated?", 
+              "id": "5a86f074faa1ab7d2e00003a_004"
+            }
+          ]
+        }, 
+        {
+          "context": "Trial design and rationale for APOLLO, a Phase 3, placebo-controlled study of patisiran in patients with hereditary ATTR amyloidosis with polyneuropathy. BACKGROUND: Patisiran is an investigational RNA interference (RNAi) therapeutic in development for the treatment of hereditary ATTR (hATTR) amyloidosis, a progressive disease associated with significant disability, morbidity, and mortality. METHODS: Here we describe the rationale and design of the Phase 3 APOLLO study, a randomized, double-blind, placebo-controlled, global study to evaluate the efficacy and safety of patisiran in patients with hATTR amyloidosis with polyneuropathy. Eligible patients are 18-85\u00a0years old with hATTR amyloidosis, investigator-estimated survival of > 2\u00a0years, Neuropathy Impairment Score (NIS) of 5-130, and polyneuropathy disability score\u00a0 < IIIb. Patients are randomized 2:1 to receive either intravenous patisiran 0.3\u00a0mg/kg or placebo once every 3\u00a0weeks. The primary objective is to determine the efficacy of patisiran at 18\u00a0months based on the difference in the change in modified NIS+7 (a composite measure of motor strength, sensation, reflexes, nerve conduction, and autonomic function) between the patisiran and placebo groups. Secondary objectives are to evaluate the effect of patisiran on Norfolk-Diabetic Neuropathy quality of life questionnaire score, nutritional status (as evaluated by modified body mass index), motor function (as measured by NIS-weakness and timed 10-m walk test), and autonomic symptoms (as measured by the Composite Autonomic Symptom Score-31 questionnaire). Exploratory objectives include assessment of cardiac function and pathologic evaluation to assess nerve fiber innervation and amyloid burden. Safety of patisiran will be assessed throughout the study. DISCUSSION: APOLLO represents the largest randomized, Phase 3 study to date in patients with hATTR amyloidosis, with endpoints that capture the multisystemic nature of this disease. TRIAL REGISTRATION: This trial is registered at clinicaltrials.gov ( NCT01960348 ); October 9, 2013.", 
+          "qas": [
+            {
+              "question": "What is the name of the RNAi investigational drug being developed against hereditary amyloidosis?", 
+              "id": "5a735b383b9d13c708000002_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Exogenous coproporphyrin III production by Corynebacterium aurimucosum and Microbacterium oxydans in erythrasma lesions. Erythrasma is a superficial skin disease caused by Gram-positive Corynebacterium species. Coral-red fluorescence under Wood's light, strongly suggestive of erythrasma, can be attributed to the presence of porphyrins. Fractionated porphyrin analysis in erythrasma lesions is yet to be reported. We attempted to investigate erythrasma lesions by isolating the responsible bacteria and determining their exogenous porphyrin production by HPLC analysis. We observed a 78-year-old woman with erythrasma who had a well-demarcated slightly scaling patch on her left foot, between the fourth and fifth toes. Two kinds of colonies on 5 % sheep blood agar were obtained from this lesion. Analysis of the 16S rRNA sequence revealed the colonies to be Corynebacterium aurimucosum and Microbacterium oxydans. HPLC analysis demonstrated that coproporphyrin III (Copro III) levels were clearly elevated, although the amounts of protoporphyrin were diminished. These results indicate that the fluorescent substance was Copro III. This study supports the view that excess Copro III synthesis by C. aurimucosum and M. oxydans leads to accumulation of porphyrin in cutaneous tissue, which emits a coral-red fluorescence when exposed to Wood's light.", 
+          "qas": [
+            {
+              "question": "Which bacteria causes erythrasma?", 
+              "id": "5a68f448b750ff4455000018_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Corynebacterium-associated skin infections. BACKGROUND: Corynebacterium spp. are diphtheroid bacteria responsible for pitted keratolysis, a common plantar infection confined to the thick stratum corneum. AIM: To study a series of demographic features of patients suffering from pitted keratolysis, and to present a review of the Corynebacterium-associated infections, including pitted keratolysis, erythrasma, and trichobacteriosis. MATERIALS AND METHODS: A 2-year, two-center, prospective survey assessed the demographics of pitted keratolysis, including age, gender, site of infection, symptoms, patients' complaints, the use of protective and/or occlusive shoes, seasonality of diagnosis, drug intake, associated skin signs (including dyshidrosis, erythrasma, and trichobacteriosis), recurrences, and previous diagnoses and treatments. RESULTS: The mean age of the 53 patients with pitted keratolysis was 24.9 years (range, 10-57 years). The male to female ratio was 7.8:1. The soles of both feet were commonly involved (92.4%). Pressure-bearing areas were the usual sites of infection, ranging from restricted involvement of the toes (12/53, 22.6%) to spreading to the entire plantar surface (15/53, 28.3%). A total of 36 (68%) of the 53 patients complained of hyperhidrosis. An unpleasant smell and pain were noted by 35 (66%) and 25 (47%) of the 53 patients, respectively. Occlusive and protective shoes were worn in 51 (96.2%) and 31 (58.4%) of the 53 cases, respectively. CONCLUSION: Pitted keratolysis commonly affects young male patients wearing protective shoes for professional reasons, inducing a moist and warm environment. Hyperhidrosis, an unpleasant smell, and pain are the main clinical complaints.", 
+          "qas": [
+            {
+              "question": "Which bacteria causes erythrasma?", 
+              "id": "5a68f448b750ff4455000018_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Interdigital foot infections: Corynebacterium minutissimum and agents of superficial mycoses. Interdigital foot infections are mostly caused initially by dermatophytes, yeasts and less frequently by bacteria. Erythrasma caused by Corynebacterium minutissimum can be confused with superficial mycoses. The aim of the study was to determine the prevalence of the etiologic agents of superficial mycoses and the frequency of Corynebacterium minutissimum in interdigital foot infections. All the samples obtained from the 121 patients with interdigital foot infections were examined directly with the use of 20% potassium hydroxide mounts and Gram stain under the microscope and cultured on Sabouraud's dextrose agar plates. In identification of superficial mycoses, the rate was found to be 14% with the cultural method and 14% with direct microscopic examination. Using a combination of direct microscopic examination and culture, a 33.8% ratio was achieved. In the culture of these samples, the most isolated factor was Trichophyton rubrum (33.7%). In 24 of the patients (19.8%) Corynebacterium minutissimum was detected by Gram staining, in 6 of these patients Trichophyton rubrum was found, Trichophyton mentagrophytes was found in 2 and Trichosporon spp. was found in 1. The examination of interdigital foot lesions in the laboratory, the coexistence of erythrasma with dermatophytes and yeast should be considered.", 
+          "qas": [
+            {
+              "question": "Which bacteria causes erythrasma?", 
+              "id": "5a68f448b750ff4455000018_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Management of cutaneous erythrasma. Corynebacterium minutissimum is the bacteria that leads to cutaneous eruptions of erythrasma and is the most common cause of interdigital foot infections. It is found mostly in occluded intertriginous areas such as the axillae, inframammary areas, interspaces of the toes, intergluteal and crural folds, and is more common in individuals with diabetes mellitus than other clinical patients. This organism can be isolated from a cutaneous site along with a concurrent dermatophyte or Candida albicans infection. The differential diagnosis of erythrasma includes psoriasis, dermatophytosis, candidiasis and intertrigo, and methods for differentiating include Wood's light examination and bacterial and mycological cultures. Erythromycin 250mg four times daily for 14 days is the treatment of choice and other antibacterials include tetracycline and chloramphenicol; however, the use of chloramphenicol is limited by bone marrow suppression potentially leading to neutropenia, agranulocytosis and aplastic anaemia. Further studies are needed but clarithromycin may be an additional drug for use in the future. Where there is therapeutic failure or intertriginous involvement, topical solutions such as clindamycin, Whitfield's ointment, sodium fusidate ointment and antibacterial soaps may be required for both treatment and prophylaxis. Limited studies on the efficacy of these medications exist, however, systemic erythromycin demonstrates cure rates as high as 100%. Compared with tetracyclines, systemic erythromycin has greater efficacy in patients with involvement of the axillae and groin, and similar efficacy for interdigital infections. Whitfield's ointment has equal efficacy to systemic erythromycin in the axillae and groin, but shows greater efficacy in the interdigital areas and is comparable with 2% sodium fusidate ointment for treatment of all areas. Adverse drug effects and potential drug interactions need to be considered. No cost-effectiveness data are available but there are limited data on cost-related treatment issues. A guideline is proposed for the detection, evaluation, treatment and prophylaxis of this cutaneous eruption.", 
+          "qas": [
+            {
+              "question": "Which bacteria causes erythrasma?", 
+              "id": "5a68f448b750ff4455000018_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Skin and wound infections: an overview. Skin infections are common and may be caused by bacteria, fungi or viruses. Breaks in the skin integrity, particularly those that inoculate pathogens into the dermis, frequently cause or exacerbate skin infections. Bacterial skin infections caused by corynebacteria include erythrasma, trichomycosis axillaris and pitted keratolysis. Staphylococci may cause impetigo, ecthyma and folliculitis. Streptococcal skin infections include impetigo and erysipelas. Human papillomavirus skin infections present as several different types of warts, depending on the surface infected and its relative moisture, and the patterns of pressure. The many dermatomycoses (skin infections caused by fungi or yeasts) include tinea capitis, tinea barbae, tinea cruris, tinea manus, tinea pedis and tinea unguium (onychomycosis). Candidal infections occur in moist areas, such as the vulva, mouth, penis, skinfolds and diaper area. Wounds caused by wood splinters or thorns may result in sporotrichosis. Animal bites may result in complex, serious infections, requiring tetanus and, possibly, rabies prophylaxis in addition to appropriate antibiotic therapy.", 
+          "qas": [
+            {
+              "question": "Which bacteria causes erythrasma?", 
+              "id": "5a68f448b750ff4455000018_004"
+            }
+          ]
+        }, 
+        {
+          "context": "RNAi therapy targeting KRAS in combination with chemotherapy for locally advanced pancreatic cancer patients. PURPOSE: The miniature biodegradable implant siG12D-LODER\u2122 was inserted into a tumor and released a siRNA drug against KRAS(G12D) along four months. This novel siRNA based drug was studied, in combination with chemotherapy, as targeted therapy for Locally Advanced Pancreatic Cancer (LAPC). METHODS: An open-label Phase 1/2a study in the first-line setting of patients with non-operable LAPC was initiated. In this study patients were assigned to receive a single dose of siG12D-LODERs, in three escalating dose cohorts (0.025mg, 0.75mg and 3.0mg). Gemcitabine was given on a weekly basis, following the siG12D-LODERTM insertion, until disease progression. The recommended dose was further examined with modified FOLFIRINOX. The follow up period was eight weeks and survival until death. RESULTS: Fifteen patients with LAPC were enrolled. Among the 15 treated patients, the most frequent adverse events observed were grade 1or 2 in severity (89%); five patients experienced serious adverse events (SAEs). In 12 patients analyzed by CT scans, none showed tumor progression, the majority (10/12) demonstrated stable disease and two showed partial response. Decrease in tumor marker CA19-9 was observed in 70% (7/10) of patients. Median overall survival was 15.12 months; 18 month survival was 38.5%. CONCLUSIONS: The combination of siG12D-LODER\u2122 and chemotherapy is well tolerated, safe and demonstrated a potential efficacy in patients with LAPC. NCT01188785.", 
+          "qas": [
+            {
+              "question": "Which siRNA based drug is in clinical trials for the treatment of pancreatic cancer?", 
+              "id": "5a74a8a70384be9551000005_000"
+            }
+          ]
+        }, 
+        {
+          "context": "How to use \u2026 the Monospot and other heterophile antibody tests. Epstein-Barr virus (EBV) is a highly prevalent virus, transmitted via saliva, which often causes asymptomatic infection in children but frequently results in infectious mononucleosis in adolescents. Heterophile antibody tests, including the Monospot test, are red cell or latex agglutination assays, which detect antired cell antibodies produced as part of a polyclonal antibody response occurring during EBV infection. Heterophile antibody tests are rapid, cheap and specific tests that can be performed from the onset of symptoms of infectious mononucleosis. In adolescents, heterophile antibody tests have high specificity and sensitivity in the diagnosis of primary acute EBV infection. However, the tests have low sensitivity and low negative predictive value in young children and are not useful under the age of 4. Heterophile tests may be positive in other viral infections, autoimmune disease and haematological malignancies, but do not appear to be positive in primary bacterial infection. Virus-specific serology is required in children under the age of 4 or if an older child is heterophile negative. Virus-specific serology allows diagnosis and the pattern of positivity and negativity enables the clinician to stage the EBV infection. Virus-specific serology appears to have better sensitivity in young children, but there is cross-reaction with other herpesvirus infections, a longer turnaround time and it is more expensive to perform. Further research is needed to establish which children benefit from and hence require testing for heterophile antibodies, the cost-effectiveness of EBV investigations and whether heterophile titres have predictive value for the severity of infection and the likelihood of complications.", 
+          "qas": [
+            {
+              "question": "Which virus can be diagnosed with the monospot test?", 
+              "id": "5a690487b750ff445500001f_000"
+            }
+          ]
+        }, 
+        {
+          "context": "The epidemiology of infectious mononucleosis in Northern Scotland: a decreasing incidence and winter peak. BACKGROUND: Infection with Epstein-Barr virus (EBV) is almost ubiquitous in humans and generally occurs at two ages: infantile, which is usually asymptomatic and associated with poorer socioeconomic conditions, and adolescent, which causes infectious mononucleosis (IM) in ~25% cases. The determinants of whether the infection causes IM remain uncertain. We aimed to evaluate seasonality and temporal trends in IM. METHODS: Data from all Monospot tests, used as a marker for IM, were collected from the Grampian population over 16 years. RESULTS: Positive Monospot test results peaked at 17 years in females and 19 in males. Females had 16% more diagnoses, although 55% more tests. IM was ~38% more common in winter than summer. The annual rate of positive tests decreased progressively over the study period, from 174/100 000 (95% CI 171-178) in 1997 to 67/100 000 (95% CI 65-69) in 2012. CONCLUSIONS: IM appears to be decreasing in incidence, which may be caused by changing environmental influences on immune systems. One such factor may be exposure to sunlight.Words 168. FUNDING: The Medical Research Council and NHS Grampian-MS endowments.", 
+          "qas": [
+            {
+              "question": "Which virus can be diagnosed with the monospot test?", 
+              "id": "5a690487b750ff445500001f_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Current diagnosis and management of infectious mononucleosis. PURPOSE OF REVIEW: Infectious mononucleosis is a common, usually self-limited disease. However, infectious mononucleosis may present with severe manifestations. Complications may also occur. Consequently, diagnostic and treatment issues regarding infectious mononucleosis are of major importance. RECENT FINDINGS: In this review, we focus on the evaluation of articles providing diagnosis and treatment data for infectious mononucleosis, published during the past 2 years. Twelve studies, deriving from extended search in PubMed, were included. Nine studies provided diagnosis data. The evaluated diagnostic methods were real-time PCR (RT-PCR), IgM/IgG antibodies measured with different assays [measurement of Epstein-Barr virus viral load (EBV-VL) in peripheral blood, neutrophil/lymphocyte/monocyte counts, C-reactive protein values, and monospot test]. The sensitivities reported for RT-PCR were high. The available treatment data were scarce (three studies). Two of them suggested that antivirals (mainly acyclovir and valacyclovir) may have a role in the treatment of infectious mononucleosis with complications, whereas the remaining study presented novel potential therapeutic patents including 5-substituted uracyle, azacytosine derivatives, and peptides inhibiting EBV-mediated membrane fusion. SUMMARY: RT-PCR and measurement of EBV-VL may provide useful tools for the early diagnosis of infectious mononucleosis in cases with inconclusive serological results. Antiviral agents may provide a useful treatment option in patients with severe infectious mononucleosis.", 
+          "qas": [
+            {
+              "question": "Which virus can be diagnosed with the monospot test?", 
+              "id": "5a690487b750ff445500001f_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Erythema multiforme-like lesions in the course of infectious mononucleosis. BACKGROUND: The rash in infectious mononucleosis is usually diffusely macular. MAIN OBSERVATIONS: A 15-year-old boy presented to us with high grade fever, sore throat, malaise, body aches, and polyarthralgia. He developed annular, erythematous, and non-scaly eruptions on chest and right arm. Blanching erythema was noted on his trunk. He had bilateral tender cervical lymph nodes, severe pharyngeal congestion, petechiae on soft palate, uvular edema, infraorbital edema, and marginal tender hepatomegaly. Investigations revealed lymphocytosis and activated atypical lymphocytes in the peripheral smear, and positive monospot test. The boy subsequently recovered in one week with total disappearance of his rash. Epstein-Barr virus-related infectious mononucleosis was considered the most likely diagnosis for our patient. CONCLUSIONS: To our knowledge, this atypical case is the third reported case of annular lesions in infectious mononucleosis. Dermatologists and other clinicians should be alerted to this special presentation of primary EBV infection.", 
+          "qas": [
+            {
+              "question": "Which virus can be diagnosed with the monospot test?", 
+              "id": "5a690487b750ff445500001f_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Henoch-Schonlein purpura associated with primary active Epstein-Barr virus infection: a case report. Henoch-Sch\u00f6nlein purpura (HSP) is the most common form of childhood vasculitis. Various viral and bacterial infections, drugs, vaccines, food allergy and even insect bites have been considered as triggering factors in pathogenesis of HSP. Epstein-Barr virus (EBV) infection, which is associated with HSP, have been rarely reported. Herein we present HSP patient possibly caused by EBV infection. A 8-year old boy was admitted to our department with fever, rashes on legs and arms and intermittent mild abdominal pain. Multiple purpuric rashes were on his extremities, abdomen and buttock. Laboratory investigations revealed that monospot test was positive, EBV serology tests; Anti-EA-D Ig G: 3+, Anti-VCA gp125 Ig G: 3+, Anti-VCA p19 Ig M: 2+, Anti EBNA-1 Ig M: negative, Anti EBNA-1 Ig M: negative, Anti EBNA-1 Ig G: negative. The patient was interpreted as the primary active acute EBV infection. A skin biopsy showed leucocytoclastic vasculitis. The other viral and bacterial investigations were negative. The patient was diagnosed as HSP vasculitis according to EULAR criteria and treated with intravenous hydration and ibuprofen. He was discharged after 15 days with normal laboratory findings and physical examination. We think that EBV infection may be stimulant factor for autoimmune reactions and may cause HSP vasculitis. Hence, it may be useful to investigate the EBV infection in etiology of HSP cases.", 
+          "qas": [
+            {
+              "question": "Which virus can be diagnosed with the monospot test?", 
+              "id": "5a690487b750ff445500001f_004"
+            }
+          ]
+        }, 
+        {
+          "context": "Chest pain in a young patient: an unusual complication of Epstein-Barr virus. A 29-year-old man presented with sudden left-sided pleuritic chest pain on a background of sore throat during the preceding week. On examination he had tender cervical lymphadenopathy, he was tachycardic and had a 24 mm Hg blood pressure difference between the left and right arms. Bloods revealed deranged liver function tests and a lymphocytosis. His D-dimer was raised, hence he was treated for presumed pulmonary embolism before imaging was available. Monospot test was positive. He subsequently had both a CT pulmonary angiogram and a CT angiogram of the aorta to exclude pulmonary embolism and aortic dissection. The CT revealed splenomegaly with a large subdiaphragmatic haematoma secondary to splenic rupture. This had likely caused referred pain through diaphragmatic irritation. He was taken to theatre for urgent splenectomy. The unifying diagnosis was infectious mononucleosis complicated by spontaneous splenic rupture secondary to Epstein-Barr virus infection.", 
+          "qas": [
+            {
+              "question": "Which virus can be diagnosed with the monospot test?", 
+              "id": "5a690487b750ff445500001f_005"
+            }
+          ]
+        }, 
+        {
+          "context": "False positivity of monospot test in an immunocompetent elderly woman with acute cytomegalovirus infection. A 75-year-old woman presented with altered mental status, septic picture, and influenza-like symptoms. Initial investigations revealed atypical lymphocytosis, thrombocytopenia, elevated liver enzymes, and a positive monospot test result. Further investigation showed the Epstein-Barr virus viral capsid antibody IgM/IgG and Epstein-Barr virus DNA by polymerase chain reaction to be negative; however, interestingly her cytomegalovirus (CMV) IgM and IgG were positive, suggesting that her mononucleosis-like syndrome was due to acute CMV infection. Herein, we report the first case of a heterophile-positive mononucleosis syndrome caused by acute CMV infection in an elderly immunocompetent woman. This case conveys that monospot test can yield false-positive result in the setting of acute CMV infection.", 
+          "qas": [
+            {
+              "question": "Which virus can be diagnosed with the monospot test?", 
+              "id": "5a690487b750ff445500001f_006"
+            }
+          ]
+        }, 
+        {
+          "context": "Acute hepatitis: a rare complication of Epstein-Barr virus (EBV) infection. Infectious Mononucleosis (IM), a benign lymphoproliferative disease, is the best known clinical syndrome caused by Epstein-Barr Virus (EBV). It usually resolves over a period of weeks or months without sequelae but may occasionally be complicated by a wide variety of neurologic, hematologic, hepatic, respiratory, and psychological complications. In this report we describe a patient with acute hepatitis following EBV-IM in a previously healthy woman. A 26-year-old woman who presented with fever, generalized weakness, nausea, sore throat, yellowing of skin, and a generalized skin rash was admitted to our clinic. Tonsillar enlargement, pharyngeal erythema, palatal petechiae, lymphadenopathy, and jaundice were noted. Significant atypical lymphocytes ( > 10%) were seen on the peripheral blood smear. Liver function tests such as ALT: 303 U/L, AST: 172 U/L, ALP: 193 U/L and total bilirubin: 7.3 mg/dl were elevated. Serological tests for EBV infection were consistent with acute infection (EBV virus capsid antigen was reactive with IgM and IgG antibodies). The Monospot test was also positive. On the seventh day, liver function tests and bilirubin had risen to peak level and platelets were decreased. The patient was managed supportively and her critical condition improved and was finally stabilized. Although the prognosis for IM is very favorable, a variety of acute complications may occur.", 
+          "qas": [
+            {
+              "question": "Which virus can be diagnosed with the monospot test?", 
+              "id": "5a690487b750ff445500001f_007"
+            }
+          ]
+        }, 
+        {
+          "context": "recount workflow: Accessing over 70,000 human RNA-seq samples with Bioconductor. The recount2 resource is composed of over 70,000 uniformly processed human RNA-seq samples spanning TCGA and SRA, including GTEx. The processed data can be accessed via the recount2 website and the \n            recount\n           Bioconductor package. This workflow explains in detail how to use the \n            recount\n           package and how to integrate it with other Bioconductor packages for several analyses that can be carried out with the recount2 resource. In particular, we describe how the coverage count matrices were computed in recount2 as well as different ways of obtaining public metadata, which can facilitate downstream analyses. Step-by-step directions show how to do a gene-level differential expression analysis, visualize base-level genome coverage data, and perform an analyses at multiple feature levels. This workflow thus provides further information to understand the data in recount2 and a compendium of R code to use the data.", 
+          "qas": [
+            {
+              "question": "Which workflow in Bioconductor has been developed for accessing human RNA-seq samples?", 
+              "id": "5a6e24a5b750ff445500003c_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Efficacy and safety of voretigene neparvovec (AAV2-hRPE65v2) in patients with RPE65-mediated inherited retinal dystrophy: a randomised, controlled, open-label, phase 3 trial. BACKGROUND: Phase 1 studies have shown potential benefit of gene replacement in RPE65-mediated inherited retinal dystrophy. This phase 3 study assessed the efficacy and safety of voretigene neparvovec in participants whose inherited retinal dystrophy would otherwise progress to complete blindness. METHODS: In this open-label, randomised, controlled phase 3 trial done at two sites in the USA, individuals aged 3 years or older with, in each eye, best corrected visual acuity of 20/60 or worse, or visual field less than 20 degrees in any meridian, or both, with confirmed genetic diagnosis of biallelic RPE65 mutations, sufficient viable retina, and ability to perform standardised multi-luminance mobility testing (MLMT) within the luminance range evaluated, were eligible. Participants were randomly assigned (2:1) to intervention or control using a permuted block design, stratified by age (<10 years and > 10 years) and baseline mobility testing passing level (pass at > 125 lux vs <125 lux). Graders assessing primary outcome were masked to treatment group. Intervention was bilateral, subretinal injection of 1\u00b75 \u00d7 10 vector genomes of voretigene neparvovec in 0\u00b73 mL total volume. The primary efficacy endpoint was 1-year change in MLMT performance, measuring functional vision at specified light levels. The intention-to-treat (ITT) and modified ITT populations were included in primary and safety analyses. This trial is registered with ClinicalTrials.gov, number NCT00999609, and enrolment is complete. FINDINGS: Between Nov 15, 2012, and Nov 21, 2013, 31 individuals were enrolled and randomly assigned to intervention (n=21) or control (n=10). One participant from each group withdrew after consent, before intervention, leaving an mITT population of 20 intervention and nine control participants. At 1 year, mean bilateral MLMT change score was 1\u00b78 (SD 1\u00b71) light levels in the intervention group versus 0\u00b72 (1\u00b70) in the control group (difference of 1\u00b76, 95% CI 0\u00b772-2\u00b741, p=0\u00b70013). 13 (65%) of 20 intervention participants, but no control participants, passed MLMT at the lowest luminance level tested (1 lux), demonstrating maximum possible improvement. No product-related serious adverse events or deleterious immune responses occurred. Two intervention participants, one with a pre-existing complex seizure disorder and another who experienced oral surgery complications, had serious adverse events unrelated to study participation. Most ocular events were mild in severity. INTERPRETATION: Voretigene neparvovec gene replacement improved functional vision in RPE65-mediated inherited retinal dystrophy previously medically untreatable. FUNDING: Spark Therapeutics.", 
+          "qas": [
+            {
+              "question": "Which retinal dystrophy related gene is targeted by the AAV2-hRPE65v2 drug?", 
+              "id": "5a74b1730384be9551000007_000"
+            }
+          ]
+        }, 
+        {
+          "context": "CancerSubtypes: an R/Bioconductor package for molecular cancer subtype identification, validation and visualization. Summary: Identifying molecular cancer subtypes from multi-omics data is an important step in the personalized medicine. We introduce CancerSubtypes, an R package for identifying cancer subtypes using multi-omics data, including gene expression, miRNA expression and DNA methylation data. CancerSubtypes integrates four main computational methods which are highly cited for cancer subtype identification and provides a standardized framework for data pre-processing, feature selection, and result follow-up analyses, including results computing, biology validation and visualization. The input and output of each step in the framework are packaged in the same data format, making it convenience to compare different methods. The package is useful for inferring cancer subtypes from an input genomic dataset, comparing the predictions from different well-known methods and testing new subtype discovery methods, as shown with different application scenarios in the Supplementary Material. Availability and implementation: The package is implemented in R and available under GPL-2 license from the Bioconductor website (http://bioconductor.org/packages/CancerSubtypes/). Contact: thuc.le@unisa.edu.au or jiuyong.li@unisa.edu.au. Supplementary information: Supplementary data are available at Bioinformatics online.", 
+          "qas": [
+            {
+              "question": "Which R/Bioconductor package has been developed for cancer subtype identification?", 
+              "id": "5a6e3155b750ff445500003f_000"
+            }
+          ]
+        }, 
+        {
+          "context": "DeepBlueR: large-scale epigenomic analysis in R. Motivation: While large amounts of epigenomic data are publicly available, their retrieval in a form suitable for downstream analysis is a bottleneck in current research. The DeepBlue Epigenomic Data Server provides a powerful interface and API for filtering, transforming, aggregating and downloading data from several epigenomic consortia. Results: To make public epigenomic data conveniently available for analysis in R, we developed an R/Bioconductor package that connects to the DeepBlue Epigenomic Data Server, enabling users to quickly gather and transform epigenomic data from selected experiments for analysis in the Bioconductor ecosystem. Availability and Implementation: http://deepblue.mpi-inf.mpg.de/R . Requirements: R 3.3, Bioconductor 3.4. Contact: felipe.albrecht@mpi-inf.mpg.de or markus.list@mpi-inf.mpg.de. Supplementary information: Supplementary data are available at Bioinformatics online.", 
+          "qas": [
+            {
+              "question": "Which R/bioconductor package has been developed to aid in epigenomic analysis?", 
+              "id": "5a6e354fb750ff4455000042_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Hereditary renal amyloidosis associated with a mutant fibrinogen alpha-chain. Three members of a family who died with renal amyloidosis were found to share a single nucleotide substitution in the fibrinogen alpha-chain gene. The predicted arginine to leucine mutation (Arg554Leu) was proven by amino acid sequence analysis of amyloid fibril protein isolated from postmortem kidney of an affected individual. Direct genomic DNA sequencing and restriction fragment length polymorphism analysis demonstrated that all three affected individuals had the guanine to thymine 4993 transversion. This is the first demonstration of hereditary amyloidosis associated with a variant fibrinogen alpha-chain. Variants of circulating fibrinogen may be the cause of a number of systemic amyloidoses with primarily renal involvement.", 
+          "qas": [
+            {
+              "question": "What protein is the most common cause of hereditary  renal amyloidosis?", 
+              "id": "5a6a02a3b750ff4455000021_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Hereditary apolipoprotein AI-associated renal amyloidosis: A diagnostic challenge. Hereditary renal amyloidosis is an autosomal dominant condition with considerable overlap with other amyloidosis types. Differential diagnosis is complicated, but is relevant for prognosis and treatment. We describe a patient with nephrotic syndrome and progressive renal failure, who had a mother with renal amiloidosis. Renal biopsy revealed amyloid deposits in glomerular space, with absence of light chains and protein AA. We suspected amyloidosis with fibrinogen A alpha chain deposits, which is the most frequent cause of hereditary amyloidosis in Europe, with a glomerular preferential affectation. However, the genetic study showed a novel mutation in apolipoprotein AI. On reviewing the biopsy of the patient's mother similar glomerular deposits were found, but there were significant deposits in the renal medulla as well, which is typical in APO AI amyloidosis. The diagnosis was confirmed by immunohistochemistry. Apo AI amyloidosis is characterized by slowly progressive renal disease and end-stage renal disease occurs aproximately 3 to 15 years from initial diagnosis. Renal transplantation offers an acceptable graft survival and in these patients with hepatorenal involvement simultaneous liver and kidney transplantation could be considered.", 
+          "qas": [
+            {
+              "question": "What protein is the most common cause of hereditary  renal amyloidosis?", 
+              "id": "5a6a02a3b750ff4455000021_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Renal Amyloidosis Associated With 5 Novel\u00a0Variants in the Fibrinogen A Alpha Chain Protein. Introduction: Fibrinogen A alpha chain amyloidosis is an autosomal dominant disease associated with mutations in the fibrinogen A alpha chain (FGA) gene, and it is the most common cause of hereditary renal amyloidosis in the UK. Patients typically present with kidney impairment and progress to end-stage renal disease over a median time of 4.6 years. Methods: Six patients presented with proteinuria, hypertension, and/or lower limb edema and underwent detailed clinical and laboratory investigations. Results: A novel FGA gene mutation was identified in each case: 2 frameshift mutations F521Sfs*27 and G519Efs*30 and 4 single base substitutions G555F, E526K, E524K, R554H. In 5 subjects, extensive amyloid deposits were found solely within the glomeruli, which stained specifically with\u00a0antibodies to fibrinogen A alpha chain, and in one of these cases, we found coexistent fibrinogen A\u00a0alpha chain amyloidosis and anti-glomerular basement membrane antibody disease. One patient was diagnosed with light-chain amyloidosis after a bone marrow examination revealed a small clonal\u00a0plasma cell population, and laser microdissection of the amyloid deposits followed by liquid\u00a0chromatography and tandem mass spectrometry identified kappa light chain as the fibril protein. Discussion: We report 6 novel mutations in the FGA gene: 5 were associated with renal fibrinogen A alpha chain amyloidosis and 1 was found to be incidental to light-chain amyloid deposits discovered in a patient with a plasma cell dyscrasia. Clinical awareness and suspicion of hereditary amyloidosis corroborated by genetic analysis and adequate typing using combined immunohistochemistry and laser microdissection and mass spectrometry is valuable to avoid misdiagnosis, especially when a family history of amyloidosis is absent.", 
+          "qas": [
+            {
+              "question": "What protein is the most common cause of hereditary  renal amyloidosis?", 
+              "id": "5a6a02a3b750ff4455000021_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Clinics in diagnostic imaging (175). Corpus callosum glioblastoma multiforme (GBM): butterfly glioma. A 54-year-old man presented with change in behaviour, nocturnal enuresis, abnormal limb movement and headache of one week's duration. The diagnosis of butterfly glioma (glioblastoma multiforme) was made based on imaging characteristics and was further confirmed by biopsy findings. As the corpus callosum is usually resistant to infiltration by tumours, a mass that involves and crosses the corpus callosum is suggestive of an aggressive neoplasm. Other neoplastic and non-neoplastic conditions that may involve the corpus callosum and mimic a butterfly glioma, as well as associated imaging features, are discussed.", 
+          "qas": [
+            {
+              "question": "What is the most common histological diagnosis of \"butterfly glioma\"?", 
+              "id": "5a7234352dc08e987e000007_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Adult neuronal ceroid lipofuscinosis with clinical findings consistent with a butterfly glioma. Case report. The authors report a case of neuronal ceroid lipofuscinosis (Kufs' disease) confirmed by stereotactically obtained brain biopsy findings and initially diagnosed as a butterfly glioma. The presenting symptoms in the 64-year-old patient were mental alterations with progressive dementia, followed by muscular atrophy and myoclonia with distal preponderance. The mild initial disturbances of coordination increased, and the patient developed a markedly ataxic gait. Computerized tomography (CT) scanning and magnetic resonance imaging revealed generalized cerebral atrophy and a bifrontal space-occupying lesion involving the callosum. The original \"clearcut\" diagnosis of glioblastoma multiforme, based on CT scans, was unexpectedly disproved by examination of stereotactically obtained brain biopsy specimens, which revealed a neuronal ceroid lipofuscinosis (Kufs' disease). To the authors' knowledge, this is the first report of a case presenting with both diffuse brain atrophy and localized accumulation of neuronal lipofuscin, mimicking a mass lesion on radiological studies.", 
+          "qas": [
+            {
+              "question": "What is the most common histological diagnosis of \"butterfly glioma\"?", 
+              "id": "5a7234352dc08e987e000007_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Diverse molecular pattern in a bihemispheric glioblastoma (butterfly glioma) in a 16-year-old boy. Glioblastoma multiforme (GBM), the most common malignant brain tumor of adults, is relatively rare in children. In a GBM affecting a 16-year-old boy, the tumor spread across the corpus callosum (butterfly glioma). This type of bilateral hemispheric growth has previously been thought to result from spread along the white matter tracts. Two samples obtained from opposite sides of the same tumor were analyzed comprehensively for loss of heterozygosity (LOH) and microsatellite instability (MSI). Amplification of EGFR and MDM2 was studied by means of multiplex polymerase chain reaction. Exons 5, 6, 7, and 8 of TP53 were screened for mutations by sequencing. In neither specimen were molecular alterations found in the EGFR, MDM2, or TP53 genes. The specimen obtained from the right hemisphere exhibited a high level of MSI and LOH in chromosome arms 5q, 9p, and 13q. The specimen from the left hemisphere exhibited LOH in chromosome arms 3p, 5q, 9p, 9q, 10p, 10q, and 13q. Here we propose four plausible hypothetical scenarios underlying the tumorigenesis of this GBM.", 
+          "qas": [
+            {
+              "question": "What is the most common histological diagnosis of \"butterfly glioma\"?", 
+              "id": "5a7234352dc08e987e000007_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Canine Butterfly Glioblastomas: A Neuroradiological Review. In humans, high-grade gliomas may infiltrate across the corpus callosum resulting in bihemispheric lesions that may have symmetrical, winged-like appearances. This particular tumor manifestation has been coined a \"butterfly\" glioma (BG). While canine and human gliomas share many neuroradiological and pathological features, the BG morphology has not been previously reported in dogs. Here, we describe the magnetic resonance imaging (MRI) characteristics of BG in three dogs and review the potential differential diagnoses based on neuroimaging findings. All dogs presented for generalized seizures and interictal neurological deficits referable to multifocal or diffuse forebrain disease. MRI examinations revealed asymmetrical (2/3) or symmetrical (1/3), bihemispheric intra-axial mass lesions that predominantly affected the frontoparietal lobes that were associated with extensive perilesional edema, and involvement of the corpus callosum. The masses displayed heterogeneous T1, T2, and fluid-attenuated inversion recovery signal intensities, variable contrast enhancement (2/3), and mass effect. All tumors demonstrated classical histopathological features of glioblastoma multiforme (GBM), including glial cell pseudopalisading, serpentine necrosis, microvascular proliferation as well as invasion of the corpus callosum by neoplastic astrocytes. Although rare, GBM should be considered a differential diagnosis in dogs with an MRI evidence of asymmetric or symmetric bilateral, intra-axial cerebral mass lesions with signal characteristics compatible with glioma.", 
+          "qas": [
+            {
+              "question": "What is the most common histological diagnosis of \"butterfly glioma\"?", 
+              "id": "5a7234352dc08e987e000007_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Butterfly Tumor of the Corpus Callosum: Clinical Characteristics, Diagnosis, and Survival Analysis. BACKGROUND: The pathologies implicate the bilateral corpus callosum that builds the butterfly pattern on axial view. These tumors have seldom been investigated for both clinical manifestations and outcome. OBJECTIVE: The objective of this study was to describe the clinical characteristics and outcomes of the butterfly tumor and to identify the predictive factors associated with survival outcome. METHODS: A retrospective study of 50 butterfly tumor was conducted between 2003 and 2016. The clinical characteristics, imaging, and outcome were assessed for the purpose of descriptive analysis. Using the Kaplan-Meier method, the median overall survival of the butterfly tumor was determined. Furthermore, the Cox proportional hazard regression was the estimated hazard ratio for death. RESULTS: Diffuse large B-cell lymphoma was common of butterfly lesions. The mortality rate was 78% and overall median survival time was 16.03 months (95% confidence interval: 14.0-19.8). Using Cox proportional hazards regression, the independent prognostic factors were Karnofsky Performance Status score < 70, splenium involvement, and butterfly glioblastoma. CONCLUSIONS: The butterfly tumor is a poor prognostic disease compared with each histology subgroup. Further molecular investigation is preferable to explore genetic variations associated with these tumors.", 
+          "qas": [
+            {
+              "question": "What is the most common histological diagnosis of \"butterfly glioma\"?", 
+              "id": "5a7234352dc08e987e000007_004"
+            }
+          ]
+        }, 
+        {
+          "context": "Metastatic Adenoid Cystic Carcinoma Mimicking Butterfly Glioblastoma: A Rare Presentation in the Splenium of the Corpus Callosum. BACKGROUND: Intracranial spread of an adenoid cystic carcinoma (ACC) of the parotid gland is rare, and metastatic ACC to the splenium of the corpus callosum mimicking butterfly glioblastoma (GBM) has not been reported previously. We report a rare case of metastasis to the splenium of the corpus callosum from ACC of the parotid gland. CASE DESCRIPTION: The tumor occupied the splenium and mimicked the presentation of a butterfly glioma. The patient had undergone parotidectomy 5 years before presentation with this intracranial lesion. On magnetic resonance imaging, the lesion was separate from the pineal gland and displaced the internal cerebral veins downward. Ventricular obstruction and increased cellularity were also suggested, and multiple fluid-filled cystic spaces were observed. The tumor was partially resected, because the extreme lateral boundary could not be visualized. Histological analysis with anti-c-kit antibody showed strong expression of the epithelial component; immunohistochemistry with anti-p63 antibody revealed nests of positive tumor cells, highlighting the myoepithelial component. The tumor also stained positive for anti-Myb antibody. CONCLUSIONS: The treatment for this lesion is surgical debulking followed by radiation therapy; however, the overall prognosis remains grim because of limited chemotherapy options and a propensity for recurrence in both local and distant fashions. When a tumor with adenoid histological features and a \"butterfly\" phenotype grows in the corpus callosum in a patient with known parotid ACC, both metastasis and adenoid variant GBM should be considered. Careful clinical and radiological correlation is required to diagnose and treat this rare lesion.", 
+          "qas": [
+            {
+              "question": "What is the most common histological diagnosis of \"butterfly glioma\"?", 
+              "id": "5a7234352dc08e987e000007_005"
+            }
+          ]
+        }, 
+        {
+          "context": "Increased NLRP3-dependent interleukin 1\u03b2 secretion in patients with familial Mediterranean fever: correlation with MEFV genotype. OBJECTIVES: To define in patients affected by familial Mediterranean fever (FMF) whether or not interleukin (IL)-1\u03b2 secretion (1) is enhanced, (2) correlates with the type of MEFV mutation and (3) is mediated by NLRP3. METHODS: Freshly isolated monocytes from 21 patients with FMF (12 homozygous and 9 heterozygous), 14 MEFV healthy carriers and 30 healthy donors (HDs), unstimulated or after lipopolysaccharide (LPS)-induced activation, were analysed for redox state (production of reactive oxygen species (ROS) and antioxidant responses) and IL-1\u03b2 and IL-1 receptor antagonist (IL-1Ra) secretion. NLRP3 down-modulation was induced by in vitro silencing of the NLRP3 gene. RESULTS: LPS-stimulated monocytes from patients with FMF displayed enhanced IL-1\u03b2 secretion, which correlated with number and penetrance of MEFV mutations. Silencing of NLRP3 consistently inhibited IL-1\u03b2 secretion. As in other autoinflammatory diseases, FMF monocytes produced more ROS than genetically negative cells from HDs. Unlike in cryopyrin-associated periodic fever syndromes (CAPS), however, they were characterised by a conserved and sustained antioxidant response. Consistent with this finding, activated MEFV-mutated monocytes did not exhibit the functional indicators of oxidative stress observed in CAPS, including accelerated IL-1\u03b2 secretion and deficient production of IL-1Ra. CONCLUSIONS: MEFV-mutated monocytes display enhanced IL-1\u03b2 secretion, which correlates with number of high-penetrance mutations and level of endogenous ROS. Unlike NLRP3-mutated cells, monocytes carrying MEFV mutations withstand oxidative stress and preserve IL-1Ra production, thereby limiting inflammation. Finally, in contrast with that found in the animal model, the increased secretion of IL-1\u03b2 by LPS-stimulated FMF monocytes is NLRP3-dependent.", 
+          "qas": [
+            {
+              "question": "What gene is mutated in Familial Mediterranean Fever?", 
+              "id": "5a6e42f1b750ff4455000046_000"
+            }
+          ]
+        }, 
+        {
+          "context": "The detection of a novel insertion mutation in exon 2 of the MEFV gene associated with familial mediterranean fever in a moroccan family. Familial Mediterranean fever (FMF) is a hereditary autoinflammatory disease that is inherited in an autosomal recessive manner and is caused by mutations in the MEFV gene. As the name indicates, FMF occurs within families and is more common in individuals of Mediterranean descent than in persons of any other ethnicity. To date, 314 mutations have been reported. We studied a Moroccan family with a total of five members, including a mother who was presenting with symptoms of FMF, while her four children remained asymptomatic. The five patients were screened by DNA sequencing of exon 2 and exon 10 of the MEFV gene. Then, complete exome sequencing analysis of the MEFV gene was done for the patients in whom a novel mutation was detected. This analysis identified a novel single base Cytosine (C) insertion mutation in the coding region of the MEFV gene, named c.441dupC (p. Glu148Argfs*5 or E148RfsX5), which resulted in a mutated Pyrin/Marenostrin protein. This is the first report of a new mutation in exon 2 of the MEFV gene in a Moroccan family. This novel insertion mutation may provide important information for further studies of FMF pathogenesis.", 
+          "qas": [
+            {
+              "question": "What gene is mutated in Familial Mediterranean Fever?", 
+              "id": "5a6e42f1b750ff4455000046_001"
+            }
+          ]
+        }, 
+        {
+          "context": "Familial Mediterranean fever associated with MEFV mutations in a large cohort of Cypriot patients. Familial Mediterranean fever (FMF) is caused by mutations in the MEFV gene and the spectrum of mutations among Greek-Cypriots with FMF-related symptoms was examined. Sequence analysis for exons 2, 3, 5, and 10 of the MEFV gene was performed in a cohort of 593 patients. A total of 70 patients carried mutations in the homozygote or compound heterozygote state, 128 were identified with one MEFV mutation and 395 had no mutations. Of the 268 identified alleles, p.Val726Ala (27.61%) was the most frequent followed by p.Met694Val (19.40%). The missense mutations p.Arg761His (3.73%) and p.Ala744Ser (2.24%) were identified as the rarest. An interesting finding is the high frequency (18.28%) of the complex p.Phe479Leu-p.Glu167Asp that was identified in 49 of the mutated alleles. The MEFV genotypes did not follow a binomial distribution and proved not to satisfy the HWE (P < 0.001). The high percentage (66.61%) of patients with unidentified mutations could be due to mutations in the rest of the coding or noncoding MEFV gene or due to mutations in other genes that are also causing Hereditary Recurrent Fevers. Results from this work indicate the high incidence of FMF in Cyprus and describe the spectrum of the mutations which occur in the country.", 
+          "qas": [
+            {
+              "question": "What gene is mutated in Familial Mediterranean Fever?", 
+              "id": "5a6e42f1b750ff4455000046_002"
+            }
+          ]
+        }, 
+        {
+          "context": "Familial Mediterranean fever gene mutations as a risk factor for early coronary artery disease. OBJECTIVE: Cardiovascular diseases (CVD) are very common in the general population. Atherosclerosis is the main pathogenesis. Familial Mediterranean fever (FMF) is an autosomal recessive disease. The gene causing FMF, designated MEFV, encodes a protein called pyrin or marenostrin that is expressed mainly in myeloid bone marrow precursors, neutrophils and monocytes. We herein aimed to determine the prevalence of MEFV mutations (all exon 2, 10 mutations) in patients with early coronary heart disease (early CHD) and coronary heart disease (CHD) with multiple risk factors and among the healthy subjects as controls. METHODS: A total of 197 patients and 119 healthy subjects were recruited and enrolled into three groups in terms of inclusion criteria. Ninety-one patients diagnosed with early CHD enrolled into group one (men <\u00a045\u00a0years of age, women <\u00a040\u00a0years of age), 106 patients with CHD (men >\u00a050\u00a0years of age) to group two and 119 healthy controls enrolled into group three. None of patients was diagnosed with FMF. The diagnosis of CHD was established on electrocardiographic changes, echocardiography and coronary angiography. RESULTS: Thirty-eight patients (41.8%) with early CHD, 17 patients (16%) with CHD and 24 healthy controls (20.2%) carried at least one mutated MEFV allele. Young patients with CHD have different risk factor profiles, clinical presentations and prognoses than older patients. Young patients with CHD usually have multiple risk factors. CONCLUSION: This study suggests that MEFV mutations in early CHD patients had significantly increased in contrast to CHD patients and healthy controls.", 
+          "qas": [
+            {
+              "question": "What gene is mutated in Familial Mediterranean Fever?", 
+              "id": "5a6e42f1b750ff4455000046_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Familial Mediterranean fever, review of the literature. Familial Mediterranean fever (FMF) is the most common monogenic periodic fever syndrome and characterized by recurrent episodes of fever, serositis, arthritis, dermal manifestations, and long-term renal complications. The MEFV gene was described in 1997 as the gene responsible for FMF and is inherited in autosomal recessive manner. It encodes mutated protein pyrin, an important player in the innate immune system and the component of inflammasome which leads to exaggerated inflammatory response through uncontrolled production of interleukin-1. The recent progress in molecular genetics and understanding of pathogenesis showed a more complicated picture of FMF inheritance, penetrance, and pathogenesis. The pathogenesis is not completely understood although the gene responsible for FMF has been identified. Whether the pyrin mutation effect in FMF is due to a loss of function or a gain of function is still controversial. The diagnosis is mainly clinical and the genetic testing is indicated to support it. Colchicine remains the mainstay of treatment of FMF since 1972. It decreases the attacks, improves quality of life, and prevents amyloidosis. The recent advances in genetic testing and molecular studies has led to the development of new therapies of interleukin-1 inhibitors; anakinra, canakinumab, and rilonacept.", 
+          "qas": [
+            {
+              "question": "What gene is mutated in Familial Mediterranean Fever?", 
+              "id": "5a6e42f1b750ff4455000046_004"
+            }
+          ]
+        }, 
+        {
+          "context": "Association of clinical and genetical features in FMF with focus on MEFV strip assay sensitivity in 452 children from western Anatolia, Turkey. The aim of this study was to determine the relationship between clinical findings and the most common mutated alleles of MEFV gene in a childhood population and to determine the sensitivity of the 12-mutation-strip assay test in familial Mediterranean fever (FMF). Records of 452 FMF children living in western Anatolia, Turkey, (12.3 \u00b1 4.7\u00a0years mean) were retrospectively reviewed. Of the 408 patients who met the Tel-Hashomer criteria, 364 were classified into two main groups (two-mutant/one-mutant allele) either of which had three subgroups. The two-mutant allele frequency was 51% and one-mutant allele 38%; 1% had complex-mutant alleles and 10% no mutant-alleles. The mean severity score was 8.3 \u00b1 2.5. Most common clinical features were fever (81.9%), abdominal pain (86.3%) and myalgia (58.8%), and the least common ones: diarrhea (1.7%), protracted febrile myalgia (1.2%) and acute orchitis (1.5%). We detected 33 different genotypes of the MEFV gene: the most common mutant allele was M694V followed by symptomatic allele mutation of E148Q. Although not significantly associated with clinical findings, P369S mutation was not rare (7.5%). Phenotype-genotype correlation revealed that patients with two-allele mutations had more severe clinical presentation and high constipation rate (22.5%); 32.6% of patients with M694V/M694V had splenomegaly. Acute orchitis and protracted febrile myalgia as rare clinical findings were more common in M694V homozygotes. Comparisons of clinical findings among patients with one-mutation allele were made for the first time, but no significant association was found. Positive predictive value of strip assay screening for 12 mutations was recorded as 89%. We suggest that whole sequence analysis for supportive diagnosis of FMF should be performed for selected patients only.", 
+          "qas": [
+            {
+              "question": "What gene is mutated in Familial Mediterranean Fever?", 
+              "id": "5a6e42f1b750ff4455000046_005"
+            }
+          ]
+        }, 
+        {
+          "context": "Accelerated apoptosis of neutrophils in familial mediterranean Fever. The causative mutations for familial Mediterranean fever (FMF) are located in the MEFV gene, which encodes pyrin. Pyrin modulates the susceptibility to apoptosis via its PYD domain, but how the mutated versions of pyrin affect apoptotic processes are poorly understood. Spontaneous and induced rates of systemic neutrophil apoptosis as well as the levels of proteins involved in apoptosis were investigated ex vivo in patients with FMF using flow cytometry and RT-qPCR. The freshly collected neutrophils from the patients in FMF remission displayed a significantly larger number of cells spontaneously entering apoptosis compared to control (6.27 \u00b1 2.14 vs. 1.69 \u00b1 0.18%). This elevated ratio was retained after 24 h incubation of neutrophils in the growth medium (32.4 \u00b1 7.41 vs. 7.65 \u00b1 1.32%). Correspondingly, the mRNA level for caspase-3 was also significantly increased under these conditions. In response to the inducing agents, the neutrophils from FMF patients also displayed significantly elevated apoptotic rates compared to control. The elevated rates, however, can be largely explained by the higher basal ratio of apoptotic cells in the former group. Monitoring of several proteins involved in apoptosis has not revealed any conventional mechanisms contributing to the enhanced apoptotic rate of neutrophils in FMF. Although the exact molecular mechanisms of accelerated neutrophil apoptosis in FMF remain unknown, it may provide a protection against excessive inflammation and tissue damage due to a massive infiltration of neutrophils in the acute period of the disease.", 
+          "qas": [
+            {
+              "question": "What gene is mutated in Familial Mediterranean Fever?", 
+              "id": "5a6e42f1b750ff4455000046_006"
+            }
+          ]
+        }, 
+        {
+          "context": "The risk of familial Mediterranean fever in MEFV heterozygotes: a statistical approach. BACKGROUND: Familial Mediterranean fever (FMF) is an autosomal recessive autoinflammatory disorder due to MEFV mutations and one of the most frequent Mediterranean genetic diseases. The observation of many heterozygous patients in whom a second mutated allele was excluded led to the proposal that heterozygosity could be causal. However, heterozygosity might be coincidental in many patients due to the very high rate of mutations in Mediterranean populations. OBJECTIVE: To better delineate the pathogenicity of heterozygosity in order to improve genetic counselling and disease management. METHODS: Complementary statistical approaches were used: estimation of FMF prevalence at population levels, genotype comparison in siblings from 63 familial forms, and genotype study in 557 patients from four Mediterranean populations. RESULTS: At the population level, we did not observe any contribution of heterozygosity to disease prevalence. In affected siblings of patients carrying two MEFV mutations, 92% carry two mutated alleles, whereas 4% are heterozygous with typical FMF diagnosis. We demonstrated statistically that patients are more likely to be heterozygous than healthy individuals, as shown by the higher ratio heterozygous carriers/non carriers in patients (p<10(-7)-p<0.003). The risk for heterozygotes to develop FMF was estimated between 2.1 \u00d7 10(-3) and 5.8 \u00d7 10(-3) and the relative risk, as compared to non carriers, between 6.3 and 8.1. CONCLUSIONS: This is the first statistical demonstration that heterozygosity is not responsible for classical Mendelian FMF per se, but constitutes a susceptibility factor for clinically-similar multifactorial forms of the disease. We also provide a first estimate of the risk for heterozygotes to develop FMF.", 
+          "qas": [
+            {
+              "question": "What gene is mutated in Familial Mediterranean Fever?", 
+              "id": "5a6e42f1b750ff4455000046_007"
+            }
+          ]
+        }, 
+        {
+          "context": "Defect of suppression of inflammasome-independent interleukin-8 secretion from SW982 synovial sarcoma cells by familial Mediterranean fever-derived pyrin mutations. Familial Mediterranean fever (FMF) is a recessive inherited autoinflammatory syndrome. Patients with FMF have symptoms such as recurrent fever and abdominal pain, sometimes accompanied by arthralgia. Biopsy specimens have revealed substantial neutrophil infiltration into synovia. FMF patients have a mutation in the Mediterranean fever gene, encoding pyrin, which is known to regulate the inflammasome, a platform for processing interleukin (IL)-1\u03b2. FMF patients heterozygous for E148Q mutation, heterozygous for M694I mutation, or combined heterozygous for E148Q and M694I mutations, which were found to be major mutations in an FMF study group in Japan, suffer from arthritis, the severity of which is likely to be lower than in FMF patients with M694V mutations. Expression plasmids of wild-type (WT) pyrin and mutated pyrin, such as E148Q, M694I, M694V, and E148Q+M694I, were constructed, and SW982 synovial sarcoma cells were transfected with these expression plasmids. IL-8 and IL-6 were spontaneously secreted from the culture supernatant of SW982 cells without any stimulation, whereas IL-1\u03b2 and TNF-\u03b1 could not be detected even when stimulated with lipopolysaccharide. Notably, two inflammasome components, ASC and caspase-1, could not be detected in SW982 cells by Western blotting. IL-8 but not IL-6 secretion from SW982 cells was largely suppressed by WT pyrin, but less suppressed by mutated pyrin, which appeared to become weaker in the order of E148Q, M694I, E148Q+M694I, and M694V mutations. As for IL-8 and IL-6, similar results were obtained using stable THP-1 cells expressing the WT pyrin or mutated pyrins, such as M694V or E148Q, when stimulated by LPS. In addition, IL-8 secretion from mononuclear cells of FMF patients was significantly higher than that of healthy volunteers when incubated on a culture plate. Thus, our results suggest that IL-8 secretion from SW982 synovial sarcoma cells suppressed by pyrin independently of inflammasome is affected by pyrin mutations, which may reflect the activity in FMF arthritis.", 
+          "qas": [
+            {
+              "question": "What gene is mutated in Familial Mediterranean Fever?", 
+              "id": "5a6e42f1b750ff4455000046_008"
+            }
+          ]
+        }, 
+        {
+          "context": "Familial Mediterranean fever-associated diseases in children. Background: MEditerranean FeVer (MEFV) gene encodes for the pyrin protein and a mutated pyrin is associated with a prolonged or augmented inflammation. Hence, various diseases were reported to be associated with familial Mediterranean fever (FMF) or carriers of MEFV mutations. However, systematic evaluation of all associated diseases in children with FMF has not been done previously. Aim: The aim of this study was to investigate the frequency and type of FMF-associated diseases in children. Design and Methods: Files of FMF patients who had been seen in two reference hospitals in Ankara, in the last two years, were retrospectively evaluated. Patients with FMF and concomitant diseases were included to the study. Results: Among 600 FMF patients, 77 were found to have a concomitant disease (12.8%). Thirty patients (5%) had vasculitis; 21 (3.5%) had juvenile idiopathic artritis (JIA); 7 (1.16%) had inflammatory bowel disease (IBD) and 19 had other diseases including 5 patients with isolated sacroiliitis. Overall, 13 (2.17%) patients had sacroiliitis in our cohort. The most frequent mutation was M694V/M694V (44%) and 81% of the patients had at least one M694V mutation. Majority of the patients (74%) developed associated diseases while they were not receiving colchicine therapy. Conclusions: Certain inflammatory diseases including vasculitis, chronic arthritis and IBD were more frequently detected in patients with FMF during childhood. M694V mutation is a susceptibility factor for associated diseases. In countries where FMF is prevalent, clinicians dealing with FMF and other inflammatory diseases should be aware of these associations.", 
+          "qas": [
+            {
+              "question": "What gene is mutated in Familial Mediterranean Fever?", 
+              "id": "5a6e42f1b750ff4455000046_009"
+            }
+          ]
+        }, 
+        {
+          "context": "A novel insertion mutation identified in exon 10 of the MEFV gene associated with Familial Mediterranean Fever. BACKGROUND: Familial Mediterranean Fever (FMF), characterized by recurrent fever and inflammation of serous membranes, is an autosomal recessive disease caused by mutations in the Mediterranean fever (MEFV) gene. Around 296 mutations have been reported to date. METHODS: Two two-generation Turkish families with a total of four members diagnosed with FMF clinically were screened with DNA sequencing performed on exon 2 and exon 10 of the MEFV genes. Then, complete exome sequencing analysis of MEFV gene was done for four patients in whom novel mutation was detected. RESULTS: A novel single base Guanine (G) insertion mutation in the coding region of MEFV gene, named c.2330dupG (p.Gln778Serfs*4 or Q778SfsX4) resulting in a mutated Pyrin/Marenostrin protein was identified. CONCLUSIONS: This is the first report of a new mutation in exon 10 of the MEFV gene in two Turkish families. This novel pattern of insertion mutation may provide important information for further studies on FMF pathogenesis.", 
+          "qas": [
+            {
+              "question": "What gene is mutated in Familial Mediterranean Fever?", 
+              "id": "5a6e42f1b750ff4455000046_010"
+            }
+          ]
+        }, 
+        {
+          "context": "The role of SMARCAL1 in replication fork stability and telomere maintenance. SMARCAL1 (SWI/SNF Related, Matrix Associated, Actin Dependent Regulator Of Chromatin, Subfamily A-Like 1), also known as HARP, is an ATP-dependent annealing helicase that stabilizes replication forks during DNA damage. Mutations in this gene are the cause of Schimke immune-osseous dysplasia (SIOD), an autosomal recessive disorder characterized by T-cell immunodeficiency and growth dysfunctions. In this review, we summarize the main roles of SMARCAL1 in DNA repair, telomere maintenance and replication fork stability in response to DNA replication stress.", 
+          "qas": [
+            {
+              "question": "Mutations in which gene cause Schimke immune-osseous dysplasia?", 
+              "id": "5a6e4d22b750ff445500004d_000"
+            }
+          ]
+        }, 
+        {
+          "context": "A 3D map of the human genome at kilobase resolution reveals principles of chromatin looping. We use in situ Hi-C to probe the 3D architecture of genomes, constructing haploid and diploid maps of nine cell types. The densest, in human lymphoblastoid cells, contains 4.9 billion contacts, achieving 1 kb resolution. We find that genomes are partitioned into contact domains (median length, 185 kb), which are associated with distinct patterns of histone marks and segregate into six subcompartments. We identify \u223c10,000 loops. These loops frequently link promoters and enhancers, correlate with gene activation, and show conservation across cell types and species. Loop anchors typically occur at domain boundaries and bind CTCF. CTCF sites at loop anchors occur predominantly (>90%) in a convergent orientation, with the asymmetric motifs \"facing\" one another. The inactive X chromosome splits into two massive domains and contains large loops anchored at CTCF-binding repeats.", 
+          "qas": [
+            {
+              "question": "What is the preferred orientation of CTCF binding sites for chromatin looping?", 
+              "id": "5a895f51fcd1d6a10c000004_000"
+            }
+          ]
+        }, 
+        {
+          "context": "CTCF Binding Polarity Determines Chromatin Looping. CCCTC-binding factor (CTCF) is an architectural protein involved in the three-dimensional (3D) organization of chromatin. In this study, we assayed the 3D genomic contact profiles of a large number of CTCF binding sites with high-resolution 4C-seq. As recently reported, our data also suggest that chromatin loops preferentially form between CTCF binding sites oriented in a convergent manner. To directly test this, we used CRISPR/Cas9 genome editing to delete core CTCF binding sites in three loci, including the CTCF site in the Sox2 super-enhancer. In all instances, CTCF and cohesin recruitment were lost, and chromatin loops with distal, convergent CTCF sites were disrupted or destabilized. Re-insertion of oppositely oriented CTCF recognition sequences restored CTCF and cohesin recruitment, but did not re-establish chromatin loops. We conclude that CTCF binding polarity plays a functional role in the formation of higher-order chromatin structure.", 
+          "qas": [
+            {
+              "question": "What is the preferred orientation of CTCF binding sites for chromatin looping?", 
+              "id": "5a895f51fcd1d6a10c000004_001"
+            }
+          ]
+        }, 
+        {
+          "context": "YY1 and CTCF orchestrate a 3D chromatin looping switch during early neural lineage commitment. CTCF is an architectural protein with a critical role in connecting higher-order chromatin folding in pluripotent stem cells. Recent reports have suggested that CTCF binding is more dynamic during development than previously appreciated. Here, we set out to understand the extent to which shifts in genome-wide CTCF occupancy contribute to the 3D reconfiguration of fine-scale chromatin folding during early neural lineage commitment. Unexpectedly, we observe a sharp decrease in CTCF occupancy during the transition from na\u00efve/primed pluripotency to multipotent primary neural progenitor cells (NPCs). Many pluripotency gene-enhancer interactions are anchored by CTCF, and its occupancy is lost in parallel with loop decommissioning during differentiation. Conversely, CTCF binding sites in NPCs are largely preexisting in pluripotent stem cells. Only a small number of CTCF sites arise de novo in NPCs. We identify another zinc finger protein, Yin Yang 1 (YY1), at the base of looping interactions between NPC-specific genes and enhancers. Putative NPC-specific enhancers exhibit strong YY1 signal when engaged in 3D contacts and negligible YY1 signal when not in loops. Moreover, siRNA knockdown of Yy1 specifically disrupts interactions between key NPC enhancers and their target genes. YY1-mediated interactions between NPC regulatory elements are often nested within constitutive loops anchored by CTCF. Together, our results support a model in which YY1 acts as an architectural protein to connect developmentally regulated looping interactions; the location of YY1-mediated interactions may be demarcated in development by a preexisting topological framework created by constitutive CTCF-mediated interactions.", 
+          "qas": [
+            {
+              "question": "What is the preferred orientation of CTCF binding sites for chromatin looping?", 
+              "id": "5a895f51fcd1d6a10c000004_002"
+            }
+          ]
+        }, 
+        {
+          "context": "CRISPR Inversion of CTCF Sites Alters Genome Topology and Enhancer/Promoter Function. CTCF and the associated cohesin complex play a central role in insulator function and higher-order chromatin organization of mammalian genomes. Recent studies identified a correlation between the orientation of CTCF-binding sites (CBSs) and chromatin loops. To test the functional significance of this observation, we combined CRISPR/Cas9-based genomic-DNA-fragment editing with chromosome-conformation-capture experiments to show that the location and relative orientations of CBSs determine the specificity of long-range chromatin looping in mammalian genomes, using protocadherin (Pcdh) and \u03b2-globin as model genes. Inversion of CBS elements within the Pcdh enhancer reconfigures the topology of chromatin loops between the distal enhancer and target promoters and alters gene-expression patterns. Thus, although enhancers can function in an orientation-independent manner in reporter assays, in the native chromosome context, the orientation of at least some enhancers carrying CBSs can determine both the architecture of topological chromatin domains and enhancer/promoter specificity. These findings reveal how 3D chromosome architecture can be encoded by linear genome sequences.", 
+          "qas": [
+            {
+              "question": "What is the preferred orientation of CTCF binding sites for chromatin looping?", 
+              "id": "5a895f51fcd1d6a10c000004_003"
+            }
+          ]
+        }, 
+        {
+          "context": "Intranasal NAP (davunetide) decreases tau hyperphosphorylation and moderately improves behavioral deficits in mice overexpressing \u03b1-synuclein. Genome-wide association studies have identified strong associations between the risk of developing Parkinson's disease (PD) and polymorphisms in the genes encoding \u03b1-synuclein and the microtubule-associated protein tau. However, the contribution of tau and its phosphorylated form (p-tau) to \u03b1-synuclein-induced pathology and neuronal dysfunction remains controversial. We have assessed the effects of NAP (davunetide), an eight-amino acid peptide that decreases tau hyperphosphorylation, in mice overexpressing wild-type human \u03b1-synuclein (Thy1-aSyn mice), a model that recapitulates aspects of PD. We found that the p-tau/tau level increased in a subcortical tissue block that includes the striatum and brain stem, and in the cerebellum of the Thy1-aSyn mice compared to nontransgenic controls. Intermittent intranasal NAP administration at 2 \u03bcg/mouse per day, 5 days a week, for 24 weeks, starting at 4 weeks of age, significantly decreased the ratio of p-tau/tau levels in the subcortical region while a higher dose of 15 \u03bcg/mouse per day induced a decrease in p-tau/tau levels in the cerebellum. Both NAP doses reduced hyperactivity, improved habituation to a novel environment, and reduced olfactory deficits in the Thy1-aSyn mice, but neither dose improved the severe deficits of motor coordination observed on the challenging beam and pole, contrasting with previous data obtained with continuous daily administration of the drug. The data reveal novel effects of NAP on brain p-tau/tau and behavioral outcomes in this model of synucleinopathy and suggest that sustained exposure to NAP may be necessary for maximal benefits.", 
+          "qas": [
+            {
+              "question": "How many amino acids does davunetide consist of?", 
+              "id": "5a7d4e9afaa1ab7d2e000013_000"
+            }
+          ]
+        }, 
+        {
+          "context": "\"Puffy hand syndrome\". Intravenous drug addiction is responsible for many complications, especially cutaneous and infectious. There is a syndrome, rarely observed in rheumatology, resulting in \"puffy hands\": the puffy hand syndrome. We report two cases of this condition from our rheumatologic consultation. Our two patients had intravenous drug addiction. They presented with an edema of the hands, bilateral, painless, no pitting, occurring in one of our patient during heroin intoxication, and in the other 2 years after stopping injections. In our two patients, additional investigations (biological, radiological, ultrasound) were unremarkable, which helped us, in the context, to put the diagnosis of puffy hand syndrome. The pathophysiology, still unclear, is based in part on a lymphatic toxicity of drugs and their excipients. There is no etiological treatment but elastic compression by night has improved edema of the hands in one of our patients.", 
+          "qas": [
+            {
+              "question": "What causes \"Puffy hand syndrome\"?", 
+              "id": "5a7346662dc08e987e00001a_000"
+            }
+          ]
+        }, 
+        {
+          "context": "Puffy hand syndrome due to drug addiction: a case-control study of the pathogenesis. AIM: We studied the pathogenesis of puffy hand syndrome of intravenous drug use. We hypothesized that injections of high-dose sublingual buprenorphine, instead of the recommended sublingual administration, could play an important role in lymphatic obstruction and destruction. DESIGN AND PARTICIPANTS: We set up a case-control study in substitution centres, recruiting intravenous drug addicts with and without puffy hands, respectively. The subjects were asked to answer anonymously a questionnaire of 40 items comprising social and demographic status, history of illicit drugs use, buprenorphine misuse and injection practices. FINDINGS: We included 33 cases and 33 controls, mean age of 34 years. They were past heroin users, mainly methadone-substituted. In multivariate analysis, sex (women) (OR = 8.9, P = 0.03), injections in the hands (OR = 5.9, P = 0.03), injections in the feet (OR = 6.5, P = 0.01) and the absence of tourniquet (OR = 7.0, p = 0.02) were significant risk factors for puffy hand syndrome. In 69.7% of the cases and 59.4% of the controls, respectively, there was a high-dose sublingual buprenorphine misuse, although it appeared not to be a significant risk factor for puffy hand syndrome. CONCLUSIONS: Injection practices are likely to cause puffy hands syndrome, but buprenorphine misuse should not be considered as a significant risk factor. However, intravenous drug users must still be warned of local and systemic complications of intravenous drug misuse.", 
+          "qas": [
+            {
+              "question": "What causes \"Puffy hand syndrome\"?", 
+              "id": "5a7346662dc08e987e00001a_001"
+            }
+          ]
+        }, 
+        {
+          "context": "[Puffy hand syndrome]. Puffy hand syndrome is an unrecognized complication of intravenous drug abuse. This painless syndrome appears during or after a long period of drug addiction. It involves the hands and sometimes the forearms, and may cause functional, aesthetic and social disturbances when the hand volume is important. Physiopathological mechanisms of the puffy hand syndrome are unclear and include venous and lymphatic insufficiencies, infectious complications and direct toxicity of injected drugs and their adulterants. Low-stretch bandage and elastic garment, usually used in lymphedema treatment, are proposed to treat the puffy hand syndrome.", 
+          "qas": [
+            {
+              "question": "What causes \"Puffy hand syndrome\"?", 
+              "id": "5a7346662dc08e987e00001a_002"
+            }
+          ]
+        }, 
+        {
+          "context": "[Comorbid puffy hand syndrome and factitious disorders: an unusual association with poor prognosis]. The authors report an original clinical presentation of factitious disorders of the upper extremity in an ex-drug-addict patient with puffy hand syndrome. Chronic self-inflicted ulcerations appeared with sequential manner. The patient confessed deliberate self-harm and transfer of anxiety on his hands, the aspect of which had become intolerable. Association of puffy hand syndrome with comorbid psychosis and major depression explained immediate recurrence of ulcerations despite fitted medication and long-term psychotherapy.", 
+          "qas": [
+            {
+              "question": "What causes \"Puffy hand syndrome\"?", 
+              "id": "5a7346662dc08e987e00001a_003"
+            }
+          ]
+        }, 
+        {
+          "context": "[Puffy hand syndrome in drug addiction treated by low-stretch bandages]. BACKGROUND: Puffy hand syndrome is a complication of intravenous drug abuse, which has no current available treatment. Arm and forearm edema are voluminous and cause functional and aesthetic disturbances. We report two cases successfully treated by low-stretch bandages. OBSERVATIONS: A 40-year-old man and a 34-year-old woman, both intravenous drug users, with puffy hand syndrome were hospitalized for 11 days. Treatment included daily multilayer bandaging. Lymphedema volumes calculated by utilizing the formula for a truncated cone decreased by 16% on the left side and 12% on the right side for the first patient and 31 and 17% for the second. Hand circumference decreased 4.3 cm on the left side and 3.2 cm on the right side in case 1, and 2.5 cm and 1.9 cm respectively for case 2. The patients were taught self-bandaging techniques during their hospital stays. Elastic gloves were fitted at the end of treatment. Reduction of lymphedema volume remained stable after 18 months in one patient while for the second patient further treatment and hospitalization were required due to poor compliance. DISCUSSION: The pathogenesis of this edema is probably multifactorial: venous, lymphatic insufficiency and the direct toxicity of injected drugs. Lymphedema treatment currently consists of low-stretch bandaging and wearing elastic garments, which is effective in decreasing the volume of puffy hand syndrome.", 
+          "qas": [
+            {
+              "question": "What causes \"Puffy hand syndrome\"?", 
+              "id": "5a7346662dc08e987e00001a_004"
+            }
+          ]
+        }, 
+        {
+          "context": "Puffy hand syndrome revealed by a severe staphylococcal skin infection. Puffy hand syndrome develops after long-term intravenous drug addiction. It is characterized by a nonpitting edema, affecting the dorsal side of fingers and hands with puffy aspect. Frequency and severity of the complications of this syndrome are rarely reported. Local infectious complications such as cellulitis can be severe and can enable the diagnosis. Herein, we report the case of a 41-year-old man who went to the emergency department for abdominal pain, fever, and bullous lesions of legs and arms with edema. Bacteriologic examination of a closed bullous lesion evidenced a methicillin sensitive Staphylococcus aureus. The abdomen computed tomography excluded deep infections and peritoneal effusion. The patient was successfully treated by intravenous oxacillin and clindamycin. He had a previous history of intravenous heroin addiction. We retained the diagnosis of puffy hand syndrome revealed by a severe staphylococcal infection with toxic involvement mimicking a four limbs cellulitis. Puffy hand syndrome, apart from the chronic lymphedema treatment, has no specific medication available. Prophylactic measures against skin infections are essential.", 
+          "qas": [
+            {
+              "question": "What causes \"Puffy hand syndrome\"?", 
+              "id": "5a7346662dc08e987e00001a_005"
+            }
+          ]
+        }, 
+        {
+          "context": "Osteonecrosis of the jaws induced by anti-RANK ligand therapy. Since the introduction of bisphosphonates to treat diseases that affect remodelling of bone, increasing numbers of patients with bisphosphonate-related osteonecrosis of the jaws have been reported; the number is currently unknown. Recently anti-RANKL agents (receptor activator of nuclear factor-kappaB ligand) such as denosumab (Prolia, Amgen Inc., California, USA) that have a similar mode of action to bisphosphonates have been introduced to treat such diseases. We report a case of osteonecrosis that was induced by anti-RANKL therapy. To our knowledge this is the first case to have been induced by these agents.", 
+          "qas": [
+            {
+              "question": "What is the mode of action of the drug Prolia?", 
+              "id": "5a70ce82b750ff4455000065_000"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

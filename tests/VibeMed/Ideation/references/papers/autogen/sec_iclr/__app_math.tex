@@ -1,0 +1,13 @@
+% \newpage
+  \subsection*{A1: Math Problem Solving} \label{sec:app:math}
+
+Mathematics is a foundational discipline and the promise of leveraging LLMs to assist with math problem solving opens up a new plethora of applications and avenues for exploration,
+including personalized AI tutoring, AI research assistance, etc. This section demonstrates how \libName can help develop LLM applications for math problem solving, showcasing strong performance and flexibility in supporting various problem-solving paradigms. 
+
+(\textbf{Scenario 1}) We are able to build a system for autonomous math problem solving by directly reusing two built-in agents from \libName. We evaluate our system and several alternative approaches, including open-source methods such as Multi-Agent Debate~\cite{liang-arxiv2023}, LangChain ReAct~\cite{langchain}, vanilla GPT-4, and commercial products ChatGPT + Code Interpreter, and ChatGPT + Plugin (Wolfram Alpha), on the MATH~\cite{hendrycks2021measuring} dataset and summarize the results in Figure~\ref{fig:res:math}. 
+We perform evaluations over 120 randomly selected level-5 problems and on the entire\footnote{We did not evaluate ChatGPT on the whole dataset since it requires substantial manual effort and is restricted by its hourly message-number limitation. Multi-agent debate and LangChain ReAct were also not evaluated since they underperformed vanilla GPT-4 on the smaller test set.} test dataset from MATH.
+The results show that the built-in agents from \libName already yield better performance out of the box compared to the alternative approaches, even including the commercial ones. 
+(\textbf{Scenario 2}) We also showcase a human-in-the-loop problem-solving process with the help of \libName. To incorporate human feedback with \libName, one only needs to set \texttt{human\_input\_mode=`ALWAYS'} in the \UserProxyAgent of the system in scenario 1. We demonstrate that this system can effectively incorporate human inputs to solve challenging problems that cannot be solved without humans. 
+(\textbf{Scenario 3}) We further demonstrate a novel scenario where {\em multiple} human users can participate in the conversations during the problem-solving process. 
+Our experiments and case studies for these scenarios show that AutoGen enables better performance or new experience compared to other solutions we experimented with.
+Due to the page limit, details of the evaluation, including case studies in three scenarios are in Appendix~\ref{appendix_sec:app:math}. 

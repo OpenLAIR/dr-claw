@@ -1,0 +1,26 @@
+\section{The \libName Framework}\label{sec:framework}
+To reduce the effort required for developers to create complex LLM applications across various domains, a core design principle of \libName is to streamline and consolidate multi-agent workflows using multi-agent conversations. This approach also aims to maximize the reusability of implemented agents.
+This section introduces the two key concepts of \libName: conversable agents and conversation programming.
+
+\subsection{Conversable Agents}\label{sec:agent}
+
+In \libName, a \emph{conversable agent} is an entity with a specific role that  can pass messages to send and receive information to and from other conversable agents, e.g., to start or continue a conversation. It maintains its internal context 
+based on sent and received messages and can be configured to possess a set of capabilities, e.g., enabled by LLMs, tools, or human input, etc. The agents can act according to programmed behavior patterns described next.
+ 
+\textbf{Agent capabilities powered by LLMs, humans, and tools.}
+Since an agent's capabilities directly influence how it processes and responds to messages, \libName allows flexibility to endow its agents with various capabilities. \libName supports many common composable capabilities for agents, including
+\textbf{1) LLMs.}  LLM-backed agents 
+exploit many capabilities of advanced LLMs such as role playing, implicit state inference and progress making conditioned on conversation history, providing feedback, adapting from feedback, and coding. These capabilities can be combined in different ways via novel prompting techniques\footnote{Appendix~\ref{append_sys_msg} presents an example of such novel prompting techniques which empowers the default LLM-backed assistant agent in \libName to converse with other agents in multi-step problem solving.} to increase an agent's skill and autonomy. \libName also offers enhanced LLM inference features
+such as result caching, error handling, message templating, etc., via an enhanced LLM inference layer. 
+\textbf{2) Humans.} Human involvement is desired or even essential in many LLM applications. \libName lets a human participate in agent conversation via human-backed agents, which could solicit human inputs at certain rounds of a conversation depending on the agent configuration. The default \emph{user proxy} agent allows {\em configurable} human involvement levels and patterns, e.g., frequency and conditions for requesting human input including the option for humans to skip providing input. 
+\textbf{3) Tools.} Tool-backed agents have the capability to execute tools via code execution or function execution.
+For example, the default user proxy agent in \libName is able to execute code suggested by LLMs, or make LLM-suggested function calls. 
+
+\textbf{Agent customization and cooperation.} Based on application-specific needs, each agent can be configured to have a mix of basic back-end types to display complex behavior in multi-agent conversations. \libName allows easy creation of agents with specialized capabilities and roles by reusing or extending the built-in agents. The yellow-shaded area of Figure~\ref{fig:conv_programming} provides a sketch of the built-in agents in \libName. The \ResponsiveAgent class is the highest-level agent abstraction and, by default, can use LLMs, humans, and tools. The \AssistantAgent and \UserProxyAgent are two pre-configured \ResponsiveAgent subclasses, each representing a common usage mode, i.e., acting as an AI assistant (backed by LLMs) and acting as a human proxy to solicit human input or execute code/function calls (backed by humans and/or tools). 
+
+In the example on the right-hand side of Figure~\ref{fig:landing}, an LLM-backed assistant agent and a  tool- and human-backed user proxy agent are deployed together to tackle a task.  Here, the assistant agent generates a solution with the help of LLMs and passes the solution to the user proxy agent. Then, the user proxy agent solicits human inputs or executes the assistant's code and passes the results as feedback back to the assistant.
+
+By allowing custom agents that can converse with each other, conversable agents in \libName serve as a useful building block. However, to develop applications where agents make meaningful progress on tasks, developers also need to be able to specify and mold these multi-agent conversations.
+
+\input{sec_iclr/__sec_system_conv}
+

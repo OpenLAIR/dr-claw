@@ -1,0 +1,20 @@
+
+\clearpage
+\section{Default System Message for Assistant Agent}
+\label{append_sys_msg}
+
+\begin{figure*}[h]
+    \centering
+    \includegraphics[width=1\linewidth]{figures/sys_msg.pdf}
+    \caption{Default system message for the built-in assistant agent in \libName (v0.1.1). This is an example of conversation programming via natural language. It contains instructions of different types, including role play, control flow, output confine,  facilitate automation, and grounding.
+    }
+    \label{fig:sys_msg}
+\end{figure*}
+
+
+Figure~\ref{fig:sys_msg} shows the default system message for the built-in assistant agent in \libName (v0.1.1), where we introduce several new prompting techniques and highlight them accordingly. When combining these new prompting techniques together, we can program a fairly complex conversation even with the simplest two-agent conversation topology. This approach tries to exploit the capability of LLMs in implicit state inference to a large degree.
+LLMs do not follow all the instructions perfectly, so the design of the system needs to have other mechanisms to handle the exceptions and faults. Some instructions can have ambiguities, and the designer should either reduce them for preciseness or intentionally keep them for flexibility and address the different situations in other agents. In general, we observe that GPT-4 follows the instructions better than GPT-3.5-turbo.
+
+\input{sec_iclr/__appendix_application}
+
+\input{sec_iclr/__appendix_table_long}

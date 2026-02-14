@@ -1,0 +1,513 @@
+Med-Skills: Anatomy-Aware Skill Abstraction and Compositional Planning for Medical Imaging Agents
+
+================================================================================
+a) Challenges -- Current Limitations and Key Bottlenecks
+================================================================================
+
+Challenge 1: The Medical Model Isolation Problem.
+The medical imaging community has produced hundreds of high-quality specialized models -- MedSAM for segmentation, CheXagent for chest X-ray interpretation, nnU-Net variants for organ-specific tasks, registration models, etc. -- but each exists as an isolated artifact with its own input/output format, preprocessing pipeline, and invocation interface. There is no standardized protocol for an autonomous agent to discover, understand, and invoke these models at runtime. Unlike general-domain APIs (e.g., RapidAPI's 16,000+ REST APIs used in ToolLLM), medical AI models lack machine-readable capability descriptions that would allow an LLM agent to reason about *when* and *how* to use them.
+
+Challenge 2: The Skill Abstraction Gap in Medicine.
+Existing agent skill frameworks (SkillRL, AgentSkillOS, SkillsBench) demonstrate that skill abstraction dramatically improves agent performance -- SkillsBench shows +51.9pp improvement in healthcare tasks. However, these frameworks treat skills as text-based behavioral heuristics (e.g., "explore systematically" or "verify before purchasing"), which is insufficient for medical imaging where skills must encapsulate: (i) computational models with specific hardware requirements, (ii) medical domain constraints (anatomical validity, modality compatibility), and (iii) safety-critical validation (e.g., a lung segmentation result must have connected components within physiologically plausible volume ranges).
+
+Challenge 3: Clinical Workflows Require Compositional Skill Reasoning.
+Real clinical workflows are not single-model invocations -- they are multi-step directed acyclic graphs (DAGs) with data dependencies, conditional branching (e.g., "if nodule detected, then measure size AND assess malignancy"), and safety checkpoints. Current medical agent approaches (MedAgentGym, MedSAM-Agent) focus on single-task execution rather than multi-step compositional planning across heterogeneous skill types.
+
+Challenge 4: Static Skill Libraries Cannot Adapt to Clinical Diversity.
+A fixed skill library cannot anticipate the enormous variety of clinical scenarios. SkillRL demonstrated that recursive skill evolution during RL training improves performance by 5.5% on ALFWorld. In medical imaging, where pathology distributions shift across institutions and modalities, a static skill library would quickly become stale. The agent must learn to generate new composite skills and refine existing ones based on clinical workflow execution feedback.
+
+================================================================================
+b) Existing Methods -- Current Approaches and Their Limitations
+================================================================================
+
+| Method          | Approach                                                        | Limitation for Medical Imaging                                              |
+|-----------------|-----------------------------------------------------------------|-----------------------------------------------------------------------------|
+| ToolLLM         | Neural API retrieval + DFSDT reasoning over 16K APIs            | No medical domain awareness; flat API organization; no safety constraints   |
+| SkillRL         | Experience-based skill distillation + hierarchical SKILLBANK    | Skills are text heuristics, not computational model wrappers; no domain-    |
+|                 | + recursive evolution via GRPO                                  | specific skill schemas                                                      |
+| TxAgent         | ToolGen (auto tool construction from API docs) + ToolRAG        | Drug/therapy domain only; no imaging model support; no multi-modal skill    |
+|                 | (adaptive retrieval)                                            | composition                                                                 |
+| MCP-Zero        | Active tool discovery via MCP with hierarchical semantic routing | General-purpose; no medical metadata; no safety-aware routing               |
+| HuggingGPT      | LLM-as-controller: plan -> select -> execute -> integrate       | No learning from experience; static model registry; no medical validation   |
+| MedSAM-Agent    | Multi-turn agentic RL for interactive segmentation              | Single-skill (segmentation only); no multi-skill composition                |
+| MedAgentGym     | SFT + DPO for code-based medical reasoning                     | Code generation approach; no reusable skill abstraction; no MCP             |
+|                 |                                                                 | interoperability                                                            |
+
+The fundamental gap: No existing method provides a principled framework for (i) automatically wrapping medical AI models as structured, safety-annotated skills, (ii) organizing them in a medically meaningful hierarchy, and (iii) enabling an LLM agent to discover, compose, and refine these skills through experience-driven learning.
+
+================================================================================
+c) Motivation -- Why This Problem Is Important
+================================================================================
+
+Clinical Translation Bottleneck. MICCAI 2026 emphasizes "From Algorithms to Clinical Translation." The community has hundreds of state-of-the-art algorithms, but translating a complex clinical workflow (e.g., comprehensive chest CT analysis) into practice requires manually integrating 5-10 different models with custom glue code. Med-Skills would make this integration automatic and adaptive.
+
+The Skill Abstraction Hypothesis for Medicine. SkillsBench demonstrates that agent skills provide the *largest* improvement in healthcare (+51.9pp) compared to any other domain. We hypothesize this is because medical tasks have: (a) highly structured domain knowledge that can be effectively encoded as skills, (b) repeatable workflow patterns (e.g., "segment organ -> measure volume -> compare to reference range" is a universal clinical pattern), and (c) strict procedural requirements that benefit from explicit skill-based guidance.
+
+MCP as the Interoperability Layer. The Model Context Protocol (MCP) has emerged as a standard for tool/model interoperability. Medical MCP servers already exist (DICOM-MCP, healthcare-mcp-public), demonstrating community readiness. By using MCP as the skill interface, Med-Skills can natively integrate with the broader MCP ecosystem while adding medical-specific extensions.
+
+Unique Research Contributions. This work would be the first to:
+1. Define a formal *Medical Skill* abstraction that extends general agent skills with domain-specific medical metadata and safety constraints.
+2. Provide an automatic pipeline for converting medical AI models into structured MCP-compatible skills.
+3. Introduce anatomy-aware hierarchical skill retrieval that exploits the inherent structure of medical knowledge (modality -> anatomy -> task).
+4. Apply recursive skill evolution (adapted from SkillRL) to the medical domain, where the skill library co-evolves with the agent through clinical workflow execution feedback.
+
+================================================================================
+d) Proposed Method -- Detailed Technical Solution
+================================================================================
+
+We propose Med-Skills, a framework with three core innovations: (1) Med-SkillGen -- an automatic medical model-to-skill wrapping pipeline, (2) Med-SkillLib -- an anatomy-aware hierarchical skill library with medical-semantic retrieval, and (3) Med-Agent -- a compositional planning agent with recursive skill evolution. We describe each in detail.
+
+--------------------------------------------------------------------------------
+Core Innovation 1: Med-SkillGen -- Automatic Medical Skill Generation
+--------------------------------------------------------------------------------
+
+Definition (Medical Skill). A Medical Skill s is a tuple:
+
+  s = (id, name, desc, I, O, M, C, V, f)
+
+where:
+- I = {(p_i, tau_i, req_i)}_{i=1}^{n_in} is the typed input schema (parameter name, type, required flag),
+- O = {(p_j, tau_j)}_{j=1}^{n_out} is the typed output schema,
+- M = (modality, anatomy, task_type, safety_level) is the medical metadata:
+    modality in {CT, MRI, X-ray, US, ...}
+    anatomy in {lung, brain, cardiac, ...}
+    task_type in {segmentation, detection, classification, registration, measurement, report}
+    safety_level in {advisory, diagnostic_support, critical}
+- C = {c_k}_{k=1}^{n_c} is a set of precondition constraints (e.g., "input must be 3D NIfTI with spacing < 2mm"),
+- V = {v_l}_{l=1}^{n_v} is a set of output validation checks (e.g., "segmentation mask volume must be in [200, 8000] mL for lung"),
+- f: I -> O is the MCP-callable function.
+
+Automatic Wrapping Pipeline. Given a medical model m with its code repository, weights, and any available documentation D_m, Med-SkillGen produces a Medical Skill s_m through a three-stage LLM-guided process:
+
+Stage 1: Interface Extraction. We use an LLM M_LLM to analyze the model's code and documentation to extract the input/output interface:
+
+  (I_m, O_m) = M_LLM(code_m, D_m, P_interface)
+
+where P_interface is a structured prompt that instructs the LLM to identify: function signatures, expected data formats (NIfTI, DICOM, PNG, etc.), preprocessing requirements (resizing, normalization), and output types (masks, bounding boxes, class labels, text).
+
+Stage 2: Medical Metadata Annotation. We annotate the medical metadata using a combination of LLM analysis and a pre-defined medical ontology T_med (derived from RadLex and SNOMED-CT categories):
+
+  M_m = M_LLM(D_m, T_med, P_meta)
+
+The ontology provides structured categories, while the LLM maps the model's description to the appropriate categories. This produces modality tags, anatomical region tags, task type, and an assessed safety level.
+
+Stage 3: Constraint and Validation Generation. We generate precondition constraints and output validation checks:
+
+  C_m = M_LLM(D_m, I_m, T_med, P_constraint)
+  V_m = M_LLM(D_m, O_m, T_med, P_validate)
+
+Constraints include input format validation (e.g., expected dimensions, spacing ranges), modality compatibility checks, and anatomical region verification. Validation checks include physiological plausibility bounds (e.g., organ volume ranges from medical literature), output format correctness, and confidence thresholds.
+
+The final output is an MCP-compatible skill descriptor in JSON schema that can be registered with any MCP server.
+
+--------------------------------------------------------------------------------
+Core Innovation 2: Med-SkillLib -- Anatomy-Aware Hierarchical Skill Library
+--------------------------------------------------------------------------------
+
+Hierarchical Organization. Inspired by SkillRL's two-level hierarchy (general + task-specific) and the inherent structure of medical knowledge, we organize Med-SkillLib as a three-level tree:
+
+  Med-SkillLib = Union_{d in D} Union_{a in A_d} Union_{t in T_a} S_{d,a,t}
+
+where D = imaging modalities (CT, MRI, X-ray, US, ...), A_d = anatomical regions applicable to modality d, T_a = task types for anatomy a, and S_{d,a,t} = set of skills at that leaf node.
+
+Additionally, we maintain a set of cross-cutting utility skills S_util that are modality/anatomy-agnostic (e.g., DICOM loading, format conversion, measurement tools, clinical calculators from healthcare-mcp-public).
+
+Medical-Semantic Skill Retrieval. Given a clinical query q (either a natural language instruction or a structured workflow description), we perform hierarchical retrieval that exploits the tree structure. We define a composite retrieval score:
+
+  score(s, q) = alpha * sim_sem(e_q, e_s) + beta * sim_onto(M_q, M_s) + gamma * compat(O_prev, I_s)
+
+where:
+- sim_sem(e_q, e_s) is the semantic similarity between query and skill description embeddings (using a biomedical sentence encoder, e.g., PubMedBERT-based),
+- sim_onto(M_q, M_s) is an ontology-based match score between the inferred medical metadata of the query and the skill's metadata (exact match on modality/anatomy gives 1.0, parent-node match gives 0.5, etc.),
+- compat(O_prev, I_s) is a type-compatibility score between the output of previously selected skills and the input requirements of candidate skill s (enabling compositional chaining),
+- alpha, beta, gamma are learned weights (initialized to alpha=0.4, beta=0.4, gamma=0.2).
+
+The retrieval proceeds top-down: first narrow by modality, then by anatomy, then rank within the filtered set. This reduces the candidate set exponentially (analogous to MCP-Zero's hierarchical semantic routing achieving 98% token reduction), adapted here to medical ontological structure rather than generic semantic clusters.
+
+Skill Compatibility Graph. We pre-compute a directed compatibility graph G_compat = (V, E) where V = Med-SkillLib and an edge (s_i, s_j) in E exists if O_{s_i} is type-compatible with I_{s_j} (i.e., the output of s_i can serve as input to s_j). Each edge has a weight:
+
+  w(s_i, s_j) = |type_match(O_{s_i}, I_{s_j})| / |I_{s_j}^{required}|
+
+This graph enables the agent to efficiently enumerate valid skill chains without trial-and-error.
+
+--------------------------------------------------------------------------------
+Core Innovation 3: Med-Agent -- Compositional Planning with Recursive Skill Evolution
+--------------------------------------------------------------------------------
+
+Workflow Planning as DAG Construction. Given a clinical query q, the Med-Agent constructs an execution DAG G = (V, E) where each node is a skill invocation and edges represent data dependencies. The agent generates this DAG through structured planning:
+
+  G = pi_theta(q, S_ret, G_compat)
+
+where pi_theta is the LLM-based policy, S_ret are retrieved candidate skills, and G_compat provides structural constraints.
+
+The planning follows a two-phase approach adapted from HuggingGPT but enhanced with medical domain awareness:
+
+Phase 1: Task Decomposition. Decompose the clinical query into an ordered set of subtasks with dependencies:
+
+  {(t_1, deps_1), ..., (t_K, deps_K)} = M_LLM(q, P_decompose)
+
+Phase 2: Skill Binding. For each subtask t_k, retrieve and bind the optimal skill:
+
+  s_k* = argmax_{s in S_ret} score(s, t_k)   s.t.  forall j in deps_k: compat(O_{s_j*}, I_s) > delta_compat
+
+This ensures that skill selection respects both relevance and type-compatibility with upstream skills.
+
+Execution with Safety Checkpoints. During execution, the agent enforces validation checks at each step:
+
+  result_k = f_{s_k*}(inputs_k)          if forall c in C_{s_k*}: c(inputs_k) = True
+  result_k = FAIL(c_violated)            otherwise
+
+After each skill execution, output validation runs:
+
+  valid_k = AND_{v in V_{s_k*}} v(result_k)
+
+If validation fails, the agent triggers a recovery protocol: either retry with modified parameters, select an alternative skill, or escalate to the user with a diagnostic message.
+
+Recursive Skill Evolution for Medical Workflows. Adapted from SkillRL's recursive evolution mechanism, we introduce a medical-domain-specific skill evolution process. After executing a batch of clinical workflows, we collect both successful and failed trajectories:
+
+  T^+ = {tau_i : R(tau_i) >= delta_success}
+  T^- = {tau_i : R(tau_i) < delta_success}
+
+where the reward R(tau) is a composite clinical quality metric (defined in Section e).
+
+Workflow Skill Distillation. From successful trajectories, we distill *composite workflow skills* -- reusable multi-step patterns that appeared frequently across different clinical queries:
+
+  s_workflow^+ = M_T(tau^+, Med-SkillLib, P_distill)
+
+For example, if the agent repeatedly executes "load DICOM -> lung segmentation -> nodule detection -> size measurement -> malignancy scoring" across different patients, this entire chain gets distilled into a single composite skill "comprehensive_lung_nodule_analysis" with its own schema.
+
+Failure-Driven Skill Refinement. From failed trajectories, we identify:
+
+  S_refine = M_T(T^-, Med-SkillLib, P_failure_analysis)
+
+This produces: (a) constraint tightening (e.g., "MedSAM requires spacing normalization for inputs with spacing > 3mm"), (b) new validation rules derived from failure modes, and (c) alternative skill recommendations for failure-prone steps.
+
+The library update rule:
+
+  Med-SkillLib <- Med-SkillLib UNION S_workflow^+ UNION S_refine
+
+This evolution happens periodically, creating the same virtuous cycle as SkillRL: as the agent handles more clinical cases, its skill library grows with validated composite workflows and refined individual skills.
+
+================================================================================
+e) Technical Details -- Architecture, Algorithms, Data Flow
+================================================================================
+
+--------------------------------------------------------------------------------
+System Architecture
+--------------------------------------------------------------------------------
+
+                    +------------------+
+                    |  Clinical Query  |
+                    +--------+---------+
+                             |
+                    +--------v---------+
+                    |    Med-Agent     |
+                    |   (LLM Policy)  |
+                    +---+----+----+---+
+                        |    |    |
+            +-----------+    |    +------------+
+            |                |                 |
+   +--------v--------+  +---v----+  +---------v--------+
+   | Task Decomposer |  | Skill  |  | DAG Executor     |
+   | (Phase 1)       |  | Binder |  | (with validation)|
+   +---------+--------+  | (Phase 2)|  +--------+---------+
+             |           +---+----+           |
+             |               |                |
+             +-------+-------+                |
+                     |                        |
+            +--------v---------+     +--------v---------+
+            |  Med-SkillLib    |     |  Skill Runtime   |
+            |  (Hierarchical)  |     |  (MCP Server)    |
+            |  Retriever +     |     |  Execution Engine|
+            |  Compat. Graph   |     +------------------+
+            +------------------+
+
+--------------------------------------------------------------------------------
+Algorithm 1: Med-SkillGen -- Automatic Medical Skill Wrapping
+--------------------------------------------------------------------------------
+
+def med_skill_gen(model_repo, documentation, ontology):
+    """
+    Convert a medical AI model into an MCP-compatible Medical Skill.
+
+    Args:
+        model_repo: Path to model code and weights
+        documentation: Model documentation (README, paper, docstrings)
+        ontology: Medical ontology T_med (RadLex + SNOMED-CT categories)
+
+    Returns:
+        MedicalSkill: MCP-compatible skill descriptor + callable
+    """
+    # Stage 1: Interface Extraction
+    code_summary = LLM.analyze_code(model_repo)  # Extract function signatures, I/O
+    I_schema = LLM.extract_input_schema(code_summary, documentation)
+    O_schema = LLM.extract_output_schema(code_summary, documentation)
+
+    # Stage 2: Medical Metadata Annotation
+    modality = LLM.classify(documentation, ontology.modalities)    # CT, MRI, X-ray...
+    anatomy = LLM.classify(documentation, ontology.anatomies)      # lung, brain...
+    task_type = LLM.classify(documentation, ontology.task_types)   # seg, det, cls...
+    safety_level = LLM.assess_safety(task_type, documentation)     # advisory/support/critical
+    M = MedicalMetadata(modality, anatomy, task_type, safety_level)
+
+    # Stage 3: Constraint & Validation Generation
+    C = LLM.generate_preconditions(I_schema, M, ontology)
+    V = LLM.generate_validations(O_schema, M, ontology)
+
+    # Generate MCP-compatible wrapper
+    mcp_tool = generate_mcp_wrapper(model_repo, I_schema, O_schema, C, V)
+
+    return MedicalSkill(
+        id=generate_id(model_repo),
+        name=LLM.generate_name(documentation),
+        desc=LLM.generate_description(documentation),
+        input_schema=I_schema,
+        output_schema=O_schema,
+        metadata=M,
+        constraints=C,
+        validations=V,
+        mcp_callable=mcp_tool
+    )
+
+--------------------------------------------------------------------------------
+Algorithm 2: Med-Agent -- Compositional Planning and Execution
+--------------------------------------------------------------------------------
+
+def med_agent_plan_and_execute(query, skill_lib, compat_graph, policy):
+    """
+    Plan and execute a clinical workflow from a natural language query.
+
+    Args:
+        query: Clinical query (e.g., "Analyze this chest CT for lung nodules")
+        skill_lib: Med-SkillLib (hierarchical skill library)
+        compat_graph: Pre-computed skill compatibility graph G_compat
+        policy: LLM policy pi_theta
+
+    Returns:
+        result: Integrated clinical result, trajectory: Execution trace
+    """
+    trajectory = []
+
+    # Phase 1: Task Decomposition
+    # Infer medical metadata from query for hierarchical filtering
+    query_meta = LLM.infer_metadata(query)  # modality, anatomy, etc.
+    subtasks = policy.decompose(query)       # [(t_k, deps_k), ...]
+
+    # Phase 2: Hierarchical Skill Retrieval + Binding
+    # Narrow candidate set using ontology structure
+    candidates = skill_lib.filter_by_metadata(query_meta)  # modality -> anatomy
+
+    dag = DAG()
+    for t_k, deps_k in subtasks:
+        # Compute composite retrieval score
+        scored = []
+        for s in candidates:
+            sem_score = cosine_sim(encode(t_k), encode(s.desc))
+            onto_score = ontology_match(query_meta, s.metadata)
+
+            # Check compatibility with upstream skills
+            if deps_k:
+                upstream_outputs = [dag.node[j].skill.output_schema for j in deps_k]
+                compat_score = type_compatibility(upstream_outputs, s.input_schema)
+            else:
+                compat_score = 1.0
+
+            total = alpha * sem_score + beta * onto_score + gamma * compat_score
+            scored.append((s, total))
+
+        s_k_star = max(scored, key=lambda x: x[1])[0]
+        dag.add_node(k, skill=s_k_star, deps=deps_k)
+
+    # Phase 3: DAG Execution with Safety Checkpoints
+    for node_k in dag.topological_order():
+        skill = node_k.skill
+
+        # Gather inputs from upstream nodes
+        inputs = {}
+        for dep in node_k.deps:
+            inputs.update(dag.node[dep].result)
+
+        # Precondition check
+        for c in skill.constraints:
+            if not c.check(inputs):
+                trajectory.append(("CONSTRAINT_FAIL", node_k, c))
+                # Recovery: try alternative skill or adjust inputs
+                skill = recover_or_escalate(node_k, skill_lib, compat_graph)
+
+        # Execute skill via MCP
+        result = skill.mcp_callable(**inputs)
+
+        # Output validation
+        for v in skill.validations:
+            if not v.check(result):
+                trajectory.append(("VALIDATION_FAIL", node_k, v))
+                result = handle_validation_failure(node_k, result, v)
+
+        dag.node[node_k].result = result
+        trajectory.append(("SUCCESS", node_k, result))
+
+    # Phase 4: Result Integration
+    final_result = policy.integrate(query, dag, trajectory)
+
+    return final_result, trajectory
+
+--------------------------------------------------------------------------------
+Algorithm 3: Recursive Skill Evolution for Medical Workflows
+--------------------------------------------------------------------------------
+
+def recursive_skill_evolution(agent, skill_lib, workflow_dataset, teacher_model):
+    """
+    Evolve the skill library through clinical workflow execution experience.
+    Adapted from SkillRL's recursive evolution for the medical domain.
+
+    Args:
+        agent: Med-Agent with policy pi_theta
+        skill_lib: Current Med-SkillLib
+        workflow_dataset: Set of clinical workflow queries
+        teacher_model: Teacher LLM M_T for skill distillation
+    """
+    # Collect trajectories
+    T_plus, T_minus = [], []
+    for query in workflow_dataset:
+        result, traj = agent.plan_and_execute(query, skill_lib)
+        reward = compute_clinical_reward(result, query)  # Composite metric
+        if reward >= delta_success:
+            T_plus.append((query, traj, reward))
+        else:
+            T_minus.append((query, traj, reward))
+
+    # Distill composite workflow skills from successes
+    # Identify recurring multi-step patterns
+    patterns = extract_frequent_subgraphs(T_plus, min_support=3)
+    for pattern in patterns:
+        s_composite = teacher_model.distill_composite_skill(
+            pattern, skill_lib, prompt=P_distill_workflow
+        )
+        # s_composite has: name, desc, sub-skills, I/O schema, M, C, V
+        skill_lib.add(s_composite)
+
+    # Analyze failures and refine skills
+    failure_clusters = cluster_failures_by_mode(T_minus)
+    for cluster in failure_clusters:
+        refinements = teacher_model.analyze_failures(
+            cluster, skill_lib, prompt=P_failure_analysis
+        )
+        for ref in refinements:
+            if ref.type == "constraint_tighten":
+                skill_lib.update_constraints(ref.skill_id, ref.new_constraints)
+            elif ref.type == "new_validation":
+                skill_lib.add_validation(ref.skill_id, ref.validation)
+            elif ref.type == "alternative_skill":
+                skill_lib.add_alternative(ref.step, ref.alternative_skill)
+
+    return skill_lib  # Updated library
+
+--------------------------------------------------------------------------------
+Clinical Reward Function
+--------------------------------------------------------------------------------
+
+The reward for a clinical workflow trajectory combines multiple dimensions:
+
+  R(tau) = w_1 * R_task(tau) + w_2 * R_valid(tau) + w_3 * R_eff(tau) + w_4 * R_safe(tau)
+
+where:
+- R_task(tau) in [0,1]: task completion score (e.g., Dice for segmentation, F1 for detection, BLEU for report generation -- depending on the terminal skill),
+- R_valid(tau) = (1/K) * sum_{k=1}^{K} 1[all validations pass at step k]: fraction of steps with valid outputs,
+- R_eff(tau) = max(0, 1 - (|tau| - |tau_opt|) / |tau_opt|): efficiency relative to optimal trajectory length (penalizes unnecessary steps and retries),
+- R_safe(tau) = prod_{k=1}^{K} 1[safety constraints respected at step k]: binary -- any safety violation zeroes this term,
+- w_1 = 0.4, w_2 = 0.2, w_3 = 0.1, w_4 = 0.3 (safety is weighted heavily).
+
+--------------------------------------------------------------------------------
+Medical Skill Embedding Space
+--------------------------------------------------------------------------------
+
+For efficient retrieval, we define a hybrid embedding for each Medical Skill:
+
+  e_s = [e_s^{text} ; e_s^{onto}]
+
+where e_s^{text} = PubMedBERT(s.desc) captures semantic meaning, and e_s^{onto} is a learned embedding of the skill's position in the medical ontology tree (modality, anatomy, task_type), trained via a graph embedding on the ontology structure. The concatenation allows retrieval to leverage both textual similarity and structural medical knowledge.
+
+================================================================================
+f) Expected Outcomes -- Anticipated Improvements and Evaluation
+================================================================================
+
+--------------------------------------------------------------------------------
+Evaluation Protocol
+--------------------------------------------------------------------------------
+
+Benchmark: Med-SkillBench. We construct a benchmark of 100+ clinical workflow scenarios across 5 modalities (CT, MRI, X-ray, Ultrasound, Pathology) and 8 anatomical regions, ranging from single-skill queries to complex multi-step workflows requiring 3-7 skills. Each scenario has: a natural language clinical query, expected skill sequence(s), reference outputs where available, and clinical validity criteria.
+
+Baselines:
+- HuggingGPT-Med: HuggingGPT adapted with medical model registry (no skill abstraction, static planning)
+- ToolLLM-Med: ToolLLM with medical APIs as tools (flat retrieval, DFSDT reasoning)
+- ReAct-Med: ReAct agent with access to same medical models (no skill library, no hierarchical retrieval)
+- MedAgentGym: Code-based medical agent (SFT+DPO, no MCP skills)
+- Med-Skills (ours): Full framework with Med-SkillGen + Med-SkillLib + Med-Agent
+
+Ablation studies:
+- w/o hierarchical retrieval (flat semantic search only)
+- w/o compatibility graph (no type-checking during planning)
+- w/o medical metadata (general-purpose skill descriptions only)
+- w/o recursive evolution (static skill library)
+- w/o safety validations (no constraint checking)
+
+--------------------------------------------------------------------------------
+Metrics
+--------------------------------------------------------------------------------
+
+| Metric                    | Description                                                     | Expected                                          |
+|---------------------------|-----------------------------------------------------------------|---------------------------------------------------|
+| Workflow Completion Rate  | % of workflows that execute fully without fatal errors          | Med-Skills: ~85% vs. baselines: ~50-65%           |
+| Clinical Correctness      | Expert-evaluated correctness of final results (1-5 Likert)     | Med-Skills: 4.1 vs. baselines: 2.8-3.4           |
+| Skill Selection Precision | % of correctly selected skills per workflow step                | Med-Skills: ~90% vs. flat retrieval: ~65%         |
+| Planning Efficiency       | Average number of skill invocations per workflow                | Med-Skills: ~K (optimal) vs. baselines: ~1.5K     |
+| Safety Compliance         | % of workflows with zero safety violations                     | Med-Skills: ~98% vs. baselines: ~75%              |
+| Skill Library Growth      | New composite skills discovered after N workflow executions     | ~15-25 composite skills after 500 workflows       |
+| Token Efficiency          | Context tokens used for skill retrieval vs. raw model docs     | Expected 80%+ reduction (from ~4K to ~800/skill)  |
+
+--------------------------------------------------------------------------------
+Expected Key Findings
+--------------------------------------------------------------------------------
+
+1. Anatomy-aware hierarchical retrieval outperforms flat retrieval by 25+ percentage points on skill selection precision, because the medical ontology structure provides a strong prior that eliminates irrelevant candidates before semantic matching.
+
+2. The compatibility graph reduces planning failures by ~40% compared to unconstrained skill selection, because type-checking catches I/O mismatches before execution.
+
+3. Recursive skill evolution improves workflow completion rate by ~8-12% over the static library after processing 500+ workflows, as composite workflow skills eliminate redundant decomposition for common clinical patterns.
+
+4. Safety validations catch ~15-20% of outputs that would otherwise be clinically incorrect, demonstrating the importance of domain-specific validation in medical AI agent systems.
+
+5. Med-SkillGen achieves >90% accuracy in automatic skill wrapping (verified against manually created skill descriptors), validating the feasibility of LLM-based automatic medical model wrapping.
+
+--------------------------------------------------------------------------------
+Concrete Demonstration Scenarios
+--------------------------------------------------------------------------------
+
+Scenario 1: Comprehensive Chest CT Analysis
+Query: "Given this chest CT scan, perform a complete lung assessment."
+Expected DAG: DICOM_Load -> Lung_Segmentation (MedSAM) -> Nodule_Detection -> Nodule_Measurement -> Malignancy_Risk_Assessment -> Structured_Report_Generation
+Skills involved: 6, from 3 different source models + 2 utility skills.
+
+Scenario 2: Brain Tumor Treatment Planning
+Query: "Segment the brain tumor, identify its type, and suggest treatment options."
+Expected DAG: NIfTI_Load -> Brain_Extraction -> Tumor_Segmentation -> Tumor_Classification -> Volume_Measurement -> [Treatment_Guideline_Lookup || Literature_Search] -> Treatment_Report
+Skills involved: 7, conditional branching after classification.
+
+Scenario 3: Cardiac Function Assessment
+Query: "Assess left ventricular function from this cardiac MRI."
+Expected DAG: DICOM_Load -> LV_Segmentation -> LV_Volume_Calculation (per frame) -> Ejection_Fraction_Computation -> Clinical_Range_Check -> Structured_Report
+Skills involved: 5, with iterative execution (per-frame segmentation).
+
+================================================================================
+Summary of Novelty for MICCAI 2026
+================================================================================
+
+This research idea positions Med-Skills as a principled bridge between the rich ecosystem of medical AI models and the emerging paradigm of LLM-powered agents, with three contributions that are novel for MICCAI 2026:
+
+(1) The formal Medical Skill abstraction with automatic generation (Med-SkillGen), which no prior work has formalized -- extending general agent skills (SkillRL's text-based heuristics) into structured, safety-annotated computational skill wrappers with medical metadata.
+
+(2) Anatomy-aware hierarchical retrieval (Med-SkillLib) exploiting the inherent structure of medical knowledge -- going beyond flat semantic retrieval (ToolLLM's ToolRetriever) or generic clustering (MCP-Zero) by leveraging the modality-anatomy-task ontological hierarchy intrinsic to medicine.
+
+(3) Recursive skill evolution adapted to clinical workflow patterns (Med-Agent) -- extending SkillRL's single-task skill evolution to multi-step compositional workflows, where composite workflow skills emerge from successful clinical case execution and individual skills are refined through failure analysis.
+
+The framework is designed to be practically extensible -- any new medical model can be wrapped and added to the library, and the agent's capabilities grow automatically through experience.

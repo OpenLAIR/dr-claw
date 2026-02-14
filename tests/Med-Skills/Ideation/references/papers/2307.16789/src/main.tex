@@ -1,0 +1,265 @@
+
+\documentclass{article} % For LaTeX2e
+\usepackage{iclr2023_conference,times}
+
+% Optional math commands from https://github.com/goodfeli/dlbook_notation.
+\input{math_commands.tex}
+
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{dcolumn}
+
+% added by Yujia
+\usepackage{colortbl}
+\usepackage{url}
+\usepackage{xspace,mfirstuc,tabulary}
+\usepackage{booktabs}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{multirow,booktabs, hhline}
+\usepackage[ruled,noend]{algorithm2e}
+\usepackage{amsmath, bm}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{subfigure}
+\usepackage{enumitem}
+\newenvironment{itemize*}%
+ {\leftmargini=20pt\begin{itemize}%
+  \setlength{\itemsep}{3pt}%
+  \setlength{\parskip}{0pt}%
+  }%
+ {\end{itemize}}
+\newenvironment{enumerate*}%
+ {\begin{enumerate}%
+  \setlength{\itemsep}{0pt}%
+  \setlength{\parskip}{0pt}}%
+ {\end{enumerate}}
+
+\usepackage{makecell}
+\usepackage{pifont}
+
+\usepackage{multicol}
+% \usepackage{algorithm}  
+% \usepackage{algorithmicx}  
+% \usepackage{algpseudocode}
+
+
+\usepackage{microtype}
+\usepackage{xspace,mfirstuc,tabulary}
+\usepackage{booktabs}
+\usepackage{amssymb}
+\usepackage{pifont}
+\usepackage{amsmath}
+\usepackage{multirow,booktabs, hhline}
+\usepackage[ruled,noend]{algorithm2e}
+\usepackage{arydshln}
+\usepackage{amsmath, bm}
+\usepackage{color}
+\usepackage{bbm}
+\usepackage{bbding}
+\usepackage{subfigure}
+\usepackage{makecell}
+\usepackage{CJKutf8}
+\usepackage{cleveref}
+\usepackage{listings}
+\usepackage{titlesec}
+\crefname{section}{§}{§§}
+\Crefname{section}{§}{§§}
+\usepackage{wrapfig}
+\usepackage{lipsum}
+% \usepackage{xcolor}
+\usepackage{hyperref}
+
+
+\hypersetup{
+    % colorlinks=true,
+    % linkcolor=blue,          % color of internal links
+    % citecolor=blue,          % color of links to bibliography
+    % filecolor=magenta,      % color of file links
+    % urlcolor=blue            % color of external links
+}
+
+
+\definecolor{lightergray}{RGB}{230,230,230}
+\definecolor{DarkGreen}{RGB}{30,130,30}
+\newcommand{\cmark}{\textcolor{DarkGreen}{\ding{51}}}
+\newcommand{\xmark}{\textcolor{red}{\ding{55}}}%
+\newcommand\icon{\raisebox{-3.7pt}{\includegraphics[width=1.5em]{figs/logo.png}}}
+
+\newcommand\ourdata{ToolBench\xspace}
+\newcommand\ourmodel{ToolLLaMA\xspace}
+\newcommand\dfs{DFSDT\xspace}
+\newcommand\turbo{ChatGPT\xspace}
+
+\title{\icon ToolLLM: Facilitating Large Language Models to Master 16000+ Real-world APIs}
+
+\iclrfinalcopy
+\author{Yujia Qin$^{1}\thanks{\ \ Indicates equal contribution.}$\hspace{0.5em}, Shihao Liang$^{1*}$, Yining Ye$^1$, Kunlun Zhu$^{1}$, Lan Yan$^{1}$, Yaxi Lu$^1$, Yankai Lin$^3\thanks{\ \  Corresponding author.}$\hspace{0.5em}, \\ \textbf{Xin Cong$^1$, Xiangru Tang$^4$, Bill Qian$^4$, Sihan Zhao$^1$, Lauren Hong$^1$, Runchu Tian$^1$,} \\
+\textbf{Ruobing Xie$^5$, Jie Zhou$^5$, Mark Gerstein$^4$, Dahai Li$^{2,6}$, Zhiyuan Liu$^{1\dag}$, Maosong Sun$^{1\dag}$} \\
+$^1$Tsinghua University $^2$ModelBest Inc. $^3$Renmin University of China\\
+$^4$Yale University
+$^5$WeChat AI, Tencent Inc. 
+$^6$Zhihu Inc.
+\\
+\texttt{yujiaqin16@gmail.com} \\
+}
+
+% The \author macro works with any number of authors. There are two commands
+% used to separate the names and addresses of multiple authors: \And and \AND.
+%
+% Using \And between authors leaves it to \LaTeX{} to determine where to break
+% the lines. Using \AND forces a linebreak at that point. So, if \LaTeX{}
+% puts 3 of 4 authors names on the first line, and the last on the second
+% line, try using \AND instead of \And before the third author name.
+
+\newcommand{\fix}{\marginpar{FIX}}
+\newcommand{\new}{\marginpar{NEW}}
+
+\begin{document}
+
+
+\maketitle
+
+\begin{abstract}
+Despite the advancements of open-source large language models (LLMs), e.g., LLaMA, they remain significantly limited in tool-use capabilities, i.e., using external tools (APIs) to fulfill human instructions. The reason is that current instruction tuning largely focuses on basic language tasks but ignores the tool-use domain.
+This is in contrast to the excellent tool-use capabilities of state-of-the-art (SOTA) closed-source LLMs, e.g., ChatGPT.
+To bridge this gap, we introduce ToolLLM, a general tool-use framework encompassing data construction, model training, and evaluation.
+We first present \ourdata, an instruction-tuning dataset for tool use, which is constructed automatically using ChatGPT. Specifically, the construction can be divided into three stages: (i) API collection: we collect $16,464$ real-world RESTful APIs spanning $49$ categories from RapidAPI Hub; (ii) instruction generation: we prompt \turbo to generate diverse instructions involving these APIs, covering both single-tool and multi-tool scenarios; (iii) solution path annotation: we use \turbo to search for a valid solution path (chain of API calls) for each instruction.
+To enhance the reasoning capabilities of LLMs, we develop a novel depth-first search-based decision tree algorithm. It enables LLMs to evaluate multiple reasoning traces and expand the search space.
+Moreover, to evaluate the tool-use capabilities of LLMs, we develop an automatic evaluator: ToolEval.
+Based on \ourdata, we fine-tune LLaMA to obtain an LLM \ourmodel, and equip it with a neural API retriever to recommend appropriate APIs for each instruction. Experiments show that \ourmodel demonstrates a remarkable ability to execute complex instructions and generalize to unseen APIs, and exhibits comparable performance to ChatGPT. 
+Our \ourmodel also demonstrates strong zero-shot generalization ability in an out-of-distribution tool-use dataset: APIBench.
+The codes, trained models, and demo are publicly available at \url{https://github.com/OpenBMB/ToolBench}.
+
+\end{abstract}
+
+\input{sections/1_introduction}
+\input{sections/3_dataset}
+\input{sections/4_experiments}
+\input{sections/2_related_work}
+\input{sections/5_conclusion}
+
+
+% \section{Default Notation}
+
+% \centerline{\bf Numbers and Arrays}
+% \bgroup
+% \def\arraystretch{1.5}
+% \begin{tabular}{p{1in}p{3.25in}}
+% $\displaystyle a$ & A scalar (integer or real)\\
+% $\displaystyle \va$ & A vector\\
+% $\displaystyle \mA$ & A matrix\\
+% $\displaystyle \tA$ & A tensor\\
+% $\displaystyle \mI_n$ & Identity matrix with $n$ rows and $n$ columns\\
+% $\displaystyle \mI$ & Identity matrix with dimensionality implied by context\\
+% $\displaystyle \ve^{(i)}$ & Standard basis vector $[0,\dots,0,1,0,\dots,0]$ with a 1 at position $i$\\
+% $\displaystyle \text{diag}(\va)$ & A square, diagonal matrix with diagonal entries given by $\va$\\
+% $\displaystyle \ra$ & A scalar random variable\\
+% $\displaystyle \rva$ & A vector-valued random variable\\
+% $\displaystyle \rmA$ & A matrix-valued random variable\\
+% \end{tabular}
+% \egroup
+% \vspace{0.25cm}
+
+% \centerline{\bf Sets and Graphs}
+% \bgroup
+% \def\arraystretch{1.5}
+
+% \begin{tabular}{p{1.25in}p{3.25in}}
+% $\displaystyle \sA$ & A set\\
+% $\displaystyle \R$ & The set of real numbers \\
+% $\displaystyle \{0, 1\}$ & The set containing 0 and 1 \\
+% $\displaystyle \{0, 1, \dots, n \}$ & The set of all integers between $0$ and $n$\\
+% $\displaystyle [a, b]$ & The real interval including $a$ and $b$\\
+% $\displaystyle (a, b]$ & The real interval excluding $a$ but including $b$\\
+% $\displaystyle \sA \backslash \sB$ & Set subtraction, i.e., the set containing the elements of $\sA$ that are not in $\sB$\\
+% $\displaystyle \gG$ & A graph\\
+% $\displaystyle \parents_\gG(\ervx_i)$ & The parents of $\ervx_i$ in $\gG$
+% \end{tabular}
+% \vspace{0.25cm}
+
+
+% \centerline{\bf Indexing}
+% \bgroup
+% \def\arraystretch{1.5}
+
+% \begin{tabular}{p{1.25in}p{3.25in}}
+% $\displaystyle \eva_i$ & Element $i$ of vector $\va$, with indexing starting at 1 \\
+% $\displaystyle \eva_{-i}$ & All elements of vector $\va$ except for element $i$ \\
+% $\displaystyle \emA_{i,j}$ & Element $i, j$ of matrix $\mA$ \\
+% $\displaystyle \mA_{i, :}$ & Row $i$ of matrix $\mA$ \\
+% $\displaystyle \mA_{:, i}$ & Column $i$ of matrix $\mA$ \\
+% $\displaystyle \etA_{i, j, k}$ & Element $(i, j, k)$ of a 3-D tensor $\tA$\\
+% $\displaystyle \tA_{:, :, i}$ & 2-D slice of a 3-D tensor\\
+% $\displaystyle \erva_i$ & Element $i$ of the random vector $\rva$ \\
+% \end{tabular}
+% \egroup
+% \vspace{0.25cm}
+
+
+% \centerline{\bf Calculus}
+% \bgroup
+% \def\arraystretch{1.5}
+% \begin{tabular}{p{1.25in}p{3.25in}}
+% % NOTE: the [2ex] on the next line adds extra height to that row of the table.
+% % Without that command, the fraction on the first line is too tall and collides
+% % with the fraction on the second line.
+% $\displaystyle\frac{d y} {d x}$ & Derivative of $y$ with respect to $x$\\ [2ex]
+% $\displaystyle \frac{\partial y} {\partial x} $ & Partial derivative of $y$ with respect to $x$ \\
+% $\displaystyle \nabla_\vx y $ & Gradient of $y$ with respect to $\vx$ \\
+% $\displaystyle \nabla_\mX y $ & Matrix derivatives of $y$ with respect to $\mX$ \\
+% $\displaystyle \nabla_\tX y $ & Tensor containing derivatives of $y$ with respect to $\tX$ \\
+% $\displaystyle \frac{\partial f}{\partial \vx} $ & Jacobian matrix $\mJ \in \R^{m\times n}$ of $f: \R^n \rightarrow \R^m$\\
+% $\displaystyle \nabla_\vx^2 f(\vx)\text{ or }\mH( f)(\vx)$ & The Hessian matrix of $f$ at input point $\vx$\\
+% $\displaystyle \int f(\vx) d\vx $ & Definite integral over the entire domain of $\vx$ \\
+% $\displaystyle \int_\sS f(\vx) d\vx$ & Definite integral with respect to $\vx$ over the set $\sS$ \\
+% \end{tabular}
+% \egroup
+% \vspace{0.25cm}
+
+% \centerline{\bf Probability and Information Theory}
+% \bgroup
+% \def\arraystretch{1.5}
+% \begin{tabular}{p{1.25in}p{3.25in}}
+% $\displaystyle P(\ra)$ & A probability distribution over a discrete variable\\
+% $\displaystyle p(\ra)$ & A probability distribution over a continuous variable, or over
+% a variable whose type has not been specified\\
+% $\displaystyle \ra \sim P$ & Random variable $\ra$ has distribution $P$\\% so thing on left of \sim should always be a random variable, with name beginning with \r
+% $\displaystyle  \E_{\rx\sim P} [ f(x) ]\text{ or } \E f(x)$ & Expectation of $f(x)$ with respect to $P(\rx)$ \\
+% $\displaystyle \Var(f(x)) $ &  Variance of $f(x)$ under $P(\rx)$ \\
+% $\displaystyle \Cov(f(x),g(x)) $ & Covariance of $f(x)$ and $g(x)$ under $P(\rx)$\\
+% $\displaystyle H(\rx) $ & Shannon entropy of the random variable $\rx$\\
+% $\displaystyle \KL ( P \Vert Q ) $ & Kullback-Leibler divergence of P and Q \\
+% $\displaystyle \mathcal{N} ( \vx ; \vmu , \mSigma)$ & Gaussian distribution %
+% over $\vx$ with mean $\vmu$ and covariance $\mSigma$ \\
+% \end{tabular}
+% \egroup
+% \vspace{0.25cm}
+
+% \centerline{\bf Functions}
+% \bgroup
+% \def\arraystretch{1.5}
+% \begin{tabular}{p{1.25in}p{3.25in}}
+% $\displaystyle f: \sA \rightarrow \sB$ & The function $f$ with domain $\sA$ and range $\sB$\\
+% $\displaystyle f \circ g $ & Composition of the functions $f$ and $g$ \\
+%   $\displaystyle f(\vx ; \vtheta) $ & A function of $\vx$ parametrized by $\vtheta$.
+%   (Sometimes we write $f(\vx)$ and omit the argument $\vtheta$ to lighten notation) \\
+% $\displaystyle \log x$ & Natural logarithm of $x$ \\
+% $\displaystyle \sigma(x)$ & Logistic sigmoid, $\displaystyle \frac{1} {1 + \exp(-x)}$ \\
+% $\displaystyle \zeta(x)$ & Softplus, $\log(1 + \exp(x))$ \\
+% $\displaystyle || \vx ||_p $ & $\normlp$ norm of $\vx$ \\
+% $\displaystyle || \vx || $ & $\normltwo$ norm of $\vx$ \\
+% $\displaystyle x^+$ & Positive part of $x$, i.e., $\max(0,x)$\\
+% $\displaystyle \1_\mathrm{condition}$ & is 1 if the condition is true, 0 otherwise\\
+% \end{tabular}
+% \egroup
+% \vspace{0.25cm}
+
+
+
+\bibliography{iclr2023_conference}
+\bibliographystyle{iclr2023_conference}
+
+\input{sections/6_appendix}
+
+\end{document}

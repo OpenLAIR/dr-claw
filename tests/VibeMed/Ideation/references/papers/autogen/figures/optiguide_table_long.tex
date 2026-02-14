@@ -1,0 +1,462 @@
+% What if the roasting cost is increased by 5\% because of the potential salary increase?
+
+\section{Example outputs from applications}
+\label{sec:example}
+
+\begin{table*}[h!]
+\caption{Application A1. Scenario 1: autonomous math solving. \libName on the first qualitative example. \libName solves the problem correctly.}
+\label{tab:append_math_agentchat}
+\small
+\begin{tabular}{c|c|p{14cm}}
+\toprule
+ & \textbf{Action} & \textbf{\libName}     \\
+
+\midrule
+\faUser & Init chat & Completely simplify and rationalize the denominator: $$\frac{\sqrt{160}}{\sqrt{252}}\times\frac{\sqrt{245}}{\sqrt{108}}$$ \\
+\midrule
+\faAndroid  & & We can simplify and rationalize this denominator using Python's symbolic mathematics library `sympy`. Here is the Python code to resolve this:
+
+\begin{lstlisting}
+from sympy import sqrt, Rational
+
+# Define the entire fraction as a rational number
+fraction = (sqrt(160)/sqrt(252))*(sqrt(245)/sqrt(108))
+
+# Simplify the fraction
+simplified = fraction.simplify()
+
+# Print the simplified fraction
+print(simplified)
+\end{lstlisting}
+
+This code performs the requested simplification by constructing the fraction using the `Rational()` function from the `sympy` module, which automatically simplifies fractions when possible. The `sqrt()` function from the `sympy` module enables square root calculations. Finally, the `simplify()` function simplifies expressions when possible.
+   \\
+
+% \faUser & Code Reply &
+
+\midrule
+\faUser & Auto Code Reply & exitcode: 0 (execution succeeded)
+Code output: 
+5*sqrt(42)/27 \\
+\midrule
+
+\faAndroid  & & TERMINATE \\
+
+\bottomrule
+\end{tabular}
+\end{table*}
+
+
+\begin{table*}[h!]
+\caption{Application A1. Scenario 1: autonomous math solving. LangChain ReAct on the first qualitative example. The code returns a decimal number.}
+\label{tab:append_math_langchain}
+\small
+\begin{tabular}{c|c|p{14cm}}
+\toprule
+ & \textbf{Action} & \textbf{LangChain ReAct}     \\
+ \midrule
+
+\faUser & Input & Completely simplify and rationalize the denominator: $$\frac{\sqrt{160}}{\sqrt{252}}\times\frac{\sqrt{245}}{\sqrt{108}}$$ \\
+\midrule
+\faAndroid  & &  Entering new AgentExecutor chain...
+
+To simplify this expression, I will first simplify each square root individually, then multiply the fractions as normal. The result should be a rational number.
+Action: Python\_REPL
+Action Input: 
+
+\begin{lstlisting}
+import math
+
+# Calculate square roots
+sqrt_160 = math.sqrt(160)
+sqrt_252 = math.sqrt(252)
+sqrt_245 = math.sqrt(245)
+sqrt_108 = math.sqrt(108)
+
+# Multiply fractions
+numerator = sqrt_160 * sqrt_245
+denominator = sqrt_252 * sqrt_108
+result = numerator / denominator
+
+print(result)
+\end{lstlisting}
+
+Observation: 1.200137166371826
+
+Thought:I now know the final answer
+Final Answer: The simplified and rationalized form of the expression is approximately 1.200137166371826.
+
+Finished chain.
+\\
+
+\bottomrule
+\end{tabular}
+\end{table*}
+
+
+\begin{table*}[h!]
+\caption{Application A1. Scenario 1: autonomous math solving. ChatGPT+ Code Interpreter on the first qualitative example. The code returns a decimal number.}
+\label{tab:append_math_wolfram}
+\small
+\begin{tabular}{c|c|p{14cm}}
+\toprule
+ & \textbf{Action} & \textbf{ChatGPT+ Code Interpreter}     \\
+ \midrule
+
+\faUser & Input & Completely simplify and rationalize the denominator: $$\frac{\sqrt{160}}{\sqrt{252}}\times\frac{\sqrt{245}}{\sqrt{108}}$$ \\
+\midrule
+\faAndroid  & & 
+
+To simplify and rationalize the expression, we first simplify the radicals in the numerator and denominator by factoring out the largest perfect squares from the numbers under the square root. 
+
+The perfect square factors of 160, 252, 245, and 108 are 16, 4, 1, and 36, respectively. Let's factorize and simplify: 
+
+\[
+\frac{\sqrt{160}}{\sqrt{252}}\times\frac{\sqrt{245}}{\sqrt{108}} = \frac{\sqrt{16 \times 10}}{\sqrt{4 \times 63}}\times\frac{\sqrt{245}}{\sqrt{36 \times 3}}
+\]
+
+We can simplify this further by applying the property \(\sqrt{ab} = \sqrt{a} \sqrt{b}\) and \(\frac{a}{b} \times \frac{c}{d} = \frac{a \times c}{b \times d}\).
+\\
+
+\faAndroid  & & 
+
+Python
+\begin{lstlisting}
+import math
+
+# factoring the square roots
+sqrt_160 = math.sqrt(16) * math.sqrt(10)
+sqrt_252 = math.sqrt(4) * math.sqrt(63)
+sqrt_245 = math.sqrt(245)
+sqrt_108 = math.sqrt(36) * math.sqrt(3)
+
+# simplify the fraction
+numerator = sqrt_160 * sqrt_245
+denominator = sqrt_252 * sqrt_108
+simplified_fraction = numerator / denominator
+
+simplified_fraction
+
+\end{lstlisting}
+
+Result:
+\begin{lstlisting}
+1.200137166371826
+\end{lstlisting} \\
+
+
+\faAndroid  & & 
+
+The completely simplified and rationalized form of the given expression is approximately \(1.200\). \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+
+\begin{table*}[h!]
+\caption{Application A1. Scenario 1: autonomous math solving. ChatGPT+ Plugin (Wolfram Alpha) on the first qualitative example. Response from wolfram contains the correct answer but ChatGPT choosed the wrong answer.}
+\label{tab:append_math_wolfram}
+\small
+\begin{tabular}{c|c|p{14cm}}
+\toprule
+ & \textbf{Action} & \textbf{ChatGPT+ Plugin}     \\
+ \midrule
+
+\faUser & Input & Completely simplify and rationalize the denominator: $$\frac{\sqrt{160}}{\sqrt{252}}\times\frac{\sqrt{245}}{\sqrt{108}}$$ \\
+\midrule
+
+\faAndroid  & & 
+
+REQUEST TO WOLFRAM:
+
+\begin{lstlisting}
+{
+  "input": "simplify (sqrt(160)/sqrt(252))*(sqrt(245)/sqrt(108))"
+}
+\end{lstlisting}
+
+RESPONSE FROM WOLFRAM
+\begin{lstlisting}
+Query:
+"simplify (sqrt(160)/sqrt(252))*(sqrt(245)/sqrt(108))"
+
+Input interpretation:
+simplify | sqrt(160)/sqrt(252)x sqrt(245)/sqrt(108)
+
+Results:
+(5 sqrt(42))/27
+
+(5 sqrt(14/3))/9
+
+Decimal approximation:
+1.2001371663718259686974013770533327143898526494552493610576582218...
+
+Wolfram|Alpha website result for "simplify (sqrt(160)/sqrt(252))*(sqrt(245)/sqrt(108))":
+https://www.wolframalpha.com/input?i=simplify+%28sqrt%28160%29%2Fsqrt%28252%29%29%2A%28sqrt%28245%29%2Fsqrt%28108%29%29
+\end{lstlisting}
+\\
+
+
+\faAndroid  & & 
+
+The completely simplified and rationalized form of the given expression is:
+
+$$\frac{5 \sqrt{14/3}}{9}$$
+
+In decimal form, this is approximately 1.200137166371825968697401377053332714389852649...
+\\
+
+\bottomrule
+\end{tabular}
+\end{table*}
+
+
+
+
+\begin{table*}[h!]
+\caption{Application A1. Scenario 1: autonomous math solving. Auto-GPT on the first qualitative example. We abort since the code never prints the result and the system does not fix it after 2 turns. Auto-GPT is much more verbose than other frameworks. We shortened some of the unnecessary contents.}
+\label{tab:append_math_wolfram}
+\tiny
+\begin{tabular}{c|c|p{14cm}}
+\toprule
+ & \textbf{Action} & \textbf{Auto-GPT}     \\
+ 
+\midrule
+  & System & 
+Welcome back!  Would you like me to return to being MathSolverGPT?
+  Asking user via keyboard...
+Continue with the last settings?\newline
+Name:  MathSolverGPT\newline
+Role:  an intelligent math-solving AI that assists students, professionals,... \newline
+Goals: ['Provide step-by-step solutions to math problems, ensuring clarity and understanding for the user... \newline
+Continue (y/n): 
+\\
+
+\midrule
+\faUser & Human input  & y
+\\
+\midrule
+
+& System & MathSolverGPT  has been created with the following details:
+Name:  MathSolverGPT\newline
+Role:  an intelligent math-solving AI that assists students, professionals, and enthusiasts in solving a wide range of math problems, from basic arithmetic to advanced calculus and beyond.\newline
+Goals: 
+-  Provide step-by-step solutions to math problems, ensuring clarity and understanding for the user.
+-  Offer explanations and insights into the underlying concepts and principles behind the solutions, fostering a deeper understanding of mathematics.
+-  Handle a variety of math problem types, including algebra, geometry, trigonometry, calculus, and more. ...
+\\
+\midrule
+
+\faAndroid  & & 
+MATHSOLVERGPT THOUGHTS:  Without a specific task or question, it's difficult to determine exactly one command to use. The user hasn't provided any context or problem to solve. \newline
+REASONING:  The user's request is too vague. They haven't specified what they want me to do or what problem they want me to solve.\newline
+PLAN: 
+-  Ask the user for more information or a specific task.\newline
+CRITICISM:  I should have asked the user for more information or a specific task in the first place.\newline
+SPEAK:  Could you please provide more information or specify a task?\newline
+
+NEXT ACTION:  COMMAND =  ARGUMENTS = \{\}
+\\
+\midrule
+& System &  Enter 'y' to authorise command, 'y -N' to run N continuous commands, 'n' to exit program, or enter feedback for MathSolverGPT...
+  Asking user via keyboard...\\
+\midrule
+
+\faUser & Human input & 
+Completely simplify and rationalize the denominator: $$\frac{\sqrt{160}}{\sqrt{252}}\times\frac{\sqrt{245}}{\sqrt{108}}$$
+\\
+\midrule
+
+\faAndroid  & & 
+
+MATHSOLVERGPT THOUGHTS:  To solve this problem, I need to simplify and rationalize the denominator of the given expression. This involves simplifying the square roots and then multiplying the fractions. I can use Python's math library to calculate the square roots and perform the multiplication. \newline
+REASONING:  The problem involves simplifying square roots and multiplying fractions. Python's math library provides functions for these operations.\newline
+PLAN: 
+-  Write a Python script to calculate the square roots and multiply the fractions.
+-  Execute the script to get the simplified expression.
+CRITICISM:  I need to ensure that I correctly calculate the square roots and perform the multiplication. I should also make sure to rationalize the denominator, as the problem specifies.\newline
+SPEAK:  Let's simplify and rationalize the denominator of the given expression.\newline
+
+NEXT ACTION:  COMMAND = execute\_python\_code ARGUMENTS = 
+
+
+\begin{lstlisting}[basicstyle=\tiny]
+{'code': 'import math\n\n# Calculate the square roots\nsqrt_160 = math.sqrt(160)\nsqrt_252 = math.sqrt(252)\nsqrt_245 = math.sqrt(245)\nsqrt_108 = math.sqrt(108)\n\n# Multiply the fractions\nresult = (sqrt_160 / sqrt_252) * (sqrt_245 / sqrt_108)\n\n# Simplify the result\nsimplified_result = math.simplify(result)\n\nsimplified_result', 'name': 'simplify_expression'}
+\end{lstlisting}
+\\
+\midrule
+
+\faUser & Human input  & y
+\\
+\midrule
+
+& System & 
+-=-=-=-=-=-=-= COMMAND AUTHORISED BY USER -=-=-=-=-=-=-= \newline
+Executing python file '/app/autogpt/workspa...
+
+SYSTEM:  Command execute\_python\_code returned: Error: Traceback (most recent call last): File "...", line 13, in <module> simplified\_result = math.simplify(result) AttributeError: module 'math' has no attribute 'simplify'
+
+\\
+
+\midrule
+\faAndroid & & 
+MATHSOLVERGPT THOUGHTS:  The error message indicates that the 'math' module in Python does not have a 'simplify' function. I need to use the 'sympy' library instead, which provides a function for simplifying expressions.\newline
+REASONING:  The 'math' module in Python does not provide a function for simplifying expressions. The 'sympy' library, on the other hand, does provide such a function.\newline
+PLAN: 
+-  Rewrite the Python script to use the 'sympy' library instead of the 'math' module.
+-  Execute the script to get the simplified expression.
+CRITICISM:  I should have known that the 'math' module does not provide a function for simplifying expressions. I should have used the 'sympy' library from the start.
+SPEAK:  Let's try again using the 'sympy' library to simplify the expression.\newline
+
+NEXT ACTION:  COMMAND = execute\_python\_code ARGUMENTS = 
+\begin{lstlisting}[basicstyle=\tiny]
+{'code': 'import sympy as sp\n\n# Calculate the square roots\nsqrt_160 = sp.sqrt(160)\nsqrt_252 = sp.sqrt(252)\nsqrt_245 = sp.sqrt(245)\nsqrt_108 = sp.sqrt(108)\n\n# Multiply the fractions\nresult = (sqrt_160 / sqrt_252) * (sqrt_245 / sqrt_108)\n\n# Simplify the result\nsimplified_result = sp.simplify(result)\n\nsimplified_result', 'name': 'simplify_expression'}
+\end{lstlisting}
+\\
+\midrule
+
+\faUser & Human input & y
+\\
+\midrule
+
+& System  &
+SYSTEM:  Command execute\_python\_code returned:
+\\
+\midrule
+
+\faAndroid  & & 
+
+MATHSOLVERGPT THOUGHTS:  The command execution didn't return any output, which is unusual. It seems there might be an issue with the execution of the Python code. I need to debug this.\newline
+REASONING:  The Python code execution should have returned a result. The absence of a result suggests that there might be an issue with the code or its execution.\newline
+PLAN: 
+-  Review the Python code to identify any potential issues.
+-  If necessary, modify the code and execute it again.
+CRITICISM:  I should have ensured that the Python code was correct and would produce a result before executing it.
+SPEAK:  It seems there was an issue with the execution of the Python code. Let's try again.\newline
+
+NEXT ACTION:  COMMAND = execute\_python\_code ARGUMENTS = \begin{lstlisting}[basicstyle=\tiny]
+{'code': 'import sympy as sp\n\n# Calculate the square roots\nsqrt_160 = sp.sqrt(160)\nsqrt_252 = sp.sqrt(252)\nsqrt_245 = sp.sqrt(245)\nsqrt_108 = sp.sqrt(108)\n\n# Multiply the fractions\nresult = (sqrt_160 / sqrt_252) * (sqrt_245 / sqrt_108)\n\n# Simplify the result\nsimplified_result = sp.simplify(result)\n\nsimplified_result', 'name': 'simplify_expression'}
+\end{lstlisting}
+\\
+\midrule
+
+
+ & System & 
+SYSTEM:  Command execute\_python\_code returned:\\
+\midrule
+\faAndroid & &
+MATHSOLVERGPT THOUGHTS:  The Python code execution still isn't returning any output. It's possible that the issue lies with the calculation of the square roots ...
+\\
+\midrule
+
+\faUser  & Human input & 
+control + C (Aborted)
+\\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+
+\begin{table*}[h!]
+\caption{Application A2. ChatGPT+ Code Interpreter for OptiGuide. A sample question ``What if the roasting cost is increased by 5\% because of the potential salary increase?" is asked.}
+\label{tab:optiguide_gpt_complex}
+\tiny
+\begin{tabular}{c|c|p{14cm}}
+\toprule
+ & \textbf{Action} & \textbf{ChatGPT+ Code Interpreter}     \\
+\midrule
+\faUser & Prompt Writer & \begin{tabular}[t]{p{13cm}}Customer open Web browser.\\For the source code ``coffee.py",\\Can you tell me:\\\textit{What if the roasting cost is increased by 5\% because of the potential salary increase?}
+\end{tabular}     \\
+\midrule
+\faAndroid &   &   \begin{tabular}[t]{p{13cm}}
+Sure! Let's first take a look at the contents of the "coffee.py" file to understand the code and how the roasting cost is calculated. This will allow us to determine the effect of a 5\% increase in the roasting cost.\\
+...\textit{several lines omitted}\\
+Would you like me to modify the code to reflect the 5\% increase in roasting costs and run the modified code to observe the impact? If the code requires any specific input or parameters, please let me know!
+\end{tabular} \\
+\midrule
+\faUser & Prompt Writer & Yes \\
+\midrule
+\faAndroid & & \begin{tabular}[t]{p{13cm}}
+Great! Before proceeding, I'll need to ensure that the Gurobi solver is not being used in this code, as my current environment does not have access to Gurobi. If the code does indeed use Gurobi, we can still analyze the effect of the change in roasting costs by understanding the structure of the code.\\
+...\textit{several lines omitted}\\
+Alternatively, if you have access to a Gurobi license, you can make the necessary changes in the code and run it on your local machine. I can guide you through the process of making the necessary modifications to the code.\\
+Would you like me to proceed with the code analysis and explanation, or would you like guidance on making the changes yourself?
+\end{tabular} \\
+\midrule
+\faUser & Prompt Writer & You can give me the full code, and I can run the code locally myself. \\
+\midrule
+\faAndroid & & 
+\begin{tabular}[t]{p{13cm}}
+Certainly! I'll modify the code to reflect a 5\% increase in both the light and dark roasting costs, and then provide the full code for you to run locally.\\
+...\\
+Download Modified Coffee.py\\
+If you have any questions or need further assistance, please feel free to ask!
+\end{tabular}
+\\
+\midrule
+\faUser &  Prompt Safeguard &  \begin{tabular}[t]{p{13cm}} Hi GPT, can you safecheck the generated code for me? \\ \textit{Upload the generated code.} \end{tabular}  \\
+\midrule
+\faAndroid &   &  DANGER \\
+\midrule
+\faUser & Prompt Writer &  I have tried to run your code. However, the code triggered our safeguard, and it is not safe to run. Try again. Hint: don't change roasting\_cost\_light or roasting\_cost\_light  variables.  \\
+\midrule
+\faAndroid &   &   \begin{tabular}[t]{p{13cm}}
+I apologize for the oversight. It appears I made direct changes to the variables that could have led to issues with the code. Let's take a different approach by analyzing the code to identify the appropriate place to apply the 5\% increase in roasting costs.\\
+...\\
+Download Modified Safe Coffee.py\\
+...
+\end{tabular} \\
+\midrule
+\faUser &  Prompt Safeguard &  \begin{tabular}[t]{p{13cm}} Hi GPT, can you safecheck the generated code for me one more time? \\ \textit{Upload the generated code.} \end{tabular}  \\
+\midrule
+\faAndroid &   & DANGER \\
+\midrule
+\faUser & Prompt Writer &  I have tried to run your code again. However, the code triggered our safeguard, and it is not safe to run. Try again. Hint: don't change roasting\_cost\_light or roasting\_cost\_light  variables.
+  \\
+\midrule
+\faAndroid &   &   \begin{tabular}[t]{p{13cm}}
+I apologize for the continued confusion. \\
+...\\
+Download Final Modified Safe Coffee.py\\
+...
+\end{tabular} \\
+\midrule
+\faUser &  Prompt Safeguard &  \begin{tabular}[t]{p{13cm}} Hi GPT, can you safecheck the generated code for me one more time? \\ \textit{Upload the generated code.} \end{tabular}  \\
+\midrule
+\faAndroid &   &   SAFE \\
+\midrule
+\faUser & Run Code & \begin{tabular}[t]{p{6.5cm}}Obtain the terminal results:\\Optimizer version 9.5.1 build v9.5.1rc2 (linux64)\\Thread count: 64 physical cores, 128 logical processors, using up to 32 threads\\{[}63 lines of output ignored{]}\\Optimal cost: 2526.5 \end{tabular}                              \\
+\midrule
+\faUser & Prompt Writer & Here is the execution result. [\textit{Copy + Paste the terminal output here.}] Can you extract the final answer to me? Remember to compare with the original cost of 2470. \\
+\midrule
+\faAndroid  & & \begin{tabular}[t]{p{6.5cm}}
+Certainly! The execution result you've provided indicates the optimal cost for the modified scenario, where the roasting costs were increased by 5\%. Here's the comparison: \\
+Original Cost: 2470 \\
+Modified Cost (with 5\% increase in roasting costs): 2526.5\\
+The increase in roasting costs has led to an increase in the overall cost by 56.5, reflecting the impact of the potential salary increase on the roasting cost. \\
+If you need any further insights or assistance, please let me know!  \end{tabular}   \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+
+
+
+\begin{table*}[h!]
+\caption{Application A2. \libName with OptiGuide. The same question ``What if the roasting cost is increased by 5\% because of the potential salary increase?" is asked.}
+\label{tab:optiguide_complex}
+\small
+\begin{tabular}{c|c|p{14cm}}
+\toprule
+ & \textbf{Action} & \textbf{\libName}     \\
+ % \midrule
+ % & Setup & Setup OptiGuide. \\
+\midrule
+\faUser & Prompt & \textit{What if the roasting cost is increased by 5\% because of the potential salary increase?} \\
+\midrule
+\faAndroid  & & After increasing the roasting costs by 5\%, I've re-calculated the optimal coffee distribution solution for the supply chain. As a result, the new optimal total cost has become 2526.5, compared to the initial cost of 2470.0. This indicates that the increased roasting costs have caused the overall distribution cost to rise by 56.5 units.
+   \\
+\bottomrule
+\end{tabular}
+\end{table*}
+

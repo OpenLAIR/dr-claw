@@ -1,0 +1,69 @@
+
+% \begin{figure*}[h]
+%     \centering
+% 
+% % Define the boxes
+% \tikzstyle{user} = [ellipse, rounded corners, minimum width=3cm, minimum height=1cm,text centered, draw=black, fill=yellow!30]
+% 
+% \tikzstyle{tool} = [rectangle, dashed, minimum width=0.1cm, minimum height=0.1cm, text centered, draw=black, fill=green!10]
+% \tikzstyle{agent} = [rectangle, rounded corners, minimum width=3cm, minimum height=1.2cm, text centered, draw=black, fill=green!30]
+% 
+% \tikzstyle{text_box} = [rectangle, minimum width=1mm, minimum height=1mm, text centered, draw=white]
+% 
+% 
+% \tikzstyle{arrow} = [thick,->,>=latex]
+% \tikzstyle{double_arrow} = [thick,<->,>=latex]
+% 
+% \begin{tikzpicture}[node distance=1cm]
+% 
+% % User
+% \node (user) [user] {{\Large \faUser} User};
+% 
+% % OptiGuide agents
+% \node (opti) [agent, minimum height=1.5cm, fill=blue!30, below=15mm of user] { Commander};
+% % \node (tool) [tool, fill=green!20, below=-5mm of opti] {\small Tools};
+% 
+% % Big circle with arrow looping around the agents
+% \draw[->, thick, dashed , gray!80, dash pattern=on 2pt off 2pt, line width=1.5pt ] ($(opti.west)$) arc (110:360:60mm and 20mm) arc (0:85:50mm and 20mm);
+% \node (looping) [text_box, text=gray, text width=3 cm, below=1mm of opti, fill=white, xshift=60mm] {\small Repeat until answering the user's question or timeout};
+% % \node (loop_text) [text_box, below=5mm of opti, xshift=10mm] 
+% 
+% \node (writer) [agent, fill=blue!30, below=15mm of opti, xshift=-35mm] {Writer};
+% \node (safeguard) [agent, fill=blue!30, below=15mm of opti, xshift=35mm] {Safeguard};
+% 
+% 
+% % optiguide frame
+% % \node (opti_frame) [draw, rounded corners, dashed, gray!80, dash pattern=on 2pt off 2pt, line width=1.5pt, fit= (writer) (safeguard) (tool)   (opti)]  {};
+% 
+% % User - Optiguide
+% \draw [arrow] ([xshift=-2mm] user.south) -- ([xshift=-2mm] opti.north) node[midway, left] {\small \circled{1} User question};
+% \draw [arrow] ([xshift=2mm] opti.north) -- ([xshift=2mm] user.south) node[midway, right] {\small \circled{8} Final Answer};
+% 
+% % OptiGuide - Writer 
+% \draw [arrow] ([yshift=3mm] opti.west) -- ([xshift=-3mm] writer.north) node[midway, sloped, above, fill=none] {\small \circled{2} Question, \shadeCircled{6} Log};
+% \draw [arrow] ([xshift=3mm] writer.north) -- ([yshift=-3mm] opti.west) node[midway, sloped, below] {\small \shadeCircled{3} Code, \circled{7} Ans};
+% 
+% % OptiGuide - Safeguard
+% \draw [arrow] ([yshift=3mm] opti.east) -- ([xshift=3mm] safeguard.north) node[midway, sloped, above] {\small \shadeCircled{4} Code};
+% \draw [arrow] ([xshift=-3mm] safeguard.north) -- ([yshift=-3mm] opti.east) node[midway, sloped, below] {\small \shadeCircled{5} Clearance};
+% 
+% 
+% 
+% \end{tikzpicture}
+% 
+% 
+%     \caption{Our re-implementation of \textit{OptiGuide} with autogen.agentchat. \todo{gb: use same format as rest of the paper.}}
+%     \label{fig:optiguide}
+% \end{figure*}
+
+
+\begin{figure*}[h]
+    \centering
+    \includegraphics[width=0.8\linewidth]{figures/optiGuide_details.png}
+    \caption{
+Our re-implementation of \textit{OptiGuide} with \libName{} streamlining agents' interactions. The Commander receives user questions (e.g., What if we prohibit shipping from supplier 1 to roastery 2?) and coordinates with the Writer and Safeguard agents. The Writer crafts the code and interpretation, the Safeguard ensures safety (e.g., not leaking information, no malicious code), and the Commander executes the code. If issues arise, the process can repeat until resolved.
+% \todo{[good-to-have] fix inconsistent font size}
+    }
+    \label{fig:optiguide}
+\end{figure*}
+

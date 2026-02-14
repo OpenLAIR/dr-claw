@@ -1,0 +1,162 @@
+%%%%%%%% ICML 2026 EXAMPLE LATEX SUBMISSION FILE %%%%%%%%%%%%%%%%%
+
+\documentclass{article}
+
+% Recommended, but optional, packages for figures and better typesetting:
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{booktabs} % for professional tables
+
+% hyperref makes hyperlinks in the resulting PDF.
+% If your build breaks (sometimes temporarily if a hyperlink spans a page)
+% please comment out the following usepackage line and replace
+% \usepackage{icml2026} with \usepackage[nohyperref]{icml2026} above.
+\usepackage{hyperref}
+
+
+% Attempt to make hyperref and algorithmic work together better:
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+
+% Use the following line for the initial blind version submitted for review:
+% \usepackage{icml2026}
+
+% For preprint, use
+\usepackage[preprint]{icml2026}
+
+% If accepted, instead use the following line for the camera-ready submission:
+% \usepackage[accepted]{icml2026}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{amsthm}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage[table]{xcolor}
+
+\usepackage{multirow}
+\usepackage{arydshln}
+\usepackage{subcaption}
+\usepackage{tabularx}
+\usepackage{tcolorbox}
+\usepackage{enumitem}
+\usepackage{titletoc}
+
+% if you use cleveref..
+\usepackage[capitalize,noabbrev]{cleveref}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% THEOREMS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{assumption}[theorem]{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% Todonotes is useful during development; simply uncomment the next line
+%    and comment out the line below the next line to turn off comments
+%\usepackage[disable,textsize=tiny]{todonotes}
+\usepackage[textsize=tiny]{todonotes}
+
+% Custom commands
+\newcommand{\method}{\textsc{SkillRL}}
+\newcommand{\skillbank}{\textsc{SkillBank}}
+
+% The \icmltitle you define below is probably too long as a header.
+% Therefore, a short form for the running title is supplied here:
+\icmltitlerunning{\method{}: Evolving Agents via Recursive Skill-Augmented Reinforcement Learning}
+
+\begin{document}
+
+\twocolumn[
+  \icmltitle{\method{}: Evolving Agents via Recursive Skill-Augmented\\ Reinforcement Learning}
+
+  % List of affiliations: The first argument should be a (short) identifier you
+  % will use later to specify author affiliations Academic affiliations
+  % should list Department, University, City, Region, Country Industry
+  % affiliations should list Company, City, Region, Country
+
+  % You can specify symbols, otherwise they are numbered in order. Ideally, you
+  % should not use this facility. Affiliations will be numbered in order of
+  % appearance and this is the preferred way.
+  \icmlsetsymbol{equal}{*}
+
+  \begin{icmlauthorlist}
+\icmlauthor{Peng Xia}{unc,equal}
+\icmlauthor{Jianwen Chen}{unc,equal}
+\icmlauthor{Hanyang Wang}{unc,uch,equal}
+\icmlauthor{Jiaqi Liu}{unc}
+\icmlauthor{Kaide Zeng}{unc}
+\icmlauthor{Yu Wang}{ucsd}
+\icmlauthor{Siwei Han}{unc}
+\icmlauthor{Yiyang Zhou}{unc}
+\icmlauthor{Xujiang Zhao}{nec}
+\icmlauthor{Haifeng Chen}{nec}
+\icmlauthor{Zeyu Zheng}{ucb}
+\icmlauthor{Cihang Xie}{ucsc}
+\icmlauthor{Huaxiu Yao}{unc}
+\end{icmlauthorlist}
+
+\icmlaffiliation{unc}{UNC-Chapel Hill}
+\icmlaffiliation{uch}{University of Chicago}
+\icmlaffiliation{ucsd}{University of California San Diego}
+\icmlaffiliation{nec}{NEC Labs America}
+\icmlaffiliation{ucb}{University of California Berkeley}
+\icmlaffiliation{ucsc}{University of California Santa Cruz}
+
+
+\icmlcorrespondingauthor{Peng Xia}{pxia@cs.unc.edu}
+\icmlcorrespondingauthor{Huaxiu Yao}{huaxiu@cs.unc.edu}
+
+  % You may provide any keywords that you find helpful for describing your
+  % paper; these are used to populate the "keywords" metadata in the PDF but
+  % will not be shown in the document
+  \icmlkeywords{Reinforcement Learning, Large Language Models, Agentic AI, Skill Learning}
+
+  \vskip 0.3in
+]
+
+% this must go after the closing bracket ] following \twocolumn[ ...
+
+% This command actually creates the footnote in the first column listing the
+% affiliations and the copyright notice. The command takes one argument, which
+% is text to display at the start of the footnote. The \icmlEqualContribution
+% command is standard text for equal contribution. Remove it (just {}) if you
+% do not need this facility.
+
+% Use ONE of the following lines. DO NOT remove the command.
+% If you have no special notice, KEEP empty braces:
+\printAffiliationsAndNotice{}  % no special notice (required even if empty)
+% Or, if applicable, use the standard equal contribution text:
+% \printAffiliationsAndNotice{\icmlEqualContribution}
+
+\begin{abstract}
+Large Language Model (LLM) agents have shown stunning results in complex tasks, yet they often operate in isolation, failing to learn from past experiences. Existing memory-based methods primarily store raw trajectories, which are often redundant and noise-heavy. This prevents agents from extracting high-level, reusable behavioral patterns that are essential for generalization.
+In this paper, we propose \method{}, a framework that bridges the gap between raw experience and policy improvement through automatic skill discovery and recursive evolution. Our approach introduces an experience-based distillation mechanism to build a hierarchical skill library \skillbank, an adaptive retrieval strategy for general and task-specific heuristics, and a recursive evolution mechanism that allows the skill library to co-evolve with the agent's policy during reinforcement learning. These innovations significantly reduce the token footprint while enhancing reasoning utility. Experimental results on ALFWorld, WebShop and seven search-augmented tasks demonstrate that \method{} achieves state-of-the-art performance, outperforming strong baselines over 15.3\% and maintaining robustness as task complexity increases. Code is available at this \href{https://github.com/aiming-lab/SkillRL}{https://github.com/aiming-lab/SkillRL}.
+\end{abstract}
+
+\input{section/intro}
+\input{section/preliminaries}
+\input{section/method}
+\input{section/exp}
+
+\input{section/related}
+\input{section/conclusion}
+
+
+\section*{Acknowledgement}
+This work was partially supported by the Amazon Research Award, the Cisco Faculty Research Award, NEC Laboratories America Research Grant, and Coefficient Giving.
+
+\bibliography{main}
+\bibliographystyle{icml2026}
+
+\input{section/appendix}
+
+\end{document}
