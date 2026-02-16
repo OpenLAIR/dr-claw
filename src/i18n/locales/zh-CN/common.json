@@ -25,6 +25,15 @@
     "tasks": "任务",
     "researchLab": "研究实验室"
   },
+  "researchLabGuide": {
+    "title": "如何正确使用 VibeLab",
+    "description": "在本项目中运行研究任务前，请先按 Usage Guide 的流程操作。",
+    "step1": "创建或打开一个项目",
+    "step2": "在 Chat 页面选择 CLI 后端（Claude Code / Cursor / Codex）并开始对话",
+    "step3": "描述你的研究目标，让 orchestrator 启动完整流程",
+    "step4": "在 Research Lab 中查看 idea、产物与论文输出",
+    "readmeHint": "请参考 README.md -> Usage Guide（使用指南）中的完整流程。"
+  },
   "status": {
     "loading": "加载中...",
     "success": "成功",

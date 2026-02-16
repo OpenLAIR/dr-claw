@@ -120,6 +120,11 @@ export default function ProviderSelectionEmptyState({
             <p className="text-[13px] text-muted-foreground mt-1">
               {t('providerSelection.description')}
             </p>
+            <p className="text-[12px] text-muted-foreground/90 mt-2">
+              {t('providerSelection.cliBackendHint', {
+                defaultValue: 'Choose a CLI backend (Claude Code / Cursor / Codex)',
+              })}
+            </p>
           </div>
 
           {/* Provider cards — horizontal row, equal width */}

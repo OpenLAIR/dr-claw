@@ -8,6 +8,12 @@ function MobileNav({ activeTab, setActiveTab, isInputFocused }) {
 
   const navItems = [
     {
+      id: 'researchlab',
+      icon: FlaskConical,
+      label: 'Lab',
+      onClick: () => setActiveTab('researchlab')
+    },
+    {
       id: 'chat',
       icon: MessageSquare,
       label: 'Chat',
@@ -30,12 +36,6 @@ function MobileNav({ activeTab, setActiveTab, isInputFocused }) {
       icon: GitBranch,
       label: 'Git',
       onClick: () => setActiveTab('git')
-    },
-    {
-      id: 'researchlab',
-      icon: FlaskConical,
-      label: 'Lab',
-      onClick: () => setActiveTab('researchlab')
     },
     ...(shouldShowTasksTab ? [{
       id: 'tasks',

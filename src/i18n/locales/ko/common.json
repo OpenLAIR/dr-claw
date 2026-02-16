@@ -25,6 +25,15 @@
     "tasks": "작업",
     "researchLab": "Research Lab"
   },
+  "researchLabGuide": {
+    "title": "VibeLab 올바른 사용 방법",
+    "description": "이 프로젝트에서 연구 작업을 시작하기 전에 Usage Guide 흐름을 먼저 따라주세요.",
+    "step1": "프로젝트를 생성하거나 열기",
+    "step2": "Chat 페이지에서 CLI 백엔드(Claude Code / Cursor / Codex)를 선택하고 대화를 시작하세요",
+    "step3": "연구 목표를 설명하고 orchestrator가 전체 파이프라인을 실행하도록 하세요",
+    "step4": "Research Lab에서 아이디어, 산출물, 논문 결과 확인",
+    "readmeHint": "README.md -> Usage Guide의 전체 절차를 따라주세요."
+  },
   "status": {
     "loading": "로딩 중...",
     "success": "성공",

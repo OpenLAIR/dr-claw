@@ -719,6 +719,33 @@ function FileViewer({ projectName, file, onClose }) {
   );
 }
 
+function UsageGuideNotice({ t }) {
+  return (
+    <div className="rounded-lg border border-amber-300/60 dark:border-amber-700/60 bg-amber-50/80 dark:bg-amber-900/20 p-4">
+      <div className="flex items-start gap-3">
+        <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+        <div className="space-y-2">
+          <h3 className="text-sm font-semibold text-amber-900 dark:text-amber-200">
+            {t('researchLabGuide.title')}
+          </h3>
+          <p className="text-xs text-amber-900/90 dark:text-amber-200/90">
+            {t('researchLabGuide.description')}
+          </p>
+          <ol className="list-decimal pl-4 space-y-1 text-xs text-amber-900/90 dark:text-amber-200/90">
+            <li>{t('researchLabGuide.step1')}</li>
+            <li>{t('researchLabGuide.step2')}</li>
+            <li>{t('researchLabGuide.step3')}</li>
+            <li>{t('researchLabGuide.step4')}</li>
+          </ol>
+          <p className="text-xs font-medium text-amber-900 dark:text-amber-200">
+            {t('researchLabGuide.readmeHint')}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ------------------------------------------------------------------ */
 /*  Main component                                                     */
 /* ------------------------------------------------------------------ */
@@ -808,19 +835,27 @@ function ResearchLab({ selectedProject }) {
       {/* Body */}
       <ScrollArea className="flex-1">
         {loading && !hasContent ? (
-          <div className="flex items-center justify-center h-40 text-muted-foreground text-sm">
-            Loading research data...
+          <div className="p-4 space-y-4 max-w-4xl mx-auto">
+            <UsageGuideNotice t={t} />
+            <div className="flex items-center justify-center h-40 text-muted-foreground text-sm">
+              Loading research data...
+            </div>
           </div>
         ) : !hasContent ? (
-          <div className="flex flex-col items-center justify-center h-60 text-muted-foreground text-sm gap-3">
-            <FolderOpen className="w-14 h-14 opacity-40" />
-            <p>No research data found in this project.</p>
-            <p className="text-xs max-w-md text-center">
-              Start a research pipeline to generate <code className="bg-muted px-1 rounded">instance.json</code> and <code className="bg-muted px-1 rounded">pipeline_config.json</code> in the project root.
-            </p>
+          <div className="p-4 space-y-4 max-w-4xl mx-auto">
+            <UsageGuideNotice t={t} />
+            <div className="flex flex-col items-center justify-center h-60 text-muted-foreground text-sm gap-3">
+              <FolderOpen className="w-14 h-14 opacity-40" />
+              <p>No research data found in this project.</p>
+              <p className="text-xs max-w-md text-center">
+                Start a research pipeline to generate <code className="bg-muted px-1 rounded">instance.json</code> and <code className="bg-muted px-1 rounded">pipeline_config.json</code> in the project root.
+              </p>
+            </div>
           </div>
         ) : (
           <div className="p-4 space-y-4 max-w-4xl mx-auto">
+            <UsageGuideNotice t={t} />
+
             {/* Row 1: Overview + Pipeline Config */}
             {(instance || config) && (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

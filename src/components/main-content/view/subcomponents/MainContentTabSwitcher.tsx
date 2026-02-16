@@ -17,11 +17,11 @@ type TabDefinition = {
 };
 
 const BASE_TABS: TabDefinition[] = [
+  { id: 'researchlab', labelKey: 'tabs.researchLab', icon: FlaskConical },
   { id: 'chat', labelKey: 'tabs.chat', icon: MessageSquare },
   { id: 'shell', labelKey: 'tabs.shell', icon: Terminal },
   { id: 'files', labelKey: 'tabs.files', icon: Folder },
   { id: 'git', labelKey: 'tabs.git', icon: GitBranch },
-  { id: 'researchlab', labelKey: 'tabs.researchLab', icon: FlaskConical },
 ];
 
 const TASKS_TAB: TabDefinition = {

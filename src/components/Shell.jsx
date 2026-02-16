@@ -57,6 +57,19 @@ function isCodexLoginCommand(command) {
   return typeof command === 'string' && /\bcodex\s+login\b/i.test(command);
 }
 
+function getPreferredProvider(selectedSession) {
+  if (selectedSession?.__provider) {
+    return selectedSession.__provider;
+  }
+
+  const storedProvider = localStorage.getItem('selected-provider');
+  if (storedProvider === 'cursor' || storedProvider === 'codex' || storedProvider === 'claude') {
+    return storedProvider;
+  }
+
+  return 'claude';
+}
+
 function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell = false, onProcessComplete, minimal = false, autoConnect = false }) {
   const { t } = useTranslation('chat');
   const terminalRef = useRef(null);
@@ -162,7 +175,7 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
               projectPath: selectedProjectRef.current.fullPath || selectedProjectRef.current.path,
               sessionId: isPlainShellRef.current ? null : selectedSessionRef.current?.id,
               hasSession: isPlainShellRef.current ? false : !!selectedSessionRef.current,
-              provider: isPlainShellRef.current ? 'plain-shell' : (selectedSessionRef.current?.__provider || 'claude'),
+              provider: isPlainShellRef.current ? 'plain-shell' : getPreferredProvider(selectedSessionRef.current),
               cols: terminal.current.cols,
               rows: terminal.current.rows,
               initialCommand: initialCommandRef.current,

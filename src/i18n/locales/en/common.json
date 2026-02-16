@@ -25,6 +25,15 @@
     "tasks": "Tasks",
     "researchLab": "Research Lab"
   },
+  "researchLabGuide": {
+    "title": "How to use VibeLab correctly",
+    "description": "Please follow the Usage Guide workflow before running research tasks in this project.",
+    "step1": "Create or open a project",
+    "step2": "In Chat, choose a CLI backend (Claude Code / Cursor / Codex) and start the conversation",
+    "step3": "Describe your research goal and let the orchestrator run the pipeline",
+    "step4": "Use Research Lab to review idea, artifacts, and paper outputs",
+    "readmeHint": "Use the process in README.md -> Usage Guide."
+  },
   "status": {
     "loading": "Loading...",
     "success": "Success",

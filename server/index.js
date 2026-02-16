@@ -1066,7 +1066,9 @@ function handleShellConnection(ws) {
                 const projectPath = data.projectPath || process.cwd();
                 const sessionId = data.sessionId;
                 const hasSession = data.hasSession;
-                const provider = data.provider || 'claude';
+                const provider = ['claude', 'cursor', 'codex', 'plain-shell'].includes(data.provider)
+                    ? data.provider
+                    : 'claude';
                 const initialCommand = data.initialCommand;
                 const isPlainShell = data.isPlainShell || (!!initialCommand && !hasSession) || provider === 'plain-shell';
                 urlDetectionBuffer = '';
@@ -1083,7 +1085,8 @@ function handleShellConnection(ws) {
                 const commandSuffix = isPlainShell && initialCommand
                     ? `_cmd_${Buffer.from(initialCommand).toString('base64').slice(0, 16)}`
                     : '';
-                ptySessionKey = `${projectPath}_${sessionId || 'default'}${commandSuffix}`;
+                const providerSuffix = isPlainShell ? '_provider_plain-shell' : `_provider_${provider}`;
+                ptySessionKey = `${projectPath}_${sessionId || 'default'}${providerSuffix}${commandSuffix}`;
 
                 // Kill any existing login session before starting fresh
                 if (isLoginCommand) {
@@ -1135,7 +1138,7 @@ function handleShellConnection(ws) {
                 if (isPlainShell) {
                     welcomeMsg = `\x1b[36mStarting terminal in: ${projectPath}\x1b[0m\r\n`;
                 } else {
-                    const providerName = provider === 'cursor' ? 'Cursor' : 'Claude';
+                    const providerName = provider === 'cursor' ? 'Cursor' : provider === 'codex' ? 'Codex' : 'Claude';
                     welcomeMsg = hasSession ?
                         `\x1b[36mResuming ${providerName} session ${sessionId} in: ${projectPath}\x1b[0m\r\n` :
                         `\x1b[36mStarting new ${providerName} session in: ${projectPath}\x1b[0m\r\n`;
@@ -1169,6 +1172,21 @@ function handleShellConnection(ws) {
                                 shellCommand = `cd "${projectPath}" && cursor-agent --resume="${sessionId}"`;
                             } else {
                                 shellCommand = `cd "${projectPath}" && cursor-agent`;
+                            }
+                        }
+                    } else if (provider === 'codex') {
+                        // Use codex command
+                        if (os.platform() === 'win32') {
+                            if (hasSession && sessionId) {
+                                shellCommand = `Set-Location -Path "${projectPath}"; codex resume ${sessionId}; if ($LASTEXITCODE -ne 0) { codex }`;
+                            } else {
+                                shellCommand = `Set-Location -Path "${projectPath}"; codex`;
+                            }
+                        } else {
+                            if (hasSession && sessionId) {
+                                shellCommand = `cd "${projectPath}" && codex resume ${sessionId} || codex`;
+                            } else {
+                                shellCommand = `cd "${projectPath}" && codex`;
                             }
                         }
                     } else {
