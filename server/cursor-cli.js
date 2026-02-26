@@ -45,6 +45,9 @@ async function spawnCursor(command, options = {}, ws) {
       args.push('--output-format', 'stream-json');
     }
     
+    // Always trust the workspace directory since the user explicitly chose it
+    args.push('--trust');
+
     // Add skip permissions flag if enabled
     if (skipPermissions || settings.skipPermissions) {
       args.push('-f');
