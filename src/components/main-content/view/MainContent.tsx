@@ -160,7 +160,7 @@ function MainContent({
 
           {activeTab === 'skills' && (
             <div className="h-full overflow-hidden">
-              <SkillsDashboard />
+              <SkillsDashboard selectedProject={selectedProject} />
             </div>
           )}
 

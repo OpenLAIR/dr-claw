@@ -3,7 +3,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
 import { fileURLToPath } from 'url';
-import { extractProjectDirectory } from '../projects.js';
+import { extractProjectDirectory, ensureProjectSkillLinks } from '../projects.js';
 import { FORBIDDEN_PATHS } from './projects.js';
 
 const GLOBAL_SKILLS_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'skills');
@@ -298,6 +298,26 @@ router.get('/file', async (req, res) => {
   }
 });
 
+// PUT /file — write a single file in the global skills/ directory
+router.put('/file', async (req, res) => {
+  try {
+    const { filePath, content } = req.body || {};
+    if (!filePath || typeof content !== 'string') {
+      return res.status(400).json({ error: 'filePath and content are required' });
+    }
+    const skillsDir = path.resolve(GLOBAL_SKILLS_DIR);
+    const resolved = path.resolve(skillsDir, filePath);
+    if (!resolved.startsWith(skillsDir + path.sep) && resolved !== skillsDir) {
+      return res.status(403).json({ error: 'Path must be under skills root' });
+    }
+    await fs.writeFile(resolved, content, 'utf8');
+    res.json({ success: true });
+  } catch (error) {
+    console.error('[ERROR] Skill file write error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // GET /scan-local — scan a local directory for skill subdirectories
 router.get('/scan-local', async (req, res) => {
   try {
@@ -453,6 +473,121 @@ router.post('/import-from-local', async (req, res) => {
     res.json({ imported, skipped, errors });
   } catch (error) {
     console.error('[skills] import-from-local error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /:projectName/import-user-skills — import from ~/.claude/skills/ into GLOBAL_SKILLS_DIR then re-sync symlinks
+router.post('/:projectName/import-user-skills', async (req, res) => {
+  try {
+    const projectName = req.params.projectName;
+    const projectRoot = await extractProjectDirectory(projectName);
+    if (!projectRoot) {
+      return res.status(404).json({ error: 'Project not found.' });
+    }
+
+    // Resolve ~/.claude/skills/
+    const userSkillsDir = path.join(os.homedir(), '.claude', 'skills');
+    let stat;
+    try {
+      stat = await fs.stat(userSkillsDir);
+    } catch {
+      return res.status(404).json({ error: 'User skills directory not found (~/.claude/skills/).' });
+    }
+    if (!stat.isDirectory()) {
+      return res.status(400).json({ error: '~/.claude/skills/ is not a directory.' });
+    }
+
+    // Scan for subdirs containing SKILL.md
+    const entries = await fs.readdir(userSkillsDir, { withFileTypes: true });
+    await fs.mkdir(GLOBAL_SKILLS_DIR, { recursive: true });
+
+    const imported = [];
+    const skipped = [];
+    const errors = [];
+
+    for (const entry of entries) {
+      if (!entry.isDirectory() || entry.name.startsWith('.')) continue;
+
+      const srcDir = path.join(userSkillsDir, entry.name);
+
+      // Verify SKILL.md exists
+      try {
+        await fs.access(path.join(srcDir, 'SKILL.md'));
+      } catch {
+        continue; // Skip dirs without SKILL.md
+      }
+
+      const destDir = path.join(GLOBAL_SKILLS_DIR, entry.name);
+
+      try {
+        // Check if already exists in global skills
+        try {
+          await fs.access(destDir);
+          skipped.push(entry.name);
+          continue;
+        } catch {
+          // Does not exist — proceed
+        }
+
+        await fs.cp(srcDir, destDir, { recursive: true });
+
+        // Parse frontmatter from SKILL.md for tag extraction
+        let frontmatter = {};
+        try {
+          const skillMdContent = await fs.readFile(path.join(srcDir, 'SKILL.md'), 'utf8');
+          const parsed = await parseFrontmatter(skillMdContent);
+          frontmatter = parsed.data || {};
+        } catch { /* ignore parse errors */ }
+
+        // Update skill-tag-mapping.json with tag overrides from frontmatter
+        const tagMappingPath = path.join(GLOBAL_SKILLS_DIR, 'skill-tag-mapping.json');
+        let tagMapping = { version: 1, stageOverrides: {}, domainOverrides: {}, platformNativeSkills: [], domainCsAiExceptions: [] };
+        try {
+          tagMapping = JSON.parse(await fs.readFile(tagMappingPath, 'utf8'));
+        } catch { /* use defaults */ }
+        if (frontmatter.stage) {
+          tagMapping.stageOverrides = tagMapping.stageOverrides || {};
+          tagMapping.stageOverrides[entry.name] = typeof frontmatter.stage === 'string'
+            ? { en: `Stage: ${frontmatter.stage}`, zh: `阶段: ${frontmatter.stage}` }
+            : frontmatter.stage;
+        }
+        if (frontmatter.domain) {
+          tagMapping.domainOverrides = tagMapping.domainOverrides || {};
+          tagMapping.domainOverrides[entry.name] = typeof frontmatter.domain === 'string'
+            ? { en: `Domain: ${frontmatter.domain}`, zh: `领域: ${frontmatter.domain}` }
+            : frontmatter.domain;
+        }
+        await fs.writeFile(tagMappingPath, JSON.stringify(tagMapping, null, 2), 'utf8');
+
+        // Update stage-skill-map.json with origin
+        const stageSkillMapPath = path.join(GLOBAL_SKILLS_DIR, 'stage-skill-map.json');
+        let stageSkillMap = { skillOrigins: {} };
+        try {
+          stageSkillMap = JSON.parse(await fs.readFile(stageSkillMapPath, 'utf8'));
+        } catch { /* use defaults */ }
+        stageSkillMap.skillOrigins = stageSkillMap.skillOrigins || {};
+        stageSkillMap.skillOrigins[entry.name] = 'user-import';
+        await fs.writeFile(stageSkillMapPath, JSON.stringify(stageSkillMap, null, 2), 'utf8');
+
+        imported.push(entry.name);
+      } catch (err) {
+        errors.push(`${entry.name}: ${err.message}`);
+      }
+    }
+
+    // Re-sync symlinks for the requesting project
+    if (imported.length > 0) {
+      try {
+        await ensureProjectSkillLinks(projectRoot);
+      } catch (err) {
+        console.warn('[skills] ensureProjectSkillLinks after import failed (non-fatal):', err.message);
+      }
+    }
+
+    res.json({ imported, skipped, errors });
+  } catch (error) {
+    console.error('[skills] import-user-skills error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -651,6 +786,52 @@ router.post('/:projectName/upload-skill', async (req, res) => {
   }
 });
 
+// DELETE /global-skill — delete a skill from the global GLOBAL_SKILLS_DIR by relative dirPath
+router.delete('/global-skill', async (req, res) => {
+  try {
+    const { dirPath } = req.body || {};
+    if (!dirPath || typeof dirPath !== 'string') {
+      return res.status(400).json({ error: 'dirPath is required' });
+    }
+    const skillsDir = path.resolve(GLOBAL_SKILLS_DIR);
+    const resolved = path.resolve(skillsDir, dirPath);
+    if (!resolved.startsWith(skillsDir + path.sep) && resolved !== skillsDir) {
+      return res.status(403).json({ error: 'Path must be under skills root' });
+    }
+    try {
+      const stat = await fs.stat(resolved);
+      if (!stat.isDirectory()) {
+        return res.status(400).json({ error: 'Path is not a directory' });
+      }
+    } catch {
+      return res.status(404).json({ error: 'Skill directory not found' });
+    }
+    await fs.rm(resolved, { recursive: true, force: true });
+
+    // Clean config files using the skill folder name
+    const skillName = path.basename(resolved);
+    const tagMappingPath = path.join(GLOBAL_SKILLS_DIR, 'skill-tag-mapping.json');
+    try {
+      const tagMapping = JSON.parse(await fs.readFile(tagMappingPath, 'utf8'));
+      if (tagMapping.stageOverrides) delete tagMapping.stageOverrides[skillName];
+      if (tagMapping.domainOverrides) delete tagMapping.domainOverrides[skillName];
+      await fs.writeFile(tagMappingPath, JSON.stringify(tagMapping, null, 2), 'utf8');
+    } catch { /* file missing or unparseable */ }
+
+    const stageSkillMapPath = path.join(GLOBAL_SKILLS_DIR, 'stage-skill-map.json');
+    try {
+      const stageSkillMap = JSON.parse(await fs.readFile(stageSkillMapPath, 'utf8'));
+      if (stageSkillMap.skillOrigins) delete stageSkillMap.skillOrigins[skillName];
+      await fs.writeFile(stageSkillMapPath, JSON.stringify(stageSkillMap, null, 2), 'utf8');
+    } catch { /* file missing or unparseable */ }
+
+    res.json({ success: true, deleted: dirPath });
+  } catch (error) {
+    console.error('[skills] delete-global-skill error:', error);
+    res.status(500).json({ error: 'Failed to delete skill: ' + error.message });
+  }
+});
+
 // DELETE /:projectName/:skillDirName
 router.delete('/:projectName/:skillDirName', async (req, res) => {
   try {
@@ -683,27 +864,41 @@ router.delete('/:projectName/:skillDirName', async (req, res) => {
     // Delete the skill directory
     await fs.rm(foundDir, { recursive: true, force: true });
 
-    // Clean up skill-tag-mapping.json
-    const tagMappingPath = path.join(projectRoot, 'skills', 'skill-tag-mapping.json');
-    try {
-      const raw = await fs.readFile(tagMappingPath, 'utf8');
-      const tagMapping = JSON.parse(raw);
-      if (tagMapping.stageOverrides) delete tagMapping.stageOverrides[skillDirName];
-      if (tagMapping.domainOverrides) delete tagMapping.domainOverrides[skillDirName];
-      await fs.writeFile(tagMappingPath, JSON.stringify(tagMapping, null, 2), 'utf8');
-    } catch {
-      // Tag mapping file doesn't exist or can't be parsed; skip cleanup
+    // Determine the parent skills dir from the found location for config cleanup
+    const foundSkillsBase = path.dirname(foundDir);
+
+    // Clean up skill-tag-mapping.json in the skills base where the skill was found
+    // Also clean from the legacy skills/ location for backwards compat
+    const tagMappingCandidates = [
+      path.join(foundSkillsBase, 'skill-tag-mapping.json'),
+      path.join(projectRoot, 'skills', 'skill-tag-mapping.json'),
+    ];
+    for (const tagMappingPath of [...new Set(tagMappingCandidates)]) {
+      try {
+        const raw = await fs.readFile(tagMappingPath, 'utf8');
+        const tagMapping = JSON.parse(raw);
+        if (tagMapping.stageOverrides) delete tagMapping.stageOverrides[skillDirName];
+        if (tagMapping.domainOverrides) delete tagMapping.domainOverrides[skillDirName];
+        await fs.writeFile(tagMappingPath, JSON.stringify(tagMapping, null, 2), 'utf8');
+      } catch {
+        // Tag mapping file doesn't exist or can't be parsed; skip cleanup
+      }
     }
 
-    // Clean up stage-skill-map.json
-    const stageSkillMapPath = path.join(projectRoot, 'skills', 'stage-skill-map.json');
-    try {
-      const raw = await fs.readFile(stageSkillMapPath, 'utf8');
-      const stageSkillMap = JSON.parse(raw);
-      if (stageSkillMap.skillOrigins) delete stageSkillMap.skillOrigins[skillDirName];
-      await fs.writeFile(stageSkillMapPath, JSON.stringify(stageSkillMap, null, 2), 'utf8');
-    } catch {
-      // Stage-skill-map file doesn't exist or can't be parsed; skip cleanup
+    // Clean up stage-skill-map.json in the skills base + legacy location
+    const stageMapCandidates = [
+      path.join(foundSkillsBase, 'stage-skill-map.json'),
+      path.join(projectRoot, 'skills', 'stage-skill-map.json'),
+    ];
+    for (const stageSkillMapPath of [...new Set(stageMapCandidates)]) {
+      try {
+        const raw = await fs.readFile(stageSkillMapPath, 'utf8');
+        const stageSkillMap = JSON.parse(raw);
+        if (stageSkillMap.skillOrigins) delete stageSkillMap.skillOrigins[skillDirName];
+        await fs.writeFile(stageSkillMapPath, JSON.stringify(stageSkillMap, null, 2), 'utf8');
+      } catch {
+        // Stage-skill-map file doesn't exist or can't be parsed; skip cleanup
+      }
     }
 
     // Remove from global skills directory

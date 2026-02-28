@@ -219,6 +219,11 @@ export const api = {
   getGlobalSkills: () => authenticatedFetch('/api/skills'),
   readGlobalSkillFile: (filePath) =>
     authenticatedFetch(`/api/skills/file?filePath=${encodeURIComponent(filePath)}`),
+  saveGlobalSkillFile: (filePath, content) =>
+    authenticatedFetch('/api/skills/file', {
+      method: 'PUT',
+      body: JSON.stringify({ filePath, content }),
+    }),
   validateSkillZip: (projectName, formData) =>
     authenticatedFetch(`/api/skills/${projectName}/validate-skill-zip`, {
       method: 'POST',
@@ -237,6 +242,15 @@ export const api = {
     authenticatedFetch('/api/skills/import-from-local', {
       method: 'POST',
       body: JSON.stringify({ sourcePath, skillNames }),
+    }),
+  deleteProjectSkill: (projectName, skillDirName) =>
+    authenticatedFetch(`/api/skills/${encodeURIComponent(projectName)}/${encodeURIComponent(skillDirName)}`, {
+      method: 'DELETE',
+    }),
+  deleteGlobalSkill: (dirPath) =>
+    authenticatedFetch('/api/skills/global-skill', {
+      method: 'DELETE',
+      body: JSON.stringify({ dirPath }),
     }),
 
   // Generic GET method for any endpoint

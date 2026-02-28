@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Check, Download, Layers, Loader2, RefreshCw, Search, Sparkles, X } from 'lucide-react';
+import { Check, Download, Edit3, Layers, Loader2, RefreshCw, Save, Search, Sparkles, Trash2, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../utils/api';
 type SkillNode = {
@@ -38,6 +38,8 @@ type SkillTagMapping = {
 
 type SkillSummary = {
   name: string;
+  /** Relative path from skills root to the skill directory (e.g. "distributed-training/accelerate") */
+  dirPath: string;
   summary: string;
   fullDescription: string;
   tags: SkillTag[];
@@ -103,6 +105,15 @@ const UI_TEXT: Record<LocaleKey, Record<string, string>> = {
     noSkillsFound: '未在该目录中发现技能。',
     alreadyImported: '已导入',
     pathLabel: '技能目录路径',
+    editSkill: '编辑',
+    deleteSkill: '删除',
+    saveSkill: '保存',
+    cancelEdit: '取消',
+    confirmDeleteSkill: '确定要删除技能 "{{name}}" 吗？此操作不可撤销。',
+    skillDeleted: '技能 "{{name}}" 已删除',
+    skillSaved: '技能 "{{name}}" 已保存',
+    saving: '保存中...',
+    deleting: '删除中...',
   },
   en: {
     loading: 'Loading skills...',
@@ -133,6 +144,15 @@ const UI_TEXT: Record<LocaleKey, Record<string, string>> = {
     noSkillsFound: 'No skills found in this directory.',
     alreadyImported: 'Already imported',
     pathLabel: 'Skills directory path',
+    editSkill: 'Edit',
+    deleteSkill: 'Delete',
+    saveSkill: 'Save',
+    cancelEdit: 'Cancel',
+    confirmDeleteSkill: 'Delete skill "{{name}}"? This cannot be undone.',
+    skillDeleted: '"{{name}}" deleted',
+    skillSaved: '"{{name}}" saved',
+    saving: 'Saving...',
+    deleting: 'Deleting...',
   },
   ko: {
     loading: 'Loading skills...',
@@ -163,6 +183,15 @@ const UI_TEXT: Record<LocaleKey, Record<string, string>> = {
     noSkillsFound: 'No skills found in this directory.',
     alreadyImported: 'Already imported',
     pathLabel: 'Skills directory path',
+    editSkill: 'Edit',
+    deleteSkill: 'Delete',
+    saveSkill: 'Save',
+    cancelEdit: 'Cancel',
+    confirmDeleteSkill: 'Delete skill "{{name}}"? This cannot be undone.',
+    skillDeleted: '"{{name}}" deleted',
+    skillSaved: '"{{name}}" saved',
+    saving: 'Saving...',
+    deleting: 'Deleting...',
   },
 };
 
@@ -522,7 +551,11 @@ function sortSkillTags(tags: SkillTag[]): SkillTag[] {
   });
 }
 
-export default function SkillsDashboard() {
+interface SkillsDashboardProps {
+  selectedProject?: { name: string; displayName: string } | null;
+}
+
+export default function SkillsDashboard({ selectedProject }: SkillsDashboardProps) {
   const { i18n } = useTranslation();
   const localeKey = useMemo(() => resolveLocaleKey(i18n.language || 'en'), [i18n.language]);
   const text = UI_TEXT[localeKey];
@@ -541,6 +574,11 @@ export default function SkillsDashboard() {
   const [selectedSkills, setSelectedSkills] = useState<Set<string>>(new Set());
   const [importMessage, setImportMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [hasScanned, setHasScanned] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState('');
+  const [editLoading, setEditLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [modalMessage, setModalMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const loadSkills = useCallback(async () => {
     setLoading(true);
@@ -578,10 +616,21 @@ export default function SkillsDashboard() {
       const treeNodes = (await treeResponse.json()) as SkillNode[];
       const skillDirs = collectSkillDirectories(treeNodes);
 
+      // Infer skills root from top-level node paths (strip the node name to get the parent)
+      const skillsRoot = treeNodes.length > 0 && treeNodes[0].path
+        ? treeNodes[0].path.replace(/[/\\][^/\\]+$/, '')
+        : '';
+
       const extractedSkills = await Promise.all(
         skillDirs.map(async (node) => {
           const skillName = node.name;
           const skillMdPath = findDirectFilePathByName(node, 'SKILL.md');
+
+          // Compute relative path from skills root (e.g. "distributed-training/accelerate")
+          let dirPath = skillName;
+          if (skillsRoot && node.path && node.path.startsWith(skillsRoot + '/')) {
+            dirPath = node.path.slice(skillsRoot.length + 1);
+          }
 
           let summary = '';
           let fullDescription = '';
@@ -617,6 +666,7 @@ export default function SkillsDashboard() {
 
           return {
             name: skillName,
+            dirPath,
             summary,
             fullDescription,
             tags: normalizedTags,
@@ -716,6 +766,85 @@ export default function SkillsDashboard() {
     setSelectedSkills(new Set());
     setImportMessage(null);
     setHasScanned(false);
+  }, []);
+
+  const handleStartEdit = useCallback(async () => {
+    if (!focusedSkill) return;
+    setEditLoading(true);
+    setModalMessage(null);
+    try {
+      const skillMdPath = `${focusedSkill.dirPath}/SKILL.md`;
+      const response = await api.readGlobalSkillFile(skillMdPath);
+      if (response.ok) {
+        const payload = await response.json();
+        setEditContent(payload.content || '');
+        setIsEditing(true);
+      } else {
+        const errBody = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
+        setModalMessage({ type: 'error', text: errBody.error || `Could not load SKILL.md (${response.status})` });
+      }
+    } catch (err) {
+      setModalMessage({ type: 'error', text: err instanceof Error ? err.message : 'Load failed' });
+    } finally {
+      setEditLoading(false);
+    }
+  }, [focusedSkill]);
+
+  const handleSaveEdit = useCallback(async () => {
+    if (!focusedSkill) return;
+    setEditLoading(true);
+    setModalMessage(null);
+    try {
+      const skillMdPath = `${focusedSkill.dirPath}/SKILL.md`;
+      const response = await api.saveGlobalSkillFile(skillMdPath, editContent);
+      if (response.ok) {
+        setModalMessage({ type: 'success', text: text.skillSaved.replace('{{name}}', focusedSkill.name) });
+        setIsEditing(false);
+        loadSkills();
+      } else {
+        const err = await response.json();
+        setModalMessage({ type: 'error', text: err.error || 'Save failed' });
+      }
+    } catch (err) {
+      setModalMessage({ type: 'error', text: err instanceof Error ? err.message : 'Save failed' });
+    } finally {
+      setEditLoading(false);
+    }
+  }, [focusedSkill, editContent, text.skillSaved, loadSkills]);
+
+  const handleCancelEdit = useCallback(() => {
+    setIsEditing(false);
+    setEditContent('');
+    setModalMessage(null);
+  }, []);
+
+  const handleDeleteSkill = useCallback(async () => {
+    if (!focusedSkill) return;
+    if (!confirm(text.confirmDeleteSkill.replace('{{name}}', focusedSkill.name))) return;
+    setDeleteLoading(true);
+    setModalMessage(null);
+    try {
+      const response = await api.deleteGlobalSkill(focusedSkill.dirPath);
+      if (response.ok) {
+        setFocusedSkill(null);
+        setIsEditing(false);
+        loadSkills();
+      } else {
+        const err = await response.json();
+        setModalMessage({ type: 'error', text: err.error || 'Delete failed' });
+      }
+    } catch (err) {
+      setModalMessage({ type: 'error', text: err instanceof Error ? err.message : 'Delete failed' });
+    } finally {
+      setDeleteLoading(false);
+    }
+  }, [focusedSkill, text.confirmDeleteSkill, loadSkills]);
+
+  const handleCloseModal = useCallback(() => {
+    setFocusedSkill(null);
+    setIsEditing(false);
+    setEditContent('');
+    setModalMessage(null);
   }, []);
 
   useEffect(() => {
@@ -915,7 +1044,7 @@ export default function SkillsDashboard() {
       {focusedSkill && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
-          onClick={() => setFocusedSkill(null)}
+          onClick={handleCloseModal}
         >
           <div
             className="w-full max-w-3xl rounded-2xl border border-border bg-card p-5 shadow-2xl"
@@ -926,15 +1055,67 @@ export default function SkillsDashboard() {
                 <h3 className="text-lg font-semibold text-foreground break-all">{focusedSkill.name}</h3>
                 <p className="mt-1 text-xs text-muted-foreground">{text.detailTitle}</p>
               </div>
-              <button
-                type="button"
-                onClick={() => setFocusedSkill(null)}
-                className="rounded-md border border-border p-1.5 text-muted-foreground hover:bg-muted"
-                aria-label="Close"
-              >
-                <X className="h-4 w-4" />
-              </button>
+              <div className="flex items-center gap-1.5">
+                {!isEditing && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleStartEdit}
+                      disabled={editLoading}
+                      className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-xs text-foreground hover:bg-muted transition-colors disabled:opacity-50"
+                      title={text.editSkill}
+                    >
+                      {editLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Edit3 className="h-3.5 w-3.5" />}
+                      {text.editSkill}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleDeleteSkill}
+                      disabled={deleteLoading}
+                      className="inline-flex items-center gap-1.5 rounded-md border border-red-200 px-2.5 py-1.5 text-xs text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/30 transition-colors disabled:opacity-50"
+                      title={text.deleteSkill}
+                    >
+                      {deleteLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                      {text.deleteSkill}
+                    </button>
+                  </>
+                )}
+                {isEditing && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleSaveEdit}
+                      disabled={editLoading}
+                      className="inline-flex items-center gap-1.5 rounded-md bg-sky-600 px-2.5 py-1.5 text-xs text-white hover:bg-sky-700 transition-colors disabled:opacity-50"
+                    >
+                      {editLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                      {editLoading ? text.saving : text.saveSkill}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCancelEdit}
+                      className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-xs text-foreground hover:bg-muted transition-colors"
+                    >
+                      {text.cancelEdit}
+                    </button>
+                  </>
+                )}
+                <button
+                  type="button"
+                  onClick={handleCloseModal}
+                  className="rounded-md border border-border p-1.5 text-muted-foreground hover:bg-muted"
+                  aria-label="Close"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
             </div>
+
+            {modalMessage && (
+              <div className={`mb-3 rounded-md border px-3 py-2 text-sm ${modalMessage.type === 'success' ? 'border-green-300/60 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300' : 'border-red-300/60 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'}`}>
+                {modalMessage.text}
+              </div>
+            )}
 
             <div className="mb-3 flex flex-wrap gap-1.5">
               {sortSkillTags(focusedSkill.tags).map((tag) => (
@@ -944,9 +1125,18 @@ export default function SkillsDashboard() {
               ))}
             </div>
 
-            <div className="max-h-[60vh] overflow-auto rounded-lg border border-border/70 bg-muted/30 p-4">
-              <p className="whitespace-pre-wrap text-sm leading-7 text-foreground">{focusedSkill.fullDescription}</p>
-            </div>
+            {isEditing ? (
+              <textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                className="w-full max-h-[60vh] min-h-[300px] overflow-auto rounded-lg border border-border/70 bg-background p-4 font-mono text-sm leading-6 text-foreground outline-none transition focus:ring-2 focus:ring-sky-300/70 dark:focus:ring-sky-700/70 resize-y"
+                spellCheck={false}
+              />
+            ) : (
+              <div className="max-h-[60vh] overflow-auto rounded-lg border border-border/70 bg-muted/30 p-4">
+                <p className="whitespace-pre-wrap text-sm leading-7 text-foreground">{focusedSkill.fullDescription}</p>
+              </div>
+            )}
           </div>
         </div>
       )}

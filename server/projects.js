@@ -1551,6 +1551,21 @@ async function ensureProjectSkillLinks(projectPath) {
           console.error('[projects] Failed to write skills-index.md:', err.message);
         }
       }
+
+      // Symlink JSON config files from VibeLab root into each project skills folder
+      for (const jsonFile of ['skill-tag-mapping.json', 'stage-skill-map.json']) {
+        const srcJson = path.join(VIBELAB_SKILLS_DIR, jsonFile);
+        const destJson = path.join(skillsSubdir, jsonFile);
+        try {
+          await fs.access(srcJson);
+          try { await fs.unlink(destJson); } catch (_) {}
+          await fs.symlink(srcJson, destJson, 'file');
+        } catch (err) {
+          if (err.code !== 'ENOENT') {
+            console.error(`[projects] Failed to symlink ${jsonFile} in ${dir}/skills:`, err.message);
+          }
+        }
+      }
     }
   } catch (err) {
     console.error('[projects] ensureProjectSkillLinks failed:', err.message);
