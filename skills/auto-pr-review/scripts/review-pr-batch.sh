@@ -37,9 +37,9 @@ if [ "$CURRENT_BRANCH" != "$DEFAULT_BRANCH" ]; then
   }
 fi
 
-# Ensure clean tree before starting
-if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
-  echo "ERROR: Working tree is dirty. Cannot run batch review."
+# Ensure clean tree before starting (ignore untracked files)
+if [ -n "$(git status --porcelain -uno 2>/dev/null)" ]; then
+  echo "ERROR: Working tree has modified/staged files. Cannot run batch review."
   exit 1
 fi
 
@@ -72,7 +72,7 @@ for PR in $PR_NUMBERS; do
   echo "--- Processing PR #${PR} ---"
 
   # Ensure clean tree between PRs (previous review may have left state)
-  if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
+  if [ -n "$(git status --porcelain -uno 2>/dev/null)" ]; then
     echo "WARNING: Dirty tree detected between PRs, resetting..."
     git checkout -- . 2>/dev/null || true
     git clean -fd 2>/dev/null || true

@@ -46,9 +46,9 @@ if ! gh auth status > /dev/null 2>&1; then
   exit 1
 fi
 
-# Check clean working tree
-if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
-  echo "ERROR: Working tree is dirty. Stash or commit changes first."
+# Check clean working tree (ignore untracked files — repos often have them)
+if [ -n "$(git status --porcelain -uno 2>/dev/null)" ]; then
+  echo "ERROR: Working tree has modified/staged files. Stash or commit changes first."
   exit 1
 fi
 
