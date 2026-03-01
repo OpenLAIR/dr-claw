@@ -1,0 +1,7 @@
+review PR #42
+auto-review all open PRs
+run PR checks on PR 15
+test this pull request and post results
+check the open PRs and comment findings
+set up PR auto-review cron on Mac Mini
+review PR #7 --force
