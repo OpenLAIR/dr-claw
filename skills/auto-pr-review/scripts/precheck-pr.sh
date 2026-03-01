@@ -9,9 +9,10 @@ WORK_DIR="${2:?Usage: precheck-pr.sh <pr-number> <work-dir>}"
 # Configurable thresholds
 MAX_TRIVIAL_LINES="${MAX_TRIVIAL_LINES:-5}"
 
-# Get diff stats and file list
+# Get diff file list and stats
 FILES=$(gh pr diff "$PR_NUMBER" --name-only 2>/dev/null || echo "")
-STAT_LINE=$(gh pr diff "$PR_NUMBER" --stat 2>/dev/null | tail -1 || echo "")
+ADDITIONS=$(gh pr view "$PR_NUMBER" --json additions --jq '.additions' 2>/dev/null || echo "0")
+DELETIONS=$(gh pr view "$PR_NUMBER" --json deletions --jq '.deletions' 2>/dev/null || echo "0")
 
 if [ -z "$FILES" ]; then
   echo "review" > "$WORK_DIR/precheck.txt"
@@ -19,9 +20,6 @@ if [ -z "$FILES" ]; then
   exit 0
 fi
 
-# Parse additions and deletions
-ADDITIONS=$(echo "$STAT_LINE" | grep -oE '[0-9]+ insertion' | grep -oE '[0-9]+' || echo "0")
-DELETIONS=$(echo "$STAT_LINE" | grep -oE '[0-9]+ deletion' | grep -oE '[0-9]+' || echo "0")
 TOTAL_LINES=$(( ${ADDITIONS:-0} + ${DELETIONS:-0} ))
 FILE_COUNT=$(echo "$FILES" | wc -l | tr -d ' ')
 

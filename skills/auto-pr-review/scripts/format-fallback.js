@@ -18,11 +18,11 @@ function main() {
   const report = JSON.parse(readFileSync(reportPath, 'utf8'));
   let template = readFileSync(templatePath, 'utf8');
 
-  const icon = (status) => status === 'pass' ? '\\u2705' : '\\u274C';
+  const icon = (status) => status === 'pass' ? '\u2705' : '\u274C';
   const verdictMap = {
-    all_clear: { icon: '\\u2705', text: 'All Clear — no issues detected' },
-    issues_found: { icon: '\\u26A0\\uFE0F', text: 'Issues Found — review failures below' },
-    critical_failure: { icon: '\\u274C', text: 'Critical Failure — build or install broken' },
+    all_clear: { icon: '\u2705', text: 'All Clear \u2014 no issues detected' },
+    issues_found: { icon: '\u26A0\uFE0F', text: 'Issues Found \u2014 review failures below' },
+    critical_failure: { icon: '\u274C', text: 'Critical Failure \u2014 build or install broken' },
   };
 
   const verdict = verdictMap[report.verdict] || verdictMap.issues_found;
