@@ -77,11 +77,41 @@ if ! npx playwright install --dry-run chromium > /dev/null 2>&1; then
   echo "WARNING: Playwright browsers may not be installed. Run: npx playwright install chromium"
 fi
 
+# Check if dev server is already running (playwright config has reuseExistingServer: true)
+if curl -s --connect-timeout 3 http://localhost:5173 > /dev/null 2>&1; then
+  echo "Dev server detected on :5173, Playwright will reuse it"
+else
+  echo "WARNING: No dev server on :5173. Starting one in background for E2E tests..."
+  npm run dev --prefix "$REPO_ROOT" > "$WORK_DIR/devserver.log" 2>&1 &
+  DEV_PID=$!
+  echo "$DEV_PID" > "$WORK_DIR/devserver.pid"
+  # Wait for server to be ready (max 60s)
+  for i in $(seq 1 60); do
+    if curl -s --connect-timeout 2 http://localhost:5173 > /dev/null 2>&1; then
+      echo "Dev server ready after ${i}s"
+      break
+    fi
+    sleep 1
+  done
+  if ! curl -s --connect-timeout 2 http://localhost:5173 > /dev/null 2>&1; then
+    echo "WARNING: Dev server failed to start within 60s, E2E tests may fail"
+  fi
+fi
+
 # Run playwright with JSON output to stdout, HTML report to work dir
 run_with_timeout "$PLAYWRIGHT_TIMEOUT" npx playwright test \
   --reporter=json \
   --output="$WORK_DIR/test-results" \
   > "$WORK_DIR/results.json" 2>"$WORK_DIR/playwright.stderr" || true
+
+# Stop dev server if we started one
+if [ -f "$WORK_DIR/devserver.pid" ]; then
+  DEV_PID=$(cat "$WORK_DIR/devserver.pid")
+  kill "$DEV_PID" 2>/dev/null || true
+  # Also kill child processes (concurrently spawns multiple)
+  pkill -P "$DEV_PID" 2>/dev/null || true
+  echo "Stopped dev server (PID $DEV_PID)"
+fi
 EXIT_CODE=$?
 echo "$EXIT_CODE" > "$WORK_DIR/playwright.exit"
 echo "playwright exit: $EXIT_CODE"
