@@ -31,15 +31,23 @@
     "title": "How to Use VibeLab",
     "description": "Start in Chat to describe your research idea. The agent will generate your pipeline and tasks through conversation. Then review and execute tasks here.",
     "step1": "Go to Chat and describe your research topic, goal, or paper idea. The agent will ask clarifying questions.",
-    "step2": "The agent generates .pipeline/docs/research_brief.json and .pipeline/tasks/tasks.json based on your conversation.",
+    "step2": "The agent generates a research pipeline and tasks based on your conversation.",
     "step3": "Review your tasks here in Research Lab. Click Go to Chat on any task to execute it with the agent.",
     "step4": "Track progress across Ideation, Experiment, and Publication stages. Refine the brief and tasks as you go.",
     "interfaceMap": "Interface: Task list and progress on the left, file preview on the right. Click Go to Chat on any task to execute it.",
     "readmeHint": "For full process details, see README.md -> Usage Guide.",
     "briefEditingTitle": "Research Brief Editing Guidance",
     "briefEditingStep1": "Fill core constraints first (goal, boundaries, metrics). Incomplete inputs are acceptable for initial task generation.",
-    "briefEditingStep2": "Click Apply Template + Generate Tasks to update .pipeline/docs/research_brief.json and regenerate .pipeline/tasks/tasks.json.",
-    "briefEditingStep3": "Use Use in Chat from the Pipeline Task List below in sequence, and keep writing clarified conclusions back to research_brief."
+    "briefEditingStep2": "Click Apply Template + Generate Tasks to update the research brief and regenerate the task list.",
+    "briefEditingStep3": "Use Use in Chat from the Pipeline Task List below in sequence, and keep writing clarified conclusions back to the research brief."
+  },
+  "researchLabTaskBoard": {
+    "doubleClickToEdit": "Double-click to edit",
+    "taskTitlePlaceholder": "Task title",
+    "taskDescriptionPlaceholder": "Task description",
+    "saving": "Saving...",
+    "untitledTask": "Untitled Task",
+    "editHint": "Double-click task card or use Edit button"
   },
   "status": {
     "loading": "Loading...",

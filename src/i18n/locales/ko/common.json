@@ -31,15 +31,23 @@
     "title": "VibeLab 사용 방법",
     "description": "채팅에서 연구 아이디어를 설명하면 에이전트가 대화를 통해 연구 파이프라인과 작업을 생성합니다. 그런 다음 여기서 작업을 확인하고 실행하세요.",
     "step1": "채팅으로 이동하여 연구 주제, 목표 또는 논문 아이디어를 설명하세요. 에이전트가 명확화 질문을 합니다.",
-    "step2": "에이전트가 대화 내용을 바탕으로 .pipeline/docs/research_brief.json과 .pipeline/tasks/tasks.json을 생성합니다.",
+    "step2": "에이전트가 대화 내용을 바탕으로 연구 파이프라인과 작업을 생성합니다.",
     "step3": "Research Lab에서 작업 목록을 확인하세요. 작업의 Go to Chat 버튼을 클릭하여 에이전트와 함께 실행합니다.",
     "step4": "Ideation, Experiment, Publication 단계에 걸쳐 진행 상황을 추적하고, Brief와 작업을 지속적으로 개선하세요.",
     "interfaceMap": "인터페이스: 왼쪽에 작업 목록과 진행률, 오른쪽에 파일 미리보기. 작업의 Go to Chat을 클릭하여 실행합니다.",
     "readmeHint": "전체 절차는 README.md -> Usage Guide를 참고하세요.",
     "briefEditingTitle": "Research Brief 편집 가이드",
     "briefEditingStep1": "핵심 제약(목표, 경계, 지표)부터 입력하세요. 입력이 불완전해도 초기 작업 생성은 가능합니다.",
-    "briefEditingStep2": "Apply Template + Generate Tasks를 클릭하면 .pipeline/docs/research_brief.json과 .pipeline/tasks/tasks.json이 함께 갱신됩니다.",
-    "briefEditingStep3": "아래 Pipeline Task List에서 Use in Chat을 순서대로 실행하고, 정리된 결론을 research_brief에 계속 반영하세요."
+    "briefEditingStep2": "Apply Template + Generate Tasks를 클릭하면 연구 브리프와 작업 목록이 함께 갱신됩니다.",
+    "briefEditingStep3": "아래 Pipeline Task List에서 Use in Chat을 순서대로 실행하고, 정리된 결론을 연구 브리프에 계속 반영하세요."
+  },
+  "researchLabTaskBoard": {
+    "doubleClickToEdit": "더블클릭하여 편집",
+    "taskTitlePlaceholder": "작업 제목",
+    "taskDescriptionPlaceholder": "작업 설명",
+    "saving": "저장 중...",
+    "untitledTask": "제목 없는 작업",
+    "editHint": "작업 카드를 더블클릭하거나 편집 버튼을 사용하세요"
   },
   "status": {
     "loading": "로딩 중...",

@@ -31,15 +31,23 @@
     "title": "如何使用 VibeLab",
     "description": "在聊天中描述你的研究想法，Agent 会通过对话生成你的研究流水线和任务。然后在此页面查看和执行任务。",
     "step1": "前往聊天页面，描述你的研究主题、目标或论文构想。Agent 会提出澄清性问题。",
-    "step2": "Agent 根据对话内容生成 .pipeline/docs/research_brief.json 和 .pipeline/tasks/tasks.json。",
+    "step2": "Agent 根据对话内容生成研究流水线和任务。",
     "step3": "在研究实验室中查看任务列表。点击任务上的 Go to Chat 按钮，由 Agent 执行该任务。",
     "step4": "在 Ideation、Experiment、Publication 三个阶段间跟踪进度，随时完善 Brief 和任务。",
     "interfaceMap": "界面布局：左侧为任务列表和进度，右侧为文件预览。点击任务上的 Go to Chat 按钮执行任务。",
     "readmeHint": "完整流程请参考 README.md -> Usage Guide（使用指南）。",
     "briefEditingTitle": "Research Brief 编辑指引",
     "briefEditingStep1": "先填写核心约束（目标、边界、评估指标）；信息不完整也可以先生成任务。",
-    "briefEditingStep2": "点击 Apply Template + Generate Tasks，会更新 .pipeline/docs/research_brief.json，并据此生成/刷新 .pipeline/tasks/tasks.json。",
-    "briefEditingStep3": "在下方 Pipeline Task List 中使用 Use in Chat 按顺序执行任务，并把澄清后的结论持续回写到 research_brief。"
+    "briefEditingStep2": "点击 Apply Template + Generate Tasks，会更新研究简报并据此生成/刷新任务列表。",
+    "briefEditingStep3": "在下方 Pipeline Task List 中使用 Use in Chat 按顺序执行任务，并把澄清后的结论持续回写到研究简报。"
+  },
+  "researchLabTaskBoard": {
+    "doubleClickToEdit": "双击可编辑",
+    "taskTitlePlaceholder": "任务标题",
+    "taskDescriptionPlaceholder": "任务描述",
+    "saving": "保存中...",
+    "untitledTask": "未命名任务",
+    "editHint": "双击任务卡片或使用编辑按钮"
   },
   "status": {
     "loading": "加载中...",

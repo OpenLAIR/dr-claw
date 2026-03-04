@@ -357,8 +357,47 @@ function StageSection({ title, icon: Icon, badgeClass, expanded, onToggle, child
   );
 }
 
-function TaskPipelineBoard({ tasks, isLoading, onOpenTasksFile, onOpenBriefFile, onNavigateToChat }) {
+function TaskPipelineBoard({ tasks, isLoading, onNavigateToChat, projectName, onTaskUpdated }) {
+  const { t } = useTranslation('common');
   const [openStages, setOpenStages] = useState({});
+  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [editForm, setEditForm] = useState({ title: '', description: '' });
+  const [saving, setSaving] = useState(false);
+
+  // Clear editing state when project changes
+  useEffect(() => {
+    setEditingTaskId(null);
+    setEditForm({ title: '', description: '' });
+  }, [projectName]);
+
+  const handleDoubleClick = useCallback((task) => {
+    setEditingTaskId(String(task.id));
+    setEditForm({ title: task.title || '', description: task.description || '' });
+  }, []);
+
+  const handleCancel = useCallback(() => {
+    setEditingTaskId(null);
+    setEditForm({ title: '', description: '' });
+  }, []);
+
+  const handleSave = useCallback(async () => {
+    if (!editingTaskId || !projectName) return;
+    setSaving(true);
+    try {
+      await api.taskmaster.updateTask(
+        encodeURIComponent(projectName),
+        editingTaskId,
+        { title: editForm.title, description: editForm.description },
+      );
+      if (onTaskUpdated) onTaskUpdated();
+    } catch (e) {
+      console.error('Failed to update task:', e);
+    } finally {
+      setSaving(false);
+      setEditingTaskId(null);
+      setEditForm({ title: '', description: '' });
+    }
+  }, [editingTaskId, editForm, projectName, onTaskUpdated]);
 
   useEffect(() => {
     if (!Array.isArray(tasks) || tasks.length === 0) return;
@@ -424,19 +463,9 @@ function TaskPipelineBoard({ tasks, isLoading, onOpenTasksFile, onOpenBriefFile,
                 Pipeline Task List
               </h3>
               <p className="text-xs text-muted-foreground">
-                Stage-oriented task board synced from <code className="bg-muted px-1 rounded">{`.pipeline/tasks/${DEFAULT_TASKS_FILENAME}`}</code>
+                Stage-oriented task board for your research pipeline
               </p>
             </div>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Button variant="ghost" size="sm" onClick={onOpenBriefFile}>
-              <FileText className="w-3.5 h-3.5 mr-1" />
-              Open research_brief.json
-            </Button>
-            <Button variant="ghost" size="sm" onClick={onOpenTasksFile}>
-              <FileText className="w-3.5 h-3.5 mr-1" />
-              Open tasks.json
-            </Button>
           </div>
         </div>
       </div>
@@ -517,16 +546,85 @@ function TaskPipelineBoard({ tasks, isLoading, onOpenTasksFile, onOpenBriefFile,
                         {stageTasks.map((task) => {
                           const statusMeta = TASK_STATUS_META[task.status] || TASK_STATUS_META.pending;
                           const isFirstPendingTask = task.status === 'pending' && String(task.id) === firstPendingTaskId;
+                          const isEditing = editingTaskId === String(task.id);
+                          const cardTone = task.status === 'done'
+                            ? 'border-emerald-200/80 bg-emerald-50/40 dark:border-emerald-900/70 dark:bg-emerald-950/20'
+                            : task.status === 'in-progress'
+                              ? 'border-blue-200/80 bg-blue-50/40 dark:border-blue-900/70 dark:bg-blue-950/20'
+                              : 'border-slate-200/80 bg-slate-50/40 dark:border-slate-800 dark:bg-slate-950/20';
                           return (
-                            <div key={`${stage}-${task.id}`} className="px-3 py-2 border-b border-border last:border-b-0">
+                            <div
+                              key={`${stage}-${task.id}`}
+                              className={`mx-2 my-2 rounded-xl border px-3 py-2.5 transition-all ${
+                                isFirstPendingTask && !isEditing ? 'ring-1 ring-emerald-300/60 dark:ring-emerald-700/60' : ''
+                              } ${cardTone} ${!isEditing ? 'cursor-pointer hover:shadow-sm hover:border-cyan-300/70 dark:hover:border-cyan-800/70' : 'border-cyan-400/70 dark:border-cyan-700/70 bg-cyan-50/40 dark:bg-cyan-950/20'}`}
+                              onDoubleClick={!isEditing ? () => handleDoubleClick(task) : undefined}
+                              title={!isEditing ? t('researchLabTaskBoard.doubleClickToEdit') : undefined}
+                            >
                               <div className="flex items-start gap-2">
-                                <span className="text-[11px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground mt-0.5">#{task.id}</span>
+                                <span className="text-[11px] px-1.5 py-0.5 rounded-md bg-background/90 border border-border text-muted-foreground mt-0.5">#{task.id}</span>
                                 <div className="min-w-0 flex-1">
-                                  <p className="text-sm font-medium text-foreground truncate">{task.title || 'Untitled Task'}</p>
-                                  {task.description && (
-                                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{task.description}</p>
+                                  {isEditing ? (
+                                    <div className="space-y-1.5">
+                                      <input
+                                        type="text"
+                                        className="w-full text-sm font-medium text-foreground bg-background border border-border rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                                        value={editForm.title}
+                                        onChange={(e) => setEditForm((prev) => ({ ...prev, title: e.target.value }))}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter') { e.preventDefault(); handleSave(); }
+                                          if (e.key === 'Escape') handleCancel();
+                                        }}
+                                        disabled={saving}
+                                        autoFocus
+                                        placeholder={t('researchLabTaskBoard.taskTitlePlaceholder')}
+                                      />
+                                      <textarea
+                                        className="w-full text-xs text-muted-foreground bg-background border border-border rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-cyan-500 resize-y min-h-[2.5rem]"
+                                        value={editForm.description}
+                                        onChange={(e) => setEditForm((prev) => ({ ...prev, description: e.target.value }))}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSave(); }
+                                          if (e.key === 'Escape') handleCancel();
+                                        }}
+                                        disabled={saving}
+                                        rows={2}
+                                        placeholder={t('researchLabTaskBoard.taskDescriptionPlaceholder')}
+                                      />
+                                      <div className="flex items-center gap-1.5">
+                                        <Button
+                                          size="sm"
+                                          className="h-6 px-2 text-[10px]"
+                                          onClick={handleSave}
+                                          disabled={saving}
+                                        >
+                                          <Check className="w-3 h-3 mr-1" />
+                                          {saving ? t('researchLabTaskBoard.saving') : t('buttons.save')}
+                                        </Button>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-6 px-2 text-[10px]"
+                                          onClick={handleCancel}
+                                          disabled={saving}
+                                        >
+                                          {t('buttons.cancel')}
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <p className="text-sm font-semibold text-foreground line-clamp-2">{task.title || t('researchLabTaskBoard.untitledTask')}</p>
+                                      {task.description && (
+                                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{task.description}</p>
+                                      )}
+                                      <p className="text-[10px] text-muted-foreground/80 mt-1 inline-flex items-center gap-1">
+                                        <PenTool className="w-3 h-3" />
+                                        {t('researchLabTaskBoard.editHint')}
+                                      </p>
+                                    </>
                                   )}
-                                  {Array.isArray(task.suggestedSkills) && task.suggestedSkills.length > 0 && (
+                                  {!isEditing && Array.isArray(task.suggestedSkills) && task.suggestedSkills.length > 0 && (
                                     <div className="flex flex-wrap gap-1 mt-1.5">
                                       {task.suggestedSkills.slice(0, 3).map((skill) => (
                                         <span key={`${task.id}-${skill}`} className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-300">
@@ -536,31 +634,44 @@ function TaskPipelineBoard({ tasks, isLoading, onOpenTasksFile, onOpenBriefFile,
                                     </div>
                                   )}
                                 </div>
-                                <div className="flex flex-col items-end gap-1">
-                                  <span className={`text-[10px] px-1.5 py-0.5 rounded ${statusMeta.className}`}>{statusMeta.label}</span>
-                                  {isFirstPendingTask && onNavigateToChat && (
-                                    <div className="mt-0.5 inline-flex flex-col items-end gap-1">
-                                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 animate-pulse">
-                                        Next
-                                      </span>
+                                {!isEditing && (
+                                  <div className="flex flex-col items-end gap-1">
+                                    <div className="flex items-center gap-1">
+                                      <span className={`text-[10px] px-1.5 py-0.5 rounded ${statusMeta.className}`}>{statusMeta.label}</span>
                                       <Button
+                                        variant="ghost"
                                         size="sm"
-                                        className="h-7 px-2.5 text-[11px] font-semibold text-white bg-gradient-to-r from-cyan-500 via-sky-500 to-emerald-500 hover:from-cyan-400 hover:via-sky-400 hover:to-emerald-400 shadow-[0_0_0_1px_rgba(255,255,255,0.2),0_8px_18px_rgba(16,185,129,0.35)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_8px_20px_rgba(34,211,238,0.35)] transition-all"
-                                        onClick={() => onNavigateToChat()}
+                                        className="h-6 px-2 text-[10px] border border-border/70 hover:border-cyan-400/70"
+                                        onClick={() => handleDoubleClick(task)}
                                       >
-                                        <Sparkles className="w-3 h-3 mr-1.5" />
-                                        <MessageSquare className="w-3 h-3 mr-1" />
-                                        Go to Chat
+                                        <PenTool className="w-3 h-3 mr-1" />
+                                        {t('buttons.edit')}
                                       </Button>
                                     </div>
-                                  )}
-                                  {task.status === 'in-progress' && (
-                                    <span className="text-[10px] text-blue-600 dark:text-blue-300 inline-flex items-center gap-1">
-                                      <Clock3 className="w-3 h-3" />
-                                      Active
-                                    </span>
-                                  )}
-                                </div>
+                                    {isFirstPendingTask && onNavigateToChat && (
+                                      <div className="mt-0.5 inline-flex flex-col items-end gap-1">
+                                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 animate-pulse">
+                                          Next
+                                        </span>
+                                        <Button
+                                          size="sm"
+                                          className="h-7 px-2.5 text-[11px] font-semibold text-white bg-gradient-to-r from-cyan-500 via-sky-500 to-emerald-500 hover:from-cyan-400 hover:via-sky-400 hover:to-emerald-400 shadow-[0_0_0_1px_rgba(255,255,255,0.2),0_8px_18px_rgba(16,185,129,0.35)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_8px_20px_rgba(34,211,238,0.35)] transition-all"
+                                          onClick={() => onNavigateToChat()}
+                                        >
+                                          <Sparkles className="w-3 h-3 mr-1.5" />
+                                          <MessageSquare className="w-3 h-3 mr-1" />
+                                          Go to Chat
+                                        </Button>
+                                      </div>
+                                    )}
+                                    {task.status === 'in-progress' && (
+                                      <span className="text-[10px] text-blue-600 dark:text-blue-300 inline-flex items-center gap-1">
+                                        <Clock3 className="w-3 h-3" />
+                                        Active
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
                               </div>
                             </div>
                           );
@@ -1085,7 +1196,12 @@ function ResearchLab({ selectedProject, onNavigateToChat }) {
   const [tasks, setTasks] = useState([]);
   const [tasksLoading, setTasksLoading] = useState(false);
   const [projectFileSet, setProjectFileSet] = useState(null);
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFile, setSelectedFileRaw] = useState(null);
+  const HIDDEN_FILENAMES = useMemo(() => new Set([DEFAULT_RESEARCH_BRIEF_FILENAME, DEFAULT_TASKS_FILENAME]), []);
+  const setSelectedFile = useCallback((file) => {
+    if (file && HIDDEN_FILENAMES.has(file.name)) return;
+    setSelectedFileRaw(file);
+  }, [HIDDEN_FILENAMES]);
   const [sectionsOpen, setSectionsOpen] = useState({
     ideation: true,
     experiment: true,
@@ -1189,7 +1305,9 @@ function ResearchLab({ selectedProject, onNavigateToChat }) {
         if (/(?:^|\/)cache\//.test(rel)) return true;
         return false;
       });
-      setArtifacts(logFiles);
+      // Exclude research_brief.json and tasks.json from user-visible artifacts
+      const HIDDEN_FILES = new Set([DEFAULT_RESEARCH_BRIEF_FILENAME, DEFAULT_TASKS_FILENAME]);
+      setArtifacts(logFiles.filter((f) => !HIDDEN_FILES.has(f.name)));
     } catch (e) {
       console.error('ResearchLab load:', e);
     } finally {
@@ -1244,16 +1362,8 @@ function ResearchLab({ selectedProject, onNavigateToChat }) {
                 tasks={tasks}
                 isLoading={tasksLoading}
                 onNavigateToChat={onNavigateToChat}
-                onOpenBriefFile={() => setSelectedFile({
-                  name: DEFAULT_RESEARCH_BRIEF_FILENAME,
-                  relativePath: `.pipeline/docs/${DEFAULT_RESEARCH_BRIEF_FILENAME}`,
-                  path: `${projectRoot.replace(/[/\\]+$/, '')}/.pipeline/docs/${DEFAULT_RESEARCH_BRIEF_FILENAME}`,
-                })}
-                onOpenTasksFile={() => setSelectedFile({
-                  name: DEFAULT_TASKS_FILENAME,
-                  relativePath: `.pipeline/tasks/${DEFAULT_TASKS_FILENAME}`,
-                  path: `${projectRoot.replace(/[/\\]+$/, '')}/.pipeline/tasks/${DEFAULT_TASKS_FILENAME}`,
-                })}
+                projectName={projectName}
+                onTaskUpdated={loadData}
               />
 
               {loading && !hasContent ? (
@@ -1306,8 +1416,7 @@ function ResearchLab({ selectedProject, onNavigateToChat }) {
                 />
               ) : (
                 <div className="rounded-lg border border-dashed border-border bg-card/60 px-4 py-6 text-center text-xs text-muted-foreground">
-                  Select <code className="bg-muted px-1 rounded">research_brief.json</code>, <code className="bg-muted px-1 rounded">tasks.json</code>,
-                  or any artifact file to preview it here.
+                  Select any artifact file to preview it here.
                 </div>
               )}
             </div>
