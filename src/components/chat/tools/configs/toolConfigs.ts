@@ -41,6 +41,127 @@ export interface ToolDisplayConfig {
   };
 }
 
+function formatActivateSkillResult(content: unknown): string {
+  const raw = String(content || '').trim();
+  if (!raw) return 'Skill activated.';
+
+  const lines = raw.split('\n');
+  const treeStart = lines.findIndex((line) => /^(\/|~\/|[A-Za-z]:[\\/])/.test(line.trim()));
+  if (treeStart === -1) return raw;
+
+  const beforeTree = lines.slice(0, treeStart).join('\n').trim();
+  const treeSection = lines.slice(treeStart).join('\n').trim();
+
+  return `${beforeTree}\n\n\`\`\`text\n${treeSection}\n\`\`\``.trim();
+}
+
+function parseJsonSafe(input: unknown): any | null {
+  if (typeof input !== 'string') return null;
+  try {
+    return JSON.parse(input);
+  } catch {
+    return null;
+  }
+}
+
+function parseLsResultPayload(result: any): {
+  directory: string;
+  total: number;
+  truncated: boolean;
+  summary: string;
+  files: string[];
+  items: Array<{ name: string; path: string; isDirectory: boolean }>;
+} | null {
+  const raw = result?.content ?? result;
+  const parsed = typeof raw === 'object' && raw !== null ? raw : parseJsonSafe(String(raw || ''));
+  if (!parsed || typeof parsed !== 'object') return null;
+
+  const directory = typeof parsed.directory === 'string' ? parsed.directory : '.';
+  const summary = typeof parsed.summary === 'string' ? parsed.summary : '';
+  const truncated = Boolean(parsed.truncated);
+  const total = typeof parsed.total === 'number' ? parsed.total : 0;
+  const files = Array.isArray(parsed.files)
+    ? parsed.files.filter((f: unknown) => typeof f === 'string')
+    : [];
+
+  let items: Array<{ name: string; path: string; isDirectory: boolean }> = [];
+  if (Array.isArray(parsed.items)) {
+    items = parsed.items
+      .map((item: any) => ({
+        name: typeof item?.name === 'string' ? item.name : '',
+        path: typeof item?.path === 'string' ? item.path : '',
+        isDirectory: Boolean(item?.isDirectory)
+      }))
+      .filter((item) => item.path);
+  }
+
+  if (items.length === 0 && files.length > 0) {
+    items = files.map((filePath: string) => {
+      const normalized = filePath.replace(/\\/g, '/');
+      const isDirectory = normalized.endsWith('/');
+      const clean = isDirectory ? normalized.slice(0, -1) : normalized;
+      const parts = clean.split('/');
+      return {
+        name: parts[parts.length - 1] || clean,
+        path: normalized,
+        isDirectory
+      };
+    });
+  }
+
+  return { directory, total, truncated, summary, files, items };
+}
+
+function formatLsResultAsMarkdown(result: any): string {
+  const payload = parseLsResultPayload(result);
+  if (!payload) {
+    const raw = String(result?.content || result || '').trim();
+    return raw || 'No directory entries returned.';
+  }
+
+  const sortedItems = [...payload.items].sort((a, b) => {
+    if (a.isDirectory !== b.isDirectory) {
+      return a.isDirectory ? -1 : 1;
+    }
+    return a.name.localeCompare(b.name);
+  });
+
+  const visibleCount = sortedItems.length;
+  const dirCount = sortedItems.filter((item) => item.isDirectory).length;
+  const fileCount = visibleCount - dirCount;
+  const treeHeader = payload.directory === '.' ? './' : `${payload.directory.replace(/\/+$/, '')}/`;
+  const treeLines = [treeHeader];
+
+  sortedItems.forEach((item, index) => {
+    const prefix = index === visibleCount - 1 ? '└── ' : '├── ';
+    treeLines.push(`${prefix}${item.name}${item.isDirectory ? '/' : ''}`);
+  });
+
+  if (visibleCount === 0) {
+    treeLines.push('└── (empty)');
+  }
+
+  const lines = [
+    `**Path:** \`${payload.directory}\``,
+    `**Entries:** ${visibleCount}${payload.total > visibleCount ? ` (showing first ${visibleCount} of ${payload.total})` : ''}`,
+    `**Breakdown:** ${dirCount} dirs, ${fileCount} files`,
+    '',
+    '```text',
+    treeLines.join('\n'),
+    '```'
+  ];
+
+  if (payload.truncated) {
+    lines.push('', '_Results truncated to keep the panel responsive._');
+  }
+
+  if (payload.summary && !/listed\s+\d+\s+items?/i.test(payload.summary)) {
+    lines.push('', `**Tool output:** ${payload.summary.trim()}`);
+  }
+
+  return lines.join('\n');
+}
+
 export const TOOL_CONFIGS: Record<string, ToolDisplayConfig> = {
   // ============================================================================
   // COMMAND TOOLS
@@ -82,6 +203,29 @@ export const TOOL_CONFIGS: Record<string, ToolDisplayConfig> = {
         border: 'border-blue-400 dark:border-blue-500',
         icon: 'text-blue-500 dark:text-blue-400'
       }
+    }
+  },
+
+  activate_skill: {
+    input: {
+      type: 'one-line',
+      label: 'Activate Skill',
+      getValue: (input) => input.name || input.skill || 'skill',
+      action: 'none',
+      colorScheme: {
+        primary: 'text-indigo-600 dark:text-indigo-300',
+        border: 'border-indigo-400 dark:border-indigo-500',
+        icon: 'text-indigo-500 dark:text-indigo-400'
+      }
+    },
+    result: {
+      type: 'collapsible',
+      defaultOpen: true,
+      title: 'Skill activation details',
+      contentType: 'markdown',
+      getContentProps: (result) => ({
+        content: formatActivateSkillResult(result?.content || result)
+      })
     }
   },
 
@@ -243,6 +387,33 @@ export const TOOL_CONFIGS: Record<string, ToolDisplayConfig> = {
           files: toolData.filenames || []
         };
       }
+    }
+  },
+
+  LS: {
+    input: {
+      type: 'one-line',
+      label: 'LS',
+      getValue: (input) => input.dir_path || input.path || '.',
+      action: 'none',
+      colorScheme: {
+        primary: 'text-gray-700 dark:text-gray-300',
+        border: 'border-gray-300 dark:border-gray-600',
+        icon: 'text-gray-500 dark:text-gray-400'
+      }
+    },
+    result: {
+      type: 'collapsible',
+      defaultOpen: true,
+      title: (result) => {
+        const payload = parseLsResultPayload(result);
+        const count = payload?.items?.length ?? 0;
+        return `Directory listing${count > 0 ? ` (${count})` : ''}`;
+      },
+      contentType: 'markdown',
+      getContentProps: (result) => ({
+        content: formatLsResultAsMarkdown(result)
+      })
     }
   },
 
@@ -608,7 +779,7 @@ const GEMINI_TOOL_ALIASES: Record<string, string> = {
   google_web_search: 'WebSearch',
   web_fetch: 'WebFetch',
   complete_task: 'Default',
-  activate_skill: 'Default',
+  activate_skill: 'activate_skill',
   save_memory: 'Default',
   get_internal_docs: 'Default'
 };
@@ -617,32 +788,6 @@ for (const [alias, target] of Object.entries(GEMINI_TOOL_ALIASES)) {
   if (!TOOL_CONFIGS[alias] && TOOL_CONFIGS[target]) {
     TOOL_CONFIGS[alias] = TOOL_CONFIGS[target];
   }
-}
-
-if (!TOOL_CONFIGS.LS) {
-  TOOL_CONFIGS.LS = {
-    input: {
-      type: 'one-line',
-      label: 'LS',
-      getValue: (input) => input.dir_path || input.path || '.',
-      action: 'none',
-      colorScheme: {
-        primary: 'text-gray-700 dark:text-gray-300',
-        border: 'border-gray-300 dark:border-gray-600',
-        icon: 'text-gray-500 dark:text-gray-400'
-      }
-    },
-    result: {
-      type: 'collapsible',
-      defaultOpen: false,
-      title: 'Directory listing',
-      contentType: 'text',
-      getContentProps: (result) => ({
-        content: String(result?.content || ''),
-        format: 'plain'
-      })
-    }
-  };
 }
 
 /**

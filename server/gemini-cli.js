@@ -169,6 +169,65 @@ function extractTodosFromShellCommand(command) {
   return parseTodosFromMarkdown(heredocMatch[1]);
 }
 
+async function enrichListDirectoryResult(toolContext, outputText, workingDir) {
+  if (!toolContext) return outputText;
+  const rawName = String(toolContext.rawToolName || '').toLowerCase();
+  if (rawName !== 'list_directory') return outputText;
+
+  const dirInput = String(toolContext.toolInput?.dir_path || toolContext.toolInput?.path || '.');
+  const resolvedDir = path.isAbsolute(dirInput)
+    ? path.resolve(dirInput)
+    : path.resolve(workingDir, dirInput);
+  const normalizedRoot = path.resolve(workingDir) + path.sep;
+  if (!resolvedDir.startsWith(normalizedRoot) && resolvedDir !== path.resolve(workingDir)) {
+    return outputText;
+  }
+
+  try {
+    const entries = await fs.readdir(resolvedDir, { withFileTypes: true });
+    const sortedEntries = [...entries].sort((a, b) => {
+      if (a.isDirectory() !== b.isDirectory()) {
+        return a.isDirectory() ? -1 : 1;
+      }
+      return a.name.localeCompare(b.name);
+    });
+    const visibleEntries = sortedEntries
+      .slice(0, 200)
+      .map((entry) => ({
+        name: entry.name,
+        isDirectory: entry.isDirectory()
+      }));
+
+    const baseRel = path.relative(workingDir, resolvedDir).replace(/\\/g, '/');
+    const relDir = baseRel && baseRel !== '' ? baseRel : '.';
+    const items = visibleEntries.map((entry) => {
+      const relPath = relDir === '.'
+        ? entry.name
+        : `${relDir}/${entry.name}`;
+      return {
+        name: entry.name,
+        path: `${relPath}${entry.isDirectory ? '/' : ''}`,
+        isDirectory: entry.isDirectory
+      };
+    });
+
+    return JSON.stringify(
+      {
+        summary: outputText,
+        directory: relDir,
+        files: items.map((item) => item.path),
+        items,
+        total: entries.length,
+        truncated: entries.length > visibleEntries.length
+      },
+      null,
+      2
+    );
+  } catch {
+    return outputText;
+  }
+}
+
 /**
  * Ensures a session directory exists and creates a basic JSONL metadata file if it doesn't.
  * This helps VibeLab discover the session even if the CLI hasn't written to it yet.
@@ -668,10 +727,11 @@ export async function spawnGemini(command, options = {}, ws) {
           case 'tool_result':
             if (response.output || response.content) {
               const rawResult = response.output !== undefined ? response.output : response.content;
-              const outputText = typeof rawResult === 'string' ? rawResult : JSON.stringify(rawResult, null, 2);
+              const baseOutputText = typeof rawResult === 'string' ? rawResult : JSON.stringify(rawResult, null, 2);
               const resultToolCallId = response.id || response.tool_use_id;
               const ctx = resultToolCallId ? toolCallContext.get(resultToolCallId) : null;
               const isError = Boolean(response.is_error || response.error);
+              const outputText = await enrichListDirectoryResult(ctx, baseOutputText, workingDir);
               
               await appendToSessionFile(capturedSessionId || sessionId || initialKey, {
                 type: 'tool_result',
