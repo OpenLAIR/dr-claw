@@ -537,13 +537,13 @@ app.get('/api/projects/:projectName/sessions', authenticateToken, async (req, re
 app.get('/api/projects/:projectName/sessions/:sessionId/messages', authenticateToken, async (req, res) => {
     try {
         const { projectName, sessionId } = req.params;
-        const { limit, offset } = req.query;
+        const { limit, offset, provider } = req.query;
 
         // Parse limit and offset if provided
         const parsedLimit = limit ? parseInt(limit, 10) : null;
         const parsedOffset = offset ? parseInt(offset, 10) : 0;
 
-        const result = await getSessionMessages(projectName, sessionId, parsedLimit, parsedOffset);
+        const result = await getSessionMessages(projectName, sessionId, parsedLimit, parsedOffset, provider);
 
         // Handle both old and new response formats
         if (Array.isArray(result)) {
@@ -573,8 +573,9 @@ app.put('/api/projects/:projectName/rename', authenticateToken, async (req, res)
 app.delete('/api/projects/:projectName/sessions/:sessionId', authenticateToken, async (req, res) => {
     try {
         const { projectName, sessionId } = req.params;
-        console.log(`[API] Deleting session: ${sessionId} from project: ${projectName}`);
-        await deleteSession(projectName, sessionId);
+        const { provider } = req.query;
+        console.log(`[API] Deleting session: ${sessionId} from project: ${projectName}, provider: ${provider || 'claude'}`);
+        await deleteSession(projectName, sessionId, provider);
         console.log(`[API] Session ${sessionId} deleted successfully`);
         res.json({ success: true });
     } catch (error) {

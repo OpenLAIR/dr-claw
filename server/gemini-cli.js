@@ -101,8 +101,10 @@ export async function spawnGemini(command, options = {}, ws) {
     const geminiCommand = process.env.GEMINI_CLI_PATH || 'gemini';
 
     const cleanEnv = { ...process.env };
-    // Always preserve full environment but ensure TERM is set to terminal for standard behavior
-    cleanEnv.TERM = 'terminal';
+    // Non-interactive JSON streaming: avoid terminal renderer hard-wrap artifacts.
+    cleanEnv.TERM = 'dumb';
+    cleanEnv.COLUMNS = '1000';
+    cleanEnv.LINES = '200';
     delete cleanEnv.TERM_PROGRAM;
     delete cleanEnv.TERM_PROGRAM_VERSION;
     delete cleanEnv.ITERM_SESSION_ID;
@@ -243,11 +245,36 @@ export async function spawnGemini(command, options = {}, ws) {
     
     let processingQueue = Promise.resolve();
     let leftOver = '';
+    let hasParsedStructuredOutput = false;
+
+    const appendToSessionFile = async (sid, entry) => {
+      const targetSid = capturedSessionId || sid || sessionId;
+      if (!targetSid || targetSid.startsWith('temp-')) return;
+      
+      // If it's still a new-session placeholder, we can't save yet, but we'll try again later
+      // or we just rely on the fact that capturedSessionId will be set very quickly.
+      if (targetSid.startsWith('new-session-')) {
+        // console.log('[Gemini] Postponing save, still have new-session ID');
+        return;
+      }
+      
+      const geminiSessionsDir = path.join(os.homedir(), '.gemini', 'sessions');
+      const sessionFile = path.join(geminiSessionsDir, `${targetSid}.jsonl`);
+      try {
+        await fs.mkdir(geminiSessionsDir, { recursive: true });
+        const data = JSON.stringify({ ...entry, timestamp: new Date().toISOString() }) + '\n';
+        await fs.appendFile(sessionFile, data, 'utf8');
+        console.log(`[Gemini] Saved ${entry.role || entry.type} to ${targetSid}`);
+      } catch (error) {
+        console.error(`[Gemini] Failed to append to session file: ${error.message}`);
+      }
+    };
 
     const processLine = async (line) => {
       if (!line.trim()) return;
       try {
         const response = JSON.parse(line);
+        hasParsedStructuredOutput = true;
         switch (response.type) {
           case 'init':
           case 'session':
@@ -257,8 +284,17 @@ export async function spawnGemini(command, options = {}, ws) {
               capturedSessionId = sid;
               
               // Persist metadata to filesystem so VibeLab can discover it on refresh
-              syncSessionMetadata(capturedSessionId, workingDir);
+              await syncSessionMetadata(capturedSessionId, workingDir);
               
+              // NEW: If we have an initial command, save it now that we have a real SID
+              if (command) {
+                await appendToSessionFile(capturedSessionId, {
+                  role: 'user',
+                  content: command,
+                  type: 'message'
+                });
+              }
+
               if (oldKey !== capturedSessionId) {
                 const sessionData = activeGeminiSessions.get(oldKey);
                 if (sessionData) {
@@ -276,6 +312,32 @@ export async function spawnGemini(command, options = {}, ws) {
             break;
             
           case 'message':
+            if (response.role && response.content) {
+              const contentText = typeof response.content === 'string'
+                ? response.content
+                : Array.isArray(response.content)
+                  ? response.content.map((part) => part?.text || (typeof part === 'string' ? part : '')).join('')
+                  : '';
+
+              if (response.role === 'assistant' && contentText) {
+                sendLifecycleStart();
+                sendContentBlockStart(null, 'text', 0);
+                messageBuffer += contentText;
+                ws.send({
+                  type: 'gemini-response',
+                  data: { type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: contentText } },
+                  sessionId: capturedSessionId || sessionId || null
+                });
+              } else {
+                await appendToSessionFile(capturedSessionId || sessionId || initialKey, {
+                  role: response.role,
+                  content: response.content,
+                  type: 'message'
+                });
+              }
+            }
+            break;
+
           case 'content':
           case 'chunk':
             const text = response.text || response.content || response.delta;
@@ -298,13 +360,21 @@ export async function spawnGemini(command, options = {}, ws) {
             const toolIndex = 1; 
             const toolName = response.name || response.tool_name;
             const toolInput = response.parameters || response.input || response.arguments;
+            const toolCallId = response.id || `tool_${Date.now()}`;
+
+            await appendToSessionFile(capturedSessionId || sessionId || initialKey, {
+              type: 'tool_use',
+              toolName,
+              toolInput,
+              toolCallId
+            });
             
             ws.send({
               type: 'gemini-response',
               data: {
                 type: 'content_block_start',
                 index: toolIndex,
-                content_block: { id: response.id || `tool_${Date.now()}`, name: toolName, input: toolInput }
+                content_block: { id: toolCallId, name: toolName, input: toolInput }
               },
               sessionId: capturedSessionId || sessionId || null
             });
@@ -331,11 +401,11 @@ export async function spawnGemini(command, options = {}, ws) {
           case 'tool_result':
             if (response.output || response.content) {
               const outputText = typeof response.output === 'string' ? response.output : JSON.stringify(response.output, null, 2);
-              sendContentBlockStart(null, 'text', 0);
-              ws.send({
-                type: 'gemini-response',
-                data: { type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: `\n[Tool Result]: ${outputText}\n` } },
-                sessionId: capturedSessionId || sessionId || null
+              
+              await appendToSessionFile(capturedSessionId || sessionId || initialKey, {
+                type: 'tool_result',
+                output: outputText,
+                toolCallId: response.id || response.tool_use_id
               });
             }
             sendContentBlockStop(1);
@@ -343,6 +413,15 @@ export async function spawnGemini(command, options = {}, ws) {
             break;
 
           case 'result':
+            if (messageBuffer && (capturedSessionId || sessionId)) {
+              await appendToSessionFile(capturedSessionId || sessionId || initialKey, {
+                role: 'assistant',
+                content: messageBuffer,
+                type: 'message'
+              });
+              messageBuffer = '';
+            }
+            break;
           case 'status':
             if (response.stats || response.status === 'completed') {
               if (response.stats) {
@@ -363,14 +442,11 @@ export async function spawnGemini(command, options = {}, ws) {
             break;
         }
       } catch (parseError) {
-        // Handle non-JSON lines
-        sendLifecycleStart();
-        sendContentBlockStart(null, 'text', 0);
-        ws.send({
-          type: 'gemini-response',
-          data: { type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: line + '\n' } },
-          sessionId: capturedSessionId || sessionId || null
-        });
+        // Gemini stream-json should be JSONL. Ignore non-JSON diagnostics to avoid
+        // polluting assistant markdown with hard-wrapped or noisy lines.
+        if (!hasParsedStructuredOutput && line.trim()) {
+          console.log(`[Gemini] Ignoring non-JSON stdout line before structured stream: ${line}`);
+        }
       }
     };
 
@@ -393,6 +469,14 @@ export async function spawnGemini(command, options = {}, ws) {
     
     geminiProcess.on('close', async (code) => {
       await processingQueue;
+      if (messageBuffer && (capturedSessionId || sessionId || initialKey)) {
+        await appendToSessionFile(capturedSessionId || sessionId || initialKey, {
+          role: 'assistant',
+          content: messageBuffer,
+          type: 'message'
+        });
+        messageBuffer = '';
+      }
       const finalSessionId = capturedSessionId || sessionId || initialKey;
       const sessionData = activeGeminiSessions.get(finalSessionId);
       if (sessionData?.heartbeat) clearInterval(sessionData.heartbeat);

@@ -387,9 +387,16 @@ export const convertSessionMessages = (rawMessages: any[]): ChatMessage[] => {
     { content: unknown; isError: boolean; timestamp: Date; toolUseResult: unknown; subagentTools?: unknown[] }
   >();
 
+  // Normalized helper to handle both Claude (nested) and Gemini (flat) formats
+  const getRole = (msg: any) => msg.role || msg.message?.role;
+  const getContent = (msg: any) => msg.content || msg.message?.content;
+
   rawMessages.forEach((message) => {
-    if (message.message?.role === 'user' && Array.isArray(message.message?.content)) {
-      message.message.content.forEach((part: any) => {
+    const role = getRole(message);
+    const content = getContent(message);
+
+    if (role === 'user' && Array.isArray(content)) {
+      content.forEach((part: any) => {
         if (part.type !== 'tool_result') {
           return;
         }
@@ -405,33 +412,35 @@ export const convertSessionMessages = (rawMessages: any[]): ChatMessage[] => {
   });
 
   rawMessages.forEach((message) => {
-    if (message.message?.role === 'user' && message.message?.content) {
-      let content = '';
-      if (Array.isArray(message.message.content)) {
+    const role = getRole(message);
+    let content = getContent(message);
+
+    if (role === 'user' && content) {
+      let text = '';
+      if (Array.isArray(content)) {
         const textParts: string[] = [];
-        message.message.content.forEach((part: any) => {
+        content.forEach((part: any) => {
           if (part.type === 'text') {
             textParts.push(decodeHtmlEntities(part.text));
           }
         });
-        content = textParts.join('\n');
-      } else if (typeof message.message.content === 'string') {
-        content = decodeHtmlEntities(message.message.content);
+        text = textParts.join('\n');
+      } else if (typeof content === 'string') {
+        text = decodeHtmlEntities(content);
       } else {
-        content = decodeHtmlEntities(String(message.message.content));
+        text = decodeHtmlEntities(String(content));
       }
 
       // Check if this user message also contains tool_result parts
-      // (text in such messages is system-injected, not user input)
-      const hasToolResults = Array.isArray(message.message.content) &&
-        message.message.content.some((part: any) => part.type === 'tool_result');
+      const hasToolResults = Array.isArray(content) &&
+        content.some((part: any) => part.type === 'tool_result');
 
       const shouldSkip =
-        !content ||
-        content.startsWith('<system-reminder>') ||
-        content.startsWith('Caveat:') ||
-        content.startsWith('This session is being continued from a previous') ||
-        content.startsWith('[Request interrupted');
+        !text ||
+        text.startsWith('<system-reminder>') ||
+        text.startsWith('Caveat:') ||
+        text.startsWith('This session is being continued from a previous') ||
+        text.startsWith('[Request interrupted');
 
       if (shouldSkip) {
         return;
@@ -439,16 +448,16 @@ export const convertSessionMessages = (rawMessages: any[]): ChatMessage[] => {
 
       // Detect skill/command content
       const isSkillRelated =
-        content.startsWith('<command-name>') ||
-        content.startsWith('<command-message>') ||
-        content.startsWith('<command-args>') ||
-        content.startsWith('<local-command-stdout>') ||
-        content.includes('Base directory for this skill:') ||
-        (hasToolResults && !content.startsWith('<system-reminder>'));
+        text.startsWith('<command-name>') ||
+        text.startsWith('<command-message>') ||
+        text.startsWith('<command-args>') ||
+        text.startsWith('<local-command-stdout>') ||
+        text.includes('Base directory for this skill:') ||
+        (hasToolResults && !text.startsWith('<system-reminder>'));
 
-      // Parse <task-notification> blocks into compact system messages
+      // Parse <task-notification> blocks
       const taskNotifRegex = /<task-notification>\s*<task-id>[^<]*<\/task-id>\s*<output-file>[^<]*<\/output-file>\s*<status>([^<]*)<\/status>\s*<summary>([^<]*)<\/summary>\s*<\/task-notification>/g;
-      const taskNotifMatch = taskNotifRegex.exec(content);
+      const taskNotifMatch = taskNotifRegex.exec(text);
       if (taskNotifMatch) {
         const status = taskNotifMatch[1]?.trim() || 'completed';
         const summary = taskNotifMatch[2]?.trim() || 'Background task finished';
@@ -462,24 +471,24 @@ export const convertSessionMessages = (rawMessages: any[]): ChatMessage[] => {
       } else if (isSkillRelated) {
         converted.push({
           type: 'user',
-          content: unescapeWithMathProtection(content),
+          content: unescapeWithMathProtection(text),
           timestamp: message.timestamp || new Date().toISOString(),
           isSkillContent: true,
         });
       } else {
         converted.push({
           type: 'user',
-          content: unescapeWithMathProtection(content),
+          content: unescapeWithMathProtection(text),
           timestamp: message.timestamp || new Date().toISOString(),
         });
       }
       return;
     }
 
-    if (message.type === 'thinking' && message.message?.content) {
+    if (message.type === 'thinking' && content) {
       converted.push({
         type: 'assistant',
-        content: unescapeWithMathProtection(message.message.content),
+        content: unescapeWithMathProtection(typeof content === 'string' ? content : JSON.stringify(content)),
         timestamp: message.timestamp || new Date().toISOString(),
         isThinking: true,
       });
@@ -510,7 +519,6 @@ export const convertSessionMessages = (rawMessages: any[]): ChatMessage[] => {
             content: message.output || '',
             isError: false,
           };
-          // Merge answers into AskUserQuestion toolInput from result content
           if (convertedMessage.toolName === 'AskUserQuestion' && message.output) {
             const parsedAnswers = parseAskUserAnswers(String(message.output));
             if (parsedAnswers) {
@@ -526,9 +534,9 @@ export const convertSessionMessages = (rawMessages: any[]): ChatMessage[] => {
       return;
     }
 
-    if (message.message?.role === 'assistant' && message.message?.content) {
-      if (Array.isArray(message.message.content)) {
-        message.message.content.forEach((part: any) => {
+    if (role === 'assistant' && content) {
+      if (Array.isArray(content)) {
+        content.forEach((part: any) => {
           if (part.type === 'text') {
             let text = part.text;
             if (typeof text === 'string') {
@@ -546,7 +554,6 @@ export const convertSessionMessages = (rawMessages: any[]): ChatMessage[] => {
             const toolResult = toolResults.get(part.id);
             const isSubagentContainer = part.name === 'Task';
 
-            // Build child tools from server-provided subagentTools data
             const childTools: import('../types/types').SubagentChildTool[] = [];
             if (isSubagentContainer && toolResult?.subagentTools && Array.isArray(toolResult.subagentTools)) {
               for (const tool of toolResult.subagentTools as any[]) {
@@ -560,7 +567,6 @@ export const convertSessionMessages = (rawMessages: any[]): ChatMessage[] => {
               }
             }
 
-            // For AskUserQuestion, extract answers from tool_result and merge into toolInput
             let finalToolInput = normalizeToolInput(part.input);
             if (part.name === 'AskUserQuestion' && toolResult) {
               const resultStr = typeof toolResult.content === 'string'
@@ -606,10 +612,10 @@ export const convertSessionMessages = (rawMessages: any[]): ChatMessage[] => {
         return;
       }
 
-      if (typeof message.message.content === 'string') {
+      if (typeof content === 'string') {
         converted.push({
           type: 'assistant',
-          content: unescapeWithMathProtection(message.message.content),
+          content: unescapeWithMathProtection(content),
           timestamp: message.timestamp || new Date().toISOString(),
         });
       }

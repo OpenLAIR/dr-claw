@@ -162,6 +162,7 @@
     "providerInfo": {
       "anthropic": "Anthropic",
       "openai": "OpenAI",
+      "google": "Google",
       "cursorEditor": "AI 代码编辑器"
     },
     "readyPrompt": {

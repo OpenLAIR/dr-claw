@@ -54,6 +54,7 @@ export const api = {
       params.append('limit', limit);
       params.append('offset', offset);
     }
+    params.append('provider', provider);
     const queryString = params.toString();
 
     // Route to the correct endpoint based on provider
@@ -72,8 +73,8 @@ export const api = {
       method: 'PUT',
       body: JSON.stringify({ displayName }),
     }),
-  deleteSession: (projectName, sessionId) =>
-    authenticatedFetch(`/api/projects/${projectName}/sessions/${sessionId}`, {
+  deleteSession: (projectName, sessionId, provider = 'claude') =>
+    authenticatedFetch(`/api/projects/${projectName}/sessions/${sessionId}?provider=${provider}`, {
       method: 'DELETE',
     }),
   deleteCodexSession: (sessionId) =>

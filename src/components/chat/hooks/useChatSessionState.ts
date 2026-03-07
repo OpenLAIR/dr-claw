@@ -139,6 +139,7 @@ export function useChatSessionState({
         }
 
         const data = await response.json();
+        console.log('[DEBUG] Received session messages data:', data);
         if (isInitialLoad && data.tokenUsage) {
           setTokenBudget(data.tokenUsage);
         }
@@ -340,7 +341,7 @@ export function useChatSessionState({
   useEffect(() => {
     const loadMessages = async () => {
       if (selectedSession && selectedProject) {
-        const provider = (localStorage.getItem('selected-provider') as Provider) || 'claude';
+        const currentProvider = selectedSession.__provider || (localStorage.getItem('selected-provider') as Provider) || 'claude';
         isLoadingSessionRef.current = true;
 
         const sessionChanged = currentSessionId !== null && currentSessionId !== selectedSession.id;
@@ -372,7 +373,7 @@ export function useChatSessionState({
             sendMessage({
               type: 'check-session-status',
               sessionId: selectedSession.id,
-              provider,
+              provider: currentProvider,
             });
           }
         } else if (currentSessionId === null) {
@@ -384,12 +385,12 @@ export function useChatSessionState({
             sendMessage({
               type: 'check-session-status',
               sessionId: selectedSession.id,
-              provider,
+              provider: currentProvider,
             });
           }
         }
 
-        if (provider === 'cursor') {
+        if (currentProvider === 'cursor') {
           setCurrentSessionId(selectedSession.id);
           sessionStorage.setItem('cursorSessionId', selectedSession.id);
 
@@ -409,7 +410,7 @@ export function useChatSessionState({
               selectedProject.name,
               selectedSession.id,
               false,
-              selectedSession.__provider || 'claude',
+              currentProvider,
             );
             setSessionMessages(messages);
           } else {
@@ -507,10 +508,10 @@ export function useChatSessionState({
   }, [pendingViewSessionRef, selectedSession?.id]);
 
   useEffect(() => {
-    if (sessionMessages.length > 0) {
-      setChatMessages(convertedMessages);
-    }
-  }, [convertedMessages, sessionMessages.length]);
+    // Sync converted messages to chat state.
+    // We update even for empty arrays to clear old state when switching to an empty session.
+    setChatMessages(convertedMessages);
+  }, [convertedMessages, setChatMessages]);
 
   useEffect(() => {
     if (selectedProject && chatMessages.length > 0) {

@@ -162,6 +162,7 @@
     "providerInfo": {
       "anthropic": "by Anthropic",
       "openai": "by OpenAI",
+      "google": "by Google",
       "cursorEditor": "AI Code Editor"
     },
     "readyPrompt": {

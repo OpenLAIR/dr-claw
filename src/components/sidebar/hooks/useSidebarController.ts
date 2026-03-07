@@ -280,7 +280,7 @@ export function useSidebarController({
       const response =
         provider === 'codex'
           ? await api.deleteCodexSession(sessionId)
-          : await api.deleteSession(projectName, sessionId);
+          : await api.deleteSession(projectName, sessionId, provider);
 
       if (response.ok) {
         onSessionDelete?.(sessionId);
