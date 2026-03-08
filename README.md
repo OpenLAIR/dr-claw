@@ -17,6 +17,9 @@
 <a href="https://x.com/Vibe2038004">
 <img src="https://img.shields.io/badge/Follow-on%20X-black?style=for-the-badge&logo=x" alt="Follow on X" />
 </a>
+<a href="./public/wechat-group-qr.jpg">
+<img src="https://img.shields.io/badge/Join-WeChat-07C160?style=for-the-badge&logo=wechat&logoColor=white" alt="Join WeChat" />
+</a>
 </p>
 
 <p align="center">
