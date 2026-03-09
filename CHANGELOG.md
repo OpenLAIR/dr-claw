@@ -1,5 +1,31 @@
 # Changelog
 
+## v0.1.5 - 2026-03-09
+
+### Highlights
+- Added broader agent and workspace support with Codex integration, Gemini CLI support, survey workspaces, graph previews, and multi-shell execution.
+- Expanded core product workflows with project dashboards, guided chat starter refinements, account recovery, file upload/delete flows, and auth/websocket fixes.
+- Reworked skill discovery and research UX with a redesigned skills explorer, taxonomy browsing, global skills library surfacing, and multiple dashboard/preview polish passes.
+- Refreshed onboarding and documentation with README improvements, badge updates, and cleanup of obsolete guide content.
+
+### Notable Changes
+- `add codex support`
+- `feat: add gemini cli support`
+- `feat: gemini session support`
+- `feat: gemini cli agent follow`
+- `feat(survey): add survey workspace and graph previews`
+- `feat(workspace): add multi-shell workspace support`
+- `feat: add file management features including upload and delete functionality`
+- `feat(dashboard): add project overview dashboard`
+- `Streamline guided chat starter selection`
+- `Add account recovery registration flow`
+- `Add global skills library entry and refresh project dashboard`
+- `Adopt taxonomy-based skill explorer`
+
+### Validation
+- `npm run typecheck` passed.
+- `npm run build` passed.
+
 ## v2026.3.4 - 2026-03-04
 
 ### Highlights
