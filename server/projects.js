@@ -1962,7 +1962,8 @@ async function getCursorSessions(projectPath) {
 
 
 // Fetch Gemini sessions for a given project path
-async function getGeminiSessions(projectPath) {
+async function getGeminiSessions(projectPath, options = {}) {
+  const { limit = 5 } = options;
   try {
     const normalizedProjectPath = await normalizeComparablePath(projectPath);
     const geminiSessionsDir = path.join(os.homedir(), '.gemini', 'sessions');
@@ -2087,6 +2088,7 @@ async function getGeminiSessions(projectPath) {
             lastActivity: stats.mtime.toISOString(),
             messageCount: 0,
             projectPath: projectPath,
+            filePath,
             __provider: 'gemini'
           });
         }
@@ -2096,7 +2098,8 @@ async function getGeminiSessions(projectPath) {
     if (sessions.length > 0) {
       console.log(`[Gemini] Found ${sessions.length} sessions for project ${projectPath}`);
     }
-    return sessions.sort((a, b) => new Date(b.lastActivity) - new Date(a.lastActivity)).slice(0, 5);
+    const sortedSessions = sessions.sort((a, b) => new Date(b.lastActivity) - new Date(a.lastActivity));
+    return limit > 0 ? sortedSessions.slice(0, limit) : sortedSessions;
   } catch (error) {
     console.error('Error fetching Gemini sessions:', error);
     return [];

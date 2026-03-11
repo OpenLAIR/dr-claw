@@ -203,12 +203,16 @@
       "sessions": "会话数",
       "tracked": "已跟踪项目",
       "progress": "平均进度",
+      "todayTokens": "今日 Token",
+      "weekTokens": "本周 Token",
       "trackedProjects": "已跟踪 {{count}} 个"
     },
     "metrics": {
       "sessions": "会话",
       "tasks": "任务",
-      "completed": "已完成"
+      "completed": "已完成",
+      "todayTokens": "今日 Token",
+      "weekTokens": "本周 Token"
     },
     "actions": {
       "chat": "打开聊天",

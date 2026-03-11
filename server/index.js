@@ -45,6 +45,7 @@ import fetch from 'node-fetch';
 import mime from 'mime-types';
 
 import { getProjects, getSessions, getSessionMessages, renameProject, deleteSession, deleteProject, addProjectManually, extractProjectDirectory, clearProjectDirectoryCache } from './projects.js';
+import { getProjectTokenUsageSummary } from './project-token-usage.js';
 import { queryClaudeSDK, abortClaudeSDKSession, isClaudeSDKSessionActive, getActiveClaudeSDKSessions, resolveToolApproval } from './claude-sdk.js';
 import { spawnCursor, abortCursorSession, isCursorSessionActive, getActiveCursorSessions } from './cursor-cli.js';
 import { queryCodex, abortCodexSession, isCodexSessionActive, getActiveCodexSessions } from './openai-codex.js';
@@ -524,6 +525,21 @@ app.get('/api/projects', authenticateToken, async (req, res) => {
         res.json(projects);
     } catch (error) {
         res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/projects/token-usage-summary', authenticateToken, async (req, res) => {
+    try {
+        const projectRefs = req.body?.projects;
+        if (!Array.isArray(projectRefs)) {
+            return res.status(400).json({ error: 'projects array is required' });
+        }
+
+        const summary = await getProjectTokenUsageSummary(projectRefs);
+        res.json(summary);
+    } catch (error) {
+        console.error('Error building project token usage summary:', error);
+        res.status(500).json({ error: 'Failed to build project token usage summary' });
     }
 });
 

@@ -46,6 +46,16 @@ export const api = {
   // Protected endpoints
   // config endpoint removed - no longer needed (frontend uses window.location)
   projects: () => authenticatedFetch('/api/projects'),
+  projectTokenUsageSummary: (projects) =>
+    authenticatedFetch('/api/projects/token-usage-summary', {
+      method: 'POST',
+      body: JSON.stringify({
+        projects: (projects || []).map((project) => ({
+          name: project.name,
+          fullPath: project.fullPath,
+        })),
+      }),
+    }),
   sessions: (projectName, limit = 5, offset = 0) =>
     authenticatedFetch(`/api/projects/${projectName}/sessions?limit=${limit}&offset=${offset}`),
   sessionMessages: (projectName, sessionId, limit = null, offset = 0, provider = 'claude') => {

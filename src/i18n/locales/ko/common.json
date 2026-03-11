@@ -203,12 +203,16 @@
       "sessions": "세션",
       "tracked": "추적 중인 프로젝트",
       "progress": "평균 진행률",
+      "todayTokens": "오늘 토큰",
+      "weekTokens": "이번 주 토큰",
       "trackedProjects": "{{count}}개 추적 중"
     },
     "metrics": {
       "sessions": "세션",
       "tasks": "작업",
-      "completed": "완료"
+      "completed": "완료",
+      "todayTokens": "오늘 토큰",
+      "weekTokens": "이번 주 토큰"
     },
     "actions": {
       "chat": "채팅 열기",

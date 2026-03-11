@@ -7,10 +7,10 @@ import {
   Sparkles,
   Terminal,
 } from 'lucide-react';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Badge } from '../../ui/badge';
+import { api } from '../../../utils/api';
 import { Button } from '../../ui/button';
 import { formatTimeAgo } from '../../../utils/dateUtils';
 import type { AppTab, Project, ProjectSession } from '../../../types/app';
@@ -25,6 +25,17 @@ type TaskmasterMetadata = {
   completed?: number;
   completionPercentage?: number;
   lastModified?: string;
+};
+
+type TokenUsageTotals = {
+  todayTokens: number;
+  weekTokens: number;
+};
+
+type ProjectTokenUsageSummary = {
+  generatedAt?: string;
+  workspace: TokenUsageTotals;
+  projects: Record<string, TokenUsageTotals>;
 };
 
 const PROJECT_TONES = [
@@ -102,6 +113,22 @@ function getProgress(project: Project) {
   return null;
 }
 
+function formatTokenCount(value: number | null | undefined) {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return '—';
+  }
+
+  if (value >= 1_000_000) {
+    return `${(value / 1_000_000).toFixed(value >= 10_000_000 ? 0 : 1)}M`;
+  }
+
+  if (value >= 1_000) {
+    return `${(value / 1_000).toFixed(value >= 100_000 ? 0 : 1)}K`;
+  }
+
+  return value.toLocaleString();
+}
+
 function StatCard({
   label,
   value,
@@ -141,6 +168,7 @@ export default function ProjectDashboard({
 }: ProjectDashboardProps) {
   const { t } = useTranslation('common');
   const now = new Date();
+  const [tokenUsageSummary, setTokenUsageSummary] = useState<ProjectTokenUsageSummary | null>(null);
 
   const totals = useMemo(() => {
     const projectCount = projects.length;
@@ -169,6 +197,50 @@ export default function ProjectDashboard({
       mostRecentlyActiveProject,
     };
   }, [projects]);
+
+  const projectUsageRefreshKey = useMemo(
+    () => projects
+      .map((project) => `${project.name}:${project.fullPath}:${getLastActivity(project) ?? ''}:${getProjectSessions(project).length}`)
+      .sort()
+      .join('|'),
+    [projects],
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (projects.length === 0) {
+      setTokenUsageSummary(null);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const fetchProjectTokenUsageSummary = async () => {
+      try {
+        const response = await api.projectTokenUsageSummary(projects);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch token usage summary: ${response.status}`);
+        }
+
+        const data = await response.json() as ProjectTokenUsageSummary;
+        if (!cancelled) {
+          setTokenUsageSummary(data);
+        }
+      } catch (error) {
+        console.error('Error fetching project token usage summary:', error);
+        if (!cancelled) {
+          setTokenUsageSummary(null);
+        }
+      }
+    };
+
+    void fetchProjectTokenUsageSummary();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [projectUsageRefreshKey]);
 
   if (projects.length === 0) {
     return (
@@ -211,7 +283,7 @@ export default function ProjectDashboard({
                 {t('projectDashboard.subtitle')}
               </p>
 
-              <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
                 <StatCard
                   label={t('projectDashboard.summary.projects')}
                   value={totals.projectCount}
@@ -228,6 +300,14 @@ export default function ProjectDashboard({
                 <StatCard
                   label={t('projectDashboard.summary.progress')}
                   value={totals.averageProgress === null ? t('projectDashboard.notTrackedShort') : `${totals.averageProgress}%`}
+                />
+                <StatCard
+                  label={t('projectDashboard.summary.todayTokens')}
+                  value={formatTokenCount(tokenUsageSummary?.workspace?.todayTokens)}
+                />
+                <StatCard
+                  label={t('projectDashboard.summary.weekTokens')}
+                  value={formatTokenCount(tokenUsageSummary?.workspace?.weekTokens)}
                 />
               </div>
             </div>
@@ -279,6 +359,7 @@ export default function ProjectDashboard({
             const metadata = getTaskmasterMetadata(project);
             const progress = getProgress(project);
             const lastActivity = getLastActivity(project);
+            const projectTokenUsage = tokenUsageSummary?.projects?.[project.name];
             const tone = PROJECT_TONES[index % PROJECT_TONES.length];
 
             return (
@@ -322,10 +403,18 @@ export default function ProjectDashboard({
                     </Button>
                   </div>
 
-                  <div className="grid gap-3 sm:grid-cols-3">
+                  <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                     <MetricPill label={t('projectDashboard.metrics.sessions')} value={sessions.length} />
                     <MetricPill label={t('projectDashboard.metrics.tasks')} value={metadata?.taskCount ?? '0'} />
                     <MetricPill label={t('projectDashboard.metrics.completed')} value={metadata?.completed ?? '0'} />
+                    <MetricPill
+                      label={t('projectDashboard.metrics.todayTokens')}
+                      value={formatTokenCount(projectTokenUsage?.todayTokens)}
+                    />
+                    <MetricPill
+                      label={t('projectDashboard.metrics.weekTokens')}
+                      value={formatTokenCount(projectTokenUsage?.weekTokens)}
+                    />
                   </div>
 
                   <div className="rounded-2xl border border-border/50 bg-background/70 p-4 shadow-sm">

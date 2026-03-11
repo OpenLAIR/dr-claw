@@ -203,12 +203,16 @@
       "sessions": "Sessions",
       "tracked": "Tracked Projects",
       "progress": "Average Progress",
+      "todayTokens": "Today Tokens",
+      "weekTokens": "This Week Tokens",
       "trackedProjects": "{{count}} tracked"
     },
     "metrics": {
       "sessions": "Sessions",
       "tasks": "Tasks",
-      "completed": "Completed"
+      "completed": "Completed",
+      "todayTokens": "Today Tokens",
+      "weekTokens": "This Week Tokens"
     },
     "actions": {
       "chat": "Open Chat",
