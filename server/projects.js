@@ -720,6 +720,11 @@ async function getSessions(projectName, limit = 5, offset = 0, userId = null) {
     });
     const visibleSessions = [...latestFromGroups, ...standaloneSessionsArray]
       .filter(session => !session.summary.startsWith('{ "'))
+      .map(s => ({
+        ...s,
+        name: s.summary,
+        __provider: 'claude'
+      }))
       .sort((a, b) => new Date(b.lastActivity) - new Date(a.lastActivity));
 
     const total = visibleSessions.length;
@@ -1826,12 +1831,17 @@ async function getGeminiSessions(projectPath, userId = null) {
         let foundMatchingCwd = false;
         let explicitTitle = null;
         let firstMessageText = null;
+        let sessionMessageCount = 0;
 
         // If we have it in DB, we know it belongs to this project
         if (dbSessionMap.has(sessionId)) {
           foundMatchingCwd = true;
           explicitTitle = dbSessionMap.get(sessionId).display_name;
-        } else {
+          sessionMessageCount = dbSessionMap.get(sessionId).message_count || 0;
+        }
+
+        // Even if in DB, we might want to scan for message count if it's 0
+        if (!foundMatchingCwd || sessionMessageCount === 0) {
           // Read just the first few lines for metadata to index it
           const fileStream = fsSync.createReadStream(filePath);
           const rl = readline.createInterface({
@@ -1840,15 +1850,20 @@ async function getGeminiSessions(projectPath, userId = null) {
           });
 
           let lineCount = 0;
+          let currentSessionMessageCount = 0;
 
           for await (const line of rl) {
             lineCount++;
-            if (lineCount > 2000) break;
-
             if (line.trim()) {
               try {
                 const entry = JSON.parse(line);
                 
+                // Track message count (user/assistant only)
+                if (entry.role === 'user' || entry.role === 'assistant' || 
+                    (entry.type === 'message' && (entry.role === 'user' || entry.role === 'assistant'))) {
+                  currentSessionMessageCount++;
+                }
+
                 // 1. CWD Match
                 if (!foundMatchingCwd) {
                   const sessionCwd = entry.cwd || entry.payload?.cwd;
@@ -1861,24 +1876,26 @@ async function getGeminiSessions(projectPath, userId = null) {
                 }
 
                 // 2. Explicit Title
-                const title = entry.summary || entry.title || entry.payload?.title || entry.payload?.summary;
-                if (title && typeof title === 'string' && title.trim() && 
-                    !title.includes('Gemini Session') && !title.includes('New Session')) {
-                  explicitTitle = title.trim();
-                }
+                if (lineCount <= 2000) {
+                  const title = entry.summary || entry.title || entry.payload?.title || entry.payload?.summary;
+                  if (title && typeof title === 'string' && title.trim() && 
+                      !title.includes('Gemini Session') && !title.includes('New Session')) {
+                    explicitTitle = title.trim();
+                  }
 
-                // 3. User Message Extraction
-                if (!firstMessageText && (entry.role === 'user' || (entry.type === 'message' && entry.role === 'user'))) {
-                  let content = entry.content || entry.message?.content || entry.payload?.message?.content;
-                  if (content) {
-                    let textContent = typeof content === 'string' ? content : 
-                      Array.isArray(content) ? content.map(part => part.text || (typeof part === 'string' ? part : '')).join(' ') : '';
+                  // 3. User Message Extraction
+                  if (!firstMessageText && (entry.role === 'user' || (entry.type === 'message' && entry.role === 'user'))) {
+                    let content = entry.content || entry.message?.content || entry.payload?.message?.content;
+                    if (content) {
+                      let textContent = typeof content === 'string' ? content : 
+                        Array.isArray(content) ? content.map(part => part.text || (typeof part === 'string' ? part : '')).join(' ') : '';
 
-                    if (textContent.trim()) {
-                      let cleaned = textContent.trim();
-                      if (!cleaned.includes('Base directory for this skill:') && !cleaned.startsWith('<command-name>')) {
-                        const helpMatch = cleaned.match(/Please help me with ["'](.*?)["']/);
-                        firstMessageText = helpMatch ? helpMatch[1] : cleaned.split('\n')[0].replace(/#+\s*/, '').trim();
+                      if (textContent.trim()) {
+                        let cleaned = textContent.trim();
+                        if (!cleaned.includes('Base directory for this skill:') && !cleaned.startsWith('<command-name>')) {
+                          const helpMatch = cleaned.match(/Please help me with ["'](.*?)["']/);
+                          firstMessageText = helpMatch ? helpMatch[1] : cleaned.split('\n')[0].replace(/#+\s*/, '').trim();
+                        }
                       }
                     }
                   }
@@ -1886,6 +1903,7 @@ async function getGeminiSessions(projectPath, userId = null) {
               } catch (e) {}
             }
           }
+          sessionMessageCount = currentSessionMessageCount;
           rl.close();
         }
 
@@ -1899,16 +1917,14 @@ async function getGeminiSessions(projectPath, userId = null) {
           }
 
           // Upsert to database so next time is faster
-          if (!dbSessionMap.has(sessionId)) {
-            sessionDb.upsertSession(sessionId, projectName, 'gemini', finalName, stats.mtime.toISOString(), 0);
-          }
+          sessionDb.upsertSession(sessionId, projectName, 'gemini', finalName, stats.mtime.toISOString(), sessionMessageCount);
 
           sessions.push({
             id: sessionId,
             name: finalName,
             createdAt: stats.birthtime.toISOString(),
             lastActivity: stats.mtime.toISOString(),
-            messageCount: 0,
+            messageCount: sessionMessageCount,
             projectPath: projectPath,
             __provider: 'gemini'
           });
@@ -1991,12 +2007,14 @@ async function buildCodexSessionsIndex() {
       const session = {
         id: sessionData.id,
         summary: sessionData.summary || 'Codex Session',
+        name: sessionData.summary || 'Codex Session',
         messageCount: sessionData.messageCount || 0,
         lastActivity: sessionData.timestamp ? new Date(sessionData.timestamp) : new Date(),
         cwd: sessionData.cwd,
         model: sessionData.model,
         filePath,
         provider: 'codex',
+        __provider: 'codex'
       };
 
       if (!sessionsByProject.has(normalizedProjectPath)) {
