@@ -458,16 +458,28 @@ async function getProjects(userId, progressCallback = null) {
       
       // LOGIC FOR VISIBILITY:
       // A. If it's already in DB and belongs to THIS user -> Visible
-      // B. If it's NOT in DB at all -> Visible (will be claimed)
-      // C. If it's in DB but belongs to someone else -> HIDDEN
+      // B. If it's NOT in DB but is within the VibeLab workspace root -> Visible & Auto-claim
+      // C. If it's NOT in DB and OUTSIDE the root -> IGNORE (avoid cluttering with external Claude projects)
+      // D. If it's in DB but belongs to someone else -> HIDDEN
       
       if (dbEntry) {
         if (dbEntry.user_id === userId) {
           discoveredDirectories.push({ entry, actualProjectDir: actualDir, dbEntry });
         }
       } else {
-        // Unclaimed project discovered in filesystem -> Claim it for current user
-        discoveredDirectories.push({ entry, actualProjectDir: actualDir, dbEntry: null });
+        // Unclaimed project discovered in filesystem.
+        // Check if it belongs to VibeLab workspace root.
+        const normalizedActual = await normalizeComparablePath(actualDir);
+        const normalizedRoot = await normalizeComparablePath(workspacesRoot);
+        
+        if (normalizedActual.startsWith(normalizedRoot)) {
+          // It's a VibeLab-local project, safe to auto-claim
+          discoveredDirectories.push({ entry, actualProjectDir: actualDir, dbEntry: null });
+        } else {
+          // It's an external Claude project (e.g. from global CLI usage)
+          // Do not auto-claim and do not show by default to avoid confusion.
+          console.log(`[projects] Skipping external Claude project: ${entry.name} at ${actualDir}`);
+        }
       }
       existingProjects.add(entry.name);
     }
