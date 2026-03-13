@@ -141,3 +141,6 @@ backup/
 
 # Pipeline runtime (local state)
 .pipeline/
+
+# Server runtime data
+server/data/
