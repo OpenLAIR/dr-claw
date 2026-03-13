@@ -2,9 +2,9 @@
 """
 Xiaohongshu (Little Red Book) research post search script.
 
-Searches for research-related posts on Xiaohongshu using the web API
-with cookie-based authentication. Scores and ranks posts by relevance,
-recency, popularity, and quality.
+Searches for research-related posts on Xiaohongshu using the
+xiaohongshu-cli tool, which handles authentication via browser cookies
+and anti-detection automatically.
 
 Usage:
     python search_xiaohongshu.py --config research_interests.yaml --output xhs_results.json
@@ -13,23 +13,16 @@ Usage:
 
 import json
 import os
+import re
+import shutil
+import subprocess
 import sys
 import logging
-import time
-import urllib.request
-import urllib.parse
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
-
-# Try to import the xhs package for enhanced functionality
-try:
-    import xhs as xhs_sdk
-    HAS_XHS_SDK = True
-except ImportError:
-    HAS_XHS_SDK = False
 
 # ---------------------------------------------------------------------------
 # Import shared scoring utilities
@@ -43,22 +36,6 @@ from scoring_utils import (
     calculate_quality_score,
     calculate_recommendation_score,
 )
-
-# ---------------------------------------------------------------------------
-# API Configuration
-# ---------------------------------------------------------------------------
-XHS_SEARCH_URL = "https://edith.xiaohongshu.com/api/sns/web/v1/search/notes"
-
-XHS_HEADERS = {
-    "Content-Type": "application/json",
-    "User-Agent": (
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/120.0.0.0 Safari/537.36"
-    ),
-    "Origin": "https://www.xiaohongshu.com",
-    "Referer": "https://www.xiaohongshu.com/",
-}
 
 # Popularity scoring: total engagement (likes + collects + comments) at which
 # a post receives the maximum popularity score.
@@ -100,8 +77,19 @@ def load_research_config(config_path: str) -> Dict:
 
 
 # ---------------------------------------------------------------------------
-# Xiaohongshu API
+# xiaohongshu-cli helpers
 # ---------------------------------------------------------------------------
+def _check_xhs_cli() -> str:
+    """Return the path to the xhs CLI, or raise if not found."""
+    path = shutil.which("xhs")
+    if not path:
+        raise RuntimeError(
+            "xiaohongshu-cli is not installed. "
+            "Run 'npm install' or install manually: uv tool install xiaohongshu-cli"
+        )
+    return path
+
+
 def _parse_count(value) -> int:
     """Parse an engagement count that might be a string like '1.2w' or '123'."""
     if value is None:
@@ -124,91 +112,78 @@ def _parse_count(value) -> int:
         return 0
 
 
-def search_xiaohongshu(
-    keyword: str,
-    cookie: str,
-    page: int = 1,
-    page_size: int = 20,
-    max_retries: int = 3,
-) -> List[Dict]:
+def _run_xhs_cli(args: List[str], timeout: int = 120) -> Optional[Dict]:
+    """Run an xhs CLI command and return parsed JSON envelope, or None on error."""
+    xhs_bin = shutil.which("xhs") or "xhs"
+    cmd = [xhs_bin] + args + ["--json"]
+    logger.info("[XHS] Running: %s", " ".join(cmd))
+
+    result = subprocess.run(cmd, capture_output=True, timeout=timeout)
+
+    if result.returncode != 0:
+        logger.error("[XHS] CLI exited %d: %s", result.returncode, result.stderr.decode(errors="replace"))
+        return None
+
+    raw = result.stdout
+    if not raw.strip():
+        logger.error("[XHS] CLI returned empty stdout")
+        return None
+
+    # Decode and strip ANSI escape sequences
+    stdout = raw.decode("utf-8", errors="replace")
+    stdout = re.sub(r"\x1b\[[0-9;]*m", "", stdout)
+
+    try:
+        envelope = json.loads(stdout)
+    except json.JSONDecodeError as e:
+        logger.error("[XHS] Failed to parse CLI output: %s", e)
+        logger.error("[XHS] cleaned stdout (first 200): %s", stdout[:200])
+        return None
+
+    if not envelope.get("ok"):
+        err = envelope.get("error", {})
+        msg = err.get("message", "") if isinstance(err, dict) else str(err)
+        logger.error("[XHS] CLI returned error: %s", msg)
+        return None
+
+    return envelope
+
+
+def search_via_xhs_cli(keyword: str) -> List[Dict]:
     """
-    Search Xiaohongshu for notes matching a keyword.
+    Search Xiaohongshu for notes matching a keyword using xiaohongshu-cli.
 
-    Args:
-        keyword: Search query string.
-        cookie: XHS authentication cookie.
-        page: Page number (1-based).
-        page_size: Number of results per page.
-        max_retries: Maximum retry attempts on failure.
-
-    Returns:
-        List of raw note items from the API response.
+    Returns a list of raw note items from the CLI JSON output.
     """
-    payload = json.dumps({
-        "keyword": keyword,
-        "page": page,
-        "page_size": page_size,
-        "sort": "general",
-        "note_type": 0,
-    }).encode("utf-8")
+    envelope = _run_xhs_cli(["search", keyword])
+    if not envelope:
+        return []
 
-    headers = dict(XHS_HEADERS)
-    headers["Cookie"] = cookie
+    items = (envelope.get("data", {}) or {}).get("items", [])
+    logger.info("[XHS] keyword='%s' => %d items", keyword, len(items))
+    return items
 
-    for attempt in range(max_retries):
-        try:
-            req = urllib.request.Request(
-                XHS_SEARCH_URL,
-                data=payload,
-                headers=headers,
-                method="POST",
-            )
-            with urllib.request.urlopen(req, timeout=30) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
 
-            if data.get("success") is False:
-                msg = data.get("msg", "Unknown error")
-                logger.warning("[XHS] API returned error: %s", msg)
-                if "cookie" in msg.lower() or "login" in msg.lower():
-                    logger.error(
-                        "[XHS] Cookie may have expired. "
-                        "XHS cookies typically expire every 7-30 days. "
-                        "Please update $XHS_TOKEN."
-                    )
-                    return []
+def fetch_note_detail(note_id: str, xsec_token: str = "") -> Optional[str]:
+    """
+    Fetch the full body text of a note via `xhs read`.
 
-            items = (data.get("data") or {}).get("items") or []
-            logger.info(
-                "[XHS] keyword='%s' page=%d => %d items",
-                keyword, page, len(items),
-            )
-            return items
+    Returns the desc (body text) string, or None on failure.
+    """
+    args = ["read", note_id]
+    if xsec_token:
+        args += ["--xsec-token", xsec_token]
 
-        except urllib.error.HTTPError as e:
-            logger.warning(
-                "[XHS] HTTP %d (attempt %d/%d): %s",
-                e.code, attempt + 1, max_retries, e.reason,
-            )
-            if e.code == 401 or e.code == 403:
-                logger.error(
-                    "[XHS] Authentication failed. Cookie may have expired. "
-                    "XHS cookies typically expire every 7-30 days. "
-                    "Please update $XHS_TOKEN."
-                )
-                return []
-        except Exception as e:
-            logger.warning(
-                "[XHS] Error (attempt %d/%d): %s",
-                attempt + 1, max_retries, e,
-            )
+    envelope = _run_xhs_cli(args, timeout=30)
+    if not envelope:
+        return None
 
-        if attempt < max_retries - 1:
-            wait = (2 ** attempt) * 2
-            logger.info("[XHS] Retrying in %d seconds...", wait)
-            time.sleep(wait)
+    items = (envelope.get("data", {}) or {}).get("items", [])
+    if not items:
+        return None
 
-    logger.error("[XHS] Failed after %d attempts for keyword='%s'", max_retries, keyword)
-    return []
+    nc = items[0].get("note_card", {})
+    return nc.get("desc", "")
 
 
 def parse_note_item(item: Dict) -> Optional[Dict]:
@@ -222,29 +197,46 @@ def parse_note_item(item: Dict) -> Optional[Dict]:
     if not note_id:
         return None
 
-    title = note_card.get("title", "").strip()
+    # Title: CLI uses "display_title", raw API uses "title"
+    title = (
+        note_card.get("display_title")
+        or note_card.get("title", "")
+    ).strip()
     desc = note_card.get("desc", "").strip()
     user_info = note_card.get("user") or {}
     interact = note_card.get("interact_info") or {}
 
-    # Parse timestamp (milliseconds since epoch)
+    # Parse timestamp — raw API has epoch ms in "time",
+    # CLI has relative text like "2天前" in corner_tag_info
+    published_dt = None
+    published_str = ""
     ts = note_card.get("time")
     if ts:
         try:
             published_dt = datetime.fromtimestamp(int(ts) / 1000)
             published_str = published_dt.isoformat()
         except (ValueError, TypeError, OSError):
-            published_dt = None
-            published_str = ""
-    else:
-        published_dt = None
-        published_str = ""
+            pass
 
-    # Extract image URLs
+    if not published_str:
+        # Fall back to corner_tag_info relative time text
+        for tag in note_card.get("corner_tag_info") or []:
+            if tag.get("type") == "publish_time":
+                published_str = tag.get("text", "")
+                break
+
+    # Extract image URLs — CLI nests them under info_list[].url,
+    # raw API has them directly as image_list[].url
     image_list = note_card.get("image_list") or []
     media_urls = []
     for img in image_list:
         url = img.get("url") or img.get("url_default") or ""
+        if not url:
+            # CLI format: pick the first info_list entry
+            for info in img.get("info_list") or []:
+                url = info.get("url", "")
+                if url:
+                    break
         if url:
             media_urls.append(url)
 
@@ -252,11 +244,28 @@ def parse_note_item(item: Dict) -> Optional[Dict]:
     collects = _parse_count(interact.get("collected_count"))
     comments = _parse_count(interact.get("comment_count"))
 
+    # Add cover image if not already in media_urls
+    cover = note_card.get("cover") or {}
+    cover_url = cover.get("url_default", "")
+    if cover_url and cover_url not in media_urls:
+        media_urls.insert(0, cover_url)
+
+    # Build link with xsec_token for authentication
+    xsec_token = item.get("xsec_token", "")
+    if xsec_token:
+        link = (
+            f"https://www.xiaohongshu.com/explore/{note_id}"
+            f"?xsec_token={xsec_token}"
+            f"&xsec_source=pc_search&source=web_search_result_notes"
+        )
+    else:
+        link = f"https://www.xiaohongshu.com/explore/{note_id}"
+
     return {
         "id": note_id,
         "title": title or "(Untitled)",
         "desc": desc,
-        "username": user_info.get("nickname", ""),
+        "username": user_info.get("nickname") or user_info.get("nick_name", ""),
         "avatar_url": user_info.get("avatar", ""),
         "likes": likes,
         "collects": collects,
@@ -264,7 +273,8 @@ def parse_note_item(item: Dict) -> Optional[Dict]:
         "published_dt": published_dt,
         "published_str": published_str,
         "media_urls": media_urls,
-        "link": f"https://www.xiaohongshu.com/explore/{note_id}",
+        "link": link,
+        "xsec_token": xsec_token,
     }
 
 
@@ -454,21 +464,12 @@ def main() -> int:
         stream=sys.stderr,
     )
 
-    # ---- Validate XHS_TOKEN ----
-    xhs_cookie = os.environ.get("XHS_TOKEN", "").strip()
-    if not xhs_cookie:
-        logger.error(
-            "XHS_TOKEN environment variable is not set. "
-            "Please set it to your Xiaohongshu cookie string.\n"
-            "  export XHS_TOKEN='your_cookie_here'\n"
-            "Note: XHS cookies typically expire every 7-30 days."
-        )
+    # ---- Check xiaohongshu-cli is installed ----
+    try:
+        _check_xhs_cli()
+    except RuntimeError as e:
+        logger.error(str(e))
         return 1
-
-    logger.warning(
-        "Reminder: Xiaohongshu cookies expire every 7-30 days. "
-        "If you see auth errors, refresh your cookie in $XHS_TOKEN."
-    )
 
     # ---- Determine search keywords ----
     search_keywords: List[str] = []
@@ -505,12 +506,7 @@ def main() -> int:
     seen_ids: set = set()
 
     for keyword in search_keywords:
-        raw_items = search_xiaohongshu(
-            keyword=keyword,
-            cookie=xhs_cookie,
-            page=1,
-            page_size=20,
-        )
+        raw_items = search_via_xhs_cli(keyword)
 
         for item in raw_items:
             note = parse_note_item(item)
@@ -519,11 +515,19 @@ def main() -> int:
                 note["_search_keyword"] = keyword
                 all_notes.append(note)
 
-        # Be polite to the API
-        if keyword != search_keywords[-1]:
-            time.sleep(1)
-
     logger.info("Total unique notes fetched: %d", len(all_notes))
+
+    # ---- Enrich: fetch full body text for notes missing desc ----
+    enriched_count = 0
+    for note in all_notes:
+        if not note["desc"]:
+            logger.info("[XHS] Fetching detail for %s ...", note["id"])
+            desc = fetch_note_detail(note["id"], note.get("xsec_token", ""))
+            if desc:
+                note["desc"] = desc
+                enriched_count += 1
+    if enriched_count:
+        logger.info("[XHS] Enriched %d notes with full body text", enriched_count)
 
     if not all_notes:
         logger.warning("No posts found for any keyword.")

@@ -16,10 +16,10 @@ Help users discover the latest research papers by searching arXiv and Semantic S
 3. Scan existing notes to build a keyword index
 
 ## Step 2: Search Papers
-Execute the search script:
+Execute the search script (scripts are located in `server/scripts/research-news/`):
 ```bash
-cd "$SKILL_DIR"
-python scripts/search_arxiv.py \
+cd server/scripts/research-news
+python search_arxiv.py \
   --config "$CONFIG_PATH" \
   --output arxiv_filtered.json \
   --max-results 200 \
@@ -38,16 +38,21 @@ Create a structured recommendation list with:
 
 ## Step 5: Auto-link Keywords (Optional)
 ```bash
-cd "$SKILL_DIR"
-python scripts/scan_existing_notes.py --vault "$VAULT_PATH" --output existing_notes_index.json
-python scripts/link_keywords.py --index existing_notes_index.json --input input.md --output output.md
+cd server/scripts/research-news
+python scan_existing_notes.py --vault "$VAULT_PATH" --output existing_notes_index.json
+python link_keywords.py --index existing_notes_index.json --input input.md --output output.md
 ```
 
 # Scripts
-- `scripts/search_arxiv.py` — Search arXiv API, parse XML, filter and score papers
-- `scripts/scan_existing_notes.py` — Scan existing notes directory, build keyword index
-- `scripts/link_keywords.py` — Auto-link keywords in text to existing notes (wikilink format)
-- `scripts/common_words.py` — Common words list for keyword filtering
+All scripts are in `server/scripts/research-news/`:
+- `search_arxiv.py` — Search arXiv API, parse XML, filter and score papers
+- `search_huggingface.py` — Search HuggingFace Daily Papers
+- `search_x.py` — Search X (Twitter) for research news
+- `search_xiaohongshu.py` — Search Xiaohongshu for research posts
+- `scan_existing_notes.py` — Scan existing notes directory, build keyword index
+- `link_keywords.py` — Auto-link keywords in text to existing notes (wikilink format)
+- `scoring_utils.py` — Shared scoring utilities
+- `common_words.py` — Common words list for keyword filtering
 
 # Scoring
 | Dimension | Weight | Description |

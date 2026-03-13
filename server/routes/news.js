@@ -12,7 +12,7 @@ const router = express.Router();
 
 // Data directory for news config & results
 const DATA_DIR = path.join(__dirname, '..', 'data');
-const SKILLS_DIR = path.join(__dirname, '..', '..', 'skills');
+const SCRIPTS_DIR = path.join(__dirname, '..', 'scripts');
 
 // ---------------------------------------------------------------------------
 // Source Registry
@@ -48,29 +48,13 @@ const SOURCE_REGISTRY = {
     requiresCredentials: false,
   },
   huggingface: {
-    label: 'HuggingFace',
+    label: 'HuggingFace Daily Papers',
     script: 'research-news/scripts/search_huggingface.py',
     configFile: 'news-config-huggingface.json',
     resultsFile: 'news-results-huggingface.json',
     defaultConfig: {
-      research_domains: {
-        'Large Language Models': {
-          keywords: ['large language model', 'LLM', 'transformer', 'foundation model'],
-          arxiv_categories: [],
-          priority: 5,
-        },
-        'Multimodal': {
-          keywords: ['vision-language', 'multimodal', 'image-text', 'visual'],
-          arxiv_categories: [],
-          priority: 4,
-        },
-        'AI Agents': {
-          keywords: ['agent', 'multi-agent', 'orchestration', 'autonomous', 'planning'],
-          arxiv_categories: [],
-          priority: 4,
-        },
-      },
-      top_n: 10,
+      research_domains: {},
+      top_n: 30,
     },
     requiresCredentials: false,
   },
@@ -91,8 +75,7 @@ const SOURCE_REGISTRY = {
       queries: 'LLM,AI agents,foundation model',
       accounts: '',
     },
-    requiresCredentials: true,
-    credentialType: 'x_bearer_token',
+    requiresCredentials: false,
   },
   xiaohongshu: {
     label: 'Xiaohongshu',
@@ -110,8 +93,7 @@ const SOURCE_REGISTRY = {
       top_n: 10,
       keywords: '大模型,AI论文,人工智能',
     },
-    requiresCredentials: true,
-    credentialType: 'xiaohongshu_token',
+    requiresCredentials: false,
   },
 };
 
@@ -208,7 +190,7 @@ router.put('/config/:source', async (req, res) => {
 });
 
 // ---------------------------------------------------------------------------
-// Search handler (shared by parameterized and legacy routes)
+// Search handler — streams progress via Server-Sent Events (SSE)
 // ---------------------------------------------------------------------------
 async function handleSearch(sourceName, req, res) {
   try {
@@ -230,7 +212,7 @@ async function handleSearch(sourceName, req, res) {
     const tmpConfigPath = path.join(DATA_DIR, `research_interests_${sourceName}.json`);
     await fs.writeFile(tmpConfigPath, JSON.stringify(config, null, 2), 'utf8');
 
-    const scriptPath = path.join(SKILLS_DIR, entry.script);
+    const scriptPath = path.join(SCRIPTS_DIR, entry.script);
 
     // Check if script exists
     try {
@@ -243,7 +225,13 @@ async function handleSearch(sourceName, req, res) {
     const topN = config.top_n || 10;
 
     // Build args based on source
-    const args = [scriptPath, '--config', tmpConfigPath, '--output', resultsPath, '--top-n', String(topN)];
+    // HuggingFace: config is optional (fetches all daily papers without filtering)
+    const args = [scriptPath];
+    const hasDomains = config.research_domains && Object.keys(config.research_domains).length > 0;
+    if (sourceName !== 'huggingface' || hasDomains) {
+      args.push('--config', tmpConfigPath);
+    }
+    args.push('--output', resultsPath, '--top-n', String(topN));
 
     if (sourceName === 'arxiv') {
       const maxResults = config.max_results || 200;
@@ -271,38 +259,62 @@ async function handleSearch(sourceName, req, res) {
             error: `No active credential found for ${entry.label}. Please add your ${entry.credentialType} in settings.`,
           });
         }
-        if (entry.credentialType === 'x_bearer_token') {
-          env.X_BEARER_TOKEN = credValue;
-        } else if (entry.credentialType === 'xiaohongshu_token') {
-          env.XHS_TOKEN = credValue;
+        // Map credential types to environment variables
+        const credEnvMap = {
+          // Add future credential mappings here
+        };
+        const envVar = credEnvMap[entry.credentialType];
+        if (envVar) {
+          env[envVar] = credValue;
         }
       } catch (credErr) {
         return res.status(400).json({ error: 'Failed to retrieve credentials', details: credErr.message });
       }
     }
 
+    // Write search logs to a file so they can be polled by the frontend
+    const logPath = path.join(DATA_DIR, `news-log-${sourceName}.json`);
+    await fs.writeFile(logPath, JSON.stringify([]), 'utf8');
+    const logs = [];
+
     const child = spawn('python3', args, {
-      cwd: path.join(SKILLS_DIR, 'research-news'),
+      cwd: path.join(SCRIPTS_DIR, 'research-news'),
       env,
     });
 
     let stdout = '';
-    let stderr = '';
+    let stderrBuf = '';
     child.stdout.on('data', (data) => { stdout += data.toString(); });
-    child.stderr.on('data', (data) => { stderr += data.toString(); });
+    child.stderr.on('data', async (data) => {
+      const chunk = data.toString();
+      stderrBuf += chunk;
+      const lines = stderrBuf.split('\n');
+      stderrBuf = lines.pop();
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed) logs.push(trimmed);
+      }
+      // Update log file for polling
+      try { await fs.writeFile(logPath, JSON.stringify(logs), 'utf8'); } catch {}
+    });
 
     child.on('close', async (code) => {
+      if (stderrBuf.trim()) logs.push(stderrBuf.trim());
+      try { await fs.writeFile(logPath, JSON.stringify(logs), 'utf8'); } catch {}
+
       if (code !== 0) {
-        console.error(`[news][${sourceName}] script failed:`, stderr);
+        console.error(`[news][${sourceName}] script failed (exit ${code})`);
         return res.status(500).json({
           error: `Search failed for ${entry.label}`,
-          details: stderr || stdout,
+          details: logs.join('\n'),
+          logs,
           exitCode: code,
         });
       }
 
       try {
         const results = JSON.parse(await fs.readFile(resultsPath, 'utf8'));
+        results.logs = logs;
         res.json(results);
       } catch (readErr) {
         res.status(500).json({ error: 'Failed to read search results', details: readErr.message });
@@ -320,6 +332,62 @@ async function handleSearch(sourceName, req, res) {
 
 // POST /api/news/search/:source — trigger search for one source
 router.post('/search/:source', (req, res) => handleSearch(req.params.source, req, res));
+
+// GET /api/news/logs/:source — poll search progress logs
+router.get('/logs/:source', async (req, res) => {
+  try {
+    const logPath = path.join(DATA_DIR, `news-log-${req.params.source}.json`);
+    const data = await fs.readFile(logPath, 'utf8');
+    res.json({ logs: JSON.parse(data) });
+  } catch {
+    res.json({ logs: [] });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// POST /api/news/xhs-login — trigger xiaohongshu-cli login
+// ---------------------------------------------------------------------------
+router.post('/xhs-login', (req, res) => {
+  const child = spawn('xhs', ['login', '--json'], {
+    env: { ...process.env },
+  });
+
+  let stdoutBuf = '';
+  let stderrBuf = '';
+  const logs = [];
+
+  child.stdout.on('data', (data) => { stdoutBuf += data.toString(); });
+  child.stderr.on('data', (data) => {
+    stderrBuf += data.toString();
+    for (const line of stderrBuf.split('\n')) {
+      const trimmed = line.trim();
+      if (trimmed) logs.push(trimmed);
+    }
+    // Keep only the incomplete last line
+    const lines = stderrBuf.split('\n');
+    stderrBuf = lines[lines.length - 1];
+  });
+
+  child.on('close', (code) => {
+    if (stderrBuf.trim()) logs.push(stderrBuf.trim());
+
+    let authenticated = false;
+    let nickname = '';
+    try {
+      const result = JSON.parse(stdoutBuf);
+      authenticated = !!(result?.ok && result?.data?.authenticated);
+      nickname = result?.data?.user?.nickname || '';
+    } catch {
+      authenticated = code === 0;
+    }
+
+    res.json({ success: authenticated, nickname, logs, exitCode: code });
+  });
+
+  child.on('error', (err) => {
+    res.status(500).json({ error: `Failed to run xhs login: ${err.message}` });
+  });
+});
 
 // ---------------------------------------------------------------------------
 // GET /api/news/results/:source — cached results for one source

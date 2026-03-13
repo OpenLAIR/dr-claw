@@ -165,6 +165,12 @@ def normalize_paper(entry: Dict) -> Optional[Dict]:
 
     upvotes = paper_data.get("upvotes", 0) or 0
 
+    # Extra metadata from the envelope (not inside paper_data)
+    thumbnail = entry.get("thumbnail", "")
+    num_comments = entry.get("numComments", 0) or 0
+    submitted_by = entry.get("submittedBy", {}) or {}
+    organization = entry.get("organization") or paper_data.get("organization")
+
     return {
         "id": arxiv_id,
         "title": title,
@@ -173,6 +179,11 @@ def normalize_paper(entry: Dict) -> Optional[Dict]:
         "published": published_at,
         "published_date": published_date,
         "upvotes": upvotes,
+        "thumbnail": thumbnail,
+        "num_comments": num_comments,
+        "submitted_by_name": submitted_by.get("fullname") or submitted_by.get("name", ""),
+        "submitted_by_avatar": submitted_by.get("avatarUrl", ""),
+        "organization": organization.get("name", "") if isinstance(organization, dict) else (organization or ""),
         "categories": [],
         "source": "huggingface",
     }
@@ -195,35 +206,45 @@ def calculate_popularity_score(upvotes: int) -> float:
     return min(upvotes / HF_UPVOTES_FULL_SCORE * SCORE_MAX, SCORE_MAX)
 
 
-def filter_and_score_papers(
+def score_papers(
     papers: List[Dict],
-    config: Dict,
+    config: Optional[Dict] = None,
 ) -> Tuple[List[Dict], int]:
     """
-    Score and filter papers against the research configuration.
+    Score papers, optionally filtering by research configuration.
+
+    If config has research_domains, papers are filtered by relevance (unmatched
+    papers are excluded). If config is None or has no domains, all papers are
+    kept and scored by recency, popularity, and quality only.
 
     Args:
         papers: Normalized paper dicts.
-        config: Research interest configuration.
+        config: Research interest configuration (optional).
 
     Returns:
         (scored_papers sorted by final_score descending, total_filtered count)
     """
-    domains = config.get("research_domains", {})
-    excluded_keywords = config.get("excluded_keywords", [])
+    domains = (config or {}).get("research_domains", {})
+    excluded_keywords = (config or {}).get("excluded_keywords", [])
+    has_domains = bool(domains)
 
     scored: List[Dict] = []
     total_filtered = 0
 
     for paper in papers:
         # Relevance
-        relevance, matched_domain, matched_keywords = calculate_relevance_score(
-            paper, domains, excluded_keywords
-        )
-
-        if relevance == 0:
-            total_filtered += 1
-            continue
+        if has_domains:
+            relevance, matched_domain, matched_keywords = calculate_relevance_score(
+                paper, domains, excluded_keywords
+            )
+            if relevance == 0:
+                total_filtered += 1
+                continue
+        else:
+            # No filtering — give all papers a baseline relevance
+            relevance = 1.0
+            matched_domain = "daily_papers"
+            matched_keywords = []
 
         # Recency
         recency = calculate_recency_score(paper.get("published_date"))
@@ -259,6 +280,13 @@ def filter_and_score_papers(
             "link": f"https://huggingface.co/papers/{arxiv_id}",
             "pdf_link": f"https://arxiv.org/pdf/{arxiv_id}.pdf",
             "source": "huggingface",
+            "media_urls": [paper["thumbnail"]] if paper.get("thumbnail") else [],
+            "engagement": {
+                "likes": paper.get("upvotes", 0),
+                "comments": paper.get("num_comments", 0),
+            },
+            "submitted_by": paper.get("submitted_by_name", ""),
+            "organization": paper.get("organization", ""),
         })
 
     scored.sort(key=lambda x: x["final_score"], reverse=True)
@@ -306,14 +334,13 @@ def main():
         stream=sys.stderr,
     )
 
-    if not args.config:
-        logger.error(
-            "No config file specified. Use --config or set OBSIDIAN_VAULT_PATH env var."
-        )
-        return 1
-
-    logger.info("Loading config from: %s", args.config)
-    config = load_research_config(args.config)
+    # Config is optional — without it we show all daily papers
+    config = None
+    if args.config:
+        logger.info("Loading config from: %s", args.config)
+        config = load_research_config(args.config)
+    else:
+        logger.info("No config provided — showing all HuggingFace Daily Papers")
 
     # Fetch daily papers from HuggingFace
     logger.info("Fetching HuggingFace Daily Papers...")
@@ -341,8 +368,8 @@ def main():
 
     logger.info("Normalized %d papers from %d raw entries", len(papers), len(raw_entries))
 
-    # Score and filter
-    scored_papers, total_filtered = filter_and_score_papers(papers, config)
+    # Score (and optionally filter if config has domains)
+    scored_papers, total_filtered = score_papers(papers, config)
 
     logger.info(
         "Scored %d papers (%d filtered out by relevance/exclusion)",

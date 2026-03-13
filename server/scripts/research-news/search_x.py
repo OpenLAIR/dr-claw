@@ -1,22 +1,25 @@
 #!/usr/bin/env python3
 """
-X (Twitter) API v2 research tweet search script.
+X (Twitter) research tweet search script.
 
-Searches recent tweets matching research-related queries and scores them
-using the shared scoring_utils module, producing output compatible with
-the other search scripts (search_arxiv.py, etc.).
+Searches recent tweets matching research-related queries using the
+twitter-cli tool (https://github.com/trevorhobenshield/twitter-cli),
+which handles authentication via browser cookies automatically.
+
+Scores results using the shared scoring_utils module, producing output
+compatible with the other search scripts (search_arxiv.py, etc.).
 """
 
 import argparse
 import json
 import logging
-import os
+import re
+import shutil
+import subprocess
 import sys
-import urllib.request
-import urllib.parse
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 # scoring_utils lives in the same directory
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -30,12 +33,6 @@ from scoring_utils import (
 )
 
 logger = logging.getLogger(__name__)
-
-# ---------------------------------------------------------------------------
-# X API v2 configuration
-# ---------------------------------------------------------------------------
-X_SEARCH_URL = "https://api.twitter.com/2/tweets/search/recent"
-X_MAX_RESULTS_PER_REQUEST = 100
 
 # Popularity normalisation: 1000 total engagements == SCORE_MAX
 POPULARITY_ENGAGEMENT_FULL_SCORE = 1000
@@ -74,89 +71,61 @@ def load_research_config(config_path: str) -> Dict:
 
 
 # ---------------------------------------------------------------------------
-# X API helpers
+# twitter-cli helpers
 # ---------------------------------------------------------------------------
 
-def _build_bearer_header(token: str) -> Dict[str, str]:
-    return {
-        "Authorization": f"Bearer {token}",
-        "User-Agent": "ResearchNewsFetcher/1.0",
-    }
+def _check_twitter_cli() -> str:
+    """Return the path to the twitter CLI, or raise if not found."""
+    path = shutil.which("twitter")
+    if not path:
+        raise RuntimeError(
+            "twitter-cli is not installed. "
+            "Run 'npm install' or install manually: uv tool install twitter-cli"
+        )
+    return path
 
 
-def search_recent_tweets(
-    query: str,
-    bearer_token: str,
-    max_results: int = X_MAX_RESULTS_PER_REQUEST,
-    max_retries: int = 3,
-) -> Tuple[List[Dict], Dict[str, Dict]]:
+def search_via_twitter_cli(query: str) -> List[Dict]:
     """
-    Call X API v2 GET /2/tweets/search/recent.
+    Search tweets using twitter-cli.
 
-    Returns:
-        (tweets, users_by_id)  where users_by_id maps author_id -> user dict.
+    Returns a list of raw tweet dicts from the CLI JSON output.
     """
-    params = {
-        "query": query,
-        "max_results": str(min(max_results, X_MAX_RESULTS_PER_REQUEST)),
-        "tweet.fields": "created_at,public_metrics,author_id,entities",
-        "expansions": "author_id",
-        "user.fields": "name,username,profile_image_url",
-    }
+    twitter_bin = shutil.which("twitter") or "twitter"
+    cmd = [twitter_bin, "search", query, "--json"]
+    logger.info("[X] Running: %s", " ".join(cmd))
 
-    url = f"{X_SEARCH_URL}?{urllib.parse.urlencode(params)}"
-    headers = _build_bearer_header(bearer_token)
-    req = urllib.request.Request(url, headers=headers)
+    result = subprocess.run(cmd, capture_output=True, timeout=120)
 
-    for attempt in range(max_retries):
-        try:
-            with urllib.request.urlopen(req, timeout=30) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
+    if result.returncode != 0:
+        logger.error("[X] CLI exited %d: %s", result.returncode, result.stderr.decode(errors="replace"))
+        return []
 
-            tweets = data.get("data", [])
-            # Build user lookup from expansions
-            users_by_id: Dict[str, Dict] = {}
-            includes = data.get("includes", {})
-            for user in includes.get("users", []):
-                users_by_id[user["id"]] = user
+    raw = result.stdout
+    if not raw.strip():
+        logger.error("[X] CLI returned empty stdout")
+        return []
 
-            logger.info(
-                "[X] Query '%s': got %d tweets", query[:40], len(tweets)
-            )
-            return tweets, users_by_id
+    # Decode and strip ANSI escape sequences (the CLI colorizes JSON output)
+    stdout = raw.decode("utf-8", errors="replace")
+    stdout = re.sub(r"\x1b\[[0-9;]*m", "", stdout)
 
-        except urllib.error.HTTPError as e:
-            body = e.read().decode("utf-8", errors="replace") if e.fp else ""
-            if e.code == 429:
-                logger.warning(
-                    "[X] Rate-limited (429). Attempt %d/%d. %s",
-                    attempt + 1, max_retries, body,
-                )
-            elif e.code in (401, 403):
-                logger.error(
-                    "[X] Auth error (%d): %s", e.code, body,
-                )
-                return [], {}
-            else:
-                logger.warning(
-                    "[X] HTTP %d (attempt %d/%d): %s",
-                    e.code, attempt + 1, max_retries, body,
-                )
+    try:
+        envelope = json.loads(stdout)
+    except json.JSONDecodeError as e:
+        logger.error("[X] Failed to parse CLI output: %s", e)
+        logger.error("[X] cleaned stdout (first 200): %s", stdout[:200])
+        return []
 
-            if attempt < max_retries - 1:
-                import time
-                wait = (2 ** attempt) * 5
-                logger.info("[X] Retrying in %d seconds...", wait)
-                time.sleep(wait)
-        except Exception as e:
-            logger.warning(
-                "[X] Error (attempt %d/%d): %s", attempt + 1, max_retries, e,
-            )
-            if attempt < max_retries - 1:
-                import time
-                time.sleep((2 ** attempt) * 2)
+    if not envelope.get("ok"):
+        err = envelope.get("error", {})
+        msg = err.get("message", "") if isinstance(err, dict) else str(err)
+        logger.error("[X] CLI returned error: %s", msg)
+        return []
 
-    return [], {}
+    tweets = envelope.get("data", [])
+    logger.info("[X] Query '%s': got %d tweets", query[:40], len(tweets))
+    return tweets
 
 
 # ---------------------------------------------------------------------------
@@ -164,13 +133,18 @@ def search_recent_tweets(
 # ---------------------------------------------------------------------------
 
 def _tweet_engagement(tweet: Dict) -> Dict[str, int]:
-    """Extract engagement metrics from a tweet's public_metrics."""
+    """Extract engagement metrics from a tweet.
+
+    Supports both twitter-cli format (metrics.*) and X API v2 format
+    (public_metrics.*_count) for backward compatibility.
+    """
+    metrics = tweet.get("metrics", {})
     pm = tweet.get("public_metrics", {})
     return {
-        "likes": pm.get("like_count", 0),
-        "retweets": pm.get("retweet_count", 0),
-        "replies": pm.get("reply_count", 0),
-        "impressions": pm.get("impression_count", 0),
+        "likes": metrics.get("likes", pm.get("like_count", 0)),
+        "retweets": metrics.get("retweets", pm.get("retweet_count", 0)),
+        "replies": metrics.get("replies", pm.get("reply_count", 0)),
+        "impressions": metrics.get("views", pm.get("impression_count", 0)),
     }
 
 
@@ -199,14 +173,17 @@ def _calculate_tweet_quality_score(tweet: Dict) -> float:
     # Start with the generic text-quality score from scoring_utils
     score = calculate_quality_score(text)
 
-    # Bonus for URLs in entities
+    # Bonus for URLs — twitter-cli puts urls as a top-level list of strings,
+    # X API v2 nests them under entities.urls as objects with expanded_url.
+    urls = tweet.get("urls", [])
     entities = tweet.get("entities", {})
-    urls = entities.get("urls", [])
-    if urls:
+    entity_urls = entities.get("urls", [])
+    all_urls = urls + [u.get("expanded_url", "") for u in entity_urls]
+    if all_urls:
         score += 0.3
         # Extra bonus for academic / paper links
-        for u in urls:
-            expanded = (u.get("expanded_url") or "").lower()
+        for url_str in all_urls:
+            expanded = (url_str if isinstance(url_str, str) else "").lower()
             if any(domain in expanded for domain in [
                 "arxiv.org", "openreview.net", "semanticscholar.org",
                 "aclanthology.org", "papers.nips.cc", "proceedings.mlr.press",
@@ -286,11 +263,10 @@ def build_queries(
 
 def score_tweets(
     tweets: List[Dict],
-    users_by_id: Dict[str, Dict],
     config: Dict,
 ) -> List[Dict]:
     """
-    Score and normalise a list of raw tweets.
+    Score and normalise a list of raw tweets from twitter-cli.
 
     Returns a list of scored item dicts ready for output.
     """
@@ -301,13 +277,13 @@ def score_tweets(
     for tweet in tweets:
         tweet_id = tweet.get("id", "")
         text = tweet.get("text", "")
-        created_at = tweet.get("created_at", "")
-        author_id = tweet.get("author_id", "")
+        created_at = tweet.get("createdAt", tweet.get("created_at", ""))
 
-        user = users_by_id.get(author_id, {})
-        username = user.get("username", "unknown")
-        display_name = user.get("name", username)
-        avatar_url = user.get("profile_image_url", "")
+        # twitter-cli nests author info under "author"
+        author = tweet.get("author", {})
+        username = author.get("screenName", author.get("username", "unknown"))
+        display_name = author.get("name", username)
+        avatar_url = author.get("profileImageUrl", author.get("profile_image_url", ""))
 
         # Build a paper-like dict so calculate_relevance_score works
         paper_proxy = {
@@ -343,6 +319,13 @@ def score_tweets(
             relevance, recency, popularity, quality, is_hot_paper=False
         )
 
+        # Extract media URLs (photos only — video URLs return 403)
+        media_urls = [
+            m.get("url", "")
+            for m in tweet.get("media", [])
+            if m.get("url") and m.get("type") == "photo"
+        ]
+
         item = {
             "id": tweet_id,
             "title": text[:100],
@@ -361,6 +344,7 @@ def score_tweets(
             "source": "x",
             "engagement": engagement,
             "avatar_url": avatar_url,
+            "media_urls": media_urls,
         }
         scored.append(item)
 
@@ -405,14 +389,11 @@ def main() -> int:
         stream=sys.stderr,
     )
 
-    # --- Bearer token ---
-    bearer_token = os.environ.get("X_BEARER_TOKEN", "").strip()
-    if not bearer_token:
-        print(
-            "ERROR: $X_BEARER_TOKEN environment variable is not set. "
-            "Please export your X API v2 Bearer Token.",
-            file=sys.stderr,
-        )
+    # --- Check twitter-cli is installed ---
+    try:
+        _check_twitter_cli()
+    except RuntimeError as e:
+        print(f"ERROR: {e}", file=sys.stderr)
         return 1
 
     # --- Load config ---
@@ -447,12 +428,10 @@ def main() -> int:
 
     # --- Fetch tweets ---
     all_tweets: List[Dict] = []
-    merged_users: Dict[str, Dict] = {}
     seen_tweet_ids: set = set()
 
     for query in queries:
-        tweets, users = search_recent_tweets(query, bearer_token)
-        merged_users.update(users)
+        tweets = search_via_twitter_cli(query)
         for t in tweets:
             tid = t.get("id")
             if tid and tid not in seen_tweet_ids:
@@ -466,7 +445,7 @@ def main() -> int:
         logger.warning("No tweets found for any query.")
 
     # --- Score ---
-    scored_items = score_tweets(all_tweets, merged_users, config)
+    scored_items = score_tweets(all_tweets, config)
 
     # Sort by final_score descending
     scored_items.sort(key=lambda x: x["final_score"], reverse=True)
