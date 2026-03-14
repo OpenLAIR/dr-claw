@@ -143,7 +143,7 @@ Dr. Claw 的核心功能是 **Research Lab**。
 - **打开已有项目** — Dr. Claw 会自动发现已注册项目，以及来自 Claude Code、Codex、Gemini 的关联会话。
 - **创建新项目** — 点击 **"+"** 按钮，选择本机的一个目录，Dr. Claw 会创建：`.claude/`、`.agents/`、`.gemini/` 等 Agent 目录、标准工作区元数据、链接的 `skills/` 目录、预设研究目录（`Survey/references`、`Survey/reports`、`Ideation/ideas`、`Ideation/references`、`Experiment/code_references`、`Experiment/datasets`、`Experiment/core_code`、`Experiment/analysis`、`Publication/paper`、`Promotion/homepage`、`Promotion/slides`、`Promotion/audio`、`Promotion/video`），以及项目根目录下的 **instance.json**（上述目录的绝对路径写入其中）。Cursor Agent 支持即将推出。
 
-> **默认项目存储路径：** 新项目默认存储在 `~/vibelab` 目录下。可在 **Settings → Appearance → Default Project Path** 中修改，也可通过环境变量 `WORKSPACES_ROOT` 设置。该配置持久化在 `~/.claude/project-config.json` 中。
+> **默认项目存储路径：** 新项目默认存储在 `~/dr-claw` 目录下。可在 **Settings → Appearance → Default Project Path** 中修改，也可通过环境变量 `WORKSPACES_ROOT` 设置。该配置持久化在 `~/.claude/project-config.json` 中。
 
 ### 第 2 步 — 通过 Chat 生成研究流水线
 

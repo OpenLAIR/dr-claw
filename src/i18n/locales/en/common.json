@@ -350,7 +350,7 @@
     "viewFullRelease": "View full release",
     "updateProgress": "Update Progress:",
     "manualUpgrade": "Manual upgrade:",
-    "npmUpgradeCommand": "npm install -g vibelab@latest",
+    "npmUpgradeCommand": "npm install -g dr-claw@latest",
     "manualUpgradeHint": "Or click \"Update Now\" to run the update automatically.",
     "updateCompleted": "Update completed successfully!",
     "restartServer": "Please restart the server to apply changes.",

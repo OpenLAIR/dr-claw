@@ -1,11 +1,11 @@
 {
-  "name": "vibelab",
+  "name": "dr-claw",
   "version": "0.1.5",
-  "description": "Vibe Lab — Desktop and mobile UI for Claude Code, Cursor CLI and Codex with Research Lab",
+  "description": "Dr. Claw — Desktop and mobile UI for Claude Code, Cursor CLI and Codex with Research Lab",
   "type": "module",
   "main": "server/index.js",
   "bin": {
-    "vibelab": "server/cli.js"
+    "dr-claw": "server/cli.js"
   },
   "files": [
     "server/",
@@ -42,7 +42,7 @@
     "ui",
     "mobile"
   ],
-  "author": "Vibe Lab Contributors",
+  "author": "Dr. Claw Contributors",
   "license": "GPL-3.0",
   "engines": {
     "node": "20.x || 22.x || 24.x"

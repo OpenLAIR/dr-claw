@@ -12,10 +12,10 @@ function sanitizeGitError(message, token) {
   return message.replace(new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '***');
 }
 
-// Default workspace root: ~/vibelab
-const DEFAULT_WORKSPACES_ROOT = path.join(os.homedir(), 'vibelab');
+// Default workspace root: ~/dr-claw
+const DEFAULT_WORKSPACES_ROOT = path.join(os.homedir(), 'dr-claw');
 
-// Dynamic workspace root: config file > env var > ~/vibelab
+// Dynamic workspace root: config file > env var > ~/dr-claw
 export async function getWorkspacesRoot() {
   const configRoot = await getWorkspaceRootFromConfig();
   return configRoot || process.env.WORKSPACES_ROOT || DEFAULT_WORKSPACES_ROOT;

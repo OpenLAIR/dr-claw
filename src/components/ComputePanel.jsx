@@ -212,13 +212,13 @@ const SlurmPanel = ({ node, selectedProject }) => {
     account: s.defaultAccount || '',
     command: '',
     script: `#!/bin/bash
-#SBATCH --job-name=vibelab-job
+#SBATCH --job-name=dr-claw-job
 #SBATCH --partition=${s.defaultPartition || 'GPU-small'}
 #SBATCH --time=${s.defaultTime || '00:30:00'}
 #SBATCH --gres=gpu:${s.defaultGpus ?? 1}
 ${s.defaultAccount ? `#SBATCH -A ${s.defaultAccount}` : '# #SBATCH -A your-account'}
-#SBATCH --output=vibelab-job-%j.out
-#SBATCH --error=vibelab-job-%j.err
+#SBATCH --output=dr-claw-job-%j.out
+#SBATCH --error=dr-claw-job-%j.err
 
 # Your commands below
 cd ${node.workDir || '~'}

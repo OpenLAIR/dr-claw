@@ -426,7 +426,7 @@ async function getProjects(userId, progressCallback = null) {
   const existingProjects = new Set();
 
   // Resolve workspace root for filtering (only for NEW discovery or manual adds)
-  const DEFAULT_WORKSPACES_ROOT = path.join(os.homedir(), 'vibelab');
+  const DEFAULT_WORKSPACES_ROOT = path.join(os.homedir(), 'dr-claw');
   const workspacesRoot = config._workspacesRoot || process.env.WORKSPACES_ROOT || DEFAULT_WORKSPACES_ROOT;
   const codexSessionsIndexRef = { sessionsByProject: null };
   let totalProjects = 0;

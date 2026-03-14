@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * Vibe Lab CLI
+ * Dr. Claw CLI
  *
- * Provides command-line utilities for managing Vibe Lab
+ * Provides command-line utilities for managing Dr. Claw
  *
  * Commands:
  *   (no args)     - Start the server (default)
@@ -84,7 +84,7 @@ function getInstallDir() {
 
 // Show status command
 function showStatus() {
-    console.log(`\n${c.bright('Vibe Lab - Status')}\n`);
+    console.log(`\n${c.bright('Dr. Claw - Status')}\n`);
     console.log(c.dim('═'.repeat(60)));
 
     // Version info
@@ -131,9 +131,9 @@ function showStatus() {
 
     console.log('\n' + c.dim('═'.repeat(60)));
     console.log(`\n${c.tip('[TIP]')} Hints:`);
-    console.log(`      ${c.dim('>')} Use ${c.bright('vibelab --port 8080')} to run on a custom port`);
-    console.log(`      ${c.dim('>')} Use ${c.bright('vibelab --database-path /path/to/db')} for custom database`);
-    console.log(`      ${c.dim('>')} Run ${c.bright('vibelab help')} for all options`);
+    console.log(`      ${c.dim('>')} Use ${c.bright('dr-claw --port 8080')} to run on a custom port`);
+    console.log(`      ${c.dim('>')} Use ${c.bright('dr-claw --database-path /path/to/db')} for custom database`);
+    console.log(`      ${c.dim('>')} Run ${c.bright('dr-claw help')} for all options`);
     console.log(`      ${c.dim('>')} Access the UI at http://localhost:${process.env.PORT || '3001'}\n`);
 }
 
@@ -141,14 +141,14 @@ function showStatus() {
 function showHelp() {
     console.log(`
 ╔═══════════════════════════════════════════════════════════════╗
-║              Vibe Lab - Command Line Tool               ║
+║              Dr. Claw - Command Line Tool               ║
 ╚═══════════════════════════════════════════════════════════════╝
 
 Usage:
-  vibelab [command] [options]
+  dr-claw [command] [options]
 
 Commands:
-  start          Start the Vibe Lab server (default)
+  start          Start the Dr. Claw server (default)
   status         Show configuration and data locations
   update         Update to the latest version
   help           Show this help information
@@ -161,11 +161,11 @@ Options:
   -v, --version               Show version information
 
 Examples:
-  $ vibelab                        # Start with defaults
-  $ vibelab --port 8080            # Start on port 8080
-  $ vibelab -p 3000                # Short form for port
-  $ vibelab start --port 4000      # Explicit start command
-  $ vibelab status                 # Show configuration
+  $ dr-claw                        # Start with defaults
+  $ dr-claw --port 8080            # Start on port 8080
+  $ dr-claw -p 3000                # Short form for port
+  $ dr-claw start --port 4000      # Explicit start command
+  $ dr-claw status                 # Show configuration
 
 Environment Variables:
   PORT                Set server port (default: 3001)
@@ -201,12 +201,12 @@ function isNewerVersion(v1, v2) {
 async function checkForUpdates(silent = false) {
     try {
         const { execSync } = await import('child_process');
-        const latestVersion = execSync('npm show vibelab version', { encoding: 'utf8' }).trim();
+        const latestVersion = execSync('npm show dr-claw version', { encoding: 'utf8' }).trim();
         const currentVersion = packageJson.version;
 
         if (isNewerVersion(latestVersion, currentVersion)) {
             console.log(`\n${c.warn('[UPDATE]')} New version available: ${c.bright(latestVersion)} (current: ${currentVersion})`);
-            console.log(`         Run ${c.bright('vibelab update')} to update\n`);
+            console.log(`         Run ${c.bright('dr-claw update')} to update\n`);
             return { hasUpdate: true, latestVersion, currentVersion };
         } else if (!silent) {
             console.log(`${c.ok('[OK]')} You are on the latest version (${currentVersion})`);
@@ -234,11 +234,11 @@ async function updatePackage() {
         }
 
         console.log(`${c.info('[INFO]')} Updating from ${currentVersion} to ${latestVersion}...`);
-        execSync('npm update -g vibelab', { stdio: 'inherit' });
-        console.log(`${c.ok('[OK]')} Update complete! Restart vibelab to use the new version.`);
+        execSync('npm update -g dr-claw', { stdio: 'inherit' });
+        console.log(`${c.ok('[OK]')} Update complete! Restart dr-claw to use the new version.`);
     } catch (e) {
         console.error(`${c.error('[ERROR]')} Update failed: ${e.message}`);
-        console.log(`${c.tip('[TIP]')} Try running manually: npm update -g vibelab`);
+        console.log(`${c.tip('[TIP]')} Try running manually: npm update -g dr-claw`);
     }
 }
 
@@ -314,7 +314,7 @@ async function main() {
             break;
         default:
             console.error(`\n❌ Unknown command: ${command}`);
-            console.log('   Run "vibelab help" for usage information.\n');
+            console.log('   Run "dr-claw help" for usage information.\n');
             process.exit(1);
     }
 }

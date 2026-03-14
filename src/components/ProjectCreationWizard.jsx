@@ -75,13 +75,13 @@ const ProjectCreationWizard = ({ onClose, onProjectCreated }) => {
       try {
         const response = await api.browseFilesystem('~');
         const data = await response.json();
-        const basePath = data.path || '~/vibelab';
+        const basePath = data.path || '~/dr-claw';
         const suggestedPath = appendPathSegment(basePath, suggestedName);
         setWorkspacePath((currentPath) => (currentPath.trim() ? currentPath : suggestedPath));
         setProjectName((currentName) => (currentName.trim() ? currentName : suggestedName));
       } catch (error) {
         console.error('Error auto-filling workspace path:', error);
-        const fallbackPath = `~/vibelab/${suggestedName}`;
+        const fallbackPath = `~/dr-claw/${suggestedName}`;
         setWorkspacePath((currentPath) => (currentPath.trim() ? currentPath : fallbackPath));
         setProjectName((currentName) => (currentName.trim() ? currentName : suggestedName));
       }
@@ -200,7 +200,7 @@ const ProjectCreationWizard = ({ onClose, onProjectCreated }) => {
 
   const openFolderBrowser = async () => {
     setShowFolderBrowser(true);
-    await loadBrowserFolders('~/vibelab');
+    await loadBrowserFolders('~/dr-claw');
   };
 
   const loadBrowserFolders = async (path) => {

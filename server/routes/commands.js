@@ -293,7 +293,7 @@ Custom commands can be created in:
     // Read version from package.json
     const packageJsonPath = path.join(path.dirname(__dirname), '..', 'package.json');
     let version = 'unknown';
-    let packageName = 'vibelab';
+    let packageName = 'dr-claw';
 
     try {
       const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'));

@@ -9,7 +9,7 @@ import { dirname } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const installMode = fs.existsSync(path.join(__dirname, '..', '.git')) ? 'git' : 'npm';
-const npmPackageName = process.env.NPM_PACKAGE_NAME || 'vibelab';
+const npmPackageName = process.env.NPM_PACKAGE_NAME || 'dr-claw';
 
 // ANSI color codes for terminal output
 const colors = {
@@ -2720,7 +2720,7 @@ async function startServer() {
 
             console.log('');
             console.log(c.dim('═'.repeat(63)));
-            console.log(`  ${c.bright('Vibe Lab Server - Ready')}`);
+            console.log(`  ${c.bright('Dr. Claw Server - Ready')}`);
             console.log(c.dim('═'.repeat(63)));
             console.log('');
 
@@ -2732,7 +2732,7 @@ async function startServer() {
             }
 
             console.log(`${c.info('[INFO]')} Installed at: ${c.dim(appInstallPath)}`);
-            console.log(`${c.tip('[TIP]')}  Run "vibelab status" for full configuration details`);
+            console.log(`${c.tip('[TIP]')}  Run "dr-claw status" for full configuration details`);
             console.log('');
 
             // Ensure the workspaces root directory exists

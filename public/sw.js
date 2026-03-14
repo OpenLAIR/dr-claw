@@ -1,4 +1,4 @@
-// Service Worker for Vibe Lab PWA
+// Service Worker for Dr. Claw PWA
 const CACHE_NAME = 'claude-ui-v1';
 const urlsToCache = [
   '/',

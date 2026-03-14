@@ -143,7 +143,7 @@ When you first open Dr. Claw you will see the **Projects** sidebar. You have two
 - **Open an existing project** — Dr. Claw auto-discovers registered projects and linked sessions from Claude Code, Codex, and Gemini.
 - **Create a new project** — Click the **"+"** button, choose a directory on your machine, and Dr. Claw will set up the workspace: agent folders such as `.claude/`, `.agents/`, `.gemini/`, standard workspace metadata, linked `skills/` directories, preset research dirs (`Survey/references`, `Survey/reports`, `Ideation/ideas`, `Ideation/references`, `Experiment/code_references`, `Experiment/datasets`, `Experiment/core_code`, `Experiment/analysis`, `Publication/paper`, `Promotion/homepage`, `Promotion/slides`, `Promotion/audio`, `Promotion/video`), and **instance.json** at the project root with absolute paths for those directories. Cursor agent support is coming soon.
 
-> **Default project storage path:** New projects are stored under `~/vibelab` by default. You can change this in **Settings → Appearance → Default Project Path**, or set the `WORKSPACES_ROOT` environment variable. The setting is persisted in `~/.claude/project-config.json`.
+> **Default project storage path:** New projects are stored under `~/dr-claw` by default. You can change this in **Settings → Appearance → Default Project Path**, or set the `WORKSPACES_ROOT` environment variable. The setting is persisted in `~/.claude/project-config.json`.
 
 ### Step 2 — Generate Your Research Pipeline via Chat
 

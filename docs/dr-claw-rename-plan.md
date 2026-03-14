@@ -7,8 +7,9 @@ Rename the project from `VibeLab` / `Vibe Lab` to `Dr. Claw` without breaking pa
 ## Status
 
 - Branch: `dr-claw-phase-1-branding`
-- Phase 1 status: completed
-- Last updated: `2026-03-13`
+- User-facing branding status: completed
+- Package/CLI/workspace-root migration status: completed
+- Last updated: `2026-03-14`
 
 ## Current State Review
 
@@ -58,7 +59,7 @@ Phase 1 has been completed in the current branch for these areas:
 - README and core docs in `docs/`
 - beta agreement text in English and Chinese
 
-Phase 1 intentionally did **not** change:
+Phase 1 intentionally did **not** change at that time:
 
 - GitHub repository URLs and clone paths (`OpenLAIR/VibeLab`, `cd VibeLab`)
 - release-check repo identifiers
@@ -69,19 +70,22 @@ Phase 1 intentionally did **not** change:
 
 ### Phase 2: Distribution and repository naming
 
-Decide whether these also change:
+Current decisions for this branch:
 
-- npm package name: `vibelab`
-- CLI bin name: `vibelab`
-- GitHub repository path: `OpenLAIR/VibeLab`
-- release-check target currently using `OpenLAIR`, `VibeLab`
+- npm package name: change from `vibelab` to `dr-claw`
+- CLI bin name: change from `vibelab` to `dr-claw`
+- default workspace root: change from `~/vibelab` to `~/dr-claw`
+- GitHub repository path: keep `OpenLAIR/VibeLab` for now
+- release-check target: keep `OpenLAIR`, `VibeLab` for now
 
-Recommended approach:
+Applied or planned in this branch:
 
-- Keep package name and CLI name temporarily for compatibility.
-- Rebrand description/author fields immediately.
-- If the GitHub repo is renamed later, update release-check code and all links in the same release.
-- If the CLI command changes to `dr-claw` or `drclaw`, provide a transition period with both names if possible.
+- update `package.json` and `package-lock.json` package/bin names
+- update CLI help, status, self-update, and server startup hints to use `dr-claw`
+- update user-facing manual upgrade commands to `npm install -g dr-claw@latest`
+- update workspace-root defaults in backend and UI to `~/dr-claw`
+- update tests and docs that depend on the default workspace path
+- keep GitHub repository links and clone paths unchanged until a later repo rename
 
 ### Phase 3: Technical identifier audit
 
@@ -91,7 +95,6 @@ Review all `vibelab` identifiers and classify them:
   - local storage keys such as `vibelab-sidebar-width`
   - schema IDs such as `https://vibelab.local/...`
   - provider/source enums like `vibelab`
-  - workspace defaults like `~/vibelab` if changing them would disrupt existing users
 - Migrate carefully:
   - telemetry labels
   - generated job names like `vibelab-job`
@@ -127,12 +130,17 @@ Rule: only migrate a technical identifier if the value is user-visible, low-risk
 ### Packaging and release files
 
 - `package.json`
+- `package-lock.json`
+- `server/cli.js`
+- `server/index.js`
+- `server/routes/commands.js`
 - any release/version-check hooks tied to `OpenLAIR/VibeLab`
 - any badges and links pointing at `OpenLAIR/VibeLab`
 
 ### Lower-priority technical references
 
 - workspace path defaults in `src/components/ProjectCreationWizard.jsx`
+- workspace root defaults in `server/routes/projects.js` and `server/projects.js`
 - storage keys in `src/components/app/AppContent.tsx`
 - diagram storage prefix in `src/components/survey/utils/diagramWindow.ts`
 - scheduler templates in `src/components/ComputePanel.jsx`
@@ -143,8 +151,8 @@ Rule: only migrate a technical identifier if the value is user-visible, low-risk
 
 1. Finish Phase 1 branding changes everywhere user-visible.
 2. Verify the app title, onboarding, and README are consistent in English and Chinese.
-3. Decide whether the repository name changes now or later.
-4. If repository/package/CLI names change, implement compatibility shims and redirect all links in one pass.
+3. Keep the repository name unchanged for now.
+4. Change package name, CLI name, and workspace-root defaults in one pass.
 5. Audit remaining `vibelab` technical identifiers and only migrate the safe/user-visible ones.
 6. Run a final grep for:
    - `VibeLab`
@@ -154,25 +162,26 @@ Rule: only migrate a technical identifier if the value is user-visible, low-risk
 
 ## Compatibility Decisions To Make
 
-These should be decided before Phase 2:
+Resolved decisions:
 
-- Will the GitHub repository stay `OpenLAIR/VibeLab` for now?
-- Will the npm package stay `vibelab` for now?
-- Will the CLI command remain `vibelab`, or should a new alias be added?
-- Should the default workspace root remain `~/vibelab` to avoid breaking current users?
+- The GitHub repository stays `OpenLAIR/VibeLab` for now.
+- The npm package changes to `dr-claw`.
+- The CLI command changes to `dr-claw`.
+- The default workspace root changes to `~/dr-claw`.
 - Should internal source/provider IDs remain `vibelab` permanently?
 
-Recommended answer for the first rename release:
+Current branch policy:
 
-- Keep repo/package/CLI/workspace-root/internal IDs unchanged.
-- Change only user-facing branding to `Dr. Claw`.
-- Revisit deeper identifier migration in a later release if needed.
+- Keep repo URLs and release-check repo identifiers unchanged.
+- Change package, CLI, and default workspace root now.
+- Revisit deeper internal identifier migration in a later release if needed.
 
 ## Risks
 
 - A blind search-and-replace will break release checks, package installs, links, schema references, or persisted local storage.
-- Renaming `~/vibelab` by default can confuse existing users and tests.
+- Renaming `~/vibelab` by default can confuse existing users and tests if they rely on implicit defaults.
 - Renaming `vibelab` source enums or schema IDs can break code that expects those exact values.
+- Renaming the CLI without an alias removes backward compatibility for existing `vibelab` command users.
 - Partial rename across English and Chinese docs will look unpolished and reduce trust.
 
 ## Verification Checklist
@@ -186,11 +195,26 @@ Recommended answer for the first rename release:
 - Existing projects still open correctly.
 - Existing local settings and storage-backed UI preferences still work.
 - Grep shows no unintended `VibeLab`/`Vibe Lab` strings in user-facing surfaces.
+- Package metadata and update commands use `dr-claw`.
+- CLI help/status/update paths use `dr-claw`.
+- New workspace defaults point to `~/dr-claw`.
 
 Verification completed for Phase 1:
 
 - `npm run typecheck` passed.
 - Remaining `VibeLab` hits in the edited surface are limited to intentionally deferred compatibility references such as repo URLs, clone commands, and release-check identifiers.
+
+Additional verification required for the current branch scope:
+
+- run tests covering workspace-root defaults
+- decide whether to provide a temporary `vibelab` CLI alias for backwards compatibility
+- decide whether to migrate lower-level persisted/internal identifiers such as `.vibelab`, `vibelab-*` storage keys, provider IDs, and schema IDs
+
+Verification completed for the package/CLI/workspace-root migration:
+
+- package/bin metadata changed in both `package.json` and `package-lock.json`
+- targeted grep found no stale `vibelab` package/CLI/workspace-root references in the edited install/update flows
+- `npm run typecheck` passed after the runtime rename changes
 
 ## Suggested First PR
 
