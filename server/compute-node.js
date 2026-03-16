@@ -203,7 +203,8 @@ function execWithPassword(command, password, timeoutMs = 60000) {
 
 // Execute SSH command on a specific node
 async function execSsh(nodeConfig, remoteCmd) {
-  const sshBase = `ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15`;
+  const port = nodeConfig.port || 22;
+  const sshBase = `ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 -p ${port}`;
 
   if (nodeConfig.keyPath) {
     const cmd = `${sshBase} -i ${nodeConfig.keyPath} ${nodeConfig.user}@${nodeConfig.host} ${JSON.stringify(remoteCmd)}`;
@@ -218,9 +219,10 @@ async function execSsh(nodeConfig, remoteCmd) {
 
 // Execute rsync on a specific node
 async function execRsync(nodeConfig, src, dst, excludes = '') {
+  const port = nodeConfig.port || 22;
   const sshCmd = nodeConfig.keyPath
-    ? `ssh -o StrictHostKeyChecking=no -i ${nodeConfig.keyPath}`
-    : `ssh -o StrictHostKeyChecking=no`;
+    ? `ssh -o StrictHostKeyChecking=no -p ${port} -i ${nodeConfig.keyPath}`
+    : `ssh -o StrictHostKeyChecking=no -p ${port}`;
 
   const cmd = `rsync -avz ${excludes} -e "${sshCmd}" ${src} ${dst}`;
 
@@ -252,13 +254,14 @@ async function resolveNode(nodeId) {
 
 export const ComputeNode = {
   // Configure / save a node
-  async configure({ id, name, host, user, key, password, workDir = '~', type = 'direct', slurm }) {
+  async configure({ id, name, host, user, key, password, workDir = '~', type = 'direct', slurm, port }) {
     const nodeId = id || generateId(host);
     const node = {
       id: nodeId,
       name: name || host,
       host,
       user,
+      port: port || 22,
       workDir,
       type,
     };

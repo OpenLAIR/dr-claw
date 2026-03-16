@@ -24,9 +24,11 @@ router.get('/nodes', async (req, res) => {
 // POST /api/compute/nodes - Add a new node
 router.post('/nodes', async (req, res) => {
   try {
-    const { name, host, user, authType, key, password, workDir, type, slurm } = req.body;
+    const { name, host, user, authType, key, password, workDir, type, slurm, port } = req.body;
     if (!host?.trim()) return res.status(400).json({ error: 'Host is required' });
     if (!user?.trim()) return res.status(400).json({ error: 'Username is required' });
+    const parsedPort = parseInt(port) || 22;
+    if (parsedPort < 1 || parsedPort > 65535) return res.status(400).json({ error: 'Port must be between 1 and 65535' });
 
     const result = await ComputeNode.configure({
       name: name?.trim() || host.trim(),
@@ -37,6 +39,7 @@ router.post('/nodes', async (req, res) => {
       workDir: (workDir || '~').trim(),
       type: type || 'direct',
       slurm: slurm || undefined,
+      port: parsedPort,
     });
 
     res.json({ success: true, message: result });
@@ -51,13 +54,18 @@ router.put('/nodes/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const existing = await loadNodeConfig(id);
-    const { name, host, user, authType, key, password, workDir, type, slurm } = req.body;
+    const { name, host, user, authType, key, password, workDir, type, slurm, port } = req.body;
+    if (port !== undefined) {
+      const parsedPort = parseInt(port);
+      if (!parsedPort || parsedPort < 1 || parsedPort > 65535) return res.status(400).json({ error: 'Port must be between 1 and 65535' });
+    }
 
     const updated = {
       ...existing,
       name: name?.trim() || existing.name,
       host: host?.trim() || existing.host,
       user: user?.trim() || existing.user,
+      port: port !== undefined ? (parseInt(port) || 22) : (existing.port || 22),
       workDir: (workDir || existing.workDir || '~').trim(),
       type: type || existing.type || 'direct',
     };
