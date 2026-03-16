@@ -110,8 +110,12 @@ Examples:
 
 Allowed values:
 
-- `vibelab`
+- `dr-claw`
 - `imported`
+
+Legacy compatibility:
+
+- `vibelab` may still appear in migrated data and should be normalized to `dr-claw` on read.
 
 `status` is single-value and identifies curation state.
 
@@ -211,7 +215,7 @@ Current model fields should be translated as follows:
 5. `keywords` can remain broad and freeform.
 6. Do not infer user-facing taxonomy directly from folder names.
 
-Manual corrections live in [skills/skills-taxonomy-v2.overrides.json](/Users/dingjiesong/Documents/workspace/ai-scientist/VibeLab/skills/skills-taxonomy-v2.overrides.json). Keep skill-specific exceptions there instead of hardcoding them into the export script.
+Manual corrections live in [../skills/skills-taxonomy-v2.overrides.json](../skills/skills-taxonomy-v2.overrides.json). Keep skill-specific exceptions there instead of hardcoding them into the export script.
 
 ## Example Mappings
 
