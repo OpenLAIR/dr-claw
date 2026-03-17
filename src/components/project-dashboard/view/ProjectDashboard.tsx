@@ -7,7 +7,7 @@ import {
   Sparkles,
   Terminal,
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { api } from '../../../utils/api';
@@ -208,6 +208,7 @@ export default function ProjectDashboard({
   const [tokenUsageSummary, setTokenUsageSummary] = useState<ProjectTokenUsageSummary | null>(null);
   const [autoResearchStatuses, setAutoResearchStatuses] = useState<Record<string, AutoResearchStatus>>({});
   const [autoResearchLoading, setAutoResearchLoading] = useState<Record<string, boolean>>({});
+  const prevActiveRunsRef = useRef<Record<string, string>>({});
 
   const totals = useMemo(() => {
     const projectCount = projects.length;
@@ -326,6 +327,39 @@ export default function ProjectDashboard({
     };
   }, [projectUsageRefreshKey, projects]);
 
+  // Browser notification when Auto Research finishes
+  const notifyAutoResearchCompletion = useCallback((projectName: string, status: string) => {
+    if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+    const title = status === 'completed'
+      ? `Auto Research completed`
+      : `Auto Research ${status}`;
+    const body = `Project: ${projectName}`;
+    try {
+      new Notification(title, { body, icon: '/favicon.png' });
+    } catch { /* silent */ }
+  }, []);
+
+  useEffect(() => {
+    const terminalStatuses = new Set(['completed', 'failed', 'cancelled']);
+    const currentActiveRuns: Record<string, string> = {};
+
+    for (const [name, status] of Object.entries(autoResearchStatuses)) {
+      const run = status?.activeRun ?? status?.latestRun;
+      if (!run) continue;
+
+      if (!terminalStatuses.has(run.status)) {
+        currentActiveRuns[name] = run.id;
+      } else {
+        const prevRunId = prevActiveRunsRef.current[name];
+        if (prevRunId && prevRunId === run.id) {
+          notifyAutoResearchCompletion(name, run.status);
+        }
+      }
+    }
+
+    prevActiveRunsRef.current = currentActiveRuns;
+  }, [autoResearchStatuses, notifyAutoResearchCompletion]);
+
   const refreshAutoResearchStatus = async (projectName: string) => {
     try {
       const response = await api.autoResearch.status(projectName);
@@ -343,6 +377,9 @@ export default function ProjectDashboard({
   };
 
   const handleAutoResearchStart = async (projectName: string) => {
+    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      void Notification.requestPermission();
+    }
     setAutoResearchLoading((current) => ({ ...current, [projectName]: true }));
     try {
       const response = await api.autoResearch.start(projectName);
