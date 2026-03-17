@@ -8,7 +8,7 @@ import { resolveCursorCliCommand } from '../utils/cursorCommand.js';
 
 const router = express.Router();
 
-function checkCommandAvailable(command, args = ['--help']) {
+function checkCommandAvailable(command, args = ['--help'], platform = process.platform) {
   return new Promise((resolve) => {
     let completed = false;
 
@@ -16,7 +16,8 @@ function checkCommandAvailable(command, args = ['--help']) {
     try {
       childProcess = spawn(command, args, {
         stdio: 'ignore',
-        env: process.env
+        env: process.env,
+        shell: platform === 'win32'
       });
     } catch {
       resolve(false);
@@ -55,6 +56,43 @@ function checkCommandAvailable(command, args = ['--help']) {
       finish(code !== 127);
     });
   });
+}
+
+function getCliCommandCandidates(defaultCommand, envVarName, platform = process.platform) {
+  const envCommand = String(process.env[envVarName] || '').trim();
+  const rawCandidates = [envCommand, defaultCommand].filter(Boolean);
+  const candidates = [];
+
+  for (const candidate of rawCandidates) {
+    candidates.push(candidate);
+
+    if (platform === 'win32' && !/\.(cmd|exe|bat)$/i.test(candidate)) {
+      candidates.push(`${candidate}.cmd`, `${candidate}.exe`);
+    }
+  }
+
+  return [...new Set(candidates)];
+}
+
+async function resolveAvailableCliCommand(
+  defaultCommand,
+  envVarName,
+  args = ['--help'],
+  {
+    platform = process.platform,
+    probe = checkCommandAvailable
+  } = {}
+) {
+  const candidates = getCliCommandCandidates(defaultCommand, envVarName, platform);
+
+  for (const candidate of candidates) {
+    // Probe command candidates in order so npm shims like *.cmd work on Windows.
+    if (await probe(candidate, args, platform)) {
+      return candidate;
+    }
+  }
+
+  return null;
 }
 
 function buildCliInstallHint(agent) {
@@ -193,14 +231,14 @@ async function checkGeminiCredentials() {
       };
     }
 
-    const cliAvailable = await checkCommandAvailable('gemini');
-    if (!cliAvailable) {
+    const cliCommand = await resolveAvailableCliCommand('gemini', 'GEMINI_CLI_PATH');
+    if (!cliCommand) {
       return {
         authenticated: false,
         email: null,
         error: 'Gemini CLI not installed',
         cliAvailable: false,
-        cliCommand: 'gemini',
+        cliCommand: process.env.GEMINI_CLI_PATH || 'gemini',
         installHint: buildCliInstallHint('gemini')
       };
     }
@@ -212,7 +250,7 @@ async function checkGeminiCredentials() {
         authenticated: true,
         email: 'API Key (Env)',
         cliAvailable: true,
-        cliCommand: 'gemini'
+        cliCommand
       };
     }
 
@@ -245,7 +283,7 @@ async function checkGeminiCredentials() {
           authenticated: true,
           email: email,
           cliAvailable: true,
-          cliCommand: 'gemini'
+          cliCommand
         };
       } else {
         console.log('[DEBUG] Gemini: OAuth file found but no tokens present');
@@ -271,7 +309,7 @@ async function checkGeminiCredentials() {
           authenticated: true,
           email: 'API Key (Config)',
           cliAvailable: true,
-          cliCommand: 'gemini'
+          cliCommand
         };
       }
     } catch (e) {
@@ -286,7 +324,7 @@ async function checkGeminiCredentials() {
       email: null,
       error: 'Gemini not configured',
       cliAvailable: true,
-      cliCommand: 'gemini'
+      cliCommand
     };
   } catch (error) {
     console.error('[DEBUG] Gemini: Unexpected error during auth check', error);
@@ -296,7 +334,7 @@ async function checkGeminiCredentials() {
         email: null,
         error: 'Gemini not configured',
         cliAvailable: true,
-        cliCommand: 'gemini'
+        cliCommand: process.env.GEMINI_CLI_PATH || 'gemini'
       };
     }
     return {
@@ -304,7 +342,7 @@ async function checkGeminiCredentials() {
       email: null,
       error: error.message,
       cliAvailable: true,
-      cliCommand: 'gemini'
+      cliCommand: process.env.GEMINI_CLI_PATH || 'gemini'
     };
   }
 }
@@ -530,14 +568,14 @@ function checkCursorStatus() {
 
 async function checkCodexCredentials() {
   try {
-    const cliAvailable = await checkCommandAvailable('codex');
-    if (!cliAvailable) {
+    const cliCommand = await resolveAvailableCliCommand('codex', 'CODEX_CLI_PATH');
+    if (!cliCommand) {
       return {
         authenticated: false,
         email: null,
         error: 'Codex CLI not installed',
         cliAvailable: false,
-        cliCommand: 'codex',
+        cliCommand: process.env.CODEX_CLI_PATH || 'codex',
         installHint: buildCliInstallHint('codex')
       };
     }
@@ -572,7 +610,7 @@ async function checkCodexCredentials() {
         authenticated: true,
         email,
         cliAvailable: true,
-        cliCommand: 'codex'
+        cliCommand
       };
     }
 
@@ -582,7 +620,7 @@ async function checkCodexCredentials() {
         authenticated: true,
         email: 'API Key Auth',
         cliAvailable: true,
-        cliCommand: 'codex'
+        cliCommand
       };
     }
 
@@ -591,7 +629,7 @@ async function checkCodexCredentials() {
       email: null,
       error: 'No valid tokens found',
       cliAvailable: true,
-      cliCommand: 'codex'
+      cliCommand
     };
   } catch (error) {
     if (error.code === 'ENOENT') {
@@ -600,7 +638,7 @@ async function checkCodexCredentials() {
         email: null,
         error: 'Codex not configured',
         cliAvailable: true,
-        cliCommand: 'codex'
+        cliCommand: process.env.CODEX_CLI_PATH || 'codex'
       };
     }
     return {
@@ -608,7 +646,7 @@ async function checkCodexCredentials() {
       email: null,
       error: error.message,
       cliAvailable: true,
-      cliCommand: 'codex'
+      cliCommand: process.env.CODEX_CLI_PATH || 'codex'
     };
   }
 }
@@ -682,3 +720,9 @@ router.post('/claude/verify-custom-api', async (req, res) => {
 });
 
 export default router;
+
+export {
+  checkCommandAvailable,
+  getCliCommandCandidates,
+  resolveAvailableCliCommand
+};
