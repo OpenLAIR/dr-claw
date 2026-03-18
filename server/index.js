@@ -68,7 +68,7 @@ import telemetryRoutes from './routes/telemetry.js';
 import computeRoutes from './routes/compute.js';
 import newsRoutes from './routes/news.js';
 import autoResearchRoutes from './routes/auto-research.js';
-import { initializeDatabase } from './database/db.js';
+import { initializeDatabase, credentialsDb } from './database/db.js';
 import { validateApiKey, authenticateToken, authenticateWebSocket } from './middleware/auth.js';
 import { IS_PLATFORM } from './constants/config.js';
 import { enqueueTelemetryEvent } from './telemetry.js';
@@ -1259,11 +1259,26 @@ function handleChatConnection(ws, request) {
     connectedClients.add(ws);
 
     const user = request?.user || {};
+    const userId = user.userId || user.id || null;
     const telemetryContext = {
-        userId: user.userId || user.id || null,
+        userId: userId,
         username: user.username || null,
         clientType: 'websocket',
         telemetryEnabled: true,
+    };
+
+    // Inject Gemini API key from DB into process.env if not already set
+    const injectGeminiApiKey = () => {
+        if (!process.env.GEMINI_API_KEY && userId) {
+            try {
+                const key = credentialsDb.getActiveCredential(userId, 'gemini_api_key');
+                if (key) {
+                    process.env.GEMINI_API_KEY = key;
+                }
+            } catch (err) {
+                console.error('[WARN] Failed to load Gemini API key from DB:', err.message);
+            }
+        }
     };
 
     // Wrap WebSocket with writer for consistent interface with SSEStreamWriter
@@ -1299,6 +1314,7 @@ function handleChatConnection(ws, request) {
                 writer.telemetryContext = { ...telemetryContext, provider: 'claude', telemetryEnabled: commandTelemetryEnabled };
 
                 // Use Claude Agents SDK
+                injectGeminiApiKey();
                 await queryClaudeSDK(data.command, data.options, writer);
             } else if (data.type === 'cursor-command') {
                 console.log('[DEBUG] Cursor message:', data.command || '[Continue/Resume]');
@@ -1318,6 +1334,7 @@ function handleChatConnection(ws, request) {
                     { ...telemetryContext, telemetryEnabled: commandTelemetryEnabled },
                 );
                 writer.telemetryContext = { ...telemetryContext, provider: 'cursor', telemetryEnabled: commandTelemetryEnabled };
+                injectGeminiApiKey();
                 await spawnCursor(data.command, data.options, writer);
             } else if (data.type === 'codex-command') {
                 console.log('[DEBUG] Codex message:', data.command || '[Continue/Resume]');
@@ -1337,6 +1354,7 @@ function handleChatConnection(ws, request) {
                     { ...telemetryContext, telemetryEnabled: commandTelemetryEnabled },
                 );
                 writer.telemetryContext = { ...telemetryContext, provider: 'codex', telemetryEnabled: commandTelemetryEnabled };
+                injectGeminiApiKey();
                 await queryCodex(data.command, data.options, writer);
             } else if (data.type === 'gemini-command') {
                 console.log('[DEBUG] Gemini message:', data.command || '[Continue/Resume]');
@@ -1356,6 +1374,7 @@ function handleChatConnection(ws, request) {
                     { ...telemetryContext, telemetryEnabled: commandTelemetryEnabled },
                 );
                 writer.telemetryContext = { ...telemetryContext, provider: 'gemini', telemetryEnabled: commandTelemetryEnabled };
+                injectGeminiApiKey();
                 await spawnGemini(data.command, data.options, writer);
             } else if (data.type === 'cursor-resume') {
                 // Backward compatibility: treat as cursor-command with resume and no prompt

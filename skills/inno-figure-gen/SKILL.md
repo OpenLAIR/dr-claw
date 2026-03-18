@@ -1,11 +1,11 @@
 ---
 name: inno-figure-gen
-description: Generate/edit images with Nano Banana Pro (Gemini 3 Pro Image). Use for image create/modify requests incl. edits. Supports text-to-image + image-to-image; 1K/2K/4K; use --input-image.
+description: Generate/edit images with Gemini image models (default: gemini-3.1-flash-image). Use for image create/modify requests incl. edits. Supports text-to-image + image-to-image; 1K/2K/4K; use --input-image. Use --model to select a different model.
 ---
 
-# Nano Banana Pro Image Generation & Editing
+# Gemini Image Generation & Editing
 
-Generate new images or edit existing ones using Google's Nano Banana Pro API (Gemini 3 Pro Image).
+Generate new images or edit existing ones using Google's Gemini image generation API (default model: `gemini-3.1-flash-image`).
 
 ## Usage
 
@@ -13,12 +13,12 @@ Run the script using absolute path (do NOT cd to skill directory first):
 
 **Generate new image:**
 ```bash
-uv run ~/.codex/skills/inno-figure-gen/scripts/generate_image.py --prompt "your image description" --filename "output-name.png" [--resolution 1K|2K|4K] [--api-key KEY]
+uv run ~/.codex/skills/inno-figure-gen/scripts/generate_image.py --prompt "your image description" --filename "output-name.png" [--resolution 1K|2K|4K] [--model MODEL] [--api-key KEY]
 ```
 
 **Edit existing image:**
 ```bash
-uv run ~/.codex/skills/inno-figure-gen/scripts/generate_image.py --prompt "editing instructions" --filename "output-name.png" --input-image "path/to/input.png" [--resolution 1K|2K|4K] [--api-key KEY]
+uv run ~/.codex/skills/inno-figure-gen/scripts/generate_image.py --prompt "editing instructions" --filename "output-name.png" --input-image "path/to/input.png" [--resolution 1K|2K|4K] [--model MODEL] [--api-key KEY]
 ```
 
 **Important:** Always run from the user's current working directory so images are saved where the user is working, not in the skill directory.
@@ -47,6 +47,18 @@ Map user requests to API parameters:
 - "low resolution", "1080", "1080p", "1K" → `1K`
 - "2K", "2048", "normal", "medium resolution" → `2K`
 - "high resolution", "high-res", "hi-res", "4K", "ultra" → `4K`
+
+## Model Selection
+
+The default model is `gemini-3.1-flash-image`. You can override it with the `--model` flag:
+
+```bash
+uv run ~/.codex/skills/inno-figure-gen/scripts/generate_image.py --prompt "..." --filename "..." --model gemini-3.1-flash-image
+```
+
+Available models depend on your Gemini API access. Common options:
+- `gemini-3.1-flash-image` (default) - Fast image generation
+- `gemini-3-pro-image-preview` - Higher quality, slower
 
 ## API Key
 

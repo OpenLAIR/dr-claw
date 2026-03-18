@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Key, Plus, Trash2, Eye, EyeOff, Copy, Check, Github, ExternalLink } from 'lucide-react';
+import { Key, Plus, Trash2, Eye, EyeOff, Copy, Check, Github, ExternalLink, Sparkles } from 'lucide-react';
 import { useVersionCheck } from '../hooks/useVersionCheck';
 import { version } from '../../package.json';
 import { authenticatedFetch } from '../utils/api';
@@ -11,13 +11,17 @@ function CredentialsSettings() {
   const { t } = useTranslation('settings');
   const [apiKeys, setApiKeys] = useState([]);
   const [githubCredentials, setGithubCredentials] = useState([]);
+  const [geminiCredentials, setGeminiCredentials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showNewKeyForm, setShowNewKeyForm] = useState(false);
   const [showNewGithubForm, setShowNewGithubForm] = useState(false);
+  const [showNewGeminiForm, setShowNewGeminiForm] = useState(false);
   const [newKeyName, setNewKeyName] = useState('');
   const [newGithubName, setNewGithubName] = useState('');
   const [newGithubToken, setNewGithubToken] = useState('');
   const [newGithubDescription, setNewGithubDescription] = useState('');
+  const [newGeminiKey, setNewGeminiKey] = useState('');
+  const [newGeminiName, setNewGeminiName] = useState('');
   const [showToken, setShowToken] = useState({});
   const [copiedKey, setCopiedKey] = useState(null);
   const [newlyCreatedKey, setNewlyCreatedKey] = useState(null);
@@ -42,6 +46,11 @@ function CredentialsSettings() {
       const credentialsRes = await authenticatedFetch('/api/settings/credentials?type=github_token');
       const credentialsData = await credentialsRes.json();
       setGithubCredentials(credentialsData.credentials || []);
+
+      // Fetch Gemini API key credentials
+      const geminiRes = await authenticatedFetch('/api/settings/credentials?type=gemini_api_key');
+      const geminiData = await geminiRes.json();
+      setGeminiCredentials(geminiData.credentials || []);
     } catch (error) {
       console.error('Error fetching settings:', error);
     } finally {
@@ -144,6 +153,57 @@ function CredentialsSettings() {
       fetchData();
     } catch (error) {
       console.error('Error toggling GitHub credential:', error);
+    }
+  };
+
+  const createGeminiCredential = async () => {
+    if (!newGeminiKey.trim()) return;
+
+    try {
+      const res = await authenticatedFetch('/api/settings/credentials', {
+        method: 'POST',
+        body: JSON.stringify({
+          credentialName: newGeminiName.trim() || 'Gemini API Key',
+          credentialType: 'gemini_api_key',
+          credentialValue: newGeminiKey,
+          description: ''
+        })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setNewGeminiKey('');
+        setNewGeminiName('');
+        setShowNewGeminiForm(false);
+        fetchData();
+      }
+    } catch (error) {
+      console.error('Error creating Gemini credential:', error);
+    }
+  };
+
+  const deleteGeminiCredential = async (credentialId) => {
+    if (!confirm(t('apiKeys.gemini.confirmDelete'))) return;
+
+    try {
+      await authenticatedFetch(`/api/settings/credentials/${credentialId}`, {
+        method: 'DELETE'
+      });
+      fetchData();
+    } catch (error) {
+      console.error('Error deleting Gemini credential:', error);
+    }
+  };
+
+  const toggleGeminiCredential = async (credentialId, isActive) => {
+    try {
+      await authenticatedFetch(`/api/settings/credentials/${credentialId}/toggle`, {
+        method: 'PATCH',
+        body: JSON.stringify({ isActive: !isActive })
+      });
+      fetchData();
+    } catch (error) {
+      console.error('Error toggling Gemini credential:', error);
     }
   };
 
@@ -380,6 +440,101 @@ function CredentialsSettings() {
                     size="sm"
                     variant="ghost"
                     onClick={() => deleteGithubCredential(credential.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Gemini API Key Section */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5" />
+            <h3 className="text-lg font-semibold">{t('apiKeys.gemini.title')}</h3>
+          </div>
+          <Button
+            size="sm"
+            onClick={() => setShowNewGeminiForm(!showNewGeminiForm)}
+          >
+            <Plus className="h-4 w-4 mr-1" />
+            {t('apiKeys.gemini.addButton')}
+          </Button>
+        </div>
+
+        <p className="text-sm text-muted-foreground mb-4">
+          {t('apiKeys.gemini.description')}
+        </p>
+
+        {showNewGeminiForm && (
+          <div className="mb-4 p-4 border rounded-lg bg-card space-y-3">
+            <Input
+              placeholder={t('apiKeys.gemini.form.namePlaceholder')}
+              value={newGeminiName}
+              onChange={(e) => setNewGeminiName(e.target.value)}
+            />
+
+            <div className="relative">
+              <Input
+                type={showToken['gemini-new'] ? 'text' : 'password'}
+                placeholder={t('apiKeys.gemini.form.keyPlaceholder')}
+                value={newGeminiKey}
+                onChange={(e) => setNewGeminiKey(e.target.value)}
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowToken({ ...showToken, 'gemini-new': !showToken['gemini-new'] })}
+                className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground"
+              >
+                {showToken['gemini-new'] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+
+            <div className="flex gap-2">
+              <Button onClick={createGeminiCredential}>{t('apiKeys.gemini.form.addButton')}</Button>
+              <Button variant="outline" onClick={() => {
+                setShowNewGeminiForm(false);
+                setNewGeminiKey('');
+                setNewGeminiName('');
+              }}>
+                {t('apiKeys.gemini.form.cancelButton')}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-2">
+          {geminiCredentials.length === 0 ? (
+            <p className="text-sm text-muted-foreground italic">{t('apiKeys.gemini.empty')}</p>
+          ) : (
+            geminiCredentials.map((credential) => (
+              <div
+                key={credential.id}
+                className="flex items-center justify-between p-3 border rounded-lg"
+              >
+                <div className="flex-1">
+                  <div className="font-medium">{credential.credential_name}</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {t('apiKeys.gemini.added')} {new Date(credential.created_at).toLocaleDateString()}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant={credential.is_active ? 'outline' : 'secondary'}
+                    onClick={() => toggleGeminiCredential(credential.id, credential.is_active)}
+                  >
+                    {credential.is_active ? t('apiKeys.status.active') : t('apiKeys.status.inactive')}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => deleteGeminiCredential(credential.id)}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

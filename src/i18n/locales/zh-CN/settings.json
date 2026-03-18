@@ -257,6 +257,20 @@
       "added": "添加时间：",
       "confirmDelete": "确定要删除此 GitHub 令牌吗？"
     },
+    "gemini": {
+      "title": "Gemini API 密钥",
+      "description": "添加 Google Gemini API 密钥以在研究论文中使用 gemini-3.1-flash-image 及其他 Gemini 模型生成图像。",
+      "addButton": "添加密钥",
+      "form": {
+        "namePlaceholder": "密钥名称（例如：研究项目）",
+        "keyPlaceholder": "Gemini API 密钥（AIza...）",
+        "addButton": "添加密钥",
+        "cancelButton": "取消"
+      },
+      "empty": "尚未添加 Gemini API 密钥。",
+      "added": "添加时间：",
+      "confirmDelete": "确定要删除此 Gemini API 密钥吗？"
+    },
     "apiDocsLink": "API 文档",
     "documentation": {
       "title": "外部 API 文档",

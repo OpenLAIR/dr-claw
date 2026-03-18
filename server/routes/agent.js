@@ -4,7 +4,7 @@ import path from 'path';
 import os from 'os';
 import { promises as fs } from 'fs';
 import crypto from 'crypto';
-import { userDb, apiKeysDb, githubTokensDb } from '../database/db.js';
+import { userDb, apiKeysDb, githubTokensDb, credentialsDb } from '../database/db.js';
 import { addProjectManually } from '../projects.js';
 import { queryClaudeSDK } from '../claude-sdk.js';
 import { spawnCursor } from '../cursor-cli.js';
@@ -938,6 +938,18 @@ router.post('/', validateExternalApiKey, async (req, res) => {
         message: githubUrl ? 'Repository cloned and session started' : 'Session started',
         projectPath: finalProjectPath
       });
+    }
+
+    // Inject Gemini API key from DB if not already set
+    if (!process.env.GEMINI_API_KEY && req.user?.id) {
+      try {
+        const geminiKey = credentialsDb.getActiveCredential(req.user.id, 'gemini_api_key');
+        if (geminiKey) {
+          process.env.GEMINI_API_KEY = geminiKey;
+        }
+      } catch (err) {
+        console.error('[WARN] Failed to load Gemini API key from DB:', err.message);
+      }
     }
 
     // Start the appropriate session

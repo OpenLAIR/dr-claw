@@ -257,6 +257,20 @@
       "added": "Added:",
       "confirmDelete": "Are you sure you want to delete this GitHub token?"
     },
+    "gemini": {
+      "title": "Gemini API Key",
+      "description": "Add a Google Gemini API key to enable image generation with gemini-3.1-flash-image and other Gemini models in your research papers.",
+      "addButton": "Add Key",
+      "form": {
+        "namePlaceholder": "Key Name (e.g., Research Project)",
+        "keyPlaceholder": "Gemini API Key (AIza...)",
+        "addButton": "Add Key",
+        "cancelButton": "Cancel"
+      },
+      "empty": "No Gemini API key added yet.",
+      "added": "Added:",
+      "confirmDelete": "Are you sure you want to delete this Gemini API key?"
+    },
     "apiDocsLink": "API Documentation",
     "documentation": {
       "title": "External API Documentation",

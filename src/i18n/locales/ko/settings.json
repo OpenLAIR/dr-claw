@@ -257,6 +257,20 @@
       "added": "추가일:",
       "confirmDelete": "이 GitHub 토큰을 삭제하시겠습니까?"
     },
+    "gemini": {
+      "title": "Gemini API 키",
+      "description": "Google Gemini API 키를 추가하여 연구 논문에서 gemini-3.1-flash-image 및 기타 Gemini 모델로 이미지를 생성할 수 있습니다.",
+      "addButton": "키 추가",
+      "form": {
+        "namePlaceholder": "키 이름 (예: 연구 프로젝트)",
+        "keyPlaceholder": "Gemini API 키 (AIza...)",
+        "addButton": "키 추가",
+        "cancelButton": "취소"
+      },
+      "empty": "추가된 Gemini API 키가 없습니다.",
+      "added": "추가일:",
+      "confirmDelete": "이 Gemini API 키를 삭제하시겠습니까?"
+    },
     "apiDocsLink": "API 문서",
     "documentation": {
       "title": "외부 API 문서",
