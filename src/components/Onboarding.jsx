@@ -11,19 +11,10 @@ import { authenticatedFetch } from '../utils/api';
 import { IS_PLATFORM } from '../constants/config';
 import { isTelemetryEnabled, setTelemetryEnabled } from '../utils/telemetry';
 import { writeCliAvailability } from '../utils/cliAvailability';
-import betaAgreementTextZh from '../../docs/internal-beta-user-agreement.zh-CN.md?raw';
-import betaAgreementTextEn from '../../docs/internal-beta-user-agreement.en-US.md?raw';
 
 const Onboarding = ({ onComplete }) => {
   const [currentStep, setCurrentStep] = useState(0);
-  const [agreedToBetaTerms, setAgreedToBetaTerms] = useState(false);
   const [telemetryConsent, setTelemetryConsentState] = useState(() => isTelemetryEnabled());
-  const [agreementLanguage, setAgreementLanguage] = useState(() => {
-    if (typeof navigator !== 'undefined' && navigator.language?.toLowerCase().startsWith('zh')) {
-      return 'zh-CN';
-    }
-    return 'en-US';
-  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -255,18 +246,8 @@ const Onboarding = ({ onComplete }) => {
 
   const handleNextStep = async () => {
     setError('');
-    const isChinese = agreementLanguage === 'zh-CN';
 
     if (currentStep === 0) {
-      if (!agreedToBetaTerms) {
-        setError(
-          isChinese
-            ? '请先勾选同意《Dr. Claw 内测用户确认协议（Beta）》'
-            : 'Please check the box to accept the Dr. Claw Beta User Confirmation Agreement first.'
-        );
-        return;
-      }
-
       setTelemetryEnabled(telemetryConsent);
       setCurrentStep(currentStep + 1);
       return;
@@ -306,10 +287,10 @@ const Onboarding = ({ onComplete }) => {
 
   const steps = [
     {
-      title: 'Agreement',
-      description: 'Review and accept beta agreement',
+      title: 'Preferences',
+      description: 'Configure onboarding preferences',
       icon: FileText,
-      required: true
+      required: false
     },
     {
       title: 'Connect Agents',
@@ -318,9 +299,6 @@ const Onboarding = ({ onComplete }) => {
       required: false
     }
   ];
-
-  const isChinese = agreementLanguage === 'zh-CN';
-  const agreementText = isChinese ? betaAgreementTextZh : betaAgreementTextEn;
 
   const renderStepContent = () => {
     switch (currentStep) {
@@ -332,83 +310,18 @@ const Onboarding = ({ onComplete }) => {
                 <FileText className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
               </div>
               <h2 className="text-2xl font-bold text-foreground mb-2">
-                {isChinese ? 'Dr. Claw 内测用户确认' : 'Dr. Claw Beta User Confirmation'}
+                Welcome to Dr. Claw
               </h2>
               <p className="text-muted-foreground">
-                {isChinese
-                  ? '首次使用前，请确认内测协议与数据使用选项。'
-                  : 'Before first use, review the beta agreement and data usage options.'}
+                Configure your data usage preference before continuing.
               </p>
             </div>
 
-            <div className="flex justify-center gap-2">
-              <button
-                type="button"
-                onClick={() => setAgreementLanguage('zh-CN')}
-                className={`rounded-md px-3 py-1.5 text-sm transition-colors ${
-                  isChinese
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-muted text-foreground hover:bg-muted/80'
-                }`}
-                disabled={isSubmitting}
-              >
-                中文
-              </button>
-              <button
-                type="button"
-                onClick={() => setAgreementLanguage('en-US')}
-                className={`rounded-md px-3 py-1.5 text-sm transition-colors ${
-                  !isChinese
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-muted text-foreground hover:bg-muted/80'
-                }`}
-                disabled={isSubmitting}
-              >
-                English
-              </button>
-            </div>
-
-            <div className="rounded-lg border border-border bg-muted/20 p-4 max-h-[28rem] overflow-y-auto text-sm leading-6 text-foreground">
-              <div className="prose prose-sm max-w-none text-foreground dark:prose-invert prose-headings:font-semibold prose-headings:text-foreground prose-p:text-foreground prose-li:text-foreground prose-strong:text-foreground prose-code:text-foreground prose-blockquote:text-muted-foreground">
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  components={{
-                    h1: ({node, ...props}) => <h1 className="text-xl mb-3" {...props} />,
-                    h2: ({node, ...props}) => <h2 className="text-base mt-5 mb-2" {...props} />,
-                    h3: ({node, ...props}) => <h3 className="text-sm mt-4 mb-2" {...props} />,
-                    blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-border pl-3 italic" {...props} />,
-                    ul: ({node, ...props}) => <ul className="list-disc pl-5" {...props} />,
-                    ol: ({node, ...props}) => <ol className="list-decimal pl-5" {...props} />,
-                    code: ({node, inline, className, children, ...props}) => (
-                      inline ? (
-                        <code className="rounded bg-muted px-1 py-0.5 text-xs" {...props}>{children}</code>
-                      ) : (
-                        <code className="block rounded bg-muted p-2 text-xs whitespace-pre-wrap" {...props}>{children}</code>
-                      )
-                    ),
-                  }}
-                >
-                  {agreementText}
-                </ReactMarkdown>
-              </div>
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
+              Internal beta agreement is temporarily disabled. Users can continue onboarding without accepting it.
             </div>
 
             <div className="space-y-3 rounded-lg border border-border bg-card p-4">
-              <label className="flex items-start gap-3 text-sm text-foreground">
-                <input
-                  type="checkbox"
-                  checked={agreedToBetaTerms}
-                  onChange={(e) => setAgreedToBetaTerms(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded border-border text-blue-600 focus:ring-blue-500"
-                  disabled={isSubmitting}
-                />
-                <span>
-                  {isChinese
-                    ? '我已阅读并同意《Dr. Claw 内测用户确认协议（Beta）》，理解本服务处于内测阶段。'
-                    : 'I have read and agree to the Dr. Claw Beta User Confirmation Agreement and understand this service is in beta.'}
-                </span>
-              </label>
-
               <label className="flex items-start gap-3 text-sm text-foreground">
                 <input
                   type="checkbox"
@@ -418,9 +331,7 @@ const Onboarding = ({ onComplete }) => {
                   disabled={isSubmitting}
                 />
                 <span>
-                  {isChinese
-                    ? '同意将我的使用数据用于改进 Dr. Claw 的模型和功能（推荐）。如不同意，你仍可继续使用，并可在设置中随时修改。'
-                    : 'Allow my usage data to improve Dr. Claw models and features (recommended). You can still continue without this and change it anytime in Settings.'}
+                  Allow my usage data to improve Dr. Claw models and features (recommended). You can still continue without this and change it anytime in Settings.
                 </span>
               </label>
             </div>
@@ -528,7 +439,7 @@ const Onboarding = ({ onComplete }) => {
   const isStepValid = () => {
     switch (currentStep) {
       case 0:
-        return agreedToBetaTerms;
+        return true;
       case 1:
         return true;
       default:
