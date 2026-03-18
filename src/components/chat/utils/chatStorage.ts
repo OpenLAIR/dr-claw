@@ -1,10 +1,17 @@
-import type { ClaudeSettings } from '../types/types';
+import type { ProviderSettings } from '../types/types';
 
 export const CLAUDE_SETTINGS_KEY = 'claude-settings';
 export const GEMINI_SETTINGS_KEY = 'gemini-settings';
+export const CURSOR_SETTINGS_KEY = 'cursor-tools-settings';
+export const CODEX_SETTINGS_KEY = 'codex-settings';
 
 export function getProviderSettingsKey(provider?: string) {
-  return provider === 'gemini' ? GEMINI_SETTINGS_KEY : CLAUDE_SETTINGS_KEY;
+  switch (provider) {
+    case 'gemini': return GEMINI_SETTINGS_KEY;
+    case 'cursor': return CURSOR_SETTINGS_KEY;
+    case 'codex': return CODEX_SETTINGS_KEY;
+    default: return CLAUDE_SETTINGS_KEY;
+  }
 }
 
 export const safeLocalStorage = {
@@ -79,11 +86,7 @@ export const safeLocalStorage = {
   },
 };
 
-export function getClaudeSettings(): ClaudeSettings {
-  return getProviderSettings();
-}
-
-export function getProviderSettings(provider?: string): ClaudeSettings {
+export function getProviderSettings(provider?: string): ProviderSettings {
   const raw = safeLocalStorage.getItem(getProviderSettingsKey(provider));
   if (!raw) {
     return {

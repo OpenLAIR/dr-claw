@@ -4,13 +4,13 @@ import { useTranslation } from 'react-i18next';
 import SessionProviderLogo from '../../../SessionProviderLogo';
 import type {
   ChatMessage,
-  ClaudePermissionSuggestion,
+  PermissionSuggestion,
   PermissionGrantResult,
   Provider,
 } from '../../types/types';
 import { Markdown } from './Markdown';
 import { formatUsageLimitText } from '../../utils/chatFormatting';
-import { getClaudePermissionSuggestion } from '../../utils/chatPermissions';
+import { getPermissionSuggestion } from '../../utils/chatPermissions';
 import type { Project } from '../../../../types/app';
 import { ToolRenderer, shouldHideToolResult } from '../../tools';
 
@@ -27,7 +27,7 @@ interface MessageComponentProps {
   createDiff: (oldStr: string, newStr: string) => DiffLine[];
   onFileOpen?: (filePath: string, diffInfo?: unknown) => void;
   onShowSettings?: () => void;
-  onGrantToolPermission?: (suggestion: ClaudePermissionSuggestion) => PermissionGrantResult | null | undefined;
+  onGrantToolPermission?: (suggestion: PermissionSuggestion) => PermissionGrantResult | null | undefined;
   autoExpandTools?: boolean;
   showRawParameters?: boolean;
   showThinking?: boolean;
@@ -52,7 +52,7 @@ const MessageComponent = memo(({ message, index, prevMessage, createDiff, onFile
                     (prevMessage.type === 'error'));
   const messageRef = React.useRef<HTMLDivElement | null>(null);
   const [isExpanded, setIsExpanded] = React.useState(false);
-  const permissionSuggestion = getClaudePermissionSuggestion(message, provider);
+  const permissionSuggestion = getPermissionSuggestion(message, provider);
   const [permissionGrantState, setPermissionGrantState] = React.useState<PermissionGrantState>('idle');
 
 

@@ -1,8 +1,8 @@
 import { safeJsonParse } from '../../../lib/utils.js';
-import type { ChatMessage, ClaudePermissionSuggestion, PermissionGrantResult } from '../types/types.js';
+import type { ChatMessage, PermissionSuggestion, PermissionGrantResult } from '../types/types.js';
 import { getProviderSettings, getProviderSettingsKey, safeLocalStorage } from './chatStorage';
 
-export function buildClaudeToolPermissionEntry(toolName?: string, toolInput?: unknown) {
+export function buildToolPermissionEntry(toolName?: string, toolInput?: unknown) {
   if (!toolName) return null;
   if (toolName !== 'Bash') return toolName;
 
@@ -29,15 +29,15 @@ export function formatToolInputForDisplay(input: unknown) {
   }
 }
 
-export function getClaudePermissionSuggestion(
+export function getPermissionSuggestion(
   message: ChatMessage | null | undefined,
   provider: string,
-): ClaudePermissionSuggestion | null {
+): PermissionSuggestion | null {
   if (provider !== 'claude' && provider !== 'gemini') return null;
   if (!message?.toolResult?.isError) return null;
 
   const toolName = message?.toolName;
-  const entry = buildClaudeToolPermissionEntry(toolName, message.toolInput);
+  const entry = buildToolPermissionEntry(toolName, message.toolInput);
   if (!entry) return null;
 
   const settings = getProviderSettings(provider);

@@ -16,7 +16,7 @@ import { isTelemetryEnabled } from '../../../utils/telemetry';
 import { thinkingModes } from '../constants/thinkingModes';
 
 import { grantToolPermission } from '../utils/chatPermissions';
-import { safeLocalStorage } from '../utils/chatStorage';
+import { getProviderSettingsKey, safeLocalStorage } from '../utils/chatStorage';
 import { consumeWorkspaceQaDraft, WORKSPACE_QA_DRAFT_EVENT } from '../../../utils/workspaceQa';
 import type {
   ChatMessage,
@@ -639,14 +639,7 @@ export function useChatComposerState({
 
       const getToolsSettings = () => {
         try {
-          const settingsKey =
-            provider === 'cursor'
-              ? 'cursor-tools-settings'
-              : provider === 'codex'
-              ? 'codex-settings'
-              : provider === 'gemini'
-              ? 'gemini-settings'
-              : 'claude-settings';
+          const settingsKey = getProviderSettingsKey(provider);
           const savedSettings = safeLocalStorage.getItem(settingsKey);
           if (savedSettings) {
             return JSON.parse(savedSettings);
