@@ -1,0 +1,164 @@
+import { spawn, spawnSync } from 'child_process';
+
+/**
+ * Build ordered CLI command candidates from env override + defaults.
+ *
+ * @param {Object} options
+ * @param {string} options.envVarName Environment variable name containing an override command.
+ * @param {string[]} options.defaultCommands Fallback command names in preference order.
+ * @param {string} [options.platform=process.platform] Runtime platform, used for Windows suffix handling.
+ * @param {boolean} [options.appendWindowsSuffixes=false] Whether to append .cmd/.exe candidates on Windows.
+ * @returns {string[]} Unique command candidates in probe order.
+ */
+function getCliCommandCandidates({
+    envVarName,
+    defaultCommands,
+    platform = process.platform,
+    appendWindowsSuffixes = false
+}) {
+    const envCommand = String(process.env[envVarName] || '').trim();
+    const rawCandidates = [];
+
+    if (envCommand) {
+        rawCandidates.push(envCommand);
+    }
+
+    for (const command of defaultCommands) {
+        if (command) {
+            rawCandidates.push(command);
+        }
+    }
+
+    const candidates = [];
+    for (const candidate of rawCandidates) {
+        candidates.push(candidate);
+
+        if (appendWindowsSuffixes && platform === 'win32' && !/\.(cmd|exe|bat)$/i.test(candidate)) {
+            candidates.push(`${candidate}.cmd`, `${candidate}.exe`);
+        }
+    }
+
+    return [...new Set(candidates)];
+}
+
+/**
+ * Probe command availability via synchronous spawn.
+ *
+ * @param {string} command Command to check.
+ * @param {string[]} [args=['--help']] Probe arguments.
+ * @param {string} [platform=process.platform] Runtime platform.
+ * @returns {boolean} True when command can be invoked.
+ */
+function isCommandAvailable(command, args = ['--help'], platform = process.platform) {
+    if (!command) return false;
+
+    const result = spawnSync(command, args, {
+        stdio: 'ignore',
+        shell: platform === 'win32'
+    });
+
+    return !result.error;
+}
+
+/**
+ * Probe command availability via async spawn with timeout.
+ *
+ * @param {string} command Command to check.
+ * @param {string[]} [args=['--help']] Probe arguments.
+ * @param {Object} [options]
+ * @param {string} [options.platform=process.platform] Runtime platform.
+ * @param {number} [options.timeoutMs=3000] Max probe duration.
+ * @returns {Promise<boolean>} True when command can be spawned.
+ */
+function checkCommandAvailable(command, args = ['--help'], { platform = process.platform, timeoutMs = 3000 } = {}) {
+    return new Promise((resolve) => {
+        let completed = false;
+
+        let childProcess;
+        try {
+            childProcess = spawn(command, args, {
+                stdio: 'ignore',
+                env: process.env,
+                shell: platform === 'win32'
+            });
+        } catch {
+            resolve(false);
+            return;
+        }
+
+        const finish = (value) => {
+            if (completed) return;
+            completed = true;
+            resolve(value);
+        };
+
+        const timeout = setTimeout(() => {
+            if (!completed) {
+                childProcess.kill();
+            }
+            finish(true);
+        }, timeoutMs);
+
+        childProcess.on('error', (error) => {
+            clearTimeout(timeout);
+            if (error?.code === 'ENOENT') {
+                finish(false);
+                return;
+            }
+            finish(true);
+        });
+
+        childProcess.on('spawn', () => {
+            clearTimeout(timeout);
+            finish(true);
+        });
+
+        childProcess.on('close', (code) => {
+            clearTimeout(timeout);
+            finish(code !== 127);
+        });
+    });
+}
+
+/**
+ * Resolve the first available command from a candidate list.
+ *
+ * @param {Object} options
+ * @param {string} options.envVarName Environment variable with command override.
+ * @param {string[]} options.defaultCommands Fallback command names in preference order.
+ * @param {string[]} [options.args=['--help']] Probe arguments.
+ * @param {string} [options.platform=process.platform] Runtime platform.
+ * @param {boolean} [options.appendWindowsSuffixes=false] Whether to append .cmd/.exe candidates on Windows.
+ * @param {(command: string, args: string[], options: {platform: string}) => Promise<boolean>} [options.probe=checkCommandAvailable] Async probe function.
+ * @returns {Promise<string|null>} First available command, or null.
+ */
+async function resolveAvailableCliCommand({
+    envVarName,
+    defaultCommands,
+    args = ['--help'],
+    platform = process.platform,
+    appendWindowsSuffixes = false,
+    probe = (command, probeArgs, probeOptions) => checkCommandAvailable(command, probeArgs, probeOptions)
+}) {
+    const candidates = getCliCommandCandidates({
+        envVarName,
+        defaultCommands,
+        platform,
+        appendWindowsSuffixes
+    });
+
+    for (const candidate of candidates) {
+        if (await probe(candidate, args, { platform })) {
+            return candidate;
+        }
+    }
+
+    return null;
+}
+
+export {
+    getCliCommandCandidates,
+    isCommandAvailable,
+    checkCommandAvailable,
+    resolveAvailableCliCommand
+};

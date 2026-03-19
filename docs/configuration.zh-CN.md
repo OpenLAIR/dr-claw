@@ -24,6 +24,8 @@ Dr. Claw 通过项目根目录下的 `.env` 文件中的环境变量进行配置
 | `VITE_PORT` | 否 | `5173` | Vite 开发服务器端口（仅开发模式）。 |
 | `CLAUDE_CLI_PATH` | 否 | `claude` | Claude Code 二进制文件的绝对或相对路径。如果 `claude` 不在你的 `PATH` 中，可在此处覆盖。 |
 | `CURSOR_CLI_PATH` | 否 | 自动探测（先 `cursor-agent` 后 `agent`） | 覆盖 Cursor CLI 命令/二进制名。适用于你的环境只提供某一个别名的情况。 |
+| `GEMINI_CLI_PATH` | 否 | `gemini` | 覆盖 Gemini CLI 命令/二进制名。适用于通过自定义别名或路径安装 Gemini 的环境。 |
+| `CODEX_CLI_PATH` | 否 | `codex` | 覆盖 Codex CLI 命令/二进制名。适用于 Codex 不在默认 `PATH` 中的环境。 |
 
 ### 数据库
 

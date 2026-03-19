@@ -24,6 +24,8 @@ Dr. Claw is configured through environment variables in a `.env` file at the pro
 | `VITE_PORT` | No | `5173` | Vite dev server port (development only). |
 | `CLAUDE_CLI_PATH` | No | `claude` | Absolute or relative path to the Claude Code binary. Override if `claude` is not on your `PATH`. |
 | `CURSOR_CLI_PATH` | No | Auto-detect (`cursor-agent` then `agent`) | Override Cursor CLI command/binary. Useful when your environment only provides one alias. |
+| `GEMINI_CLI_PATH` | No | `gemini` | Override Gemini CLI command/binary. Useful when your shell resolves Gemini through a custom alias or path. |
+| `CODEX_CLI_PATH` | No | `codex` | Override Codex CLI command/binary. Useful when Codex is installed outside your default `PATH`. |
 
 ### Database
 

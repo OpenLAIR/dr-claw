@@ -1,28 +1,12 @@
-import { spawnSync } from 'child_process';
+import { isCommandAvailable, getCliCommandCandidates } from './cliResolution.js';
 
 let cachedCursorCommand = null;
 
 function getCursorCommandCandidates() {
-  const envCommand = (process.env.CURSOR_CLI_PATH || '').trim();
-  const candidates = [];
-
-  if (envCommand) {
-    candidates.push(envCommand);
-  }
-
-  candidates.push('cursor-agent', 'agent');
-  return [...new Set(candidates)];
-}
-
-function isCommandAvailable(command) {
-  if (!command) return false;
-
-  const result = spawnSync(command, ['--help'], {
-    stdio: 'ignore',
-    shell: process.platform === 'win32'
+  return getCliCommandCandidates({
+    envVarName: 'CURSOR_CLI_PATH',
+    defaultCommands: ['cursor-agent', 'agent']
   });
-
-  return !result.error;
 }
 
 function resolveCursorCliCommand(options = {}) {
@@ -56,7 +40,7 @@ function normalizeCursorLoginCommand(command = '') {
   if (isGeminiLoginCommand(command)) {
     return command;
   }
-  
+
   if (!isCursorLoginCommand(command)) {
     return command;
   }
