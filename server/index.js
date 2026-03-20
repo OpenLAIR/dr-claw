@@ -815,38 +815,10 @@ app.delete('/api/projects/:projectName/sessions/:sessionId', authenticateToken, 
     }
 });
 
-// Delete project endpoint (force=true to delete with sessions)
+// Delete project endpoint (DISABLED - prevents accidental data loss)
+// This endpoint is disabled to prevent users from accidentally deleting entire project directories
 app.delete('/api/projects/:projectName', authenticateToken, async (req, res) => {
-    try {
-        const userId = req.user?.id;
-        const { projectName } = req.params;
-        const force = req.query.force === 'true';
-        await deleteProject(projectName, force, userId);
-        res.json({ success: true });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-app.post('/api/projects/trash/:projectName/restore', authenticateToken, async (req, res) => {
-    try {
-        const userId = req.user?.id;
-        await restoreProject(req.params.projectName, userId);
-        res.json({ success: true });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-app.delete('/api/projects/trash/:projectName', authenticateToken, async (req, res) => {
-    try {
-        const userId = req.user?.id;
-        const mode = req.query.mode === 'physical' ? 'physical' : 'logical';
-        await deleteTrashedProject(req.params.projectName, mode, userId);
-        res.json({ success: true });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+    res.status(403).json({ error: 'Project deletion is disabled to prevent accidental data loss' });
 });
 
 // Create project endpoint
