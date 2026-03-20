@@ -143,6 +143,14 @@ function isGitRepositoryMissingError(message = '') {
          msg.includes('project directory is not a git repository');
 }
 
+function getGitErrorText(error) {
+  return [
+    String(error?.message || ''),
+    String(error?.stdout || ''),
+    String(error?.stderr || ''),
+  ].join('\n');
+}
+
 async function getCurrentBranchName(projectPath, fallback = 'main') {
   try {
     const { stdout } = await spawnAsync('git', ['symbolic-ref', '--short', 'HEAD'], { cwd: projectPath });
@@ -1020,13 +1028,14 @@ router.post('/fetch', async (req, res) => {
     res.json({ success: true, output: stdout || 'Fetch completed successfully', remoteName });
   } catch (error) {
     console.error('Git fetch error:', error);
+    const errorText = getGitErrorText(error);
     res.status(500).json({ 
       error: 'Fetch failed', 
-      details: error.message.includes('Could not resolve hostname') 
+      details: errorText.includes('Could not resolve hostname') 
         ? 'Unable to connect to remote repository. Check your internet connection.'
-        : error.message.includes('fatal: \'origin\' does not appear to be a git repository')
+        : errorText.includes('fatal: \'origin\' does not appear to be a git repository')
         ? 'No remote repository configured. Add a remote with: git remote add origin <url>'
-        : error.message
+        : errorText
     });
   }
 });
@@ -1067,24 +1076,25 @@ router.post('/pull', async (req, res) => {
     });
   } catch (error) {
     console.error('Git pull error:', error);
+    const errorText = getGitErrorText(error);
     
     // Enhanced error handling for common pull scenarios
     let errorMessage = 'Pull failed';
-    let details = error.message;
+    let details = errorText;
     
-    if (error.message.includes('CONFLICT')) {
+    if (errorText.includes('CONFLICT')) {
       errorMessage = 'Merge conflicts detected';
       details = 'Pull created merge conflicts. Please resolve conflicts manually in the editor, then commit the changes.';
-    } else if (error.message.includes('Please commit your changes or stash them')) {
+    } else if (errorText.includes('Please commit your changes or stash them')) {
       errorMessage = 'Uncommitted changes detected';  
       details = 'Please commit or stash your local changes before pulling.';
-    } else if (error.message.includes('Could not resolve hostname')) {
+    } else if (errorText.includes('Could not resolve hostname')) {
       errorMessage = 'Network error';
       details = 'Unable to connect to remote repository. Check your internet connection.';
-    } else if (error.message.includes('fatal: \'origin\' does not appear to be a git repository')) {
+    } else if (errorText.includes('fatal: \'origin\' does not appear to be a git repository')) {
       errorMessage = 'Remote not configured';
       details = 'No remote repository configured. Add a remote with: git remote add origin <url>';
-    } else if (error.message.includes('diverged')) {
+    } else if (errorText.includes('diverged')) {
       errorMessage = 'Branches have diverged';
       details = 'Your local branch and remote branch have diverged. Consider fetching first to review changes.';
     }
@@ -1132,29 +1142,33 @@ router.post('/push', async (req, res) => {
     });
   } catch (error) {
     console.error('Git push error:', error);
+    const errorText = getGitErrorText(error);
     
     // Enhanced error handling for common push scenarios
     let errorMessage = 'Push failed';
-    let details = error.message;
+    let details = errorText;
     
-    if (error.message.includes('rejected')) {
+    if (errorText.includes('rejected')) {
       errorMessage = 'Push rejected';
       details = 'The remote has newer commits. Pull first to merge changes before pushing.';
-    } else if (error.message.includes('non-fast-forward')) {
+    } else if (errorText.includes('non-fast-forward')) {
       errorMessage = 'Non-fast-forward push';
       details = 'Your branch is behind the remote. Pull the latest changes first.';
-    } else if (error.message.includes('Could not resolve hostname')) {
+    } else if (errorText.includes('Could not resolve hostname')) {
       errorMessage = 'Network error';
       details = 'Unable to connect to remote repository. Check your internet connection.';
-    } else if (error.message.includes('fatal: \'origin\' does not appear to be a git repository')) {
+    } else if (errorText.includes('fatal: \'origin\' does not appear to be a git repository')) {
       errorMessage = 'Remote not configured';
       details = 'No remote repository configured. Add a remote with: git remote add origin <url>';
-    } else if (error.message.includes('Permission denied')) {
+    } else if (errorText.includes('Permission denied')) {
       errorMessage = 'Authentication failed';
       details = 'Permission denied. Check your credentials or SSH keys.';
-    } else if (error.message.includes('no upstream branch')) {
+    } else if (errorText.includes('no upstream branch')) {
       errorMessage = 'No upstream branch';
       details = 'No upstream branch configured. Use: git push --set-upstream origin <branch>';
+    } else if (errorText.includes('src refspec') && errorText.includes('does not match any')) {
+      errorMessage = 'No commits to push';
+      details = 'Create an initial commit before publishing or pushing this branch.';
     }
     
     res.status(500).json({ 
@@ -1212,23 +1226,27 @@ router.post('/publish', async (req, res) => {
     });
   } catch (error) {
     console.error('Git publish error:', error);
+    const errorText = getGitErrorText(error);
     
     // Enhanced error handling for common publish scenarios
     let errorMessage = 'Publish failed';
-    let details = error.message;
+    let details = errorText;
     
-    if (error.message.includes('rejected')) {
+    if (errorText.includes('rejected')) {
       errorMessage = 'Publish rejected';
       details = 'The remote branch already exists and has different commits. Use push instead.';
-    } else if (error.message.includes('Could not resolve hostname')) {
+    } else if (errorText.includes('Could not resolve hostname')) {
       errorMessage = 'Network error';
       details = 'Unable to connect to remote repository. Check your internet connection.';
-    } else if (error.message.includes('Permission denied')) {
+    } else if (errorText.includes('Permission denied')) {
       errorMessage = 'Authentication failed';
       details = 'Permission denied. Check your credentials or SSH keys.';
-    } else if (error.message.includes('fatal:') && error.message.includes('does not appear to be a git repository')) {
+    } else if (errorText.includes('fatal:') && errorText.includes('does not appear to be a git repository')) {
       errorMessage = 'Remote not configured';
       details = 'Remote repository not properly configured. Check your remote URL.';
+    } else if (errorText.includes('src refspec') && errorText.includes('does not match any')) {
+      errorMessage = 'No commits to publish';
+      details = 'Create an initial commit before publishing this branch.';
     }
     
     res.status(500).json({ 
