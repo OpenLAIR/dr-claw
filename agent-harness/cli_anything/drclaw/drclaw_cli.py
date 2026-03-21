@@ -58,13 +58,13 @@ Sub-command tree:
     report      Send a TaskMaster status report through OpenClaw
 """
 
+import base64
 import json
+import mimetypes
 import os
 import shutil
 import subprocess
 import sys
-import base64
-import mimetypes
 import warnings
 from pathlib import Path
 from typing import Any, Dict, List, Optional
