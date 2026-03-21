@@ -2,7 +2,7 @@
 
 ## Overview
 
-VibeLab, now also branded as Dr. Claw, is a full-stack AI research workspace for managing multi-provider coding and research sessions. The Python `drclaw` CLI exposes the same server capabilities for automation, OpenClaw integration, and mobile status reporting.
+VibeLab, now also branded as Dr. Claw, is a full-stack AI research workspace for managing multi-provider coding and research sessions. The Python `drclaw` CLI exposes the same server capabilities for automation, OpenClaw integration, mobile status reporting, and structured OpenClaw-ready schemas.
 
 ## Core workflows
 
@@ -34,9 +34,12 @@ drclaw sessions messages <project-ref> <session-id> --provider claude --limit 10
 drclaw chat sessions --project <project-ref>
 drclaw chat send --project <project-ref> --message "What changed?"
 drclaw chat send --project <project-ref> --session <session-id> --message "Continue"
+drclaw --json chat reply --project <project-ref> --session <session-id> -m "Continue and tell me the next checkpoint"
 ```
 
 `chat send` resolves the project reference to a real filesystem path before opening the websocket, and waits for explicit completion events instead of using a silence timeout.
+
+For machine-facing clients, `chat send`, `chat reply`, `workflow continue`, and `workflow resume` now embed `openclaw.turn.v1` under the top-level `openclaw` field.
 
 ### TaskMaster / pipeline progress
 
@@ -60,9 +63,31 @@ drclaw openclaw install
 drclaw openclaw configure --push-channel feishu:<chat_id>
 drclaw openclaw report --project <project-ref> --dry-run
 drclaw openclaw report --project <project-ref>
+drclaw openclaw-watch on --interval 30
+drclaw openclaw-watch status
+drclaw openclaw-watch off
 ```
 
 `openclaw report` generates a concise status digest with counts, next task, required inputs, suggested skills, and optional next-action prompt text.
+
+`openclaw-watch` runs as a background daemon and subscribes to Dr. Claw WebSocket events so OpenClaw can receive event-driven notifications instead of polling digest commands. It now resolves the affected project, compares workflow snapshots, derives higher-level signals such as `blocker_detected`, `waiting_for_human`, and `task_completed`, and asks OpenClaw agent to write the final Lark/Feishu summary.
+
+## OpenClaw schema contract
+
+Major JSON commands now include a top-level `openclaw` field with a stable versioned payload:
+
+- `openclaw.turn.v1`
+- `openclaw.project.v1`
+- `openclaw.portfolio.v1`
+- `openclaw.daily.v1`
+- `openclaw.report.v1`
+- `openclaw.event.v1`
+
+Formal schema reference:
+
+```bash
+cat agent-harness/cli_anything/drclaw/SCHEMA.md
+```
 
 ## Server contract notes
 
@@ -92,4 +117,14 @@ drclaw --json projects list
 drclaw --json sessions list <project-ref> --provider codex
 drclaw --json taskmaster summary <project-ref>
 drclaw --json openclaw report --project <project-ref> --dry-run
+drclaw --json workflow status --project <project-ref>
+drclaw --json digest portfolio
+drclaw --json chat watch --event claude-permission-request --event taskmaster-project-updated
 ```
+
+Guidance:
+
+- Prefer the embedded `openclaw` field over parsing natural-language `reply`
+- Use `decision.needed` and `next_actions` for mobile quick actions
+- Use `openclaw-watch` when proactive notifications are needed
+- For watcher-driven notifications, prefer `event.signals` over raw websocket event names

@@ -1,6 +1,6 @@
 ---
 name: dr-claw
-description: Dr. Claw skill for OpenClaw project discovery, idea intake, waiting-session triage, session replies, workflow control, and mobile reporting through the local drclaw CLI.
+description: Dr. Claw skill for OpenClaw project discovery, idea intake, waiting-session triage, structured session control, event-driven notifications, and mobile reporting through the local drclaw CLI.
 ---
 
 # Dr. Claw for OpenClaw
@@ -12,6 +12,8 @@ Use this skill when OpenClaw needs to operate Dr. Claw from chat or mobile, espe
 - continuing, approving, rejecting, retrying, or resuming workflows
 - creating a new project from a fresh idea
 - generating daily or per-project digests
+- consuming stable `openclaw.*` JSON schema payloads
+- running the background event-driven watcher daemon
 
 ## Preconditions
 
@@ -39,6 +41,14 @@ When invoking the CLI from OpenClaw, prefer `$DRCLAW_BIN --url "$DRCLAW_URL" ...
 ## Core operating rule
 
 Prefer direct CLI facts over model guesses. For stateful operations, return the raw CLI result first, then summarize for the user.
+
+When a command returns JSON, prefer the top-level `openclaw` field over scraping the raw natural-language `reply`.
+
+Formal schema contract:
+
+```bash
+cat /Users/david/Developer/agent/VibeLab/agent-harness/cli_anything/drclaw/SCHEMA.md
+```
 
 When calling OpenClaw locally from automation or shell, use:
 
@@ -97,6 +107,11 @@ $DRCLAW_BIN --url "$DRCLAW_URL" chat waiting --json
 $DRCLAW_BIN --url "$DRCLAW_URL" chat waiting --project <project> --json
 ```
 
+For session replies and workflow actions, use the embedded `openclaw.turn.v1` payload to decide:
+- whether user input is required
+- which quick action to render next
+- whether the session is still processing
+
 Recommended triage flow:
 1. Resolve the project first if needed.
 2. Use `chat waiting --json` to find actionable sessions.
@@ -144,6 +159,13 @@ $DRCLAW_BIN --url "$DRCLAW_URL" workflow retry --project <project> --session <se
 $DRCLAW_BIN --url "$DRCLAW_URL" workflow resume --project <project> --session <session-id> --bypass-permissions --json
 ```
 
+For project-level UI cards or voice summaries, prefer the embedded `openclaw.project.v1` payload from:
+
+```bash
+$DRCLAW_BIN --url "$DRCLAW_URL" workflow status --project <project> --json
+$DRCLAW_BIN --url "$DRCLAW_URL" digest project --project <project> --json
+```
+
 ## Digests and reporting
 
 Daily digest:
@@ -164,6 +186,8 @@ Cross-project portfolio digest with recommended follow-ups:
 $DRCLAW_BIN --url "$DRCLAW_URL" digest portfolio --json
 ```
 
+For cross-project OpenClaw dashboards, use the embedded `openclaw.portfolio.v1` field rather than custom ranking logic.
+
 Artifacts and workflow state:
 
 ```bash
@@ -179,6 +203,39 @@ Keep replies compact:
 - always include exact session ids when asking the user to choose one
 - when reporting a post-reply state, say whether the session is still processing or has cleared
 
+When JSON is available:
+- prefer `openclaw.decision.needed` to decide whether to interrupt the user
+- prefer `openclaw.next_actions` for quick replies or buttons
+- prefer `openclaw.turn.summary` / `openclaw.focus` for compact rendering
+
+## Event-driven watcher daemon
+
+Use the watcher when OpenClaw should proactively notify the user instead of waiting for manual digest polling.
+
+Start / stop / inspect:
+
+```bash
+$DRCLAW_BIN --url "$DRCLAW_URL" --json openclaw-watch on --to feishu:<chat_id>
+$DRCLAW_BIN --url "$DRCLAW_URL" --json openclaw-watch status
+$DRCLAW_BIN --url "$DRCLAW_URL" --json openclaw-watch off
+```
+
+Watcher behavior:
+- subscribes to Dr. Claw WebSocket events
+- reacts to important event types only
+- resolves the affected project when possible, including path-based file change events
+- compares workflow snapshots to derive higher-level `openclaw.event.v1.event.signals`
+- current useful signals include `human_decision_needed`, `waiting_for_human`, `blocker_detected`, `blocker_cleared`, `task_completed`, `next_task_changed`, `attention_needed`, and `session_aborted`
+- asks OpenClaw agent to generate the final Feishu/Lark notification when enough project context is available
+- parses delivered agent output back into clean human-facing text instead of leaking plugin logs / raw JSON
+- enriches events with `openclaw.event.v1` and project-level status when possible
+- deduplicates repeated notifications for a 6-hour time window
+- pushes only attention-worthy updates to the configured OpenClaw channel
+
+Watcher runtime files:
+- state: `~/.drclaw/openclaw-watcher-state.json`
+- log: `~/.drclaw/logs/openclaw-watcher.log`
+
 ## Reliable OpenClaw patterns
 
 Pattern: list projects
@@ -186,15 +243,16 @@ Pattern: list projects
 2. Present short names, display names, and paths only when needed.
 
 Pattern: user asks what needs attention
-1. Run `$DRCLAW_BIN --url "$DRCLAW_URL" chat waiting --json`.
-2. Group by project.
-3. Present session id, provider, summary, and last activity.
+1. Run `$DRCLAW_BIN --url "$DRCLAW_URL" digest portfolio --json`.
+2. Use the embedded `openclaw.portfolio.v1.focus` field first.
+3. Fall back to `chat waiting --json` if the user explicitly wants raw waiting sessions.
 
 Pattern: user asks OpenClaw to answer a waiting session
 1. Run `$DRCLAW_BIN --url "$DRCLAW_URL" chat reply --project ... --session ... -m ... --json`.
-2. Immediately run `$DRCLAW_BIN --url "$DRCLAW_URL" chat waiting --project ... --json`.
-3. If the same session is still present, report that it is still processing.
-4. Optionally run `drclaw_wait_until_clear.sh` and report the final clearance.
+2. Read `openclaw.turn.v1` from the response.
+3. If `decision.needed=true`, surface the decision reason and quick actions.
+4. If the same session is still present in `waiting_sessions`, report that it is still processing.
+5. Optionally run `drclaw_wait_until_clear.sh` and report the final clearance.
 
 Pattern: user suddenly has a new idea
 1. Pick a workspace path, usually `/Users/<user>/vibelab/<slug>`.
@@ -205,4 +263,5 @@ Pattern: user suddenly has a new idea
 Pattern: user wants an update without opening Dr. Claw
 1. Run `$DRCLAW_BIN --url "$DRCLAW_URL" digest daily --json`, `$DRCLAW_BIN --url "$DRCLAW_URL" digest project --project ... --json`, or `$DRCLAW_BIN --url "$DRCLAW_URL" digest portfolio --json`.
 2. Use `digest portfolio` when the user wants cross-project progress, attention recommendations, or suggested replies.
-3. Summarize only the load-bearing items: waiting sessions, task progress, blockers, next actions.
+3. Prefer the `openclaw.*` schema field for rendering.
+4. Summarize only the load-bearing items: waiting sessions, task progress, blockers, next actions.

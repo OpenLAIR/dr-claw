@@ -151,37 +151,46 @@ If agent web search does not work later, see **Troubleshooting Web Search** belo
 
 ## OpenClaw Integration
 
-This section is written for **new users integrating OpenClaw with Dr. Claw for the first time**. The goal is not to expose every detail. The goal is to get a reliable first integration running quickly:
+This section is for users wiring OpenClaw to Dr. Claw as a practical control surface, not as a separate backend rewrite.
 
-- OpenClaw can see which Dr. Claw projects exist
-- OpenClaw can find sessions waiting for user input
-- OpenClaw can reply into a chosen session so Dr. Claw keeps going
-- OpenClaw can summarize project / portfolio progress and recommend what to focus on next
+The current integration has three stable layers:
+- **control plane**: OpenClaw runs local `drclaw ...` commands directly
+- **structured contract**: major JSON responses include a top-level `openclaw` payload
+- **proactive delivery**: a background watcher can push important project changes to Feishu/Lark through OpenClaw
+
+With those three layers in place, OpenClaw can already act as a usable project secretary:
+- list Dr. Claw projects
+- find sessions waiting for user input
+- reply into a chosen session so work continues
+- summarize project and portfolio progress
+- push proactive blocker / decision / completion updates back to chat
 
 The clean mental model is:
 - **Dr. Claw**: owns the real projects, sessions, pipelines, artifacts, and execution
-- **`drclaw` CLI**: exposes that state through a stable local control surface exposed primarily as `drclaw`
+- **`drclaw` CLI**: exposes that state through a stable local control surface
 - **OpenClaw**: acts as the user-facing secretary on mobile, chat, or voice
 
 ### Fastest path for new users
 
-If you only want the shortest successful path, do these 5 things:
+If you only want the shortest successful path, do these 6 things:
 
 1. Start Dr. Claw
 2. Install the `drclaw` CLI
-3. Give OpenClaw local shell / `exec` access
-4. Install the provided OpenClaw skill
-5. Make `chat waiting` and `digest portfolio` work end-to-end
+3. Login once with the CLI
+4. Give OpenClaw local shell / `exec` access
+5. Install the provided OpenClaw skill
+6. Make `chat waiting` and `digest portfolio` work end-to-end
 
-Once those two commands work, OpenClaw already behaves like a usable research secretary.
+Once those commands work, OpenClaw is already usable.
 
 ### Step 0: confirm the prerequisites
 
 Before integrating, make sure:
 - you can already run Dr. Claw locally
-- you already have at least one project, or can create one under `~/vibelab/...`
+- you already have at least one project, or can create one
 - you have configured at least one execution backend such as Claude Code, Gemini CLI, or Codex
 - your OpenClaw instance is allowed to run local tools
+- if you want proactive push, OpenClaw can already deliver to a Feishu/Lark channel
 
 If those are not true yet, get Dr. Claw itself working first.
 
@@ -227,7 +236,13 @@ drclaw --json auth status
 drclaw --json projects list
 ```
 
-A good sequence is:
+If `drclaw` is not on your PATH, invoke it as a module instead:
+
+```bash
+PYTHONPATH=agent-harness python3 -m cli_anything.drclaw.drclaw_cli --help
+```
+
+A good verification sequence is:
 - `drclaw --json auth status` should return JSON if the server is reachable
 - `drclaw --json projects list` will work only after login or if you already have a saved token
 
@@ -283,21 +298,24 @@ The compatibility form is still available:
 drclaw openclaw install --server-url http://localhost:3001
 ```
 
-### Step 5: make two core commands work first
+### Step 5: make the core commands work first
 
-For a new user, do not start with everything. Start with these two:
+For a new user, do not start with everything. Start with these commands:
 
-1. **Find which sessions are waiting for user input**
 ```bash
+drclaw --json projects list
 drclaw --json chat waiting
-```
-
-2. **Get portfolio-wide progress and recommendations**
-```bash
 drclaw --json digest portfolio
+drclaw --json workflow status --project <project>
 ```
 
-If OpenClaw can call both commands and summarize the result back to the user, your minimum viable integration is already working.
+What they are for:
+- `projects list`: lets OpenClaw resolve project choices correctly
+- `chat waiting`: shows which sessions need user input
+- `digest portfolio`: gives cross-project progress and recommendations
+- `workflow status`: gives one-project status, next task, and decision context
+
+If OpenClaw can call those commands and summarize the result back to the user, your minimum viable integration is already working.
 
 ### Step 6: add the reply loop
 
@@ -330,37 +348,68 @@ drclaw --json chat project --project <project> --session <session-id> -m "<instr
 
 That is the better pattern for multi-turn project-scoped discussion.
 
-### Step 7: recommended fixed operating patterns
+### Step 7: consume the structured schema instead of scraping text
 
-Recommended OpenClaw flows:
+Major machine-facing commands now return a versioned top-level `openclaw` field. Current schema families are:
+- `openclaw.turn.v1`
+- `openclaw.project.v1`
+- `openclaw.portfolio.v1`
+- `openclaw.daily.v1`
+- `openclaw.report.v1`
+- `openclaw.event.v1`
 
-1. **User asks: what needs my attention right now?**
+Formal contract:
+
 ```bash
-drclaw --json digest portfolio
+cat agent-harness/cli_anything/drclaw/SCHEMA.md
 ```
 
-2. **User asks: which sessions are waiting for me?**
+Recommended client rendering rules:
+- prefer `openclaw.decision.needed` to decide whether to interrupt the user
+- prefer `openclaw.next_actions` for quick actions and voice suggestions
+- prefer `openclaw.turn.summary` or portfolio `openclaw.focus` for compact rendering
+- for watcher notifications, render from `openclaw.event.v1.event.signals` first
+- do not depend on raw `reply` text alone when `openclaw` exists
+
+### Step 8: enable proactive notifications with the watcher
+
+The watcher is event-driven. It listens to Dr. Claw WebSocket events and only emits attention-worthy updates.
+
+Configure the default push channel once:
+
 ```bash
-drclaw --json chat waiting
+drclaw openclaw configure --push-channel feishu:<chat_id>
 ```
 
-3. **User asks: what is the latest state of this project?**
+Start, inspect, and stop the watcher:
+
 ```bash
-drclaw --json projects latest <project>
-drclaw --json projects progress <project>
+drclaw --json openclaw-watch on --to feishu:<chat_id>
+drclaw --json openclaw-watch status
+drclaw --json openclaw-watch off
 ```
 
-4. **User says: reply to this session and keep it moving**
-```bash
-drclaw --json chat reply --project <project> --session <session-id> -m "<message>"
-```
+What it does:
+- subscribes to Dr. Claw WebSocket events instead of polling digests
+- resolves the affected project for task, project, and file-change events when possible
+- compares workflow snapshots to derive higher-level signals instead of forwarding raw event names
+- deduplicates repeated notifications with a stable signature and 6-hour TTL
+- asks `openclaw agent --deliver` to write the final human-facing Feishu/Lark summary
+- falls back to a plain bridge push if agent summarization fails
+- stores state in `~/.drclaw/openclaw-watcher-state.json`
+- stores logs in `~/.drclaw/logs/openclaw-watcher.log`
 
-5. **User says: I just had a new idea, create a project and help me shape it**
-```bash
-drclaw --json projects idea /absolute/path/to/project --name "<display-name>" --idea "<idea text>"
-```
+Current important signals include:
+- `human_decision_needed`
+- `waiting_for_human`
+- `blocker_detected`
+- `blocker_cleared`
+- `task_completed`
+- `next_task_changed`
+- `attention_needed`
+- `session_aborted`
 
-### Step 8: prefer serialized local turns
+### Step 9: prefer serialized local turns
 
 When OpenClaw repeatedly runs `openclaw agent --local`, use the serialized wrapper to avoid session-lock collisions:
 
@@ -376,17 +425,18 @@ openclaw_drclaw_turn.sh --json -m "Use your exec tool to run `drclaw --json dige
 
 In practice: **when OpenClaw calls Dr. Claw locally, stable serial turns are better than risky parallel turns.**
 
-### Step 9: how to know the integration is successful
+### Step 10: how to know the integration is successful
 
-A new user can consider the integration complete once all 4 are true:
+A new user can consider the integration complete once all of these are true:
 - OpenClaw can list Dr. Claw projects
 - OpenClaw can identify waiting sessions
 - OpenClaw can successfully send one reply into a chosen session
-- OpenClaw can produce one `digest portfolio` style summary with recommendations
+- OpenClaw can produce one `digest portfolio` summary with recommendations
+- OpenClaw can receive at least one watcher-driven proactive summary in Feishu/Lark
 
 At that point, OpenClaw is no longer just a chat surface. It becomes Dr. Claw's mobile secretary.
 
-### Step 10: what end users can say afterwards
+### Step 11: what end users can say afterwards
 
 After setup, users should be able to talk to OpenClaw naturally:
 - “Check which Dr. Claw projects are waiting for my reply.”
@@ -396,6 +446,7 @@ After setup, users should be able to talk to OpenClaw naturally:
 - “I just had a new idea. Create a Dr. Claw project, discuss it with me, refine it, and start execution planning.”
 
 The goal is not to replace Dr. Claw. The goal is to make Dr. Claw **callable, reportable, steerable, and remotely manageable** through OpenClaw.
+
 
 ## Configuration
 

@@ -10,24 +10,24 @@ It turns Dr. Claw into a controllable research backend so another agent can:
 - summarize project progress and portfolio-wide status
 - push compact reports back to mobile / OpenClaw
 
-## What this CLI is for
+## What This CLI Is For
 
 `drclaw` is the control plane between three layers:
 - **Dr. Claw**: the research workspace and server
 - **`drclaw` CLI**: the stable machine-facing interface
 - **OpenClaw**: the mobile / chat / voice-facing assistant that calls the CLI and reports back to the user
 
-The intended workflow is: the user talks to OpenClaw, OpenClaw runs `drclaw ...`, and Dr. Claw continues execution inside the right project/session.
+The intended workflow is: the user talks to OpenClaw, OpenClaw runs `drclaw ...`, and Dr. Claw continues execution inside the right project or session.
 
-## Installation
+## Install
 
-From the Dr. Claw repo root:
+From the repo root:
 
 ```bash
 pip install -e ./agent-harness
 ```
 
-The primary console entrypoint is `drclaw`. The legacy `vibelab` alias is still supported for compatibility during the rename.
+The main entrypoint is `drclaw`. The legacy `vibelab` alias is still supported.
 
 Verify installation:
 
@@ -36,209 +36,242 @@ drclaw --help
 drclaw --json projects list
 ```
 
-## Server and auth setup
+If you want to invoke the module directly:
 
-Start by checking the local Dr. Claw server:
+```bash
+PYTHONPATH=agent-harness python3 -m cli_anything.drclaw.drclaw_cli --help
+```
+
+## Server And Auth
+
+Check whether the local Dr. Claw server is up:
 
 ```bash
 drclaw server status
 ```
 
-If needed:
+Start it if needed:
 
 ```bash
 drclaw server on
 ```
 
-Then authenticate:
+Login:
 
 ```bash
 drclaw auth login --username <username> --password <password>
 ```
 
-The token is stored in `~/.drclaw_session.json`. If that file only contains OpenClaw integration fields and no `token`, authenticated commands like `projects list` and `chat waiting` will return `Not logged in`.
+Auth state is stored in `~/.drclaw_session.json`.
 
-## Quick start
+Useful auth commands:
 
 ```bash
-# List projects
-drclaw projects list
-
-# Create a new empty workspace project
-drclaw projects create /path/to/new-project --name "Demo Project"
-
-# Create a new project from an idea and immediately start discussion
-drclaw projects idea /path/to/new-idea-project --name "Idea Project" --idea "Build an OpenClaw-native project secretary for Dr. Claw"
-
-# Inspect the latest conversation state for a project
-drclaw --json projects latest <project-ref>
-
-# Inspect project progress and next action
-drclaw --json projects progress <project-ref>
-
-# List waiting sessions across all projects
-drclaw --json chat waiting
-
-# Reply into a chosen waiting session
-drclaw --json chat reply --project <project-ref> --session <session-id> -m "Please continue with the plan and tell me the next decision point."
-
-# Talk to one project session in a project-scoped way
-drclaw --json chat project --project <project-ref> --session <session-id> -m "Summarize the current blockers and propose the next three actions."
-
-# Get a cross-project digest for mobile / secretary use
-drclaw --json digest portfolio
+drclaw auth status
+drclaw auth logout
 ```
 
-## Project references
+If `~/.drclaw_session.json` only contains OpenClaw integration fields and no `token`, authenticated commands such as `projects list` and `chat waiting` will return `Not logged in`.
 
-Anywhere the CLI accepts `<project-ref>`, you can pass one of:
-- the project `name`
-- the project `displayName`
-- the project filesystem `path` / `fullPath`
+## How To Use
 
-For chat and workflow operations, the CLI resolves the real project path before issuing server-side commands.
+### 1. Find a project
 
-## Command groups
-
-### Projects
+List all projects:
 
 ```bash
 drclaw --json projects list
-drclaw --json projects create /abs/path --name "Display Name"
-drclaw --json projects idea /abs/path --name "Display Name" --idea "<idea text>"
-drclaw --json projects latest <project-ref>
-drclaw --json projects progress <project-ref>
 ```
 
-Use these for project creation, idea intake, last-message lookup, and progress inspection.
+Anywhere the CLI accepts `<project-ref>`, you can pass one of:
+- project `name`
+- project `displayName`
+- project filesystem `path` or `fullPath`
 
-### Sessions and chat
+### 2. Inspect the current state
+
+See the latest conversation in a project:
+
+```bash
+drclaw --json projects latest <project-ref>
+```
+
+See project progress and next action:
+
+```bash
+drclaw --json projects progress <project-ref>
+drclaw --json workflow status --project <project-ref>
+drclaw --json digest project --project <project-ref>
+```
+
+See the whole portfolio:
+
+```bash
+drclaw --json digest portfolio
+drclaw --json digest daily
+```
+
+### 3. Find sessions waiting for a reply
+
+Across all projects:
+
+```bash
+drclaw --json chat waiting
+```
+
+Within one project:
+
+```bash
+drclaw --json chat waiting --project <project-ref>
+```
+
+List known sessions in a project:
 
 ```bash
 drclaw --json chat sessions --project <project-ref>
-drclaw --json chat waiting
-drclaw --json chat waiting --project <project-ref>
-# Advanced reply with provider override and auto-approval
-drclaw --json chat reply --project <project-ref> --session <session-id> \
-  --provider gemini --bypass-permissions --timeout 300 -m "<message>"
-
-drclaw --json chat send --project <project-ref> --provider gemini --bypass-permissions --message "<message>"
-drclaw --json chat project --project <project-ref> --session <session-id> -m "<message>"
+drclaw --json sessions list <project-ref>
 ```
 
-# Advanced Chat Options:
-- `--provider [claude|gemini|codex|cursor]`: Force a specific provider. Useful if the original session provider (like Codex) is failing.
-- `--bypass-permissions`: Automatically approve all tool calls (like reading/writing files). Essential for non-interactive automation.
-- `--timeout <seconds>`: Set a hard wait time. **If omitted, the CLI waits indefinitely (up to 1 hour)** and uses **heartbeat detection** to ensure the session is still active. This is recommended for long-running research tasks.
-- `--attach <path>`: Attach a file or image. CLI handles Base64 encoding and MIME detection automatically. Can be repeated.
-- `--model <model-id>`: Override the default model used by the provider.
+Read message history from one session:
 
-### Workflow / task control
+```bash
+drclaw --json sessions messages <project-ref> <session-id> --provider claude --limit 100
+```
+
+### 4. Talk to a project or reply to a waiting session
+
+Send a new message into a project:
+
+```bash
+drclaw --json chat send --project <project-ref> --message "What changed?"
+```
+
+Reply to an existing waiting session:
+
+```bash
+drclaw --json chat reply --project <project-ref> --session <session-id> -m "Please continue with the plan and tell me the next decision point."
+```
+
+Talk to a specific project session:
+
+```bash
+drclaw --json chat project --project <project-ref> --session <session-id> -m "Summarize the current blockers and propose the next three actions."
+```
+
+### 5. Control workflow execution explicitly
+
+Use these when the user wants execution control rather than just freeform chat:
 
 ```bash
 drclaw --json workflow status --project <project-ref>
-drclaw --json workflow continue --project <project-ref> --session <session-id> \
-  --provider gemini --bypass-permissions -m "<instruction>"
+drclaw --json workflow continue --project <project-ref> --session <session-id> -m "<instruction>"
 drclaw --json workflow approve --project <project-ref> --session <session-id>
 drclaw --json workflow reject --project <project-ref> --session <session-id> -m "<reason>"
 drclaw --json workflow retry --project <project-ref> --session <session-id>
-drclaw --json workflow resume --project <project-ref> --session <session-id> --bypass-permissions
+drclaw --json workflow resume --project <project-ref> --session <session-id>
+```
+
+### 6. Use TaskMaster and artifacts
+
+```bash
+drclaw --json taskmaster detect <project-ref>
+drclaw --json taskmaster summary <project-ref>
+drclaw --json taskmaster next <project-ref>
+drclaw --json taskmaster next-guidance <project-ref>
 drclaw --json taskmaster artifacts --project <project-ref>
 ```
 
-Use these when the user wants to explicitly control execution rather than just converse with the session.
-
-### Digests and reports
+If a project does not have TaskMaster initialized yet:
 
 ```bash
-drclaw --json digest daily
-drclaw --json digest project --project <project-ref>
-drclaw --json digest portfolio
-drclaw --json openclaw report --project <project-ref> --dry-run
-drclaw openclaw configure --push-channel feishu:<chat_id>
-drclaw openclaw report --project <project-ref>
+drclaw taskmaster init <project-ref>
 ```
 
-Use `digest portfolio` when OpenClaw needs to answer questions like:
-- which projects need attention first
-- what experiments are making progress
-- which project is waiting for response
-- what reply should I send next
+### 7. Create or manage projects
 
-## OpenClaw integration
+Create a new empty workspace project:
 
-This section is the shortest practical onboarding for a new OpenClaw user.
+```bash
+drclaw --json projects create /abs/path --name "Display Name"
+```
 
-### 1. What “integration” actually means
+Create a new project from an idea and immediately start discussion:
 
-You do **not** need a complicated custom API bridge first.
+```bash
+drclaw --json projects idea /abs/path --name "Display Name" --idea "Build an OpenClaw-native project secretary for Dr. Claw"
+```
 
-A good first integration simply means:
-- OpenClaw can run local `drclaw ...` commands
-- OpenClaw can read JSON output
-- OpenClaw can summarize that output back to the user
+Add, rename, or delete a project:
 
-That alone is enough to support project lookup, waiting-session triage, replies, workflow control, and progress digests.
+```bash
+drclaw projects add /abs/path --name "Display Name"
+drclaw projects rename <project-ref> "New Display Name"
+drclaw projects delete <project-ref>
+```
 
-### 2. Minimum prerequisites
+## Important Chat Options
+
+Advanced chat and workflow commands support:
+- `--provider [claude|gemini|codex|cursor]`: force a provider when needed
+- `--bypass-permissions`: auto-approve tool calls for automation
+- `--timeout <seconds>`: hard wait limit
+- `--attach <path>`: attach a file or image, repeatable
+- `--model <model-id>`: override the provider model
+
+If `--timeout` is omitted, the CLI waits with heartbeat detection and uses a 1-hour safety cap. This is usually the right default for long-running research tasks.
+
+## OpenClaw Integration
+
+The current integration has three stable layers:
+- **control plane**: OpenClaw runs local `drclaw ...` commands directly
+- **structured contract**: major JSON responses include a top-level `openclaw` payload
+- **proactive delivery**: a background watcher can push important project changes to Feishu/Lark through OpenClaw
+
+### Minimum prerequisites
 
 Before wiring OpenClaw in, make sure:
 - Dr. Claw server is running
 - `drclaw` CLI is installed locally
 - at least one Dr. Claw project exists
-- OpenClaw has local shell / `exec` capability
+- OpenClaw has local shell or `exec` capability
+- if you want push notifications, OpenClaw can already deliver to a Feishu/Lark channel
 
-### 3. First commands to make work
-
-Start with these two commands:
-
-```bash
-drclaw --json chat waiting
-drclaw --json digest portfolio
-```
-
-If OpenClaw can run those and summarize the results, the core integration is already alive.
-
-### 4. Give OpenClaw local exec capability
-
-OpenClaw should be able to execute the CLI directly, for example:
+### Recommended first commands
 
 ```bash
 drclaw --json chat waiting
 drclaw --json digest portfolio
-drclaw --json chat reply --project <project-ref> --session <session-id> -m "<message>"
-drclaw --json workflow continue --project <project-ref> --session <session-id> -m "<instruction>"
+drclaw --json digest project --project <project-ref>
+drclaw --json workflow status --project <project-ref>
 ```
 
-Prefer direct local CLI execution over building an extra proxy layer.
+If OpenClaw can run those and consume the JSON, the core integration is working.
 
-### 5. One-command install for OpenClaw
-
-Run this once:
+### One-command install for OpenClaw
 
 ```bash
 drclaw install --server-url http://localhost:3001
 ```
 
-That command will:
-- copy the full Dr. Claw skill into `~/.openclaw/workspace/skills/drclaw`
-- install the wrapper scripts OpenClaw uses for serialized local turns
+This will:
+- copy the Dr. Claw skill into `~/.openclaw/workspace/skills/drclaw`
+- install wrapper scripts used for serialized local turns
 - save the current Dr. Claw server URL into `~/.drclaw_session.json`
 - remember the local `drclaw` executable path for OpenClaw usage
 
-If you also want to save a default push channel during setup:
+To also save a default push channel:
 
 ```bash
 drclaw install --server-url http://localhost:3001 --push-channel feishu:<chat_id>
 ```
 
-The OpenClaw-specific alias is still available:
+The OpenClaw-specific alias is also available:
 
 ```bash
 drclaw openclaw install --server-url http://localhost:3001
 ```
 
-### 6. Prefer serialized local turns
+### Serialized local turns
 
 When OpenClaw calls local `openclaw agent --local`, use the wrapper script to avoid session-lock collisions:
 
@@ -246,71 +279,102 @@ When OpenClaw calls local `openclaw agent --local`, use the wrapper script to av
 agent-harness/skills/dr-claw/scripts/openclaw_drclaw_turn.sh --json -m "Use your exec tool to run `drclaw --json digest portfolio`. Return only the result."
 ```
 
-### 7. Stable usage pattern for OpenClaw
+## Watcher And Proactive Notifications
 
-For reliable automation, prefer single-turn JSON commands instead of interactive shells.
+The watcher is event-driven. It listens to Dr. Claw WebSocket events and only emits attention-worthy updates.
 
-Good patterns:
+Configure the default push channel once:
+
+```bash
+drclaw openclaw configure --push-channel feishu:<chat_id>
+```
+
+Start, inspect, and stop the watcher:
+
+```bash
+drclaw --json openclaw-watch on --to feishu:<chat_id>
+drclaw --json openclaw-watch status
+drclaw --json openclaw-watch off
+```
+
+What it does:
+- subscribes to Dr. Claw WebSocket events instead of polling digests
+- resolves the affected project for task, project, and file-change events when possible
+- compares workflow snapshots to derive higher-level signals instead of forwarding raw event names
+- deduplicates repeated notifications with a stable signature and 6-hour TTL
+- asks `openclaw agent --deliver` to write the final human-facing Feishu/Lark summary
+- falls back to a plain bridge push if agent summarization fails
+- stores state in `~/.drclaw/openclaw-watcher-state.json`
+- stores logs in `~/.drclaw/logs/openclaw-watcher.log`
+
+Current important signals include:
+- `human_decision_needed`
+- `waiting_for_human`
+- `blocker_detected`
+- `blocker_cleared`
+- `task_completed`
+- `next_task_changed`
+- `attention_needed`
+- `session_aborted`
+
+## Structured OpenClaw Schema
+
+Major machine-facing commands return a versioned `openclaw` field.
+
+Current schema families:
+- `openclaw.turn.v1`
+- `openclaw.project.v1`
+- `openclaw.portfolio.v1`
+- `openclaw.daily.v1`
+- `openclaw.report.v1`
+- `openclaw.event.v1`
+
+Formal contract:
+
+```bash
+cat agent-harness/cli_anything/drclaw/SCHEMA.md
+```
+
+Recommended client rendering rules:
+- prefer `openclaw.decision.needed` to decide whether to interrupt the user
+- prefer `openclaw.next_actions` for quick actions and voice suggestions
+- prefer `openclaw.turn.summary` or portfolio `openclaw.focus` for compact rendering
+- for watcher notifications, render from `openclaw.event.v1.event.signals` first
+- do not depend on raw `reply` text alone when `openclaw` exists
+
+## Typical Use Cases
+
+### User asks: what is waiting for response?
 
 ```bash
 drclaw --json chat waiting
-drclaw --json projects latest <project-ref>
-drclaw --json projects progress <project-ref>
-drclaw --json chat reply --project <project-ref> --session <session-id> -m "<message>"
-drclaw --json chat project --project <project-ref> --session <session-id> -m "<instruction>"
-drclaw --json digest portfolio
 ```
 
-### 8. Success checklist
-
-A new user should consider the integration complete when OpenClaw can:
-- list projects
-- find waiting sessions
-- reply to one chosen session
-- summarize portfolio progress and recommend the next action
-
-## Typical use cases
-
-### A. User asks: what is waiting for response?
-
-```bash
-drclaw --json chat waiting
-```
-
-OpenClaw should return compact rows with:
-- `project`
-- `project_display_name`
-- `session_id`
-- `provider`
-- `summary`
-
-### B. User asks OpenClaw to answer one session
+### User asks OpenClaw to answer one session
 
 ```bash
 drclaw --json chat reply --project <project-ref> --session <session-id> -m "Please proceed with option B and tell me the next milestone."
 drclaw --json chat waiting --project <project-ref>
 ```
 
-### C. User suddenly has a new idea
+### User suddenly has a new idea
 
 ```bash
 drclaw --json projects idea /absolute/path/to/project --name "Idea Project" --idea "<idea text>"
 ```
 
-This creates the project, opens the first session, and seeds the initial discussion for refinement.
-
-### D. User asks for cross-project progress and suggestions
+### User asks for cross-project progress and suggestions
 
 ```bash
 drclaw --json digest portfolio
 ```
 
-This returns:
-- per-project progress summary
-- recommendation priority
-- recommended action
-- session id
-- suggested reply
+### User wants a mobile-ready report pushed out
+
+```bash
+drclaw --json openclaw report --project <project-ref> --dry-run
+drclaw openclaw report --project <project-ref>
+```
 
 ## Configuration
 
@@ -318,17 +382,37 @@ This returns:
 |----------|-------------|---------|
 | `DRCLAW_URL` | Server base URL | `http://localhost:3001` |
 | `DRCLAW_TOKEN` | Inject token without session file | session file |
-| `VIBELAB_URL` | Legacy server base URL (fallback) | `http://localhost:3001` |
-| `VIBELAB_TOKEN` | Legacy token (fallback) | session file |
+| `DRCLAW_LANG` | Default CLI language | `en` |
+| `VIBELAB_URL` | Legacy server base URL | `http://localhost:3001` |
+| `VIBELAB_TOKEN` | Legacy token fallback | session file |
 
-The `--url URL` flag overrides `DRCLAW_URL` and `VIBELAB_URL` for a single invocation.
+The `--url URL` flag overrides `DRCLAW_URL` and `VIBELAB_URL` for one invocation.
 
-## Running tests
+## Troubleshooting
+
+If `drclaw` is not found:
 
 ```bash
-python3 -m pytest agent-harness/cli_anything/drclaw/tests/test_core.py -q
 PYTHONPATH=agent-harness python3 -m cli_anything.drclaw.drclaw_cli --help
-PYTHONPATH=agent-harness python3 -m cli_anything.drclaw.drclaw_cli chat waiting --help
-PYTHONPATH=agent-harness python3 -m cli_anything.drclaw.drclaw_cli digest portfolio --help
-PYTHONPATH=agent-harness python3 -m cli_anything.drclaw.drclaw_cli workflow continue --help
+```
+
+If authenticated commands fail, check:
+
+```bash
+drclaw auth status
+drclaw server status
+```
+
+If watcher delivery looks wrong, inspect:
+
+```bash
+drclaw --json openclaw-watch status
+tail -n 50 ~/.drclaw/logs/openclaw-watcher.log
+cat ~/.drclaw/openclaw-watcher-state.json
+```
+
+## Running Tests
+
+```bash
+PYTHONPATH=agent-harness python3 -m unittest cli_anything.drclaw.tests.test_core -q
 ```

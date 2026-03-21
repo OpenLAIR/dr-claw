@@ -4,7 +4,8 @@ Unit tests for cli_anything.drclaw core modules.
 All tests mock HTTP calls so no running server is required.
 
 Run with:
-    pytest cli_anything/vibelab/tests/test_core.py -v
+    PYTHONPATH=agent-harness python3 -m unittest cli_anything.drclaw.tests.test_core -q
+    pytest agent-harness/cli_anything/drclaw/tests/test_core.py -q
 """
 
 import json
@@ -42,6 +43,9 @@ class TestSessionFile(unittest.TestCase):
     def _patch_session_file(self):
         return patch("cli_anything.drclaw.core.session.SESSION_FILE", self.session_path)
 
+    def _patch_legacy_session_file(self):
+        return patch("cli_anything.drclaw.core.session.LEGACY_SESSION_FILE", self.session_path)
+
     def test_login_stores_token(self):
         """login() should write the JWT token to the session file."""
         from cli_anything.drclaw.core.session import DrClaw
@@ -50,7 +54,7 @@ class TestSessionFile(unittest.TestCase):
             {"success": True, "token": "fake-jwt-token", "user": {"username": "alice"}}
         )
 
-        with self._patch_session_file():
+        with self._patch_session_file(), self._patch_legacy_session_file():
             client = DrClaw()
             with patch.object(client._session, "post", return_value=fake_resp):
                 result = client.login("alice", "secret")
@@ -66,7 +70,7 @@ class TestSessionFile(unittest.TestCase):
 
         self.session_path.write_text(json.dumps({"token": "old-token"}))
 
-        with self._patch_session_file():
+        with self._patch_session_file(), self._patch_legacy_session_file():
             client = DrClaw()
             client.logout()
 
@@ -78,7 +82,7 @@ class TestSessionFile(unittest.TestCase):
 
         self.session_path.write_text(json.dumps({"token": "stored-token"}))
 
-        with self._patch_session_file():
+        with self._patch_session_file(), self._patch_legacy_session_file():
             client = DrClaw()
             token = client.get_token()
 
@@ -90,7 +94,7 @@ class TestSessionFile(unittest.TestCase):
 
         self.session_path.write_text(json.dumps({"token": "file-token"}))
 
-        with self._patch_session_file():
+        with self._patch_session_file(), self._patch_legacy_session_file():
             # Test DRCLAW_TOKEN (highest priority)
             with patch.dict(os.environ, {"DRCLAW_TOKEN": "env-token"}):
                 client = DrClaw()
@@ -107,7 +111,7 @@ class TestSessionFile(unittest.TestCase):
         """Calling get() without a token raises NotLoggedInError."""
         from cli_anything.drclaw.core.session import NotLoggedInError, DrClaw
 
-        with self._patch_session_file():
+        with self._patch_session_file(), self._patch_legacy_session_file():
             client = DrClaw()
             with self.assertRaises(NotLoggedInError):
                 client.get("/api/projects")
@@ -116,7 +120,7 @@ class TestSessionFile(unittest.TestCase):
         """get_base_url() should fall back to localhost:3001."""
         from cli_anything.drclaw.core.session import DrClaw
 
-        with self._patch_session_file():
+        with self._patch_session_file(), self._patch_legacy_session_file():
             with patch.dict(os.environ, {}, clear=True):
                 client = DrClaw()
                 url = client.get_base_url()
@@ -127,7 +131,7 @@ class TestSessionFile(unittest.TestCase):
         """DRCLAW_URL env var overrides the default."""
         from cli_anything.drclaw.core.session import DrClaw
 
-        with self._patch_session_file():
+        with self._patch_session_file(), self._patch_legacy_session_file():
             with patch.dict(os.environ, {"DRCLAW_URL": "http://myserver:4000"}):
                 client = DrClaw()
                 url = client.get_base_url()
@@ -142,7 +146,7 @@ class TestSessionFile(unittest.TestCase):
         """url_override constructor param takes highest precedence."""
         from cli_anything.drclaw.core.session import DrClaw
 
-        with self._patch_session_file():
+        with self._patch_session_file(), self._patch_legacy_session_file():
             with patch.dict(os.environ, {"DRCLAW_URL": "http://env:9000"}):
                 client = DrClaw(url_override="http://explicit:1234")
                 url = client.get_base_url()
@@ -582,6 +586,12 @@ class TestChat(unittest.TestCase):
 
 class TestCliHelpers(unittest.TestCase):
 
+    def _make_context(self):
+        from cli_anything.drclaw.drclaw_cli import Context
+        from cli_anything.drclaw.core.session import DrClaw
+
+        return Context(json_mode=True, client=DrClaw(), lang="en")
+
     def test_resolve_session_provider_finds_unique_provider(self):
         from cli_anything.drclaw.drclaw_cli import _resolve_session_provider
         from cli_anything.drclaw.core.session import DrClaw
@@ -620,7 +630,7 @@ class TestCliHelpers(unittest.TestCase):
 
         mock_ctx = MagicMock()
         result = _maybe_send_openclaw_chat_notification(
-            mock_ctx,
+            self._make_context(),
             {"project": "proj-1", "provider": "claude", "session_id": "sess-1", "reply": "done"},
             action="chat_reply",
             notify_openclaw=False,
@@ -643,7 +653,7 @@ class TestCliHelpers(unittest.TestCase):
             return_value="ok",
         ) as send_message:
             result = _maybe_send_openclaw_chat_notification(
-                mock_ctx,
+                self._make_context(),
                 {
                     "project_display_name": "Project One",
                     "provider": "claude",
@@ -722,6 +732,182 @@ class TestCliHelpers(unittest.TestCase):
         self.assertEqual(brief["latest_artifact"], "results/metrics.json")
         self.assertEqual(brief["artifact_count"], 2)
         self.assertEqual(len(brief["artifacts"]), 2)
+
+    def test_build_openclaw_turn_schema_marks_decision_needed(self):
+        from cli_anything.drclaw.drclaw_cli import _build_openclaw_turn_schema
+
+        schema = _build_openclaw_turn_schema(
+            project={"name": "proj-1", "displayName": "Project One", "fullPath": "/tmp/proj-1"},
+            provider="claude",
+            session_id="sess-1",
+            reply="Please confirm the dataset choice?",
+            action="reply",
+            waiting_rows=[],
+        )
+
+        self.assertEqual(schema["schema_version"], "openclaw.turn.v1")
+        self.assertTrue(schema["decision"]["needed"])
+        self.assertEqual(schema["turn"]["reply_kind"], "question")
+        self.assertEqual(schema["next_actions"][0]["id"], "reply")
+
+    def test_build_openclaw_project_schema_marks_attention(self):
+        from cli_anything.drclaw.drclaw_cli import _build_openclaw_project_schema
+
+        schema = _build_openclaw_project_schema(
+            {
+                "project": "proj-1",
+                "project_display_name": "Project One",
+                "project_path": "/tmp/proj-1",
+                "status": "in-progress",
+                "counts": {"total": 5, "completed": 1, "in_progress": 1, "pending": 2, "blocked": 1},
+                "next_task": {"id": 2, "title": "Run eval"},
+                "guidance": {"whyNext": "Need validation"},
+                "waiting": [],
+                "artifacts": {},
+                "updated_at": "2026-03-21T12:00:00Z",
+            }
+        )
+
+        self.assertEqual(schema["schema_version"], "openclaw.project.v1")
+        self.assertEqual(schema["project"]["state"], "attention_needed")
+        self.assertTrue(schema["decision"]["needed"])
+
+    def test_build_openclaw_portfolio_schema_exposes_focus(self):
+        from cli_anything.drclaw.drclaw_cli import _build_openclaw_portfolio_schema
+
+        schema = _build_openclaw_portfolio_schema(
+            {
+                "summary": {"project_count": 2, "high_priority_projects": 1},
+                "projects": [{"project": "proj-1"}, {"project": "proj-2"}],
+                "recommendations": [
+                    {"project": "proj-1", "project_display_name": "Project One", "priority": "high", "action": "reply"}
+                ],
+            }
+        )
+
+        self.assertEqual(schema["schema_version"], "openclaw.portfolio.v1")
+        self.assertTrue(schema["decision"]["needed"])
+        self.assertEqual(schema["focus"][0]["project_display_name"], "Project One")
+
+    def test_build_openclaw_event_schema_maps_permission_request(self):
+        from cli_anything.drclaw.drclaw_cli import _build_openclaw_event_schema
+
+        schema = _build_openclaw_event_schema(
+            {"type": "claude-permission-request", "project": "proj-1", "session_id": "sess-1", "timestamp": "2026-03-21T12:00:00Z"}
+        )
+
+        self.assertEqual(schema["schema_version"], "openclaw.event.v1")
+        self.assertEqual(schema["event"]["mapped_kind"], "human_decision_needed")
+
+
+class TestOpenClawWatcherDaemon(unittest.TestCase):
+
+    def test_should_notify_deduplicates_same_signature(self):
+        from cli_anything.drclaw.core import openclaw_daemon as daemon_mod
+
+        state = {"seen_events": {}}
+        event = {
+            "type": "claude-permission-request",
+            "project": "proj-1",
+            "provider": "claude",
+            "session_id": "sess-1",
+            "tool_name": "write_file",
+        }
+        portfolio_event = {"decision": {"reason": "waiting_session"}, "project": {"state": "attention_needed"}}
+
+        self.assertTrue(daemon_mod._should_notify(state, dict(event), portfolio_event))
+        self.assertFalse(daemon_mod._should_notify(state, dict(event), portfolio_event))
+
+    def test_should_notify_filters_unimportant_event(self):
+        from cli_anything.drclaw.core import openclaw_daemon as daemon_mod
+
+        state = {"seen_events": {}}
+        event = {"type": "active-sessions", "project": "proj-1"}
+        self.assertFalse(daemon_mod._should_notify(state, event, None))
+
+    def test_build_event_message_includes_tool_name(self):
+        from cli_anything.drclaw.core import openclaw_daemon as daemon_mod
+
+        message = daemon_mod._build_event_message(
+            {
+                "type": "claude-permission-request",
+                "project": "proj-1",
+                "provider": "claude",
+                "session_id": "sess-1",
+                "tool_name": "edit_file",
+                "openclaw": {"event": {"mapped_kind": "human_decision_needed"}},
+            },
+            {"decision": {"needed": True, "reason": "waiting_session"}, "next_actions": [{"label": "Check Status"}]},
+        )
+
+        self.assertIn("Tool: edit_file", message)
+        self.assertIn("Decision: waiting_session", message)
+
+    def test_derive_signals_detects_waiting_and_completion(self):
+        from cli_anything.drclaw.core import openclaw_daemon as daemon_mod
+
+        signals = daemon_mod._derive_signals(
+            {"type": "taskmaster-update", "project": "proj-1"},
+            {"waiting": 0, "blocked": 0, "completed": 1, "next_task_id": 1, "next_task_title": "A"},
+            {"waiting": 1, "blocked": 0, "completed": 2, "next_task_id": 2, "next_task_title": "B"},
+        )
+
+        kinds = {row["kind"] for row in signals}
+        self.assertIn("waiting_for_human", kinds)
+        self.assertIn("task_completed", kinds)
+        self.assertIn("next_task_changed", kinds)
+
+    def test_should_emit_signal_filters_empty_noise(self):
+        from cli_anything.drclaw.core import openclaw_daemon as daemon_mod
+
+        self.assertFalse(daemon_mod._should_emit_signal({"type": "taskmaster-update"}, [], None))
+
+    def test_extract_delivery_message_prefers_delivered_text(self):
+        from cli_anything.drclaw.core import openclaw_daemon as daemon_mod
+
+        text = daemon_mod._extract_delivery_message('{"delivered_text":"项目 A 已完成实验，下一步请确认是否发布。"}')
+        self.assertEqual(text, "项目 A 已完成实验，下一步请确认是否发布。")
+
+    def test_extract_delivery_message_reads_agent_payload_after_plugin_logs(self):
+        from cli_anything.drclaw.core import openclaw_daemon as daemon_mod
+
+        raw = (
+            "[plugins] feishu_chat: Registered\n"
+            "[plugins] other: Registered\n"
+            '{"status":"ok","result":{"payloads":[{"text":"项目 B 发现 blocker，需先决定是否解除依赖。"}]}}'
+        )
+        text = daemon_mod._extract_delivery_message(raw)
+        self.assertEqual(text, "项目 B 发现 blocker，需先决定是否解除依赖。")
+
+    def test_build_project_digest_avoids_waiting_websocket_calls(self):
+        from cli_anything.drclaw.core import openclaw_daemon as daemon_mod
+
+        client = MagicMock()
+        project = {"name": "proj-1", "displayName": "Project One", "fullPath": "/tmp/proj-1"}
+
+        with patch(
+            "cli_anything.drclaw.core.openclaw_daemon.taskmaster_mod.build_summary",
+            return_value={"status": "taskmaster-only", "counts": {"total": 1, "completed": 0}, "next_task": {}, "guidance": {}, "updated_at": "2026-03-21T22:00:00Z"},
+        ), patch(
+            "cli_anything.drclaw.core.openclaw_daemon.taskmaster_mod.get_artifact_summary",
+            return_value={"artifacts": [], "latestArtifact": {}, "totalArtifacts": 0},
+        ), patch(
+            "cli_anything.drclaw.core.openclaw_daemon.chat_mod.get_waiting_sessions_compact",
+            side_effect=AssertionError("watcher should not query waiting websocket state here"),
+        ):
+            digest = daemon_mod._build_project_digest(client, project)
+
+        self.assertEqual(digest["waiting"], [])
+
+    def test_record_notification_keeps_recent_entries_only(self):
+        from cli_anything.drclaw.core import openclaw_daemon as daemon_mod
+
+        state = {"last_notifications": []}
+        for idx in range(25):
+            daemon_mod._record_notification(state, {"type": "taskmaster-update", "project": f"proj-{idx}"}, f"msg-{idx}")
+
+        self.assertEqual(len(state["last_notifications"]), 20)
+        self.assertEqual(state["last_notifications"][0]["project"], "proj-5")
 
     def test_build_daily_digest_aggregates_counts(self):
         from cli_anything.drclaw.drclaw_cli import _build_daily_digest

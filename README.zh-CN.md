@@ -152,12 +152,19 @@ npm run dev
 
 ## 接入 OpenClaw
 
-这一部分面向**第一次接 OpenClaw 的新用户**。目标不是讲所有细节，而是先让你在最短路径里跑通：
+这一部分面向把 OpenClaw 当作 Dr. Claw 外部控制面来接入的用户，而不是去重做一套新的后端。
 
-- OpenClaw 能看 Dr. Claw 里有哪些项目
-- OpenClaw 能发现哪些 session 在等用户回复
-- OpenClaw 能替用户回复某个 session，让 Dr. Claw 继续执行
-- OpenClaw 能做项目 / 全局进展总结，并推荐下一步该盯什么
+当前集成已经有三层稳定能力：
+- **控制面**：OpenClaw 直接执行本地 `drclaw ...` 命令
+- **结构化契约**：主要 JSON 响应都带顶层 `openclaw` 字段
+- **主动推送**：后台 watcher 可以把重要项目变化通过 OpenClaw 主动推到 Feishu/Lark
+
+这三层一旦具备，OpenClaw 就已经能作为一个可用的项目秘书：
+- 列出 Dr. Claw 项目
+- 找到等待用户输入的 session
+- 代用户回复某个 session，让工作继续推进
+- 汇总单项目和全局进展
+- 在 blocker / 决策点 / 完成事件出现时主动推送摘要
 
 可以把整体关系理解成：
 - **Dr. Claw**：真正执行研究任务、维护项目状态和 session
@@ -166,25 +173,27 @@ npm run dev
 
 ### 给新用户的最短接入路径
 
-如果你只想先跑通一版，按下面 5 步做就够了：
+如果你只想先跑通一版，按下面 6 步做就够了：
 
 1. 启动 Dr. Claw 服务
 2. 安装 `drclaw` CLI
-3. 让 OpenClaw 能本地执行 shell / `exec`
-4. 安装仓库提供的 OpenClaw skill
-5. 先跑通 `chat waiting` 和 `digest portfolio` 两个命令
+3. 用 CLI 登录一次
+4. 让 OpenClaw 能本地执行 shell / `exec`
+5. 安装仓库提供的 OpenClaw skill
+6. 先跑通 `chat waiting` 和 `digest portfolio`
 
-这两个命令一旦通了，OpenClaw 就已经具备了“秘书”雏形。
+这几个环节通了之后，OpenClaw 就已经可用了。
 
 ### 第 0 步：先确认你已经具备这些前提
 
 建议先确认：
 - 你已经能本地启动 Dr. Claw
-- 你已经至少创建过一个项目，或者已有 `~/vibelab/...` 下的项目
+- 你已经至少创建过一个项目，或者已有可用项目
 - 你已经配置好一个底层执行 Agent，例如 Claude Code、Gemini CLI 或 Codex
 - 你本机能运行 OpenClaw，并且 OpenClaw 允许本地工具执行
+- 如果要做主动推送，OpenClaw 已经能往 Feishu/Lark channel 发消息
 
-如果这四件事还没满足，先把 Dr. Claw 本身跑起来，再接 OpenClaw。
+如果这些前提还没满足，先把 Dr. Claw 本身跑起来，再接 OpenClaw。
 
 ### 第 1 步：启动并验证 Dr. Claw 服务
 
@@ -228,6 +237,12 @@ drclaw --json auth status
 drclaw --json projects list
 ```
 
+如果你的 PATH 里没有 `drclaw`，也可以直接用模块方式调用：
+
+```bash
+PYTHONPATH=agent-harness python3 -m cli_anything.drclaw.drclaw_cli --help
+```
+
 推荐按这个顺序判断：
 - `drclaw --json auth status` 能返回 JSON，说明服务可达
 - `drclaw --json projects list` 只有在你已经登录，或者本地已有 token 时才会成功
@@ -240,7 +255,7 @@ drclaw auth login --username <username> --password <password>
 
 ### 第 3 步：让 OpenClaw 具备本地执行 CLI 的能力
 
-OpenClaw 这边最关键的不是“深度 API 集成”，而是**本地能直接执行 `drclaw ...`**。
+OpenClaw 这边最关键的不是“深度 API 集成”，而是 **本地能直接执行 `drclaw ...`**。
 
 最少需要让 OpenClaw 能执行这些命令：
 
@@ -254,7 +269,7 @@ drclaw --json workflow continue --project <project> --session <session-id> -m "<
 推荐做法：
 - 给 OpenClaw 开启本地 `exec` / shell 工具
 - 优先走本地 CLI 调用
-- 不要一开始就做复杂代理层或额外 server bridge
+- 不要一开始就做复杂代理层或额外 bridge
 
 因为这一层越薄，越稳定，也越容易排查问题。
 
@@ -284,21 +299,24 @@ drclaw install --server-url http://localhost:3001 --push-channel feishu:<chat_id
 drclaw openclaw install --server-url http://localhost:3001
 ```
 
-### 第 5 步：先跑通两个最重要的命令
+### 第 5 步：先跑通最核心的命令
 
-对新用户来说，先不要追求全功能，先跑通这两个：
+对新用户来说，先不要追求全功能，先跑通这些命令：
 
-1. **查看哪些 session 在等用户回复**
 ```bash
+drclaw --json projects list
 drclaw --json chat waiting
-```
-
-2. **查看全局项目进展和推荐动作**
-```bash
 drclaw --json digest portfolio
+drclaw --json workflow status --project <project>
 ```
 
-如果这两个命令都能被 OpenClaw 调起来，并能把结果总结给用户，你的最小可用集成就已经完成了。
+它们分别解决：
+- `projects list`：让 OpenClaw 能正确解析项目选择
+- `chat waiting`：告诉你哪些 session 需要用户输入
+- `digest portfolio`：给出跨项目进度和建议
+- `workflow status`：给出单项目状态、下一任务和决策上下文
+
+如果 OpenClaw 能执行这些命令并把结果总结给用户，你的最小可用集成就已经完成了。
 
 ### 第 6 步：再补上“回复 session”的闭环
 
@@ -331,37 +349,68 @@ drclaw --json chat project --project <project> --session <session-id> -m "<instr
 
 这更适合做项目态多轮沟通。
 
-### 第 7 步：推荐 OpenClaw 的固定使用套路
+### 第 7 步：优先消费结构化 schema，而不是硬解析文本
 
-推荐让 OpenClaw 固定按下面几类套路工作。
+现在主要面向机器的命令都返回版本化的顶层 `openclaw` 字段。当前 schema 家族有：
+- `openclaw.turn.v1`
+- `openclaw.project.v1`
+- `openclaw.portfolio.v1`
+- `openclaw.daily.v1`
+- `openclaw.report.v1`
+- `openclaw.event.v1`
 
-1. **用户问：现在有什么项目需要我处理？**
+正式契约文档：
+
 ```bash
-drclaw --json digest portfolio
+cat agent-harness/cli_anything/drclaw/SCHEMA.md
 ```
 
-2. **用户问：哪些 session 在等我回复？**
+给客户端的推荐消费规则：
+- 用 `openclaw.decision.needed` 判断是否要打断用户
+- 用 `openclaw.next_actions` 生成快捷操作或语音建议
+- 用 `openclaw.turn.summary` 或 portfolio 的 `openclaw.focus` 做紧凑展示
+- watcher 通知优先读 `openclaw.event.v1.event.signals`
+- 只要有 `openclaw` 字段，就不要只依赖原始 `reply` 文本
+
+### 第 8 步：用 watcher 开启主动通知
+
+watcher 现在是事件驱动的。它会监听 Dr. Claw 的 WebSocket 事件，只在真正值得提醒的变化上发通知。
+
+先配置默认推送 channel：
+
 ```bash
-drclaw --json chat waiting
+drclaw openclaw configure --push-channel feishu:<chat_id>
 ```
 
-3. **用户问：某个项目现在进展如何？**
+启动、查看状态、停止：
+
 ```bash
-drclaw --json projects latest <project>
-drclaw --json projects progress <project>
+drclaw --json openclaw-watch on --to feishu:<chat_id>
+drclaw --json openclaw-watch status
+drclaw --json openclaw-watch off
 ```
 
-4. **用户说：帮我回复这个 session 并让它继续做**
-```bash
-drclaw --json chat reply --project <project> --session <session-id> -m "<message>"
-```
+它会做这些事：
+- 订阅 Dr. Claw WebSocket 事件，而不是轮询 digest
+- 在可能时把 task、project、file-change 事件解析到具体项目
+- 对比 workflow snapshot，提炼高层 signal，而不是转发原始事件名
+- 用稳定签名和 6 小时 TTL 做去重
+- 调 `openclaw agent --deliver` 生成最终给人看的 Feishu/Lark 摘要
+- 如果 agent 总结失败，回退到 bridge 直接发送
+- 状态保存在 `~/.drclaw/openclaw-watcher-state.json`
+- 日志保存在 `~/.drclaw/logs/openclaw-watcher.log`
 
-5. **用户说：我突然有个新 idea，帮我建项目并聊清楚**
-```bash
-drclaw --json projects idea /absolute/path/to/project --name "<display-name>" --idea "<idea text>"
-```
+当前重要 signal 包括：
+- `human_decision_needed`
+- `waiting_for_human`
+- `blocker_detected`
+- `blocker_cleared`
+- `task_completed`
+- `next_task_changed`
+- `attention_needed`
+- `session_aborted`
 
-### 第 8 步：优先使用串行调用策略
+### 第 9 步：优先使用串行调用策略
 
 当 OpenClaw 本地连续调用 `openclaw agent --local` 时，建议通过串行 wrapper 执行，避免多个 turn 抢同一个 session 锁。仓库里已提供脚本：
 
@@ -369,7 +418,7 @@ drclaw --json projects idea /absolute/path/to/project --name "<display-name>" --
 agent-harness/skills/dr-claw/scripts/openclaw_drclaw_turn.sh
 ```
 
-它适合把类似下面的调用封装起来：
+例如：
 
 ```bash
 openclaw_drclaw_turn.sh --json -m "Use your exec tool to run `drclaw --json digest portfolio`. Return only raw stdout."
@@ -377,26 +426,28 @@ openclaw_drclaw_turn.sh --json -m "Use your exec tool to run `drclaw --json dige
 
 简单说：**OpenClaw 调 Dr. Claw CLI 时，宁可串行稳定，也不要并发冒险。**
 
-### 第 9 步：如何判断集成已经成功
+### 第 10 步：如何判断集成已经成功
 
-满足下面 4 条，就说明新用户已经接通了：
+满足下面这些条件，就说明接入已经跑通：
 - OpenClaw 能列出 Dr. Claw 项目
 - OpenClaw 能说出哪些 session 在 waiting
 - OpenClaw 能对某个 session 成功发一条回复
 - OpenClaw 能给出一次 `digest portfolio` 风格的全局总结和建议
+- OpenClaw 能在 Feishu/Lark 收到至少一条 watcher 主动推送的摘要
 
 做到这里，OpenClaw 就已经不只是聊天入口，而是 Dr. Claw 的移动秘书。
 
-### 第 10 步：面向最终用户可以怎么说
+### 第 11 步：面向最终用户可以怎么说
 
 接入完成后，用户就可以直接对 OpenClaw 说：
 - “看看现在 Dr. Claw 有哪些项目在等我回复。”
 - “把这个项目的最后一条消息和当前 progress 总结一下。”
 - “替我回复这个 session：先按方案 B 继续，做完给我汇报结果。”
 - “总结一下最近所有实验的进展，并推荐我今天优先处理什么。”
-- “我突然有个新 idea，帮我在 Dr. Claw 建一个 project，然后和我一起把它聊清楚并开始做。”
+- “我突然有个新 idea，帮我在 Dr. Claw 建一个 project，然后和我一起把它聊清楚并开始执行规划。”
 
-OpenClaw 的职责不是取代 Dr. Claw，而是把 Dr. Claw 变成一个**随时可调度、可汇报、可追问、可遥控**的后台研究执行系统。
+OpenClaw 的职责不是取代 Dr. Claw，而是把 Dr. Claw 变成一个 **随时可调度、可汇报、可追问、可遥控** 的后台研究执行系统。
+
 
 ## 配置说明
 
