@@ -45,12 +45,31 @@ function getTabTitle(activeTab: AppTab, shouldShowTasksTab: boolean, t: (key: st
   return 'Project';
 }
 
-function getSessionTitle(session: ProjectSession): string {
-  if (session.__provider === 'cursor') {
-    return (session.name as string) || 'Untitled Session';
+function stripInternalContextPrefix(value: string): string {
+  if (typeof value !== 'string') return '';
+  let cleaned = value;
+  
+  // 1. Match full [Context: ...] prefixes at the start of the string, including multiple ones
+  const fullPrefixPattern = /^\s*\[Context:[^\]]*\]\s*/i;
+  while (fullPrefixPattern.test(cleaned)) {
+    cleaned = cleaned.replace(fullPrefixPattern, '');
+  }
+  
+  // 2. Match common truncated prefixes like "[Context: session-mode=..." or "[Context: Tre..."
+  const truncatedPrefixPattern = /^\s*\[Context:[^\]]*$/i;
+  if (truncatedPrefixPattern.test(cleaned)) {
+    return 'New Session';
   }
 
-  return (session.summary as string) || 'New Session';
+  return cleaned.trim();
+}
+
+function getSessionTitle(session: ProjectSession): string {
+  const name = session.__provider === 'cursor' 
+    ? (session.name as string) || 'Untitled Session'
+    : (session.summary as string) || 'New Session';
+    
+  return stripInternalContextPrefix(name) || 'New Session';
 }
 
 export default function MainContentTitle({

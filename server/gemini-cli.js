@@ -6,6 +6,7 @@ import os from 'os';
 import { createRequestId, waitForToolApproval, matchesToolPermission } from './utils/permissions.js';
 import { ensureProjectSkillLinks } from './projects.js';
 import { writeProjectTemplates } from './templates/index.js';
+import { stripInternalContextPrefix } from './utils/sessionFormatting.js';
 
 // Use cross-spawn on Windows for better command execution
 const spawnFunction = process.platform === 'win32' ? crossSpawn : spawn;
@@ -107,16 +108,6 @@ function isAllowedBeforeTodos(rawToolName) {
     'activate_skill',
     'enter_plan_mode'
   ].includes(normalized);
-}
-
-function stripInternalContextPrefix(text) {
-  if (typeof text !== 'string') return '';
-  let cleaned = text;
-  const contextPrefixPattern = /^\s*\[Context:[^\]]*]\s*(?:\r?\n\s*)*/i;
-  while (contextPrefixPattern.test(cleaned)) {
-    cleaned = cleaned.replace(contextPrefixPattern, '');
-  }
-  return cleaned;
 }
 
 function sanitizePersistedGeminiContent(content) {

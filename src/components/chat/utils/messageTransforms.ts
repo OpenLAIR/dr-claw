@@ -65,12 +65,22 @@ const normalizeToolInput = (value: unknown): string => {
 };
 
 const stripInternalContextPrefix = (value: string): string => {
-  let cleaned = String(value || '');
-  const contextPrefixPattern = /^\s*\[Context:[^\]]*]\s*(?:\r?\n\s*)*/i;
-  while (contextPrefixPattern.test(cleaned)) {
-    cleaned = cleaned.replace(contextPrefixPattern, '');
+  if (typeof value !== 'string') return '';
+  let cleaned = value;
+  
+  // 1. Match full [Context: ...] prefixes at the start of the string, including multiple ones
+  const fullPrefixPattern = /^\s*\[Context:[^\]]*\]\s*/i;
+  while (fullPrefixPattern.test(cleaned)) {
+    cleaned = cleaned.replace(fullPrefixPattern, '');
   }
-  return cleaned;
+  
+  // 2. Match common truncated prefixes like "[Context: session-mode=..." or "[Context: Tre..."
+  const truncatedPrefixPattern = /^\s*\[Context:[^\]]*$/i;
+  if (truncatedPrefixPattern.test(cleaned)) {
+    return 'New Session';
+  }
+
+  return cleaned.trim();
 };
 
 const toAbsolutePath = (projectPath: string, filePath?: string) => {

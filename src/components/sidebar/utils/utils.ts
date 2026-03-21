@@ -51,20 +51,38 @@ export const getSessionDate = (session: SessionWithProvider): Date => {
   return new Date(session.lastActivity || 0);
 };
 
+const stripInternalContextPrefix = (value: string): string => {
+  if (typeof value !== 'string') return '';
+  let cleaned = value;
+  
+  // 1. Match full [Context: ...] prefixes at the start of the string, including multiple ones
+  const fullPrefixPattern = /^\s*\[Context:[^\]]*\]\s*/i;
+  while (fullPrefixPattern.test(cleaned)) {
+    cleaned = cleaned.replace(fullPrefixPattern, '');
+  }
+  
+  // 2. Match common truncated prefixes like "[Context: session-mode=..." or "[Context: Tre..."
+  const truncatedPrefixPattern = /^\s*\[Context:[^\]]*$/i;
+  if (truncatedPrefixPattern.test(cleaned)) {
+    return 'New Session';
+  }
+
+  return cleaned.trim();
+};
+
 export const getSessionName = (session: SessionWithProvider, t: TFunction): string => {
+  let name = '';
   if (session.__provider === 'cursor') {
-    return session.name || t('projects.untitledSession');
+    name = session.name || t('projects.untitledSession');
+  } else if (session.__provider === 'codex') {
+    name = session.summary || session.name || t('projects.codexSession');
+  } else if (session.__provider === 'gemini') {
+    name = session.summary || session.name || 'Gemini Session';
+  } else {
+    name = session.summary || t('projects.newSession');
   }
-
-  if (session.__provider === 'codex') {
-    return session.summary || session.name || t('projects.codexSession');
-  }
-
-  if (session.__provider === 'gemini') {
-    return session.summary || session.name || 'Gemini Session';
-  }
-
-  return session.summary || t('projects.newSession');
+  
+  return stripInternalContextPrefix(name) || t('projects.newSession');
 };
 
 export const getSessionMode = (session: SessionWithProvider) => {

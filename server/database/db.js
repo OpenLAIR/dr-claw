@@ -4,6 +4,7 @@ import fs from 'fs';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { stripInternalContextPrefix } from '../utils/sessionFormatting.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -544,6 +545,7 @@ const sessionDb = {
   // Upsert session metadata (insert if not exists, update if exists)
   upsertSession: (id, projectName, provider, displayName, lastActivity, messageCount = 0, metadata = null) => {
     try {
+      const cleanedDisplayName = stripInternalContextPrefix(displayName);
       const stmt = db.prepare(`
         INSERT INTO session_metadata (id, project_name, provider, display_name, last_activity, message_count, metadata)
         VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -553,7 +555,7 @@ const sessionDb = {
           message_count = COALESCE(excluded.message_count, session_metadata.message_count),
           metadata = COALESCE(excluded.metadata, session_metadata.metadata)
       `);
-      stmt.run(id, projectName, provider, displayName, lastActivity, messageCount, metadata ? JSON.stringify(metadata) : null);
+      stmt.run(id, projectName, provider, cleanedDisplayName, lastActivity, messageCount, metadata ? JSON.stringify(metadata) : null);
     } catch (err) {
       console.error('Error upserting session metadata:', err.message);
     }
@@ -562,8 +564,9 @@ const sessionDb = {
   // Update session name ONLY (priority for manual rename)
   updateSessionName: (id, displayName) => {
     try {
+      const cleanedDisplayName = stripInternalContextPrefix(displayName);
       const stmt = db.prepare('UPDATE session_metadata SET display_name = ? WHERE id = ?');
-      stmt.run(displayName, id);
+      stmt.run(cleanedDisplayName, id);
     } catch (err) {
       console.error('Error updating session name:', err.message);
     }

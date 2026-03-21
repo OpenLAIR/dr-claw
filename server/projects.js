@@ -66,6 +66,7 @@ import crypto from 'crypto';
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 import os from 'os';
+import { stripInternalContextPrefix } from './utils/sessionFormatting.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const VIBELAB_SKILLS_DIR = path.join(__dirname, '..', 'skills');
@@ -1059,7 +1060,7 @@ async function parseJsonlSessions(filePath, projectName = null, dbSessionMap = n
 
             // Update summary from summary entries with sessionId - always take the LATEST in the file
             if (entry.type === 'summary' && entry.summary) {
-              session.summary = entry.summary;
+              session.summary = stripInternalContextPrefix(entry.summary);
             }
 
             // Track last user and assistant messages (skip system messages)
@@ -1087,7 +1088,7 @@ async function parseJsonlSessions(filePath, projectName = null, dbSessionMap = n
               );
 
               if (typeof textContent === 'string' && textContent.length > 0 && !isSystemMessage) {
-                session.lastUserMessage = textContent;
+                session.lastUserMessage = stripInternalContextPrefix(textContent);
               }
             } else if (entry.message?.role === 'assistant' && entry.message?.content) {
               // Skip API error messages using the isApiErrorMessage flag
@@ -1115,7 +1116,7 @@ async function parseJsonlSessions(filePath, projectName = null, dbSessionMap = n
                 );
 
                 if (assistantText && !isSystemAssistantMessage) {
-                  session.lastAssistantMessage = assistantText;
+                  session.lastAssistantMessage = stripInternalContextPrefix(assistantText);
                 }
               }
             }
@@ -2148,7 +2149,7 @@ async function getGeminiSessions(projectPath, optionsOrUserId = null) {
                 const title = entry.summary || entry.title || entry.payload?.title || entry.payload?.summary;
                 if (title && typeof title === 'string' && title.trim() &&
                     !title.includes('Gemini Session') && !title.includes('New Session')) {
-                  explicitTitle = title.trim();
+                  explicitTitle = stripInternalContextPrefix(title.trim());
                 }
 
                 // 3. User Message Extraction
@@ -2159,7 +2160,7 @@ async function getGeminiSessions(projectPath, optionsOrUserId = null) {
                       Array.isArray(content) ? content.map(part => part.text || (typeof part === 'string' ? part : '')).join(' ') : '';
 
                     if (textContent.trim()) {
-                      let cleaned = textContent.trim();
+                      let cleaned = stripInternalContextPrefix(textContent.trim());
                       if (!cleaned.includes('Base directory for this skill:') && !cleaned.startsWith('<command-name>')) {
                         const helpMatch = cleaned.match(/Please help me with ["'](.*?)["']/);
                         firstMessageText = helpMatch ? helpMatch[1] : cleaned.split('\n')[0].replace(/#+\s*/, '').trim();
@@ -2388,7 +2389,7 @@ async function parseCodexSessionFile(filePath) {
           if (entry.type === 'event_msg' && entry.payload?.type === 'user_message') {
             messageCount++;
             if (entry.payload.message) {
-              lastUserMessage = entry.payload.message;
+              lastUserMessage = stripInternalContextPrefix(entry.payload.message);
             }
           }
 
