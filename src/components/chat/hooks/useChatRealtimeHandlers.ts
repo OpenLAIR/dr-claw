@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
-import { decodeHtmlEntities, formatUsageLimitText } from '../utils/chatFormatting';
+import { decodeHtmlEntities, formatUsageLimitText, unescapeWithMathProtection } from '../utils/chatFormatting';
 import { parseAskUserAnswers, mergeAnswersIntoToolInput } from '../utils/messageTransforms';
 import { safeLocalStorage } from '../utils/chatStorage';
 import type { ChatMessage, PendingPermissionRequest } from '../types/types';
@@ -135,6 +135,20 @@ export function useChatRealtimeHandlers({
     const childToolUpdates: { parentId: string; child: any }[] = [];
 
     structuredData.content.forEach((part: any) => {
+      if (part.type === 'thinking' || part.type === 'reasoning') {
+        const thinkingText = part.thinking || part.reasoning || part.text || '';
+        if (thinkingText.trim()) {
+          newMessages.push({
+            type: 'assistant',
+            content: unescapeWithMathProtection(thinkingText),
+            timestamp: new Date(),
+            isThinking: true,
+            isStreaming: true,
+          });
+        }
+        return;
+      }
+
       if (part.type === 'tool_use') {
         const toolInput = part.input ? JSON.stringify(part.input, null, 2) : '';
 
