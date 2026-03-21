@@ -614,6 +614,19 @@ export const convertSessionMessages = (rawMessages: any[]): ChatMessage[] => {
     if (role === 'assistant' && content) {
       if (Array.isArray(content)) {
         content.forEach((part: any) => {
+          if (part.type === 'thinking' || part.type === 'reasoning') {
+            const thinkingText = part.thinking || part.reasoning || part.text || '';
+            if (thinkingText.trim()) {
+              converted.push({
+                type: 'assistant',
+                content: unescapeWithMathProtection(thinkingText),
+                timestamp: message.timestamp || new Date().toISOString(),
+                isThinking: true,
+              });
+            }
+            return;
+          }
+
           if (part.type === 'text') {
             let text = part.text;
             if (typeof text === 'string') {

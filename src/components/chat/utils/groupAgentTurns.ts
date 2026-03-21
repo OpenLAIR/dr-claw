@@ -49,10 +49,10 @@ export function groupMessagesIntoTurns(
       msg.content &&
       msg.content.trim().length > 0;
 
-    const textIndices = new Set<number>();
+    const textIndices = new Array<number>();
     for (let i = 0; i < currentTurnMessages.length; i++) {
       if (isTextMessage(currentTurnMessages[i])) {
-        textIndices.add(i);
+        textIndices.push(i);
       }
     }
 
@@ -73,7 +73,8 @@ export function groupMessagesIntoTurns(
     // If there's only one message and it's a text message, standalone
     if (
       currentTurnMessages.length === 1 &&
-      textIndices.has(0) &&
+      textIndices.length === 1 &&
+      textIndices[0] === 0 &&
       toolCount === 0
     ) {
       items.push({ kind: 'standalone', message: currentTurnMessages[0] });
@@ -81,8 +82,27 @@ export function groupMessagesIntoTurns(
       return;
     }
 
-    const textMessages = currentTurnMessages.filter((_, i) => textIndices.has(i));
-    const intermediateMessages = currentTurnMessages.filter((_, i) => !textIndices.has(i));
+    // The last text message of the turn is extracted as textMessages (shown directly);
+    // all others (intermediate thoughts, tool calls) are intermediateMessages (collapsed).
+    const finalTextIndex = textIndices.length > 0 ? textIndices[textIndices.length - 1] : -1;
+    
+    const textMessages = [];
+    const intermediateMessages = [];
+    
+    for (let i = 0; i < currentTurnMessages.length; i++) {
+      const msg = currentTurnMessages[i];
+      if (i === finalTextIndex) {
+        textMessages.push(msg);
+      } else {
+        // If a message was originally a text message but isn't the final one,
+        // we can optionally mark it as thinking for consistent UI treatment,
+        // although keeping it as is will render it as normal text inside the collapsed block.
+        if (isTextMessage(msg)) {
+          msg.isThinking = true;
+        }
+        intermediateMessages.push(msg);
+      }
+    }
 
     items.push({
       kind: 'agent-turn',

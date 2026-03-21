@@ -135,6 +135,19 @@ export function useChatRealtimeHandlers({
     const childToolUpdates: { parentId: string; child: any }[] = [];
 
     structuredData.content.forEach((part: any) => {
+      if (part.type === 'thinking' || part.type === 'reasoning') {
+        const thinkingText = part.thinking || part.reasoning || part.text || '';
+        if (thinkingText.trim()) {
+          newMessages.push({
+            type: 'assistant',
+            content: decodeHtmlEntities(thinkingText),
+            timestamp: new Date(),
+            isThinking: true,
+          });
+        }
+        return;
+      }
+
       if (part.type === 'tool_use') {
         const toolInput = part.input ? JSON.stringify(part.input, null, 2) : '';
 
