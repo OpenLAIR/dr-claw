@@ -98,9 +98,10 @@ export function groupMessagesIntoTurns(
         // we can optionally mark it as thinking for consistent UI treatment,
         // although keeping it as is will render it as normal text inside the collapsed block.
         if (isTextMessage(msg)) {
-          msg.isThinking = true;
+          intermediateMessages.push({ ...msg, isThinking: true });
+        } else {
+          intermediateMessages.push(msg);
         }
-        intermediateMessages.push(msg);
       }
     }
 

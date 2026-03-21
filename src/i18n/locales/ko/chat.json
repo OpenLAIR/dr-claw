@@ -59,7 +59,8 @@
   "agentTurn": {
     "thought": "사고",
     "usedTools": "{{count}}개 도구 사용",
-    "steps": "에이전트 단계"
+    "steps": "에이전트 단계",
+    "streaming": "스트리밍 중..."
   },
   "skill": {
     "contentLoaded": "스킬 콘텐츠 로드됨"

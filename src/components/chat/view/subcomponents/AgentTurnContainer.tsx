@@ -85,7 +85,7 @@ export default function AgentTurnContainer({
               <span className="flex-1 truncate">{streamingSummary}</span>
               {thinkingMessages.some(m => m.isStreaming) && (
                 <span className="flex items-center gap-1 text-[10px] bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded animate-pulse">
-                  Streaming...
+                  {t('agentTurn.streaming')}
                 </span>
               )}
             </summary>

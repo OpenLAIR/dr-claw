@@ -59,7 +59,8 @@
   "agentTurn": {
     "thought": "Thought",
     "usedTools": "Used {{count}} tools",
-    "steps": "Agent steps"
+    "steps": "Agent steps",
+    "streaming": "Streaming..."
   },
   "skill": {
     "contentLoaded": "Skill Content Loaded"

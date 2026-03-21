@@ -59,7 +59,8 @@
   "agentTurn": {
     "thought": "思考",
     "usedTools": "使用了 {{count}} 个工具",
-    "steps": "执行步骤"
+    "steps": "执行步骤",
+    "streaming": "传输中..."
   },
   "skill": {
     "contentLoaded": "技能内容已加载"

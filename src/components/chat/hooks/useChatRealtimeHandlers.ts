@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
-import { decodeHtmlEntities, formatUsageLimitText } from '../utils/chatFormatting';
+import { decodeHtmlEntities, formatUsageLimitText, unescapeWithMathProtection } from '../utils/chatFormatting';
 import { parseAskUserAnswers, mergeAnswersIntoToolInput } from '../utils/messageTransforms';
 import { safeLocalStorage } from '../utils/chatStorage';
 import type { ChatMessage, PendingPermissionRequest } from '../types/types';
@@ -140,9 +140,10 @@ export function useChatRealtimeHandlers({
         if (thinkingText.trim()) {
           newMessages.push({
             type: 'assistant',
-            content: decodeHtmlEntities(thinkingText),
+            content: unescapeWithMathProtection(thinkingText),
             timestamp: new Date(),
             isThinking: true,
+            isStreaming: true,
           });
         }
         return;
