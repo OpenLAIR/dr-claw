@@ -188,6 +188,40 @@ function withTimeout(promise, timeoutMs, onTimeout) {
   ]);
 }
 
+async function writeCompletionReport(runId, projectPath, projectName) {
+  const run = autoResearchDb.getRunById(runId);
+  if (!run) return;
+
+  const status = run.status || 'unknown';
+  const lines = [
+    `# Auto Research Report`,
+    '',
+    `**Project:** ${projectName}`,
+    `**Status:** ${status}`,
+    `**Provider:** ${run.provider || 'claude'}`,
+    `**Tasks:** ${run.completed_tasks ?? 0} / ${run.total_tasks ?? 0} completed`,
+    `**Started:** ${run.started_at || 'N/A'}`,
+    `**Finished:** ${run.finished_at || 'N/A'}`,
+  ];
+
+  if (run.session_id) {
+    lines.push(`**Session ID:** ${run.session_id}`);
+  }
+  if (run.error) {
+    lines.push('', '## Error', '', `\`\`\`\n${run.error}\n\`\`\``);
+  }
+
+  lines.push('', '---', `*Generated at ${new Date().toISOString()}*`, '');
+
+  try {
+    const reportPath = path.join(projectPath, 'auto-research-report.md');
+    await fs.writeFile(reportPath, lines.join('\n'), 'utf8');
+    console.log(`[AutoResearch] Report written to ${reportPath}`);
+  } catch (error) {
+    console.error('[AutoResearch] Failed to write report:', error);
+  }
+}
+
 async function deliverCompletionEmail(runId, userId, projectName) {
   const run = autoResearchDb.getRunById(runId);
   const profile = userDb.getProfile(userId);
@@ -322,6 +356,7 @@ async function runAutoResearch(runId, userId, projectName, projectPath) {
     });
   } finally {
     activeRuns.delete(runId);
+    await writeCompletionReport(runId, projectPath, projectName);
     await deliverCompletionEmail(runId, userId, projectName);
   }
 }
