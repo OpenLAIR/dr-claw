@@ -574,6 +574,7 @@ function normalizeSessionTimestamp(timestamp) {
   return Number.isNaN(parsed.getTime()) ? value : parsed.toISOString();
 }
 
+// Returns "YYYY-MM-DD HH:MM:SS" format for SQLite created_at column convention
 function normalizeSessionCreatedAt(timestamp) {
   if (!timestamp) {
     return null;
@@ -1003,5 +1004,6 @@ export {
   credentialsDb,
   githubTokensDb, // Backward compatibility
   sessionDb,
-  projectDb
+  projectDb,
+  normalizeSessionTimestamp
 };

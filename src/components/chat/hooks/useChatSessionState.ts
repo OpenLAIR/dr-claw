@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import type { MutableRefObject } from 'react';
 
 import { api, authenticatedFetch } from '../../../utils/api';
+import { RESUMING_STATUS_TEXT } from '../types/types';
 import type { ChatMessage, Provider } from '../types/types';
 import type { Project, ProjectSession } from '../../../types/app';
 import { clearSessionTimerStart, readSessionTimerStart, safeLocalStorage } from '../utils/chatStorage';
@@ -14,6 +15,8 @@ import {
 
 const MESSAGES_PER_PAGE = 20;
 const INITIAL_VISIBLE_MESSAGES = 100;
+/** Grace period for WebSocket status-check response before clearing stale resume state */
+const STATUS_VALIDATION_TIMEOUT_MS = 5000;
 
 type PendingViewSession = {
   sessionId: string | null;
@@ -108,7 +111,7 @@ export function useChatSessionState({
     }
 
     return {
-      text: 'Resuming...',
+      text: RESUMING_STATUS_TEXT,
       tokens: 0,
       can_interrupt: true,
       startTime: persistedInitialStartTime,
@@ -654,7 +657,7 @@ export function useChatSessionState({
         }
 
         return {
-          text: previous?.text || 'Resuming...',
+          text: previous?.text || RESUMING_STATUS_TEXT,
           tokens: previous?.tokens || 0,
           can_interrupt: previous?.can_interrupt !== false,
           startTime: persistedStartTime,
@@ -696,10 +699,10 @@ export function useChatSessionState({
 
       clearSessionTimerStart(activeViewSessionId);
       setPendingStatusValidationSessionId((previous) => (previous === activeViewSessionId ? null : previous));
-      setClaudeStatus((previous) => (previous?.text === 'Resuming...' ? null : previous));
+      setClaudeStatus((previous) => (previous?.text === RESUMING_STATUS_TEXT ? null : previous));
       setIsLoading(false);
       setCanAbortSession(false);
-    }, 5000);
+    }, STATUS_VALIDATION_TIMEOUT_MS);
 
     return () => {
       clearTimeout(timeoutId);

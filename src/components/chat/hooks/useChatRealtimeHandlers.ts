@@ -8,6 +8,7 @@ import {
   persistSessionTimerStart,
   safeLocalStorage,
 } from '../utils/chatStorage';
+import { RESUMING_STATUS_TEXT } from '../types/types';
 import type { ChatMessage, PendingPermissionRequest } from '../types/types';
 import type { Project, ProjectSession, SessionProvider } from '../../../types/app';
 
@@ -1189,7 +1190,7 @@ export function useChatRealtimeHandlers({
           onSessionStatusResolved?.(statusSessionId, true);
           // If we have a startTime from the backend, sync our status
           if (Number.isFinite(latestMessage.startTime)) {
-            syncClaudeStatusStartTime(latestMessage.startTime, 'Resuming...');
+            syncClaudeStatusStartTime(latestMessage.startTime, RESUMING_STATUS_TEXT);
           }
         } else if (isCurrentSession && latestMessage.isProcessing === false) {
           clearSessionTimerStart(statusSessionId);

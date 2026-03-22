@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import ChatMessagesPane from './subcomponents/ChatMessagesPane';
 import ChatComposer from './subcomponents/ChatComposer';
 import SkillShortcutsPanel from './subcomponents/SkillShortcutsPanel';
+import { RESUMING_STATUS_TEXT } from '../types/types';
 import type { ChatInterfaceProps } from '../types/types';
 import type { ProviderAvailability } from '../types/types';
 import { useChatProviderState } from '../hooks/useChatProviderState';
@@ -483,7 +484,7 @@ function ChatInterface({
   const prevIsLoadingForProcessingRef = useRef(false);
   useEffect(() => {
     const processingSessionId = selectedSession?.id || currentSessionId;
-    const shouldTrackAsProcessing = isLoading && claudeStatus?.text !== 'Resuming...';
+    const shouldTrackAsProcessing = isLoading && claudeStatus?.text !== RESUMING_STATUS_TEXT;
     const loadingJustStarted = shouldTrackAsProcessing && !prevIsLoadingForProcessingRef.current;
     prevIsLoadingForProcessingRef.current = shouldTrackAsProcessing;
     if (processingSessionId && loadingJustStarted && onSessionProcessing) {

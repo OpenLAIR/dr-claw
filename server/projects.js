@@ -912,24 +912,6 @@ function mapIndexedSessionToProjectSession(session, provider) {
   };
 }
 
-function toIsoString(value) {
-  if (!value) {
-    return null;
-  }
-
-  if (value instanceof Date) {
-    return value.toISOString();
-  }
-
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    const raw = String(value).trim();
-    return raw || null;
-  }
-
-  return parsed.toISOString();
-}
-
 function getSessionPlaceholderName(provider) {
   switch (provider) {
     case 'cursor':
@@ -947,7 +929,7 @@ function isPlaceholderSessionName(provider, displayName) {
   return String(displayName || '').trim() === getSessionPlaceholderName(provider);
 }
 
-function shouldRefreshIndexedSession(provider, indexedSession, parsedSession) {
+async function shouldRefreshIndexedSession(provider, indexedSession, parsedSession) {
   if (!parsedSession) {
     return false;
   }
@@ -968,8 +950,9 @@ function shouldRefreshIndexedSession(provider, indexedSession, parsedSession) {
     return true;
   }
 
-  const indexedLastActivity = toIsoString(indexedSession.last_activity || indexedSession.lastActivity);
-  const parsedLastActivity = toIsoString(parsedSession.lastActivity);
+  const { normalizeSessionTimestamp } = await import('./database/db.js');
+  const indexedLastActivity = normalizeSessionTimestamp(indexedSession.last_activity || indexedSession.lastActivity);
+  const parsedLastActivity = normalizeSessionTimestamp(parsedSession.lastActivity);
   if (parsedLastActivity && parsedLastActivity !== indexedLastActivity) {
     return true;
   }
@@ -984,7 +967,7 @@ function shouldRefreshIndexedSession(provider, indexedSession, parsedSession) {
 }
 
 async function reconcileIndexedSessionFromSource(projectName, provider, parsedSession, indexedSession = null, projectPath = null) {
-  const { sessionDb } = await import('./database/db.js');
+  const { sessionDb, normalizeSessionTimestamp } = await import('./database/db.js');
 
   const resolvedProjectPath =
     projectPath ||
@@ -1003,7 +986,7 @@ async function reconcileIndexedSessionFromSource(projectName, provider, parsedSe
 
   sessionDb.upsertSessionFromSource(parsedSession.id, projectName, provider, {
     displayName: parsedSession.summary || parsedSession.name || null,
-    lastActivity: toIsoString(parsedSession.lastActivity),
+    lastActivity: normalizeSessionTimestamp(parsedSession.lastActivity),
     messageCount: Number(parsedSession.messageCount || 0),
     metadata,
     createdAt: parsedSession.createdAt || indexedSession?.created_at || null,
@@ -1034,7 +1017,7 @@ async function reconcileClaudeSessionIndex(projectName, targetSessionId = null) 
 
     if (session) {
       const indexedSession = dbSessionMap.get(session.id) || null;
-      if (shouldRefreshIndexedSession('claude', indexedSession, session)) {
+      if (await shouldRefreshIndexedSession('claude', indexedSession, session)) {
         await reconcileIndexedSessionFromSource(projectName, 'claude', session, indexedSession, projectPath);
       }
     }
@@ -1047,15 +1030,7 @@ async function reconcileClaudeSessionIndex(projectName, targetSessionId = null) 
     };
   }
 
-  const result = await getSessions(projectName, 0, 0);
-  if (!targetSessionId) {
-    return result;
-  }
-
-  return {
-    ...result,
-    session: (result.sessions || []).find((session) => session.id === targetSessionId) || null,
-  };
+  return getSessions(projectName, 0, 0);
 }
 
 async function reconcileGeminiSessionIndex(projectPath, options = {}) {
@@ -1386,7 +1361,7 @@ async function getSessions(projectName, limit = 5, offset = 0, userId = null) {
     await Promise.all(
       visibleSessions.map(async (session) => {
         const indexedSession = dbSessionMap.get(session.id) || null;
-        if (!shouldRefreshIndexedSession('claude', indexedSession, session)) {
+        if (!await shouldRefreshIndexedSession('claude', indexedSession, session)) {
           return;
         }
 
@@ -2699,13 +2674,15 @@ async function getGeminiSessions(projectPath, optionsOrUserId = null) {
     if (syncIndex) {
       const { sessionDb } = await import('./database/db.js');
       const projectName = providedProjectName || encodeProjectPath(projectPath);
-      for (const session of filteredSessions) {
-        const indexedSession = sessionDb.getSessionById(session.id);
-        await reconcileIndexedSessionFromSource(projectName, 'gemini', {
-          ...session,
-          summary: session.summary || session.name,
-        }, indexedSession, projectPath);
-      }
+      await Promise.allSettled(
+        filteredSessions.map(async (session) => {
+          const indexedSession = sessionDb.getSessionById(session.id);
+          await reconcileIndexedSessionFromSource(projectName, 'gemini', {
+            ...session,
+            summary: session.summary || session.name,
+          }, indexedSession, projectPath);
+        })
+      );
     }
 
     return limit > 0 ? filteredSessions.slice(0, limit) : filteredSessions;
@@ -2977,14 +2954,16 @@ async function getCodexSessions(projectPath, options = {}) {
     if (syncIndex) {
       const { sessionDb } = await import('./database/db.js');
       const projectName = providedProjectName || encodeProjectPath(projectPath);
-      for (const session of filteredSessions) {
-        const indexedSession = sessionDb.getSessionById(session.id);
-        await reconcileIndexedSessionFromSource(projectName, 'codex', {
-          ...session,
-          summary: session.summary || session.name,
-          createdAt: session.createdAt || session.lastActivity,
-        }, indexedSession, projectPath);
-      }
+      await Promise.allSettled(
+        filteredSessions.map(async (session) => {
+          const indexedSession = sessionDb.getSessionById(session.id);
+          await reconcileIndexedSessionFromSource(projectName, 'codex', {
+            ...session,
+            summary: session.summary || session.name,
+            createdAt: session.createdAt || session.lastActivity,
+          }, indexedSession, projectPath);
+        })
+      );
     }
 
     return limit > 0 ? filteredSessions.slice(0, limit) : filteredSessions;

@@ -11,6 +11,8 @@ export type Provider = SessionProvider;
 
 export type PermissionMode = 'default' | 'acceptEdits' | 'bypassPermissions' | 'plan';
 
+export const RESUMING_STATUS_TEXT = 'Resuming...';
+
 export interface ChatImage {
   data: string;
   name: string;
