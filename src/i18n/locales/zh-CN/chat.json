@@ -349,6 +349,11 @@
       }
     }
   },
+  "attachedPrompt": {
+    "showPrompt": "显示提示词",
+    "hidePrompt": "隐藏提示词",
+    "remove": "移除"
+  },
   "pipelineOnboarding": {
     "noBrief": {
       "title": "设置研究流水线",

@@ -349,6 +349,11 @@
       }
     }
   },
+  "attachedPrompt": {
+    "showPrompt": "Show prompt",
+    "hidePrompt": "Hide prompt",
+    "remove": "Remove"
+  },
   "pipelineOnboarding": {
     "noBrief": {
       "title": "Set Up Your Research Pipeline",

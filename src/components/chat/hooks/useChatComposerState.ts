@@ -21,6 +21,7 @@ import { grantToolPermission } from '../utils/chatPermissions';
 import { getProviderSettingsKey, persistSessionTimerStart, safeLocalStorage } from '../utils/chatStorage';
 import { consumeWorkspaceQaDraft, WORKSPACE_QA_DRAFT_EVENT } from '../../../utils/workspaceQa';
 import type {
+  AttachedPrompt,
   ChatAttachment,
   ChatImage,
   ChatMessage,
@@ -226,6 +227,7 @@ export function useChatComposerState({
   const [thinkingMode, setThinkingMode] = useState('none');
   const [intakeGreeting, setIntakeGreeting] = useState<string | null>(null);
   const [pendingStageTagKeys, setPendingStageTagKeys] = useState<string[]>([]);
+  const [attachedPrompt, setAttachedPrompt] = useState<AttachedPrompt | null>(null);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const inputHighlightRef = useRef<HTMLDivElement>(null);
@@ -730,7 +732,7 @@ export function useChatComposerState({
     ) => {
       event.preventDefault();
       const currentInput = inputValueRef.current;
-      if ((!currentInput.trim() && attachedFiles.length === 0) || isLoading || !selectedProject) {
+      if ((!currentInput.trim() && attachedFiles.length === 0 && !attachedPrompt) || isLoading || !selectedProject) {
         return;
       }
 
@@ -762,9 +764,19 @@ export function useChatComposerState({
           defaultValue: 'Please inspect the attached files and help me with them.',
         });
       let messageContent = normalizedInput;
+
+      // Prepend attached prompt text if present
+      if (attachedPrompt) {
+        if (currentInput.trim()) {
+          messageContent = `${attachedPrompt.promptText}\n\n${normalizedInput}`;
+        } else {
+          messageContent = attachedPrompt.promptText;
+        }
+      }
+
       const selectedThinkingMode = thinkingModes.find((mode: { id: string; prefix?: string }) => mode.id === thinkingMode);
       if (selectedThinkingMode && selectedThinkingMode.prefix) {
-        messageContent = `${selectedThinkingMode.prefix}: ${normalizedInput}`;
+        messageContent = `${selectedThinkingMode.prefix}: ${messageContent}`;
       }
 
       // Inject intake greeting context for the first message after auto-intake
@@ -877,6 +889,7 @@ export function useChatComposerState({
         images: uploadedImages.length > 0 ? uploadedImages : undefined,
         attachments: messageAttachments.length > 0 ? messageAttachments : undefined,
         timestamp: new Date(),
+        ...(attachedPrompt ? { attachedPrompt } : {}),
       };
 
       setChatMessages((previous) => [...previous, userMessage]);
@@ -1060,6 +1073,7 @@ export function useChatComposerState({
       setFileErrors(new Map());
       setIsTextareaExpanded(false);
       setThinkingMode('none');
+      setAttachedPrompt(null);
 
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto';
@@ -1069,6 +1083,7 @@ export function useChatComposerState({
     },
     [
       attachedFiles,
+      attachedPrompt,
       claudeModel,
       codexModel,
       currentSessionId,
@@ -1444,6 +1459,8 @@ export function useChatComposerState({
   return {
     input,
     setInput,
+    attachedPrompt,
+    setAttachedPrompt,
     textareaRef,
     inputHighlightRef,
     isTextareaExpanded,

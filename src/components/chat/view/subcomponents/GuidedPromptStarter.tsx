@@ -7,11 +7,13 @@ import {
 } from '../../constants/guidedPromptScenarios';
 import { api } from '../../../../utils/api';
 import { useAuth } from '../../../../contexts/AuthContext';
+import type { AttachedPrompt } from '../../types/types';
 
 interface GuidedPromptStarterProps {
   projectName: string;
   setInput: React.Dispatch<React.SetStateAction<string>>;
   textareaRef: React.RefObject<HTMLTextAreaElement>;
+  setAttachedPrompt?: (prompt: AttachedPrompt | null) => void;
 }
 
 interface SkillTreeNode {
@@ -38,6 +40,7 @@ export default function GuidedPromptStarter({
   projectName: _projectName,
   setInput,
   textareaRef,
+  setAttachedPrompt,
 }: GuidedPromptStarterProps) {
   const { t } = useTranslation('chat');
   const { user } = useAuth();
@@ -91,15 +94,29 @@ export default function GuidedPromptStarter({
   }, []);
 
   const injectTemplate = (scenario: GuidedPromptScenario, skills: string[]) => {
-    const template = buildTemplate(t, scenario, skills);
-    setInput(prev => prev ? `${template}\n\n${prev}` : template);
-    setTimeout(() => {
-      const el = textareaRef.current;
-      if (!el) return;
-      el.focus();
-      const cursor = el.value.length;
-      el.setSelectionRange(cursor, cursor);
-    }, 100);
+    const nextValue = buildTemplate(t, scenario, skills);
+    if (setAttachedPrompt) {
+      setAttachedPrompt({
+        scenarioId: scenario.id,
+        scenarioIcon: scenario.icon,
+        scenarioTitle: t(scenario.titleKey),
+        promptText: nextValue,
+      });
+      setTimeout(() => {
+        const el = textareaRef.current;
+        if (!el) return;
+        el.focus();
+      }, 100);
+    } else {
+      setInput(prev => prev ? `${nextValue}\n\n${prev}` : nextValue);
+      setTimeout(() => {
+        const el = textareaRef.current;
+        if (!el) return;
+        el.focus();
+        const cursor = el.value.length;
+        el.setSelectionRange(cursor, cursor);
+      }, 100);
+    }
   };
 
   const handleScenarioSelect = (scenario: GuidedPromptScenario) => {

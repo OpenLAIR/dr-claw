@@ -4,6 +4,7 @@ import { MicButton } from '../../../MicButton.jsx';
 import ImageAttachment from './ImageAttachment';
 import PermissionRequestsBanner from './PermissionRequestsBanner';
 import ChatInputControls from './ChatInputControls';
+import PromptBadgeDropdown from './PromptBadgeDropdown';
 import { useTranslation } from 'react-i18next';
 import type {
   ChangeEvent,
@@ -17,7 +18,7 @@ import type {
   SetStateAction,
   TouchEvent,
 } from 'react';
-import type { PendingPermissionRequest, PermissionMode, Provider } from '../../types/types';
+import type { AttachedPrompt, PendingPermissionRequest, PermissionMode, Provider } from '../../types/types';
 
 interface MentionableFile {
   name: string;
@@ -96,6 +97,9 @@ interface ChatComposerProps {
   isTextareaExpanded: boolean;
   sendByCtrlEnter?: boolean;
   onTranscript: (text: string) => void;
+  attachedPrompt: AttachedPrompt | null;
+  onRemoveAttachedPrompt: () => void;
+  onUpdateAttachedPrompt: (promptText: string) => void;
 }
 
 export default function ChatComposer({
@@ -153,6 +157,9 @@ export default function ChatComposer({
   isTextareaExpanded,
   sendByCtrlEnter,
   onTranscript,
+  attachedPrompt,
+  onRemoveAttachedPrompt,
+  onUpdateAttachedPrompt,
 }: ChatComposerProps) {
   const { t } = useTranslation('chat');
   const AnyCommandMenu = CommandMenu as any;
@@ -294,6 +301,13 @@ export default function ChatComposer({
           }`}
         >
           <input {...getInputProps()} />
+          {attachedPrompt && (
+            <PromptBadgeDropdown
+              prompt={attachedPrompt}
+              onRemove={onRemoveAttachedPrompt}
+              onUpdate={onUpdateAttachedPrompt}
+            />
+          )}
           <div ref={inputHighlightRef} aria-hidden="true" className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl">
             <div className="chat-input-placeholder block w-full pl-12 pr-20 sm:pr-40 py-1.5 sm:py-4 text-transparent text-base leading-6 whitespace-pre-wrap break-words">
               {renderInputWithMentions(input)}
@@ -340,7 +354,7 @@ export default function ChatComposer({
 
             <button
               type="submit"
-              disabled={(!input.trim() && attachedFiles.length === 0) || isLoading}
+              disabled={(!input.trim() && attachedFiles.length === 0 && !attachedPrompt) || isLoading}
               onMouseDown={(event) => {
                 event.preventDefault();
                 onSubmit(event);

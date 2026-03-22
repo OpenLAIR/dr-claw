@@ -180,6 +180,14 @@ const MessageComponent = memo(({ message, index, prevMessage, createDiff, onFile
             </div>
           )}
           <div className="bg-blue-600 text-white rounded-2xl rounded-tr-none px-4 py-2.5 shadow-sm max-w-[90%] sm:max-w-[85%]">
+            {message.attachedPrompt && (
+              <div className="mb-1.5">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-100 text-xs font-medium">
+                  <span>{message.attachedPrompt.scenarioIcon}</span>
+                  {message.attachedPrompt.scenarioTitle}
+                </span>
+              </div>
+            )}
             <div className="text-[15px] whitespace-pre-wrap break-words leading-relaxed">
               {message.content}
             </div>

@@ -5,7 +5,7 @@ import SessionProviderLogo from '../../../SessionProviderLogo';
 import { CLAUDE_MODELS, CURSOR_MODELS, CODEX_MODELS, GEMINI_MODELS } from '../../../../../shared/modelConstants';
 import type { ProjectSession, SessionMode, SessionProvider } from '../../../../types/app';
 import GuidedPromptStarter from './GuidedPromptStarter';
-import type { ProviderAvailability } from '../../types/types';
+import type { AttachedPrompt, ProviderAvailability } from '../../types/types';
 
 interface ProviderSelectionEmptyStateProps {
   selectedSession: ProjectSession | null;
@@ -23,6 +23,7 @@ interface ProviderSelectionEmptyStateProps {
   setGeminiModel: (model: string) => void;
   projectName: string;
   setInput: React.Dispatch<React.SetStateAction<string>>;
+  setAttachedPrompt?: (prompt: AttachedPrompt | null) => void;
   providerAvailability: Record<SessionProvider, ProviderAvailability>;
   newSessionMode: SessionMode;
   onNewSessionModeChange?: (mode: SessionMode) => void;
@@ -103,6 +104,7 @@ export default function ProviderSelectionEmptyState({
   setGeminiModel,
   projectName,
   setInput,
+  setAttachedPrompt,
   providerAvailability,
   newSessionMode,
   onNewSessionModeChange,
@@ -222,6 +224,7 @@ export default function ProviderSelectionEmptyState({
                 projectName={projectName}
                 setInput={setInput}
                 textareaRef={textareaRef}
+                setAttachedPrompt={setAttachedPrompt}
               />
             )}
 
