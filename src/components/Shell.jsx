@@ -6,6 +6,7 @@ import { WebLinksAddon } from '@xterm/addon-web-links';
 import '@xterm/xterm/css/xterm.css';
 import { useTranslation } from 'react-i18next';
 import { IS_PLATFORM } from '../constants/config';
+import { stripInternalContextPrefix } from '../utils/sessionFormatting';
 
 const xtermStyles = `
   .xterm .xterm-screen {
@@ -280,9 +281,10 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
 
   const sessionDisplayName = useMemo(() => {
     if (!selectedSession) return null;
-    return selectedSession.__provider === 'cursor'
+    const rawName = selectedSession.__provider === 'cursor'
       ? (selectedSession.name || 'Untitled Session')
       : (selectedSession.summary || 'New Session');
+    return stripInternalContextPrefix(rawName) || 'New Session';
   }, [selectedSession]);
 
   const sessionDisplayNameShort = useMemo(() => {

@@ -97,7 +97,7 @@ export function groupMessagesIntoTurns(
         // If a message was originally a text message but isn't the final one,
         // we can optionally mark it as thinking for consistent UI treatment,
         // although keeping it as is will render it as normal text inside the collapsed block.
-        if (isTextMessage(msg)) {
+        if (isTextMessage(msg) && !msg.isSkillContent) {
           intermediateMessages.push({ ...msg, isThinking: true });
         } else {
           intermediateMessages.push(msg);

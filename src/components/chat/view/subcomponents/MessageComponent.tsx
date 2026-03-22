@@ -44,6 +44,25 @@ type InteractiveOption = {
 
 type PermissionGrantState = 'idle' | 'granted' | 'error';
 
+function extractSkillContentTitle(content: string, fallback: string): string {
+  const commandMatch = content.match(/<command-name>([^<]+)<\/command-name>/i);
+  if (commandMatch?.[1]?.trim()) {
+    return commandMatch[1].trim();
+  }
+
+  const headingMatch = content.match(/^#\s+(.+)$/m);
+  if (headingMatch?.[1]?.trim()) {
+    return headingMatch[1].trim();
+  }
+
+  const pathMatch = content.match(/Base directory for this skill:\s*(\S+)/i);
+  if (pathMatch?.[1]) {
+    return pathMatch[1].split('/').pop() || fallback;
+  }
+
+  return fallback;
+}
+
 const MessageComponent = memo(({ message, index, prevMessage, createDiff, onFileOpen, onShowSettings, onGrantToolPermission, autoExpandTools, showRawParameters, showThinking, hideThinkingFold, selectedProject, provider }: MessageComponentProps) => {
   const { t } = useTranslation('chat');
   const isGrouped = prevMessage && prevMessage.type === message.type &&
@@ -105,7 +124,7 @@ const MessageComponent = memo(({ message, index, prevMessage, createDiff, onFile
         <div className="w-full mb-4">
           <div className="border border-purple-200/50 dark:border-purple-800/30 rounded-lg bg-purple-50/30 dark:bg-purple-900/10 shadow-sm overflow-hidden">
             <details className="group">
-              <summary className="flex items-center gap-2 px-3 py-2 cursor-pointer text-[13px] select-none hover:bg-purple-50/50 dark:hover:bg-purple-900/20 transition-colors">
+              <summary className="flex list-none items-center gap-2 px-3 py-2 cursor-pointer text-[13px] select-none hover:bg-purple-50/50 dark:hover:bg-purple-900/20 transition-colors [&::-webkit-details-marker]:hidden">
                 <svg
                   className="w-3.5 h-3.5 text-purple-400 dark:text-purple-500 transition-transform duration-150 group-open:rotate-90 flex-shrink-0"
                   fill="none"
@@ -117,14 +136,7 @@ const MessageComponent = memo(({ message, index, prevMessage, createDiff, onFile
                 <span className="font-bold text-purple-600 dark:text-purple-400 text-xs flex-shrink-0">Skill</span>
                 <span className="text-gray-300 dark:text-gray-700 text-[10px] flex-shrink-0 mx-0.5">|</span>
                 <span className="text-gray-500 dark:text-gray-400 truncate flex-1 font-medium text-xs">
-                  {(() => {
-                    const c = message.content || '';
-                    const cmdMatch = c.match(/<command-name>([^<]+)<\/command-name>/);
-                    if (cmdMatch) return cmdMatch[1];
-                    const pathMatch = c.match(/Base directory for this skill:\s*(\S+)/);
-                    if (pathMatch) return pathMatch[1].split('/').pop() || t('skill.contentLoaded');
-                    return t('skill.contentLoaded');
-                  })()}
+                  {extractSkillContentTitle(message.content || '', t('skill.contentLoaded'))}
                 </span>
               </summary>
               <div className="px-4 py-3 border-t border-purple-100 dark:border-purple-800/30 max-h-96 overflow-y-auto">
@@ -522,4 +534,3 @@ const MessageComponent = memo(({ message, index, prevMessage, createDiff, onFile
 });
 
 export default MessageComponent;
-

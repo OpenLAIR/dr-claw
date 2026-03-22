@@ -13,6 +13,21 @@ export const stripInternalContextPrefix = (value: string, returnDefaultOnEmpty =
   if (typeof value !== 'string') return returnDefaultOnEmpty ? '' : null;
   let cleaned = value;
   let hasMatch = false;
+
+  const internalCommandTagPattern = /<\/?(?:command-name|command-message|command-args|local-command-stdout)>/i;
+  const skillContentPattern = /Base directory for this skill:\s*\S+/i;
+
+  if (internalCommandTagPattern.test(cleaned) || skillContentPattern.test(cleaned)) {
+    cleaned = cleaned
+      .replace(/<command-name>[^<]*<\/command-name>/gi, '')
+      .replace(/<command-message>[^<]*<\/command-message>/gi, '')
+      .replace(/<command-args>[^<]*<\/command-args>/gi, '')
+      .replace(/<local-command-stdout>[\s\S]*?<\/local-command-stdout>/gi, '')
+      .replace(/^[❯>]\s*Base directory for this skill:\s*\S+\s*/gim, '')
+      .replace(/^Base directory for this skill:\s*\S+\s*/gim, '')
+      .trim();
+    hasMatch = true;
+  }
   
   // 1. Match full [Context: ...] prefixes at the start of the string, including multiple ones
   const fullPrefixPattern = /^\s*\[Context:[^\]]*\]\s*/i;
