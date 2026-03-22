@@ -57,6 +57,7 @@ const useWebSocketProviderState = (): WebSocketContextType => {
   }, []);
 
   useEffect(() => {
+    unmountedRef.current = false;
     connect();
     
     return () => {
