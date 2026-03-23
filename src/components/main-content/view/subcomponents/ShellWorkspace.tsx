@@ -140,9 +140,12 @@ export default function ShellWorkspace({ project, session = null }: ShellWorkspa
       return;
     }
 
+    const persistedActiveId = activeShellId.startsWith('session-shell:')
+      ? shells[0]?.id ?? activeShellId
+      : activeShellId;
     window.localStorage.setItem(storageKey, JSON.stringify({
       shells,
-      activeShellId,
+      activeShellId: persistedActiveId,
     }));
   }, [storageKey, shells, activeShellId]);
 
