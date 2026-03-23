@@ -36,7 +36,8 @@
     "prepublishOnly": "npm run build",
     "postinstall": "node scripts/fix-node-pty.js && node scripts/install-python-tools.js",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "merge:with-disable-delete": "bash scripts/merge-with-disable-delete.sh"
   },
   "keywords": [
     "claude code",
