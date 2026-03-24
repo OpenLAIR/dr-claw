@@ -159,6 +159,49 @@ export const ClaudeSkillAdapter = {
 };
 
 // ══════════════════════════════════════════════════
+// Python environment helpers (prefer uv, fallback to venv+pip)
+// ══════════════════════════════════════════════════
+
+let _hasUv = null;
+async function hasUv() {
+  if (_hasUv === null) {
+    try { await exec('uv', ['--version']); _hasUv = true; } catch { _hasUv = false; }
+  }
+  return _hasUv;
+}
+
+/** Extract minimum minor version from a requirement string like ">=3.11". */
+function parseMinVersion(req = '>=3.11') {
+  const m = req.match(/(\d+)\.(\d+)/);
+  return { major: m ? parseInt(m[1]) : 3, minor: m ? parseInt(m[2]) : 11 };
+}
+
+async function createVenv(venvDir, pythonVersion, onLog) {
+  if (await hasUv()) {
+    const { major, minor } = parseMinVersion(pythonVersion);
+    onLog?.(`Creating venv via uv (Python ${major}.${minor}+) …`);
+    await exec('uv', ['venv', '--python', `${major}.${minor}`, venvDir]);
+  } else {
+    onLog?.('Creating venv via python3 -m venv …');
+    await exec('python3', ['-m', 'venv', venvDir]);
+  }
+}
+
+async function pipInstall(venvDir, args, opts = {}, onLog) {
+  if (await hasUv()) {
+    const python = path.join(venvDir, 'bin', 'python');
+    onLog?.('Installing dependencies via uv …');
+    await exec('uv', ['pip', 'install', '--python', python, ...args], opts);
+  } else {
+    const pip = path.join(venvDir, 'bin', 'pip');
+    onLog?.('Upgrading pip …');
+    await exec(pip, ['install', '--upgrade', 'pip']);
+    onLog?.('Installing dependencies …');
+    await exec(pip, ['install', ...args], opts);
+  }
+}
+
+// ══════════════════════════════════════════════════
 // PythonAppAdapter  (type: "python-app")
 // ══════════════════════════════════════════════════
 
@@ -172,14 +215,9 @@ export const PythonAppAdapter = {
     const setupDir = getSetupDir(tool.id);
     await fs.mkdir(setupDir, { recursive: true });
 
-    onLog?.('Creating virtual environment …');
     const venvDir = path.join(setupDir, '.venv');
-    await exec('python3', ['-m', 'venv', venvDir]);
-    const pip = path.join(venvDir, 'bin', 'pip');
-    onLog?.('Upgrading pip …');
-    await exec(pip, ['install', '--upgrade', 'pip']);
-    onLog?.('Installing dependencies …');
-    await exec(pip, ['install', '-e', '.'], { cwd: bundledDir });
+    await createVenv(venvDir, tool.requirements?.pythonVersion, onLog);
+    await pipInstall(venvDir, ['-e', '.'], { cwd: bundledDir }, onLog);
     onLog?.('Dependencies installed.');
 
     return { installDir: bundledDir, setupDir, installedAt: new Date().toISOString() };
@@ -188,9 +226,8 @@ export const PythonAppAdapter = {
   async update(tool, _installDir, onLog) {
     const bundledDir = getBundledDir(tool);
     const setupDir = getSetupDir(tool.id);
-    const pip = path.join(setupDir, '.venv', 'bin', 'pip');
-    onLog?.('Updating dependencies …');
-    await exec(pip, ['install', '-e', '.'], { cwd: bundledDir });
+    const venvDir = path.join(setupDir, '.venv');
+    await pipInstall(venvDir, ['-e', '.'], { cwd: bundledDir }, onLog);
     onLog?.('Update complete.');
   },
 
@@ -229,26 +266,23 @@ export const PythonAppAdapter = {
 
   async doctor(tool, _installDir, onLog) {
     const results = [];
+    const reqVersion = tool.requirements?.pythonVersion || '>=3.11';
 
-    // Check Python version
-    try {
-      const version = await exec('python3', ['--version']);
-      const match = version.match(/(\d+)\.(\d+)/);
-      if (match && (parseInt(match[1]) > 3 || (parseInt(match[1]) === 3 && parseInt(match[2]) >= 11))) {
-        results.push({ check: 'Python >= 3.11', ok: true, message: version });
-      } else {
-        results.push({ check: 'Python >= 3.11', ok: false, message: `Found ${version}, need 3.11+` });
-      }
-    } catch {
-      results.push({ check: 'Python >= 3.11', ok: false, message: 'python3 not found' });
+    // Check uv
+    if (await hasUv()) {
+      results.push({ check: 'uv', ok: true, message: 'Available (fast installs)' });
+    } else {
+      results.push({ check: 'uv', ok: true, message: 'Not found — will use pip (slower)' });
     }
 
-    // Check pip
+    // Check Python version in venv
+    const setupDir = getSetupDir(tool.id);
+    const venvPython = path.join(setupDir, '.venv', 'bin', 'python');
     try {
-      await exec('python3', ['-m', 'pip', '--version']);
-      results.push({ check: 'pip', ok: true });
+      const version = await exec(venvPython, ['--version']);
+      results.push({ check: `Python ${reqVersion}`, ok: true, message: version });
     } catch {
-      results.push({ check: 'pip', ok: false, message: 'pip not available' });
+      results.push({ check: `Python ${reqVersion}`, ok: false, message: 'venv python not found — try reinstalling' });
     }
 
     // Check bundled source
