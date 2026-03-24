@@ -354,6 +354,20 @@ export const api = {
     }),
   },
 
+  // Community Tools endpoints
+  communityTools: {
+    registry: () => authenticatedFetch('/api/community-tools/registry'),
+    installed: () => authenticatedFetch('/api/community-tools/installed'),
+    status: (toolId) => authenticatedFetch(`/api/community-tools/${toolId}/status`),
+    install: (toolId) => authenticatedFetch(`/api/community-tools/${toolId}/install`, { method: 'POST' }),
+    update: (toolId) => authenticatedFetch(`/api/community-tools/${toolId}/update`, { method: 'POST' }),
+    uninstall: (toolId) => authenticatedFetch(`/api/community-tools/${toolId}/uninstall`, { method: 'POST' }),
+    configure: (toolId, config) => authenticatedFetch(`/api/community-tools/${toolId}/config`, { method: 'PUT', body: JSON.stringify(config) }),
+    run: (toolId, command, args) => authenticatedFetch(`/api/community-tools/${toolId}/run`, { method: 'POST', body: JSON.stringify({ command, args }) }),
+    stop: (toolId) => authenticatedFetch(`/api/community-tools/${toolId}/stop`, { method: 'POST' }),
+    doctor: (toolId) => authenticatedFetch(`/api/community-tools/${toolId}/doctor`, { method: 'POST' }),
+  },
+
   // Generic GET method for any endpoint
   get: (endpoint) => authenticatedFetch(`/api${endpoint}`),
 

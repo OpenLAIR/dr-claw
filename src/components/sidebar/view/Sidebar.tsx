@@ -43,6 +43,7 @@ function Sidebar({
   onOpenTrash,
   onOpenSkills,
   onOpenNews,
+  onOpenCommunityTools,
   onImportedProjectCreated,
   newSessionMode,
 }: SidebarProps) {
@@ -252,6 +253,7 @@ function Sidebar({
             onOpenTrash={onOpenTrash}
             onOpenSkills={onOpenSkills}
             onOpenNews={onOpenNews}
+            onOpenCommunityTools={onOpenCommunityTools}
             onCreateProject={() => setShowWizard(true)}
             onCollapseSidebar={handleCollapseSidebar}
 

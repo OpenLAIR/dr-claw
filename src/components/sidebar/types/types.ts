@@ -48,6 +48,7 @@ export type SidebarProps = {
   onOpenTrash: () => void;
   onOpenSkills: () => void;
   onOpenNews: () => void;
+  onOpenCommunityTools: () => void;
   onImportedProjectCreated?: (project: Project, options?: ProjectCreationOptions) => void;
   newSessionMode?: SessionMode;
 };

@@ -633,6 +633,17 @@ export function useProjectsState({
     }
   }, [isMobile, navigate]);
 
+  const handleOpenCommunityTools = useCallback(() => {
+    setSelectedProject(null);
+    setSelectedSession(null);
+    setActiveTab('community-tools');
+    navigate('/');
+
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  }, [isMobile, navigate]);
+
   const handleSessionDelete = useCallback(
     (sessionIdToDelete: string) => {
       if (selectedSession?.id === sessionIdToDelete) {
@@ -742,6 +753,7 @@ export function useProjectsState({
       onOpenTrash: handleOpenTrash,
       onOpenSkills: handleOpenSkills,
       onOpenNews: handleOpenNews,
+      onOpenCommunityTools: handleOpenCommunityTools,
       onImportedProjectCreated: handleProjectCreatedWithIntake,
       importedProjectAnalysisPrompt,
       onDismissImportedProjectAnalysisPrompt: clearImportedProjectAnalysisPrompt,
@@ -753,6 +765,7 @@ export function useProjectsState({
       handleNewSession,
       handleOpenDashboard,
       handleOpenNews,
+      handleOpenCommunityTools,
       handleOpenSkills,
       handleOpenTrash,
       handleProjectCreatedWithIntake,

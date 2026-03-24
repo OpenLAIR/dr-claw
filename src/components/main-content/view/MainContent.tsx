@@ -11,6 +11,7 @@ import SurveyPage from '../../survey/view/SurveyPage';
 import ProjectDashboard from '../../project-dashboard/view/ProjectDashboard';
 import TrashDashboard from '../../project-dashboard/view/TrashDashboard';
 import NewsDashboard from '../../news-dashboard/view/NewsDashboard';
+import CommunityToolsPanel from '../../CommunityToolsPanel';
 
 import MainContentHeader from './subcomponents/MainContentHeader';
 import MainContentStateView from './subcomponents/MainContentStateView';
@@ -172,6 +173,26 @@ function MainContent({
               ]);
             }}
           />
+        </div>
+      </div>
+    );
+  }
+
+  if (activeTab === 'community-tools') {
+    return (
+      <div className="h-full flex flex-col">
+        <MainContentHeader
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          selectedProject={null}
+          selectedSession={null}
+          shouldShowTasksTab={shouldShowTasksTab}
+          isMobile={isMobile}
+          onMenuClick={onMenuClick}
+        />
+
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <CommunityToolsPanel />
         </div>
       </div>
     );

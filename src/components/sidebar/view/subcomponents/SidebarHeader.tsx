@@ -1,4 +1,4 @@
-import { Blocks, FolderPlus, LayoutDashboard, Newspaper, PanelLeftClose, Plus, RefreshCw, Search, Trash2, X } from 'lucide-react';
+import { Blocks, FolderPlus, LayoutDashboard, Newspaper, PanelLeftClose, Plus, RefreshCw, Search, Trash2, Wrench, X } from 'lucide-react';
 import type { TFunction } from 'i18next';
 import type { AppTab } from '../../../../types/app';
 import { Button } from '../../../ui/button';
@@ -20,6 +20,7 @@ type SidebarHeaderProps = {
   onOpenTrash: () => void;
   onOpenSkills: () => void;
   onOpenNews: () => void;
+  onOpenCommunityTools: () => void;
   onCreateProject: () => void;
   onCollapseSidebar: () => void;
   t: TFunction;
@@ -40,6 +41,7 @@ export default function SidebarHeader({
   onOpenTrash,
   onOpenSkills,
   onOpenNews,
+  onOpenCommunityTools,
   onCreateProject,
   onCollapseSidebar,
   t,
@@ -170,6 +172,17 @@ export default function SidebarHeader({
 
             <Button
               type="button"
+              variant={activeTab === 'community-tools' ? 'secondary' : 'outline'}
+              size="sm"
+              className="h-9 w-full justify-start rounded-xl"
+              onClick={onOpenCommunityTools}
+            >
+              <Wrench className="h-4 w-4" />
+              Community Tools
+            </Button>
+
+            <Button
+              type="button"
               variant={activeTab === 'trash' ? 'secondary' : 'outline'}
               size="sm"
               className="h-9 w-full justify-start rounded-xl"
@@ -275,6 +288,16 @@ export default function SidebarHeader({
             >
               <Blocks className="h-4 w-4" />
               {t('common:projectDashboard.skillsTitle')}
+            </Button>
+
+            <Button
+              type="button"
+              variant={activeTab === 'community-tools' ? 'secondary' : 'outline'}
+              className="h-10 w-full justify-start rounded-xl"
+              onClick={onOpenCommunityTools}
+            >
+              <Wrench className="h-4 w-4" />
+              Community Tools
             </Button>
           </div>
         )}
