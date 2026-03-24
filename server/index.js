@@ -69,6 +69,8 @@ import computeRoutes from './routes/compute.js';
 import newsRoutes from './routes/news.js';
 import autoResearchRoutes from './routes/auto-research.js';
 import communityToolsRoutes from './routes/community-tools.js';
+import { getInstalledTool, setInstalledTool } from './community-tools-store.js';
+import { getAdapter } from './community-tools-adapters.js';
 import { initializeDatabase } from './database/db.js';
 import { validateApiKey, authenticateToken, authenticateWebSocket } from './middleware/auth.js';
 import { IS_PLATFORM } from './constants/config.js';
@@ -2942,6 +2944,48 @@ const HOST = process.env.HOST || '0.0.0.0';
 // Show localhost when binding to all interfaces; 0.0.0.0 is not directly connectable.
 const DISPLAY_HOST = HOST === '0.0.0.0' ? 'localhost' : HOST;
 
+// Pre-install bundled community tools (runs in background, non-blocking)
+const PRE_INSTALL_TOOLS = ['autoresearchclaw'];
+
+async function bootstrapCommunityTools() {
+    const registryPath = path.join(__dirname, 'data', 'community-tools-registry.json');
+    let registry;
+    try {
+        registry = JSON.parse(await fsPromises.readFile(registryPath, 'utf8'));
+    } catch (err) {
+        console.error(`${c.warn('[WARN]')} Could not load community tools registry:`, err.message);
+        return;
+    }
+
+    for (const toolId of PRE_INSTALL_TOOLS) {
+        try {
+            const existing = await getInstalledTool(toolId);
+            if (existing) continue;
+
+            const tool = registry.find((t) => t.id === toolId);
+            if (!tool) {
+                console.warn(`${c.warn('[WARN]')} Pre-install tool "${toolId}" not found in registry, skipping.`);
+                continue;
+            }
+
+            console.log(`${c.info('[INFO]')} Auto-installing community tool: ${tool.name} …`);
+            const adapter = getAdapter(tool.type);
+            const result = await adapter.install(tool, (msg) => console.log(`  ${c.dim(msg)}`));
+            await setInstalledTool(toolId, {
+                installDir: result.installDir,
+                setupDir: result.setupDir,
+                installedAt: result.installedAt,
+                type: tool.type,
+                repoUrl: tool.repoUrl,
+                localPath: tool.localPath,
+            });
+            console.log(`${c.ok('[OK]')}   ${tool.name} installed successfully.`);
+        } catch (err) {
+            console.error(`${c.warn('[WARN]')} Failed to auto-install "${toolId}":`, err.message);
+        }
+    }
+}
+
 // Initialize database and start server
 async function startServer() {
     try {
@@ -2984,6 +3028,9 @@ async function startServer() {
             // Ensure the workspaces root directory exists
             const startupWorkspaceRoot = await getWorkspacesRoot();
             await fsPromises.mkdir(startupWorkspaceRoot, { recursive: true });
+
+            // Auto-install bundled community tools that should be pre-installed
+            bootstrapCommunityTools();
 
             // Start watching the projects folder for changes
             await setupProjectsWatcher();
