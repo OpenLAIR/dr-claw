@@ -143,7 +143,8 @@ backup/
 .pipeline/
 
 # Server runtime data
-server/data/
+server/data/*
+!server/data/community-tools-registry.json
 
 # Search result files
 xhs_results.json

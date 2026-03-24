@@ -1,0 +1,6 @@
+[submodule "community-tools/autoresearch"]
+	path = community-tools/autoresearch
+	url = https://github.com/uditgoenka/autoresearch
+[submodule "community-tools/autoresearchclaw"]
+	path = community-tools/autoresearchclaw
+	url = https://github.com/aiming-lab/AutoResearchClaw

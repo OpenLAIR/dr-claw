@@ -1,0 +1,39 @@
+[
+  {
+    "id": "autoresearch",
+    "name": "AutoResearch",
+    "description": "Claude Code skill for automated research — installs slash commands for literature search, paper analysis, and research planning directly into your Claude workflow.",
+    "repoUrl": "https://github.com/uditgoenka/autoresearch",
+    "localPath": "community-tools/autoresearch",
+    "type": "claude-skill",
+    "commands": [
+      { "name": "/autoresearch", "description": "Run full automated research workflow" },
+      { "name": "/autoresearch:plan", "description": "Generate a research plan from a topic" },
+      { "name": "/autoresearch:search", "description": "Search and analyze relevant papers" },
+      { "name": "/autoresearch:summarize", "description": "Summarize findings into a report" }
+    ],
+    "requirements": {
+      "runtime": "claude-code",
+      "note": "Requires Claude Code CLI to be installed and available in PATH"
+    },
+    "tags": ["research", "claude-skill", "literature-review", "automation"]
+  },
+  {
+    "id": "autoresearchclaw",
+    "name": "AutoResearchClaw",
+    "description": "23-stage automated research pipeline — from topic initialization to full paper generation with experiments, charts, and references.",
+    "repoUrl": "https://github.com/aiming-lab/AutoResearchClaw",
+    "localPath": "community-tools/autoresearchclaw",
+    "type": "python-app",
+    "commands": [
+      { "name": "run", "description": "Run the full 23-stage research pipeline" },
+      { "name": "doctor", "description": "Check environment and dependencies" }
+    ],
+    "requirements": {
+      "runtime": "python",
+      "pythonVersion": ">=3.11",
+      "note": "Requires Python 3.11+ and pip"
+    },
+    "tags": ["research", "python-app", "paper-generation", "pipeline", "automation"]
+  }
+]
