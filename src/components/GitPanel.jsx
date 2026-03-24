@@ -840,7 +840,7 @@ function GitPanel({ selectedProject, isMobile, onFileOpen }) {
   }
 
   return (
-    <div className="h-full flex flex-col bg-background">
+    <div className="h-full min-h-0 flex flex-col bg-background">
       {/* Header */}
       <div className={`flex items-center justify-between border-b border-border/60 ${isMobile ? 'px-3 py-2' : 'px-4 py-3'}`}>
         <div className="relative" ref={dropdownRef}>
@@ -1263,7 +1263,7 @@ function GitPanel({ selectedProject, isMobile, onFileOpen }) {
 
       {/* File List - Changes View - Only show when git is available */}
       {activeView === 'changes' && !gitStatus?.error && (
-        <div className={`flex-1 overflow-y-auto ${isMobile ? 'pb-mobile-nav' : ''}`}>
+        <div className={`flex-1 min-h-0 overflow-y-auto ${isMobile ? 'pb-mobile-nav' : ''}`}>
           {isLoading ? (
             <div className="flex items-center justify-center h-32">
               <RefreshCw className="w-5 h-5 animate-spin text-muted-foreground" />
@@ -1313,7 +1313,7 @@ function GitPanel({ selectedProject, isMobile, onFileOpen }) {
 
       {/* History View - Only show when git is available */}
       {activeView === 'history' && !gitStatus?.error && (
-        <div className={`flex-1 overflow-y-auto ${isMobile ? 'pb-mobile-nav' : ''}`}>
+        <div className={`flex-1 min-h-0 overflow-y-auto ${isMobile ? 'pb-mobile-nav' : ''}`}>
           {isLoading ? (
             <div className="flex items-center justify-center h-32">
               <RefreshCw className="w-5 h-5 animate-spin text-muted-foreground" />
