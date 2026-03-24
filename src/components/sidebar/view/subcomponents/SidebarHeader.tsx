@@ -178,7 +178,7 @@ export default function SidebarHeader({
               onClick={onOpenCommunityTools}
             >
               <Wrench className="h-4 w-4" />
-              Community Tools
+              {t('common:tabs.communityTools')}
             </Button>
 
             <Button
@@ -297,7 +297,7 @@ export default function SidebarHeader({
               onClick={onOpenCommunityTools}
             >
               <Wrench className="h-4 w-4" />
-              Community Tools
+              {t('common:tabs.communityTools')}
             </Button>
           </div>
         )}

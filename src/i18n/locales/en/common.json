@@ -29,7 +29,8 @@
     "researchLab": "Research Lab",
     "skills": "Skills",
     "compute": "Compute",
-    "news": "News"
+    "news": "News",
+    "communityTools": "Community Tools"
   },
   "researchLabGuide": {
     "title": "How to Use Dr. Claw",

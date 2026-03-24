@@ -29,7 +29,8 @@
     "researchLab": "研究实验室",
     "skills": "技能",
     "compute": "计算节点",
-    "news": "论文动态"
+    "news": "论文动态",
+    "communityTools": "社区工具"
   },
   "researchLabGuide": {
     "title": "如何使用 Dr. Claw",

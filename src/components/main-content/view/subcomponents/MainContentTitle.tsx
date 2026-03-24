@@ -43,6 +43,10 @@ function getTabTitle(activeTab: AppTab, shouldShowTasksTab: boolean, t: (key: st
     return t('tabs.news');
   }
 
+  if (activeTab === 'community-tools') {
+    return t('tabs.communityTools');
+  }
+
   if (activeTab === 'tasks' && shouldShowTasksTab) {
     return 'TaskMaster';
   }
