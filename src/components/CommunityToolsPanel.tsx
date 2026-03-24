@@ -41,6 +41,7 @@ type RegistryTool = {
   commands: ToolCommand[];
   requirements: ToolRequirements;
   tags: string[];
+  preInstalled?: boolean;
 };
 
 type InstalledInfo = {
@@ -209,6 +210,13 @@ function ToolCard({
     return () => clearInterval(interval);
   }, [polling, pollStatus, onRefresh]);
 
+  // Auto-poll for pre-installed tools that haven't finished setting up yet
+  useEffect(() => {
+    if (!tool.preInstalled || isInstalled) return;
+    const interval = setInterval(() => { onRefresh(); }, 3000);
+    return () => clearInterval(interval);
+  }, [tool.preInstalled, isInstalled, onRefresh]);
+
   const handleInstall = async () => {
     setActionLoading('install');
     setLogs([]);
@@ -339,7 +347,9 @@ function ToolCard({
   const statusBadge = polling
     ? { label: 'Working…', className: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400' }
     : isInstalled
-    ? { label: 'Installed', className: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' }
+    ? { label: tool.preInstalled ? 'Pre-installed' : 'Installed', className: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' }
+    : tool.preInstalled
+    ? { label: 'Setting up…', className: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400' }
     : { label: 'Not Installed', className: 'bg-muted text-muted-foreground' };
 
   return (
@@ -363,7 +373,7 @@ function ToolCard({
           <p className="text-xs text-muted-foreground line-clamp-2">{tool.description}</p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          {!isInstalled && !polling && (
+          {!isInstalled && !polling && !tool.preInstalled && (
             <button
               type="button"
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
@@ -402,15 +412,17 @@ function ToolCard({
                 {actionLoading === 'doctor' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Stethoscope className="w-3.5 h-3.5" />}
                 Doctor
               </button>
-              <button
-                type="button"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-destructive/30 text-destructive hover:bg-destructive/10 transition-colors"
-                onClick={handleUninstall}
-                disabled={!!actionLoading || polling}
-              >
-                {actionLoading === 'uninstall' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-                Uninstall
-              </button>
+              {!tool.preInstalled && (
+                <button
+                  type="button"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-destructive/30 text-destructive hover:bg-destructive/10 transition-colors"
+                  onClick={handleUninstall}
+                  disabled={!!actionLoading || polling}
+                >
+                  {actionLoading === 'uninstall' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                  Uninstall
+                </button>
+              )}
             </div>
           )}
 

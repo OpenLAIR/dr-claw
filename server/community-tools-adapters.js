@@ -175,9 +175,10 @@ export const PythonAppAdapter = {
     onLog?.('Creating virtual environment …');
     const venvDir = path.join(setupDir, '.venv');
     await exec('python3', ['-m', 'venv', venvDir]);
-    onLog?.('Virtual environment created. Installing dependencies …');
-
     const pip = path.join(venvDir, 'bin', 'pip');
+    onLog?.('Upgrading pip …');
+    await exec(pip, ['install', '--upgrade', 'pip']);
+    onLog?.('Installing dependencies …');
     await exec(pip, ['install', '-e', '.'], { cwd: bundledDir });
     onLog?.('Dependencies installed.');
 
