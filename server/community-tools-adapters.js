@@ -75,13 +75,6 @@ export const ClaudeSkillAdapter = {
     return { installDir: bundledDir, installedAt: new Date().toISOString() };
   },
 
-  async update(tool, _installDir, onLog) {
-    const bundledDir = getBundledDir(tool);
-    onLog?.('Re-syncing skill files from bundled source …');
-    await this._syncFiles(tool, bundledDir, onLog);
-    onLog?.('Update complete.');
-  },
-
   async uninstall(tool, _installDir, onLog) {
     const claudeHome = path.join(os.homedir(), '.claude');
     const skillsDest = path.join(claudeHome, 'skills', tool.id);
@@ -221,14 +214,6 @@ export const PythonAppAdapter = {
     onLog?.('Dependencies installed.');
 
     return { installDir: bundledDir, setupDir, installedAt: new Date().toISOString() };
-  },
-
-  async update(tool, _installDir, onLog) {
-    const bundledDir = getBundledDir(tool);
-    const setupDir = getSetupDir(tool.id);
-    const venvDir = path.join(setupDir, '.venv');
-    await pipInstall(venvDir, ['-e', '.'], { cwd: bundledDir }, onLog);
-    onLog?.('Update complete.');
   },
 
   async configure(tool, _installDir, config, onLog) {

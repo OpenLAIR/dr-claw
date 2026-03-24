@@ -9,7 +9,7 @@ import {
   Download,
   Loader2,
   Play,
-  RefreshCw,
+
   Square,
   Stethoscope,
   Trash2,
@@ -242,24 +242,6 @@ function ToolCard({
     }
   };
 
-  const handleUpdate = async () => {
-    setActionLoading('update');
-    setLogs([]);
-    try {
-      const res = await api.communityTools.update(tool.id);
-      if (!res.ok) {
-        const data = await res.json();
-        setLogs([`Error: ${data.error}`]);
-        return;
-      }
-      setPolling(true);
-    } catch (err: any) {
-      setLogs([`Error: ${err.message}`]);
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
   const handleUninstall = async () => {
     if (!confirm(`Uninstall ${tool.name}? This will remove all installed files.`)) return;
     setActionLoading('uninstall');
@@ -394,15 +376,6 @@ function ToolCard({
           {/* Action Buttons */}
           {isInstalled && (
             <div className="flex items-center gap-2 flex-wrap">
-              <button
-                type="button"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border hover:bg-accent transition-colors"
-                onClick={handleUpdate}
-                disabled={!!actionLoading || polling}
-              >
-                {actionLoading === 'update' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
-                Update
-              </button>
               <button
                 type="button"
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border hover:bg-accent transition-colors"

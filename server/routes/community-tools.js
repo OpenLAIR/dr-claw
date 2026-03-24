@@ -126,41 +126,6 @@ router.post('/:toolId/install', async (req, res) => {
   }
 });
 
-// ─── POST /:toolId/update ───
-router.post('/:toolId/update', async (req, res) => {
-  try {
-    const { toolId } = req.params;
-    if (activeOps.has(toolId)) {
-      return res.status(409).json({ error: 'An operation is already in progress for this tool' });
-    }
-
-    const registry = await loadRegistry();
-    const tool = getToolFromRegistry(registry, toolId);
-    if (!tool) return res.status(404).json({ error: 'Tool not found in registry' });
-
-    const installed = await getInstalledTool(toolId);
-    if (!installed) return res.status(400).json({ error: 'Tool is not installed' });
-
-    const op = { type: 'update', logs: [] };
-    activeOps.set(toolId, op);
-    res.json({ success: true, message: 'Update started' });
-
-    const adapter = getAdapter(tool.type);
-    try {
-      await adapter.update(tool, installed.installDir, (msg) => { op.logs.push(msg); });
-      await setInstalledTool(toolId, { ...installed, updatedAt: new Date().toISOString() });
-      op.logs.push('✓ Done');
-    } catch (err) {
-      op.logs.push(`✗ Error: ${err.message}`);
-    } finally {
-      setTimeout(() => activeOps.delete(toolId), 60_000);
-    }
-  } catch (error) {
-    console.error('Error updating community tool:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
 // ─── POST /:toolId/uninstall ───
 router.post('/:toolId/uninstall', async (req, res) => {
   try {

@@ -2945,8 +2945,6 @@ const HOST = process.env.HOST || '0.0.0.0';
 const DISPLAY_HOST = HOST === '0.0.0.0' ? 'localhost' : HOST;
 
 // Pre-install bundled community tools (runs in background, non-blocking)
-const PRE_INSTALL_TOOLS = ['autoresearchclaw'];
-
 async function bootstrapCommunityTools() {
     const registryPath = path.join(__dirname, 'data', 'community-tools-registry.json');
     let registry;
@@ -2957,31 +2955,43 @@ async function bootstrapCommunityTools() {
         return;
     }
 
-    for (const toolId of PRE_INSTALL_TOOLS) {
+    const preInstallTools = registry.filter((t) => t.preInstalled);
+    for (const tool of preInstallTools) {
         try {
-            const existing = await getInstalledTool(toolId);
-            if (existing) continue;
+            // Get current submodule commit hash as version marker
+            const bundledDir = path.resolve(__dirname, '..', tool.localPath || `community-tools/${tool.id}`);
+            let currentHash = null;
+            try {
+                currentHash = await new Promise((resolve, reject) => {
+                    const proc = spawn('git', ['-C', bundledDir, 'rev-parse', 'HEAD'], { stdio: ['ignore', 'pipe', 'pipe'] });
+                    let stdout = '';
+                    proc.stdout.on('data', (d) => { stdout += d; });
+                    proc.on('close', (code) => code === 0 ? resolve(stdout.trim()) : reject(new Error(`git exited ${code}`)));
+                    proc.on('error', reject);
+                });
+            } catch { /* not a git repo, skip hash check */ }
 
-            const tool = registry.find((t) => t.id === toolId);
-            if (!tool) {
-                console.warn(`${c.warn('[WARN]')} Pre-install tool "${toolId}" not found in registry, skipping.`);
-                continue;
-            }
+            const existing = await getInstalledTool(tool.id);
 
-            console.log(`${c.info('[INFO]')} Auto-installing community tool: ${tool.name} …`);
+            // Skip if already installed at the same version
+            if (existing && (!currentHash || existing.bundledHash === currentHash)) continue;
+
+            const action = existing ? 'Updating' : 'Installing';
+            console.log(`${c.info('[INFO]')} ${action} community tool: ${tool.name} …`);
             const adapter = getAdapter(tool.type);
             const result = await adapter.install(tool, (msg) => console.log(`  ${c.dim(msg)}`));
-            await setInstalledTool(toolId, {
+            await setInstalledTool(tool.id, {
                 installDir: result.installDir,
                 setupDir: result.setupDir,
-                installedAt: result.installedAt,
+                installedAt: existing?.installedAt || result.installedAt,
                 type: tool.type,
                 repoUrl: tool.repoUrl,
                 localPath: tool.localPath,
+                bundledHash: currentHash,
             });
-            console.log(`${c.ok('[OK]')}   ${tool.name} installed successfully.`);
+            console.log(`${c.ok('[OK]')}   ${tool.name} ${action.toLowerCase()} successfully.`);
         } catch (err) {
-            console.error(`${c.warn('[WARN]')} Failed to auto-install "${toolId}":`, err.message);
+            console.error(`${c.warn('[WARN]')} Failed to auto-install "${tool.id}":`, err.message);
         }
     }
 }
