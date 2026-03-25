@@ -20,6 +20,7 @@
     "bioinformatics-init-analysis": { "zh": "阶段: 实验分析", "en": "Stage: Analysis", "ko": "단계: 분석" },
     "biorxiv-database": { "zh": "阶段: 资源准备", "en": "Stage: Resource Prep", "ko": "단계: 리소스 준비" },
     "scientific-writing": { "zh": "阶段: 论文撰写", "en": "Stage: Paper Writing", "ko": "단계: 논문 작성" },
+    "research-paper-writing": { "zh": "阶段: 论文撰写", "en": "Stage: Paper Writing", "ko": "단계: 논문 작성" },
     "academic-researcher": { "zh": "阶段: 调研", "en": "Stage: Survey", "ko": "단계: 조사" },
     "gemini-deep-research": { "zh": "阶段: 调研", "en": "Stage: Survey", "ko": "단계: 조사" },
 

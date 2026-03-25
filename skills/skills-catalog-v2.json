@@ -1,7 +1,7 @@
 {
   "generatedAt": "2026-03-20T05:23:15.888Z",
   "schema": "skills-taxonomy-v2",
-  "totalSkills": 111,
+  "totalSkills": 112,
   "skills": [
     {
       "name": "academic-researcher",
@@ -4769,6 +4769,51 @@
         "academic-researcher",
         "paper-finder",
         "inno-deep-research"
+      ]
+    },
+    {
+      "name": "research-paper-writing",
+      "primaryIntent": "writing",
+      "intents": [
+        "writing",
+        "research"
+      ],
+      "capabilities": [
+        "visualization-reporting"
+      ],
+      "domains": [
+        "cs-ai"
+      ],
+      "keywords": [
+        "research-paper-writing",
+        "academic writing",
+        "paper writing",
+        "abstract",
+        "introduction",
+        "related work",
+        "method",
+        "experiments",
+        "conclusion",
+        "paragraph flow",
+        "self-review",
+        "claim-evidence alignment",
+        "reverse outlining"
+      ],
+      "source": "imported",
+      "status": "verified",
+      "summary": "Improve academic paper writing quality for ML/CV/NLP-style papers with clear section structure, paragraph flow, and reviewer-facing presentation. Use when drafting or revising Abstract, Introduction, Related Work, Method, Experiments, or Conclusion; polishing figures/tables; checking claim-support alignment; or performing self-review before submission.",
+      "legacy": {
+        "dirPath": "research-paper-writing",
+        "skillFile": "skills/research-paper-writing/SKILL.md",
+        "topLevelGroup": "Standalone",
+        "collection": "Paper Writing",
+        "domain": "cs"
+      },
+      "relatedSkills": [
+        "inno-paper-writing",
+        "scientific-writing",
+        "ml-paper-writing",
+        "inno-figure-gen"
       ]
     },
     {
