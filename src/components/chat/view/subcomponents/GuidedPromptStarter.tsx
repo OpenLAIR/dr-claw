@@ -91,7 +91,9 @@ export default function GuidedPromptStarter({
   }, []);
 
   const injectTemplate = (scenario: GuidedPromptScenario, skills: string[]) => {
-    const nextValue = buildTemplate(t, scenario, skills);
+    const template = buildTemplate(t, scenario, skills);
+    const currentValue = textareaRef.current?.value || '';
+    const nextValue = currentValue ? `${currentValue}\n\n${template}` : template;
     setInput(nextValue);
     setTimeout(() => {
       const el = textareaRef.current;

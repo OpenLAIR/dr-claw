@@ -33,7 +33,9 @@ export default function SkillShortcutsPanel({
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
   const inject = (prompt: string) => {
-    setInput(prompt);
+    const currentValue = textareaRef.current?.value || '';
+    const newValue = currentValue ? `${currentValue}\n\n${prompt}` : prompt;
+    setInput(newValue);
     setTimeout(() => textareaRef.current?.focus(), 100);
   };
 
