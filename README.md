@@ -5,6 +5,9 @@
 </div>
 
 <p align="center">
+<a href="https://openlair.github.io/dr-claw">
+<img src="https://img.shields.io/badge/%F0%9F%8C%90-Homepage-CB2B3E?style=for-the-badge" alt="Homepage" />
+</a>
 <a href="https://github.com/OpenLAIR/dr-claw">
 <img src="https://img.shields.io/badge/%F0%9F%A6%9E-Dr.%20Claw-CB2B3E?style=for-the-badge" alt="Dr. Claw" />
 </a>
@@ -72,6 +75,19 @@ Dr. Claw is a general-purpose AI research assistant designed to help researchers
 - **🗂️ Chat-Driven Pipeline** — Describe your research idea in Chat; the agent uses the `inno-pipeline-planner` skill to interactively generate a structured research brief and task list — no manual templates needed
 - **🤖 Multi-Agent Backend** — Seamlessly switch between Claude Code, Gemini CLI, and Codex as your execution engines
 
+### What the Pipeline Produces
+
+| | Artifact | Location | Description |
+|---|---|---|---|
+| 📚 | Survey reports | `Survey/reports/` | Literature reviews with citations from arXiv, Semantic Scholar, and web sources |
+| 💡 | Research ideas | `Ideation/ideas/` | Brainstorming outputs with multi-persona evaluation scores |
+| 🔬 | Experiment code | `Experiment/core_code/` | Implementation from the plan → implement → judge loop |
+| 📊 | Analysis results | `Experiment/analysis/` | Statistical analysis, tables, and paper-ready figures |
+| 📝 | Paper draft | `Publication/paper/` | Academic manuscript (IEEE/ACM format) with citations and LaTeX math |
+| 🎞️ | Presentation | `Promotion/slides/` | Slide deck, TTS narration audio, and demo video |
+
+> See [docs/pipeline-outputs.md](docs/pipeline-outputs.md) for the full artifact list and project directory structure.
+
 <details>
 <summary><span style="font-size: 1.17em; font-weight: 600;">More Features</span></summary>
 
@@ -118,7 +134,7 @@ Dr. Claw is a general-purpose AI research assistant designed to help researchers
 
 Cursor agent support is in progress and coming soon.
 
-### Installation
+### Installation 
 
 1. **Clone the repository:**
 ```bash
@@ -140,14 +156,66 @@ cp .env.example .env
 Need custom ports, auth, or workspace settings? See [docs/configuration.md](docs/configuration.md).
 
 4. **Start the application:**
+
 ```bash
 # Development mode (with hot reload)
 npm run dev
 ```
 
-5. **Open your browser** at `http://localhost:5173` (or the port you configured in `.env`)
+Then create your account via the bowser `http://localhost:5173`.
 
-If agent web search does not work later, see **Troubleshooting Web Search** below.
+5. **Use the application**
+
+There are two ways to interact with Dr. Claw: the **frontend UI** workflow or the **terminal-only**. The UI provides richer visualization but may encounter occasional bugs; the terminal approach is more stable and lightweight.
+
+#### Option A: Frontend UI
+
+Open your browser at `http://localhost:5173` (or the port you configured in `.env`).
+
+
+
+#### Option B: Terminal Only
+
+<p align="center">
+  <img src="public/screenshots/terminal_example1.png" alt="Terminal workflow example" width="800">
+</p>
+
+Open a **second terminal** (keep `npm run dev` running in the first) and install the `drclaw` CLI harness:
+
+```bash
+pip install -e ./agent-harness
+```
+
+Then log in with the credentials you created during setup:
+
+```bash
+drclaw auth login --username YOUR_USERNAME --password YOUR_PASSWORD
+```
+
+Install at least one agent CLI (if you haven't already):
+
+| Agent | Install | Auth |
+|-------|---------|------|
+| Claude Code | `npm install -g @anthropic-ai/claude-code` | `claude` → follow OAuth prompt |
+| Gemini CLI | `npm install -g @google/gemini-cli` | `gemini` → Google sign-in, or `export GOOGLE_API_KEY=...` |
+| Codex CLI | `npm install -g @openai/codex` | `codex login`, or `export OPENAI_API_KEY=...` |
+
+Navigate to the project directory you want to work in and launch any of the agents:
+
+```bash
+cd /path/to/your/project
+claude    # or: gemini | codex
+```
+
+Skills from `dr-claw/skills/` are automatically symlinked into each project's `.claude/skills/` directory when the project is created, so the agent discovers them without extra configuration. You can also reference any skill manually inside a session:
+
+```
+> Read .claude/skills/inno-experiment-analysis/SKILL.md and follow it to analyze my results.
+```
+
+
+
+If agent web search does not work later, see [Troubleshooting Web Search](#troubleshooting-web-search) below.
 
 ## OpenClaw Integration
 
@@ -504,6 +572,7 @@ If you want Dr. Claw to execute the generated task list end-to-end for you, use 
 
 </details>
 
+<a id="troubleshooting-web-search"></a>
 <details>
 <summary><strong>Step 4 — Troubleshooting Web Search</strong></summary>
 
@@ -690,11 +759,12 @@ If you find Dr. Claw useful in your research, please cite:
 
 ```bibtex
 @misc{song2026drclaw,
-  author       = {Dingjie Song and Hanrong Zhang and Dawei Liu and Yixin Liu and Zhengqing Yuan and Siqi Zhang and Lichao Sun},
+  author       = {Dingjie Song and Hanrong Zhang and Dawei Liu and Yixin Liu and Zhengqing Yuan and Zongxia Li and Siqi Zhang and Lichao Sun},
   title        = {Dr. Claw: An AI Research Workspace from Idea to Paper},
   year         = {2026},
   organization = {GitHub},
   url          = {https://github.com/OpenLAIR/dr-claw},
+  homepage     = {https://openlair.github.io/dr-claw},
 }
 ```
 

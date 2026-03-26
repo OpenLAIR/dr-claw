@@ -1,3 +1,10 @@
+# Skills
+
+Skills are structured instruction files (SKILL.md) that tell an AI coding agent (Claude Code, Gemini CLI, etc.) what to do and how to do it. They are NOT standalone scripts — they are prompts/playbooks that an agent reads and follows:
+
+`
+Your instruction → Agent → reads SKILL.md → follows the instructions and use Skills
+`
 # InnoFlow Research Pipeline Skills
 
 Project-scoped skills for the Research flow (idea generation, code survey, implementation plan, ML dev, experiments). Canonical behavior is in the Medical_ai_scientist_idea repo: `run_infer_idea_ours.py` (idea mode) and `run_infer.py` (plan mode).
