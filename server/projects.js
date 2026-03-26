@@ -2487,6 +2487,19 @@ async function ensureProjectSkillLinks(projectPath) {
             try { await fs.unlink(path.join(skillsSubdir, name)); } catch (_) {}
           }
           await fs.symlink(absolutePath, linkPath, 'dir');
+          // Create underscore alias so Gemini model's underscore-converted names resolve correctly
+          if (name.includes('-')) {
+            const underscoreName = name.replace(/-/g, '_');
+            const aliasPath = isAgents && !coreNames.has(name)
+              ? path.join(skillsSubdir, 'library', underscoreName)
+              : path.join(skillsSubdir, underscoreName);
+            try {
+              try { await fs.unlink(aliasPath); } catch (_) {}
+              await fs.symlink(absolutePath, aliasPath, 'dir');
+            } catch (aliasErr) {
+              console.error(`[projects] Failed to create underscore alias ${underscoreName}:`, aliasErr.message);
+            }
+          }
         } catch (err) {
           console.error(`[projects] Failed to symlink ${name} in ${dir}/skills:`, err.message);
         }
