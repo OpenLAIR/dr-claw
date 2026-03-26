@@ -49,6 +49,11 @@ export type SidebarProps = {
   onOpenSkills: () => void;
   onOpenNews: () => void;
   onOpenCommunityTools: () => void;
+  onStartResearchRun: (toolId: string) => void;
+  onSelectResearchRun: (toolId: string, runPath: string) => void;
+  onDeleteResearchRun?: (toolId: string, runPath: string) => Promise<void>;
+  selectedResearchTool: string | null;
+  selectedResearchRun: string | null;
   onImportedProjectCreated?: (project: Project, options?: ProjectCreationOptions) => void;
   newSessionMode?: SessionMode;
 };

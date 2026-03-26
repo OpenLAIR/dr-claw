@@ -365,6 +365,12 @@ export const api = {
     run: (toolId, command, args) => authenticatedFetch(`/api/community-tools/${toolId}/run`, { method: 'POST', body: JSON.stringify({ command, args }) }),
     stop: (toolId) => authenticatedFetch(`/api/community-tools/${toolId}/stop`, { method: 'POST' }),
     doctor: (toolId) => authenticatedFetch(`/api/community-tools/${toolId}/doctor`, { method: 'POST' }),
+    outputs: (toolId) => authenticatedFetch(`/api/community-tools/${toolId}/outputs`),
+    readOutputFile: (toolId, filePath) => authenticatedFetch(`/api/community-tools/${toolId}/outputs/file?path=${encodeURIComponent(filePath)}`),
+    deleteRun: (toolId, runPath) => authenticatedFetch(`/api/community-tools/${toolId}/outputs/run`, {
+      method: 'DELETE',
+      body: JSON.stringify({ runPath }),
+    }),
   },
 
   // Generic GET method for any endpoint

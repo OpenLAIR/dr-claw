@@ -177,6 +177,31 @@ export function useProjectsState({
   const [importedProjectAnalysisPrompt, setImportedProjectAnalysisPrompt] = useState<ImportedProjectAnalysisPrompt | null>(null);
   const [newSessionMode, setNewSessionMode] = useState<SessionMode>(() => readStoredNewSessionMode());
 
+  const [selectedResearchTool, setSelectedResearchTool] = useState<string | null>(null);
+  const [selectedResearchRun, setSelectedResearchRun] = useState<string | null>(null);
+
+  const [communityToolTerminal, setCommunityToolTerminal] = useState<{
+    toolId: string;
+    toolName: string;
+    installDir: string;
+    setupDir: string;
+    initialCommand?: string;
+  } | null>(null);
+
+  const openCommunityToolTerminal = useCallback((config: {
+    toolId: string;
+    toolName: string;
+    installDir: string;
+    setupDir: string;
+    initialCommand?: string;
+  }) => {
+    setCommunityToolTerminal(config);
+  }, []);
+
+  const closeCommunityToolTerminal = useCallback(() => {
+    setCommunityToolTerminal(null);
+  }, []);
+
   const loadingProgressTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const projectsUpdateDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingProjectsMessageRef = useRef<ProjectsUpdatedMessage | null>(null);
@@ -493,8 +518,10 @@ export function useProjectsState({
     (project: Project) => {
       setSelectedProject(project);
       setSelectedSession(null);
+      // Keep selectedResearchRun/Tool alive so ResearchRunViewer stays mounted
+      // (preserves terminal logs & polling). CSS hidden handles visibility.
       setActiveTab((currentTab) =>
-        currentTab === 'dashboard' || currentTab === 'trash' || currentTab === 'news' || currentTab === 'skills'
+        currentTab === 'dashboard' || currentTab === 'trash' || currentTab === 'news' || currentTab === 'skills' || currentTab === 'research-run'
           ? 'chat'
           : currentTab,
       );
@@ -633,10 +660,44 @@ export function useProjectsState({
     }
   }, [isMobile, navigate]);
 
+  const [runConfigToolId, setRunConfigToolId] = useState<string | null>(null);
+
+  const handleStartResearchRun = useCallback((toolId: string) => {
+    setRunConfigToolId(toolId);
+  }, []);
+
   const handleOpenCommunityTools = useCallback(() => {
     setSelectedProject(null);
     setSelectedSession(null);
     setActiveTab('community-tools');
+    navigate('/');
+
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  }, [isMobile, navigate]);
+
+  const handleDeleteResearchRun = useCallback(async (toolId: string, runPath: string) => {
+    const res = await api.communityTools.deleteRun(toolId, runPath);
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || 'Failed to delete run');
+    }
+    // If the deleted run is currently selected, clear selection
+    if (selectedResearchRun === runPath && selectedResearchTool === toolId) {
+      setSelectedResearchRun(null);
+      setSelectedResearchTool(null);
+      setActiveTab('dashboard');
+      navigate('/');
+    }
+  }, [selectedResearchRun, selectedResearchTool, navigate]);
+
+  const handleSelectResearchRun = useCallback((toolId: string, runPath: string) => {
+    setSelectedResearchTool(toolId);
+    setSelectedResearchRun(runPath);
+    setSelectedProject(null);
+    setSelectedSession(null);
+    setActiveTab('research-run');
     navigate('/');
 
     if (isMobile) {
@@ -754,6 +815,11 @@ export function useProjectsState({
       onOpenSkills: handleOpenSkills,
       onOpenNews: handleOpenNews,
       onOpenCommunityTools: handleOpenCommunityTools,
+      onStartResearchRun: handleStartResearchRun,
+      onSelectResearchRun: handleSelectResearchRun,
+      onDeleteResearchRun: handleDeleteResearchRun,
+      selectedResearchTool,
+      selectedResearchRun,
       onImportedProjectCreated: handleProjectCreatedWithIntake,
       importedProjectAnalysisPrompt,
       onDismissImportedProjectAnalysisPrompt: clearImportedProjectAnalysisPrompt,
@@ -763,9 +829,12 @@ export function useProjectsState({
       activeTab,
       clearImportedProjectAnalysisPrompt,
       handleNewSession,
+      handleDeleteResearchRun,
       handleOpenDashboard,
       handleOpenNews,
       handleOpenCommunityTools,
+      handleStartResearchRun,
+      handleSelectResearchRun,
       handleOpenSkills,
       handleOpenTrash,
       handleProjectCreatedWithIntake,
@@ -782,6 +851,8 @@ export function useProjectsState({
       newSessionMode,
       projects,
       selectedProject,
+      selectedResearchRun,
+      selectedResearchTool,
       selectedSession,
       settingsInitialTab,
       showSettings,
@@ -810,6 +881,8 @@ export function useProjectsState({
     setIsInputFocused,
     setShowSettings,
     openSettings,
+    runConfigToolId,
+    setRunConfigToolId,
     fetchProjects,
     fetchTrashProjects,
     sidebarSharedProps,
@@ -829,5 +902,12 @@ export function useProjectsState({
     handleProjectCreatedWithIntake,
     clearPendingAutoIntake,
     clearImportedProjectAnalysisPrompt,
+    communityToolTerminal,
+    openCommunityToolTerminal,
+    closeCommunityToolTerminal,
+    selectedResearchTool,
+    selectedResearchRun,
+    handleSelectResearchRun,
+    handleDeleteResearchRun,
   };
 }

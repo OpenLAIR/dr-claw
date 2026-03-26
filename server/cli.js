@@ -61,8 +61,9 @@ function loadEnvFile() {
         const envPath = path.join(__dirname, '../.env');
         const envFile = fs.readFileSync(envPath, 'utf8');
         envFile.split('\n').forEach(line => {
-            const trimmedLine = line.trim();
+            let trimmedLine = line.trim();
             if (trimmedLine && !trimmedLine.startsWith('#')) {
+                if (trimmedLine.startsWith('export ')) trimmedLine = trimmedLine.slice(7);
                 const [key, ...valueParts] = trimmedLine.split('=');
                 if (key && valueParts.length > 0 && !process.env[key]) {
                     process.env[key] = valueParts.join('=').trim();

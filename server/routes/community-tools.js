@@ -54,7 +54,7 @@ router.get('/:toolId/status', async (req, res) => {
     res.json({
       installed: !!installed,
       info: installed,
-      activeOperation: op ? { type: op.type, logs: op.logs } : null,
+      activeOperation: op ? { type: op.type, logs: op.logs, running: op.process !== null } : null,
     });
   } catch (error) {
     console.error('Error getting tool status:', error);
@@ -66,7 +66,8 @@ router.get('/:toolId/status', async (req, res) => {
 router.post('/:toolId/install', async (req, res) => {
   try {
     const { toolId } = req.params;
-    if (activeOps.has(toolId)) {
+    const existingOp = activeOps.get(toolId);
+    if (existingOp?.type === 'install') {
       return res.status(409).json({ error: 'An operation is already in progress for this tool' });
     }
 
@@ -118,7 +119,10 @@ router.post('/:toolId/install', async (req, res) => {
     } catch (err) {
       op.logs.push(`✗ Error: ${err.message}`);
     } finally {
-      setTimeout(() => activeOps.delete(toolId), 60_000);
+      const currentOp = op;
+      setTimeout(() => {
+        if (activeOps.get(toolId) === currentOp) activeOps.delete(toolId);
+      }, 60_000);
     }
   } catch (error) {
     console.error('Error installing community tool:', error);
@@ -188,11 +192,12 @@ router.post('/:toolId/run', async (req, res) => {
     const adapter = getAdapter(tool.type);
     if (!adapter.run) return res.status(400).json({ error: 'This tool does not support run' });
 
-    if (activeOps.has(toolId) && activeOps.get(toolId).type === 'run') {
+    const existingRunOp = activeOps.get(toolId);
+    if (existingRunOp?.type === 'run' && existingRunOp.process !== null) {
       return res.status(409).json({ error: 'Tool is already running' });
     }
 
-    const op = { type: 'run', logs: [], process: null, aborted: false };
+    const op = { type: 'run', logs: [], process: null, aborted: false, cleanupScheduled: false };
     activeOps.set(toolId, op);
 
     const proc = adapter.run(tool, installed.installDir, command, args, (data) => {
@@ -203,13 +208,25 @@ router.post('/:toolId/run', async (req, res) => {
     proc.on('close', (code) => {
       op.logs.push(code === 0 ? '\n✓ Process exited successfully' : `\n✗ Process exited with code ${code}`);
       op.process = null;
-      setTimeout(() => activeOps.delete(toolId), 60_000);
+      if (!op.cleanupScheduled) {
+        op.cleanupScheduled = true;
+        const currentOp = op;
+        setTimeout(() => {
+          if (activeOps.get(toolId) === currentOp) activeOps.delete(toolId);
+        }, 60_000);
+      }
     });
 
     proc.on('error', (err) => {
       op.logs.push(`\n✗ Error: ${err.message}`);
       op.process = null;
-      setTimeout(() => activeOps.delete(toolId), 60_000);
+      if (!op.cleanupScheduled) {
+        op.cleanupScheduled = true;
+        const currentOp = op;
+        setTimeout(() => {
+          if (activeOps.get(toolId) === currentOp) activeOps.delete(toolId);
+        }, 60_000);
+      }
     });
 
     res.json({ success: true, message: 'Command started' });
@@ -251,6 +268,115 @@ router.post('/:toolId/doctor', async (req, res) => {
     res.json({ success: true, results });
   } catch (error) {
     console.error('Error running doctor for community tool:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ─── GET /:toolId/outputs ───
+// List output files (runs/stages) for the tool.
+// Lists setupDir directly — researchclaw writes artifacts/ there by default.
+router.get('/:toolId/outputs', async (req, res) => {
+  try {
+    const { toolId } = req.params;
+    const installed = await getInstalledTool(toolId);
+    if (!installed) return res.status(400).json({ error: 'Tool is not installed' });
+
+    const setupDir = installed.setupDir || installed.installDir;
+    const outputBase = path.resolve(setupDir);
+
+    async function listDir(dir, depth = 0) {
+      if (depth > 4) return [];
+      let entries;
+      try { entries = await fs.readdir(dir, { withFileTypes: true }); } catch { return []; }
+      const items = [];
+      for (const e of entries) {
+        if (e.name.startsWith('.')) continue;
+        const rel = path.relative(outputBase, path.join(dir, e.name));
+        if (e.isDirectory()) {
+          items.push({ name: e.name, path: rel, type: 'dir', children: await listDir(path.join(dir, e.name), depth + 1) });
+        } else {
+          const stat = await fs.stat(path.join(dir, e.name)).catch(() => null);
+          items.push({ name: e.name, path: rel, type: 'file', size: stat?.size || 0 });
+        }
+      }
+      return items;
+    }
+
+    const tree = await listDir(outputBase);
+    res.json({ outputDir: outputBase, tree });
+  } catch (error) {
+    console.error('Error listing outputs:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ─── GET /:toolId/outputs/file ───
+// Read a single output file
+router.get('/:toolId/outputs/file', async (req, res) => {
+  try {
+    const { toolId } = req.params;
+    const filePath = req.query.path;
+    if (!filePath) return res.status(400).json({ error: 'path query parameter is required' });
+
+    const installed = await getInstalledTool(toolId);
+    if (!installed) return res.status(400).json({ error: 'Tool is not installed' });
+
+    const setupDir = installed.setupDir || installed.installDir;
+    const outputBase = path.resolve(setupDir);
+    const resolved = path.resolve(outputBase, filePath);
+
+    // Prevent path traversal
+    if (!resolved.startsWith(outputBase + path.sep) && resolved !== outputBase) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const content = await fs.readFile(resolved, 'utf8');
+    res.json({ content, path: filePath });
+  } catch (error) {
+    if (error.code === 'ENOENT') return res.status(404).json({ error: 'File not found' });
+    console.error('Error reading output file:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ─── DELETE /:toolId/outputs/run ───
+// Move a run directory to .trash (soft delete)
+router.delete('/:toolId/outputs/run', async (req, res) => {
+  try {
+    const { toolId } = req.params;
+    const { runPath } = req.body;
+    if (!runPath) return res.status(400).json({ error: 'runPath is required' });
+
+    const installed = await getInstalledTool(toolId);
+    if (!installed) return res.status(400).json({ error: 'Tool is not installed' });
+
+    const setupDir = installed.setupDir || installed.installDir;
+    const outputBase = path.resolve(setupDir);
+    const resolved = path.resolve(outputBase, runPath);
+
+    // Prevent path traversal
+    if (!resolved.startsWith(outputBase + path.sep) && resolved !== outputBase) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    // Don't allow trashing the output base itself
+    if (resolved === outputBase) {
+      return res.status(403).json({ error: 'Cannot trash output root' });
+    }
+
+    // Move to .trash/ under outputBase, preserving the run directory name
+    const runDirName = path.basename(resolved);
+    const trashBase = path.join(outputBase, '.trash');
+    await fs.mkdir(trashBase, { recursive: true });
+
+    // Append timestamp to avoid collisions if the same name is trashed twice
+    const trashDest = path.join(trashBase, `${runDirName}__${Date.now()}`);
+    await fs.rename(resolved, trashDest);
+
+    res.json({ success: true, message: 'Run moved to trash', trashPath: path.relative(outputBase, trashDest) });
+  } catch (error) {
+    if (error.code === 'ENOENT') return res.status(404).json({ error: 'Run not found' });
+    console.error('Error trashing run:', error);
     res.status(500).json({ error: error.message });
   }
 });

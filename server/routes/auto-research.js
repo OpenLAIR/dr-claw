@@ -1,7 +1,8 @@
 import express from 'express';
 import crypto from 'crypto';
 import path from 'path';
-import { promises as fs } from 'fs';
+import { promises as fs, readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
 
 import { appSettingsDb, autoResearchDb, userDb } from '../database/db.js';
 import { extractProjectDirectory } from '../projects.js';
@@ -11,6 +12,23 @@ import { queryCodex, abortCodexSession, isCodexSessionActive } from '../openai-c
 import { spawnGemini, abortGeminiSession, isGeminiSessionActive } from '../gemini-cli.js';
 import { sendAutoResearchCompletionEmail } from '../utils/auto-research-mailer.js';
 import { getGeminiApiKeyForUser, withGeminiApiKeyEnv } from '../utils/geminiApiKey.js';
+
+const __filename_local = fileURLToPath(import.meta.url);
+const __dirname_local = path.dirname(__filename_local);
+
+function loadRecommendedModelFromRegistry() {
+  try {
+    const registryPath = path.resolve(__dirname_local, '..', 'data', 'community-tools-registry.json');
+    const data = JSON.parse(readFileSync(registryPath, 'utf8'));
+    const tool = data.find((t) => t.id === 'autoresearchclaw');
+    if (tool?.recommendedProvider && tool?.recommendedModel) {
+      return { recommendedProvider: tool.recommendedProvider, recommendedModel: tool.recommendedModel };
+    }
+  } catch { /* ignore */ }
+  return { recommendedProvider: null, recommendedModel: null };
+}
+
+const _recommendedModel = loadRecommendedModelFromRegistry();
 
 const router = express.Router();
 
@@ -414,6 +432,8 @@ router.get('/:projectName/status', async (req, res) => {
     res.json({
       success: true,
       provider: activeProvider,
+      recommendedProvider: _recommendedModel.recommendedProvider,
+      recommendedModel: _recommendedModel.recommendedModel,
       eligibility,
       profile: {
         notificationEmail: profile?.notification_email || null,

@@ -1,6 +1,8 @@
 import {
   Activity,
   ArrowRight,
+  ChevronDown,
+  ChevronRight,
   FolderOpen,
   FlaskConical,
   MessageSquare,
@@ -15,6 +17,7 @@ import { Button } from '../../ui/button';
 import { formatTimeAgo } from '../../../utils/dateUtils';
 import type { AppTab, Project, ProjectSession } from '../../../types/app';
 import { CLAUDE_MODELS, CODEX_MODELS, GEMINI_MODELS } from '../../../../shared/modelConstants';
+import AutoResearchWizard from './AutoResearchWizard';
 
 type AutoResearchProvider = 'claude' | 'codex' | 'gemini';
 
@@ -62,6 +65,8 @@ type AutoResearchRun = {
 
 type AutoResearchStatus = {
   provider?: AutoResearchProvider;
+  recommendedProvider?: AutoResearchProvider | null;
+  recommendedModel?: string | null;
   eligibility?: {
     eligible: boolean;
     reasons: string[];
@@ -102,10 +107,19 @@ function getDefaultModelForProvider(provider: AutoResearchProvider): string {
   return CLAUDE_MODELS.DEFAULT || 'sonnet';
 }
 
-function getDefaultConfig(provider: AutoResearchProvider = 'claude'): AutoResearchConfig {
+function getDefaultConfig(
+  provider: AutoResearchProvider = 'claude',
+  recommendedProvider?: AutoResearchProvider | null,
+  recommendedModel?: string | null,
+): AutoResearchConfig {
+  const resolvedProvider = recommendedProvider || provider;
+  const resolvedModel =
+    recommendedModel && isModelValidForProvider(resolvedProvider, recommendedModel)
+      ? recommendedModel
+      : getDefaultModelForProvider(resolvedProvider);
   return {
-    provider,
-    model: getDefaultModelForProvider(provider),
+    provider: resolvedProvider,
+    model: resolvedModel,
   };
 }
 
@@ -129,11 +143,12 @@ function getModelFromStatus(status?: AutoResearchStatus, provider: AutoResearchP
 }
 
 function resolveAutoResearchConfig(currentConfig: AutoResearchConfig | undefined, status?: AutoResearchStatus): AutoResearchConfig {
-  const provider = currentConfig?.provider ?? status?.provider ?? 'claude';
+  const provider = currentConfig?.provider ?? status?.provider ?? status?.recommendedProvider ?? 'claude';
+  const recommendedModel = status?.recommendedModel && isModelValidForProvider(provider, status.recommendedModel) ? status.recommendedModel : null;
   const statusModel = getModelFromStatus(status, provider);
   const model = isModelValidForProvider(provider, currentConfig?.model)
-    ? currentConfig?.model ?? statusModel
-    : statusModel;
+    ? currentConfig?.model ?? recommendedModel ?? statusModel
+    : recommendedModel ?? statusModel;
 
   return {
     provider,
@@ -287,6 +302,8 @@ export default function ProjectDashboard({
   const [autoResearchStatuses, setAutoResearchStatuses] = useState<Record<string, AutoResearchStatus>>({});
   const [autoResearchLoading, setAutoResearchLoading] = useState<Record<string, boolean>>({});
   const [autoResearchConfigByProject, setAutoResearchConfigByProject] = useState<Record<string, AutoResearchConfig>>({});
+  const [wizardOpen, setWizardOpen] = useState<string | null>(null);
+  const [modelSelectorExpanded, setModelSelectorExpanded] = useState<Record<string, boolean>>({});
 
   const totals = useMemo(() => {
     const projectCount = projects.length;
@@ -652,12 +669,18 @@ export default function ProjectDashboard({
             const autoResearchDisabledReason = autoResearch?.eligibility?.reasons?.[0];
             const autoResearchBusy = Boolean(autoResearchLoading[project.name]);
             const tone = PROJECT_TONES[index % PROJECT_TONES.length];
-            const autoResearchConfig = autoResearchConfigByProject[project.name] ?? getDefaultConfig(autoResearch?.provider || 'claude');
+            const autoResearchConfig = autoResearchConfigByProject[project.name] ?? getDefaultConfig(autoResearch?.provider || 'claude', autoResearch?.recommendedProvider, autoResearch?.recommendedModel);
             const autoResearchConfigWithDefaults = isModelValidForProvider(autoResearchConfig.provider, autoResearchConfig.model)
               ? autoResearchConfig
-              : getDefaultConfig(autoResearchConfig.provider);
+              : getDefaultConfig(autoResearchConfig.provider, autoResearch?.recommendedProvider, autoResearch?.recommendedModel);
             const openableSessionId = activeRun?.sessionId || latestRun?.sessionId;
             const hasAutoResearchRun = Boolean(activeRun || latestRun);
+            const isModelExpanded = Boolean(modelSelectorExpanded[project.name]);
+            const providerLabel = AUTO_RESEARCH_PROVIDER_OPTIONS.find((o) => o.value === autoResearchConfigWithDefaults.provider)?.label || autoResearchConfigWithDefaults.provider;
+            const modelLabel = AUTO_RESEARCH_MODELS_BY_PROVIDER[autoResearchConfigWithDefaults.provider]?.find((o) => o.value === autoResearchConfigWithDefaults.model)?.label || autoResearchConfigWithDefaults.model;
+            const canOpenWizard = !activeRun && autoResearch?.eligibility?.reasons?.some(
+              (r) => r === 'research_brief_missing' || r === 'tasks_file_missing',
+            );
 
             return (
               <article
@@ -787,41 +810,59 @@ export default function ProjectDashboard({
                         {getAutoResearchHint(autoResearch)}
                       </div>
                     ) : null}
-                    <div className="mt-3 flex flex-wrap gap-3">
-                      <label className="min-w-[150px] flex-1">
-                        <span className="mb-1 block text-[11px] font-medium text-muted-foreground">Provider</span>
-                        <select
-                          value={autoResearchConfigWithDefaults.provider}
-                          onChange={(event) => {
-                            handleAutoResearchProviderChange(project.name, event.target.value as AutoResearchProvider);
-                          }}
-                          className="w-full rounded-full border border-border/60 bg-white px-3 py-2 text-xs dark:bg-slate-950"
-                          disabled={autoResearchBusy || Boolean(activeRun)}
-                        >
-                          {AUTO_RESEARCH_PROVIDER_OPTIONS.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                      <label className="min-w-[180px] flex-1">
-                        <span className="mb-1 block text-[11px] font-medium text-muted-foreground">Model</span>
-                        <select
-                          value={autoResearchConfigWithDefaults.model}
-                          onChange={(event) => {
-                            handleAutoResearchModelChange(project.name, event.target.value, autoResearchConfigWithDefaults.provider);
-                          }}
-                          className="w-full rounded-full border border-border/60 bg-white px-3 py-2 text-xs dark:bg-slate-950"
-                          disabled={autoResearchBusy || Boolean(activeRun)}
-                        >
-                          {AUTO_RESEARCH_MODELS_BY_PROVIDER[autoResearchConfigWithDefaults.provider].map((modelOption) => (
-                            <option key={modelOption.value} value={modelOption.value}>
-                              {modelOption.label}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
+                    <div className="mt-3">
+                      <button
+                        type="button"
+                        className="flex w-full items-center gap-2 rounded-xl border border-border/40 bg-background/50 px-3 py-2 text-left text-xs text-muted-foreground transition-colors hover:bg-background/80"
+                        onClick={() => setModelSelectorExpanded((prev) => ({ ...prev, [project.name]: !prev[project.name] }))}
+                        disabled={autoResearchBusy || Boolean(activeRun)}
+                      >
+                        {isModelExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                        <span className="font-medium">
+                          {t('projectDashboard.autoResearch.modelSelectorCollapsed', { provider: providerLabel, model: modelLabel })}
+                        </span>
+                        <span className="ml-auto text-[10px] text-muted-foreground/70">
+                          {t('projectDashboard.autoResearch.changeModel')}
+                        </span>
+                      </button>
+                      {isModelExpanded && (
+                        <div className="mt-2 flex flex-wrap gap-3">
+                          <label className="min-w-[150px] flex-1">
+                            <span className="mb-1 block text-[11px] font-medium text-muted-foreground">Provider</span>
+                            <select
+                              value={autoResearchConfigWithDefaults.provider}
+                              onChange={(event) => {
+                                handleAutoResearchProviderChange(project.name, event.target.value as AutoResearchProvider);
+                              }}
+                              className="w-full rounded-full border border-border/60 bg-white px-3 py-2 text-xs dark:bg-slate-950"
+                              disabled={autoResearchBusy || Boolean(activeRun)}
+                            >
+                              {AUTO_RESEARCH_PROVIDER_OPTIONS.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                  {option.label}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                          <label className="min-w-[180px] flex-1">
+                            <span className="mb-1 block text-[11px] font-medium text-muted-foreground">Model</span>
+                            <select
+                              value={autoResearchConfigWithDefaults.model}
+                              onChange={(event) => {
+                                handleAutoResearchModelChange(project.name, event.target.value, autoResearchConfigWithDefaults.provider);
+                              }}
+                              className="w-full rounded-full border border-border/60 bg-white px-3 py-2 text-xs dark:bg-slate-950"
+                              disabled={autoResearchBusy || Boolean(activeRun)}
+                            >
+                              {AUTO_RESEARCH_MODELS_BY_PROVIDER[autoResearchConfigWithDefaults.provider].map((modelOption) => (
+                                <option key={modelOption.value} value={modelOption.value}>
+                                  {modelOption.label}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                        </div>
+                      )}
                     </div>
                     {hasAutoResearchRun ? (
                       (() => {
@@ -865,10 +906,14 @@ export default function ProjectDashboard({
                       variant={activeRun ? 'outline' : 'default'}
                       size="sm"
                       className="rounded-full"
-                      disabled={autoResearchBusy || (!activeRun && !autoResearch?.eligibility?.eligible)}
+                      disabled={autoResearchBusy || (!activeRun && !autoResearch?.eligibility?.eligible && !canOpenWizard)}
                       onClick={() => {
                         if (activeRun) {
                           void handleAutoResearchCancel(project.name);
+                          return;
+                        }
+                        if (canOpenWizard) {
+                          setWizardOpen(project.name);
                           return;
                         }
                         void handleAutoResearchStart(project.name);
@@ -920,6 +965,30 @@ export default function ProjectDashboard({
             );
           })}
         </section>
+
+        {wizardOpen && (() => {
+          const wizardStatus = autoResearchStatuses[wizardOpen];
+          const wizardConfig = autoResearchConfigByProject[wizardOpen] ?? getDefaultConfig('claude', wizardStatus?.recommendedProvider, wizardStatus?.recommendedModel);
+          const wizardConfigResolved = isModelValidForProvider(wizardConfig.provider, wizardConfig.model)
+            ? wizardConfig
+            : getDefaultConfig(wizardConfig.provider, wizardStatus?.recommendedProvider, wizardStatus?.recommendedModel);
+          const wProviderLabel = AUTO_RESEARCH_PROVIDER_OPTIONS.find((o) => o.value === wizardConfigResolved.provider)?.label || wizardConfigResolved.provider;
+          const wModelLabel = AUTO_RESEARCH_MODELS_BY_PROVIDER[wizardConfigResolved.provider]?.find((o) => o.value === wizardConfigResolved.model)?.label || wizardConfigResolved.model;
+          return (
+            <AutoResearchWizard
+              projectName={wizardOpen}
+              provider={wizardConfigResolved.provider}
+              model={wizardConfigResolved.model}
+              providerLabel={wProviderLabel}
+              modelLabel={wModelLabel}
+              onClose={() => setWizardOpen(null)}
+              onComplete={() => {
+                setWizardOpen(null);
+                void refreshAutoResearchStatus(wizardOpen);
+              }}
+            />
+          );
+        })()}
       </div>
     </div>
   );

@@ -12,6 +12,7 @@ import ProjectDashboard from '../../project-dashboard/view/ProjectDashboard';
 import TrashDashboard from '../../project-dashboard/view/TrashDashboard';
 import NewsDashboard from '../../news-dashboard/view/NewsDashboard';
 import CommunityToolsPanel from '../../CommunityToolsPanel';
+import ResearchRunViewer from '../../ResearchRunViewer';
 
 import MainContentHeader from './subcomponents/MainContentHeader';
 import MainContentStateView from './subcomponents/MainContentStateView';
@@ -63,6 +64,9 @@ function MainContent({
   onStartWorkspaceQa,
   newSessionMode,
   onNewSessionModeChange,
+  onOpenCommunityToolTerminal,
+  selectedResearchTool,
+  selectedResearchRun,
 }: MainContentProps) {
   const { preferences } = useUiPreferences();
   const { autoExpandTools, showRawParameters, showThinking, autoScrollToBottom, sendByCtrlEnter } = preferences;
@@ -178,47 +182,9 @@ function MainContent({
     );
   }
 
-  if (activeTab === 'community-tools') {
-    return (
-      <div className="h-full flex flex-col">
-        <MainContentHeader
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          selectedProject={null}
-          selectedSession={null}
-          shouldShowTasksTab={shouldShowTasksTab}
-          isMobile={isMobile}
-          onMenuClick={onMenuClick}
-        />
+  const isGlobalTab = activeTab === 'community-tools' || activeTab === 'research-run' || activeTab === 'news';
 
-        <div className="flex-1 min-h-0 overflow-hidden">
-          <CommunityToolsPanel />
-        </div>
-      </div>
-    );
-  }
-
-  if (activeTab === 'news') {
-    return (
-      <div className="h-full flex flex-col">
-        <MainContentHeader
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          selectedProject={null}
-          selectedSession={null}
-          shouldShowTasksTab={shouldShowTasksTab}
-          isMobile={isMobile}
-          onMenuClick={onMenuClick}
-        />
-
-        <div className="flex-1 min-h-0 overflow-hidden">
-          <NewsDashboard />
-        </div>
-      </div>
-    );
-  }
-
-  if (!selectedProject) {
+  if (!selectedProject && !isGlobalTab) {
     return <MainContentStateView mode="empty" isMobile={isMobile} onMenuClick={onMenuClick} />;
   }
 
@@ -227,111 +193,135 @@ function MainContent({
       <MainContentHeader
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        selectedProject={selectedProject}
-        selectedSession={selectedSession}
+        selectedProject={isGlobalTab ? null : selectedProject ?? null}
+        selectedSession={isGlobalTab ? null : selectedSession ?? null}
         shouldShowTasksTab={shouldShowTasksTab}
         isMobile={isMobile}
         onMenuClick={onMenuClick}
       />
 
       <div className="flex-1 flex min-h-0 overflow-hidden">
-        <div className={`flex flex-col min-h-0 overflow-hidden ${editorExpanded ? 'hidden' : ''} flex-1`}>
-          <div className={`h-full ${activeTab === 'chat' ? 'block' : 'hidden'}`}>
-            <ErrorBoundary showDetails>
-              <ChatInterface
-                selectedProject={selectedProject}
-                selectedSession={selectedSession}
-                ws={ws}
-                sendMessage={sendMessage}
-                latestMessage={latestMessage}
-                onFileOpen={handleFileOpen}
-                onInputFocusChange={onInputFocusChange}
-                onSessionActive={onSessionActive}
-                onSessionInactive={onSessionInactive}
-                onSessionProcessing={onSessionProcessing}
-                onSessionNotProcessing={onSessionNotProcessing}
-                processingSessions={processingSessions}
-                onReplaceTemporarySession={onReplaceTemporarySession}
-                onNavigateToSession={onNavigateToSession}
-                onShowSettings={onShowSettings}
-                autoExpandTools={autoExpandTools}
-                showRawParameters={showRawParameters}
-                showThinking={showThinking}
-                autoScrollToBottom={autoScrollToBottom}
-                sendByCtrlEnter={sendByCtrlEnter}
-                externalMessageUpdate={externalMessageUpdate}
-                onShowAllTasks={() => setActiveTab('researchlab')}
-                pendingAutoIntake={pendingAutoIntake}
-                clearPendingAutoIntake={clearPendingAutoIntake}
-                importedProjectAnalysisPrompt={importedProjectAnalysisPrompt}
-                clearImportedProjectAnalysisPrompt={clearImportedProjectAnalysisPrompt}
-                onOpenShellForSession={() => setActiveTab('shell')}
-                newSessionMode={newSessionMode}
-                onNewSessionModeChange={onNewSessionModeChange}
-              />
-            </ErrorBoundary>
-          </div>
-
-          {activeTab === 'files' && (
-            <div className="h-full overflow-hidden">
-              <FileTree
-                selectedProject={selectedProject}
-                onFileOpen={handleFileOpen}
-                onStartWorkspaceQa={onStartWorkspaceQa}
-              />
-            </div>
+        {/* Global tabs — CSS-toggled to preserve sibling component state */}
+        <div className={`flex-1 min-h-0 overflow-hidden ${activeTab === 'community-tools' ? '' : 'hidden'}`}>
+          <CommunityToolsPanel onOpenTerminal={onOpenCommunityToolTerminal} />
+        </div>
+        <div className={`flex-1 min-h-0 overflow-hidden ${activeTab === 'research-run' && selectedResearchTool && selectedResearchRun ? '' : 'hidden'}`}>
+          {selectedResearchTool && selectedResearchRun && (
+            <ResearchRunViewer
+              toolId={selectedResearchTool}
+              runPath={selectedResearchRun}
+              onOpenTerminal={onOpenCommunityToolTerminal}
+            />
           )}
-
-          {activeTab === 'shell' && (
-            <div className="h-full w-full overflow-hidden">
-              <ShellWorkspace project={selectedProject} session={selectedSession} />
-            </div>
-          )}
-
-          {activeTab === 'git' && (
-            <div className="h-full overflow-hidden">
-              <AnyGitPanel selectedProject={selectedProject} isMobile={isMobile} onFileOpen={handleFileOpen} />
-            </div>
-          )}
-
-          {activeTab === 'survey' && (
-            <div className="h-full overflow-hidden">
-              <SurveyPage selectedProject={selectedProject} />
-            </div>
-          )}
-
-          {activeTab === 'researchlab' && (
-            <div className="h-full overflow-hidden">
-              <ResearchLab
-                selectedProject={selectedProject}
-                onNavigateToChat={() => setActiveTab('chat')}
-              />
-            </div>
-          )}
-
-          {activeTab === 'compute' && (
-            <div className="h-full overflow-hidden">
-              <ComputePanel selectedProject={selectedProject} />
-            </div>
-          )}
-
-          <div className={`h-full overflow-hidden ${activeTab === 'preview' ? 'block' : 'hidden'}`} />
+        </div>
+        <div className={`flex-1 min-h-0 overflow-hidden ${activeTab === 'news' ? '' : 'hidden'}`}>
+          <NewsDashboard />
         </div>
 
-        <EditorSidebar
-          editingFile={editingFile}
-          isMobile={isMobile}
-          editorExpanded={editorExpanded}
-          editorWidth={editorWidth}
-          resizeHandleRef={resizeHandleRef}
-          onResizeStart={handleResizeStart}
-          onCloseEditor={handleCloseEditor}
-          onToggleEditorExpand={handleToggleEditorExpand}
-          projectPath={selectedProject.path}
-          selectedProject={selectedProject}
-          onStartWorkspaceQa={onStartWorkspaceQa}
-          fillSpace={false}
-        />
+        {/* Project-specific tabs — only rendered when a project is selected */}
+        {selectedProject && (
+          <>
+            <div className={`flex flex-col min-h-0 overflow-hidden ${editorExpanded ? 'hidden' : ''} flex-1 ${isGlobalTab ? 'hidden' : ''}`}>
+              <div className={`h-full ${activeTab === 'chat' ? 'block' : 'hidden'}`}>
+                <ErrorBoundary showDetails>
+                  <ChatInterface
+                    selectedProject={selectedProject}
+                    selectedSession={selectedSession}
+                    ws={ws}
+                    sendMessage={sendMessage}
+                    latestMessage={latestMessage}
+                    onFileOpen={handleFileOpen}
+                    onInputFocusChange={onInputFocusChange}
+                    onSessionActive={onSessionActive}
+                    onSessionInactive={onSessionInactive}
+                    onSessionProcessing={onSessionProcessing}
+                    onSessionNotProcessing={onSessionNotProcessing}
+                    processingSessions={processingSessions}
+                    onReplaceTemporarySession={onReplaceTemporarySession}
+                    onNavigateToSession={onNavigateToSession}
+                    onShowSettings={onShowSettings}
+                    autoExpandTools={autoExpandTools}
+                    showRawParameters={showRawParameters}
+                    showThinking={showThinking}
+                    autoScrollToBottom={autoScrollToBottom}
+                    sendByCtrlEnter={sendByCtrlEnter}
+                    externalMessageUpdate={externalMessageUpdate}
+                    onShowAllTasks={() => setActiveTab('researchlab')}
+                    pendingAutoIntake={pendingAutoIntake}
+                    clearPendingAutoIntake={clearPendingAutoIntake}
+                    importedProjectAnalysisPrompt={importedProjectAnalysisPrompt}
+                    clearImportedProjectAnalysisPrompt={clearImportedProjectAnalysisPrompt}
+                    onOpenShellForSession={() => setActiveTab('shell')}
+                    newSessionMode={newSessionMode}
+                    onNewSessionModeChange={onNewSessionModeChange}
+                  />
+                </ErrorBoundary>
+              </div>
+
+              {activeTab === 'files' && (
+                <div className="h-full overflow-hidden">
+                  <FileTree
+                    selectedProject={selectedProject}
+                    onFileOpen={handleFileOpen}
+                    onStartWorkspaceQa={onStartWorkspaceQa}
+                  />
+                </div>
+              )}
+
+              {activeTab === 'shell' && (
+                <div className="h-full w-full overflow-hidden">
+                  <ShellWorkspace project={selectedProject} session={selectedSession} />
+                </div>
+              )}
+
+              {activeTab === 'git' && (
+                <div className="h-full overflow-hidden">
+                  <AnyGitPanel selectedProject={selectedProject} isMobile={isMobile} onFileOpen={handleFileOpen} />
+                </div>
+              )}
+
+              {activeTab === 'survey' && (
+                <div className="h-full overflow-hidden">
+                  <SurveyPage selectedProject={selectedProject} />
+                </div>
+              )}
+
+              {activeTab === 'researchlab' && (
+                <div className="h-full overflow-hidden">
+                  <ResearchLab
+                    selectedProject={selectedProject}
+                    onNavigateToChat={() => setActiveTab('chat')}
+                  />
+                </div>
+              )}
+
+              {activeTab === 'compute' && (
+                <div className="h-full overflow-hidden">
+                  <ComputePanel selectedProject={selectedProject} />
+                </div>
+              )}
+
+              <div className={`h-full overflow-hidden ${activeTab === 'preview' ? 'block' : 'hidden'}`} />
+            </div>
+
+            {!isGlobalTab && (
+              <EditorSidebar
+                editingFile={editingFile}
+                isMobile={isMobile}
+                editorExpanded={editorExpanded}
+                editorWidth={editorWidth}
+                resizeHandleRef={resizeHandleRef}
+                onResizeStart={handleResizeStart}
+                onCloseEditor={handleCloseEditor}
+                onToggleEditorExpand={handleToggleEditorExpand}
+                projectPath={selectedProject.path}
+                selectedProject={selectedProject}
+                onStartWorkspaceQa={onStartWorkspaceQa}
+                fillSpace={false}
+              />
+            )}
+          </>
+        )}
       </div>
     </div>
   );

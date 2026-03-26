@@ -17,7 +17,7 @@ export interface ProjectCreationOptions {
   importedProjectAnalysisPrompt?: ImportedProjectAnalysisPrompt | null;
 }
 
-export type AppTab = 'dashboard' | 'trash' | 'chat' | 'survey' | 'files' | 'shell' | 'git' | 'researchlab' | 'skills' | 'tasks' | 'preview' | 'compute' | 'news' | 'community-tools';
+export type AppTab = 'dashboard' | 'trash' | 'chat' | 'survey' | 'files' | 'shell' | 'git' | 'researchlab' | 'skills' | 'tasks' | 'preview' | 'compute' | 'news' | 'community-tools' | 'research-run';
 
 export interface ProjectSession {
   id: string;

@@ -44,6 +44,11 @@ function Sidebar({
   onOpenSkills,
   onOpenNews,
   onOpenCommunityTools,
+  onStartResearchRun,
+  onSelectResearchRun,
+  onDeleteResearchRun,
+  selectedResearchTool,
+  selectedResearchRun,
   onImportedProjectCreated,
   newSessionMode,
 }: SidebarProps) {
@@ -254,6 +259,10 @@ function Sidebar({
             onOpenSkills={onOpenSkills}
             onOpenNews={onOpenNews}
             onOpenCommunityTools={onOpenCommunityTools}
+            onStartResearchRun={onStartResearchRun}
+            onSelectResearchRun={onSelectResearchRun}
+            onDeleteResearchRun={onDeleteResearchRun}
+            selectedResearchRun={selectedResearchRun}
             onCreateProject={() => setShowWizard(true)}
             onCollapseSidebar={handleCollapseSidebar}
 

@@ -1,10 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 import Sidebar from '../sidebar/view/Sidebar';
 import MainContent from '../main-content/view/MainContent';
 import MobileNav from '../MobileNav';
+import CommunityToolTerminalOverlay from '../CommunityToolTerminalOverlay';
+import RunConfigModal from '../RunConfigModal';
 
 import { useWebSocket } from '../../contexts/WebSocketContext';
 import { useDeviceSettings } from '../../hooks/useDeviceSettings';
@@ -67,6 +69,13 @@ export default function AppContent() {
     handleProjectCreatedWithIntake,
     clearPendingAutoIntake,
     clearImportedProjectAnalysisPrompt,
+    communityToolTerminal,
+    openCommunityToolTerminal,
+    closeCommunityToolTerminal,
+    selectedResearchTool,
+    selectedResearchRun,
+    runConfigToolId,
+    setRunConfigToolId,
   } = useProjectsState({
     sessionId,
     navigate,
@@ -144,6 +153,25 @@ export default function AppContent() {
       window.removeEventListener(TELEMETRY_SETTINGS_EVENT, syncTelemetrySetting);
     };
   }, [isConnected, sendMessage]);
+
+  // Registry cache for RunConfigModal
+  type RegistryTool = { id: string; name: string; recommendedProvider?: string; recommendedModel?: string };
+  const [registryTools, setRegistryTools] = useState<RegistryTool[]>([]);
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('/api/community-tools/registry');
+        if (!res.ok) return;
+        const data = await res.json();
+        setRegistryTools(data.tools || []);
+      } catch { /* ignore */ }
+    })();
+  }, []);
+
+  const runConfigTool = useMemo(
+    () => registryTools.find((t) => t.id === runConfigToolId) || null,
+    [registryTools, runConfigToolId],
+  );
 
   const SIDEBAR_MIN = 220;
   const SIDEBAR_MAX = 480;
@@ -272,6 +300,9 @@ export default function AppContent() {
           onStartWorkspaceQa={handleStartWorkspaceQa}
           newSessionMode={newSessionMode}
           onNewSessionModeChange={setNewSessionMode}
+          onOpenCommunityToolTerminal={openCommunityToolTerminal}
+          selectedResearchTool={selectedResearchTool}
+          selectedResearchRun={selectedResearchRun}
         />
       </div>
 
@@ -283,6 +314,23 @@ export default function AppContent() {
         />
       )}
 
+      {communityToolTerminal && (
+        <CommunityToolTerminalOverlay
+          config={communityToolTerminal}
+          onClose={closeCommunityToolTerminal}
+        />
+      )}
+
+      {runConfigToolId && runConfigTool && (
+        <RunConfigModal
+          toolId={runConfigToolId}
+          toolName={runConfigTool.name}
+          recommendedProvider={runConfigTool.recommendedProvider}
+          recommendedModel={runConfigTool.recommendedModel}
+          onClose={() => setRunConfigToolId(null)}
+          onStarted={() => setRunConfigToolId(null)}
+        />
+      )}
     </div>
   );
 }

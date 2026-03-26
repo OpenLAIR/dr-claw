@@ -1,4 +1,5 @@
 import fs from 'fs/promises';
+import { readFileSync } from 'fs';
 import path from 'path';
 import os from 'os';
 import { spawn } from 'child_process';
@@ -173,7 +174,7 @@ async function createVenv(venvDir, pythonVersion, onLog) {
   if (await hasUv()) {
     const { major, minor } = parseMinVersion(pythonVersion);
     onLog?.(`Creating venv via uv (Python ${major}.${minor}+) …`);
-    await exec('uv', ['venv', '--python', `${major}.${minor}`, venvDir]);
+    await exec('uv', ['venv', '--seed', '--python', `${major}.${minor}`, venvDir]);
   } else {
     onLog?.('Creating venv via python3 -m venv …');
     await exec('python3', ['-m', 'venv', venvDir]);
@@ -219,13 +220,67 @@ export const PythonAppAdapter = {
   async configure(tool, _installDir, config, onLog) {
     const setupDir = getSetupDir(tool.id);
     await fs.mkdir(setupDir, { recursive: true });
-    const yamlLines = [];
-    for (const [key, value] of Object.entries(config)) {
-      yamlLines.push(`${key}: ${JSON.stringify(value)}`);
-    }
+
+    // Provider → base_url mapping (matches researchclaw/llm/__init__.py PROVIDER_PRESETS)
+    const PROVIDER_BASE_URLS = {
+      anthropic: 'https://api.anthropic.com',
+      openai: 'https://api.openai.com/v1',
+      gemini: 'https://generativelanguage.googleapis.com/v1beta/openai',
+    };
+    const PROVIDER_API_KEY_ENVS = {
+      anthropic: 'ANTHROPIC_API_KEY',
+      openai: 'OPENAI_API_KEY',
+      gemini: 'GEMINI_API_KEY',
+    };
+
+    const provider = config.llm_provider || 'anthropic';
+    const baseUrl = PROVIDER_BASE_URLS[provider] || PROVIDER_BASE_URLS.anthropic;
+    const apiKeyEnv = PROVIDER_API_KEY_ENVS[provider] || 'OPENAI_API_KEY';
+    const apiKey = config.api_key || '';
+    const model = config.model || 'claude-opus-4-6';
+    const topic = config.research_topic || 'Untitled Research';
+    const outputDir = config.output_dir || 'auto-research';
+    const experimentMode = config.experiment_mode || 'simulated';
+
+    // Generate nested YAML that the CLI expects
+    const yamlContent = [
+      'project:',
+      '  name: "auto-research"',
+      '  mode: ' + JSON.stringify(config.project_mode || 'full-auto'),
+      'research:',
+      `  topic: ${JSON.stringify(topic)}`,
+      'runtime:',
+      '  timezone: "UTC"',
+      'notifications:',
+      '  channel: "console"',
+      'knowledge_base:',
+      '  backend: "markdown"',
+      '  root: "docs/kb"',
+      'llm:',
+      `  provider: ${JSON.stringify(provider)}`,
+      `  base_url: ${JSON.stringify(baseUrl)}`,
+      `  api_key: ${JSON.stringify(apiKey)}`,
+      `  api_key_env: ${JSON.stringify(apiKeyEnv)}`,
+      `  primary_model: ${JSON.stringify(model)}`,
+      'security:',
+      '  hitl_required_stages: []',
+      '  allow_publish_without_approval: true',
+      'experiment:',
+      `  mode: ${JSON.stringify(experimentMode)}`,
+      '',
+    ].join('\n');
+
     const configPath = path.join(setupDir, 'config.arc.yaml');
-    await fs.writeFile(configPath, yamlLines.join('\n') + '\n');
+    await fs.writeFile(configPath, yamlContent);
     onLog?.(`Configuration written to ${configPath}`);
+
+    // Save run options (output_dir is a CLI arg, not part of config YAML)
+    const runOptions = {
+      output_dir: outputDir,
+      project_mode: config.project_mode || 'full-auto',
+      github_token: config.github_token || '',
+    };
+    await fs.writeFile(path.join(setupDir, '.run_options.json'), JSON.stringify(runOptions));
   },
 
   run(tool, _installDir, command, args = [], onData) {
@@ -234,7 +289,31 @@ export const PythonAppAdapter = {
     const venvBin = path.join(setupDir, '.venv', 'bin');
     const env = { ...process.env, PATH: `${venvBin}:${process.env.PATH}`, VIRTUAL_ENV: path.join(setupDir, '.venv') };
     const cmdArgs = [command, ...args];
-    const proc = spawn('researchclaw', cmdArgs, { cwd: bundledDir, env, shell: true });
+
+    // For 'run' command: pass --config, --output, and conditionally --auto-approve
+    if (command === 'run') {
+      const configPath = path.join(setupDir, 'config.arc.yaml');
+      cmdArgs.push('--config', configPath);
+      try {
+        const runOpts = JSON.parse(readFileSync(path.join(setupDir, '.run_options.json'), 'utf8'));
+        if (!runOpts.project_mode || runOpts.project_mode === 'full-auto') {
+          cmdArgs.push('--auto-approve');
+        }
+        const hasResume = args.includes('--resume');
+        const hasOutput = args.includes('--output') || args.includes('-o');
+        if (runOpts.output_dir && !hasResume && !hasOutput) {
+          cmdArgs.push('--output', runOpts.output_dir);
+        }
+        // Inject GITHUB_TOKEN if configured
+        if (runOpts.github_token) {
+          env.GITHUB_TOKEN = runOpts.github_token;
+        }
+      } catch {
+        cmdArgs.push('--auto-approve');
+      }
+    }
+
+    const proc = spawn('researchclaw', cmdArgs, { cwd: setupDir, env, shell: true });
 
     proc.stdout?.on('data', (d) => onData?.(d.toString()));
     proc.stderr?.on('data', (d) => onData?.(d.toString()));
@@ -279,7 +358,6 @@ export const PythonAppAdapter = {
     }
 
     // Check venv in setup dir
-    const setupDir = getSetupDir(tool.id);
     const venvDir = path.join(setupDir, '.venv');
     if (await dirExists(venvDir)) {
       results.push({ check: 'Virtual environment', ok: true });

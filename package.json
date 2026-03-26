@@ -26,7 +26,7 @@
   },
   "scripts": {
     "dev": "concurrently --kill-others \"npm run server\" \"npm run client\"",
-    "server": "node --watch-path=./server/routes --watch-path=./server/middleware --watch-path=./server/database --watch-path=./server/utils --watch-path=./server/constants --watch-path=./server/index.js server/index.js",
+    "server": "node --watch-path=./server/routes --watch-path=./server/middleware --watch-path=./server/database --watch-path=./server/utils --watch-path=./server/constants --watch-path=./server/index.js --watch-path=./server/community-tools-adapters.js --watch-path=./server/community-tools-store.js server/index.js",
     "client": "vite --host",
     "build": "vite build",
     "preview": "vite preview",

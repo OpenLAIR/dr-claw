@@ -5,6 +5,7 @@ import type { ReleaseInfo } from '../../../../types/sharedTypes';
 import SidebarFooter from './SidebarFooter';
 import SidebarHeader from './SidebarHeader';
 import SidebarProjectList, { type SidebarProjectListProps } from './SidebarProjectList';
+import SidebarResearchTools from './SidebarResearchTools';
 
 type SidebarContentProps = {
   isPWA: boolean;
@@ -22,6 +23,10 @@ type SidebarContentProps = {
   onOpenSkills: () => void;
   onOpenNews: () => void;
   onOpenCommunityTools: () => void;
+  onStartResearchRun: (toolId: string) => void;
+  onSelectResearchRun: (toolId: string, runPath: string) => void;
+  onDeleteResearchRun?: (toolId: string, runPath: string) => Promise<void>;
+  selectedResearchRun: string | null;
   onCreateProject: () => void;
   onCollapseSidebar: () => void;
   updateAvailable: boolean;
@@ -50,6 +55,10 @@ export default function SidebarContent({
   onOpenSkills,
   onOpenNews,
   onOpenCommunityTools,
+  onStartResearchRun,
+  onSelectResearchRun,
+  onDeleteResearchRun,
+  selectedResearchRun,
   onCreateProject,
   onCollapseSidebar,
   updateAvailable,
@@ -81,11 +90,21 @@ export default function SidebarContent({
         onOpenTrash={onOpenTrash}
         onOpenSkills={onOpenSkills}
         onOpenNews={onOpenNews}
-        onOpenCommunityTools={onOpenCommunityTools}
         onCreateProject={onCreateProject}
         onCollapseSidebar={onCollapseSidebar}
         t={t}
       />
+
+      <SidebarResearchTools
+        activeTab={activeTab}
+        selectedRunPath={selectedResearchRun}
+        onSelectRun={onSelectResearchRun}
+        onDeleteRun={onDeleteResearchRun}
+        onOpenConfig={onOpenCommunityTools}
+        onStartRun={onStartResearchRun}
+      />
+
+      <div className="hidden md:block nav-divider mx-3" />
 
       <ScrollArea className="flex-1 md:px-1.5 md:py-2 overflow-y-auto overscroll-contain">
         <SidebarProjectList {...projectListProps} />

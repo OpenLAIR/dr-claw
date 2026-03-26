@@ -102,6 +102,10 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
   const [authUrlCopyStatus, setAuthUrlCopyStatus] = useState('idle');
   const [isAuthPanelHidden, setIsAuthPanelHidden] = useState(false);
 
+  const reconnectTimerRef = useRef(null);
+  const reconnectAttemptsRef = useRef(0);
+  const connectToShellRef = useRef(null);
+
   const selectedProjectRef = useRef(selectedProject);
   const selectedSessionRef = useRef(selectedSession);
   const initialCommandRef = useRef(initialCommand);
@@ -166,6 +170,7 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
       ws.current.onopen = () => {
         setIsConnected(true);
         setIsConnecting(false);
+        reconnectAttemptsRef.current = 0;
         authUrlRef.current = '';
         setAuthUrl('');
         setAuthUrlCopyStatus('idle');
@@ -238,9 +243,25 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
         setAuthUrlCopyStatus('idle');
         setIsAuthPanelHidden(false);
 
+        // Auto-reconnect with retry limit (server keeps PTY alive for 30 min)
+        const MAX_RECONNECT = 5;
+        if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+        reconnectAttemptsRef.current += 1;
+
         if (terminal.current) {
-          terminal.current.clear();
-          terminal.current.write('\x1b[2J\x1b[H');
+          if (reconnectAttemptsRef.current <= MAX_RECONNECT) {
+            terminal.current.write('\r\n\x1b[33m[Disconnected — reconnecting…]\x1b[0m\r\n');
+          } else {
+            terminal.current.write('\r\n\x1b[31m[Connection lost. Close and reopen the terminal to retry.]\x1b[0m\r\n');
+          }
+        }
+
+        if (reconnectAttemptsRef.current <= MAX_RECONNECT) {
+          const delay = Math.min(1500 * reconnectAttemptsRef.current, 8000);
+          reconnectTimerRef.current = setTimeout(() => {
+            reconnectTimerRef.current = null;
+            if (connectToShellRef.current) connectToShellRef.current();
+          }, delay);
         }
       };
 
@@ -260,7 +281,13 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
     connectWebSocket();
   }, [isInitialized, isConnected, isConnecting, connectWebSocket]);
 
+  useEffect(() => { connectToShellRef.current = connectToShell; }, [connectToShell]);
+
   const disconnectFromShell = useCallback(() => {
+    if (reconnectTimerRef.current) {
+      clearTimeout(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
+    }
     if (ws.current) {
       ws.current.close();
       ws.current = null;
@@ -500,6 +527,11 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
 
     return () => {
       resizeObserver.disconnect();
+
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
+      }
 
       if (ws.current && (ws.current.readyState === WebSocket.OPEN || ws.current.readyState === WebSocket.CONNECTING)) {
         ws.current.close();

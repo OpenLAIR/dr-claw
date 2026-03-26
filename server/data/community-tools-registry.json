@@ -35,6 +35,8 @@
       "note": "Requires Python 3.11+ and pip"
     },
     "tags": ["research", "python-app", "paper-generation", "pipeline", "automation"],
-    "preInstalled": true
+    "preInstalled": true,
+    "recommendedProvider": "claude",
+    "recommendedModel": "claude-opus-4-6"
   }
 ]

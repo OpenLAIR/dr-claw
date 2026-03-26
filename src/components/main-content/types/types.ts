@@ -91,6 +91,15 @@ export interface MainContentProps {
   onStartWorkspaceQa?: (project: Project, prompt: string) => void;
   newSessionMode?: SessionMode;
   onNewSessionModeChange?: (mode: SessionMode) => void;
+  onOpenCommunityToolTerminal?: (config: {
+    toolId: string;
+    toolName: string;
+    installDir: string;
+    setupDir: string;
+    initialCommand?: string;
+  }) => void;
+  selectedResearchTool?: string | null;
+  selectedResearchRun?: string | null;
 }
 
 export interface MainContentHeaderProps {
