@@ -1045,7 +1045,12 @@ export async function spawnGemini(command, options = {}, ws) {
               const resultToolCallId = response.id || response.tool_use_id;
               const ctx = resultToolCallId ? toolCallContext.get(resultToolCallId) : null;
               const isError = Boolean(response.is_error || response.error);
-              const outputText = await enrichListDirectoryResult(ctx, baseOutputText, workingDir);
+              let outputText = await enrichListDirectoryResult(ctx, baseOutputText, workingDir);
+
+              // Guide the model when it tries to shell-execute a skill directory
+              if (isError && ctx?.rawToolName === 'run_shell_command' && /is a directory|EISDIR/i.test(outputText)) {
+                outputText += '\n\nThis path is a skill directory, not an executable. Use activate_skill to invoke it, or read its SKILL.md for instructions.';
+              }
               
               await appendToSessionFile(capturedSessionId || sessionId || initialKey, {
                 type: 'tool_result',
