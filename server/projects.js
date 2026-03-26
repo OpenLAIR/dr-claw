@@ -2487,8 +2487,9 @@ async function ensureProjectSkillLinks(projectPath) {
             try { await fs.unlink(path.join(skillsSubdir, name)); } catch (_) {}
           }
           await fs.symlink(absolutePath, linkPath, 'dir');
-          // Create underscore alias so Gemini model's underscore-converted names resolve correctly
-          if (name.includes('-')) {
+          // Create underscore alias only for .gemini/ — Gemini function calling
+          // converts hyphens to underscores, other agents don't need this.
+          if (dir === '.gemini' && name.includes('-')) {
             const underscoreName = name.replace(/-/g, '_');
             const aliasPath = isAgents && !coreNames.has(name)
               ? path.join(skillsSubdir, 'library', underscoreName)
