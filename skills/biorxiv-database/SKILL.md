@@ -28,7 +28,7 @@ Search for preprints containing specific keywords in titles, abstracts, or autho
 
 **Basic Usage:**
 ```python
-python scripts/biorxiv_search.py \
+.venv/bin/python3 scripts/biorxiv_search.py \
   --keywords "CRISPR" "gene editing" \
   --start-date 2024-01-01 \
   --end-date 2024-12-31 \
@@ -37,7 +37,7 @@ python scripts/biorxiv_search.py \
 
 **With Category Filter:**
 ```python
-python scripts/biorxiv_search.py \
+.venv/bin/python3 scripts/biorxiv_search.py \
   --keywords "neural networks" "deep learning" \
   --days-back 180 \
   --category neuroscience \
@@ -47,7 +47,7 @@ python scripts/biorxiv_search.py \
 **Search Fields:**
 By default, keywords are searched in both title and abstract. Customize with `--search-fields`:
 ```python
-python scripts/biorxiv_search.py \
+.venv/bin/python3 scripts/biorxiv_search.py \
   --keywords "AlphaFold" \
   --search-fields title \
   --days-back 365
@@ -59,7 +59,7 @@ Find all papers by a specific author within a date range.
 
 **Basic Usage:**
 ```python
-python scripts/biorxiv_search.py \
+.venv/bin/python3 scripts/biorxiv_search.py \
   --author "Smith" \
   --start-date 2023-01-01 \
   --end-date 2024-12-31 \
@@ -69,7 +69,7 @@ python scripts/biorxiv_search.py \
 **Recent Publications:**
 ```python
 # Last year by default if no dates specified
-python scripts/biorxiv_search.py \
+.venv/bin/python3 scripts/biorxiv_search.py \
   --author "Johnson" \
   --output johnson_recent.json
 ```
@@ -80,7 +80,7 @@ Retrieve all preprints posted within a specific date range.
 
 **Basic Usage:**
 ```python
-python scripts/biorxiv_search.py \
+.venv/bin/python3 scripts/biorxiv_search.py \
   --start-date 2024-01-01 \
   --end-date 2024-01-31 \
   --output january_2024.json
@@ -88,7 +88,7 @@ python scripts/biorxiv_search.py \
 
 **With Category Filter:**
 ```python
-python scripts/biorxiv_search.py \
+.venv/bin/python3 scripts/biorxiv_search.py \
   --start-date 2024-06-01 \
   --end-date 2024-06-30 \
   --category genomics \
@@ -98,7 +98,7 @@ python scripts/biorxiv_search.py \
 **Days Back Shortcut:**
 ```python
 # Last 30 days
-python scripts/biorxiv_search.py \
+.venv/bin/python3 scripts/biorxiv_search.py \
   --days-back 30 \
   --output last_month.json
 ```
@@ -109,14 +109,14 @@ Retrieve detailed metadata for a specific preprint.
 
 **Basic Usage:**
 ```python
-python scripts/biorxiv_search.py \
+.venv/bin/python3 scripts/biorxiv_search.py \
   --doi "10.1101/2024.01.15.123456" \
   --output paper_details.json
 ```
 
 **Full DOI URLs Accepted:**
 ```python
-python scripts/biorxiv_search.py \
+.venv/bin/python3 scripts/biorxiv_search.py \
   --doi "https://doi.org/10.1101/2024.01.15.123456"
 ```
 
@@ -126,7 +126,7 @@ Download the full-text PDF of any preprint.
 
 **Basic Usage:**
 ```python
-python scripts/biorxiv_search.py \
+.venv/bin/python3 scripts/biorxiv_search.py \
   --doi "10.1101/2024.01.15.123456" \
   --download-pdf paper.pdf
 ```
@@ -222,7 +222,7 @@ All searches return structured JSON with the following format:
 
 1. **Broad keyword search:**
 ```python
-python scripts/biorxiv_search.py \
+.venv/bin/python3 scripts/biorxiv_search.py \
   --keywords "organoids" "tissue engineering" \
   --start-date 2023-01-01 \
   --end-date 2024-12-31 \
@@ -263,7 +263,7 @@ for doi in selected_dois:
 Track research trends by analyzing publication frequencies over time:
 
 ```python
-python scripts/biorxiv_search.py \
+.venv/bin/python3 scripts/biorxiv_search.py \
   --keywords "machine learning" \
   --start-date 2020-01-01 \
   --end-date 2024-12-31 \
@@ -282,7 +282,7 @@ Monitor specific researchers' preprints:
 authors = ["Smith", "Johnson", "Williams"]
 
 for author in authors:
-    python scripts/biorxiv_search.py \
+    .venv/bin/python3 scripts/biorxiv_search.py \
       --author "{author}" \
       --days-back 365 \
       --output "{author}_papers.json"
@@ -352,7 +352,7 @@ from datetime import datetime, timedelta
 end_date = datetime.now()
 start_date = end_date - timedelta(days=90)
 
-python scripts/biorxiv_search.py \
+.venv/bin/python3 scripts/biorxiv_search.py \
   --start-date {start_date.strftime('%Y-%m-%d')} \
   --end-date {end_date.strftime('%Y-%m-%d')}
 ```
@@ -362,7 +362,7 @@ python scripts/biorxiv_search.py \
 Limit the number of results returned:
 
 ```python
-python scripts/biorxiv_search.py \
+.venv/bin/python3 scripts/biorxiv_search.py \
   --keywords "COVID-19" \
   --days-back 30 \
   --limit 50 \

@@ -58,6 +58,7 @@
  */
 
 import { promises as fs } from 'fs';
+import { execFile } from 'child_process';
 import fsSync from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -2351,6 +2352,64 @@ async function generateSkillsIndex(skillDirs) {
   return lines.join('\n');
 }
 
+/**
+ * Scan skill directories for requirements.txt files and install Python
+ * dependencies into a project-level .venv. Non-fatal on failure.
+ */
+async function bootstrapSkillPythonDeps(projectPath, skillDirs) {
+  // Collect all requirements.txt paths
+  const reqFiles = [];
+  for (const { absolutePath } of skillDirs) {
+    const reqPath = path.join(absolutePath, 'requirements.txt');
+    try {
+      await fs.access(reqPath);
+      reqFiles.push(reqPath);
+    } catch (_) {
+      // No requirements.txt in this skill
+    }
+  }
+  if (reqFiles.length === 0) return;
+
+  const venvDir = path.join(projectPath, '.venv');
+
+  const exec = (cmd, args) =>
+    new Promise((resolve, reject) => {
+      execFile(cmd, args, { cwd: projectPath, timeout: 120_000 }, (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+
+  // Create venv if missing
+  try {
+    await fs.access(path.join(venvDir, 'bin', 'python3'));
+  } catch (_) {
+    try {
+      await exec('uv', ['venv', venvDir]);
+    } catch (_uvErr) {
+      try {
+        await exec('python3', ['-m', 'venv', venvDir]);
+      } catch (pyErr) {
+        console.warn('[projects] Failed to create .venv:', pyErr.message);
+        return;
+      }
+    }
+  }
+
+  // Install deps from each requirements.txt
+  for (const reqFile of reqFiles) {
+    try {
+      await exec('uv', ['pip', 'install', '--python', path.join(venvDir, 'bin', 'python3'), '-r', reqFile]);
+    } catch (_uvErr) {
+      try {
+        await exec(path.join(venvDir, 'bin', 'pip'), ['install', '-r', reqFile]);
+      } catch (pipErr) {
+        console.warn(`[projects] Failed to install deps from ${reqFile}:`, pipErr.message);
+      }
+    }
+  }
+}
+
 async function ensureProjectSkillLinks(projectPath) {
   try {
     for (const dir of PROJECT_PIPELINE_FOLDERS) {
@@ -2517,6 +2576,9 @@ async function ensureProjectSkillLinks(projectPath) {
         }
       }
     }
+
+    // Bootstrap Python dependencies from skill requirements.txt files
+    await bootstrapSkillPythonDeps(projectPath, skillDirs);
   } catch (err) {
     console.error('[projects] ensureProjectSkillLinks failed:', err.message);
   }

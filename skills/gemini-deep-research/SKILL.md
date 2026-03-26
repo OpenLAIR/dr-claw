@@ -24,7 +24,7 @@ Google Gemini's Deep Research Agent autonomously breaks down complex queries, se
 ## Prerequisites
 
 - `GEMINI_API_KEY` environment variable must be set (obtain from [Google AI Studio](https://aistudio.google.com/apikey))
-- Python 3.8+ with the `requests` library installed
+- Python 3.8+ (dependencies are auto-installed in the project's `.venv`)
 - Requires a direct Gemini API key — OAuth tokens are not supported
 
 ## How to Run the Script
@@ -32,7 +32,7 @@ Google Gemini's Deep Research Agent autonomously breaks down complex queries, se
 The script is at `scripts/deep_research.py` **relative to this skill's directory** (i.e., the directory containing this SKILL.md). Resolve the full path from the skill's location before running.
 
 ```bash
-python3 <this-skill-directory>/scripts/deep_research.py \
+.venv/bin/python3 <this-skill-directory>/scripts/deep_research.py \
   --query "<research query>" \
   --stream \
   --output-dir ./reports
@@ -58,14 +58,14 @@ python3 <this-skill-directory>/scripts/deep_research.py \
 
 **Basic research:**
 ```bash
-python3 <this-skill-directory>/scripts/deep_research.py \
+.venv/bin/python3 <this-skill-directory>/scripts/deep_research.py \
   --query "Current state of quantum error correction techniques" \
   --stream --output-dir ./reports
 ```
 
 **Custom output format:**
 ```bash
-python3 <this-skill-directory>/scripts/deep_research.py \
+.venv/bin/python3 <this-skill-directory>/scripts/deep_research.py \
   --query "Competitive landscape of EV batteries" \
   --format "1. Executive Summary\n2. Key Players (data table)\n3. Technology Comparison\n4. Supply Chain Risks" \
   --stream --output-dir ./reports
