@@ -9,6 +9,11 @@ description: Efficient database search tool for bioRxiv preprint server. Use thi
 
 This skill provides efficient Python-based tools for searching and retrieving preprints from the bioRxiv database. It enables comprehensive searches by keywords, authors, date ranges, and categories, returning structured JSON metadata that includes titles, abstracts, DOIs, and citation information. The skill also supports PDF downloads for full-text analysis.
 
+## Prerequisites
+
+- Python 3.8+ (dependencies are auto-installed in the project's `.venv`)
+- Use `.venv/bin/python3` on macOS/Linux or `.venv\Scripts\python.exe` on Windows
+
 ## When to Use This Skill
 
 Use this skill when:

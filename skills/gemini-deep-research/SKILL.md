@@ -25,6 +25,7 @@ Google Gemini's Deep Research Agent autonomously breaks down complex queries, se
 
 - `GEMINI_API_KEY` environment variable must be set (obtain from [Google AI Studio](https://aistudio.google.com/apikey))
 - Python 3.8+ (dependencies are auto-installed in the project's `.venv`)
+- Use `.venv/bin/python3` on macOS/Linux or `.venv\Scripts\python.exe` on Windows
 - Requires a direct Gemini API key — OAuth tokens are not supported
 
 ## How to Run the Script

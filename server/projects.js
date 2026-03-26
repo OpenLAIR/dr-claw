@@ -2355,8 +2355,18 @@ async function generateSkillsIndex(skillDirs) {
 /**
  * Scan skill directories for requirements.txt files and install Python
  * dependencies into a project-level .venv. Non-fatal on failure.
+ * Skips installation when all requirements.txt files are older than the venv.
  */
 async function bootstrapSkillPythonDeps(projectPath, skillDirs) {
+  const isWin = process.platform === 'win32';
+  const venvDir = path.join(projectPath, '.venv');
+  const venvPython = isWin
+    ? path.join(venvDir, 'Scripts', 'python.exe')
+    : path.join(venvDir, 'bin', 'python3');
+  const venvPip = isWin
+    ? path.join(venvDir, 'Scripts', 'pip.exe')
+    : path.join(venvDir, 'bin', 'pip');
+
   // Collect all requirements.txt paths
   const reqFiles = [];
   for (const { absolutePath } of skillDirs) {
@@ -2364,13 +2374,9 @@ async function bootstrapSkillPythonDeps(projectPath, skillDirs) {
     try {
       await fs.access(reqPath);
       reqFiles.push(reqPath);
-    } catch (_) {
-      // No requirements.txt in this skill
-    }
+    } catch (_) {}
   }
   if (reqFiles.length === 0) return;
-
-  const venvDir = path.join(projectPath, '.venv');
 
   const exec = (cmd, args) =>
     new Promise((resolve, reject) => {
@@ -2382,7 +2388,7 @@ async function bootstrapSkillPythonDeps(projectPath, skillDirs) {
 
   // Create venv if missing
   try {
-    await fs.access(path.join(venvDir, 'bin', 'python3'));
+    await fs.access(venvPython);
   } catch (_) {
     try {
       await exec('uv', ['venv', venvDir]);
@@ -2396,18 +2402,34 @@ async function bootstrapSkillPythonDeps(projectPath, skillDirs) {
     }
   }
 
+  // Skip install if venv is newer than all requirements.txt (already up to date)
+  const marker = path.join(venvDir, '.deps-installed');
+  try {
+    const markerStat = await fs.stat(marker);
+    const markerTime = markerStat.mtimeMs;
+    const allOlder = await Promise.all(
+      reqFiles.map(async (f) => (await fs.stat(f)).mtimeMs <= markerTime)
+    );
+    if (allOlder.every(Boolean)) return;
+  } catch (_) {
+    // marker doesn't exist — proceed with install
+  }
+
   // Install deps from each requirements.txt
   for (const reqFile of reqFiles) {
     try {
-      await exec('uv', ['pip', 'install', '--python', path.join(venvDir, 'bin', 'python3'), '-r', reqFile]);
+      await exec('uv', ['pip', 'install', '--python', venvPython, '-r', reqFile]);
     } catch (_uvErr) {
       try {
-        await exec(path.join(venvDir, 'bin', 'pip'), ['install', '-r', reqFile]);
+        await exec(venvPip, ['install', '-r', reqFile]);
       } catch (pipErr) {
         console.warn(`[projects] Failed to install deps from ${reqFile}:`, pipErr.message);
       }
     }
   }
+
+  // Touch marker so subsequent calls skip when nothing changed
+  await fs.writeFile(marker, new Date().toISOString(), 'utf8');
 }
 
 async function ensureProjectSkillLinks(projectPath) {
