@@ -31,7 +31,7 @@ const c = {
     dim: (text) => `${colors.dim}${text}${colors.reset}`,
 };
 
-console.log('PORT from env:', process.env.PORT);
+console.log('Requested PORT from env:', process.env.PORT);
 
 import express from 'express';
 import { WebSocketServer, WebSocket } from 'ws';
@@ -74,6 +74,14 @@ import { IS_PLATFORM } from './constants/config.js';
 import { enqueueTelemetryEvent } from './telemetry.js';
 import { resolveCursorCliCommand, isCursorLoginCommand, isGeminiLoginCommand, normalizeCursorLoginCommand } from './utils/cursorCommand.js';
 import { getGeminiApiKeyForUser, withGeminiApiKeyEnv } from './utils/geminiApiKey.js';
+import {
+    DEFAULT_BACKEND_PORT,
+    DEFAULT_FRONTEND_PORT,
+    getFrontendPortSync,
+    listenOnAvailablePort,
+    parsePortNumber,
+    setRuntimePortSync,
+} from './utils/runtimePorts.js';
 
 // File system watchers for provider project/session folders
 const PROVIDER_WATCH_PATHS = [
@@ -2783,7 +2791,7 @@ app.get('*', (req, res) => {
     res.sendFile(indexPath);
   } else {
     // In development, redirect to Vite dev server only if dist doesn't exist
-    res.redirect(`http://${DISPLAY_HOST}:${process.env.VITE_PORT || 5173}`);
+    res.redirect(`http://${DISPLAY_HOST}:${getFrontendPortSync(REQUESTED_VITE_PORT)}`);
   }
 });
 
@@ -2989,7 +2997,8 @@ async function getFileTree(dirPath, maxDepth = 3, currentDepth = 0, showHidden =
     });
 }
 
-const PORT = process.env.PORT || 3001;
+const REQUESTED_PORT = parsePortNumber(process.env.PORT, DEFAULT_BACKEND_PORT);
+const REQUESTED_VITE_PORT = parsePortNumber(process.env.VITE_PORT, DEFAULT_FRONTEND_PORT);
 const HOST = process.env.HOST || '0.0.0.0';
 // Show localhost when binding to all interfaces; 0.0.0.0 is not directly connectable.
 const DISPLAY_HOST = HOST === '0.0.0.0' ? 'localhost' : HOST;
@@ -3009,37 +3018,45 @@ async function startServer() {
         console.log(`${c.info('[INFO]')} Running in ${c.bright(isProduction ? 'PRODUCTION' : 'DEVELOPMENT')} mode`);
 
         if (!isProduction) {
-            console.log(`${c.warn('[WARN]')} Note: Requests will be proxied to Vite dev server at ${c.dim('http://' + DISPLAY_HOST + ':' + (process.env.VITE_PORT || 5173))}`);
+            console.log(`${c.warn('[WARN]')} Note: Requests will be proxied to Vite dev server at ${c.dim('http://' + DISPLAY_HOST + ':' + getFrontendPortSync(REQUESTED_VITE_PORT))}`);
         }
 
-        server.listen(PORT, HOST, async () => {
-            const appInstallPath = path.join(__dirname, '..');
-            const vitePort = process.env.VITE_PORT || 5173;
-
-            console.log('');
-            console.log(c.dim('═'.repeat(63)));
-            console.log(`  ${c.bright('Dr. Claw Server - Ready')}`);
-            console.log(c.dim('═'.repeat(63)));
-            console.log('');
-
-            if (isProduction) {
-                console.log(`${c.info('[INFO]')} Server URL:  ${c.bright('http://' + DISPLAY_HOST + ':' + PORT)}`);
-            } else {
-                console.log(`${c.info('[INFO]')} Backend URL: ${c.dim('http://' + DISPLAY_HOST + ':' + PORT)}`);
-                console.log(`${c.ok('[OK]')}   Frontend URL: ${c.bright('http://' + DISPLAY_HOST + ':' + vitePort)} (Use this for development)`);
-            }
-
-            console.log(`${c.info('[INFO]')} Installed at: ${c.dim(appInstallPath)}`);
-            console.log(`${c.tip('[TIP]')}  Run "dr-claw status" for full configuration details`);
-            console.log('');
-
-            // Ensure the workspaces root directory exists
-            const startupWorkspaceRoot = await getWorkspacesRoot();
-            await fsPromises.mkdir(startupWorkspaceRoot, { recursive: true });
-
-            // Start watching the projects folder for changes
-            await setupProjectsWatcher();
+        const activePort = await listenOnAvailablePort(server, {
+            startPort: REQUESTED_PORT,
+            host: HOST,
         });
+        setRuntimePortSync('backend', activePort);
+
+        const appInstallPath = path.join(__dirname, '..');
+        const vitePort = getFrontendPortSync(REQUESTED_VITE_PORT);
+
+        if (activePort !== REQUESTED_PORT) {
+            console.log(`${c.warn('[WARN]')} Port ${REQUESTED_PORT} is busy, switched backend to ${activePort}`);
+        }
+
+        console.log('');
+        console.log(c.dim('═'.repeat(63)));
+        console.log(`  ${c.bright('Dr. Claw Server - Ready')}`);
+        console.log(c.dim('═'.repeat(63)));
+        console.log('');
+
+        if (isProduction) {
+            console.log(`${c.info('[INFO]')} Server URL:  ${c.bright('http://' + DISPLAY_HOST + ':' + activePort)}`);
+        } else {
+            console.log(`${c.info('[INFO]')} Backend URL: ${c.dim('http://' + DISPLAY_HOST + ':' + activePort)}`);
+            console.log(`${c.ok('[OK]')}   Frontend URL: ${c.bright('http://' + DISPLAY_HOST + ':' + vitePort)} (Use this for development)`);
+        }
+
+        console.log(`${c.info('[INFO]')} Installed at: ${c.dim(appInstallPath)}`);
+        console.log(`${c.tip('[TIP]')}  Run "dr-claw status" for full configuration details`);
+        console.log('');
+
+        // Ensure the workspaces root directory exists
+        const startupWorkspaceRoot = await getWorkspacesRoot();
+        await fsPromises.mkdir(startupWorkspaceRoot, { recursive: true });
+
+        // Start watching the projects folder for changes
+        await setupProjectsWatcher();
     } catch (error) {
         console.error('[ERROR] Failed to start server:', error);
         process.exit(1);

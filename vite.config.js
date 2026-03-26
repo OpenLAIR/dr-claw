@@ -1,5 +1,43 @@
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
+import {
+  DEFAULT_BACKEND_PORT,
+  DEFAULT_FRONTEND_PORT,
+  getBackendPortSync,
+  parsePortNumber,
+  setRuntimePortSync
+} from './server/utils/runtimePorts.js'
+
+function buildProxyTarget(protocol, host, fallbackPort) {
+  return `${protocol}://${host}:${getBackendPortSync(fallbackPort)}`
+}
+
+function configureDynamicProxy(proxy, protocol, host, fallbackPort, eventName = 'proxyReq') {
+  const syncTarget = () => {
+    proxy.options.target = buildProxyTarget(protocol, host, fallbackPort)
+  }
+
+  syncTarget()
+  proxy.on(eventName, syncTarget)
+}
+
+function runtimePortSyncPlugin() {
+  return {
+    name: 'runtime-port-sync',
+    configureServer(server) {
+      const recordFrontendPort = () => {
+        const address = server.httpServer?.address()
+        if (address && typeof address === 'object' && address.port) {
+          setRuntimePortSync('frontend', address.port)
+        }
+      }
+
+      if (server.httpServer) {
+        server.httpServer.once('listening', recordFrontendPort)
+      }
+    }
+  }
+}
 
 export default defineConfig(({ command, mode }) => {
   // Load env file based on `mode` in the current working directory.
@@ -9,22 +47,35 @@ export default defineConfig(({ command, mode }) => {
   // When binding to all interfaces (0.0.0.0), proxy should connect to localhost.
   // Otherwise, proxy to the specific host the backend is bound to.
   const proxyHost = host === '0.0.0.0' ? 'localhost' : host
-  const port = env.PORT || 3001
+  const backendPort = parsePortNumber(env.PORT, DEFAULT_BACKEND_PORT)
+  const frontendPort = parsePortNumber(env.VITE_PORT, DEFAULT_FRONTEND_PORT)
 
   return {
-    plugins: [react()],
+    plugins: [react(), runtimePortSyncPlugin()],
     server: {
       host,
-      port: parseInt(env.VITE_PORT) || 5173,
+      port: frontendPort,
+      strictPort: false,
       proxy: {
-        '/api': `http://${proxyHost}:${port}`,
+        '/api': {
+          target: buildProxyTarget('http', proxyHost, backendPort),
+          configure(proxy) {
+            configureDynamicProxy(proxy, 'http', proxyHost, backendPort)
+          }
+        },
         '/ws': {
-          target: `ws://${proxyHost}:${port}`,
-          ws: true
+          target: buildProxyTarget('ws', proxyHost, backendPort),
+          ws: true,
+          configure(proxy) {
+            configureDynamicProxy(proxy, 'ws', proxyHost, backendPort, 'proxyReqWs')
+          }
         },
         '/shell': {
-          target: `ws://${proxyHost}:${port}`,
-          ws: true
+          target: buildProxyTarget('ws', proxyHost, backendPort),
+          ws: true,
+          configure(proxy) {
+            configureDynamicProxy(proxy, 'ws', proxyHost, backendPort, 'proxyReqWs')
+          }
         }
       }
     },
