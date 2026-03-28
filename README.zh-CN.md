@@ -195,6 +195,9 @@ drclaw auth login --username 你的用户名 --password 你的密码
 | Claude Code | `npm install -g @anthropic-ai/claude-code` | `claude` → 按提示完成 OAuth |
 | Gemini CLI | `npm install -g @google/gemini-cli` | `gemini` → Google 登录，或 `export GOOGLE_API_KEY=...` |
 | Codex CLI | `npm install -g @openai/codex` | `codex login`，或 `export OPENAI_API_KEY=...` |
+| **OpenRouter** | 无需安装 CLI | `export OPENROUTER_API_KEY=sk-or-...`（在 [openrouter.ai/keys](https://openrouter.ai/keys) 获取密钥）|
+
+> **OpenRouter** 允许你通过单个 API 密钥使用*任意*模型（GPT-5、Claude、Gemini、DeepSeek、Llama、Mistral、Qwen 等）。在 UI 中选择模型或在 `.env` 中设置 `OPENROUTER_MODEL`。
 
 进入你要工作的项目目录，启动任一 Agent：
 

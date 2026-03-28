@@ -14,9 +14,9 @@ import { api } from '../../../utils/api';
 import { Button } from '../../ui/button';
 import { formatTimeAgo } from '../../../utils/dateUtils';
 import type { AppTab, Project, ProjectSession } from '../../../types/app';
-import { CLAUDE_MODELS, CODEX_MODELS, GEMINI_MODELS } from '../../../../shared/modelConstants';
+import { CLAUDE_MODELS, CODEX_MODELS, GEMINI_MODELS, OPENROUTER_MODELS } from '../../../../shared/modelConstants';
 
-type AutoResearchProvider = 'claude' | 'codex' | 'gemini';
+type AutoResearchProvider = 'claude' | 'codex' | 'gemini' | 'openrouter';
 
 type ProjectDashboardProps = {
   projects: Project[];
@@ -99,6 +99,9 @@ function getDefaultModelForProvider(provider: AutoResearchProvider): string {
   if (provider === 'gemini') {
     return GEMINI_MODELS.DEFAULT || 'gemini-3-flash-preview';
   }
+  if (provider === 'openrouter') {
+    return OPENROUTER_MODELS.DEFAULT || 'anthropic/claude-sonnet-4';
+  }
   return CLAUDE_MODELS.DEFAULT || 'sonnet';
 }
 
@@ -117,6 +120,7 @@ function isModelValidForProvider(provider: AutoResearchProvider, model?: string 
   if (!model) {
     return false;
   }
+  if (provider === 'openrouter' && model.includes('/')) return true;
   return getModelOptions(provider).some((option) => option.value === model);
 }
 
@@ -145,12 +149,14 @@ const AUTO_RESEARCH_PROVIDER_OPTIONS: Array<{ value: AutoResearchProvider; label
   { value: 'claude', label: 'Claude' },
   { value: 'codex', label: 'Codex' },
   { value: 'gemini', label: 'Gemini' },
+  { value: 'openrouter', label: 'OpenRouter' },
 ];
 
 const AUTO_RESEARCH_MODELS_BY_PROVIDER: Record<AutoResearchProvider, { value: string; label: string }[]> = {
   claude: CLAUDE_MODELS.OPTIONS,
   codex: CODEX_MODELS.OPTIONS,
   gemini: GEMINI_MODELS.OPTIONS,
+  openrouter: OPENROUTER_MODELS.OPTIONS,
 };
 
 const PROJECT_TONES = [
@@ -190,6 +196,7 @@ function getProjectSessions(project: Project): ProjectSession[] {
     ...(project.cursorSessions ?? []),
     ...(project.codexSessions ?? []),
     ...(project.geminiSessions ?? []),
+    ...(project.openrouterSessions ?? []),
   ];
 }
 

@@ -69,6 +69,49 @@ export const CODEX_MODELS = {
 };
 
 /**
+ * OpenRouter Models
+ * Users can also type any model slug from https://openrouter.ai/models
+ */
+export const OPENROUTER_MODELS = {
+  OPTIONS: [
+    // Anthropic
+    { value: 'anthropic/claude-sonnet-4', label: 'Claude Sonnet 4 (Anthropic)' },
+    { value: 'anthropic/claude-opus-4', label: 'Claude Opus 4 (Anthropic)' },
+    { value: 'anthropic/claude-haiku-3.5', label: 'Claude 3.5 Haiku (Anthropic)' },
+    // OpenAI
+    { value: 'openai/gpt-5', label: 'GPT-5 (OpenAI)' },
+    { value: 'openai/gpt-4.1', label: 'GPT-4.1 (OpenAI)' },
+    { value: 'openai/gpt-4.1-mini', label: 'GPT-4.1 Mini (OpenAI)' },
+    { value: 'openai/o3', label: 'O3 (OpenAI)' },
+    { value: 'openai/o4-mini', label: 'O4 Mini (OpenAI)' },
+    // Google
+    { value: 'google/gemini-2.5-pro', label: 'Gemini 2.5 Pro (Google)' },
+    { value: 'google/gemini-2.5-flash', label: 'Gemini 2.5 Flash (Google)' },
+    // DeepSeek
+    { value: 'deepseek/deepseek-r1', label: 'DeepSeek R1' },
+    { value: 'deepseek/deepseek-chat-v3-0324', label: 'DeepSeek V3 0324' },
+    // Meta
+    { value: 'meta-llama/llama-4-maverick', label: 'Llama 4 Maverick (Meta)' },
+    { value: 'meta-llama/llama-4-scout', label: 'Llama 4 Scout (Meta)' },
+    // Mistral
+    { value: 'mistralai/mistral-large', label: 'Mistral Large' },
+    { value: 'mistralai/codestral', label: 'Codestral (Mistral)' },
+    // Qwen
+    { value: 'qwen/qwen3-235b-a22b', label: 'Qwen3 235B' },
+    { value: 'qwen/qwen3-32b', label: 'Qwen3 32B' },
+    // xAI
+    { value: 'x-ai/grok-3', label: 'Grok 3 (xAI)' },
+    { value: 'x-ai/grok-3-mini', label: 'Grok 3 Mini (xAI)' },
+    // Cohere
+    { value: 'cohere/command-a', label: 'Command A (Cohere)' },
+  ],
+
+  ALLOWS_CUSTOM: true,
+
+  DEFAULT: (typeof process !== 'undefined' && process.env?.OPENROUTER_MODEL) || 'anthropic/claude-sonnet-4'
+};
+
+/**
  * Gemini (Google) Models
  */
 export const GEMINI_MODELS = {

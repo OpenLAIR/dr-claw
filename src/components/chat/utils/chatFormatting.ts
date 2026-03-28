@@ -176,3 +176,24 @@ export function buildAssistantMessages(
   }
   return [{ type: 'assistant', content, timestamp }];
 }
+
+/**
+ * Returns the display label for a given provider.
+ * For OpenRouter, shows a prettified version of the selected model slug.
+ */
+export function getProviderDisplayName(provider: string): string {
+  if (provider === 'cursor') return 'Cursor';
+  if (provider === 'codex') return 'Codex';
+  if (provider === 'gemini') return 'Gemini';
+  if (provider === 'openrouter') {
+    const slug = localStorage.getItem('openrouter-model') || '';
+    if (slug) {
+      const afterSlash = slug.includes('/') ? slug.split('/').pop()! : slug;
+      return afterSlash
+        .replace(/-/g, ' ')
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+    }
+    return 'OpenRouter';
+  }
+  return 'Claude';
+}

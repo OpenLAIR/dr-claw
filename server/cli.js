@@ -7,6 +7,7 @@
  * Commands:
  *   (no args)     - Start the server (default)
  *   start         - Start the server
+ *   chat          - Interactive terminal chat via OpenRouter
  *   status        - Show configuration and data locations
  *   help          - Show help information
  *   version       - Show version information
@@ -156,6 +157,7 @@ Legacy alias:
 
 Commands:
   start          Start the Dr. Claw server (default)
+  chat           Interactive terminal chat via OpenRouter
   status         Show configuration and data locations
   update         Update to the latest version
   help           Show this help information
@@ -164,11 +166,15 @@ Commands:
 Options:
   -p, --port <port>           Set server port (default: 3001)
   --database-path <path>      Set custom database location
+  --model <model>             OpenRouter model slug (chat command)
+  --key <key>                 OpenRouter API key (chat command)
   -h, --help                  Show this help information
   -v, --version               Show version information
 
 Examples:
   $ dr-claw                        # Start with defaults
+  $ dr-claw chat                   # Terminal chat with OpenRouter
+  $ dr-claw chat --model deepseek/deepseek-r1
   $ dr-claw --port 8080            # Start on port 8080
   $ dr-claw -p 3000                # Short form for port
   $ dr-claw start --port 4000      # Explicit start command
@@ -274,6 +280,14 @@ function parseArgs(args) {
             parsed.options.databasePath = args[++i];
         } else if (arg.startsWith('--database-path=')) {
             parsed.options.databasePath = arg.split('=')[1];
+        } else if (arg === '--model' || arg === '-m') {
+            parsed.options.model = args[++i];
+        } else if (arg.startsWith('--model=')) {
+            parsed.options.model = arg.split('=')[1];
+        } else if (arg === '--key') {
+            parsed.options.key = args[++i];
+        } else if (arg.startsWith('--key=')) {
+            parsed.options.key = arg.split('=')[1];
         } else if (arg === '--help' || arg === '-h') {
             parsed.command = 'help';
         } else if (arg === '--version' || arg === '-v') {
@@ -303,6 +317,12 @@ async function main() {
         case 'start':
             await startServer();
             break;
+        case 'chat': {
+            loadEnvFile();
+            const { startChat } = await import('./cli-chat.js');
+            await startChat({ model: options.model, key: options.key });
+            break;
+        }
         case 'status':
         case 'info':
             showStatus();

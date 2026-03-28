@@ -1,7 +1,7 @@
 {
   "name": "dr-claw",
   "version": "1.1.0",
-  "description": "Dr. Claw — Desktop and mobile UI for Claude Code, Cursor CLI and Codex with Research Lab",
+  "description": "Dr. Claw — Desktop and mobile UI for Claude Code, Cursor CLI, Codex, and OpenRouter with Research Lab",
   "type": "module",
   "main": "server/index.js",
   "bin": {
@@ -42,6 +42,7 @@
     "claude code",
     "ai",
     "anthropic",
+    "openrouter",
     "ui",
     "mobile"
   ],

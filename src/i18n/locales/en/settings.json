@@ -341,6 +341,9 @@
       },
       "gemini": {
         "description": "Google Gemini AI CLI assistant"
+      },
+      "openrouter": {
+        "description": "Route to any model via OpenRouter API"
       }
     },
     "connectionStatus": "Connection Status",

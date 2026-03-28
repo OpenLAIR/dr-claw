@@ -341,6 +341,9 @@
       },
       "gemini": {
         "description": "Google Gemini AI CLI 어시스턴트"
+      },
+      "openrouter": {
+        "description": "OpenRouter API를 통해 모든 모델로 라우팅"
       }
     },
     "connectionStatus": "연결 상태",

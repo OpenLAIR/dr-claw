@@ -18,6 +18,10 @@ const agentConfig = {
     name: 'Gemini',
     color: 'blue',
   },
+  openrouter: {
+    name: 'OpenRouter',
+    color: 'purple',
+  },
 };
 
 const colorClasses = {

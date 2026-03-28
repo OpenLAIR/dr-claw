@@ -13,6 +13,7 @@ import type { Project, ProjectSession, SessionMode, SessionProvider } from '../.
 import AssistantThinkingIndicator from './AssistantThinkingIndicator';
 import { getIntrinsicMessageKey } from '../../utils/messageKeys';
 import { groupMessagesIntoTurns } from '../../utils/groupAgentTurns';
+import { getProviderDisplayName } from '../../utils/chatFormatting';
 
 const WORKSPACE_QA_GREETING = `Ask about any file, module, or implementation detail in this workspace. I will stay focused on code and project structure unless you explicitly ask to start research planning.`;
 
@@ -37,6 +38,8 @@ interface ChatMessagesPaneProps {
   setCodexModel: (model: string) => void;
   geminiModel: string;
   setGeminiModel: (model: string) => void;
+  openrouterModel: string;
+  setOpenrouterModel: (model: string) => void;
   isLoadingMoreMessages: boolean;
   hasMoreMessages: boolean;
   totalMessages: number;
@@ -88,6 +91,8 @@ export default function ChatMessagesPane({
   setCodexModel,
   geminiModel,
   setGeminiModel,
+  openrouterModel,
+  setOpenrouterModel,
   isLoadingMoreMessages,
   hasMoreMessages,
   totalMessages,
@@ -201,6 +206,8 @@ export default function ChatMessagesPane({
             setCodexModel={setCodexModel}
             geminiModel={geminiModel}
             setGeminiModel={setGeminiModel}
+            openrouterModel={openrouterModel}
+            setOpenrouterModel={setOpenrouterModel}
             projectName={selectedProject.name}
             setInput={setInput}
             setAttachedPrompt={setAttachedPrompt}
@@ -215,7 +222,7 @@ export default function ChatMessagesPane({
                   <SessionProviderLogo provider={provider} className="w-full h-full" />
                 </div>
                 <div className="text-xs font-semibold text-gray-900 dark:text-white">
-                  {t('messageTypes.claude')}
+                  {getProviderDisplayName(provider)}
                 </div>
               </div>
               <div className="w-full pl-0">

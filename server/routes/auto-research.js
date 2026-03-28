@@ -5,10 +5,11 @@ import { promises as fs } from 'fs';
 
 import { appSettingsDb, autoResearchDb, userDb } from '../database/db.js';
 import { extractProjectDirectory } from '../projects.js';
-import { CLAUDE_MODELS, CODEX_MODELS, GEMINI_MODELS } from '../../shared/modelConstants.js';
+import { CLAUDE_MODELS, CODEX_MODELS, GEMINI_MODELS, OPENROUTER_MODELS } from '../../shared/modelConstants.js';
 import { queryClaudeSDK, abortClaudeSDKSession, isClaudeSDKSessionActive } from '../claude-sdk.js';
 import { queryCodex, abortCodexSession, isCodexSessionActive } from '../openai-codex.js';
 import { spawnGemini, abortGeminiSession, isGeminiSessionActive } from '../gemini-cli.js';
+import { queryOpenRouter, abortOpenRouterSession, isOpenRouterSessionActive } from '../openrouter.js';
 import { sendAutoResearchCompletionEmail } from '../utils/auto-research-mailer.js';
 import { getGeminiApiKeyForUser, withGeminiApiKeyEnv } from '../utils/geminiApiKey.js';
 
@@ -28,11 +29,14 @@ function getDefaultModelForProvider(provider) {
   if (provider === 'gemini') {
     return GEMINI_MODELS.DEFAULT || 'gemini-3-flash-preview';
   }
+  if (provider === 'openrouter') {
+    return OPENROUTER_MODELS.DEFAULT || 'anthropic/claude-sonnet-4';
+  }
   return CLAUDE_MODELS.DEFAULT || 'sonnet';
 }
 
 function normalizeAutoResearchProvider(provider) {
-  if (provider === 'claude' || provider === 'codex' || provider === 'gemini') {
+  if (provider === 'claude' || provider === 'codex' || provider === 'gemini' || provider === 'openrouter') {
     return provider;
   }
   return 'claude';
@@ -52,6 +56,9 @@ function abortActiveSession(provider, sessionId) {
   if (provider === 'gemini') {
     return abortGeminiSession(sessionId);
   }
+  if (provider === 'openrouter') {
+    return abortOpenRouterSession(sessionId);
+  }
   return abortClaudeSDKSession(sessionId);
 }
 
@@ -61,6 +68,9 @@ function isSessionActiveForProvider(provider, sessionId) {
   }
   if (provider === 'gemini') {
     return isGeminiSessionActive(sessionId);
+  }
+  if (provider === 'openrouter') {
+    return isOpenRouterSessionActive(sessionId);
   }
   return isClaudeSDKSessionActive(sessionId);
 }
@@ -337,38 +347,25 @@ async function runAutoResearch(runId, userId, projectName, projectPath) {
       const model = runState.model || getDefaultModelForProvider(provider);
       const permissionMode = runState.permissionMode || AUTO_RESEARCH_DEFAULT_PERMISSION_MODE;
 
+      const agentOptions = {
+        cwd: projectPath,
+        projectPath,
+        sessionId: runState.sessionId,
+        env: sessionEnv,
+        model,
+        permissionMode,
+        stageTagKeys: task.stage ? [task.stage] : [],
+        stageTagSource: 'auto_research',
+      };
+
+      const agentPromise =
+        provider === 'codex'   ? queryCodex(prompt, agentOptions, writer)
+        : provider === 'gemini'  ? spawnGemini(prompt, agentOptions, writer)
+        : provider === 'openrouter' ? queryOpenRouter(prompt, agentOptions, writer)
+        : queryClaudeSDK(prompt, agentOptions, writer);
+
       await withTimeout(
-        provider === 'codex'
-          ? queryCodex(prompt, {
-            cwd: projectPath,
-            projectPath,
-            sessionId: runState.sessionId,
-            env: sessionEnv,
-            model,
-            permissionMode,
-            stageTagKeys: task.stage ? [task.stage] : [],
-            stageTagSource: 'auto_research',
-          }, writer)
-          : provider === 'gemini'
-            ? spawnGemini(prompt, {
-              cwd: projectPath,
-              projectPath,
-              sessionId: runState.sessionId,
-              env: sessionEnv,
-              model,
-              permissionMode,
-              stageTagKeys: task.stage ? [task.stage] : [],
-              stageTagSource: 'auto_research',
-            }, writer)
-            : queryClaudeSDK(prompt, {
-              cwd: projectPath,
-              projectPath,
-              sessionId: runState.sessionId,
-              env: sessionEnv,
-              permissionMode,
-              stageTagKeys: task.stage ? [task.stage] : [],
-              stageTagSource: 'auto_research',
-            }, writer),
+        agentPromise,
         TASK_TIMEOUT_MS,
         async () => {
           if (runState.sessionId) {

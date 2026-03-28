@@ -240,4 +240,46 @@ router.put('/auto-research-resend-key', async (req, res) => {
   }
 });
 
+// ===============================
+// OpenRouter Models (cached proxy)
+// ===============================
+
+let openrouterModelsCache = { data: null, fetchedAt: 0 };
+const OPENROUTER_CACHE_TTL = 1000 * 60 * 30; // 30 minutes
+
+router.get('/openrouter-models', async (_req, res) => {
+  try {
+    const now = Date.now();
+    if (openrouterModelsCache.data && now - openrouterModelsCache.fetchedAt < OPENROUTER_CACHE_TTL) {
+      return res.json(openrouterModelsCache.data);
+    }
+
+    const response = await fetch(
+      'https://openrouter.ai/api/v1/models?output_modalities=text&supported_parameters=tools',
+      { headers: { 'HTTP-Referer': 'https://github.com/OpenLAIR/dr-claw', 'X-Title': 'Dr. Claw' } }
+    );
+    if (!response.ok) throw new Error(`OpenRouter API returned ${response.status}`);
+
+    const json = await response.json();
+    const models = (json.data || [])
+      .filter((m) => m.id && m.name)
+      .map((m) => ({
+        value: m.id,
+        label: m.name,
+        contextLength: m.context_length || null,
+        pricing: m.pricing || null,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+
+    openrouterModelsCache = { data: { models }, fetchedAt: now };
+    res.json({ models });
+  } catch (error) {
+    console.error('Error fetching OpenRouter models:', error);
+    if (openrouterModelsCache.data) {
+      return res.json(openrouterModelsCache.data);
+    }
+    res.status(502).json({ error: 'Failed to fetch OpenRouter models' });
+  }
+});
+
 export default router;

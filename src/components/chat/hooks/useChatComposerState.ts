@@ -51,6 +51,7 @@ interface UseChatComposerStateArgs {
   claudeModel: string;
   codexModel: string;
   geminiModel: string;
+  openrouterModel: string;
   isLoading: boolean;
   canAbortSession: boolean;
   tokenBudget: Record<string, unknown> | null;
@@ -194,6 +195,7 @@ export function useChatComposerState({
   claudeModel,
   codexModel,
   geminiModel,
+  openrouterModel,
   isLoading,
   canAbortSession,
   tokenBudget,
@@ -1045,6 +1047,25 @@ export function useChatComposerState({
             stageTagSource: 'task_context',
           },
         });
+      } else if (provider === 'openrouter') {
+        console.log('[DEBUG] Sending openrouter-command');
+        sendMessage({
+          type: 'openrouter-command',
+          command: messageContent,
+          sessionId: effectiveSessionId,
+          options: {
+            cwd: resolvedProjectPath,
+            projectPath: resolvedProjectPath,
+            sessionId: effectiveSessionId,
+            resume: Boolean(effectiveSessionId),
+            model: openrouterModel,
+            permissionMode,
+            telemetryEnabled,
+            sessionMode: isNewSession ? newSessionMode : selectedSession?.mode,
+            stageTagKeys: pendingStageTagKeys,
+            stageTagSource: 'task_context',
+          },
+        });
       } else {
         console.log('[DEBUG] Sending claude-command');
         sendMessage({
@@ -1093,6 +1114,7 @@ export function useChatComposerState({
       cursorModel,
       executeCommand,
       geminiModel,
+      openrouterModel,
       isLoading,
       onSessionActive,
       pendingViewSessionRef,

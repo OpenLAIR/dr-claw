@@ -9,7 +9,7 @@ import type {
   Provider,
 } from '../../types/types';
 import { Markdown } from './Markdown';
-import { formatUsageLimitText } from '../../utils/chatFormatting';
+import { formatUsageLimitText, getProviderDisplayName } from '../../utils/chatFormatting';
 import { getPermissionSuggestion } from '../../utils/chatPermissions';
 import type { Project } from '../../../../types/app';
 import { ToolRenderer, shouldHideToolResult } from '../../tools';
@@ -284,7 +284,7 @@ const MessageComponent = memo(({ message, index, prevMessage, createDiff, onFile
                 </div>
               )}
               <div className="text-xs font-semibold text-gray-900 dark:text-white">
-                {message.type === 'error' ? t('messageTypes.error') : message.type === 'tool' ? t('messageTypes.tool') : (provider === 'cursor' ? t('messageTypes.cursor') : provider === 'codex' ? t('messageTypes.codex') : provider === 'gemini' ? 'Gemini' : t('messageTypes.claude'))}
+                {message.type === 'error' ? t('messageTypes.error') : message.type === 'tool' ? t('messageTypes.tool') : getProviderDisplayName(provider)}
               </div>
             </div>
           )}

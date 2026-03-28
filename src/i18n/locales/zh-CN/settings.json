@@ -341,6 +341,9 @@
       },
       "gemini": {
         "description": "Google Gemini AI CLI 助手"
+      },
+      "openrouter": {
+        "description": "通过 OpenRouter API 路由到任意模型"
       }
     },
     "connectionStatus": "连接状态",

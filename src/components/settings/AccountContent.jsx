@@ -48,6 +48,16 @@ const agentConfig = {
     subtextClass: 'text-blue-700 dark:text-blue-300',
     buttonClass: 'bg-blue-600 hover:bg-blue-700',
   },
+  openrouter: {
+    name: 'OpenRouter',
+    description: 'Route to any model via OpenRouter API',
+    cliCommand: 'openrouter',
+    bgClass: 'bg-violet-50 dark:bg-violet-900/20',
+    borderClass: 'border-violet-200 dark:border-violet-800',
+    textClass: 'text-violet-900 dark:text-violet-100',
+    subtextClass: 'text-violet-700 dark:text-violet-300',
+    buttonClass: 'bg-violet-600 hover:bg-violet-700',
+  },
 };
 
 export default function AccountContent({ agent, authStatus, onLogin }) {
@@ -60,6 +70,10 @@ export default function AccountContent({ agent, authStatus, onLogin }) {
   const [customApiToken, setCustomApiToken] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [verifyResult, setVerifyResult] = useState(null);
+
+  const [openrouterApiKey, setOpenrouterApiKey] = useState('');
+  const [isVerifyingOpenRouter, setIsVerifyingOpenRouter] = useState(false);
+  const [openrouterVerifyResult, setOpenrouterVerifyResult] = useState(null);
 
   const handleVerifyCustomApi = async () => {
     setIsVerifying(true);
@@ -84,6 +98,30 @@ export default function AccountContent({ agent, authStatus, onLogin }) {
       setIsVerifying(false);
     }
   };
+
+  const handleVerifyOpenRouterKey = async () => {
+    setIsVerifyingOpenRouter(true);
+    setOpenrouterVerifyResult(null);
+    try {
+      const res = await authenticatedFetch('/api/cli/openrouter/verify-api-key', {
+        method: 'POST',
+        body: JSON.stringify({ apiKey: openrouterApiKey.trim() }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setOpenrouterVerifyResult({ success: true, message: data.message || 'API key verified and saved.' });
+        setOpenrouterApiKey('');
+      } else {
+        setOpenrouterVerifyResult({ success: false, message: data.error || 'Invalid API key' });
+      }
+    } catch (err) {
+      setOpenrouterVerifyResult({ success: false, message: err.message });
+    } finally {
+      setIsVerifyingOpenRouter(false);
+    }
+  };
+
+  if (!config) return null;
 
   return (
     <div className="space-y-6">
@@ -135,31 +173,33 @@ export default function AccountContent({ agent, authStatus, onLogin }) {
             </div>
           </div>
 
-          <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className={`font-medium ${config.textClass}`}>
-                  {authStatus?.authenticated ? t('agents.login.reAuthenticate') : t('agents.login.title')}
+          {agent !== 'openrouter' && (
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className={`font-medium ${config.textClass}`}>
+                    {authStatus?.authenticated ? t('agents.login.reAuthenticate') : t('agents.login.title')}
+                  </div>
+                  <div className={`text-sm ${config.subtextClass}`}>
+                    {authStatus?.authenticated
+                      ? t('agents.login.reAuthDescription')
+                      : cliMissing
+                        ? t('agents.login.installDescription', { agent: config.name })
+                      : t('agents.login.description', { agent: config.name })}
+                  </div>
                 </div>
-                <div className={`text-sm ${config.subtextClass}`}>
-                  {authStatus?.authenticated
-                    ? t('agents.login.reAuthDescription')
-                    : cliMissing
-                      ? t('agents.login.installDescription', { agent: config.name })
-                    : t('agents.login.description', { agent: config.name })}
-                </div>
+                <Button
+                  onClick={onLogin}
+                  className={`${config.buttonClass} text-white`}
+                  size="sm"
+                  disabled={authStatus?.loading || cliMissing}
+                >
+                  <LogIn className="w-4 h-4 mr-2" />
+                  {authStatus?.authenticated ? t('agents.login.reLoginButton') : t('agents.login.button')}
+                </Button>
               </div>
-              <Button
-                onClick={onLogin}
-                className={`${config.buttonClass} text-white`}
-                size="sm"
-                disabled={authStatus?.loading || cliMissing}
-              >
-                <LogIn className="w-4 h-4 mr-2" />
-                {authStatus?.authenticated ? t('agents.login.reLoginButton') : t('agents.login.button')}
-              </Button>
             </div>
-          </div>
+          )}
 
           {cliMissing && installHint && (
             <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
@@ -211,6 +251,53 @@ export default function AccountContent({ agent, authStatus, onLogin }) {
                     {verifyResult.message}
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {agent === 'openrouter' && (
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Key className="w-4 h-4 text-violet-500" />
+                <div className={`font-medium ${config.textClass}`}>API Key Configuration</div>
+              </div>
+              <p className={`text-sm ${config.subtextClass} mb-3`}>
+                {authStatus?.authenticated
+                  ? 'Your API key is configured. Enter a new key below to replace it.'
+                  : 'Enter your OpenRouter API key to connect. Get one at openrouter.ai/keys.'}
+              </p>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-sm text-gray-600 dark:text-gray-400 block mb-1 flex items-center gap-1">
+                    <Key className="w-3.5 h-3.5" /> OpenRouter API Key
+                  </label>
+                  <Input
+                    type="password"
+                    placeholder="sk-or-..."
+                    value={openrouterApiKey}
+                    onChange={e => setOpenrouterApiKey(e.target.value)}
+                  />
+                </div>
+                <Button
+                  onClick={handleVerifyOpenRouterKey}
+                  disabled={isVerifyingOpenRouter || !openrouterApiKey.trim()}
+                  size="sm"
+                  className={`${config.buttonClass} text-white w-full`}
+                >
+                  {isVerifyingOpenRouter ? 'Verifying...' : 'Verify & Save Key'}
+                </Button>
+                {openrouterVerifyResult && (
+                  <div className={`text-sm ${openrouterVerifyResult.success ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                    {openrouterVerifyResult.message}
+                  </div>
+                )}
+                <div className="text-xs text-muted-foreground mt-2">
+                  <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
+                    Get an API key at openrouter.ai/keys
+                  </a>
+                  {' · '}
+                  <span>Supports 200+ models including GPT-5, Claude, Gemini, DeepSeek, Llama, and more.</span>
+                </div>
               </div>
             </div>
           )}

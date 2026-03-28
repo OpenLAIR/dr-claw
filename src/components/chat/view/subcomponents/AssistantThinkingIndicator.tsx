@@ -1,6 +1,7 @@
 import { SessionProvider } from '../../../../types/app';
 import SessionProviderLogo from '../../../SessionProviderLogo';
 import { useTranslation } from 'react-i18next';
+import { getProviderDisplayName } from '../../utils/chatFormatting';
 
 type AssistantThinkingIndicatorProps = {
   selectedProvider: SessionProvider;
@@ -18,7 +19,7 @@ export default function AssistantThinkingIndicator({ selectedProvider, statusTex
             <SessionProviderLogo provider={selectedProvider} className="w-full h-full" />
           </div>
           <div className="text-xs font-semibold text-gray-900 dark:text-white">
-            {selectedProvider === 'cursor' ? 'Cursor' : selectedProvider === 'codex' ? 'Codex' : selectedProvider === 'gemini' ? 'Gemini' : 'Claude'}
+            {getProviderDisplayName(selectedProvider)}
           </div>
         </div>
         <div className="w-full text-sm text-gray-500 dark:text-gray-400">

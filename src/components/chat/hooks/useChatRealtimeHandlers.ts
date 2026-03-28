@@ -382,12 +382,14 @@ export function useChatRealtimeHandlers({
       'claude-complete',
       'codex-complete',
       'gemini-complete',
+      'openrouter-complete',
       'cursor-result',
       'session-aborted',
       'claude-error',
       'cursor-error',
       'codex-error',
       'gemini-error',
+      'openrouter-error',
     ]);
 
     const isClaudeSystemInit =
@@ -669,6 +671,88 @@ export function useChatRealtimeHandlers({
         break;
       }
 
+      case 'openrouter-response': {
+        const orData = latestMessage.data;
+        if (orData && typeof orData === 'object') {
+          if (Number.isFinite(orData.startTime)) {
+            persistStartTime(orData.startTime, latestMessage.sessionId, currentSessionId, selectedSession?.id);
+            syncClaudeStatusStartTime(orData.startTime);
+          }
+
+          if (orData.type === 'assistant_message' && orData.message?.content) {
+            setIsLoading(true);
+            setStatusTextOverride(null);
+            const text = orData.message.content;
+            streamBufferRef.current += text;
+            if (!streamTimerRef.current) {
+              streamTimerRef.current = window.setTimeout(() => {
+                const chunk = streamBufferRef.current;
+                streamBufferRef.current = '';
+                streamTimerRef.current = null;
+                appendStreamingChunk(setChatMessages, chunk, false);
+              }, 30);
+            }
+            return;
+          }
+
+          if (orData.type === 'structured_turn' && orData.message) {
+            flushAndFinalizePendingStream();
+            handleStructuredAssistantMessage(orData.message, orData);
+            return;
+          }
+
+          if (orData.type === 'structured_result' && orData.message) {
+            handleUserToolResults(orData.message, orData);
+            return;
+          }
+
+          if (orData.type === 'tool_use') {
+            flushAndFinalizePendingStream();
+            if (['Bash', 'bash', 'run_shell_command'].includes(orData.toolName)) {
+              setStatusTextOverride(i18n.t('chat:status.runningCode'));
+            }
+            const toolInput = orData.toolInput ? JSON.stringify(orData.toolInput, null, 2) : '';
+            setChatMessages((prev) => [
+              ...prev,
+              {
+                type: 'assistant' as const,
+                content: '',
+                timestamp: new Date(),
+                isToolUse: true,
+                toolName: orData.toolName,
+                toolInput,
+                toolId: orData.toolCallId,
+                toolResult: null,
+              },
+            ]);
+            return;
+          }
+
+          if (orData.type === 'tool_result') {
+            setStatusTextOverride(null);
+            setChatMessages((prev) => {
+              const updated = [...prev];
+              for (let i = updated.length - 1; i >= 0; i--) {
+                if (updated[i].isToolUse && updated[i].toolId === orData.toolCallId) {
+                  updated[i] = {
+                    ...updated[i],
+                    toolResult: {
+                      content: orData.output,
+                      isError: orData.isError || false,
+                      timestamp: new Date(),
+                    },
+                  };
+                  break;
+                }
+              }
+              return updated;
+            });
+            return;
+          }
+        }
+        break;
+      }
+
       case 'claude-output': {
         const cleaned = String(latestMessage.data || '');
         if (cleaned.trim()) {
@@ -686,9 +770,11 @@ export function useChatRealtimeHandlers({
       }
 
       case 'claude-complete':
-      case 'gemini-complete': {
+      case 'gemini-complete':
+      case 'openrouter-complete': {
         const pendingSessionId = sessionStorage.getItem('pendingSessionId');
         const completedSessionId = latestMessage.sessionId || currentSessionId || pendingSessionId;
+        flushAndFinalizePendingStream();
         clearLoadingIndicators();
         markSessionsAsCompleted(completedSessionId, currentSessionId, selectedSession?.id, pendingSessionId);
         if (pendingSessionId && !currentSessionId && latestMessage.exitCode === 0) {
@@ -703,7 +789,8 @@ export function useChatRealtimeHandlers({
       }
 
       case 'claude-error':
-      case 'gemini-error': {
+      case 'gemini-error':
+      case 'openrouter-error': {
         if (isLegacyTaskMasterInstallError(latestMessage.error)) {
           break;
         }

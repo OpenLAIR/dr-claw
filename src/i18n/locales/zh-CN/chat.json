@@ -178,13 +178,15 @@
       "anthropic": "Anthropic",
       "openai": "OpenAI",
       "google": "Google",
-      "cursorEditor": "AI 代码编辑器"
+      "cursorEditor": "AI 代码编辑器",
+      "openrouter": "通过 API 使用任意模型"
     },
     "readyPrompt": {
       "claude": "已准备好使用 Claude {{model}}。在下方输入您的消息。",
       "cursor": "已准备好使用 Cursor {{model}}。在下方输入您的消息。",
       "gemini": "已准备好使用 Gemini {{model}}。在下方输入您的消息。",
       "codex": "已准备好使用 Codex {{model}}。在下方输入您的消息。",
+      "openrouter": "已准备好使用 OpenRouter {{model}}。在下方输入您的消息。",
       "default": "请在上方选择一个供应商以开始"
     }
   },

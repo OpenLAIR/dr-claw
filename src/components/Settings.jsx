@@ -159,6 +159,15 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
     loading: true,
     error: null
   });
+  const [openrouterAuthStatus, setOpenrouterAuthStatus] = useState({
+    authenticated: false,
+    email: null,
+    cliAvailable: true,
+    cliCommand: 'openrouter',
+    installHint: null,
+    loading: true,
+    error: null
+  });
 
   const buildDefaultAuthState = (overrides = {}) => ({
     authenticated: false,
@@ -547,6 +556,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
       checkCursorAuthStatus();
       checkCodexAuthStatus();
       checkGeminiAuthStatus();
+      checkOpenRouterAuthStatus();
       setActiveTab(VALID_SETTINGS_TABS.has(initialTab) ? initialTab : 'agents');
     }
   }, [isOpen, initialTab]);
@@ -804,6 +814,41 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
       console.error('Error checking Gemini auth status:', error);
       setGeminiAuthStatus(buildDefaultAuthState({
         cliCommand: 'gemini',
+        error: error.message
+      }));
+    }
+  };
+
+  const checkOpenRouterAuthStatus = async () => {
+    try {
+      const response = await authenticatedFetch('/api/cli/openrouter/status');
+
+      if (response.ok) {
+        const data = await response.json();
+        setOpenrouterAuthStatus({
+          authenticated: data.authenticated,
+          email: data.email,
+          cliAvailable: data.cliAvailable !== false,
+          cliCommand: data.cliCommand || 'openrouter',
+          installHint: data.installHint || null,
+          loading: false,
+          error: data.error || null
+        });
+        writeCliAvailability('openrouter', {
+          cliAvailable: data.cliAvailable !== false,
+          cliCommand: data.cliCommand || 'openrouter',
+          installHint: data.installHint || null,
+        });
+      } else {
+        setOpenrouterAuthStatus(buildDefaultAuthState({
+          cliCommand: 'openrouter',
+          error: 'Failed to check authentication status'
+        }));
+      }
+    } catch (error) {
+      console.error('Error checking OpenRouter auth status:', error);
+      setOpenrouterAuthStatus(buildDefaultAuthState({
+        cliCommand: 'openrouter',
         error: error.message
       }));
     }
@@ -1551,6 +1596,13 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
                       onClick={() => setSelectedAgent('gemini')}
                       isMobile={true}
                     />
+                    <AgentListItem
+                      agentId="openrouter"
+                      authStatus={openrouterAuthStatus}
+                      isSelected={selectedAgent === 'openrouter'}
+                      onClick={() => setSelectedAgent('openrouter')}
+                      isMobile={true}
+                    />
                   </div>
                 </div>
 
@@ -1574,6 +1626,12 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
                       authStatus={geminiAuthStatus}
                       isSelected={selectedAgent === 'gemini'}
                       onClick={() => setSelectedAgent('gemini')}
+                    />
+                    <AgentListItem
+                      agentId="openrouter"
+                      authStatus={openrouterAuthStatus}
+                      isSelected={selectedAgent === 'openrouter'}
+                      onClick={() => setSelectedAgent('openrouter')}
                     />
                   </div>
                 </div>
@@ -1626,12 +1684,14 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
                           selectedAgent === 'claude' ? claudeAuthStatus :
                           selectedAgent === 'cursor' ? cursorAuthStatus :
                           selectedAgent === 'gemini' ? geminiAuthStatus :
+                          selectedAgent === 'openrouter' ? openrouterAuthStatus :
                           codexAuthStatus
                         }
                         onLogin={
                           selectedAgent === 'claude' ? handleClaudeLogin :
                           selectedAgent === 'cursor' ? handleCursorLogin :
                           selectedAgent === 'gemini' ? handleGeminiLogin :
+                          selectedAgent === 'openrouter' ? (() => {}) :
                           handleCodexLogin
                         }
                       />

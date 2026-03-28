@@ -19,6 +19,8 @@ function buildCliInstallHint(agent) {
       return 'Codex CLI is not installed. Install it first, then retry login.';
     case 'gemini':
       return 'Gemini CLI is not installed. Install it first, then retry login.';
+    case 'openrouter':
+      return 'Set OPENROUTER_API_KEY in your .env file. Get a key at https://openrouter.ai/keys';
     default:
       return 'Required CLI is not installed. Install it first, then retry login.';
   }
@@ -590,6 +592,73 @@ async function checkCodexCredentials() {
     };
   }
 }
+
+router.get('/openrouter/status', async (req, res) => {
+  try {
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    if (apiKey) {
+      return res.json(buildStatusPayload({
+        authenticated: true,
+        email: 'API Key Connected',
+        cliAvailable: true,
+        cliCommand: 'openrouter'
+      }, 'openrouter'));
+    }
+
+    return res.json(buildStatusPayload({
+      authenticated: false,
+      email: null,
+      error: 'OPENROUTER_API_KEY not set',
+      cliAvailable: true,
+      cliCommand: 'openrouter',
+      installHint: 'Set OPENROUTER_API_KEY in your .env file or environment. Get a key at https://openrouter.ai/keys'
+    }, 'openrouter'));
+  } catch (error) {
+    console.error('Error checking OpenRouter auth status:', error);
+    res.status(500).json({
+      authenticated: false,
+      email: null,
+      error: error.message
+    });
+  }
+});
+
+router.post('/openrouter/verify-api-key', async (req, res) => {
+  try {
+    const { apiKey } = req.body;
+    if (!apiKey) return res.status(400).json({ error: 'API key is required' });
+
+    const response = await fetch('https://openrouter.ai/api/v1/models', {
+      headers: { 'Authorization': `Bearer ${apiKey}` }
+    });
+
+    if (response.ok) {
+      const envPath = path.join(process.cwd(), '.env');
+      let envContent = '';
+      try { envContent = await fs.readFile(envPath, 'utf8'); } catch {}
+
+      const lines = envContent.split('\n');
+      let found = false;
+      const newLines = lines.map(line => {
+        if (line.trim().startsWith('OPENROUTER_API_KEY=')) {
+          found = true;
+          return `OPENROUTER_API_KEY=${apiKey}`;
+        }
+        return line;
+      }).filter(l => l.trim() !== '' || found);
+
+      if (!found) newLines.push(`OPENROUTER_API_KEY=${apiKey}`);
+      await fs.writeFile(envPath, newLines.join('\n') + '\n');
+      process.env.OPENROUTER_API_KEY = apiKey;
+
+      return res.json({ success: true, message: 'OpenRouter API key verified and saved.' });
+    } else {
+      return res.status(401).json({ error: 'Invalid API key' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 router.post('/claude/verify-custom-api', async (req, res) => {
   try {
