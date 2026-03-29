@@ -35,6 +35,7 @@
 - [Highlights](#highlights)
 - [Quick Start](#quick-start)
 - [Configuration](#configuration)
+- [OpenRouter](#openrouter)
 - [OpenClaw Integration](#openclaw-integration)
 - [Research Lab - Quick Example](#research-lab-quick-example)
 - [Usage Guide](#usage-guide)
@@ -53,7 +54,7 @@ Dr. Claw is a general-purpose AI research assistant designed to help researchers
 ## Product Screenshot
 
 <p align="center">
-  <img src="public/screenshots/chat.png" alt="Dr. Claw chat interface" width="1000">
+  <img src="public/screenshots/new_claw.png" alt="Dr. Claw chat interface" width="1000">
 </p>
 
 <details>
@@ -73,7 +74,7 @@ Dr. Claw is a general-purpose AI research assistant designed to help researchers
 - **⚡ Auto Research** — Start one-click sequential task execution directly from the Project Dashboard, open the generated session live, and receive an email when the run completes
 - **📚 100+ Research Skills** — A curated library spanning idea generation, code survey, experiment development & analysis, paper writing, review response, and delivery — automatically discovered by agents and applied as task-level assistance
 - **🗂️ Chat-Driven Pipeline** — Describe your research idea in Chat; the agent uses the `inno-pipeline-planner` skill to interactively generate a structured research brief and task list — no manual templates needed
-- **🤖 Multi-Agent Backend** — Seamlessly switch between Claude Code, Gemini CLI, and Codex as your execution engines
+- **🤖 Multi-Agent Backend** — Seamlessly switch between Claude Code, Gemini CLI, Codex, and OpenRouter as your execution engines
 
 ### What the Pipeline Produces
 
@@ -215,6 +216,33 @@ Skills from `dr-claw/skills/` are automatically symlinked into each project's `.
 ```
 > Read .claude/skills/inno-experiment-analysis/SKILL.md and follow it to analyze my results.
 ```
+
+
+
+#### Option C: OpenRouter Terminal Chat
+
+For a lightweight terminal-only experience using any [OpenRouter](https://openrouter.ai/) model, use the built-in `dr-claw chat` command. No browser or UI required — just an interactive agentic session with full tool-calling capabilities (file I/O, shell, grep, glob, web search/fetch).
+
+```bash
+# Make sure OPENROUTER_API_KEY is set (or pass --key)
+export OPENROUTER_API_KEY=sk-or-...
+
+# Launch a chat session with any model
+node server/cli.js chat --model moonshotai/kimi-k2.5
+```
+
+You can also pass the API key inline:
+
+```bash
+node server/cli.js chat --model anthropic/claude-sonnet-4 --key sk-or-your-key
+```
+
+| Flag | Description |
+|------|-------------|
+| `--model <slug>` | OpenRouter model slug (e.g., `moonshotai/kimi-k2.5`, `anthropic/claude-sonnet-4`, `deepseek/deepseek-r1`) |
+| `--key <key>` | OpenRouter API key (defaults to `OPENROUTER_API_KEY` env var) |
+
+Browse all available models at [openrouter.ai/models](https://openrouter.ai/models).
 
 
 
@@ -480,7 +508,52 @@ Dr. Claw reads local settings from `.env`. For most users, the only required ste
 
 For the full environment reference and deployment notes, see [docs/configuration.md](docs/configuration.md).
 
-Auto Research email notifications are configured inside the app at **Settings → Email**. The v1 flow supports Claude Code, Codex, and Gemini engines for unattended task execution, and interrupted runs are automatically reconciled so they do not remain stuck in `running`.
+Auto Research email notifications are configured inside the app at **Settings → Email**. The v1 flow supports Claude Code, Codex, Gemini, and OpenRouter engines for unattended task execution, and interrupted runs are automatically reconciled so they do not remain stuck in `running`.
+
+## OpenRouter
+
+[OpenRouter](https://openrouter.ai/) is integrated as a first-class provider, giving you access to **hundreds of models** (GPT-5, Claude, Gemini, DeepSeek, Llama, Mistral, Qwen, Kimi, and more) through a single API key.
+
+### Setup
+
+1. Get an API key at [openrouter.ai/keys](https://openrouter.ai/keys).
+2. Set the key in one of three ways:
+   - **Environment variable:** `export OPENROUTER_API_KEY=sk-or-...`
+   - **`.env` file:** add `OPENROUTER_API_KEY=sk-or-...` to your project `.env`
+   - **UI:** go to **Settings → OpenRouter** and paste your key
+
+### Using OpenRouter in the UI
+
+1. Open a project and go to **Chat**.
+2. Under **Choose Your AI Assistant**, click **OpenRouter**.
+3. Search for a model in the dropdown (it fetches the full list from OpenRouter) or type a custom model slug.
+4. Start chatting — the agent has the same tool-calling capabilities as Claude, Gemini, and Codex (file read/write, shell, grep, glob, web search/fetch, todo).
+
+OpenRouter is also available in **Auto Research** on the Project Dashboard — select it as the provider and pick any model.
+
+### Using OpenRouter in the Terminal
+
+No browser needed. The `dr-claw chat` CLI gives you a fully agentic terminal session:
+
+```bash
+# Basic usage
+node server/cli.js chat --model moonshotai/kimi-k2.5
+
+# With an explicit API key
+node server/cli.js chat --model deepseek/deepseek-r1 --key sk-or-your-key
+```
+
+The CLI supports the same tools as the UI (file I/O, shell, grep, glob, web search, web fetch, todo). Type your message and the agent will execute multi-step research tasks autonomously.
+
+### Default Model
+
+Set `OPENROUTER_MODEL` in `.env` to change the default model used when none is specified:
+
+```env
+OPENROUTER_MODEL=moonshotai/kimi-k2.5
+```
+
+If unset, the default is `anthropic/claude-sonnet-4`.
 
 <a id="research-lab-quick-example"></a>
 
@@ -679,7 +752,7 @@ Dr. Claw is fully responsive. On mobile devices:
 #### Backend (Node.js + Express)
 - **Express Server** - RESTful API with static file serving
 - **WebSocket Server** - Communication for chats and project refresh
-- **Agent Integration (Claude Code, Gemini CLI, Codex)** - Process spawning, streaming, and session management
+- **Agent Integration (Claude Code, Gemini CLI, Codex, OpenRouter)** - Process spawning, streaming, and session management
 - **File System API** - Exposing file browser for projects
 
 #### Frontend (React + Vite)
