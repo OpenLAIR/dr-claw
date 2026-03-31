@@ -23,6 +23,7 @@ type SidebarContentProps = {
   onOpenNews: () => void;
   onCreateProject: () => void;
   onCollapseSidebar: () => void;
+  currentVersion: string;
   updateAvailable: boolean;
   releaseInfo: ReleaseInfo | null;
   latestVersion: string | null;
@@ -50,6 +51,7 @@ export default function SidebarContent({
   onOpenNews,
   onCreateProject,
   onCollapseSidebar,
+  currentVersion,
   updateAvailable,
   releaseInfo,
   latestVersion,
@@ -89,6 +91,7 @@ export default function SidebarContent({
       </ScrollArea>
 
       <SidebarFooter
+        currentVersion={currentVersion}
         updateAvailable={updateAvailable}
         releaseInfo={releaseInfo}
         latestVersion={latestVersion}

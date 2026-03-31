@@ -4,6 +4,7 @@ import type { TFunction } from 'i18next';
 type SidebarCollapsedProps = {
   onExpand: () => void;
   onShowSettings: () => void;
+  currentVersion: string;
   updateAvailable: boolean;
   onShowVersionModal: () => void;
   t: TFunction;
@@ -12,6 +13,7 @@ type SidebarCollapsedProps = {
 export default function SidebarCollapsed({
   onExpand,
   onShowSettings,
+  currentVersion,
   updateAvailable,
   onShowVersionModal,
   t,
@@ -52,6 +54,13 @@ export default function SidebarCollapsed({
           <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
         </button>
       )}
+
+      <div
+        className="mt-auto w-8 px-0.5 pb-1 text-center text-[8px] leading-tight font-mono text-muted-foreground/60 break-all select-none"
+        title={`${t('common:common.version')} v${currentVersion}`}
+      >
+        v{currentVersion}
+      </div>
     </div>
   );
 }

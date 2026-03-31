@@ -3,6 +3,7 @@ import type { TFunction } from 'i18next';
 import type { ReleaseInfo } from '../../../../types/sharedTypes';
 
 type SidebarFooterProps = {
+  currentVersion: string;
   updateAvailable: boolean;
   releaseInfo: ReleaseInfo | null;
   latestVersion: string | null;
@@ -13,6 +14,7 @@ type SidebarFooterProps = {
 };
 
 export default function SidebarFooter({
+  currentVersion,
   updateAvailable,
   releaseInfo,
   latestVersion,
@@ -72,6 +74,17 @@ export default function SidebarFooter({
       )}
 
       {/* Settings */}
+      <div className="px-2 pb-1.5">
+        <div className="hidden md:flex items-center justify-between px-2.5 py-2 rounded-lg bg-muted/35 text-xs">
+          <span className="text-muted-foreground">{t('common:common.version')}</span>
+          <span className="font-mono font-medium text-foreground">v{currentVersion}</span>
+        </div>
+        <div className="md:hidden px-3.5 py-2 rounded-xl bg-muted/35 flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">{t('common:common.version')}</span>
+          <span className="text-sm font-mono font-medium text-foreground">v{currentVersion}</span>
+        </div>
+      </div>
+
       <div className="nav-divider" />
 
       {/* Desktop settings */}
