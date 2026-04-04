@@ -1,5 +1,9 @@
 import { spawn, spawnSync } from 'child_process';
 
+function isCommandNotFoundExitCode(code) {
+    return code === 127 || code === 9009;
+}
+
 /**
  * Build ordered CLI command candidates from env override + defaults.
  *
@@ -57,7 +61,7 @@ function isCommandAvailable(command, args = ['--help'], platform = process.platf
         shell: platform === 'win32'
     });
 
-    return !result.error;
+    return !result.error && !isCommandNotFoundExitCode(result.status);
 }
 
 /**
@@ -109,13 +113,15 @@ function checkCommandAvailable(command, args = ['--help'], { platform = process.
         });
 
         childProcess.on('spawn', () => {
-            clearTimeout(timeout);
-            finish(true);
+            if (platform !== 'win32') {
+                clearTimeout(timeout);
+                finish(true);
+            }
         });
 
         childProcess.on('close', (code) => {
             clearTimeout(timeout);
-            finish(code !== 127);
+            finish(!isCommandNotFoundExitCode(code));
         });
     });
 }

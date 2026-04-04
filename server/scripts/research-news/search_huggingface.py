@@ -11,6 +11,7 @@ import json
 import os
 import sys
 import logging
+import ssl
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
@@ -21,6 +22,12 @@ try:
     HAS_REQUESTS = True
 except ImportError:
     HAS_REQUESTS = False
+
+try:
+    import certifi
+    CERTIFI_CA_BUNDLE = certifi.where()
+except ImportError:
+    CERTIFI_CA_BUNDLE = None
 
 import urllib.request
 import urllib.parse
@@ -46,6 +53,31 @@ HF_DAILY_PAPERS_URL = "https://huggingface.co/api/daily_papers"
 HF_UPVOTES_FULL_SCORE = 50
 
 
+def build_ssl_context() -> ssl.SSLContext:
+    if CERTIFI_CA_BUNDLE and os.path.exists(CERTIFI_CA_BUNDLE):
+        return ssl.create_default_context(cafile=CERTIFI_CA_BUNDLE)
+    return ssl.create_default_context()
+
+
+def http_get_json(url: str, headers: Optional[Dict[str, str]] = None, timeout: int = 30) -> List[Dict]:
+    headers = headers or {}
+
+    if HAS_REQUESTS:
+        request_kwargs = {
+            "headers": headers,
+            "timeout": timeout,
+        }
+        if CERTIFI_CA_BUNDLE and os.path.exists(CERTIFI_CA_BUNDLE):
+            request_kwargs["verify"] = CERTIFI_CA_BUNDLE
+        response = requests.get(url, **request_kwargs)
+        response.raise_for_status()
+        return response.json()
+
+    req = urllib.request.Request(url, headers=headers)
+    with urllib.request.urlopen(req, timeout=timeout, context=build_ssl_context()) as resp:
+        return json.loads(resp.read().decode("utf-8"))
+
+
 def load_research_config(config_path: str) -> Dict:
     """
     Load research interest configuration from a YAML file.
@@ -59,7 +91,7 @@ def load_research_config(config_path: str) -> Dict:
     import json
 
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, "r", encoding="utf-8-sig") as f:
             if config_path.endswith(".json"):
                 config = json.load(f)
             else:
@@ -100,14 +132,7 @@ def fetch_daily_papers(max_retries: int = 3) -> List[Dict]:
 
     for attempt in range(max_retries):
         try:
-            if HAS_REQUESTS:
-                response = requests.get(HF_DAILY_PAPERS_URL, headers=headers, timeout=30)
-                response.raise_for_status()
-                data = response.json()
-            else:
-                req = urllib.request.Request(HF_DAILY_PAPERS_URL, headers=headers)
-                with urllib.request.urlopen(req, timeout=30) as resp:
-                    data = json.loads(resp.read().decode("utf-8"))
+            data = http_get_json(HF_DAILY_PAPERS_URL, headers=headers, timeout=30)
 
             logger.info("[HF] Fetched %d daily paper entries", len(data))
             return data
@@ -356,7 +381,7 @@ def main():
         }
         with open(args.output, "w", encoding="utf-8") as f:
             json.dump(output, f, ensure_ascii=False, indent=2)
-        print(json.dumps(output, ensure_ascii=False, indent=2))
+        print(json.dumps(output, ensure_ascii=True, indent=2))
         return 0
 
     # Normalize entries
@@ -404,7 +429,7 @@ def main():
         )
 
     # Also output to stdout
-    print(json.dumps(output, ensure_ascii=False, indent=2, default=str))
+    print(json.dumps(output, ensure_ascii=True, indent=2, default=str))
 
     return 0
 

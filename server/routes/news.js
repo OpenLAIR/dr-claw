@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { spawn } from 'child_process';
 import { credentialsDb } from '../database/db.js';
+import { checkCommandAvailable } from '../utils/cliResolution.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,6 +14,129 @@ const router = express.Router();
 // Data directory for news config & results
 const DATA_DIR = path.join(__dirname, '..', 'data');
 const SCRIPTS_DIR = path.join(__dirname, '..', 'scripts');
+const PYTHON_RUNTIME_CACHE_TTL_MS = 30_000;
+const PYTHON_RUNTIME_INSPECTION_CODE = [
+  'import importlib.util, json, os, ssl, sys',
+  'paths = ssl.get_default_verify_paths()',
+  'data = {',
+  '  "executable": sys.executable,',
+  '  "version": sys.version.split()[0],',
+  '  "has_certifi": importlib.util.find_spec("certifi") is not None,',
+  '  "cafile": paths.cafile,',
+  '  "cafile_exists": bool(paths.cafile and os.path.exists(paths.cafile)),',
+  '  "openssl_cafile": paths.openssl_cafile,',
+  '  "openssl_cafile_exists": bool(paths.openssl_cafile and os.path.exists(paths.openssl_cafile))',
+  '}',
+  'print(json.dumps(data))',
+].join('\n');
+
+let cachedPythonRuntime = null;
+let pythonRuntimeCacheExpiry = 0;
+
+function getPythonRuntimeCandidates() {
+  if (process.platform === 'win32') {
+    return [
+      { command: 'python', args: [], label: 'python' },
+      { command: 'py', args: ['-3'], label: 'py -3' },
+      { command: 'python3', args: [], label: 'python3' },
+    ];
+  }
+
+  return [
+    { command: 'python3', args: [], label: 'python3' },
+    { command: 'python', args: [], label: 'python' },
+  ];
+}
+
+function inspectPythonRuntime(candidate) {
+  return new Promise((resolve) => {
+    const child = spawn(candidate.command, [...candidate.args, '-c', PYTHON_RUNTIME_INSPECTION_CODE], {
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+
+    let stdout = '';
+    let stderr = '';
+    let settled = false;
+
+    const finish = (value) => {
+      if (settled) return;
+      settled = true;
+      resolve(value);
+    };
+
+    const timeout = setTimeout(() => {
+      try { child.kill(); } catch {}
+      finish(null);
+    }, 3000);
+
+    child.stdout.on('data', (chunk) => { stdout += chunk.toString(); });
+    child.stderr.on('data', (chunk) => { stderr += chunk.toString(); });
+    child.on('error', () => {
+      clearTimeout(timeout);
+      finish(null);
+    });
+    child.on('close', (code) => {
+      clearTimeout(timeout);
+      if (code !== 0) {
+        finish(null);
+        return;
+      }
+      try {
+        const inspected = JSON.parse(stdout.trim());
+        finish({
+          ...candidate,
+          ...inspected,
+          hasUsableCertificates: Boolean(
+            inspected.has_certifi ||
+            inspected.cafile_exists ||
+            inspected.openssl_cafile_exists
+          ),
+          stderr: stderr.trim(),
+        });
+      } catch {
+        finish(null);
+      }
+    });
+  });
+}
+
+async function resolvePythonRuntime(options = {}) {
+  const { refresh = false } = options;
+
+  if (!refresh && cachedPythonRuntime && Date.now() < pythonRuntimeCacheExpiry) {
+    return cachedPythonRuntime;
+  }
+
+  const inspectedCandidates = [];
+  for (const candidate of getPythonRuntimeCandidates()) {
+    const probeArgs = [...candidate.args, '--version'];
+    if (await checkCommandAvailable(candidate.command, probeArgs, { platform: process.platform })) {
+      const inspected = await inspectPythonRuntime(candidate);
+      inspectedCandidates.push(inspected || {
+        ...candidate,
+        executable: null,
+        version: null,
+        has_certifi: false,
+        cafile: null,
+        cafile_exists: false,
+        openssl_cafile: null,
+        openssl_cafile_exists: false,
+        hasUsableCertificates: false,
+      });
+    }
+  }
+
+  const selectedRuntime = inspectedCandidates.find((candidate) => candidate?.hasUsableCertificates)
+    || inspectedCandidates[0]
+    || null;
+
+  if (selectedRuntime) {
+    cachedPythonRuntime = selectedRuntime;
+    pythonRuntimeCacheExpiry = Date.now() + PYTHON_RUNTIME_CACHE_TTL_MS;
+  }
+
+  return selectedRuntime;
+}
 
 // ---------------------------------------------------------------------------
 // Source Registry
@@ -281,7 +405,31 @@ async function handleSearch(sourceName, req, res) {
     await fs.writeFile(logPath, JSON.stringify([]), 'utf8');
     const logs = [];
 
-    const child = spawn('python3', args, {
+    const pythonRuntime = await resolvePythonRuntime();
+    if (!pythonRuntime) {
+      const details = process.platform === 'win32'
+        ? 'No usable Python runtime found. Tried: python, py -3, python3.'
+        : 'No usable Python runtime found. Tried: python3, python.';
+      logs.push(details);
+      try { await fs.writeFile(logPath, JSON.stringify(logs), 'utf8'); } catch {}
+      console.error(`[news][${sourceName}] ${details}`);
+      return res.status(503).json({
+        error: `Search failed for ${entry.label}`,
+        details,
+        logs,
+      });
+    }
+
+    const runtimeDetails = [pythonRuntime.label];
+    if (pythonRuntime.version) runtimeDetails.push(`Python ${pythonRuntime.version}`);
+    if (pythonRuntime.executable) runtimeDetails.push(pythonRuntime.executable);
+    logs.push(`[runtime] Using ${runtimeDetails.join(' | ')}`);
+    if (!pythonRuntime.hasUsableCertificates) {
+      logs.push('[runtime] Warning: selected Python runtime has no detectable CA bundle; HTTPS requests may fail.');
+    }
+    try { await fs.writeFile(logPath, JSON.stringify(logs), 'utf8'); } catch {}
+
+    const child = spawn(pythonRuntime.command, [...pythonRuntime.args, ...args], {
       cwd: path.join(SCRIPTS_DIR, 'research-news'),
       env,
     });

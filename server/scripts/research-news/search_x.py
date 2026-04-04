@@ -48,7 +48,7 @@ def load_research_config(config_path: str) -> Dict:
     import json
 
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, "r", encoding="utf-8-sig") as f:
             if config_path.endswith(".json"):
                 config = json.load(f)
             else:
@@ -482,7 +482,7 @@ def main() -> int:
         )
 
     # Also write to stdout for piping
-    print(json.dumps(output, ensure_ascii=False, indent=2))
+    print(json.dumps(output, ensure_ascii=True, indent=2))
     return 0
 
 

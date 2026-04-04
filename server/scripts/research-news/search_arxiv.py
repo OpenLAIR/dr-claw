@@ -11,6 +11,7 @@ import os
 import sys
 import time
 import logging
+import ssl
 from datetime import datetime, timedelta
 from typing import List, Dict, Set, Optional, Tuple
 from pathlib import Path
@@ -25,6 +26,12 @@ try:
 except ImportError:
     HAS_REQUESTS = False
     logger.warning("requests library not found, using urllib for Semantic Scholar API")
+
+try:
+    import certifi
+    CERTIFI_CA_BUNDLE = certifi.where()
+except ImportError:
+    CERTIFI_CA_BUNDLE = None
 
 # ---------------------------------------------------------------------------
 # API 配置
@@ -63,6 +70,57 @@ S2_RATE_LIMIT_WAIT = 30
 S2_CATEGORY_REQUEST_INTERVAL = 3
 
 
+def build_ssl_context() -> ssl.SSLContext:
+    """Build an SSL context, preferring certifi when available."""
+    if CERTIFI_CA_BUNDLE and os.path.exists(CERTIFI_CA_BUNDLE):
+        return ssl.create_default_context(cafile=CERTIFI_CA_BUNDLE)
+    return ssl.create_default_context()
+
+
+def http_get_text(
+    url: str,
+    headers: Optional[Dict[str, str]] = None,
+    timeout: int = 60,
+    params: Optional[Dict[str, str]] = None,
+) -> str:
+    """Fetch text over HTTPS with an explicit CA bundle when available."""
+    headers = headers or {}
+
+    if HAS_REQUESTS:
+        request_kwargs = {
+            "headers": headers,
+            "timeout": timeout,
+        }
+        if params:
+            request_kwargs["params"] = params
+        if CERTIFI_CA_BUNDLE and os.path.exists(CERTIFI_CA_BUNDLE):
+            request_kwargs["verify"] = CERTIFI_CA_BUNDLE
+        response = requests.get(url, **request_kwargs)
+        response.raise_for_status()
+        response.encoding = response.encoding or "utf-8"
+        return response.text
+
+    final_url = url
+    if params:
+        query_string = urllib.parse.urlencode(params)
+        separator = "&" if "?" in url else "?"
+        final_url = f"{url}{separator}{query_string}"
+
+    request = urllib.request.Request(final_url, headers=headers)
+    with urllib.request.urlopen(request, timeout=timeout, context=build_ssl_context()) as response:
+        return response.read().decode("utf-8")
+
+
+def http_get_json(
+    url: str,
+    headers: Optional[Dict[str, str]] = None,
+    timeout: int = 60,
+    params: Optional[Dict[str, str]] = None,
+) -> Dict:
+    """Fetch JSON over HTTPS with the same certificate handling as http_get_text."""
+    return json.loads(http_get_text(url, headers=headers, timeout=timeout, params=params))
+
+
 def load_research_config(config_path: str) -> Dict:
     """
     从 JSON 或 YAML 文件加载研究兴趣配置
@@ -76,7 +134,7 @@ def load_research_config(config_path: str) -> Dict:
     import json
 
     try:
-        with open(config_path, 'r', encoding='utf-8') as f:
+        with open(config_path, 'r', encoding='utf-8-sig') as f:
             if config_path.endswith('.json'):
                 config = json.load(f)
             else:
@@ -139,7 +197,7 @@ def search_arxiv_by_date_range(
     end_date: datetime,
     max_results: int = 200,
     max_retries: int = 3
-) -> List[Dict]:
+) -> Tuple[List[Dict], bool]:
     """
     使用 arXiv API 搜索指定日期范围内的论文
     
@@ -170,18 +228,23 @@ def search_arxiv_by_date_range(
         f"sortBy=submittedDate&"
         f"sortOrder=descending"
     )
+    headers = {
+        "User-Agent": "ResearchNews-ArxivFetcher/1.0"
+    }
     
     logger.info("[arXiv] Searching papers from %s to %s", start_date.date(), end_date.date())
     logger.debug("[arXiv] URL: %s...", url[:120])
-    
+
+    last_error = None
+
     for attempt in range(max_retries):
         try:
-            with urllib.request.urlopen(url, timeout=60) as response:
-                xml_content = response.read().decode('utf-8')
-                papers = parse_arxiv_xml(xml_content)
-                logger.info("[arXiv] Found %d papers", len(papers))
-                return papers
+            xml_content = http_get_text(url, headers=headers, timeout=60)
+            papers = parse_arxiv_xml(xml_content)
+            logger.info("[arXiv] Found %d papers", len(papers))
+            return papers, True
         except Exception as e:
+            last_error = e
             logger.warning("[arXiv] Error (attempt %d/%d): %s", attempt + 1, max_retries, e)
             if attempt < max_retries - 1:
                 wait_time = (2 ** attempt) * 2
@@ -189,9 +252,11 @@ def search_arxiv_by_date_range(
                 time.sleep(wait_time)
             else:
                 logger.error("[arXiv] Failed after %d attempts", max_retries)
-                return []
-    
-    return []
+                if last_error is not None:
+                    logger.error("[arXiv] Last error: %s", last_error)
+                return [], False
+
+    return [], False
 
 
 def search_semantic_scholar_hot_papers(
@@ -234,22 +299,12 @@ def search_semantic_scholar_hot_papers(
     
     for attempt in range(max_retries):
         try:
-            if HAS_REQUESTS:
-                response = requests.get(
-                    SEMANTIC_SCHOLAR_API_URL,
-                    params=params,
-                    headers=headers,
-                    timeout=15
-                )
-                response.raise_for_status()
-                data = response.json()
-            else:
-                # 使用 urllib
-                query_string = urllib.parse.urlencode(params)
-                url = f"{SEMANTIC_SCHOLAR_API_URL}?{query_string}"
-                req = urllib.request.Request(url, headers=headers)
-                with urllib.request.urlopen(req, timeout=15) as response:
-                    data = json.loads(response.read().decode('utf-8'))
+            data = http_get_json(
+                SEMANTIC_SCHOLAR_API_URL,
+                headers=headers,
+                timeout=15,
+                params=params,
+            )
             
             papers = data.get("data", [])
             if not papers:
@@ -645,17 +700,43 @@ def main():
         except Exception:
             pass
 
+    def _build_output(top_papers, total_unique):
+        total_found = len(recent_papers) + len(hot_papers)
+        return {
+            'target_date': args.target_date or target_date.strftime('%Y-%m-%d'),
+            'search_date': target_date.strftime('%Y-%m-%d'),
+            'date_windows': {
+                'recent_30d': {
+                    'start': window_30d_start.strftime('%Y-%m-%d'),
+                    'end': window_30d_end.strftime('%Y-%m-%d')
+                },
+                'past_year': {
+                    'start': window_1y_start.strftime('%Y-%m-%d'),
+                    'end': window_1y_end.strftime('%Y-%m-%d')
+                }
+            },
+            'total_found': total_found,
+            'total_filtered': total_unique,
+            'total_recent': len(recent_papers),
+            'total_hot': len(hot_papers),
+            'total_unique': total_unique,
+            'top_papers': top_papers,
+        }
+
     # ========== 第一步：搜索最近30天的论文（arXiv）==========
     logger.info("=" * 70)
     logger.info("Step 1: Searching recent papers (last 30 days) from arXiv")
     logger.info("=" * 70)
 
-    recent_papers = search_arxiv_by_date_range(
+    recent_papers, recent_fetch_succeeded = search_arxiv_by_date_range(
         categories=categories,
         start_date=window_30d_start,
         end_date=window_30d_end,
         max_results=args.max_results
     )
+
+    if not recent_fetch_succeeded:
+        return 1
 
     if recent_papers:
         scored_recent = filter_and_score_papers(
@@ -728,29 +809,18 @@ def main():
 
     if len(unique_papers) == 0:
         logger.warning("No papers matched the criteria!")
-        return 1
+        output = _build_output([], 0)
+        with open(args.output, 'w', encoding='utf-8') as f:
+            json.dump(output, f, ensure_ascii=False, indent=2, default=str)
+        logger.info("Results saved to: %s", args.output)
+        print(json.dumps(output, ensure_ascii=True, indent=2, default=str))
+        return 0
 
     # 取前 N 篇
     top_papers = unique_papers[:args.top_n]
 
     # 准备输出
-    output = {
-        'target_date': args.target_date or target_date.strftime('%Y-%m-%d'),
-        'date_windows': {
-            'recent_30d': {
-                'start': window_30d_start.strftime('%Y-%m-%d'),
-                'end': window_30d_end.strftime('%Y-%m-%d')
-            },
-            'past_year': {
-                'start': window_1y_start.strftime('%Y-%m-%d'),
-                'end': window_1y_end.strftime('%Y-%m-%d')
-            }
-        },
-        'total_recent': len(recent_papers),
-        'total_hot': len(hot_papers),
-        'total_unique': len(unique_papers),
-        'top_papers': top_papers
-    }
+    output = _build_output(top_papers, len(unique_papers))
 
     # 保存结果
     with open(args.output, 'w', encoding='utf-8') as f:
@@ -763,7 +833,7 @@ def main():
         logger.info("  %d. %s... (Score: %s)%s", i, p.get('title', 'N/A')[:60], p['scores']['recommendation'], hot_marker)
 
     # 同时输出到 stdout
-    print(json.dumps(output, ensure_ascii=False, indent=2, default=str))
+    print(json.dumps(output, ensure_ascii=True, indent=2, default=str))
 
     return 0
 

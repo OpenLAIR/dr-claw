@@ -46,6 +46,71 @@ const XHS_COOKIE_SOURCES = [
   { value: 'safari', label: 'Safari' },
 ];
 
+function clampInteger(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function parseIntegerDraft(draft: string, fallback: number, min: number, max: number) {
+  const trimmed = draft.trim();
+  if (!trimmed) return fallback;
+
+  const parsed = Number.parseInt(trimmed, 10);
+  if (!Number.isFinite(parsed)) return fallback;
+
+  return clampInteger(parsed, min, max);
+}
+
+function EditableNumberInput({
+  value,
+  min,
+  max,
+  step,
+  fallback,
+  onCommit,
+  className,
+}: {
+  value: number | undefined;
+  min: number;
+  max: number;
+  step?: number;
+  fallback: number;
+  onCommit: (value: number) => void;
+  className: string;
+}) {
+  const [draft, setDraft] = useState(String(value ?? fallback));
+
+  useEffect(() => {
+    setDraft(String(value ?? fallback));
+  }, [fallback, value]);
+
+  const commitDraft = useCallback(() => {
+    const nextValue = parseIntegerDraft(draft, fallback, min, max);
+    setDraft(String(nextValue));
+    if (nextValue !== value) {
+      onCommit(nextValue);
+    }
+  }, [draft, fallback, max, min, onCommit, value]);
+
+  return (
+    <input
+      type="number"
+      min={min}
+      max={max}
+      step={step}
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={commitDraft}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          commitDraft();
+          e.currentTarget.blur();
+        }
+      }}
+      className={className}
+    />
+  );
+}
+
 function shouldPreferXhsQrLogin() {
   if (IS_PLATFORM) return true;
   if (typeof window === 'undefined') return false;
@@ -91,10 +156,12 @@ function DomainEditor({
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
             <label className="text-[10px] font-medium text-muted-foreground">{t('settings.priority')}</label>
-            <input
-              type="number" min={1} max={10}
+            <EditableNumberInput
+              min={1}
+              max={10}
+              fallback={5}
               value={domain.priority}
-              onChange={(e) => onUpdate(name, { ...domain, priority: parseInt(e.target.value) || 5 })}
+              onCommit={(value) => onUpdate(name, { ...domain, priority: value })}
               className="w-12 rounded-lg border border-border/60 bg-background px-2 py-1 text-xs text-center font-medium tabular-nums"
             />
           </div>
@@ -440,20 +507,25 @@ export default function SourceSettingsDialog({
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="rounded-xl border border-border/40 bg-background/50 p-3.5">
             <label className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">{t('settings.resultsToShow')}</label>
-            <input
-              type="number" min={1} max={50}
-              value={config.top_n || 10}
-              onChange={(e) => updateField('top_n', parseInt(e.target.value) || 10)}
+            <EditableNumberInput
+              min={1}
+              max={50}
+              fallback={10}
+              value={config.top_n}
+              onCommit={(value) => updateField('top_n', value)}
               className="mt-1.5 w-full rounded-lg border border-border/50 bg-background px-3 py-2 text-sm font-medium tabular-nums focus:border-primary/40 focus:outline-none focus:ring-1 focus:ring-primary/20"
             />
           </div>
           {sourceKey === 'arxiv' && (
             <div className="rounded-xl border border-border/40 bg-background/50 p-3.5">
               <label className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">{t('settings.maxArxivResults')}</label>
-              <input
-                type="number" min={50} max={1000} step={50}
-                value={config.max_results || 200}
-                onChange={(e) => updateField('max_results', parseInt(e.target.value) || 200)}
+              <EditableNumberInput
+                min={50}
+                max={1000}
+                step={50}
+                fallback={200}
+                value={config.max_results}
+                onCommit={(value) => updateField('max_results', value)}
                 className="mt-1.5 w-full rounded-lg border border-border/50 bg-background px-3 py-2 text-sm font-medium tabular-nums focus:border-primary/40 focus:outline-none focus:ring-1 focus:ring-primary/20"
               />
             </div>
