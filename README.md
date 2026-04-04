@@ -23,6 +23,9 @@
 <a href="./public/wechat-group-qr.jpg">
 <img src="https://img.shields.io/badge/Join-WeChat-07C160?style=for-the-badge&logo=wechat&logoColor=white" alt="Join WeChat" />
 </a>
+<a href="https://github.com/OpenLAIR/dr-claw-plugin-cc">
+<img src="https://img.shields.io/badge/Claude%20Code-Plugin-7C3AED?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+PHBhdGggZD0iTTEyIDJMMiAyMmgyMEwxMiAyeiIvPjwvc3ZnPg==" alt="Claude Code Plugin" />
+</a>
 </p>
 
 <p align="center">
@@ -40,6 +43,7 @@
 - [Research Lab - Quick Example](#research-lab-quick-example)
 - [Usage Guide](#usage-guide)
 - [Additional Details](#additional-details)
+- [Claude Code Plugin](#claude-code-plugin)
 - [Contributing](#contributing)
 - [FAQ](./docs/faq.md)
 - [License](#license)
@@ -724,6 +728,37 @@ The project includes **100+ skills** under `skills/` to support research tasks (
 These skills are discovered by the agent and can be applied as task-level assistance throughout the workflow.
 
 </details>
+
+## Claude Code Plugin
+
+If you use **Claude Code** as your primary coding agent and want Dr. Claw's research pipeline directly in your terminal — without running the full web UI — check out the standalone Claude Code plugin:
+
+**[`OpenLAIR/dr-claw-plugin-cc`](https://github.com/OpenLAIR/dr-claw-plugin-cc)**
+
+The plugin provides 4 slash commands (`/drclaw:setup`, `/drclaw:status`, `/drclaw:run`, `/drclaw:reset`) that let you initialize research projects, track progress across all 5 pipeline stages, and execute tasks — all from within a Claude Code session.
+
+### Install
+
+Inside any Claude Code session, run:
+
+```
+/plugin marketplace add OpenLAIR/dr-claw-plugin-cc
+/plugin install dr-claw@dr-claw
+/reload-plugins
+```
+
+The plugin is now permanently installed. Run `/drclaw:setup` to initialize a new research project.
+
+> **Scope options:** By default the plugin is installed to your user scope (available in all projects). Add `--scope project` to install it for a specific project only, or `--scope local` for a machine-local install.
+
+### What's Included
+
+- **60+ bundled research skills** — a curated subset of Dr. Claw's skill library covering literature survey, idea generation, experiment development, paper writing, and more
+- **3 project templates** — Method/Model, Dataset/Benchmark, and Position Paper, each with a pre-configured task pipeline
+- **Auto-detection** — the plugin detects existing `.pipeline/` directories on session start and shows your current progress
+- **Same data format** — projects created with the plugin use the same `research_brief.json` and `tasks.json` schemas as the full Dr. Claw workspace, so you can switch between them
+
+> **Note:** The plugin bundles a snapshot of skills from this repository. Skills are synchronized manually — see the plugin repo's README for details.
 
 ## Additional Details
 <details>

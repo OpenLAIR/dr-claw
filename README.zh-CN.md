@@ -23,6 +23,9 @@
 <a href="./public/wechat-group-qr.jpg">
 <img src="https://img.shields.io/badge/%E5%8A%A0%E5%85%A5-%E5%BE%AE%E4%BF%A1%E7%BE%A4-07C160?style=for-the-badge&logo=wechat&logoColor=white" alt="加入微信群" />
 </a>
+<a href="https://github.com/OpenLAIR/dr-claw-plugin-cc">
+<img src="https://img.shields.io/badge/Claude%20Code-Plugin-7C3AED?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+PHBhdGggZD0iTTEyIDJMMiAyMmgyMEwxMiAyeiIvPjwvc3ZnPg==" alt="Claude Code Plugin" />
+</a>
 </p>
 
 <p align="center">
@@ -40,6 +43,7 @@
 - [Research Lab - 快速示例](#research-lab-quick-example)
 - [使用指南](#使用指南)
 - [补充说明](#补充说明)
+- [Claude Code 插件](#claude-code-插件)
 - [贡献](#贡献)
 - [FAQ](./docs/faq.zh-CN.md)
 - [许可证](#许可证)
@@ -719,6 +723,37 @@ Dr. Claw 当前以生成后的 **Pipeline Task List** 作为执行流水线。
 Agent 会自动发现这些 skills，并在任务执行过程中按需调用。
 
 </details>
+
+## Claude Code 插件
+
+如果你主要使用 **Claude Code** 作为编程代理，希望在终端中直接使用 Dr. Claw 的研究流水线而无需运行完整的 Web UI，可以使用独立的 Claude Code 插件：
+
+**[`OpenLAIR/dr-claw-plugin-cc`](https://github.com/OpenLAIR/dr-claw-plugin-cc)**
+
+该插件提供 4 个斜杠命令（`/drclaw:setup`、`/drclaw:status`、`/drclaw:run`、`/drclaw:reset`），让你可以初始化研究项目、跟踪 5 个流水线阶段的进度并执行任务 — 全部在 Claude Code 会话中完成。
+
+### 安装
+
+在任意 Claude Code 会话中运行：
+
+```
+/plugin marketplace add OpenLAIR/dr-claw-plugin-cc
+/plugin install dr-claw@dr-claw
+/reload-plugins
+```
+
+插件安装完成后会永久生效。运行 `/drclaw:setup` 即可初始化新的研究项目。
+
+> **安装范围：** 默认安装到用户级别（所有项目可用）。添加 `--scope project` 可仅安装到当前项目，`--scope local` 可安装到本机。
+
+### 包含内容
+
+- **60+ 内置研究技能** — 从 Dr. Claw 技能库中精选的子集，涵盖文献调研、想法生成、实验开发、论文写作等
+- **3 种项目模板** — 方法/模型、数据集/基准、综述论文，每种都有预配置的任务流水线
+- **自动检测** — 插件在会话启动时自动检测已有的 `.pipeline/` 目录并显示当前进度
+- **相同数据格式** — 插件创建的项目使用与完整 Dr. Claw 工作区相同的 `research_brief.json` 和 `tasks.json` 格式，两者可以互通
+
+> **注意：** 插件内置的技能是本仓库技能库的快照，技能同步由维护者手动完成 — 详见插件仓库的 README。
 
 ## 补充说明
 <details>
