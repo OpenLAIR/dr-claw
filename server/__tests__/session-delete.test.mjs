@@ -8,12 +8,14 @@ const originalUserProfile = process.env.USERPROFILE;
 const originalDatabasePath = process.env.DATABASE_PATH;
 
 let tempRoot = null;
+let loadedDatabase = null;
 
 async function loadTestModules() {
   vi.resetModules();
   const projects = await import('../projects.js');
   const database = await import('../database/db.js');
   await database.initializeDatabase();
+  loadedDatabase = database;
   return { projects, database };
 }
 
@@ -26,7 +28,12 @@ describe('session deletion fallbacks', () => {
   });
 
   afterEach(async () => {
-    vi.resetModules();
+    try {
+      loadedDatabase?.closeDatabase?.();
+    } finally {
+      loadedDatabase = null;
+      vi.resetModules();
+    }
 
     if (originalHome === undefined) delete process.env.HOME;
     else process.env.HOME = originalHome;

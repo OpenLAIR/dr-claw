@@ -20,10 +20,10 @@ import { writeProjectTemplates } from './templates/index.js';
 import { classifyError } from '../shared/errorClassifier.js';
 import { applyStageTagsToSession, recordIndexedSession } from './utils/sessionIndex.js';
 import { createRequestId, waitForToolApproval, matchesToolPermission } from './utils/permissions.js';
+import { getOpenRouterBaseUrl, getOpenRouterProviderHeaders } from './utils/openrouterConfig.js';
 
 const execAsync = promisify(exec);
 
-const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 const MAX_AGENT_TURNS = 30;
 const BASH_TIMEOUT_MS = 120_000;
 const MAX_OUTPUT_CHARS = 100_000;
@@ -482,19 +482,18 @@ async function loadHistory(sessionId) {
 // Streaming API call + response parser
 // ---------------------------------------------------------------------------
 
-async function streamApiCall(apiKey, model, messages, tools, signal) {
+async function streamApiCall(baseUrl, apiKey, model, messages, tools, signal) {
   const body = { model, messages, stream: true, stream_options: { include_usage: true } };
   if (tools?.length) {
     body.tools = tools;
     body.tool_choice = 'auto';
   }
-  return fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
+  return fetch(`${baseUrl}/chat/completions`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
-      'HTTP-Referer': 'https://github.com/OpenLAIR/dr-claw',
-      'X-Title': 'Dr. Claw',
+      ...getOpenRouterProviderHeaders(baseUrl, 'Dr. Claw'),
     },
     body: JSON.stringify(body),
     signal,
@@ -568,6 +567,7 @@ export async function queryOpenRouter(command, options = {}, ws) {
     cwd,
     projectPath,
     model = 'anthropic/claude-sonnet-4',
+    baseUrl: requestedBaseUrl,
     env,
     sessionMode,
     stageTagKeys,
@@ -579,6 +579,9 @@ export async function queryOpenRouter(command, options = {}, ws) {
 
   const workingDirectory = cwd || projectPath || process.cwd();
   const apiKey = env?.OPENROUTER_API_KEY || process.env.OPENROUTER_API_KEY;
+  const baseUrl = getOpenRouterBaseUrl({
+    OPENROUTER_BASE_URL: requestedBaseUrl ?? env?.OPENROUTER_BASE_URL ?? process.env.OPENROUTER_BASE_URL,
+  });
 
   if (!apiKey) {
     sendMessage(ws, {
@@ -678,7 +681,7 @@ export async function queryOpenRouter(command, options = {}, ws) {
       console.log(`[OpenRouter] Turn ${turn}/${MAX_AGENT_TURNS} · model=${model} · msgs=${messages.length}`);
 
       const response = await streamApiCall(
-        apiKey, model, messages,
+        baseUrl, apiKey, model, messages,
         noToolFallback ? [] : tools,
         abortController.signal,
       );

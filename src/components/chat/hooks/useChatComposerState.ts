@@ -1123,6 +1123,7 @@ export function useChatComposerState({
             sessionId: effectiveSessionId,
             resume: Boolean(effectiveSessionId),
             model: openrouterModel,
+            baseUrl: localStorage.getItem('openrouter-base-url') || undefined,
             permissionMode,
             toolsSettings,
             telemetryEnabled,

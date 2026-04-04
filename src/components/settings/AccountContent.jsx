@@ -82,6 +82,7 @@ export default function AccountContent({ agent, authStatus, onLogin }) {
   const [verifyResult, setVerifyResult] = useState(null);
 
   const [openrouterApiKey, setOpenrouterApiKey] = useState('');
+  const [openrouterBaseUrl, setOpenrouterBaseUrl] = useState(() => localStorage.getItem('openrouter-base-url') || '');
   const [isVerifyingOpenRouter, setIsVerifyingOpenRouter] = useState(false);
   const [openrouterVerifyResult, setOpenrouterVerifyResult] = useState(null);
 
@@ -161,6 +162,18 @@ export default function AccountContent({ agent, authStatus, onLogin }) {
       handleLoadOllamaModels();
     }
   }, [agent, handleDetectGpus, handleLoadOllamaModels]);
+
+  useEffect(() => {
+    if (agent === 'openrouter') {
+      const nextBaseUrl = authStatus?.baseUrl || '';
+      setOpenrouterBaseUrl(nextBaseUrl);
+      if (nextBaseUrl) {
+        localStorage.setItem('openrouter-base-url', nextBaseUrl);
+      } else {
+        localStorage.removeItem('openrouter-base-url');
+      }
+    }
+  }, [agent, authStatus?.baseUrl]);
 
   const handleSaveLocalConfig = async () => {
     localStorage.setItem('local-gpu-server-url', localServerUrl);
@@ -257,12 +270,23 @@ export default function AccountContent({ agent, authStatus, onLogin }) {
     try {
       const res = await authenticatedFetch('/api/cli/openrouter/verify-api-key', {
         method: 'POST',
-        body: JSON.stringify({ apiKey: openrouterApiKey.trim() }),
+        body: JSON.stringify({
+          apiKey: openrouterApiKey.trim() || undefined,
+          baseUrl: openrouterBaseUrl.trim() || undefined,
+        }),
       });
       const data = await res.json();
       if (res.ok) {
-        setOpenrouterVerifyResult({ success: true, message: data.message || 'API key verified and saved.' });
+        const nextBaseUrl = data.baseUrl || openrouterBaseUrl.trim();
+        setOpenrouterVerifyResult({ success: true, message: data.message || 'OpenRouter settings verified and saved.' });
         setOpenrouterApiKey('');
+        setOpenrouterBaseUrl(nextBaseUrl);
+        if (nextBaseUrl) {
+          localStorage.setItem('openrouter-base-url', nextBaseUrl);
+        } else {
+          localStorage.removeItem('openrouter-base-url');
+        }
+        if (typeof onLogin === 'function') onLogin();
       } else {
         setOpenrouterVerifyResult({ success: false, message: data.error || 'Invalid API key' });
       }
@@ -553,8 +577,8 @@ export default function AccountContent({ agent, authStatus, onLogin }) {
               </div>
               <p className={`text-sm ${config.subtextClass} mb-3`}>
                 {authStatus?.authenticated
-                  ? 'Your API key is configured. Enter a new key below to replace it.'
-                  : 'Enter your OpenRouter API key to connect. Get one at openrouter.ai/keys.'}
+                  ? 'Your API key is configured. You can replace it below or point OpenRouter to a relay base URL.'
+                  : 'Enter your OpenRouter API key to connect. If you use a relay, fill its base URL below.'}
               </p>
               <div className="space-y-3">
                 <div>
@@ -568,13 +592,27 @@ export default function AccountContent({ agent, authStatus, onLogin }) {
                     onChange={e => setOpenrouterApiKey(e.target.value)}
                   />
                 </div>
+                <div>
+                  <label className="text-sm text-gray-600 dark:text-gray-400 block mb-1 flex items-center gap-1">
+                    <Server className="w-3.5 h-3.5" /> Relay / Base URL
+                  </label>
+                  <Input
+                    type="url"
+                    placeholder="https://openrouter.ai/api/v1 or https://your-relay.example.com/v1"
+                    value={openrouterBaseUrl}
+                    onChange={e => setOpenrouterBaseUrl(e.target.value)}
+                  />
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Fill the full API base path. Most relays use `/v1`; official OpenRouter uses `/api/v1`.
+                  </div>
+                </div>
                 <Button
                   onClick={handleVerifyOpenRouterKey}
-                  disabled={isVerifyingOpenRouter || !openrouterApiKey.trim()}
+                  disabled={isVerifyingOpenRouter || (!openrouterApiKey.trim() && !authStatus?.authenticated)}
                   size="sm"
                   className={`${config.buttonClass} text-white w-full`}
                 >
-                  {isVerifyingOpenRouter ? 'Verifying...' : 'Verify & Save Key'}
+                  {isVerifyingOpenRouter ? 'Verifying...' : 'Verify & Save Settings'}
                 </Button>
                 {openrouterVerifyResult && (
                   <div className={`text-sm ${openrouterVerifyResult.success ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>

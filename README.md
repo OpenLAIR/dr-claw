@@ -521,6 +521,9 @@ Auto Research email notifications are configured inside the app at **Settings â†
    - **Environment variable:** `export OPENROUTER_API_KEY=sk-or-...`
    - **`.env` file:** add `OPENROUTER_API_KEY=sk-or-...` to your project `.env`
    - **UI:** go to **Settings â†’ OpenRouter** and paste your key
+3. If you use a relay / proxy endpoint, also set `OPENROUTER_BASE_URL` to the full compatible base path:
+   - **Official OpenRouter:** `OPENROUTER_BASE_URL=https://openrouter.ai/api/v1`
+   - **Relay example:** `OPENROUTER_BASE_URL=https://your-relay.example.com/v1`
 
 ### Using OpenRouter in the UI
 
@@ -541,6 +544,9 @@ node server/cli.js chat --model moonshotai/kimi-k2.5
 
 # With an explicit API key
 node server/cli.js chat --model deepseek/deepseek-r1 --key sk-or-your-key
+
+# With a relay / proxy endpoint
+node server/cli.js chat --model deepseek/deepseek-r1 --base-url https://your-relay.example.com/v1
 ```
 
 The CLI supports the same tools as the UI (file I/O, shell, grep, glob, web search, web fetch, todo). Type your message and the agent will execute multi-step research tasks autonomously.
