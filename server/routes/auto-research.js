@@ -27,7 +27,7 @@ function getDefaultModelForProvider(provider) {
     return CODEX_MODELS.DEFAULT || 'gpt-5.4';
   }
   if (provider === 'gemini') {
-    return GEMINI_MODELS.DEFAULT || 'gemini-3-flash-preview';
+    return GEMINI_MODELS.DEFAULT || 'gemini-2.5-flash';
   }
   if (provider === 'openrouter') {
     return OPENROUTER_MODELS.DEFAULT || 'anthropic/claude-sonnet-4';

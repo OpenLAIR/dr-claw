@@ -396,6 +396,66 @@ describe('gemini-api', () => {
     });
   });
 
+  it('falls back to a smaller direct Gemini model before invoking the CLI on capacity exhaustion', async () => {
+    process.env.GEMINI_API_MAX_ATTEMPTS = '1';
+
+    global.fetch = vi.fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 429,
+        headers: new Headers(),
+        text: async () => 'RESOURCE_EXHAUSTED: No capacity available for model gemini-3-flash-preview',
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        body: makeSseResponse([
+          'data: {"candidates":[{"content":{"role":"model","parts":[{"text":"Recovered on fallback model."}]},"finishReason":"STOP"}],"usageMetadata":{"promptTokenCount":8,"candidatesTokenCount":4,"totalTokenCount":12}}',
+          '',
+        ]).body,
+      });
+
+    const { queryGeminiApi } = await geminiApiModulePromise;
+    const { sent, writer } = createTestWriter();
+
+    await queryGeminiApi('Say hello after capacity fallback.', {
+      cwd: '/tmp/project',
+      projectPath: '/tmp/project',
+      model: 'gemini-3-flash-preview',
+      sessionId: 'gemini-direct-model-fallback',
+      permissionMode: 'bypassPermissions',
+      env: {
+        GEMINI_API_KEY: 'env-gemini-key',
+      },
+    }, writer);
+
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+    expect(global.fetch.mock.calls[0][0]).toBe('https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:streamGenerateContent?alt=sse');
+    expect(global.fetch.mock.calls[1][0]).toBe('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse');
+    expect(spawnGemini).not.toHaveBeenCalled();
+    expect(sent.find((entry) => entry.type === 'gemini-error')).toBeUndefined();
+    expect(sent).toContainEqual(expect.objectContaining({
+      type: 'gemini-status',
+      sessionId: 'gemini-direct-model-fallback',
+      data: expect.objectContaining({
+        status: 'Model busy, retrying with gemini-2.5-flash...',
+      }),
+    }));
+    expect(sent).toContainEqual(expect.objectContaining({
+      type: 'gemini-response',
+      sessionId: 'gemini-direct-model-fallback',
+      data: {
+        type: 'content_block_delta',
+        index: 0,
+        delta: { type: 'text_delta', text: 'Recovered on fallback model.' },
+      },
+    }));
+    expect(sent.at(-1)).toEqual({
+      type: 'gemini-complete',
+      sessionId: 'gemini-direct-model-fallback',
+      exitCode: 0,
+    });
+  });
+
   it('replays oauth tool turns back to Code Assist with synthetic thought signatures and function responses', async () => {
     getGeminiAuthHeaders.mockResolvedValue({
       headers: { Authorization: 'Bearer tool-loop-token' },

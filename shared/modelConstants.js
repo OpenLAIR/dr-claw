@@ -135,5 +135,5 @@ export const GEMINI_MODELS = {
     { value: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite' }
   ],
 
-  DEFAULT: 'gemini-3-flash-preview'
+  DEFAULT: 'gemini-2.5-flash'
 };

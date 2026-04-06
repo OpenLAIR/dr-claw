@@ -40,6 +40,119 @@ type ProjectTokenUsageSummary = {
   projects: Record<string, TokenUsageTotals>;
 };
 
+type AutoResearchRun = {
+  id: string;
+  status: string;
+  provider?: AutoResearchProvider;
+  sessionId?: string | null;
+  currentTaskId?: string | null;
+  completedTasks?: number;
+  totalTasks?: number;
+  error?: string | null;
+  metadata?: {
+    autoResearchModel?: string | null;
+  } | null;
+};
+
+type AutoResearchStatus = {
+  provider?: AutoResearchProvider;
+  eligibility?: {
+    eligible: boolean;
+    reasons: string[];
+  };
+  profile?: {
+    notificationEmail?: string | null;
+  };
+  mail?: {
+    senderEmail?: string | null;
+  };
+  pipeline?: {
+    hasResearchBrief?: boolean;
+    hasTasksFile?: boolean;
+    actionableTaskCount?: number;
+    completedTaskCount?: number;
+    totalTaskCount?: number;
+    nextTask?: {
+      id?: string | number;
+      title?: string;
+    } | null;
+  };
+  activeRun?: AutoResearchRun | null;
+  latestRun?: AutoResearchRun | null;
+};
+
+type AutoResearchConfig = {
+  provider: AutoResearchProvider;
+  model: string;
+};
+
+function getDefaultModelForProvider(provider: AutoResearchProvider): string {
+  if (provider === 'codex') {
+    return CODEX_MODELS.DEFAULT || 'gpt-5.4';
+  }
+  if (provider === 'gemini') {
+    return GEMINI_MODELS.DEFAULT || 'gemini-2.5-flash';
+  }
+  if (provider === 'openrouter') {
+    return OPENROUTER_MODELS.DEFAULT || 'anthropic/claude-sonnet-4';
+  }
+  return CLAUDE_MODELS.DEFAULT || 'sonnet';
+}
+
+function getDefaultConfig(provider: AutoResearchProvider = 'claude'): AutoResearchConfig {
+  return {
+    provider,
+    model: getDefaultModelForProvider(provider),
+  };
+}
+
+function getModelOptions(provider: AutoResearchProvider) {
+  return AUTO_RESEARCH_MODELS_BY_PROVIDER[provider] ?? [];
+}
+
+function isModelValidForProvider(provider: AutoResearchProvider, model?: string | null) {
+  if (!model) {
+    return false;
+  }
+  if (provider === 'openrouter' && model.includes('/')) return true;
+  return getModelOptions(provider).some((option) => option.value === model);
+}
+
+function getModelFromStatus(status?: AutoResearchStatus, provider: AutoResearchProvider = 'claude') {
+  const candidateModel =
+    status?.activeRun?.metadata?.autoResearchModel || status?.latestRun?.metadata?.autoResearchModel || '';
+  return isModelValidForProvider(provider, candidateModel)
+    ? candidateModel
+    : getDefaultModelForProvider(provider);
+}
+
+function resolveAutoResearchConfig(currentConfig: AutoResearchConfig | undefined, status?: AutoResearchStatus): AutoResearchConfig {
+  const provider = currentConfig?.provider ?? status?.provider ?? 'claude';
+  const statusModel = getModelFromStatus(status, provider);
+  const model = isModelValidForProvider(provider, currentConfig?.model)
+    ? currentConfig?.model ?? statusModel
+    : statusModel;
+
+  return {
+    provider,
+    model,
+  };
+}
+
+const AUTO_RESEARCH_PROVIDER_OPTIONS: Array<{ value: AutoResearchProvider; label: string }> = [
+  { value: 'claude', label: 'Claude' },
+  { value: 'codex', label: 'Codex' },
+  { value: 'gemini', label: 'Gemini' },
+  { value: 'openrouter', label: 'OpenRouter' },
+];
+
+const AUTO_RESEARCH_MODELS_BY_PROVIDER: Record<AutoResearchProvider, { value: string; label: string }[]> = {
+  claude: CLAUDE_MODELS.OPTIONS,
+  codex: CODEX_MODELS.OPTIONS,
+  gemini: GEMINI_MODELS.OPTIONS,
+  openrouter: OPENROUTER_MODELS.OPTIONS,
+};
+
 const PROJECT_TONES = [
   {
     shell: 'from-sky-100/95 via-cyan-50/90 to-white dark:from-sky-950/35 dark:via-cyan-950/20 dark:to-slate-950/80',

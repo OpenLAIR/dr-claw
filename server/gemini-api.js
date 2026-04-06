@@ -25,6 +25,11 @@ export const SYNTHETIC_THOUGHT_SIGNATURE = 'skip_thought_signature_validator';
 const RETRYABLE_HTTP_STATUS = new Set([408, 425, 429, 500, 502, 503, 504]);
 const GEMINI_PROJECT_ROOT_MARKER = '.project_root';
 const GEMINI_CLI_SESSION_FILE_PREFIX = 'session-';
+const GEMINI_MODEL_FALLBACK_CHAIN = [
+  'gemini-3-flash-preview',
+  'gemini-2.5-flash',
+  'gemini-2.5-flash-lite',
+];
 
 const activeGeminiApiSessions = new Map();
 const codeAssistProjectCache = new Map();
@@ -1342,12 +1347,25 @@ function summarizeGeminiApiError(status, bodyText, fallbackModel) {
   }
 }
 
+function isCapacityExhaustedError(error) {
+  if (!error) return false;
+  if (error.status === 429) return true;
+  const combinedText = `${error.errorMessage || ''} ${error.bodyText || ''}`;
+  return /RESOURCE_EXHAUSTED|MODEL_CAPACITY_EXHAUSTED|No capacity available|capacity exhausted/i.test(combinedText);
+}
+
+function getNextGeminiFallbackModel(model) {
+  const currentIndex = GEMINI_MODEL_FALLBACK_CHAIN.indexOf(model);
+  if (currentIndex === -1) return null;
+  return GEMINI_MODEL_FALLBACK_CHAIN[currentIndex + 1] || null;
+}
+
 export async function queryGeminiApi(command, options = {}, ws) {
   const {
     sessionId,
     cwd,
     projectPath,
-    model = 'gemini-3-flash-preview',
+    model: requestedModel = 'gemini-2.5-flash',
     env,
     sessionMode,
     stageTagKeys,
@@ -1365,6 +1383,7 @@ export async function queryGeminiApi(command, options = {}, ws) {
   const allowedTools = [...(toolsSettings?.allowedTools || [])];
   const disallowedTools = [...(toolsSettings?.disallowedTools || [])];
   const sessionStartTime = Date.now();
+  let activeModel = requestedModel;
 
   let auth = null;
   if (env?.GEMINI_API_KEY) {
@@ -1502,7 +1521,7 @@ export async function queryGeminiApi(command, options = {}, ws) {
       if (!currentSession || currentSession.status === 'aborted') break;
 
       const requestBody = buildRequestBody(
-        model,
+        activeModel,
         contents,
         systemInstruction,
         thinkingMode,
@@ -1510,7 +1529,7 @@ export async function queryGeminiApi(command, options = {}, ws) {
       );
 
       const request = await executeGeminiRequestWithRetry(
-        () => streamGenerateContent(model, requestBody, auth.headers, abortController.signal, {
+        () => streamGenerateContent(activeModel, requestBody, auth.headers, abortController.signal, {
           authMethod: auth.authMethod,
           sessionId: currentSessionId,
           codeAssistProjectId,
@@ -1518,7 +1537,7 @@ export async function queryGeminiApi(command, options = {}, ws) {
         {
           signal: abortController.signal,
           operationName: `Gemini turn ${turn}`,
-          errorFormatter: (status, bodyText) => summarizeGeminiApiError(status, bodyText, model),
+          errorFormatter: (status, bodyText) => summarizeGeminiApiError(status, bodyText, activeModel),
         },
       );
 
@@ -1526,12 +1545,29 @@ export async function queryGeminiApi(command, options = {}, ws) {
         if (request.error.status === 401 || request.error.status === 403) {
           return { authFailed: true };
         }
+        if (request.error.isRetryable && isCapacityExhaustedError(request.error)) {
+          const fallbackModel = getNextGeminiFallbackModel(activeModel);
+          if (fallbackModel) {
+            sendMessage(ws, {
+              type: 'gemini-status',
+              sessionId: currentSessionId,
+              data: {
+                status: `Model busy, retrying with ${fallbackModel}...`,
+                can_interrupt: true,
+                startTime: sessionStartTime,
+              },
+            });
+            activeModel = fallbackModel;
+            turn -= 1;
+            continue;
+          }
+        }
         if (request.error.isRetryable) {
           const fellBackToCli = await fallbackToGeminiCli(command, {
             ...options,
             cwd: workingDirectory,
             projectPath: workingDirectory,
-            model,
+            model: activeModel,
             sessionId: currentSessionId,
           }, ws, currentSessionId, request.error);
           if (fellBackToCli) {
