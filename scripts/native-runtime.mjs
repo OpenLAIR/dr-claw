@@ -8,7 +8,7 @@ const require = createRequire(import.meta.url);
 const command = process.argv[2];
 const projectRoot = process.cwd();
 const statePath = path.join(projectRoot, '.native-runtime.json');
-const nativeModules = ['better-sqlite3', 'sqlite3', 'node-pty', 'bcrypt'];
+const nativeModules = ['better-sqlite3', 'sqlite3', 'node-pty'];
 const electronVersion = require(path.join(projectRoot, 'node_modules', 'electron', 'package.json')).version;
 
 function readState() {
