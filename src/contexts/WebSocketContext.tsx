@@ -57,25 +57,6 @@ const useWebSocketProviderState = (): WebSocketContextType => {
     }
   }, []);
 
-  useEffect(() => {
-    unmountedRef.current = false;
-    const id = ++connectionIdRef.current;
-    connect(id);
-
-    return () => {
-      unmountedRef.current = true;
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-      }
-      if (drainTimerRef.current) {
-        clearTimeout(drainTimerRef.current);
-      }
-      if (wsRef.current) {
-        wsRef.current.close();
-      }
-    };
-  }, [token, connect]);
-
   const connect = useCallback((id?: number) => {
     if (unmountedRef.current) return;
     if (id !== undefined && id !== connectionIdRef.current) return;
@@ -126,6 +107,25 @@ const useWebSocketProviderState = (): WebSocketContextType => {
       console.error('Error creating WebSocket connection:', error);
     }
   }, [token, drainQueue]);
+
+  useEffect(() => {
+    unmountedRef.current = false;
+    const id = ++connectionIdRef.current;
+    connect(id);
+
+    return () => {
+      unmountedRef.current = true;
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+      }
+      if (drainTimerRef.current) {
+        clearTimeout(drainTimerRef.current);
+      }
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
+    };
+  }, [token, connect]);
 
   const sendMessage = useCallback((message: any) => {
     const socket = wsRef.current;
