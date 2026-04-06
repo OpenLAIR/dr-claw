@@ -19,6 +19,20 @@ function configureDynamicProxy(proxy, protocol, host, fallbackPort, eventName = 
 
   syncTarget()
   proxy.on(eventName, syncTarget)
+
+  // Vite adds its own error handler *after* configure() returns,
+  // so we must wait a tick to replace it with ours.
+  process.nextTick(() => {
+    proxy.removeAllListeners('error')
+    proxy.on('error', (err, _req, res) => {
+      if (err.code === 'ECONNREFUSED' || err.code === 'ECONNRESET') return
+      console.error(`[vite] proxy error: ${err.message}`)
+      if (res && !res.headersSent && typeof res.writeHead === 'function') {
+        res.writeHead(502)
+        res.end('Bad Gateway')
+      }
+    })
+  })
 }
 
 function runtimePortSyncPlugin() {

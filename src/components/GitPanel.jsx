@@ -834,7 +834,7 @@ function GitPanel({ selectedProject, isMobile, onFileOpen }) {
   if (!selectedProject) {
     return (
       <div className="h-full flex items-center justify-center text-muted-foreground">
-        <p>Select a project to view source control</p>
+        <p>Select a project to view code history</p>
       </div>
     );
   }

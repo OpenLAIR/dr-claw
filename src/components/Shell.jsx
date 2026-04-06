@@ -93,6 +93,8 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
   const terminal = useRef(null);
   const fitAddon = useRef(null);
   const ws = useRef(null);
+  const reconnectTimer = useRef(null);
+  const unmountedRef = useRef(false);
   const [isConnected, setIsConnected] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isRestarting, setIsRestarting] = useState(false);
@@ -156,9 +158,10 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
   }, []);
 
   const connectWebSocket = useCallback(async () => {
-    if (isConnecting || isConnected) return;
+    if (ws.current && (ws.current.readyState === WebSocket.CONNECTING || ws.current.readyState === WebSocket.OPEN)) return;
 
     try {
+      setIsConnecting(true);
       const wsUrl = buildShellWebSocketUrl(wsPath);
 
       ws.current = new WebSocket(wsUrl);
@@ -241,9 +244,13 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
         setAuthUrlCopyStatus('idle');
         setIsAuthPanelHidden(false);
 
-        if (terminal.current) {
-          terminal.current.clear();
-          terminal.current.write('\x1b[2J\x1b[H');
+        // Auto-reconnect after backend restarts (e.g. --watch mode)
+        if (!unmountedRef.current) {
+          reconnectTimer.current = setTimeout(() => {
+            if (!unmountedRef.current) {
+              connectWebSocket();
+            }
+          }, 3000);
         }
       };
 
@@ -255,15 +262,15 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
       setIsConnected(false);
       setIsConnecting(false);
     }
-  }, [isConnecting, isConnected, wsPath]);
+  }, [wsPath]);
 
   const connectToShell = useCallback(() => {
-    if (!isInitialized || isConnected || isConnecting) return;
-    setIsConnecting(true);
+    if (!isInitialized) return;
     connectWebSocket();
-  }, [isInitialized, isConnected, isConnecting, connectWebSocket]);
+  }, [isInitialized, connectWebSocket]);
 
   const disconnectFromShell = useCallback(() => {
+    clearTimeout(reconnectTimer.current);
     if (ws.current) {
       ws.current.close();
       ws.current = null;
@@ -302,6 +309,7 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
 
   const restartShell = () => {
     setIsRestarting(true);
+    clearTimeout(reconnectTimer.current);
 
     if (ws.current) {
       ws.current.close();
@@ -502,6 +510,8 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
     }
 
     return () => {
+      unmountedRef.current = true;
+      clearTimeout(reconnectTimer.current);
       resizeObserver.disconnect();
 
       if (ws.current && (ws.current.readyState === WebSocket.OPEN || ws.current.readyState === WebSocket.CONNECTING)) {
