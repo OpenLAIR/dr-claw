@@ -418,6 +418,8 @@ export const api = {
     slurmSalloc: (id, opts) => authenticatedFetch(`/api/compute/nodes/${id}/slurm/salloc`, { method: 'POST', body: JSON.stringify(opts) }),
     slurmSbatch: (id, opts) => authenticatedFetch(`/api/compute/nodes/${id}/slurm/sbatch`, { method: 'POST', body: JSON.stringify(opts) }),
     slurmCancel: (id, jobId) => authenticatedFetch(`/api/compute/nodes/${id}/slurm/cancel/${jobId}`, { method: 'POST' }),
+    monitorNode: (id) => authenticatedFetch(`/api/compute/nodes/${id}/monitor`),
+    monitorLocal: () => authenticatedFetch('/api/compute/local/monitor'),
     // Backward-compatible
     getConfig: () => authenticatedFetch('/api/compute/config'),
     configure: (config) => authenticatedFetch('/api/compute/configure', { method: 'POST', body: JSON.stringify(config) }),
