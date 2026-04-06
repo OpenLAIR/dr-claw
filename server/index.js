@@ -67,7 +67,7 @@ import skillsRoutes from './routes/skills.js';
 import telemetryRoutes from './routes/telemetry.js';
 import computeRoutes from './routes/compute.js';
 import newsRoutes from './routes/news.js';
-import autoResearchRoutes from './routes/auto-research.js';
+import autoResearchRoutes, { setAutoResearchBroadcast, handleComputeWarningAck } from './routes/auto-research.js';
 import referencesRoutes from './routes/references.js';
 import { initializeDatabase, sessionDb, tagDb } from './database/db.js';
 import { validateApiKey, authenticateToken, authenticateWebSocket } from './middleware/auth.js';
@@ -105,6 +105,16 @@ const WATCHER_DEBOUNCE_MS = 1000;
 let projectsWatchers = [];
 let projectsWatcherDebounceTimer = null;
 const connectedClients = new Set();
+
+setAutoResearchBroadcast((message) => {
+    const payload = JSON.stringify(message);
+    connectedClients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(payload);
+        }
+    });
+});
+
 let isGetProjectsRunning = false; // Flag to prevent reentrant calls
 let hasPendingProjectsUpdate = false;
 let lastWatcherEvent = null;
@@ -1479,7 +1489,11 @@ function handleChatConnection(ws, request) {
             const data = JSON.parse(message);
             console.log(`[DEBUG] Received WebSocket message: ${data.type}`);
             
-            if (data.type === 'telemetry-settings') {
+            if (data.type === 'compute-warning-acknowledged') {
+                if (data.runId) {
+                    handleComputeWarningAck(data.runId);
+                }
+            } else if (data.type === 'telemetry-settings') {
                 const enabled = data.enabled !== false;
                 writer.telemetryContext = {
                     ...(writer.telemetryContext || telemetryContext),

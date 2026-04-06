@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import Sidebar from '../sidebar/view/Sidebar';
 import MainContent from '../main-content/view/MainContent';
 import MobileNav from '../MobileNav';
+import ComputeWarningModal from '../modals/ComputeWarningModal';
 
 import { useWebSocket } from '../../contexts/WebSocketContext';
 import { useDeviceSettings } from '../../hooks/useDeviceSettings';
@@ -146,6 +147,19 @@ export default function AppContent() {
     };
   }, [isConnected, sendMessage]);
 
+  const [computeWsWarning, setComputeWsWarning] = useState<{
+    runId: string;
+    warnings: string[];
+  } | null>(null);
+
+  useEffect(() => {
+    if (!latestMessage || latestMessage.type !== 'compute-resource-warning') return;
+    setComputeWsWarning({
+      runId: latestMessage.runId,
+      warnings: latestMessage.warnings ?? [],
+    });
+  }, [latestMessage]);
+
   const SIDEBAR_MIN = 220;
   const SIDEBAR_MAX = 480;
   const SIDEBAR_DEFAULT = 288; // w-72
@@ -195,6 +209,23 @@ export default function AppContent() {
 
   return (
     <div className="fixed inset-0 flex bg-background">
+      <ComputeWarningModal
+        isOpen={computeWsWarning !== null}
+        warnings={computeWsWarning?.warnings ?? []}
+        runId={computeWsWarning?.runId}
+        onContinue={() => {
+          if (computeWsWarning) {
+            sendMessage({
+              type: 'compute-warning-acknowledged',
+              runId: computeWsWarning.runId,
+            });
+            setComputeWsWarning(null);
+          }
+        }}
+        onCancel={() => {
+          setComputeWsWarning(null);
+        }}
+      />
       {!isMobile ? (
         <div
           className="h-full flex-shrink-0 relative transition-[width] duration-150 ease-out"

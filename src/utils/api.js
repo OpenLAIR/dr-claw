@@ -253,13 +253,14 @@ export const api = {
   autoResearch: {
     status: (projectName) =>
       authenticatedFetch(`/api/auto-research/${encodeURIComponent(projectName)}/status`),
-    start: (projectName, { provider, model, permissionMode } = {}) =>
+    start: (projectName, { provider, model, permissionMode, acknowledgeComputeWarnings } = {}) =>
       authenticatedFetch(`/api/auto-research/${encodeURIComponent(projectName)}/start`, {
         method: 'POST',
         body: JSON.stringify({
           provider,
           model,
           permissionMode,
+          acknowledgeComputeWarnings,
         }),
       }),
     cancel: (projectName) =>
@@ -420,6 +421,7 @@ export const api = {
     slurmCancel: (id, jobId) => authenticatedFetch(`/api/compute/nodes/${id}/slurm/cancel/${jobId}`, { method: 'POST' }),
     monitorNode: (id) => authenticatedFetch(`/api/compute/nodes/${id}/monitor`),
     monitorLocal: () => authenticatedFetch('/api/compute/local/monitor'),
+    readiness: () => authenticatedFetch('/api/compute/readiness'),
     // Backward-compatible
     getConfig: () => authenticatedFetch('/api/compute/config'),
     configure: (config) => authenticatedFetch('/api/compute/configure', { method: 'POST', body: JSON.stringify(config) }),

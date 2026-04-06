@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 
 import { api } from '../../../utils/api';
 import { Button } from '../../ui/button';
+import ComputeWarningModal from '../../modals/ComputeWarningModal';
 import { formatTimeAgo } from '../../../utils/dateUtils';
 import type { AppTab, Project, ProjectSession } from '../../../types/app';
 import { CLAUDE_MODELS, CODEX_MODELS, GEMINI_MODELS, OPENROUTER_MODELS } from '../../../../shared/modelConstants';
@@ -295,6 +296,7 @@ export default function ProjectDashboard({
   const [autoResearchStatuses, setAutoResearchStatuses] = useState<Record<string, AutoResearchStatus>>({});
   const [autoResearchLoading, setAutoResearchLoading] = useState<Record<string, boolean>>({});
   const [autoResearchConfigByProject, setAutoResearchConfigByProject] = useState<Record<string, AutoResearchConfig>>({});
+  const [computeWarning, setComputeWarning] = useState<{ projectName: string; warnings: string[] } | null>(null);
 
   const totals = useMemo(() => {
     const projectCount = projects.length;
@@ -442,17 +444,29 @@ export default function ProjectDashboard({
     }
   };
 
-  const handleAutoResearchStart = async (projectName: string) => {
+  const startAutoResearch = async (projectName: string, acknowledgeComputeWarnings = false) => {
     setAutoResearchLoading((current) => ({ ...current, [projectName]: true }));
     try {
       const config = autoResearchConfigByProject[projectName] ?? getDefaultConfig();
       const response = await api.autoResearch.start(projectName, {
         provider: config.provider,
         model: config.model,
+        acknowledgeComputeWarnings,
       });
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error?.error || 'Failed to start Auto Research');
+        const data = await response.json();
+        if (
+          !acknowledgeComputeWarnings &&
+          data?.eligibility?.reasons?.includes('compute_resources_unavailable') &&
+          data?.eligibility?.computeReadiness?.warnings?.length
+        ) {
+          setComputeWarning({
+            projectName,
+            warnings: data.eligibility.computeReadiness.warnings,
+          });
+          return;
+        }
+        throw new Error(data?.error || 'Failed to start Auto Research');
       }
       await refreshAutoResearchStatus(projectName);
     } catch (error) {
@@ -461,6 +475,10 @@ export default function ProjectDashboard({
     } finally {
       setAutoResearchLoading((current) => ({ ...current, [projectName]: false }));
     }
+  };
+
+  const handleAutoResearchStart = (projectName: string) => {
+    void startAutoResearch(projectName);
   };
 
   const handleAutoResearchCancel = async (projectName: string) => {
@@ -492,6 +510,8 @@ export default function ProjectDashboard({
         return 'No pending tasks found. Add pending tasks in Research Lab and then start again.';
       case 'run_in_progress':
         return 'Run already in progress';
+      case 'compute_resources_unavailable':
+        return 'Compute resources unavailable for experiment tasks';
       default:
         return 'Unavailable';
     }
@@ -559,6 +579,18 @@ export default function ProjectDashboard({
 
   return (
     <div className="h-full overflow-auto bg-background">
+      <ComputeWarningModal
+        isOpen={computeWarning !== null}
+        warnings={computeWarning?.warnings ?? []}
+        onContinue={() => {
+          if (computeWarning) {
+            const { projectName } = computeWarning;
+            setComputeWarning(null);
+            void startAutoResearch(projectName, true);
+          }
+        }}
+        onCancel={() => setComputeWarning(null)}
+      />
       <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-6 p-4 sm:p-6">
         <section className="relative overflow-hidden rounded-[32px] border border-border/60 bg-[radial-gradient(circle_at_top_left,rgba(125,211,252,0.14),transparent_34%),linear-gradient(135deg,rgba(250,251,252,0.97),rgba(246,250,252,0.93))] p-6 shadow-sm dark:bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.12),transparent_34%),linear-gradient(135deg,rgba(6,10,20,0.96),rgba(15,23,42,0.90))] sm:p-7">
           <div className="absolute -right-12 -top-10 h-36 w-36 rounded-full bg-sky-100/40 blur-3xl dark:bg-sky-500/12" />

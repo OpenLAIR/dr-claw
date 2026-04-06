@@ -495,6 +495,119 @@ router.get('/local/monitor', async (_req, res) => {
   }
 });
 
+// ─── Compute readiness checker (used by auto-research gate) ───
+
+const GPU_BUSY_THRESHOLD = 80;
+const VRAM_FULL_THRESHOLD = 90;
+const CPU_BUSY_THRESHOLD = 90;
+const MEM_FULL_THRESHOLD = 90;
+
+async function getLocalResourceStats() {
+  const { exec } = await import('child_process');
+  const os = await import('os');
+  const { promisify } = await import('util');
+  const execAsync = promisify(exec);
+  const platform = os.default.platform();
+
+  const run = async (cmd) => {
+    try { return (await execAsync(cmd, { timeout: 10000 })).stdout.trim(); }
+    catch { return ''; }
+  };
+
+  const gpus = [];
+  const gpuRaw = await run(
+    'nvidia-smi --query-gpu=index,name,utilization.gpu,utilization.memory,memory.used,memory.total,temperature.gpu,power.draw --format=csv,noheader,nounits'
+  );
+  if (gpuRaw) {
+    for (const line of gpuRaw.split('\n')) {
+      const p = line.split(',').map(s => s.trim());
+      if (p.length >= 7) {
+        gpus.push({
+          index: parseInt(p[0]) || 0,
+          name: p[1] || 'Unknown',
+          gpuUtil: parseFloat(p[2]) || 0,
+          memUtil: parseFloat(p[3]) || 0,
+          memUsedMB: parseFloat(p[4]) || 0,
+          memTotalMB: parseFloat(p[5]) || 0,
+        });
+      }
+    }
+  }
+
+  const cpuCores = os.default.cpus().length;
+  const loadAvg = os.default.loadavg()[0];
+  const totalMemMB = Math.round(os.default.totalmem() / (1024 * 1024));
+  const freeMemMB = Math.round(os.default.freemem() / (1024 * 1024));
+  const usedMemMB = totalMemMB - freeMemMB;
+  let cpuUtilPercent = Math.min(100, Math.round((loadAvg / cpuCores) * 100));
+
+  if (platform === 'darwin') {
+    const topOut = await run("top -l 1 -n 0 | head -4");
+    const cpuMatch = topOut.match(/CPU usage:\s+(\d+(?:\.\d+)?)% user,\s+(\d+(?:\.\d+)?)% sys/);
+    if (cpuMatch) {
+      cpuUtilPercent = Math.round(parseFloat(cpuMatch[1]) + parseFloat(cpuMatch[2]));
+    }
+  }
+
+  return {
+    gpus,
+    cpu: { cores: cpuCores, utilPercent: cpuUtilPercent },
+    mem: { totalMB: totalMemMB, usedMB: usedMemMB, utilPercent: totalMemMB > 0 ? Math.round((usedMemMB / totalMemMB) * 100) : 0 },
+  };
+}
+
+export async function checkComputeReadiness() {
+  const warnings = [];
+
+  try {
+    const local = await getLocalResourceStats();
+
+    if (local.gpus.length === 0) {
+      warnings.push('No GPU detected on the local machine');
+    } else {
+      const allBusy = local.gpus.every(g => g.gpuUtil > GPU_BUSY_THRESHOLD);
+      if (allBusy) {
+        warnings.push(`All GPUs are heavily utilized (>${GPU_BUSY_THRESHOLD}% usage)`);
+      }
+      const vramFull = local.gpus.some(g => g.memUtil > VRAM_FULL_THRESHOLD);
+      if (vramFull) {
+        warnings.push(`GPU VRAM is nearly full (>${VRAM_FULL_THRESHOLD}% on one or more GPUs)`);
+      }
+    }
+
+    if (local.cpu.utilPercent > CPU_BUSY_THRESHOLD) {
+      warnings.push(`CPU load is very high (${local.cpu.utilPercent}%, threshold ${CPU_BUSY_THRESHOLD}%)`);
+    }
+    if (local.mem.utilPercent > MEM_FULL_THRESHOLD) {
+      warnings.push(`System memory is nearly full (${local.mem.utilPercent}%, threshold ${MEM_FULL_THRESHOLD}%)`);
+    }
+
+    // Also check remote nodes
+    try {
+      const config = await loadAllNodes();
+      const nodes = config.nodes || [];
+      if (nodes.length === 0 && local.gpus.length === 0) {
+        warnings.push('No remote compute nodes configured');
+      }
+    } catch { /* ignore remote check failures */ }
+  } catch (error) {
+    warnings.push(`Failed to check local resources: ${error.message}`);
+  }
+
+  return { ready: warnings.length === 0, warnings };
+}
+
+// GET /api/compute/readiness - Pre-flight compute readiness check
+router.get('/readiness', async (_req, res) => {
+  try {
+    const result = await checkComputeReadiness();
+    res.json(result);
+  } catch (error) {
+    console.error('Error checking compute readiness:', error);
+    res.json({ ready: false, warnings: ['Failed to check compute readiness'] });
+  }
+});
+
 router.get('/status', async (req, res) => {
   try {
     const node = await getActiveNode();

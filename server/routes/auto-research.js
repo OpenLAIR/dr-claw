@@ -12,11 +12,31 @@ import { spawnGemini, abortGeminiSession, isGeminiSessionActive } from '../gemin
 import { queryOpenRouter, abortOpenRouterSession, isOpenRouterSessionActive } from '../openrouter.js';
 import { sendAutoResearchCompletionEmail } from '../utils/auto-research-mailer.js';
 import { getGeminiApiKeyForUser, withGeminiApiKeyEnv } from '../utils/geminiApiKey.js';
+import { checkComputeReadiness } from './compute.js';
 
 const router = express.Router();
 
 const activeRuns = new Map();
+const pendingComputeAcks = new Map();
 const TASK_TIMEOUT_MS = Number.parseInt(process.env.AUTO_RESEARCH_TASK_TIMEOUT_MS || '', 10) || 30 * 60 * 1000;
+const COMPUTE_ACK_TIMEOUT_MS = 10 * 60 * 1000;
+
+let _broadcastFn = null;
+
+export function setAutoResearchBroadcast(fn) {
+  _broadcastFn = fn;
+}
+
+function broadcastComputeWarning(runId, warnings, taskId) {
+  if (typeof _broadcastFn === 'function') {
+    _broadcastFn({
+      type: 'compute-resource-warning',
+      runId,
+      taskId,
+      warnings,
+    });
+  }
+}
 const AUTO_RESEARCH_SENDER_EMAIL_KEY = 'auto_research_sender_email';
 const AUTO_RESEARCH_RESEND_API_KEY = 'auto_research_resend_api_key';
 const AUTO_RESEARCH_DEFAULT_PERMISSION_MODE = 'bypassPermissions';
@@ -184,8 +204,15 @@ function serializeRun(run, runtime = null) {
   };
 }
 
-function buildEligibility(profile, pipelineState, activeRun) {
+function hasExperimentTasks(pipelineState) {
+  return pipelineState.tasks.some(
+    (t) => t.stage === 'experiment' && (t.status === 'pending' || t.status === 'in-progress'),
+  );
+}
+
+async function buildEligibility(profile, pipelineState, activeRun, { acknowledgeComputeWarnings = false } = {}) {
   const reasons = [];
+  let computeReadiness = null;
 
   if (!profile?.notification_email) {
     reasons.push('notification_email_missing');
@@ -203,9 +230,22 @@ function buildEligibility(profile, pipelineState, activeRun) {
     reasons.push('run_in_progress');
   }
 
+  if (!acknowledgeComputeWarnings && hasExperimentTasks(pipelineState)) {
+    try {
+      computeReadiness = await checkComputeReadiness();
+      if (!computeReadiness.ready) {
+        reasons.push('compute_resources_unavailable');
+      }
+    } catch {
+      computeReadiness = { ready: false, warnings: ['Failed to check compute readiness'] };
+      reasons.push('compute_resources_unavailable');
+    }
+  }
+
   return {
     eligible: reasons.length === 0,
     reasons,
+    computeReadiness,
   };
 }
 
@@ -330,6 +370,29 @@ async function runAutoResearch(runId, userId, projectName, projectPath) {
         throw new Error(`Task ${task.id} does not have a nextActionPrompt`);
       }
 
+      if (task.stage === 'experiment') {
+        const readiness = await checkComputeReadiness();
+        if (!readiness.ready) {
+          console.log(`[AutoResearch] Compute resources unavailable for experiment task ${task.id}. Waiting for acknowledgement.`);
+          autoResearchDb.updateRun(runId, {
+            status: 'waiting_compute',
+            currentTaskId: String(task.id),
+          });
+
+          broadcastComputeWarning(runId, readiness.warnings, String(task.id));
+
+          await withTimeout(
+            new Promise((resolve) => { pendingComputeAcks.set(runId, resolve); }),
+            COMPUTE_ACK_TIMEOUT_MS,
+            () => { pendingComputeAcks.delete(runId); },
+          );
+
+          if (runState.cancelRequested) {
+            throw new Error('Run cancelled by user');
+          }
+        }
+      }
+
       autoResearchDb.updateRun(runId, {
         status: 'running',
         currentTaskId: String(task.id),
@@ -419,7 +482,7 @@ router.get('/:projectName/status', async (req, res) => {
     const latestRun = autoResearchDb.getLatestRunForProject(userId, projectName);
     const activeRuntime = activeRun ? activeRuns.get(activeRun.id) || null : null;
     const latestRuntime = latestRun ? activeRuns.get(latestRun.id) || null : null;
-    const eligibility = buildEligibility(profile, pipelineState, activeRun);
+    const eligibility = await buildEligibility(profile, pipelineState, activeRun);
 
     const activeProvider = activeRuntime?.provider || activeRun?.provider || latestRuntime?.provider || latestRun?.provider || 'claude';
     res.json({
@@ -458,7 +521,9 @@ router.post('/:projectName/start', async (req, res) => {
       provider: rawProvider,
       model: rawModel,
       permissionMode: rawPermissionMode,
+      acknowledgeComputeWarnings: rawAcknowledge,
     } = req.body || {};
+    const acknowledgeComputeWarnings = rawAcknowledge === true;
     const provider = normalizeAutoResearchProvider(rawProvider);
     const permissionMode = normalizePermissionMode(rawPermissionMode);
     const model = rawModel || getDefaultModelForProvider(provider);
@@ -466,7 +531,7 @@ router.post('/:projectName/start', async (req, res) => {
     const profile = userDb.getProfile(userId);
     const existingRun = autoResearchDb.getActiveRunForProject(userId, projectName);
     const pipelineState = await readPipelineState(projectPath);
-    const eligibility = buildEligibility(profile, pipelineState, existingRun);
+    const eligibility = await buildEligibility(profile, pipelineState, existingRun, { acknowledgeComputeWarnings });
 
     if (!eligibility.eligible) {
       return res.status(400).json({
@@ -554,5 +619,13 @@ router.post('/:projectName/cancel', async (req, res) => {
     res.status(500).json({ error: 'Failed to cancel Auto Research' });
   }
 });
+
+export function handleComputeWarningAck(runId) {
+  const resolver = pendingComputeAcks.get(runId);
+  if (resolver) {
+    resolver();
+    pendingComputeAcks.delete(runId);
+  }
+}
 
 export default router;
