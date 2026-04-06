@@ -36,6 +36,7 @@ const buildWebSocketUrl = (token: string | null) => {
 const useWebSocketProviderState = (): WebSocketContextType => {
   const wsRef = useRef<WebSocket | null>(null);
   const unmountedRef = useRef(false);
+  const connectionIdRef = useRef(0);
   const [latestMessage, setLatestMessage] = useState<any>(null);
   const [isConnected, setIsConnected] = useState(false);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -58,8 +59,9 @@ const useWebSocketProviderState = (): WebSocketContextType => {
 
   useEffect(() => {
     unmountedRef.current = false;
-    connect();
-    
+    const id = ++connectionIdRef.current;
+    connect(id);
+
     return () => {
       unmountedRef.current = true;
       if (reconnectTimeoutRef.current) {
@@ -72,23 +74,27 @@ const useWebSocketProviderState = (): WebSocketContextType => {
         wsRef.current.close();
       }
     };
-  }, [token]);
+  }, [token, connect]);
 
-  const connect = useCallback(() => {
+  const connect = useCallback((id?: number) => {
     if (unmountedRef.current) return;
+    if (id !== undefined && id !== connectionIdRef.current) return;
     try {
       const wsUrl = buildWebSocketUrl(token);
 
       if (!wsUrl) return console.warn('No authentication token found for WebSocket connection');
-      
+
       const websocket = new WebSocket(wsUrl);
+      const currentId = connectionIdRef.current;
 
       websocket.onopen = () => {
+        if (currentId !== connectionIdRef.current) { websocket.close(); return; }
         setIsConnected(true);
         wsRef.current = websocket;
       };
 
       websocket.onmessage = (event) => {
+        if (currentId !== connectionIdRef.current) return;
         try {
           const data = JSON.parse(event.data);
           messageQueueRef.current.push(data);
@@ -101,11 +107,13 @@ const useWebSocketProviderState = (): WebSocketContextType => {
       };
 
       websocket.onclose = () => {
+        if (currentId !== connectionIdRef.current) return;
         setIsConnected(false);
         wsRef.current = null;
-        
+
         reconnectTimeoutRef.current = setTimeout(() => {
           if (unmountedRef.current) return;
+          if (currentId !== connectionIdRef.current) return;
           connect();
         }, 3000);
       };
