@@ -5,18 +5,19 @@
 </div>
 
 <p align="center">
+<a href="https://github.com/OpenLAIR/dr-claw">
+<img src="https://img.shields.io/badge/%F0%9F%A6%9E-Dr.%20Claw-7C3AED?style=for-the-badge" alt="Dr. Claw" />
+</a>
 <a href="https://openlair.github.io/dr-claw">
-<img src="https://img.shields.io/badge/%F0%9F%8C%90-%E4%B8%BB%E9%A1%B5-CB2B3E?style=for-the-badge" alt="主页" />
+<img src="https://img.shields.io/badge/%F0%9F%8C%90-%E4%B8%BB%E9%A1%B5-2563EB?style=for-the-badge" alt="主页" />
 </a>
 <a href="https://www.npmjs.com/package/dr-claw">
 <img src="https://img.shields.io/npm/v/dr-claw?style=for-the-badge&logo=npm&color=CB3837" alt="npm version" />
 </a>
-<a href="https://github.com/OpenLAIR/dr-claw">
-<img src="https://img.shields.io/badge/%F0%9F%A6%9E-Dr.%20Claw-CB2B3E?style=for-the-badge" alt="Dr. Claw" />
-</a>
 <a href="https://github.com/OpenLAIR/dr-claw/blob/main/LICENSE">
 <img src="https://img.shields.io/badge/License-GPL--3.0%20%2B%20AGPL--3.0-blue?style=for-the-badge" alt="License: GPL-3.0 + AGPL-3.0" />
 </a>
+<br/>
 <a href="https://join.slack.com/t/vibe-lab-group/shared_invite/zt-3r4bkcx5t-iGyRMI~r09zt7p_ND2eP9A">
 <img src="https://img.shields.io/badge/Join-Slack-4A154B?style=for-the-badge&logo=slack" alt="Join Slack" />
 </a>
