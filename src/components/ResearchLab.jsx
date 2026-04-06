@@ -1535,7 +1535,7 @@ function SessionStageBoard({
 /** Research artifacts grouped by pipeline stage */
 function ArtifactsCard({ artifacts, onSelect, selectedPath, compact = false }) {
   const [openStages, setOpenStages] = useState({});
-  const [cardCollapsed, setCardCollapsed] = useState(false);
+  const [cardCollapsed, setCardCollapsed] = useState(compact);
 
   // Group by stage
   const groups = {};
