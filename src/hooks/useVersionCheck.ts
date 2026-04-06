@@ -21,7 +21,7 @@ const compareVersions = (v1: string, v2: string) => {
   return 0;
 };
 
-export type InstallMode = 'git' | 'npm';
+export type InstallMode = 'git' | 'npm' | 'desktop';
 
 export const useVersionCheck = (owner: string, repo: string) => {
   const [updateAvailable, setUpdateAvailable] = useState(false);
@@ -34,7 +34,7 @@ export const useVersionCheck = (owner: string, repo: string) => {
       try {
         const response = await fetch('/health');
         const data = await response.json();
-        if (data.installMode === 'npm' || data.installMode === 'git') {
+        if (data.installMode === 'npm' || data.installMode === 'git' || data.installMode === 'desktop') {
           setInstallMode(data.installMode);
         }
       } catch {

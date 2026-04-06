@@ -1,0 +1,84 @@
+name: Desktop Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish_release:
+        description: Publish GitHub release with built artifacts
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-desktop:
+    name: Build Desktop (${{ matrix.platform_label }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            platform_args: --mac dmg
+            artifact_name: desktop-macos
+            artifact_glob: release/*.dmg
+            platform_label: macos
+          - os: windows-latest
+            platform_args: --win nsis
+            artifact_name: desktop-windows
+            artifact_glob: release/*.exe
+            platform_label: windows
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # CSC_IDENTITY_AUTO_DISCOVERY=false skips Apple code signing / notarization so CI can build
+      # without a Developer ID certificate. macOS Gatekeeper will warn on downloaded DMGs.
+      # For production releases, configure signing (e.g. CSC_LINK + CSC_KEY_PASSWORD, APPLE_ID,
+      # APPLE_APP_SPECIFIC_PASSWORD, APPLE_TEAM_ID) and set CSC_IDENTITY_AUTO_DISCOVERY=true or
+      # remove this override so electron-builder can discover the signing identity.
+      - name: Build desktop distributables
+        shell: bash
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: npm run desktop:dist -- ${{ matrix.platform_args }} --publish never
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.artifact_glob }}
+          if-no-files-found: error
+
+  publish-release:
+    name: Publish GitHub Release
+    needs: build-desktop
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.publish_release == 'true'
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            release-artifacts/desktop-macos/*.dmg
+            release-artifacts/desktop-windows/*.exe

@@ -111,6 +111,7 @@ export default function AccountContent({ agent, authStatus, onLogin }) {
   const [deployResult, setDeployResult] = useState(null);
   const [ollamaModels, setOllamaModels] = useState([]);
   const [isLoadingModels, setIsLoadingModels] = useState(false);
+  const [ollamaModelsError, setOllamaModelsError] = useState(null);
   const [pullModelName, setPullModelName] = useState('');
   const [isPulling, setIsPulling] = useState(false);
   const [pullResult, setPullResult] = useState(null);
@@ -130,15 +131,23 @@ export default function AccountContent({ agent, authStatus, onLogin }) {
       } else {
         setGpuError(data.error || 'Could not detect GPUs');
       }
-    } catch {
-      setGpuError('GPU detection not available.');
+    } catch (err) {
+      const isNetwork =
+        err?.name === 'TypeError' && String(err?.message || '').toLowerCase().includes('fetch');
+      setGpuError(
+        isNetwork
+          ? t('agents.account.local.gpuDetectNetworkError')
+          : t('agents.account.local.gpuDetectFailed'),
+      );
+      console.warn('[AccountContent] GPU detection failed', err);
     } finally {
       setIsDetectingGpu(false);
     }
-  }, [selectedGpu]);
+  }, [selectedGpu, t]);
 
   const handleLoadOllamaModels = useCallback(async () => {
     setIsLoadingModels(true);
+    setOllamaModelsError(null);
     try {
       const res = await authenticatedFetch(`/api/cli/local/models?serverUrl=${encodeURIComponent(localServerUrl)}`);
       const data = await res.json();
@@ -150,10 +159,17 @@ export default function AccountContent({ agent, authStatus, onLogin }) {
             localStorage.setItem('local-model', smallModels[0].name);
           }
         }
+      } else {
+        setOllamaModels([]);
+        setOllamaModelsError(data.error || t('agents.account.local.ollamaModelsLoadFailed'));
       }
-    } catch {}
+    } catch (err) {
+      setOllamaModels([]);
+      setOllamaModelsError(t('agents.account.local.ollamaModelsNetworkError'));
+      console.warn('[AccountContent] Ollama models load failed', err);
+    }
     setIsLoadingModels(false);
-  }, [localServerUrl]);
+  }, [localServerUrl, t]);
 
   useEffect(() => {
     if (agent === 'local') {
@@ -163,17 +179,31 @@ export default function AccountContent({ agent, authStatus, onLogin }) {
   }, [agent, handleDetectGpus, handleLoadOllamaModels]);
 
   const handleSaveLocalConfig = async () => {
-    localStorage.setItem('local-gpu-server-url', localServerUrl);
     localStorage.setItem('local-gpu-selected', selectedGpu);
     try {
-      await authenticatedFetch('/api/cli/local/save-config', {
+      const res = await authenticatedFetch('/api/cli/local/save-config', {
         method: 'POST',
         body: JSON.stringify({ serverUrl: localServerUrl }),
       });
-    } catch {}
-    setDeployResult({ success: true, message: 'Configuration saved.' });
-    handleLoadOllamaModels();
-    if (typeof onLogin === 'function') onLogin();
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setDeployResult({
+          success: false,
+          message: data.error || 'Could not save configuration.',
+        });
+        return;
+      }
+      localStorage.setItem('local-gpu-server-url', localServerUrl);
+      setDeployResult({ success: true, message: 'Configuration saved.' });
+      handleLoadOllamaModels();
+      if (typeof onLogin === 'function') onLogin();
+    } catch (err) {
+      setDeployResult({
+        success: false,
+        message: t('agents.account.local.ollamaModelsNetworkError'),
+      });
+      console.warn('[AccountContent] save local GPU config failed', err);
+    }
   };
 
   const handleTestConnection = async () => {
@@ -755,6 +785,12 @@ export default function AccountContent({ agent, authStatus, onLogin }) {
                     Refresh
                   </Button>
                 </div>
+
+                {ollamaModelsError && (
+                  <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200 mb-3">
+                    {ollamaModelsError}
+                  </div>
+                )}
 
                 {ollamaModels.length > 0 ? (
                   <div className="space-y-1.5">

@@ -54,10 +54,7 @@ export default function SidebarHeader({
   return (
     <div className="flex-shrink-0">
       {/* Desktop header */}
-      <div
-        className="hidden md:block px-3 pt-3 pb-2"
-        style={{}}
-      >
+      <div className="hidden md:block px-3 pt-3 pb-2">
         <div className="flex items-center justify-between gap-2">
           {IS_PLATFORM ? (
             <a

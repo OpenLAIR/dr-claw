@@ -26,10 +26,17 @@
   },
   "scripts": {
     "predev": "node scripts/check-deps.js",
-    "dev": "concurrently --kill-others \"npm run server\" \"npm run client\"",
-    "server": "node --watch-path=./server/routes --watch-path=./server/middleware --watch-path=./server/database --watch-path=./server/utils --watch-path=./server/constants --watch-path=./server/index.js server/index.js",
+    "dev": "npm run native:node && concurrently --kill-others \"npm run server\" \"npm run client\"",
+    "server": "npm run native:node && node --watch-path=./server/routes --watch-path=./server/middleware --watch-path=./server/database --watch-path=./server/utils --watch-path=./server/constants --watch-path=./server/index.js server/index.js",
     "client": "vite --host",
     "build": "vite build",
+    "native:node": "node scripts/native-runtime.mjs node",
+    "native:electron": "node scripts/native-runtime.mjs electron",
+    "desktop:icons": "node scripts/build-electron-icons.mjs",
+    "desktop:prepare": "node electron/cli.mjs prepare",
+    "desktop:dev": "node electron/cli.mjs dev",
+    "desktop:pack": "node electron/cli.mjs pack",
+    "desktop:dist": "node electron/cli.mjs dist",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "start": "npm run build && npm run server",
@@ -37,7 +44,11 @@
     "prepublishOnly": "npm run build",
     "postinstall": "node scripts/fix-node-pty.js && node scripts/install-python-tools.js",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "desktop:pack:mac": "node electron/cli.mjs pack --mac",
+    "desktop:pack:win": "node electron/cli.mjs pack --win",
+    "desktop:dist:mac": "node electron/cli.mjs dist --mac dmg --publish never",
+    "desktop:dist:win": "node electron/cli.mjs dist --win nsis --publish never"
   },
   "keywords": [
     "claude code",
@@ -84,6 +95,7 @@
     "cross-spawn": "^7.0.3",
     "express": "^4.18.2",
     "fuse.js": "^7.0.0",
+    "glob": "^11.1.0",
     "gray-matter": "^4.0.3",
     "i18next": "^25.7.4",
     "i18next-browser-languagedetector": "^8.2.0",
@@ -120,7 +132,10 @@
     "auto-changelog": "^2.5.0",
     "autoprefixer": "^10.4.16",
     "concurrently": "^8.2.2",
+    "electron": "^37.3.1",
+    "electron-builder": "^26.0.12",
     "node-gyp": "^10.0.0",
+    "png-to-ico": "^3.0.1",
     "postcss": "^8.4.32",
     "release-it": "^19.0.5",
     "sharp": "^0.34.2",
@@ -128,5 +143,45 @@
     "typescript": "^5.9.3",
     "vite": "^7.0.4",
     "vitest": "^4.1.0"
+  },
+  "build": {
+    "appId": "io.openlair.drclaw",
+    "productName": "Dr. Claw",
+    "directories": {
+      "output": "release"
+    },
+    "asar": false,
+    "extraMetadata": {
+      "main": "electron/main.mjs"
+    },
+    "files": [
+      "dist/**/*",
+      "public/**/*",
+      "server/**/*",
+      "shared/**/*",
+      "skills/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "icon": "build/icon.icns",
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.developer-tools",
+      "artifactName": "${productName}-${version}-mac-${arch}.${ext}"
+    },
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        "nsis"
+      ],
+      "artifactName": "${productName}-${version}-win-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true
+    }
   }
 }

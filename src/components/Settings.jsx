@@ -11,6 +11,7 @@ import LoginModal from './LoginModal';
 import { authenticatedFetch, api } from '../utils/api';
 import { isTelemetryEnabled, setTelemetryEnabled } from '../utils/telemetry';
 import { writeCliAvailability } from '../utils/cliAvailability';
+import { useDesktop } from '../hooks/useDesktop';
 
 // New settings components
 import AgentListItem from './settings/AgentListItem';
@@ -25,6 +26,7 @@ const VALID_SETTINGS_TABS = new Set(['agents', 'email', 'appearance', 'git', 'ap
 function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
   const { isDarkMode, toggleDarkMode } = useTheme();
   const { t } = useTranslation('settings');
+  const { isDesktop, selectDirectory, showItemInFolder } = useDesktop();
   const [allowedTools, setAllowedTools] = useState([]);
   const [disallowedTools, setDisallowedTools] = useState([]);
   const [newAllowedTool, setNewAllowedTool] = useState('');
@@ -130,7 +132,10 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
     cliCommand: 'claude',
     installHint: null,
     loading: true,
-    error: null
+    error: null,
+    installable: false,
+    docsUrl: null,
+    downloadUrl: null
   });
   const [cursorAuthStatus, setCursorAuthStatus] = useState({
     authenticated: false,
@@ -139,7 +144,10 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
     cliCommand: 'agent',
     installHint: null,
     loading: true,
-    error: null
+    error: null,
+    installable: false,
+    docsUrl: null,
+    downloadUrl: null
   });
   const [codexAuthStatus, setCodexAuthStatus] = useState({
     authenticated: false,
@@ -148,7 +156,10 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
     cliCommand: 'codex',
     installHint: null,
     loading: true,
-    error: null
+    error: null,
+    installable: false,
+    docsUrl: null,
+    downloadUrl: null
   });
   const [geminiAuthStatus, setGeminiAuthStatus] = useState({
     authenticated: false,
@@ -157,7 +168,10 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
     cliCommand: 'gemini',
     installHint: null,
     loading: true,
-    error: null
+    error: null,
+    installable: false,
+    docsUrl: null,
+    downloadUrl: null
   });
   const [openrouterAuthStatus, setOpenrouterAuthStatus] = useState({
     authenticated: false,
@@ -186,6 +200,9 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
     installHint: null,
     loading: false,
     error: null,
+    installable: false,
+    docsUrl: null,
+    downloadUrl: null,
     ...overrides
   });
 
@@ -702,7 +719,10 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
           cliCommand: data.cliCommand || 'claude',
           installHint: data.installHint || null,
           loading: false,
-          error: data.error || null
+          error: data.error || null,
+          installable: data.installable === true,
+          docsUrl: data.docsUrl || null,
+          downloadUrl: data.downloadUrl || null
         });
         writeCliAvailability('claude', {
           cliAvailable: data.cliAvailable !== false,
@@ -737,7 +757,10 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
           cliCommand: data.cliCommand || 'agent',
           installHint: data.installHint || null,
           loading: false,
-          error: data.error || null
+          error: data.error || null,
+          installable: data.installable === true,
+          docsUrl: data.docsUrl || null,
+          downloadUrl: data.downloadUrl || null
         });
         writeCliAvailability('cursor', {
           cliAvailable: data.cliAvailable !== false,
@@ -772,7 +795,10 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
           cliCommand: data.cliCommand || 'codex',
           installHint: data.installHint || null,
           loading: false,
-          error: data.error || null
+          error: data.error || null,
+          installable: data.installable === true,
+          docsUrl: data.docsUrl || null,
+          downloadUrl: data.downloadUrl || null
         });
         writeCliAvailability('codex', {
           cliAvailable: data.cliAvailable !== false,
@@ -807,7 +833,10 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
           cliCommand: data.cliCommand || 'gemini',
           installHint: data.installHint || null,
           loading: false,
-          error: data.error || null
+          error: data.error || null,
+          installable: data.installable === true,
+          docsUrl: data.docsUrl || null,
+          downloadUrl: data.downloadUrl || null
         });
         writeCliAvailability('gemini', {
           cliAvailable: data.cliAvailable !== false,
@@ -864,6 +893,27 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
     }
   };
 
+  const refreshProviderStatus = async (provider) => {
+    if (provider === 'claude') {
+      await checkClaudeAuthStatus();
+      return;
+    }
+
+    if (provider === 'cursor') {
+      await checkCursorAuthStatus();
+      return;
+    }
+
+    if (provider === 'codex') {
+      await checkCodexAuthStatus();
+      return;
+    }
+
+    if (provider === 'gemini') {
+      await checkGeminiAuthStatus();
+    }
+  };
+
   const checkLocalAuthStatus = async () => {
     try {
       const response = await authenticatedFetch('/api/cli/local/status');
@@ -910,28 +960,24 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
   };
 
   const handleClaudeLogin = () => {
-    if (claudeAuthStatus.cliAvailable === false) return;
     setLoginProvider('claude');
     setSelectedProject(projects?.[0] || { name: 'default', fullPath: process.cwd() });
     setShowLoginModal(true);
   };
 
   const handleCursorLogin = () => {
-    if (cursorAuthStatus.cliAvailable === false) return;
     setLoginProvider('cursor');
     setSelectedProject(projects?.[0] || { name: 'default', fullPath: process.cwd() });
     setShowLoginModal(true);
   };
 
   const handleCodexLogin = () => {
-    if (codexAuthStatus.cliAvailable === false) return;
     setLoginProvider('codex');
     setSelectedProject(projects?.[0] || { name: 'default', fullPath: process.cwd() });
     setShowLoginModal(true);
   };
 
   const handleGeminiLogin = () => {
-    if (geminiAuthStatus.cliAvailable === false) return;
     setLoginProvider('gemini');
     setSelectedProject(projects?.[0] || { name: 'default', fullPath: process.cwd() });
     setShowLoginModal(true);
@@ -1295,8 +1341,6 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
             {/* Appearance Tab */}
             {activeTab === 'appearance' && (
               <div className="space-y-6 md:space-y-8">
-               {activeTab === 'appearance' && (
-  <div className="space-y-6 md:space-y-8">
     {/* Theme Settings */}
     <div className="space-y-4">
       <div className="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
@@ -1437,6 +1481,29 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
             placeholder={workspaceRootDefault}
             className="flex-1 text-sm font-mono"
           />
+          {isDesktop && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                const selected = await selectDirectory({
+                  title: t('appearanceSettings.defaultProjectPath.browseTitle', 'Select Default Project Folder'),
+                  defaultPath: workspaceRoot || workspaceRootDefault || undefined,
+                });
+                if (selected) {
+                  setWorkspaceRoot(selected);
+                  setWorkspaceRootSaved(false);
+                  setWorkspaceRootError('');
+                  saveWorkspaceRoot(selected);
+                }
+              }}
+              className="whitespace-nowrap"
+              title={t('appearanceSettings.defaultProjectPath.browse', 'Browse')}
+            >
+              <FolderOpen className="w-4 h-4 mr-1" />
+              {t('appearanceSettings.defaultProjectPath.browse', 'Browse')}
+            </Button>
+          )}
           <Button
             variant="outline"
             size="sm"
@@ -1612,9 +1679,6 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
         </div>
       </div>
     </div>
-  </div>
-)}
-
               </div>
             )}
 
@@ -2397,6 +2461,42 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
           loginProvider === 'gemini' ? geminiAuthStatus.installHint :
           null
         }
+        installable={
+          loginProvider === 'claude' ? claudeAuthStatus.installable === true :
+          loginProvider === 'cursor' ? cursorAuthStatus.installable === true :
+          loginProvider === 'codex' ? codexAuthStatus.installable === true :
+          loginProvider === 'gemini' ? geminiAuthStatus.installable === true :
+          false
+        }
+        installerAvailable={
+          loginProvider === 'claude' ? claudeAuthStatus.installerAvailable !== false :
+          loginProvider === 'cursor' ? cursorAuthStatus.installerAvailable !== false :
+          loginProvider === 'codex' ? codexAuthStatus.installerAvailable !== false :
+          loginProvider === 'gemini' ? geminiAuthStatus.installerAvailable !== false :
+          true
+        }
+        installerHint={
+          loginProvider === 'claude' ? claudeAuthStatus.installerHint :
+          loginProvider === 'cursor' ? cursorAuthStatus.installerHint :
+          loginProvider === 'codex' ? codexAuthStatus.installerHint :
+          loginProvider === 'gemini' ? geminiAuthStatus.installerHint :
+          null
+        }
+        docsUrl={
+          loginProvider === 'claude' ? claudeAuthStatus.docsUrl :
+          loginProvider === 'cursor' ? cursorAuthStatus.docsUrl :
+          loginProvider === 'codex' ? codexAuthStatus.docsUrl :
+          loginProvider === 'gemini' ? geminiAuthStatus.docsUrl :
+          null
+        }
+        downloadUrl={
+          loginProvider === 'claude' ? claudeAuthStatus.downloadUrl :
+          loginProvider === 'cursor' ? cursorAuthStatus.downloadUrl :
+          loginProvider === 'codex' ? codexAuthStatus.downloadUrl :
+          loginProvider === 'gemini' ? geminiAuthStatus.downloadUrl :
+          null
+        }
+        onStatusRefresh={() => refreshProviderStatus(loginProvider)}
       />
     </div>
   );

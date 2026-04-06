@@ -24,9 +24,11 @@ export default function VersionUpgradeModal({
     installMode
 }: VersionUpgradeModalProps) {
     const { t } = useTranslation('common');
-    const upgradeCommand = installMode === 'npm'
-        ? t('versionUpdate.npmUpgradeCommand')
-        : 'git checkout main && git pull && npm install';
+    const upgradeCommand = installMode === 'desktop'
+        ? 'Install the latest Dr. Claw desktop package for your platform.'
+        : installMode === 'npm'
+            ? t('versionUpdate.npmUpgradeCommand')
+            : 'git checkout main && git pull && npm install';
     const [isUpdating, setIsUpdating] = useState(false);
     const [updateOutput, setUpdateOutput] = useState('');
     const [updateError, setUpdateError] = useState('');
@@ -178,28 +180,32 @@ export default function VersionUpgradeModal({
                     </button>
                     {!updateOutput && (
                         <>
-                            <button
-                                onClick={() => {
-                                    navigator.clipboard.writeText(upgradeCommand);
-                                }}
-                                className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors"
-                            >
-                                {t('versionUpdate.buttons.copyCommand')}
-                            </button>
-                            <button
-                                onClick={handleUpdateNow}
-                                disabled={isUpdating}
-                                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed rounded-md transition-colors flex items-center justify-center gap-2"
-                            >
-                                {isUpdating ? (
-                                    <>
-                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                        {t('versionUpdate.buttons.updating')}
-                                    </>
-                                ) : (
-                                    t('versionUpdate.buttons.updateNow')
-                                )}
-                            </button>
+                            {installMode !== 'desktop' && (
+                                <button
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(upgradeCommand);
+                                    }}
+                                    className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors"
+                                >
+                                    {t('versionUpdate.buttons.copyCommand')}
+                                </button>
+                            )}
+                            {installMode !== 'desktop' && (
+                                <button
+                                    onClick={handleUpdateNow}
+                                    disabled={isUpdating}
+                                    className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed rounded-md transition-colors flex items-center justify-center gap-2"
+                                >
+                                    {isUpdating ? (
+                                        <>
+                                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                            {t('versionUpdate.buttons.updating')}
+                                        </>
+                                    ) : (
+                                        t('versionUpdate.buttons.updateNow')
+                                    )}
+                                </button>
+                            )}
                         </>
                     )}
                 </div>

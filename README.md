@@ -124,6 +124,8 @@ Dr. Claw is a general-purpose AI research assistant designed to help researchers
 
 ## Quick Start
 
+> **Desktop App (Beta):** Want to skip the setup below? Download the latest `.dmg` (macOS) or `.exe` (Windows) installer from [GitHub Releases](https://github.com/OpenLAIR/dr-claw/releases) and run it directly. The desktop app is currently in beta — for a more stable experience, follow the full installation steps below.
+
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) v20 or higher (**v22 LTS recommended**, see `.nvmrc`)
@@ -171,11 +173,17 @@ There are two ways to interact with Dr. Claw: the **frontend UI** workflow or th
 
 #### Option A: Frontend UI
 
+<details>
+<summary><strong>Open the web UI in your browser</strong></summary>
+
 Open your browser at `http://localhost:5173` (or the port you configured in `.env`).
 
-
+</details>
 
 #### Option B: Terminal Only
+
+<details>
+<summary><strong>Use the CLI harness with your preferred agent</strong></summary>
 
 <p align="center">
   <img src="public/screenshots/terminal_example1.png" alt="Terminal workflow example" width="800">
@@ -217,9 +225,12 @@ Skills from `dr-claw/skills/` are automatically symlinked into each project's `.
 > Read .claude/skills/inno-experiment-analysis/SKILL.md and follow it to analyze my results.
 ```
 
-
+</details>
 
 #### Option C: OpenRouter Terminal Chat
+
+<details>
+<summary><strong>Lightweight terminal chat with any OpenRouter model</strong></summary>
 
 For a lightweight terminal-only experience using any [OpenRouter](https://openrouter.ai/) model, use the built-in `dr-claw chat` command. No browser or UI required — just an interactive agentic session with full tool-calling capabilities (file I/O, shell, grep, glob, web search/fetch).
 
@@ -244,7 +255,24 @@ node server/cli.js chat --model anthropic/claude-sonnet-4 --key sk-or-your-key
 
 Browse all available models at [openrouter.ai/models](https://openrouter.ai/models).
 
+</details>
 
+#### Option D: Desktop App
+
+<details>
+<summary><strong>Run as a standalone desktop application (macOS & Windows)</strong></summary>
+
+```bash
+# Development mode (launches Electron with hot reload)
+npm run desktop:dev
+
+# Build distributable installer (.dmg / .exe)
+npm run desktop:dist
+```
+
+For details on the desktop architecture, IPC bridge, and CI/CD release process, see [electron/README.md](electron/README.md).
+
+</details>
 
 If agent web search does not work later, see [Troubleshooting Web Search](#troubleshooting-web-search) below.
 

@@ -45,6 +45,11 @@ pids
 *.seed
 *.pid.lock
 .runtime/
+.native-runtime.json
+.electron-gyp/
+.electron-cache/
+.electron-home/
+release/
 
 # Coverage directory used by tools like istanbul
 coverage/

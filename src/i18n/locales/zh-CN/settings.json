@@ -346,7 +346,11 @@
         "description": "通过 OpenRouter API 路由到任意模型"
       },
       "local": {
-        "description": "在本地 GPU 上运行开源模型"
+        "description": "在本地 GPU 上运行开源模型",
+        "gpuDetectNetworkError": "无法连接应用服务器以检测 GPU。请检查网络后重试。",
+        "gpuDetectFailed": "GPU 检测失败。请重试；若持续出现请查看服务器日志。",
+        "ollamaModelsLoadFailed": "无法从服务器加载 Ollama 模型列表。",
+        "ollamaModelsNetworkError": "加载 Ollama 模型时出现网络错误。请确认应用已运行且 Ollama 可访问。"
       }
     },
     "connectionStatus": "连接状态",

@@ -11,8 +11,9 @@ import crypto from 'crypto';
 import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
-import { exec } from 'child_process';
+import { exec, execFile } from 'child_process';
 import { promisify } from 'util';
+import { glob } from 'glob';
 import { encodeProjectPath, ensureProjectSkillLinks, reconcileLocalGPUSessionIndex } from './projects.js';
 import { writeProjectTemplates } from './templates/index.js';
 import { classifyError } from '../shared/errorClassifier.js';
@@ -20,11 +21,15 @@ import { applyStageTagsToSession, recordIndexedSession } from './utils/sessionIn
 import { createRequestId, waitForToolApproval, matchesToolPermission } from './utils/permissions.js';
 
 const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
-const DEFAULT_OLLAMA_URL = 'http://localhost:11434';
+export const DEFAULT_OLLAMA_URL = 'http://localhost:11434';
 const MAX_AGENT_TURNS = 30;
 const BASH_TIMEOUT_MS = 120_000;
 const MAX_OUTPUT_CHARS = 100_000;
+/** Match maxBuffer to capped output so large command output is not buffered in full. */
+const MAX_TOOL_BUFFER_BYTES = Math.min(MAX_OUTPUT_CHARS * 4, 512 * 1024);
+const GLOB_MAX_MATCHES = 200;
 const SESSIONS_DIR_NAME = 'localgpu-sessions';
 
 const activeLocalGPUSessions = new Map();
@@ -93,12 +98,58 @@ export async function detectGPUs() {
 // Ollama helpers
 // ---------------------------------------------------------------------------
 
+function isLoopbackHostname(hostname) {
+  if (!hostname) return false;
+  const h = hostname.toLowerCase();
+  if (h === 'localhost' || h === '::1' || h === '[::1]') return true;
+  if (h === '127.0.0.1') return true;
+  const m = /^127\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(h);
+  if (!m) return false;
+  return [m[1], m[2], m[3]].every((oct) => {
+    const n = parseInt(oct, 10);
+    return n >= 0 && n <= 255;
+  });
+}
+
+/**
+ * Normalize and validate Ollama base URL. Only http(s) loopback hosts are allowed (SSRF hardening).
+ */
+export function normalizeLocalOllamaBaseUrl(input) {
+  let raw = String(input ?? '').trim().replace(/\/+$/, '');
+  if (!raw) raw = DEFAULT_OLLAMA_URL;
+  if (!/^https?:\/\//i.test(raw)) {
+    raw = `http://${raw}`;
+  }
+  let u;
+  try {
+    u = new URL(raw);
+  } catch {
+    throw new Error('Invalid Ollama server URL');
+  }
+  if (u.protocol !== 'http:' && u.protocol !== 'https:') {
+    throw new Error('Ollama URL must use http or https');
+  }
+  if (u.username || u.password) {
+    throw new Error('Ollama URL must not include credentials');
+  }
+  if (!isLoopbackHostname(u.hostname)) {
+    throw new Error('Ollama URL must use localhost or 127.0.0.1 (loopback only)');
+  }
+  return u.origin;
+}
+
 function getOllamaUrl(options) {
-  return (options?.serverUrl || process.env.LOCAL_GPU_SERVER_URL || DEFAULT_OLLAMA_URL).replace(/\/+$/, '');
+  const raw = options?.serverUrl || process.env.LOCAL_GPU_SERVER_URL || DEFAULT_OLLAMA_URL;
+  return normalizeLocalOllamaBaseUrl(raw);
 }
 
 export async function checkOllamaStatus(serverUrl) {
-  const url = (serverUrl || DEFAULT_OLLAMA_URL).replace(/\/+$/, '');
+  let url;
+  try {
+    url = normalizeLocalOllamaBaseUrl(serverUrl || DEFAULT_OLLAMA_URL);
+  } catch (e) {
+    return { running: false, error: e.message };
+  }
   try {
     const res = await fetch(`${url}/api/tags`, { signal: AbortSignal.timeout(5000) });
     if (!res.ok) return { running: false, error: `Server returned ${res.status}` };
@@ -129,7 +180,7 @@ function formatOllamaModel(m) {
 }
 
 export async function pullOllamaModel(serverUrl, modelName) {
-  const url = (serverUrl || DEFAULT_OLLAMA_URL).replace(/\/+$/, '');
+  const url = normalizeLocalOllamaBaseUrl(serverUrl || DEFAULT_OLLAMA_URL);
   const res = await fetch(`${url}/api/pull`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -279,6 +330,78 @@ function sendMessage(ws, data) {
 // Tool execution (same as OpenRouter)
 // ---------------------------------------------------------------------------
 
+async function runBashToolCommand(command, execCwd) {
+  if (typeof command !== 'string') {
+    return 'Error: command must be a string';
+  }
+  if (command.includes('\0')) {
+    return 'Error: command contains invalid characters';
+  }
+  const opts = {
+    cwd: execCwd,
+    timeout: BASH_TIMEOUT_MS,
+    maxBuffer: MAX_TOOL_BUFFER_BYTES,
+    windowsHide: true,
+  };
+  try {
+    if (process.platform === 'win32') {
+      const comspec = process.env.ComSpec || 'cmd.exe';
+      const { stdout, stderr } = await execFileAsync(comspec, ['/d', '/s', '/c', command], opts);
+      return (stdout + (stderr ? `\n[stderr]\n${stderr}` : '')).slice(0, MAX_OUTPUT_CHARS);
+    }
+    const { stdout, stderr } = await execFileAsync('/bin/sh', ['-c', command], opts);
+    return (stdout + (stderr ? `\n[stderr]\n${stderr}` : '')).slice(0, MAX_OUTPUT_CHARS);
+  } catch (err) {
+    return `Error: ${err.message}`;
+  }
+}
+
+function isPathUnderSearchRoot(absPath, rootAbs) {
+  const rootNorm = path.resolve(rootAbs);
+  const fileNorm = path.resolve(absPath);
+  const prefix = rootNorm.endsWith(path.sep) ? rootNorm : `${rootNorm}${path.sep}`;
+  return fileNorm === rootNorm || fileNorm.startsWith(prefix);
+}
+
+async function runRipgrepSearch(pattern, dirAbs, includeGlob) {
+  if (typeof pattern !== 'string' || pattern.includes('\0')) {
+    return 'Error: invalid search pattern';
+  }
+  const rgArgs = [
+    '--max-count', '50',
+    '--line-number',
+    '--color', 'never',
+    '--no-heading',
+  ];
+  if (includeGlob && typeof includeGlob === 'string' && !includeGlob.includes('\0')) {
+    rgArgs.push('--glob', includeGlob);
+  }
+  rgArgs.push('--', pattern, dirAbs);
+  const opts = {
+    cwd: dirAbs,
+    timeout: 15_000,
+    maxBuffer: MAX_TOOL_BUFFER_BYTES,
+    windowsHide: true,
+  };
+  try {
+    const { stdout, stderr } = await execFileAsync('rg', rgArgs, opts);
+    const combined = (stdout || '') + (stderr ? `\n[stderr]\n${stderr}` : '');
+    const trimmed = combined.trim().slice(0, MAX_OUTPUT_CHARS);
+    return trimmed || 'No results.';
+  } catch (err) {
+    if (err?.code === 'ENOENT') {
+      return 'Error: ripgrep (rg) is not installed or not in PATH. Install from https://github.com/BurntSushi/ripgrep';
+    }
+    // ripgrep exits 1 when there are zero matches (not an error).
+    if (err?.code === 1 && typeof err.stdout === 'string') {
+      const combined = (err.stdout || '') + (err.stderr ? `\n[stderr]\n${err.stderr}` : '');
+      const trimmed = combined.trim().slice(0, MAX_OUTPUT_CHARS);
+      return trimmed || 'No results.';
+    }
+    return `Error: ${err.message}`;
+  }
+}
+
 async function executeTool(name, args, cwd) {
   try {
     if (name === 'Read') {
@@ -313,35 +436,40 @@ async function executeTool(name, args, cwd) {
 
     if (name === 'Bash') {
       const execCwd = args.cwd ? (path.isAbsolute(args.cwd) ? args.cwd : path.resolve(cwd, args.cwd)) : cwd;
-      const { stdout, stderr } = await execAsync(args.command, {
-        cwd: execCwd,
-        timeout: BASH_TIMEOUT_MS,
-        maxBuffer: 10 * 1024 * 1024,
-      });
-      return (stdout + (stderr ? `\n[stderr]\n${stderr}` : '')).slice(0, MAX_OUTPUT_CHARS);
+      return await runBashToolCommand(args.command, execCwd);
     }
 
     if (name === 'Glob') {
       const dir = args.directory
         ? (path.isAbsolute(args.directory) ? args.directory : path.resolve(cwd, args.directory))
         : cwd;
-      const { stdout } = await execAsync(
-        `find ${JSON.stringify(dir)} -path ${JSON.stringify(args.pattern)} -type f 2>/dev/null | head -200`,
-        { cwd: dir, timeout: 15000 },
-      );
-      return stdout.trim() || 'No files matched.';
+      const dirResolved = path.resolve(dir);
+      if (typeof args.pattern !== 'string' || args.pattern.includes('\0')) {
+        return 'Error: invalid glob pattern';
+      }
+      const matches = await glob(args.pattern, {
+        cwd: dirResolved,
+        nodir: true,
+        absolute: true,
+        followSymbolicLinks: false,
+        maxDepth: 40,
+      });
+      const safe = [];
+      for (const p of matches) {
+        if (isPathUnderSearchRoot(p, dirResolved)) {
+          safe.push(p);
+        }
+        if (safe.length >= GLOB_MAX_MATCHES) break;
+      }
+      return safe.join('\n') || 'No files matched.';
     }
 
     if (name === 'Search') {
       const dir = args.directory
         ? (path.isAbsolute(args.directory) ? args.directory : path.resolve(cwd, args.directory))
         : cwd;
-      const includeFlag = args.include ? `--glob ${JSON.stringify(args.include)}` : '';
-      const { stdout } = await execAsync(
-        `rg --max-count 50 --line-number ${includeFlag} ${JSON.stringify(args.pattern)} ${JSON.stringify(dir)} 2>/dev/null | head -200`,
-        { cwd: dir, timeout: 15000 },
-      );
-      return stdout.trim() || 'No results.';
+      const dirResolved = path.resolve(dir);
+      return await runRipgrepSearch(args.pattern, dirResolved, args.include);
     }
 
     if (name === 'LS') {
@@ -556,7 +684,19 @@ export async function queryLocalGPU(command, options = {}, ws) {
   } = options;
 
   const workingDirectory = cwd || projectPath || process.cwd();
-  const ollamaUrl = getOllamaUrl(options);
+  let ollamaUrl;
+  try {
+    ollamaUrl = getOllamaUrl(options);
+  } catch (err) {
+    sendMessage(ws, {
+      type: 'localgpu-error',
+      error: err.message,
+      errorType: 'auth',
+      isRetryable: false,
+      sessionId,
+    });
+    return;
+  }
 
   // Verify Ollama is reachable
   try {

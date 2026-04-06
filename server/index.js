@@ -426,11 +426,21 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Public health check endpoint (no authentication required)
 app.get('/health', (req, res) => {
-  res.json({
+  const isDesktop = process.env.DR_CLAW_DESKTOP === '1';
+  const response = {
     status: 'ok',
     timestamp: new Date().toISOString(),
-    installMode
-  });
+    installMode: isDesktop ? 'desktop' : installMode,
+  };
+
+  if (isDesktop) {
+    response.desktop = {
+      platform: process.platform,
+      arch: process.arch,
+    };
+  }
+
+  res.json(response);
 });
 
 // Optional API key validation (if configured)
@@ -653,6 +663,13 @@ app.use(express.static(path.join(__dirname, '../dist'), {
 // System update endpoint
 app.post('/api/system/update', authenticateToken, async (req, res) => {
     try {
+        if (process.env.DR_CLAW_DESKTOP === '1') {
+            return res.status(400).json({
+                success: false,
+                error: 'Desktop builds do not support in-app self-update yet. Install a newer desktop package instead.'
+            });
+        }
+
         // Get the project root directory (parent of server directory)
         const projectRoot = path.join(__dirname, '..');
 
@@ -3086,6 +3103,7 @@ async function getFileTree(dirPath, maxDepth = 3, currentDepth = 0, showHidden =
 const REQUESTED_PORT = parsePortNumber(process.env.PORT, DEFAULT_BACKEND_PORT);
 const REQUESTED_VITE_PORT = parsePortNumber(process.env.VITE_PORT, DEFAULT_FRONTEND_PORT);
 const HOST = process.env.HOST || '0.0.0.0';
+const IS_DESKTOP = process.env.DR_CLAW_DESKTOP === '1';
 // Show localhost when binding to all interfaces; 0.0.0.0 is not directly connectable.
 const DISPLAY_HOST = HOST === '0.0.0.0' ? 'localhost' : HOST;
 
@@ -3101,6 +3119,9 @@ async function startServer() {
 
         // Log Claude implementation mode
         console.log(`${c.info('[INFO]')} Using Claude Agents SDK for Claude integration`);
+        if (IS_DESKTOP) {
+            console.log(`${c.info('[INFO]')} Running inside Electron desktop shell`);
+        }
         console.log(`${c.info('[INFO]')} Running in ${c.bright(isProduction ? 'PRODUCTION' : 'DEVELOPMENT')} mode`);
 
         if (!isProduction) {
