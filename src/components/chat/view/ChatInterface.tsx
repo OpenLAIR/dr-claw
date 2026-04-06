@@ -902,6 +902,7 @@ function ChatInterface({
           activeSidebarTab={sidebarTab}
           onSidebarTabChange={setSidebarTab}
           onStartWorkspaceQa={onStartWorkspaceQa}
+          onStartTask={handleStartTaskInChat}
         />
       </div>
 

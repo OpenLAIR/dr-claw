@@ -2397,7 +2397,7 @@ function UsageGuideNotice({
 /*  Main component                                                     */
 /* ------------------------------------------------------------------ */
 
-function ResearchLab({ selectedProject, onNavigateToChat, compact = false, onFileOpen }) {
+function ResearchLab({ selectedProject, onNavigateToChat, compact = false, onFileOpen, onStartTask }) {
   const { t } = useTranslation('common');
   const [loading, setLoading] = useState(false);
   const [instance, setInstance] = useState(null);
@@ -2852,10 +2852,18 @@ function ResearchLab({ selectedProject, onNavigateToChat, compact = false, onFil
                         </p>
                       ) : null}
 
-                      {onNavigateToChat && (
+                      {(onStartTask || onNavigateToChat) && (
                         <button
                           type="button"
-                          onClick={() => onNavigateToChat()}
+                          onClick={() => {
+                            const prompt = nextTask.nextActionPrompt || nextTask.guidance?.nextActionPrompt || '';
+                            if (onStartTask) {
+                              onStartTask(prompt, nextTask);
+                              if (onNavigateToChat) onNavigateToChat();
+                            } else if (onNavigateToChat) {
+                              onNavigateToChat();
+                            }
+                          }}
                           className={`relative inline-flex items-center gap-2 overflow-hidden rounded-full font-semibold text-white shadow-[0_0_20px_rgba(14,165,233,0.35)] transition-all duration-300 hover:shadow-[0_0_30px_rgba(14,165,233,0.5)] hover:scale-[1.03] active:scale-[0.98] bg-gradient-to-r from-cyan-500 via-sky-500 to-emerald-500 hover:from-cyan-400 hover:via-sky-400 hover:to-emerald-400 ${compact ? 'mt-3 px-4 py-2 text-xs' : 'mt-4 px-5 py-2.5 text-sm'}`}
                         >
                           {/* Shine sweep animation */}

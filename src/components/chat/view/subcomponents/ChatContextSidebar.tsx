@@ -83,6 +83,7 @@ interface ChatContextSidebarProps {
   activeSidebarTab?: SidebarTab;
   onSidebarTabChange?: (tab: SidebarTab) => void;
   onStartWorkspaceQa?: (project: Project, prompt: string) => void;
+  onStartTask?: (prompt?: string, task?: { stage?: string } | null) => void;
 }
 
 const formatTimeLabel = (value: string, locale?: string) => {
@@ -269,6 +270,7 @@ export default function ChatContextSidebar({
   activeSidebarTab = 'context',
   onSidebarTabChange,
   onStartWorkspaceQa,
+  onStartTask,
 }: ChatContextSidebarProps) {
   const { t, i18n } = useTranslation('chat');
   const [fetchedMessages, setFetchedMessages] = useState<ChatMessage[]>([]);
@@ -832,6 +834,7 @@ export default function ChatContextSidebar({
             onNavigateToChat={() => onSidebarTabChange?.('context')}
             compact
             onFileOpen={onFileOpen}
+            onStartTask={onStartTask}
           />
         </div>
       ) : activeSidebarTab === 'files' ? (
