@@ -42,8 +42,8 @@
 - [OpenClaw Integration](#openclaw-integration)
 - [Research Lab - Quick Example](#research-lab-quick-example)
 - [Usage Guide](#usage-guide)
-- [Additional Details](#additional-details)
 - [Claude Code Plugin](#claude-code-plugin)
+- [Additional Details](#additional-details)
 - [Contributing](#contributing)
 - [FAQ](./docs/faq.md)
 - [License](#license)
@@ -747,15 +747,15 @@ Inside any Claude Code session, run:
 /reload-plugins
 ```
 
-The plugin is now permanently installed. Run `/drclaw:setup` to initialize a new research project.
+The plugin is installed and will be available in future sessions. Run `/drclaw:setup` to initialize a new research project.
 
 > **Scope options:** By default the plugin is installed to your user scope (available in all projects). Add `--scope project` to install it for a specific project only, or `--scope local` for a machine-local install.
 
 ### What's Included
 
-- **60+ bundled research skills** — a curated subset of Dr. Claw's skill library covering literature survey, idea generation, experiment development, paper writing, and more
+- **60+ bundled skills** — a curated subset of Dr. Claw's skill library covering literature survey, idea generation, experiment development, paper writing, and more
 - **3 project templates** — Method/Model, Dataset/Benchmark, and Position Paper, each with a pre-configured task pipeline
-- **Auto-detection** — the plugin detects existing `.pipeline/` directories on session start and shows your current progress
+- **Auto-detection** — the plugin detects existing pipeline projects on session start and shows your current progress
 - **Same data format** — projects created with the plugin use the same `research_brief.json` and `tasks.json` schemas as the full Dr. Claw workspace, so you can switch between them
 
 > **Note:** The plugin bundles a snapshot of skills from this repository. Skills are synchronized manually — see the plugin repo's README for details.
