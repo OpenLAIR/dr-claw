@@ -2824,47 +2824,59 @@ function ResearchLab({ selectedProject, onNavigateToChat, compact = false, onFil
               </div>
 
               <div className={`grid ${compact ? 'gap-2' : 'gap-4'}`}>
-                <div className={`border border-border/60 bg-card/78 shadow-sm backdrop-blur ${compact ? 'rounded-xl p-3' : 'rounded-[28px] p-5'}`}>
-                  <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-                    <MessageSquare className="h-4 w-4 text-primary" />
-                    Next Action
-                  </div>
-                  {nextTask ? (
-                    <div className={`border border-border/60 bg-background/70 shadow-sm ${compact ? 'mt-2 rounded-xl p-2.5' : 'mt-4 rounded-2xl p-4'}`}>
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0">
-                          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${TASK_STAGE_META[nextTask.stage]?.className || TASK_STAGE_META.unassigned.className}`}>
-                            {TASK_STAGE_META[nextTask.stage]?.label || TASK_STAGE_META.unassigned.label}
-                          </span>
-                          <div className={`font-semibold tracking-tight text-foreground ${compact ? 'mt-1.5 text-sm' : 'mt-3 text-lg'}`}>
-                            {nextTask.title || t('researchLabTaskBoard.untitledTask')}
+                {nextTask ? (
+                  <div className={`group relative overflow-hidden border shadow-sm backdrop-blur ${compact ? 'rounded-xl p-3 border-cyan-300/50 dark:border-cyan-800/50' : 'rounded-[28px] p-5 border-cyan-200/60 dark:border-cyan-900/50'} bg-gradient-to-br from-cyan-50/80 via-card/90 to-sky-50/60 dark:from-cyan-950/30 dark:via-card/90 dark:to-sky-950/20`}>
+                    {/* Animated glow accent */}
+                    <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 animate-pulse rounded-full bg-cyan-400/20 blur-2xl dark:bg-cyan-500/10" />
+                    <div className="pointer-events-none absolute -bottom-6 -left-6 h-24 w-24 animate-pulse rounded-full bg-sky-400/15 blur-2xl delay-700 dark:bg-sky-500/10" />
+
+                    <div className="relative">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                          <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500 to-sky-600 shadow-sm">
+                            <Sparkles className="h-3.5 w-3.5 text-white" />
                           </div>
-                          {nextTask.description ? (
-                            <p className={`text-sm leading-6 text-muted-foreground ${compact ? 'mt-1 line-clamp-2' : 'mt-2 line-clamp-3'}`}>
-                              {nextTask.description}
-                            </p>
-                          ) : null}
+                          Next Action
                         </div>
-                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${TASK_STATUS_META[nextTask.status]?.className || TASK_STATUS_META.pending.className}`}>
-                          {TASK_STATUS_META[nextTask.status]?.label || TASK_STATUS_META.pending.label}
+                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${TASK_STAGE_META[nextTask.stage]?.className || TASK_STAGE_META.unassigned.className}`}>
+                          {TASK_STAGE_META[nextTask.stage]?.label || TASK_STAGE_META.unassigned.label}
                         </span>
                       </div>
-                      {onNavigateToChat && !compact && (
-                        <Button
-                          className="mt-4 rounded-full text-white bg-gradient-to-r from-cyan-500 via-sky-500 to-emerald-500 hover:from-cyan-400 hover:via-sky-400 hover:to-emerald-400"
+
+                      <div className={`font-semibold tracking-tight text-foreground ${compact ? 'mt-2 text-sm' : 'mt-3 text-lg'}`}>
+                        {nextTask.title || t('researchLabTaskBoard.untitledTask')}
+                      </div>
+                      {nextTask.description ? (
+                        <p className={`text-sm leading-6 text-muted-foreground ${compact ? 'mt-1 line-clamp-2' : 'mt-2 line-clamp-3'}`}>
+                          {nextTask.description}
+                        </p>
+                      ) : null}
+
+                      {onNavigateToChat && (
+                        <button
+                          type="button"
                           onClick={() => onNavigateToChat()}
+                          className={`relative inline-flex items-center gap-2 overflow-hidden rounded-full font-semibold text-white shadow-[0_0_20px_rgba(14,165,233,0.35)] transition-all duration-300 hover:shadow-[0_0_30px_rgba(14,165,233,0.5)] hover:scale-[1.03] active:scale-[0.98] bg-gradient-to-r from-cyan-500 via-sky-500 to-emerald-500 hover:from-cyan-400 hover:via-sky-400 hover:to-emerald-400 ${compact ? 'mt-3 px-4 py-2 text-xs' : 'mt-4 px-5 py-2.5 text-sm'}`}
                         >
-                          <Sparkles className="mr-1.5 h-4 w-4" />
-                          Go to Chat
-                        </Button>
+                          {/* Shine sweep animation */}
+                          <span className="pointer-events-none absolute inset-0 -translate-x-full animate-[shimmer_2.5s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+                          <Sparkles className={`relative ${compact ? 'h-3.5 w-3.5' : 'h-4 w-4'}`} />
+                          <span className="relative">Run Next Task</span>
+                        </button>
                       )}
                     </div>
-                  ) : (
+                  </div>
+                ) : (
+                  <div className={`border border-border/60 bg-card/78 shadow-sm backdrop-blur ${compact ? 'rounded-xl p-3' : 'rounded-[28px] p-5'}`}>
+                    <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                      <MessageSquare className="h-4 w-4 text-primary" />
+                      Next Action
+                    </div>
                     <div className={`border border-dashed border-border/60 bg-background/60 text-sm text-muted-foreground ${compact ? 'mt-2 rounded-xl px-3 py-3' : 'mt-4 rounded-2xl px-4 py-5'}`}>
                       Generate or sync the task pipeline in Chat, then return here to continue execution.
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
           </section>
