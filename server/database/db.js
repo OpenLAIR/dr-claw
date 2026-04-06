@@ -1475,12 +1475,16 @@ const projectDb = {
   // Get project by its file-system path (uses idx_projects_path index)
   getProjectByPath: (projectPath, userId = null) => {
     try {
-      const query = userId
-        ? 'SELECT * FROM projects WHERE path = ? AND user_id = ?'
-        : 'SELECT * FROM projects WHERE path = ?';
       const row = userId
-        ? db.prepare(query).get(projectPath, userId)
-        : db.prepare(query).get(projectPath);
+        ? db.prepare(`
+            SELECT *
+            FROM projects
+            WHERE path = ?
+              AND (user_id = ? OR user_id IS NULL)
+            ORDER BY CASE WHEN user_id = ? THEN 0 ELSE 1 END
+            LIMIT 1
+          `).get(projectPath, userId, userId)
+        : db.prepare('SELECT * FROM projects WHERE path = ?').get(projectPath);
       if (row && row.metadata) {
         row.metadata = JSON.parse(row.metadata);
       }

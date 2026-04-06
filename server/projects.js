@@ -84,6 +84,8 @@ const CURRENT_DEFAULT_WORKSPACES_ROOT = path.join(os.homedir(), 'dr-claw');
 const DELETED_PROJECTS_CONFIG_KEY = '_deletedProjects';
 
 let projectConfigMutationQueue = Promise.resolve();
+const _lastBootstrapByUser = new Map(); // userId -> timestamp
+const BOOTSTRAP_STALENESS_MS = 60_000; // Only re-scan legacy sources every 60 seconds
 
 function isProjectTrashed(projectInfo = null, dbEntry = null) {
   return Boolean(projectInfo?.trash?.trashedAt || dbEntry?.metadata?.trash?.trashedAt);
@@ -1279,17 +1281,22 @@ async function getProjects(userId, progressCallback = null) {
   let totalProjects = 0;
   let processedProjects = 0;
 
-  let dbProjects = projectDb.getAllProjects(userId || null);
-  if (dbProjects.length === 0) {
+  // Sync from legacy sources so CLI-created projects appear in the web UI.
+  // Only re-scan if the last bootstrap was more than 60 seconds ago to avoid
+  // O(N) filesystem walks on every getProjects() call. See #86.
+  const now = Date.now();
+  const userKey = userId || '__anonymous__';
+  if (now - (_lastBootstrapByUser.get(userKey) || 0) > BOOTSTRAP_STALENESS_MS) {
     await bootstrapProjectsIndexFromLegacySources(
       config,
       projectDb,
       userId || null,
       visibleWorkspaceRoots,
     );
+    _lastBootstrapByUser.set(userKey, now);
   }
   await syncDiscoveredProjectsFromCodexSessions(config, projectDb, userId || null, visibleWorkspaceRoots);
-  dbProjects = projectDb.getAllProjects(userId || null);
+  const dbProjects = projectDb.getAllProjects(userId || null);
 
   try {
     const visibleProjects = [];
@@ -2944,38 +2951,63 @@ async function addProjectManually(projectPath, displayName = null, userId = null
 
   const projectName = encodeProjectPath(absolutePath);
 
-  // Check for existing project with the same path (may have legacy encoded ID)
-  const existingByPath = projectDb.getProjectByPath(absolutePath, userId);
-  if (existingByPath) {
-    if (existingByPath.id !== projectName) {
-      // Legacy ID detected — migrate to new encoding
-      projectDb.migrateProjectIdentity(existingByPath.id, projectName, absolutePath);
+  // Check for existing project with the same path (any user or matching user).
+  // A single lookup handles both same-user exact match and cross-user dedup.
+  const existing = projectDb.getProjectByPath(absolutePath, userId);
+
+  if (existing) {
+    // Migrate legacy encoded IDs if needed
+    if (existing.id !== projectName) {
+      projectDb.migrateProjectIdentity(existing.id, projectName, absolutePath);
     }
-    return {
-      name: projectName,
-      path: absolutePath,
-      fullPath: absolutePath,
-      displayName: displayName || existingByPath.display_name || await generateDisplayName(projectName, absolutePath),
-      isManuallyAdded: Boolean(existingByPath.metadata?.manuallyAdded),
-      createdAt: existingByPath.created_at,
-      sessions: [],
-      cursorSessions: [],
-      alreadyExists: true,
-    };
+
+    // If the existing record already belongs to this user, mark as manually
+    // added and return without creating a duplicate.
+    if (existing.user_id === userId || existing.user_id == null) {
+      // Preserve existing values while marking as manually added
+      const mergedMetadata = { ...(existing.metadata || {}), manuallyAdded: true };
+      projectDb.upsertProject(
+        projectName, userId,
+        displayName || existing.display_name,
+        absolutePath,
+        existing.is_starred || 0,
+        existing.last_accessed || new Date().toISOString(),
+        mergedMetadata,
+      );
+
+      return {
+        name: projectName,
+        path: absolutePath,
+        fullPath: absolutePath,
+        displayName: displayName || existing.display_name || await generateDisplayName(projectName, absolutePath),
+        isManuallyAdded: true,
+        createdAt: existing.created_at,
+        sessions: [],
+        cursorSessions: [],
+        alreadyExists: true,
+      };
+    }
   }
 
-  projectDb.upsertProject(projectName, userId, displayName, absolutePath, 0, new Date().toISOString(), { manuallyAdded: true });
+  const effectiveId = existing ? existing.id : projectName;
+
+  // Preserve existing values so the upsert doesn't silently clear them
+  const preservedStarred = existing?.is_starred || 0;
+  const mergedMetadata = { ...(existing?.metadata || {}), manuallyAdded: true };
+  const preservedLastAccessed = existing?.last_accessed || new Date().toISOString();
+
+  projectDb.upsertProject(effectiveId, userId, displayName, absolutePath, preservedStarred, preservedLastAccessed, mergedMetadata);
 
   await mutateProjectConfig((config) => {
-    config[projectName] = {
-      ...(config[projectName] || {}),
+    config[effectiveId] = {
+      ...(config[effectiveId] || {}),
       manuallyAdded: true,
       originalPath: absolutePath,
-      ownerUserId: config[projectName]?.ownerUserId ?? userId ?? null,
+      ownerUserId: config[effectiveId]?.ownerUserId ?? userId ?? null,
     };
 
     if (displayName) {
-      config[projectName].displayName = displayName;
+      config[effectiveId].displayName = displayName;
     }
   });
 
@@ -2988,10 +3020,10 @@ async function addProjectManually(projectPath, displayName = null, userId = null
   } catch (_) {}
 
   return {
-    name: projectName,
+    name: effectiveId,
     path: absolutePath,
     fullPath: absolutePath,
-    displayName: displayName || await generateDisplayName(projectName, absolutePath),
+    displayName: displayName || await generateDisplayName(effectiveId, absolutePath),
     isManuallyAdded: true,
     createdAt: dirCreatedAt,
     sessions: [],
