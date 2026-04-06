@@ -14,10 +14,9 @@ import path from 'path';
 import os from 'os';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { getOpenRouterBaseUrl, getOpenRouterProviderHeaders } from './utils/openrouterConfig.js';
 
 const execAsync = promisify(exec);
-
-const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 const MAX_AGENT_TURNS = 25;
 const BASH_TIMEOUT_MS = 120_000;
 const MAX_OUTPUT_CHARS = 80_000;
@@ -267,19 +266,18 @@ async function executeTool(name, args, workingDir) {
 
 // ── Streaming API call ────────────────────────────────────────────────────────
 
-async function streamApiCall(apiKey, model, messages, tools) {
+async function streamApiCall(baseUrl, apiKey, model, messages, tools) {
   const body = { model, messages, stream: true, stream_options: { include_usage: true } };
   if (tools?.length) {
     body.tools = tools;
     body.tool_choice = 'auto';
   }
-  return fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
+  return fetch(`${baseUrl}/chat/completions`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
-      'HTTP-Referer': 'https://github.com/OpenLAIR/dr-claw',
-      'X-Title': 'Dr. Claw CLI',
+      ...getOpenRouterProviderHeaders(baseUrl, 'Dr. Claw CLI'),
     },
     body: JSON.stringify(body),
   });
@@ -341,6 +339,9 @@ async function consumeStream(response, onText) {
 export async function startChat(options = {}) {
   const apiKey = options.key || process.env.OPENROUTER_API_KEY;
   const model = options.model || process.env.OPENROUTER_MODEL || 'anthropic/claude-sonnet-4';
+  const baseUrl = getOpenRouterBaseUrl({
+    OPENROUTER_BASE_URL: options.baseUrl || process.env.OPENROUTER_BASE_URL,
+  });
   const workingDir = process.cwd();
 
   if (!apiKey) {
@@ -411,7 +412,7 @@ export async function startChat(options = {}) {
 
 async function agentLoop(apiKey, model, messages, workingDir) {
   for (let turn = 0; turn < MAX_AGENT_TURNS; turn++) {
-    const response = await streamApiCall(apiKey, model, messages, TOOL_SCHEMAS);
+    const response = await streamApiCall(baseUrl, apiKey, model, messages, TOOL_SCHEMAS);
 
     if (!response.ok) {
       const errText = await response.text().catch(() => '');

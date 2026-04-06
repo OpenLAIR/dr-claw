@@ -415,8 +415,6 @@ export default function ProviderSelectionEmptyState({
 
 type ModelOption = { value: string; label: string; contextLength?: number | null; isCustom?: boolean };
 
-let _modelsCache: ModelOption[] | null = null;
-
 function OpenRouterModelInput({
   value,
   options: fallbackOptions,
@@ -428,7 +426,7 @@ function OpenRouterModelInput({
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const [models, setModels] = useState<ModelOption[]>(_modelsCache || fallbackOptions);
+  const [models, setModels] = useState<ModelOption[]>(fallbackOptions);
   const [loading, setLoading] = useState(false);
   const [customDraft, setCustomDraft] = useState('');
   const [showCustomInput, setShowCustomInput] = useState(false);
@@ -438,14 +436,12 @@ function OpenRouterModelInput({
   const customModels: ModelOption[] = JSON.parse(localStorage.getItem('openrouter-custom-models') || '[]');
 
   const fetchModels = useCallback(async () => {
-    if (_modelsCache) { setModels(_modelsCache); return; }
     setLoading(true);
     try {
       const res = await authenticatedFetch('/api/settings/openrouter-models');
       if (res.ok) {
         const data = await res.json();
         if (data.models?.length) {
-          _modelsCache = data.models;
           setModels(data.models);
         }
       }

@@ -840,7 +840,7 @@ class ResponseCollector {
  *   }
  */
 router.post('/', validateExternalApiKey, async (req, res) => {
-  const { githubUrl, projectPath, message, provider = 'claude', model, githubToken, branchName } = req.body;
+  const { githubUrl, projectPath, message, provider = 'claude', model, githubToken, branchName, baseUrl } = req.body;
 
   // Parse stream and cleanup as booleans (handle string "true"/"false" from curl)
   const stream = req.body.stream === undefined ? true : (req.body.stream === true || req.body.stream === 'true');
@@ -999,6 +999,7 @@ router.post('/', validateExternalApiKey, async (req, res) => {
         cwd: finalProjectPath,
         sessionId: null,
         model: model || OPENROUTER_MODELS.DEFAULT,
+        baseUrl,
         env: sessionEnv,
       }, writer);
     } else if (provider === 'local') {

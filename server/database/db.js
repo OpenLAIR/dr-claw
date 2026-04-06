@@ -182,6 +182,14 @@ const initializeDatabase = async () => {
   }
 };
 
+const closeDatabase = () => {
+  if (!db.open) {
+    return;
+  }
+
+  db.close();
+};
+
 // User database operations
 const userDb = {
   // Check if any users exist
@@ -1838,6 +1846,7 @@ const referencesDb = {
 export {
   db,
   initializeDatabase,
+  closeDatabase,
   userDb,
   autoResearchDb,
   appSettingsDb,

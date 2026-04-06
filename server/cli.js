@@ -19,8 +19,9 @@
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import { dirname } from 'path';
+import { parseCliArgs } from './utils/cliArgs.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -168,6 +169,7 @@ Options:
   --database-path <path>      Set custom database location
   --model <model>             OpenRouter model slug (chat command)
   --key <key>                 OpenRouter API key (chat command)
+  --base-url <url>            OpenRouter or relay base URL (chat command)
   -h, --help                  Show this help information
   -v, --version               Show version information
 
@@ -175,6 +177,7 @@ Examples:
   $ dr-claw                        # Start with defaults
   $ dr-claw chat                   # Terminal chat with OpenRouter
   $ dr-claw chat --model deepseek/deepseek-r1
+  $ dr-claw chat --base-url https://your-relay.example.com/v1
   $ dr-claw --port 8080            # Start on port 8080
   $ dr-claw -p 3000                # Short form for port
   $ dr-claw start --port 4000      # Explicit start command
@@ -186,6 +189,7 @@ Environment Variables:
   DATABASE_PATH       Set custom database location
   CLAUDE_CLI_PATH     Set custom Claude CLI path
   CONTEXT_WINDOW      Set context window size (default: 160000)
+  OPENROUTER_BASE_URL Set OpenRouter or relay base URL for chat
 
 Documentation:
   ${packageJson.homepage || 'https://github.com/OpenLAIR/dr-claw'}
@@ -266,44 +270,12 @@ async function startServer() {
 }
 
 // Parse CLI arguments
-function parseArgs(args) {
-    const parsed = { command: 'start', options: {} };
-
-    for (let i = 0; i < args.length; i++) {
-        const arg = args[i];
-
-        if (arg === '--port' || arg === '-p') {
-            parsed.options.port = args[++i];
-        } else if (arg.startsWith('--port=')) {
-            parsed.options.port = arg.split('=')[1];
-        } else if (arg === '--database-path') {
-            parsed.options.databasePath = args[++i];
-        } else if (arg.startsWith('--database-path=')) {
-            parsed.options.databasePath = arg.split('=')[1];
-        } else if (arg === '--model' || arg === '-m') {
-            parsed.options.model = args[++i];
-        } else if (arg.startsWith('--model=')) {
-            parsed.options.model = arg.split('=')[1];
-        } else if (arg === '--key') {
-            parsed.options.key = args[++i];
-        } else if (arg.startsWith('--key=')) {
-            parsed.options.key = arg.split('=')[1];
-        } else if (arg === '--help' || arg === '-h') {
-            parsed.command = 'help';
-        } else if (arg === '--version' || arg === '-v') {
-            parsed.command = 'version';
-        } else if (!arg.startsWith('-')) {
-            parsed.command = arg;
-        }
-    }
-
-    return parsed;
-}
+export const parseArgs = parseCliArgs;
 
 // Main CLI handler
 async function main() {
     const args = process.argv.slice(2);
-    const { command, options } = parseArgs(args);
+    const { command, options } = parseCliArgs(args);
 
     // Apply CLI options to environment variables
     if (options.port) {
@@ -320,7 +292,7 @@ async function main() {
         case 'chat': {
             loadEnvFile();
             const { startChat } = await import('./cli-chat.js');
-            await startChat({ model: options.model, key: options.key });
+            await startChat({ model: options.model, key: options.key, baseUrl: options.baseUrl });
             break;
         }
         case 'status':
@@ -347,8 +319,13 @@ async function main() {
     }
 }
 
-// Run the CLI
-main().catch(error => {
-    console.error('\n❌ Error:', error.message);
-    process.exit(1);
-});
+const isDirectExecution = process.argv[1]
+    ? import.meta.url === pathToFileURL(process.argv[1]).href
+    : false;
+
+if (isDirectExecution) {
+    main().catch(error => {
+        console.error('\n❌ Error:', error.message);
+        process.exit(1);
+    });
+}

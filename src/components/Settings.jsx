@@ -165,6 +165,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
     cliAvailable: true,
     cliCommand: 'openrouter',
     installHint: null,
+    baseUrl: null,
     loading: true,
     error: null
   });
@@ -184,6 +185,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
     cliAvailable: true,
     cliCommand: null,
     installHint: null,
+    baseUrl: null,
     loading: false,
     error: null,
     ...overrides
@@ -841,6 +843,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
           cliAvailable: data.cliAvailable !== false,
           cliCommand: data.cliCommand || 'openrouter',
           installHint: data.installHint || null,
+          baseUrl: data.baseUrl || null,
           loading: false,
           error: data.error || null
         });
@@ -1756,11 +1759,11 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
                           selectedAgent === 'local' ? localAuthStatus :
                           codexAuthStatus
                         }
-                        onLogin={
+        onLogin={
                           selectedAgent === 'claude' ? handleClaudeLogin :
                           selectedAgent === 'cursor' ? handleCursorLogin :
                           selectedAgent === 'gemini' ? handleGeminiLogin :
-                          selectedAgent === 'openrouter' ? (() => {}) :
+                          selectedAgent === 'openrouter' ? checkOpenRouterAuthStatus :
                           selectedAgent === 'local' ? checkLocalAuthStatus :
                           handleCodexLogin
                         }

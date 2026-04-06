@@ -6,6 +6,11 @@ import os from 'os';
 import fetch from 'node-fetch';
 import { resolveCursorCliCommand } from '../utils/cursorCommand.js';
 import { resolveAvailableCliCommand } from '../utils/cliResolution.js';
+import {
+  getOpenRouterBaseUrl,
+  getOpenRouterProviderHeaders,
+  normalizeOpenRouterBaseUrl,
+} from '../utils/openrouterConfig.js';
 
 const router = express.Router();
 
@@ -44,6 +49,44 @@ function buildStatusPayload(result, agent) {
     cliCommand: result.cliCommand || null,
     installHint: result.installHint || (result.cliAvailable === false ? buildCliInstallHint(agent) : null)
   };
+}
+
+async function upsertEnvValues(envPath, entries) {
+  let envContent = '';
+  try {
+    envContent = await fs.readFile(envPath, 'utf8');
+  } catch {}
+
+  const nextValues = Object.fromEntries(
+    Object.entries(entries).map(([key, value]) => [key, String(value)])
+  );
+  const seenKeys = new Set();
+  const newLines = envContent
+    .split('\n')
+    .map((line) => {
+      const trimmed = line.trim();
+      const [rawKey] = line.split('=');
+      const key = rawKey?.trim();
+      if (!key || !(key in nextValues)) {
+        return line;
+      }
+
+      seenKeys.add(key);
+      return `${key}=${nextValues[key]}`;
+    });
+
+  Object.entries(nextValues).forEach(([key, value]) => {
+    if (!seenKeys.has(key)) {
+      newLines.push(`${key}=${value}`);
+    }
+  });
+
+  const finalContent = newLines
+    .filter((line, index, allLines) => line.trim() !== '' || index < allLines.length - 1)
+    .join('\n')
+    .replace(/\n*$/, '\n');
+
+  await fs.writeFile(envPath, finalContent);
 }
 
 router.get('/claude/status', async (req, res) => {
@@ -629,23 +672,30 @@ async function checkCodexCredentials() {
 router.get('/openrouter/status', async (req, res) => {
   try {
     const apiKey = process.env.OPENROUTER_API_KEY;
+    const baseUrl = getOpenRouterBaseUrl(process.env);
     if (apiKey) {
-      return res.json(buildStatusPayload({
+      return res.json({
+        ...buildStatusPayload({
         authenticated: true,
         email: 'API Key Connected',
         cliAvailable: true,
         cliCommand: 'openrouter'
-      }, 'openrouter'));
+        }, 'openrouter'),
+        baseUrl,
+      });
     }
 
-    return res.json(buildStatusPayload({
+    return res.json({
+      ...buildStatusPayload({
       authenticated: false,
       email: null,
       error: 'OPENROUTER_API_KEY not set',
       cliAvailable: true,
       cliCommand: 'openrouter',
       installHint: 'Set OPENROUTER_API_KEY in your .env file or environment. Get a key at https://openrouter.ai/keys'
-    }, 'openrouter'));
+      }, 'openrouter'),
+      baseUrl,
+    });
   } catch (error) {
     console.error('Error checking OpenRouter auth status:', error);
     res.status(500).json({
@@ -658,35 +708,50 @@ router.get('/openrouter/status', async (req, res) => {
 
 router.post('/openrouter/verify-api-key', async (req, res) => {
   try {
-    const { apiKey } = req.body;
+    const providedApiKey = typeof req.body?.apiKey === 'string' ? req.body.apiKey.trim() : '';
+    const apiKey = providedApiKey || process.env.OPENROUTER_API_KEY;
     if (!apiKey) return res.status(400).json({ error: 'API key is required' });
 
-    const response = await fetch('https://openrouter.ai/api/v1/models', {
-      headers: { 'Authorization': `Bearer ${apiKey}` }
+    let baseUrl;
+    try {
+      baseUrl = normalizeOpenRouterBaseUrl(req.body?.baseUrl);
+    } catch (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    const response = await fetch(`${baseUrl}/models`, {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        ...getOpenRouterProviderHeaders(baseUrl, 'Dr. Claw'),
+      }
     });
 
     if (response.ok) {
       const envPath = path.join(process.cwd(), '.env');
-      let envContent = '';
-      try { envContent = await fs.readFile(envPath, 'utf8'); } catch {}
-
-      const lines = envContent.split('\n');
-      let found = false;
-      const newLines = lines.map(line => {
-        if (line.trim().startsWith('OPENROUTER_API_KEY=')) {
-          found = true;
-          return `OPENROUTER_API_KEY=${apiKey}`;
-        }
-        return line;
-      }).filter(l => l.trim() !== '' || found);
-
-      if (!found) newLines.push(`OPENROUTER_API_KEY=${apiKey}`);
-      await fs.writeFile(envPath, newLines.join('\n') + '\n');
+      await upsertEnvValues(envPath, {
+        OPENROUTER_API_KEY: apiKey,
+        OPENROUTER_BASE_URL: baseUrl,
+      });
       process.env.OPENROUTER_API_KEY = apiKey;
+      process.env.OPENROUTER_BASE_URL = baseUrl;
 
-      return res.json({ success: true, message: 'OpenRouter API key verified and saved.' });
+      return res.json({
+        success: true,
+        message: 'OpenRouter settings verified and saved.',
+        baseUrl,
+      });
     } else {
-      return res.status(401).json({ error: 'Invalid API key' });
+      const details = await response.text().catch(() => '');
+      let error = `OpenRouter endpoint verification failed (${response.status}).`;
+      if (response.status === 401 || response.status === 403) {
+        error = 'The configured endpoint rejected this API key.';
+      } else if (details) {
+        error = `${error} ${details.slice(0, 160)}`;
+      } else {
+        error = `${error} Make sure the relay exposes a compatible /models endpoint.`;
+      }
+
+      return res.status(response.status === 401 || response.status === 403 ? 401 : 400).json({ error });
     }
   } catch (error) {
     res.status(500).json({ error: error.message });
