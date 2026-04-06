@@ -8,6 +8,9 @@
 <a href="https://openlair.github.io/dr-claw">
 <img src="https://img.shields.io/badge/%F0%9F%8C%90-Homepage-CB2B3E?style=for-the-badge" alt="Homepage" />
 </a>
+<a href="https://www.npmjs.com/package/dr-claw">
+<img src="https://img.shields.io/npm/v/dr-claw?style=for-the-badge&logo=npm&color=CB3837" alt="npm version" />
+</a>
 <a href="https://github.com/OpenLAIR/dr-claw">
 <img src="https://img.shields.io/badge/%F0%9F%A6%9E-Dr.%20Claw-CB2B3E?style=for-the-badge" alt="Dr. Claw" />
 </a>
@@ -164,7 +167,24 @@ Dr. Claw is a general-purpose AI research assistant designed to help researchers
 
 Cursor agent support is in progress and coming soon.
 
-### Installation 
+### Option 1: Run with npx (Recommended)
+
+No cloning or manual setup required — just run:
+
+```bash
+npx dr-claw
+```
+
+Or install globally for repeated use:
+
+```bash
+npm install -g dr-claw
+dr-claw
+```
+
+Then open your browser at `http://localhost:3001` to create your account and start using Dr. Claw.
+
+### Option 2: Install from Source (For Development)
 
 1. **Clone the repository:**
 ```bash
@@ -192,7 +212,7 @@ Need custom ports, auth, or workspace settings? See [docs/configuration.md](docs
 npm run dev
 ```
 
-Then create your account via the bowser `http://localhost:5173`.
+Then create your account via the browser `http://localhost:5173`.
 
 5. **Use the application**
 
