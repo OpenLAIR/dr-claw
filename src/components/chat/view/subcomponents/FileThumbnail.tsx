@@ -12,7 +12,57 @@ import {
   getFileExtension,
 } from '../../utils/fileExtensions';
 
+/* ---------- LRU blob cache with automatic eviction (#1) ---------- */
+const MAX_BLOB_CACHE_SIZE = 50;
 const blobCache = new Map<string, string>();
+
+function cacheBlobUrl(key: string, url: string): void {
+  // Re-insert so Map iteration order reflects recency
+  if (blobCache.has(key)) {
+    const old = blobCache.get(key)!;
+    blobCache.delete(key);
+    if (old !== url) URL.revokeObjectURL(old);
+  }
+  blobCache.set(key, url);
+
+  // Evict oldest entries when over limit
+  while (blobCache.size > MAX_BLOB_CACHE_SIZE) {
+    const oldest = blobCache.keys().next().value;
+    if (oldest === undefined) break;
+    const oldUrl = blobCache.get(oldest);
+    if (oldUrl) URL.revokeObjectURL(oldUrl);
+    blobCache.delete(oldest);
+  }
+}
+
+/* ---------- Shared IntersectionObserver (#6) ---------- */
+type ObserverCallback = (isIntersecting: boolean) => void;
+const observerCallbacks = new Map<Element, ObserverCallback>();
+let sharedObserver: IntersectionObserver | null = null;
+
+function getSharedObserver(): IntersectionObserver {
+  if (!sharedObserver) {
+    sharedObserver = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const cb = observerCallbacks.get(entry.target);
+          if (cb) cb(entry.isIntersecting);
+        }
+      },
+      { rootMargin: '100px' },
+    );
+  }
+  return sharedObserver;
+}
+
+function observeElement(el: Element, callback: ObserverCallback): () => void {
+  observerCallbacks.set(el, callback);
+  getSharedObserver().observe(el);
+  return () => {
+    observerCallbacks.delete(el);
+    getSharedObserver().unobserve(el);
+  };
+}
 
 interface FileThumbnailProps {
   projectName: string;
@@ -36,27 +86,26 @@ export default function FileThumbnail({ projectName, absolutePath, fileName, cla
     const el = containerRef.current;
     if (!el) return undefined;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) return;
-        observer.disconnect();
+    let unobserved = false;
+    const unobserve = observeElement(el, (isIntersecting) => {
+      if (!isIntersecting || unobserved) return;
+      unobserved = true;
+      // Eagerly stop watching once visible
+      getSharedObserver().unobserve(el);
 
-        api.getFileContentBlob(projectName, absolutePath)
-          .then((blob) => {
-            if (cancelled) return;
-            const url = URL.createObjectURL(blob);
-            blobCache.set(absolutePath, url);
-            setBlobUrl(url);
-          })
-          .catch(() => {
-            if (!cancelled) setFailed(true);
-          });
-      },
-      { rootMargin: '100px' },
-    );
+      api.getFileContentBlob(projectName, absolutePath)
+        .then((blob) => {
+          if (cancelled) return;
+          const url = URL.createObjectURL(blob);
+          cacheBlobUrl(absolutePath, url);
+          setBlobUrl(url);
+        })
+        .catch(() => {
+          if (!cancelled) setFailed(true);
+        });
+    });
 
-    observer.observe(el);
-    return () => { cancelled = true; observer.disconnect(); };
+    return () => { cancelled = true; unobserve(); };
   }, [absolutePath, blobUrl, failed, isImage, projectName]);
 
   const base = `flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border/60 bg-muted/20 ${className}`;
@@ -84,7 +133,7 @@ export default function FileThumbnail({ projectName, absolutePath, fileName, cla
   else if (HTML_EXTENSIONS.has(ext)) { icon = <Globe className={iconClass} />; }
   else if (AUDIO_EXTENSIONS.has(ext)) { icon = <Music className={iconClass} />; }
   else if (VIDEO_EXTENSIONS.has(ext)) { icon = <Film className={iconClass} />; }
-  else if (CODE_EXTENSIONS.has(ext)) { icon = <FileCode2 className={iconClass} />; label = ext.toUpperCase(); }
+  else if (CODE_EXTENSIONS.has(ext)) { icon = <FileCode2 className={iconClass} />; label = ext.toUpperCase().slice(0, 4); }
   else { icon = <File className={iconClass} />; }
 
   return (

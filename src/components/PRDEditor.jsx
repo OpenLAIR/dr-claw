@@ -376,6 +376,11 @@ This document outlines the requirements for building an AI-powered task manageme
       return;
     }
 
+    if (/[/\\]|\.\./.test(fileName.trim())) {
+      alert('Filename must not contain path separators or ".." sequences.');
+      return;
+    }
+
     // Check if file already exists
     const fullFileName = fileName.endsWith('.txt') || fileName.endsWith('.md') ? fileName : `${fileName}.md`;
     const existingFile = existingPRDs.find(prd => prd.name === fullFileName);

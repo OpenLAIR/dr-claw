@@ -818,20 +818,13 @@ export function deriveSessionContextSummary(
 
     switch (message.toolName) {
       case 'Read': {
-<<<<<<< HEAD
         extractToolInputPaths(parsedInput).forEach((filePath) => {
           addFile(contextFiles, filePath, effectiveProjectRoot, 'Read', timestamp);
-        });
-=======
-        const filePath = parsedInput?.file_path || parsedInput?.path;
-        if (typeof filePath === 'string') {
-          addFile(contextFiles, filePath, projectRoot, 'Read', timestamp);
           const skillMatch = filePath.match(/\/(?:\.claude\/)?skills\/([^/]+)\/SKILL\.md$/i);
           if (skillMatch?.[1]) {
             addTask(skills, 'skill', skillMatch[1], undefined, timestamp);
           }
-        }
->>>>>>> fix: shell reconnect, git panel rename, vite proxy error handling, skill detection
+        });
         break;
       }
 

@@ -157,16 +157,29 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
     return copied;
   }, []);
 
+  const connectingLock = useRef(false);
+
   const connectWebSocket = useCallback(async () => {
+    if (connectingLock.current) return;
     if (ws.current && (ws.current.readyState === WebSocket.CONNECTING || ws.current.readyState === WebSocket.OPEN)) return;
 
+    // Close any lingering socket in CLOSING state before opening a new one
+    if (ws.current && ws.current.readyState === WebSocket.CLOSING) {
+      ws.current.onclose = null;
+      ws.current.onerror = null;
+      ws.current.onmessage = null;
+      ws.current = null;
+    }
+
     try {
+      connectingLock.current = true;
       setIsConnecting(true);
       const wsUrl = buildShellWebSocketUrl(wsPath);
 
       ws.current = new WebSocket(wsUrl);
 
       ws.current.onopen = () => {
+        connectingLock.current = false;
         setIsConnected(true);
         setIsConnecting(false);
         authUrlRef.current = '';
@@ -175,7 +188,7 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
         setIsAuthPanelHidden(false);
 
         setTimeout(() => {
-          if (fitAddon.current && terminal.current) {
+          if (fitAddon.current && terminal.current && ws.current && ws.current.readyState === WebSocket.OPEN) {
             fitAddon.current.fit();
 
             ws.current.send(JSON.stringify({
@@ -239,6 +252,7 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
       };
 
       ws.current.onclose = (event) => {
+        connectingLock.current = false;
         setIsConnected(false);
         setIsConnecting(false);
         setAuthUrlCopyStatus('idle');
@@ -255,10 +269,12 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
       };
 
       ws.current.onerror = (error) => {
+        connectingLock.current = false;
         setIsConnected(false);
         setIsConnecting(false);
       };
     } catch (error) {
+      connectingLock.current = false;
       setIsConnected(false);
       setIsConnecting(false);
     }
@@ -271,7 +287,11 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
 
   const disconnectFromShell = useCallback(() => {
     clearTimeout(reconnectTimer.current);
+    connectingLock.current = false;
     if (ws.current) {
+      ws.current.onclose = null;
+      ws.current.onmessage = null;
+      ws.current.onerror = null;
       ws.current.close();
       ws.current = null;
     }
@@ -310,8 +330,12 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
   const restartShell = () => {
     setIsRestarting(true);
     clearTimeout(reconnectTimer.current);
+    connectingLock.current = false;
 
     if (ws.current) {
+      ws.current.onclose = null;
+      ws.current.onmessage = null;
+      ws.current.onerror = null;
       ws.current.close();
       ws.current = null;
     }
@@ -511,11 +535,17 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
 
     return () => {
       unmountedRef.current = true;
+      connectingLock.current = false;
       clearTimeout(reconnectTimer.current);
       resizeObserver.disconnect();
 
-      if (ws.current && (ws.current.readyState === WebSocket.OPEN || ws.current.readyState === WebSocket.CONNECTING)) {
-        ws.current.close();
+      if (ws.current) {
+        ws.current.onclose = null;
+        ws.current.onmessage = null;
+        ws.current.onerror = null;
+        if (ws.current.readyState === WebSocket.OPEN || ws.current.readyState === WebSocket.CONNECTING) {
+          ws.current.close();
+        }
       }
       ws.current = null;
 

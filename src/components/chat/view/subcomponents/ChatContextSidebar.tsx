@@ -570,9 +570,16 @@ export default function ChatContextSidebar({
 
   useEffect(() => {
     if (typeof window === 'undefined') {
-      return;
+      return undefined;
     }
-    window.localStorage.setItem(SIDEBAR_WIDTH_STORAGE_KEY, String(sidebarWidth));
+    const timer = setTimeout(() => {
+      try {
+        window.localStorage.setItem(SIDEBAR_WIDTH_STORAGE_KEY, String(sidebarWidth));
+      } catch {
+        // Ignore quota-exceeded or access-denied errors
+      }
+    }, 300);
+    return () => clearTimeout(timer);
   }, [sidebarWidth]);
 
   useEffect(() => {

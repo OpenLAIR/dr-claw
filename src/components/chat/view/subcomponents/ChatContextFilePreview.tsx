@@ -75,14 +75,11 @@ function highlightJsonLine(line: string): (string | JSX.Element)[] {
 }
 
 function JsonHighlight({ content }: { content: string }) {
-  const lines = content.split('\n');
-  return (
-    <>
-      {lines.map((line, i) => (
-        <div key={i}>{highlightJsonLine(line)}</div>
-      ))}
-    </>
-  );
+  const rendered = useMemo(() => {
+    const lines = content.split('\n');
+    return lines.map((line, i) => <div key={i}>{highlightJsonLine(line)}</div>);
+  }, [content]);
+  return <>{rendered}</>;
 }
 
 interface ChatContextFilePreviewProps {
@@ -106,7 +103,7 @@ export default function ChatContextFilePreview({
   const previewKind = useMemo(() => getPreviewKind(file), [file]);
 
   useEffect(() => {
-    let cancelled = false;
+    const abortController = new AbortController();
     let objectUrl: string | null = null;
 
     setContent('');
@@ -129,7 +126,7 @@ export default function ChatContextFilePreview({
         if (previewKind === 'pdf' || previewKind === 'image' || previewKind === 'audio' || previewKind === 'video') {
           const absolutePath = file.absolutePath || file.relativePath;
           const blob = await api.getFileContentBlob(projectName, absolutePath);
-          if (cancelled) {
+          if (abortController.signal.aborted) {
             return;
           }
 
@@ -144,7 +141,7 @@ export default function ChatContextFilePreview({
         }
 
         const rawText = await response.text();
-        if (cancelled) {
+        if (abortController.signal.aborted) {
           return;
         }
 
@@ -173,11 +170,11 @@ export default function ChatContextFilePreview({
           }
         }
       } catch (error) {
-        if (!cancelled) {
+        if (!abortController.signal.aborted) {
           setLoadError(error instanceof Error ? error.message : 'Failed to load preview.');
         }
       } finally {
-        if (!cancelled) {
+        if (!abortController.signal.aborted) {
           setLoading(false);
         }
       }
@@ -186,7 +183,7 @@ export default function ChatContextFilePreview({
     void loadPreview();
 
     return () => {
-      cancelled = true;
+      abortController.abort();
       if (objectUrl) {
         URL.revokeObjectURL(objectUrl);
       }
@@ -271,7 +268,7 @@ export default function ChatContextFilePreview({
           <iframe
             title={file?.name || 'HTML preview'}
             srcDoc={content}
-            sandbox="allow-scripts allow-same-origin"
+            sandbox=""
             className={`h-full ${previewHeightClass} w-full rounded-xl border border-border/60 bg-white`}
           />
         </div>

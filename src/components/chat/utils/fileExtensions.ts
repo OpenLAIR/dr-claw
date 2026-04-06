@@ -1,6 +1,6 @@
 export const IMAGE_EXTENSIONS = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg']);
-export const AUDIO_EXTENSIONS = new Set(['mp3', 'wav', 'ogg', 'flac', 'm4a']);
-export const VIDEO_EXTENSIONS = new Set(['mp4', 'mov', 'webm', 'mkv']);
+export const AUDIO_EXTENSIONS = new Set(['mp3', 'wav', 'ogg', 'flac', 'm4a', 'aac', 'opus']);
+export const VIDEO_EXTENSIONS = new Set(['mp4', 'mov', 'webm', 'mkv', 'flv', 'avi']);
 export const MARKDOWN_EXTENSIONS = new Set(['md', 'mdx']);
 export const HTML_EXTENSIONS = new Set(['html', 'htm']);
 export const CODE_EXTENSIONS = new Set([
