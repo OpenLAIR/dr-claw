@@ -419,7 +419,12 @@ const wss = new WebSocketServer({
 // Make WebSocket server available to routes
 app.locals.wss = wss;
 
-app.use(cors());
+app.use(cors({
+  origin: process.env.DR_CLAW_CORS_ORIGINS
+    ? process.env.DR_CLAW_CORS_ORIGINS.split(',').map((o) => o.trim())
+    : [`http://localhost:${getFrontendPortSync()}`, `http://127.0.0.1:${getFrontendPortSync()}`],
+  credentials: true,
+}));
 app.use(express.json({
   limit: '50mb',
   type: (req) => {

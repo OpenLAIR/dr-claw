@@ -488,6 +488,9 @@ router.post('/search/:source', (req, res) => handleSearch(req.params.source, req
 // GET /api/news/logs/:source — poll search progress logs
 router.get('/logs/:source', async (req, res) => {
   try {
+    const entry = getSourceEntry(req.params.source);
+    if (!entry) return res.status(404).json({ error: `Unknown source: ${req.params.source}` });
+
     const logPath = path.join(DATA_DIR, `news-log-${req.params.source}.json`);
     const data = await fs.readFile(logPath, 'utf8');
     res.json({ logs: JSON.parse(data) });

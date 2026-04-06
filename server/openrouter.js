@@ -13,7 +13,7 @@ import crypto from 'crypto';
 import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
-import { exec } from 'child_process';
+import { exec, spawn } from 'child_process';
 import { promisify } from 'util';
 import { encodeProjectPath, ensureProjectSkillLinks, reconcileOpenRouterSessionIndex } from './projects.js';
 import { writeProjectTemplates } from './templates/index.js';
@@ -22,6 +22,43 @@ import { applyStageTagsToSession, recordIndexedSession } from './utils/sessionIn
 import { createRequestId, waitForToolApproval, matchesToolPermission } from './utils/permissions.js';
 
 const execAsync = promisify(exec);
+
+function spawnAsync(command, args, options = {}) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, {
+      ...options,
+      shell: false,
+    });
+
+    let stdout = '';
+    let stderr = '';
+
+    child.stdout.on('data', (data) => {
+      stdout += data.toString();
+    });
+
+    child.stderr.on('data', (data) => {
+      stderr += data.toString();
+    });
+
+    child.on('error', (error) => {
+      reject(error);
+    });
+
+    child.on('close', (code) => {
+      if (code === 0) {
+        resolve({ stdout, stderr });
+        return;
+      }
+
+      const error = new Error(`Command failed: ${command} ${args.join(' ')}`);
+      error.code = code;
+      error.stdout = stdout;
+      error.stderr = stderr;
+      reject(error);
+    });
+  });
+}
 
 const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 const MAX_AGENT_TURNS = 30;
@@ -276,25 +313,33 @@ async function executeTool(name, args, workingDir) {
 
       case 'Glob': {
         const dir = resolve(args.path);
-        const { stdout } = await execAsync(
-          `rg --files --glob '${args.pattern}' 2>/dev/null | head -300`,
-          { cwd: dir, timeout: 30_000, maxBuffer: 1024 * 1024 },
-        ).catch(() =>
-          execAsync(`find . -name '${args.pattern}' -type f 2>/dev/null | head -300`, {
-            cwd: dir, timeout: 30_000, maxBuffer: 1024 * 1024,
-          }),
-        );
-        return trunc(stdout || '(no matches)');
+        try {
+          const { stdout } = await spawnAsync('rg', ['--files', '--glob', args.pattern], {
+            cwd: dir, timeout: 30_000,
+          });
+          const lines = stdout.split('\n').filter(Boolean).slice(0, 300);
+          return trunc(lines.join('\n') || '(no matches)');
+        } catch {
+          try {
+            const { stdout } = await spawnAsync('find', ['.', '-name', args.pattern, '-type', 'f'], {
+              cwd: dir, timeout: 30_000,
+            });
+            const lines = stdout.split('\n').filter(Boolean).slice(0, 300);
+            return trunc(lines.join('\n') || '(no matches)');
+          } catch {
+            return '(no matches)';
+          }
+        }
       }
 
       case 'Grep': {
         const target = resolve(args.path);
-        let cmd = `rg --line-number --max-count 100 --max-columns 200`;
-        if (args.include) cmd += ` --glob '${args.include}'`;
-        cmd += ` '${args.pattern.replace(/'/g, "'\\''")}' '${target}'`;
+        const rgArgs = ['--line-number', '--max-count', '100', '--max-columns', '200'];
+        if (args.include) rgArgs.push('--glob', args.include);
+        rgArgs.push(args.pattern, target);
         try {
-          const { stdout } = await execAsync(cmd, {
-            cwd: workingDir, timeout: 30_000, maxBuffer: 2 * 1024 * 1024,
+          const { stdout } = await spawnAsync('rg', rgArgs, {
+            cwd: workingDir, timeout: 30_000,
           });
           return trunc(stdout || '(no matches)');
         } catch (err) {
