@@ -5,7 +5,7 @@
     "changelog": "git log --pretty=format:\"* %s (%h)\" ${from}...${to}"
   },
   "npm": {
-    "publish": true
+    "publish": false
   },
   "github": {
     "release": true,
