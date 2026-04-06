@@ -1,6 +1,9 @@
 
 *.md
 !README.md
+public/screenshots/
+public/convert-icons.md
+public/generate-icons.js
 .env*
 .gitignore
 .nvmrc

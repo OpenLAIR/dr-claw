@@ -19,9 +19,13 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           cache: 'npm'
 
+      # Note: npm ci may compile native modules (node-pty, better-sqlite3) —
+      # ubuntu-latest includes build-essential by default
       - run: npm ci
 
       - run: npm run build
+
+      - run: npm test
 
       - run: npm publish
         env:

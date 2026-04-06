@@ -299,7 +299,7 @@ node server/cli.js chat --model anthropic/claude-sonnet-4 --key sk-or-your-key
 | Flag | Description |
 |------|-------------|
 | `--model <slug>` | OpenRouter model slug (e.g., `moonshotai/kimi-k2.5`, `anthropic/claude-sonnet-4`, `deepseek/deepseek-r1`) |
-| `--key <key>` | OpenRouter API key (defaults to `OPENROUTER_API_KEY` env var) |
+| `--key <key>` | OpenRouter API key (defaults to `OPENROUTER_API_KEY` env var). Prefer the env var over `--key` to avoid exposing secrets in shell history. |
 
 Browse all available models at [openrouter.ai/models](https://openrouter.ai/models).
 

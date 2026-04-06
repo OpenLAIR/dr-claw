@@ -37,6 +37,7 @@ const colors = {
     yellow: '\x1b[33m',
     blue: '\x1b[34m',
     magenta: '\x1b[35m',
+    red: '\x1b[31m',
     white: '\x1b[37m',
     gray: '\x1b[90m',
 };
@@ -46,7 +47,7 @@ const c = {
     info: (text) => `${colors.cyan}${text}${colors.reset}`,
     ok: (text) => `${colors.green}${text}${colors.reset}`,
     warn: (text) => `${colors.yellow}${text}${colors.reset}`,
-    error: (text) => `${colors.yellow}${text}${colors.reset}`,
+    error: (text) => `${colors.red}${text}${colors.reset}`,
     tip: (text) => `${colors.blue}${text}${colors.reset}`,
     bright: (text) => `${colors.bright}${text}${colors.reset}`,
     dim: (text) => `${colors.dim}${text}${colors.reset}`,
@@ -202,8 +203,8 @@ function showVersion() {
 
 // Compare semver versions, returns true if v1 > v2
 function isNewerVersion(v1, v2) {
-    const parts1 = v1.split('.').map(Number);
-    const parts2 = v2.split('.').map(Number);
+    const parts1 = v1.split('.').map(p => parseInt(p, 10));
+    const parts2 = v2.split('.').map(p => parseInt(p, 10));
     for (let i = 0; i < 3; i++) {
         if (parts1[i] > parts2[i]) return true;
         if (parts1[i] < parts2[i]) return false;
@@ -211,16 +212,32 @@ function isNewerVersion(v1, v2) {
     return false;
 }
 
+// Detect install mode: 'git' (cloned repo), 'npx', or 'npm' (global install)
+function getInstallMode() {
+    if (fs.existsSync(path.join(__dirname, '..', '.git'))) return 'git';
+    const npmExecpath = process.env.npm_execpath || '';
+    if (npmExecpath.includes('npx') || process.env.npm_command === 'exec') return 'npx';
+    return 'npm';
+}
+
 // Check for updates
 async function checkForUpdates(silent = false) {
     try {
-        const { execSync } = await import('child_process');
-        const latestVersion = execSync('npm show dr-claw version', { encoding: 'utf8' }).trim();
+        const { exec } = await import('child_process');
+        const { promisify } = await import('util');
+        const execAsync = promisify(exec);
+        const { stdout } = await execAsync('npm show dr-claw version', { timeout: 10000 });
+        const latestVersion = stdout.trim();
         const currentVersion = packageJson.version;
+        const mode = getInstallMode();
 
         if (isNewerVersion(latestVersion, currentVersion)) {
             console.log(`\n${c.warn('[UPDATE]')} New version available: ${c.bright(latestVersion)} (current: ${currentVersion})`);
-            console.log(`         Run ${c.bright('dr-claw update')} to update\n`);
+            if (mode === 'npx') {
+                console.log(`         Run ${c.bright('npx dr-claw@latest')} to use the new version\n`);
+            } else {
+                console.log(`         Run ${c.bright('dr-claw update')} to update\n`);
+            }
             return { hasUpdate: true, latestVersion, currentVersion };
         } else if (!silent) {
             console.log(`${c.ok('[OK]')} You are on the latest version (${currentVersion})`);
@@ -237,9 +254,14 @@ async function checkForUpdates(silent = false) {
 // Update the package
 async function updatePackage() {
     try {
-        const { execSync } = await import('child_process');
-        console.log(`${c.info('[INFO]')} Checking for updates...`);
+        const mode = getInstallMode();
 
+        if (mode === 'npx') {
+            console.log(`${c.info('[INFO]')} You're running via npx. Run ${c.bright('npx dr-claw@latest')} to get the latest version.`);
+            return;
+        }
+
+        console.log(`${c.info('[INFO]')} Checking for updates...`);
         const { hasUpdate, latestVersion, currentVersion } = await checkForUpdates(true);
 
         if (!hasUpdate) {
@@ -248,11 +270,14 @@ async function updatePackage() {
         }
 
         console.log(`${c.info('[INFO]')} Updating from ${currentVersion} to ${latestVersion}...`);
-        execSync('npm update -g dr-claw', { stdio: 'inherit' });
+        const { exec } = await import('child_process');
+        const { promisify } = await import('util');
+        const execAsync = promisify(exec);
+        await execAsync('npm update -g dr-claw', { timeout: 120000 });
         console.log(`${c.ok('[OK]')} Update complete! Restart dr-claw to use the new version.`);
     } catch (e) {
         console.error(`${c.error('[ERROR]')} Update failed: ${e.message}`);
-        console.log(`${c.tip('[TIP]')} Try running manually: npm update -g dr-claw`);
+        console.log(`${c.tip('[TIP]')} Try running manually: npm install -g dr-claw@latest`);
     }
 }
 
