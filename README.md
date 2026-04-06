@@ -74,7 +74,7 @@ Dr. Claw is a general-purpose AI research assistant designed to help researchers
 
 ## What's New
 
-- 🖥️ **Desktop App** `2026-04-06` — Dr. Claw now runs as a native desktop app! Grab the `.dmg` or `.exe` from [GitHub Releases](https://github.com/OpenLAIR/dr-claw/releases) and get started in seconds.
+- 🖥️ **Desktop App & npx** `2026-04-06` — Dr. Claw now runs as a native desktop app! Grab the `.dmg` / `.exe` from [GitHub Releases](https://github.com/OpenLAIR/dr-claw/releases), or run `npx dr-claw` for zero-setup instant start.
 - 🗂️ **Multi-Tab Sidebar** `2026-04-06` — Research Lab and Files now live side-by-side as switchable tabs in the right sidebar — everything you need, one glance away.
 - 📂 **File Preview Overlay** `2026-04-06` — Preview any project file inline with a sleek pill toggle and sidebar browser — no more context-switching!
 - 💬 **Terminal Chat** `2026-04-06` — Love the terminal? Run `dr-claw chat` for a fully agentic session with any OpenRouter model — zero browser required.
