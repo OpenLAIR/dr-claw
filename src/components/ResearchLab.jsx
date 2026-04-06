@@ -606,22 +606,29 @@ function OverviewCard({ instance, config, researchBrief, compact = false }) {
 
   return (
     <>
-      <div className={`flex h-full flex-col border border-border/60 bg-card/78 shadow-sm backdrop-blur ${compact ? 'gap-2 rounded-xl p-3' : 'gap-4 rounded-[28px] p-5'}`}>
+      <div className={`flex h-full flex-col border border-border/60 bg-card/78 shadow-sm backdrop-blur ${compact ? 'gap-2 rounded-xl p-3 border-l-2 border-l-blue-400 dark:border-l-blue-600' : 'gap-4 rounded-[28px] p-5'}`}>
         <button type="button" onClick={() => setCollapsed(v => !v)} className="flex w-full items-center justify-between gap-2 text-left">
           <div className="flex items-center gap-2.5">
-            {!compact && (
+            {compact ? (
+              <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400">
+                <FlaskConical className="w-3.5 h-3.5" />
+              </div>
+            ) : (
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-blue-200/70 bg-blue-50/90 text-blue-700 dark:border-blue-900/70 dark:bg-blue-950/30 dark:text-blue-300">
                 <FlaskConical className="w-5 h-5" />
               </div>
             )}
-            <div>
-              <h3 className={`font-semibold tracking-tight text-foreground ${compact ? 'text-sm' : 'text-base'}`}>
-                Research Overview
-              </h3>
-              {!compact && <p className="text-xs text-muted-foreground">Brief, scope, and instance metadata for this workspace</p>}
-            </div>
+            <h3 className={`font-semibold tracking-tight text-foreground ${compact ? 'text-sm' : 'text-base'}`}>
+              Research Overview
+            </h3>
+            {!compact && <p className="text-xs text-muted-foreground">Brief, scope, and instance metadata for this workspace</p>}
           </div>
-          {collapsed ? <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 flex-shrink-0 text-muted-foreground" />}
+          <div className="flex items-center gap-2">
+            {compact && metadata.length > 0 && (
+              <span className="rounded-full border border-blue-200/60 bg-blue-50/80 px-2 py-0.5 text-[10px] font-medium text-blue-700 dark:border-blue-900/50 dark:bg-blue-950/40 dark:text-blue-300">{metadata.length}</span>
+            )}
+            {collapsed ? <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 flex-shrink-0 text-muted-foreground" />}
+          </div>
         </button>
         {!collapsed && overviewTitle && (
           <div className="rounded-2xl border border-border/60 bg-background/70 p-4 shadow-sm">
@@ -770,22 +777,29 @@ function PapersCard({ papers, compact = false }) {
   const shown = expanded ? papers : papers.slice(0, compact ? 3 : 5);
 
   return (
-    <div className={`flex h-full flex-col border border-border/60 bg-card/78 shadow-sm backdrop-blur ${compact ? 'rounded-xl p-3' : 'rounded-[28px] p-5'}`}>
+    <div className={`flex h-full flex-col border border-border/60 bg-card/78 shadow-sm backdrop-blur ${compact ? 'rounded-xl p-3 border-l-2 border-l-emerald-400 dark:border-l-emerald-600' : 'rounded-[28px] p-5'}`}>
       <button type="button" onClick={() => setCollapsed(v => !v)} className="flex w-full items-center justify-between gap-2 text-left">
         <div className="flex items-center gap-2.5">
-          {!compact && (
+          {compact ? (
+            <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400">
+              <BookOpen className="w-3.5 h-3.5" />
+            </div>
+          ) : (
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-emerald-200/70 bg-emerald-50/90 text-emerald-700 dark:border-emerald-900/70 dark:bg-emerald-950/30 dark:text-emerald-300">
               <BookOpen className="w-5 h-5" />
             </div>
           )}
-          <div>
-            <h3 className={`font-semibold tracking-tight text-foreground ${compact ? 'text-sm' : 'text-base'}`}>
-              Source Papers ({papers.length})
-            </h3>
-            {!compact && <p className="text-xs text-muted-foreground">Related work and references supplied to the pipeline</p>}
-          </div>
+          <h3 className={`font-semibold tracking-tight text-foreground ${compact ? 'text-sm' : 'text-base'}`}>
+            Source Papers
+          </h3>
+          {!compact && <p className="text-xs text-muted-foreground">Related work and references supplied to the pipeline ({papers.length})</p>}
         </div>
-        {collapsed ? <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 flex-shrink-0 text-muted-foreground" />}
+        <div className="flex items-center gap-2">
+          {compact && (
+            <span className="rounded-full border border-emerald-200/60 bg-emerald-50/80 px-2 py-0.5 text-[10px] font-medium text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300">{papers.length}</span>
+          )}
+          {collapsed ? <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 flex-shrink-0 text-muted-foreground" />}
+        </div>
       </button>
       {!collapsed && <ul className={`flex-1 space-y-1.5 ${compact ? 'mt-2' : 'mt-4'}`}>
         {shown.map((p, i) => (
@@ -982,22 +996,29 @@ function TaskPipelineBoard({ tasks, isLoading, onNavigateToChat, projectName, on
   }, []);
 
   return (
-    <div className={`overflow-hidden border border-border/60 bg-card/78 shadow-sm backdrop-blur ${compact ? 'rounded-xl' : 'rounded-[30px]'}`}>
-      <button type="button" onClick={() => setBoardCollapsed(v => !v)} className={`flex w-full items-center justify-between border-b border-border/60 bg-gradient-to-r from-sky-50 via-cyan-50 to-emerald-50 text-left dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 ${compact ? 'px-3 py-2.5' : 'px-5 py-4'}`}>
+    <div className={`overflow-hidden border border-border/60 bg-card/78 shadow-sm backdrop-blur ${compact ? 'rounded-xl border-l-2 border-l-cyan-400 dark:border-l-cyan-600' : 'rounded-[30px]'}`}>
+      <button type="button" onClick={() => setBoardCollapsed(v => !v)} className={`flex w-full items-center justify-between text-left ${compact ? 'px-3 py-2.5' : 'border-b border-border/60 bg-gradient-to-r from-sky-50 via-cyan-50 to-emerald-50 px-5 py-4 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950'}`}>
         <div className="flex items-center gap-2">
-          {!compact && (
+          {compact ? (
+            <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-cyan-100 text-cyan-600 dark:bg-cyan-950/50 dark:text-cyan-400">
+              <ListChecks className="w-3.5 h-3.5" />
+            </div>
+          ) : (
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/70 bg-white/85 shadow-sm dark:border-white/10 dark:bg-slate-800/80">
               <ListChecks className="w-4 h-4 text-cyan-700 dark:text-cyan-300" />
             </div>
           )}
-          <div>
-            <h3 className={`font-semibold tracking-tight text-foreground ${compact ? 'text-sm' : 'text-base'}`}>
-              Pipeline Task List
-            </h3>
-            {!compact && <p className="text-xs text-muted-foreground sm:text-sm">Stage-oriented task board for your research pipeline</p>}
-          </div>
+          <h3 className={`font-semibold tracking-tight text-foreground ${compact ? 'text-sm' : 'text-base'}`}>
+            Pipeline Task List
+          </h3>
+          {!compact && <p className="text-xs text-muted-foreground sm:text-sm">Stage-oriented task board for your research pipeline</p>}
         </div>
-        {boardCollapsed ? <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 flex-shrink-0 text-muted-foreground" />}
+        <div className="flex items-center gap-2">
+          {compact && summary.total > 0 && (
+            <span className="rounded-full border border-cyan-200/60 bg-cyan-50/80 px-2 py-0.5 text-[10px] font-medium text-cyan-700 dark:border-cyan-900/50 dark:bg-cyan-950/40 dark:text-cyan-300">{summary.total}</span>
+          )}
+          {boardCollapsed ? <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 flex-shrink-0 text-muted-foreground" />}
+        </div>
       </button>
 
       {!boardCollapsed && <div className={`space-y-4 ${compact ? 'p-3' : 'p-5'}`}>
@@ -1402,11 +1423,15 @@ function SessionStageBoard({
 
   if (sessions.length === 0) {
     return (
-      <div className={`border border-border/60 bg-card/78 shadow-sm backdrop-blur ${compact ? 'rounded-xl p-3' : 'rounded-[30px] p-5'}`}>
+      <div className={`border border-border/60 bg-card/78 shadow-sm backdrop-blur ${compact ? 'rounded-xl p-3 border-l-2 border-l-violet-400 dark:border-l-violet-600' : 'rounded-[30px] p-5'}`}>
         <div className="flex items-center gap-2.5">
-          {!compact && (
+          {compact ? (
+            <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400">
+              <GitBranch className="w-3.5 h-3.5" />
+            </div>
+          ) : (
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-violet-200/70 bg-violet-50/90 text-violet-700 dark:border-violet-900/70 dark:bg-violet-950/30 dark:text-violet-300">
-              <MessageSquare className="w-5 h-5" />
+              <GitBranch className="w-5 h-5" />
             </div>
           )}
           <h3 className={`font-semibold tracking-tight text-foreground ${compact ? 'text-sm' : 'text-base'}`}>Session Stage Links</h3>
@@ -1419,17 +1444,26 @@ function SessionStageBoard({
   }
 
   return (
-    <div className={`border border-border/60 bg-card/78 shadow-sm backdrop-blur ${compact ? 'rounded-xl p-3' : 'rounded-[30px] p-5'}`}>
+    <div className={`border border-border/60 bg-card/78 shadow-sm backdrop-blur ${compact ? 'rounded-xl p-3 border-l-2 border-l-violet-400 dark:border-l-violet-600' : 'rounded-[30px] p-5'}`}>
       <button type="button" onClick={() => setSessionBoardCollapsed(v => !v)} className="flex w-full items-center justify-between gap-2 text-left">
         <div className="flex items-center gap-2.5">
-          {!compact && (
+          {compact ? (
+            <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400">
+              <GitBranch className="w-3.5 h-3.5" />
+            </div>
+          ) : (
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-violet-200/70 bg-violet-50/90 text-violet-700 dark:border-violet-900/70 dark:bg-violet-950/30 dark:text-violet-300">
-              <MessageSquare className="w-5 h-5" />
+              <GitBranch className="w-5 h-5" />
             </div>
           )}
           <h3 className={`font-semibold tracking-tight text-foreground ${compact ? 'text-sm' : 'text-base'}`}>Session Stage Links</h3>
         </div>
-        {sessionBoardCollapsed ? <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 flex-shrink-0 text-muted-foreground" />}
+        <div className="flex items-center gap-2">
+          {compact && sessions.length > 0 && (
+            <span className="rounded-full border border-violet-200/60 bg-violet-50/80 px-2 py-0.5 text-[10px] font-medium text-violet-700 dark:border-violet-900/50 dark:bg-violet-950/40 dark:text-violet-300">{sessions.length}</span>
+          )}
+          {sessionBoardCollapsed ? <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 flex-shrink-0 text-muted-foreground" />}
+        </div>
       </button>
 
       {!sessionBoardCollapsed && <div className={`mt-3 grid gap-2 ${compact ? 'grid-cols-3' : 'sm:grid-cols-2 xl:grid-cols-5'}`}>
@@ -1555,10 +1589,14 @@ function ArtifactsCard({ artifacts, onSelect, selectedPath, compact = false }) {
   const toggle = (stage, defaultOpen) => setOpenStages(prev => ({ ...prev, [stage]: !(prev[stage] ?? defaultOpen) }));
 
   return (
-    <div className={`border border-border/60 bg-card/78 shadow-sm backdrop-blur ${compact ? 'rounded-xl p-3' : 'rounded-[30px] p-5'}`}>
+    <div className={`border border-border/60 bg-card/78 shadow-sm backdrop-blur ${compact ? 'rounded-xl p-3 border-l-2 border-l-teal-400 dark:border-l-teal-600' : 'rounded-[30px] p-5'}`}>
       <button type="button" onClick={() => setCardCollapsed(v => !v)} className="flex w-full items-center justify-between gap-2 text-left">
         <div className="flex items-center gap-2.5">
-          {!compact && (
+          {compact ? (
+            <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-teal-100 text-teal-600 dark:bg-teal-950/50 dark:text-teal-400">
+              <Beaker className="w-3.5 h-3.5" />
+            </div>
+          ) : (
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-cyan-200/70 bg-cyan-50/90 text-cyan-700 dark:border-cyan-900/70 dark:bg-cyan-950/30 dark:text-cyan-300">
               <Beaker className="w-5 h-5" />
             </div>
@@ -1568,7 +1606,7 @@ function ArtifactsCard({ artifacts, onSelect, selectedPath, compact = false }) {
           </h3>
         </div>
         <div className="flex items-center gap-2">
-          <span className="rounded-full border border-border/60 bg-background/75 px-2 py-0.5 text-xs text-muted-foreground shadow-sm">
+          <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium shadow-sm ${compact ? 'border border-teal-200/60 bg-teal-50/80 text-teal-700 dark:border-teal-900/50 dark:bg-teal-950/40 dark:text-teal-300' : 'border border-border/60 bg-background/75 text-xs text-muted-foreground'}`}>
             {artifacts.length}
           </span>
           {cardCollapsed ? <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 flex-shrink-0 text-muted-foreground" />}
@@ -1829,14 +1867,20 @@ function IdeaCard({ projectName, config, projectFileSet, compact = false }) {
   if (!ideaText) return null;
 
   return (
-    <div className={`overflow-hidden border border-border/60 bg-card/78 shadow-sm backdrop-blur ${compact ? 'rounded-xl' : 'rounded-[30px]'}`}>
+    <div className={`overflow-hidden border border-border/60 bg-card/78 shadow-sm backdrop-blur ${compact ? 'rounded-xl border-l-2 border-l-amber-400 dark:border-l-amber-600' : 'rounded-[30px]'}`}>
       {/* Header */}
       <div
-        className={`flex cursor-pointer items-center justify-between border-b border-border/60 bg-gradient-to-r from-amber-50 via-orange-50 to-white transition-colors hover:bg-muted/30 dark:from-slate-950 dark:via-amber-950/20 dark:to-slate-950 ${compact ? 'px-3 py-2.5' : 'px-5 py-4'}`}
+        className={`flex cursor-pointer items-center justify-between transition-colors hover:bg-muted/30 ${compact ? 'px-3 py-2.5' : 'border-b border-border/60 bg-gradient-to-r from-amber-50 via-orange-50 to-white px-5 py-4 dark:from-slate-950 dark:via-amber-950/20 dark:to-slate-950'}`}
         onClick={() => setExpanded(!expanded)}
       >
         <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-amber-500 dark:text-amber-400" />
+          {compact ? (
+            <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400">
+              <Lightbulb className="w-3.5 h-3.5" />
+            </div>
+          ) : (
+            <Sparkles className="w-4 h-4 text-amber-500 dark:text-amber-400" />
+          )}
           Final Selected Idea
         </h3>
         <div className="flex items-center gap-1.5">
@@ -1904,13 +1948,19 @@ function PaperCard({ projectName, projectRoot, compact = false }) {
   }, [projectName, projectRoot]);
 
   return (
-    <div className={`overflow-hidden border border-border/60 bg-card/78 shadow-sm backdrop-blur ${compact ? 'rounded-xl' : 'rounded-[30px]'}`}>
+    <div className={`overflow-hidden border border-border/60 bg-card/78 shadow-sm backdrop-blur ${compact ? 'rounded-xl border-l-2 border-l-purple-400 dark:border-l-purple-600' : 'rounded-[30px]'}`}>
       <div
-        className={`flex cursor-pointer items-center justify-between border-b border-border/60 bg-gradient-to-r from-purple-50 via-fuchsia-50 to-white transition-colors hover:bg-muted/30 dark:from-slate-950 dark:via-purple-950/20 dark:to-slate-950 ${compact ? 'px-3 py-2.5' : 'px-5 py-4'}`}
+        className={`flex cursor-pointer items-center justify-between transition-colors hover:bg-muted/30 ${compact ? 'px-3 py-2.5' : 'border-b border-border/60 bg-gradient-to-r from-purple-50 via-fuchsia-50 to-white px-5 py-4 dark:from-slate-950 dark:via-purple-950/20 dark:to-slate-950'}`}
         onClick={() => setExpanded(!expanded)}
       >
         <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-          <PenTool className="w-4 h-4 text-purple-500 dark:text-purple-400" />
+          {compact ? (
+            <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-purple-100 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400">
+              <PenTool className="w-3.5 h-3.5" />
+            </div>
+          ) : (
+            <PenTool className="w-4 h-4 text-purple-500 dark:text-purple-400" />
+          )}
           Paper (main.pdf)
         </h3>
         {status === 'loaded' && (
@@ -2896,10 +2946,6 @@ function ResearchLab({ selectedProject, onNavigateToChat, compact = false, onFil
                 {sourcePapers.length > 0 ? <PapersCard papers={sourcePapers} compact={compact} /> : null}
               </div>
 
-              <div className={compact ? '' : 'xl:hidden'}>
-                {sidebar}
-              </div>
-
               <TaskPipelineBoard
                 tasks={tasks}
                 isLoading={tasksLoading}
@@ -2908,6 +2954,10 @@ function ResearchLab({ selectedProject, onNavigateToChat, compact = false, onFil
                 onTaskUpdated={loadData}
                 compact={compact}
               />
+
+              <div className={compact ? '' : 'xl:hidden'}>
+                {sidebar}
+              </div>
 
               <SessionStageBoard
                 projectTags={projectTags}
