@@ -4,6 +4,7 @@ import ChatInterface from '../../chat/view/ChatInterface';
 import GitPanel from '../../GitPanel';
 import SkillsDashboard from '../../SkillsDashboard';
 import ComputePanel from '../../ComputePanel';
+import ComputeResourcesDashboard from '../../compute-dashboard/ComputeResourcesDashboard';
 import ErrorBoundary from '../../ErrorBoundary';
 import SurveyPage from '../../survey/view/SurveyPage';
 import ProjectDashboard from '../../project-dashboard/view/ProjectDashboard';
@@ -194,6 +195,26 @@ function MainContent({
 
         <div className="flex-1 min-h-0 overflow-hidden">
           <NewsDashboard />
+        </div>
+      </div>
+    );
+  }
+
+  if (activeTab === 'compute' && !selectedProject) {
+    return (
+      <div className="h-full flex flex-col">
+        <MainContentHeader
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          selectedProject={null}
+          selectedSession={null}
+          shouldShowTasksTab={shouldShowTasksTab}
+          isMobile={isMobile}
+          onMenuClick={onMenuClick}
+        />
+
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <ComputeResourcesDashboard />
         </div>
       </div>
     );

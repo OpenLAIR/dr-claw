@@ -185,6 +185,79 @@ router.post('/nodes/:id/run', async (req, res) => {
   }
 });
 
+// GET /api/compute/nodes/:id/monitor - Get GPU and CPU usage
+router.get('/nodes/:id/monitor', async (req, res) => {
+  try {
+    const monitorCmd = [
+      'echo "===GPU_START==="',
+      '(nvidia-smi --query-gpu=index,name,utilization.gpu,utilization.memory,memory.used,memory.total,temperature.gpu,power.draw --format=csv,noheader,nounits 2>/dev/null || echo "NO_GPU")',
+      'echo "===GPU_END==="',
+      'echo "===CPU_START==="',
+      'nproc 2>/dev/null || echo "0"',
+      'echo "---"',
+      // 1-second load averages; top is more portable than mpstat
+      '(cat /proc/loadavg 2>/dev/null || uptime | sed "s/.*load average[s]*: //" | cut -d, -f1)',
+      'echo "---"',
+      // Memory info in MB
+      '(free -m 2>/dev/null | grep Mem || echo "Mem: 0 0 0 0 0 0")',
+      'echo "===CPU_END==="',
+    ].join(' && ');
+
+    const output = await ComputeNode.run({
+      nodeId: req.params.id,
+      command: monitorCmd,
+      skipSync: true,
+    });
+
+    const gpuSection = (output.match(/===GPU_START===\n([\s\S]*?)===GPU_END===/) || [])[1]?.trim() || '';
+    const cpuSection = (output.match(/===CPU_START===\n([\s\S]*?)===CPU_END===/) || [])[1]?.trim() || '';
+
+    const gpus = [];
+    if (gpuSection && gpuSection !== 'NO_GPU') {
+      for (const line of gpuSection.split('\n')) {
+        const parts = line.split(',').map(s => s.trim());
+        if (parts.length >= 7) {
+          gpus.push({
+            index: parseInt(parts[0]) || 0,
+            name: parts[1] || 'Unknown',
+            gpuUtil: parseFloat(parts[2]) || 0,
+            memUtil: parseFloat(parts[3]) || 0,
+            memUsedMB: parseFloat(parts[4]) || 0,
+            memTotalMB: parseFloat(parts[5]) || 0,
+            tempC: parseFloat(parts[6]) || 0,
+            powerW: parseFloat(parts[7]) || 0,
+          });
+        }
+      }
+    }
+
+    const cpuParts = cpuSection.split('---').map(s => s.trim());
+    const cpuCount = parseInt(cpuParts[0]) || 0;
+    const loadAvg = parseFloat(cpuParts[1]) || 0;
+    const memLine = cpuParts[2] || '';
+    const memTokens = memLine.split(/\s+/);
+    const memTotalMB = parseInt(memTokens[1]) || 0;
+    const memUsedMB = parseInt(memTokens[2]) || 0;
+
+    res.json({
+      success: true,
+      gpus,
+      cpu: {
+        cores: cpuCount,
+        loadAvg,
+        utilPercent: cpuCount > 0 ? Math.min(100, Math.round((loadAvg / cpuCount) * 100)) : 0,
+        memTotalMB,
+        memUsedMB,
+        memUtilPercent: memTotalMB > 0 ? Math.round((memUsedMB / memTotalMB) * 100) : 0,
+      },
+      timestamp: Date.now(),
+    });
+  } catch (error) {
+    console.error('Error monitoring compute node:', error);
+    res.json({ success: false, error: error.message, gpus: [], cpu: null, timestamp: Date.now() });
+  }
+});
+
 // ─── Slurm endpoints ───
 
 // GET /api/compute/nodes/:id/slurm/info - Get partition info
@@ -337,6 +410,88 @@ router.post('/run', async (req, res) => {
     res.json({ success: true, output });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// GET /api/compute/local/monitor - Monitor the local machine's CPU and GPU
+router.get('/local/monitor', async (_req, res) => {
+  const { exec } = await import('child_process');
+  const os = await import('os');
+  const { promisify } = await import('util');
+  const execAsync = promisify(exec);
+
+  const platform = os.default.platform();
+
+  const run = async (cmd) => {
+    try {
+      const { stdout } = await execAsync(cmd, { timeout: 10000 });
+      return stdout.trim();
+    } catch {
+      return '';
+    }
+  };
+
+  try {
+    // --- GPU ---
+    const gpus = [];
+    const gpuRaw = await run(
+      'nvidia-smi --query-gpu=index,name,utilization.gpu,utilization.memory,memory.used,memory.total,temperature.gpu,power.draw --format=csv,noheader,nounits'
+    );
+    if (gpuRaw) {
+      for (const line of gpuRaw.split('\n')) {
+        const p = line.split(',').map(s => s.trim());
+        if (p.length >= 7) {
+          gpus.push({
+            index: parseInt(p[0]) || 0,
+            name: p[1] || 'Unknown',
+            gpuUtil: parseFloat(p[2]) || 0,
+            memUtil: parseFloat(p[3]) || 0,
+            memUsedMB: parseFloat(p[4]) || 0,
+            memTotalMB: parseFloat(p[5]) || 0,
+            tempC: parseFloat(p[6]) || 0,
+            powerW: parseFloat(p[7]) || 0,
+          });
+        }
+      }
+    }
+
+    // --- CPU ---
+    const cpuCores = os.default.cpus().length;
+    const loadAvg = os.default.loadavg()[0]; // 1-min
+    const totalMemMB = Math.round(os.default.totalmem() / (1024 * 1024));
+    const freeMemMB = Math.round(os.default.freemem() / (1024 * 1024));
+    const usedMemMB = totalMemMB - freeMemMB;
+
+    let cpuUtilPercent = Math.min(100, Math.round((loadAvg / cpuCores) * 100));
+
+    // On macOS, try to get a more accurate CPU usage from top
+    if (platform === 'darwin') {
+      const topOut = await run("top -l 1 -n 0 | head -4");
+      const cpuMatch = topOut.match(/CPU usage:\s+(\d+(?:\.\d+)?)% user,\s+(\d+(?:\.\d+)?)% sys/);
+      if (cpuMatch) {
+        cpuUtilPercent = Math.round(parseFloat(cpuMatch[1]) + parseFloat(cpuMatch[2]));
+      }
+    }
+
+    res.json({
+      success: true,
+      hostname: os.default.hostname(),
+      platform,
+      gpus,
+      cpu: {
+        cores: cpuCores,
+        model: os.default.cpus()[0]?.model || 'Unknown',
+        loadAvg,
+        utilPercent: cpuUtilPercent,
+        memTotalMB: totalMemMB,
+        memUsedMB: usedMemMB,
+        memUtilPercent: totalMemMB > 0 ? Math.round((usedMemMB / totalMemMB) * 100) : 0,
+      },
+      timestamp: Date.now(),
+    });
+  } catch (error) {
+    console.error('Error monitoring local machine:', error);
+    res.json({ success: false, error: error.message, gpus: [], cpu: null, timestamp: Date.now() });
   }
 });
 

@@ -1,4 +1,4 @@
-import { Blocks, FolderPlus, LayoutDashboard, Newspaper, PanelLeftClose, Plus, RefreshCw, Search, Trash2, X } from 'lucide-react';
+import { Blocks, FolderPlus, LayoutDashboard, Monitor, Newspaper, PanelLeftClose, Plus, RefreshCw, Search, Trash2, X } from 'lucide-react';
 import type { TFunction } from 'i18next';
 import type { AppTab } from '../../../../types/app';
 import { Button } from '../../../ui/button';
@@ -20,6 +20,7 @@ type SidebarHeaderProps = {
   onOpenTrash: () => void;
   onOpenSkills: () => void;
   onOpenNews: () => void;
+  onOpenCompute: () => void;
   onCreateProject: () => void;
   onCollapseSidebar: () => void;
   t: TFunction;
@@ -40,6 +41,7 @@ export default function SidebarHeader({
   onOpenTrash,
   onOpenSkills,
   onOpenNews,
+  onOpenCompute,
   onCreateProject,
   onCollapseSidebar,
   t,
@@ -175,6 +177,17 @@ export default function SidebarHeader({
               <Trash2 className="h-4 w-4" />
               {t('common:tabs.trash')}
             </Button>
+
+            <Button
+              type="button"
+              variant={activeTab === 'compute' ? 'secondary' : 'outline'}
+              size="sm"
+              className="h-9 w-full justify-start rounded-xl"
+              onClick={onOpenCompute}
+            >
+              <Monitor className="h-4 w-4" />
+              {t('common:tabs.compute')}
+            </Button>
           </div>
         )}
       </div>
@@ -272,6 +285,16 @@ export default function SidebarHeader({
             >
               <Blocks className="h-4 w-4" />
               {t('common:projectDashboard.skillsTitle')}
+            </Button>
+
+            <Button
+              type="button"
+              variant={activeTab === 'compute' ? 'secondary' : 'outline'}
+              className="h-10 w-full justify-start rounded-xl"
+              onClick={onOpenCompute}
+            >
+              <Monitor className="h-4 w-4" />
+              {t('common:tabs.compute')}
             </Button>
           </div>
         )}

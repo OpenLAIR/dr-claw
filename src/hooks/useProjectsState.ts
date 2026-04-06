@@ -702,7 +702,7 @@ export function useProjectsState({
       setSelectedProject(project);
       setSelectedSession(null);
       setActiveTab((currentTab) =>
-        currentTab === 'dashboard' || currentTab === 'trash' || currentTab === 'news' || currentTab === 'skills'
+        currentTab === 'dashboard' || currentTab === 'trash' || currentTab === 'news' || currentTab === 'skills' || currentTab === 'compute'
           ? 'chat'
           : currentTab,
       );
@@ -862,6 +862,17 @@ export function useProjectsState({
     }
   }, [isMobile, navigate]);
 
+  const handleOpenCompute = useCallback(() => {
+    setSelectedProject(null);
+    setSelectedSession(null);
+    setActiveTab('compute');
+    navigate('/');
+
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  }, [isMobile, navigate]);
+
   const handleSessionDelete = useCallback(
     (sessionIdToDelete: string) => {
       if (selectedSession?.id === sessionIdToDelete) {
@@ -979,6 +990,7 @@ export function useProjectsState({
       onOpenTrash: handleOpenTrash,
       onOpenSkills: handleOpenSkills,
       onOpenNews: handleOpenNews,
+      onOpenCompute: handleOpenCompute,
       onImportedProjectCreated: handleProjectCreatedWithIntake,
       importedProjectAnalysisPrompt,
       onDismissImportedProjectAnalysisPrompt: clearImportedProjectAnalysisPrompt,
@@ -988,6 +1000,7 @@ export function useProjectsState({
       activeTab,
       clearImportedProjectAnalysisPrompt,
       handleNewSession,
+      handleOpenCompute,
       handleOpenDashboard,
       handleOpenNews,
       handleOpenSkills,
@@ -1044,6 +1057,7 @@ export function useProjectsState({
     handleOpenTrash,
     handleOpenSkills,
     handleOpenNews,
+    handleOpenCompute,
     handleNewSession,
     handleStartWorkspaceQa,
     handleChatFromReference,

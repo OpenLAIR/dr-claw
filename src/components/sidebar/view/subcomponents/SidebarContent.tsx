@@ -21,6 +21,7 @@ type SidebarContentProps = {
   onOpenTrash: () => void;
   onOpenSkills: () => void;
   onOpenNews: () => void;
+  onOpenCompute: () => void;
   onCreateProject: () => void;
   onCollapseSidebar: () => void;
   currentVersion: string;
@@ -49,6 +50,7 @@ export default function SidebarContent({
   onOpenTrash,
   onOpenSkills,
   onOpenNews,
+  onOpenCompute,
   onCreateProject,
   onCollapseSidebar,
   currentVersion,
@@ -81,6 +83,7 @@ export default function SidebarContent({
         onOpenTrash={onOpenTrash}
         onOpenSkills={onOpenSkills}
         onOpenNews={onOpenNews}
+        onOpenCompute={onOpenCompute}
         onCreateProject={onCreateProject}
         onCollapseSidebar={onCollapseSidebar}
         t={t}
