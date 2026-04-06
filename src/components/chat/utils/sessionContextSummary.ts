@@ -176,7 +176,13 @@ const isAbsolutePath = (value: string) => value.startsWith('/') || WINDOWS_ABS_P
 
 const toIsoTimestamp = (value: string | number | Date | undefined): string => {
   const date = value ? new Date(value) : new Date();
-  return Number.isNaN(date.getTime()) ? new Date().toISOString() : date.toISOString();
+  if (Number.isNaN(date.getTime())) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('[sessionContextSummary] Invalid date value, falling back to now:', value);
+    }
+    return new Date().toISOString();
+  }
+  return date.toISOString();
 };
 
 const parseJsonValue = (value: unknown): any => {
@@ -299,7 +305,7 @@ const extractTodos = (toolInput: any, toolResult: any): Array<{ label: string; d
 };
 
 const extractSkillName = (message: ChatMessage): string | null => {
-  if (message.toolName === 'activate_skill') {
+  if (message.toolName === 'activate_skill' || message.toolName === 'Skill') {
     const parsedInput = parseJsonValue(message.toolInput) || {};
     const skillName = parsedInput?.name || parsedInput?.skill;
     return typeof skillName === 'string' && skillName.trim() ? skillName.trim() : null;
@@ -814,6 +820,10 @@ export function deriveSessionContextSummary(
       case 'Read': {
         extractToolInputPaths(parsedInput).forEach((filePath) => {
           addFile(contextFiles, filePath, effectiveProjectRoot, 'Read', timestamp);
+          const skillMatch = filePath.match(/\/(?:\.claude\/)?skills\/([^/]+)\/SKILL\.md$/i);
+          if (skillMatch?.[1]) {
+            addTask(skills, 'skill', skillMatch[1], undefined, timestamp);
+          }
         });
         break;
       }
@@ -914,7 +924,8 @@ export function deriveSessionContextSummary(
         break;
       }
 
-      case 'activate_skill': {
+      case 'activate_skill':
+      case 'Skill': {
         const skillLabel = parsedInput?.name || parsedInput?.skill;
         if (typeof skillLabel === 'string' && skillLabel.trim()) {
           addTask(skills, 'skill', skillLabel.trim(), 'Activated in session', timestamp);

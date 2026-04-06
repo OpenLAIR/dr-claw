@@ -335,7 +335,8 @@
       "unreadOutputs": "未读输出"
     },
     "sections": {
-      "injectedContext": "注入上下文",
+      "injectedContext": "引用上下文",
+      "skillsSubheader": "技能",
       "taskContext": "任务上下文",
       "reviewQueue": "审阅队列",
       "fileReview": "文件审阅"
@@ -375,7 +376,9 @@
       "loading": "正在加载预览...",
       "loadError": "加载预览失败。{{error}}",
       "selectToReview": "选择一个文件进行审阅",
-      "unreadHint": "输出文件会保持未读状态，直到你从审阅队列中打开它。"
+      "unreadHint": "输出文件会保持未读状态，直到你从审阅队列中打开它。",
+      "closePreview": "关闭预览",
+      "openInEditor": "在编辑器中打开"
     }
   },
   "shell": {

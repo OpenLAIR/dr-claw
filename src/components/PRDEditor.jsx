@@ -376,8 +376,13 @@ This document outlines the requirements for building an AI-powered task manageme
       return;
     }
 
+    if (/[/\\]|\.\./.test(fileName.trim())) {
+      alert('Filename must not contain path separators or ".." sequences.');
+      return;
+    }
+
     // Check if file already exists
-    const fullFileName = fileName.endsWith('.txt') || fileName.endsWith('.md') ? fileName : `${fileName}.txt`;
+    const fullFileName = fileName.endsWith('.txt') || fileName.endsWith('.md') ? fileName : `${fileName}.md`;
     const existingFile = existingPRDs.find(prd => prd.name === fullFileName);
     
     console.log('Save check:', {
@@ -402,8 +407,8 @@ This document outlines the requirements for building an AI-powered task manageme
   const performSave = async () => {
     setSaving(true);
     try {
-      // Ensure filename has .txt extension
-      const fullFileName = fileName.endsWith('.txt') || fileName.endsWith('.md') ? fileName : `${fileName}.txt`;
+      // Ensure filename has .md extension
+      const fullFileName = fileName.endsWith('.txt') || fileName.endsWith('.md') ? fileName : `${fileName}.md`;
       
       const response = await authenticatedFetch(`/api/taskmaster/prd/${encodeURIComponent(project?.name)}`, {
         method: 'POST',
@@ -551,7 +556,7 @@ This document outlines the requirements for building an AI-powered task manageme
                       placeholder="Enter PRD filename"
                       maxLength={100}
                     />
-                    <span className="text-sm sm:text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap ml-1">.txt</span>
+                    <span className="text-sm sm:text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap ml-1">.md</span>
                   </div>
                   <button
                     onClick={() => document.querySelector('input[placeholder="Enter PRD filename"]')?.focus()}
@@ -782,7 +787,7 @@ This document outlines the requirements for building an AI-powered task manageme
                     <div className="bg-white dark:bg-gray-800 rounded border border-purple-200 dark:border-purple-700 p-3 mb-3">
                       <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">💬 Example:</p>
                       <p className="text-xs text-gray-900 dark:text-white font-mono">
-                        "I've just initialized a new project with Claude Task Master. I have a PRD at .pipeline/docs/{fileName.endsWith('.txt') || fileName.endsWith('.md') ? fileName : `${fileName}.txt`}. Can you help me parse it and set up the initial tasks?"
+                        "I've just initialized a new project with Claude Task Master. I have a PRD at .pipeline/docs/{fileName.endsWith('.txt') || fileName.endsWith('.md') ? fileName : `${fileName}.md`}. Can you help me parse it and set up the initial tasks?"
                       </p>
                     </div>
                     
@@ -838,7 +843,7 @@ This document outlines the requirements for building an AI-powered task manageme
               </div>
               
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                A PRD file named "{fileName.endsWith('.txt') || fileName.endsWith('.md') ? fileName : `${fileName}.txt`}" already exists. 
+                A PRD file named "{fileName.endsWith('.txt') || fileName.endsWith('.md') ? fileName : `${fileName}.md`}" already exists. 
                 Do you want to overwrite it with the current content?
               </p>
               

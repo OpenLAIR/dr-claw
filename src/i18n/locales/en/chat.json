@@ -335,7 +335,8 @@
       "unreadOutputs": "Unread Outputs"
     },
     "sections": {
-      "injectedContext": "Injected Context",
+      "injectedContext": "Referenced Context",
+      "skillsSubheader": "Skills",
       "taskContext": "Task Context",
       "reviewQueue": "Review Queue",
       "fileReview": "File Review"
@@ -375,7 +376,9 @@
       "loading": "Loading preview...",
       "loadError": "Failed to load preview. {{error}}",
       "selectToReview": "Select a file to review",
-      "unreadHint": "Outputs stay unread until you open them from the review queue."
+      "unreadHint": "Outputs stay unread until you open them from the review queue.",
+      "closePreview": "Close preview",
+      "openInEditor": "Open in Editor"
     }
   },
   "shell": {
