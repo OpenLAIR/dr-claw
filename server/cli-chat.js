@@ -18,6 +18,7 @@ import { promisify } from 'util';
 const execAsync = promisify(exec);
 
 function spawnAsync(command, args, options = {}) {
+  const maxBuffer = options.maxBuffer || 1024 * 1024; // 1 MB default
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, {
       ...options,
@@ -26,9 +27,17 @@ function spawnAsync(command, args, options = {}) {
 
     let stdout = '';
     let stderr = '';
+    let truncated = false;
 
     child.stdout.on('data', (data) => {
-      stdout += data.toString();
+      if (!truncated) {
+        stdout += data.toString();
+        if (stdout.length > maxBuffer) {
+          stdout = stdout.slice(0, maxBuffer);
+          truncated = true;
+          child.kill('SIGTERM');
+        }
+      }
     });
 
     child.stderr.on('data', (data) => {
@@ -269,7 +278,7 @@ async function executeTool(name, args, workingDir) {
         const target = resolve(args.path);
         const rgArgs = ['--line-number', '--max-count', '100', '--max-columns', '200'];
         if (args.include) rgArgs.push('--glob', args.include);
-        rgArgs.push(args.pattern, target);
+        rgArgs.push('-e', args.pattern, '--', target);
         try {
           const { stdout } = await spawnAsync('rg', rgArgs, {
             cwd: workingDir, timeout: 30_000,
