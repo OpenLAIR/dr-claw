@@ -3,7 +3,6 @@ import React, { useEffect } from 'react';
 import ChatInterface from '../../chat/view/ChatInterface';
 import GitPanel from '../../GitPanel';
 import SkillsDashboard from '../../SkillsDashboard';
-import ComputePanel from '../../ComputePanel';
 import ComputeResourcesDashboard from '../../compute-dashboard/ComputeResourcesDashboard';
 import ErrorBoundary from '../../ErrorBoundary';
 import SurveyPage from '../../survey/view/SurveyPage';
@@ -292,12 +291,6 @@ function MainContent({
                 selectedProject={selectedProject}
                 onChatFromReference={onChatFromReference ? (ref: Reference) => onChatFromReference(selectedProject, ref) : undefined}
               />
-            </div>
-          )}
-
-          {activeTab === 'compute' && (
-            <div className="h-full overflow-hidden">
-              <ComputePanel selectedProject={selectedProject} />
             </div>
           )}
 

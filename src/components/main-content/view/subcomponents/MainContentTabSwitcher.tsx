@@ -1,4 +1,4 @@
-import { MessageSquare, Terminal, GitBranch, ClipboardCheck, Server, BookOpen, type LucideIcon } from 'lucide-react';
+import { MessageSquare, Terminal, GitBranch, ClipboardCheck, BookOpen, type LucideIcon } from 'lucide-react';
 import Tooltip from '../../../Tooltip';
 import type { AppTab } from '../../../../types/app';
 import type { Dispatch, SetStateAction } from 'react';
@@ -21,7 +21,6 @@ const BASE_TABS: TabDefinition[] = [
   { id: 'survey', labelKey: 'tabs.survey', icon: BookOpen },
   { id: 'shell', labelKey: 'tabs.shell', icon: Terminal },
   { id: 'git', labelKey: 'tabs.git', icon: GitBranch },
-  { id: 'compute', labelKey: 'tabs.compute', icon: Server },
 ];
 
 const TASKS_TAB: TabDefinition = {
