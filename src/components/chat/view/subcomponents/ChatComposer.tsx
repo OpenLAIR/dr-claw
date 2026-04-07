@@ -6,6 +6,7 @@ import PermissionRequestsBanner from './PermissionRequestsBanner';
 import ChatInputControls from './ChatInputControls';
 import ReferencePicker from '../../../references/view/ReferencePicker';
 import PromptBadgeDropdown from './PromptBadgeDropdown';
+import SkillShortcutsPanel from './SkillShortcutsPanel';
 import SessionProviderLogo from '../../../SessionProviderLogo';
 import { Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -136,6 +137,7 @@ interface ChatComposerProps {
   renderInputWithMentions: (text: string) => ReactNode;
   textareaRef: RefObject<HTMLTextAreaElement>;
   input: string;
+  setInput: Dispatch<SetStateAction<string>>;
   onInputChange: (event: ChangeEvent<HTMLTextAreaElement>) => void;
   onTextareaClick: (event: MouseEvent<HTMLTextAreaElement>) => void;
   onTextareaKeyDown: (event: KeyboardEvent<HTMLTextAreaElement>) => void;
@@ -154,7 +156,8 @@ interface ChatComposerProps {
   onRemoveAttachedPrompt: () => void;
   onUpdateAttachedPrompt: (promptText: string) => void;
   centered?: boolean;
-  // Provider selection props (used when centered)
+  setAttachedPrompt?: (prompt: AttachedPrompt | null) => void;
+  // Provider selection props
   setProvider?: (next: SessionProvider) => void;
   claudeModel?: string;
   setClaudeModel?: (model: string) => void;
@@ -220,6 +223,7 @@ export default function ChatComposer({
   renderInputWithMentions,
   textareaRef,
   input,
+  setInput,
   onInputChange,
   onTextareaClick,
   onTextareaKeyDown,
@@ -238,6 +242,7 @@ export default function ChatComposer({
   onRemoveAttachedPrompt,
   onUpdateAttachedPrompt,
   centered,
+  setAttachedPrompt,
   setProvider,
   claudeModel: claudeModelProp,
   setClaudeModel,
@@ -553,8 +558,16 @@ export default function ChatComposer({
 
           {/* Bottom toolbar inside text box */}
           {!hasQuestionPanel && (
-            <div className="relative z-10 border-t border-border/30 px-4 py-2.5">
-              <div className="flex items-center gap-2">
+            <div className="relative z-10 border-t border-border/30">
+              {/* Skill shortcuts */}
+              {!centered && (
+                <div className="px-3 pt-1.5">
+                  <SkillShortcutsPanel setInput={setInput} textareaRef={textareaRef} setAttachedPrompt={setAttachedPrompt} />
+                </div>
+              )}
+
+              {/* Controls row */}
+              <div className="flex items-center gap-2 px-4 py-2">
                 {/* Left side */}
                 <div className="flex items-center gap-1.5">
                   {/* Agent selector — only in empty state */}
@@ -638,7 +651,7 @@ export default function ChatComposer({
                     isUserScrolledUp={isUserScrolledUp}
                     hasMessages={hasMessages}
                     onScrollToBottom={onScrollToBottom}
-                    hideCommandMenu={centered}
+                    hideCommandMenu
                     compact
                   />
                 </div>

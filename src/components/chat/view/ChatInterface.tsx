@@ -6,7 +6,6 @@ import { useTaskMaster } from '../../../contexts/TaskMasterContext';
 import { useTranslation } from 'react-i18next';
 import ChatMessagesPane from './subcomponents/ChatMessagesPane';
 import ChatComposer from './subcomponents/ChatComposer';
-import SkillShortcutsPanel from './subcomponents/SkillShortcutsPanel';
 import ChatContextSidebar from './subcomponents/ChatContextSidebar';
 import GuidedPromptStarter from './subcomponents/GuidedPromptStarter';
 import { RESUMING_STATUS_TEXT } from '../types/types';
@@ -817,22 +816,6 @@ function ChatInterface({
           onRetry={handleRetry}
         />
 
-        {!isEmpty && (
-          <div className="px-2 sm:px-4 max-w-5xl mx-auto w-full">
-            <div className="flex gap-4">
-              <div className="flex-1 min-w-0">
-                <SkillShortcutsPanel setInput={setInput} textareaRef={textareaRef} setAttachedPrompt={setAttachedPrompt} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <ChatTaskProgressPill
-                  onStartTask={handleStartTaskInChat}
-                  onShowAllTasks={() => setSidebarTab('research')}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
         <ChatComposer
           pendingPermissionRequests={pendingPermissionRequests}
           handlePermissionDecision={handlePermissionDecision}
@@ -882,6 +865,7 @@ function ChatInterface({
           renderInputWithMentions={renderInputWithMentions}
           textareaRef={textareaRef}
           input={input}
+          setInput={setInput}
           onInputChange={handleInputChange}
           onTextareaClick={handleTextareaClick}
           onTextareaKeyDown={handleKeyDown}
@@ -908,6 +892,7 @@ function ChatInterface({
             setAttachedPrompt((prev) => prev ? { ...prev, promptText: text } : null)
           }
           centered={isEmpty}
+          setAttachedPrompt={setAttachedPrompt}
           setProvider={(next) => setProvider(next as Provider)}
           claudeModel={claudeModel}
           setClaudeModel={setClaudeModel}
