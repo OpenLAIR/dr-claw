@@ -13,8 +13,9 @@ import { spawnGemini } from '../gemini-cli.js';
 import { queryGeminiApi } from '../gemini-api.js';
 import { queryOpenRouter } from '../openrouter.js';
 import { queryLocalGPU } from '../local-gpu.js';
+import { spawnNanoClawCode } from '../nano-claw-code.js';
 import { Octokit } from '@octokit/rest';
-import { CLAUDE_MODELS, CURSOR_MODELS, CODEX_MODELS, GEMINI_MODELS, LOCAL_MODELS, OPENROUTER_MODELS } from '../../shared/modelConstants.js';
+import { CLAUDE_MODELS, CURSOR_MODELS, CODEX_MODELS, GEMINI_MODELS, LOCAL_MODELS, NANO_CLAW_CODE_MODELS, OPENROUTER_MODELS } from '../../shared/modelConstants.js';
 import { IS_PLATFORM } from '../constants/config.js';
 import { getGeminiApiKeyForUser, withGeminiApiKeyEnv } from '../utils/geminiApiKey.js';
 
@@ -860,8 +861,8 @@ router.post('/', validateExternalApiKey, async (req, res) => {
     return res.status(400).json({ error: 'message is required' });
   }
 
-  if (!['claude', 'cursor', 'codex', 'gemini', 'openrouter', 'local'].includes(provider)) {
-    return res.status(400).json({ error: 'provider must be "claude", "cursor", "codex", "gemini", "openrouter", or "local"' });
+  if (!['claude', 'cursor', 'codex', 'gemini', 'openrouter', 'local', 'nano'].includes(provider)) {
+    return res.status(400).json({ error: 'provider must be "claude", "cursor", "codex", "gemini", "openrouter", "local", or "nano"' });
   }
 
   // Validate GitHub branch/PR creation requirements
@@ -1025,6 +1026,16 @@ router.post('/', validateExternalApiKey, async (req, res) => {
         model: model || LOCAL_MODELS.DEFAULT || 'qwen3:8b',
         env: sessionEnv,
         permissionMode: 'bypassPermissions',
+      }, writer);
+    } else if (provider === 'nano') {
+      console.log('🤖 Starting Nano Claw Code session');
+
+      await spawnNanoClawCode(message.trim(), {
+        projectPath: finalProjectPath,
+        cwd: finalProjectPath,
+        sessionId: null,
+        model: model || NANO_CLAW_CODE_MODELS.DEFAULT,
+        env: sessionEnv,
       }, writer);
     }
 

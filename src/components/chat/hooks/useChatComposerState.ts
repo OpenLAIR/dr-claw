@@ -69,6 +69,7 @@ interface UseChatComposerStateArgs {
   geminiModel: string;
   openrouterModel: string;
   localModel: string;
+  nanoModel: string;
   isLoading: boolean;
   canAbortSession: boolean;
   tokenBudget: TokenBudget | null;
@@ -244,6 +245,7 @@ export function useChatComposerState({
   geminiModel,
   openrouterModel,
   localModel,
+  nanoModel,
   isLoading,
   canAbortSession,
   tokenBudget,
@@ -547,7 +549,20 @@ export function useChatComposerState({
           projectName: selectedProject.name,
           sessionId: currentSessionId,
           provider,
-          model: provider === 'cursor' ? cursorModel : provider === 'codex' ? codexModel : claudeModel,
+          model:
+            provider === 'cursor'
+              ? cursorModel
+              : provider === 'codex'
+                ? codexModel
+                : provider === 'gemini'
+                  ? geminiModel
+                  : provider === 'openrouter'
+                    ? openrouterModel
+                    : provider === 'local'
+                      ? localModel
+                      : provider === 'nano'
+                        ? nanoModel
+                        : claudeModel,
           tokenUsage: tokenBudget,
         };
 
@@ -686,6 +701,10 @@ export function useChatComposerState({
       currentSessionId,
       cursorModel,
       getChatMessagesForBtw,
+      geminiModel,
+      openrouterModel,
+      localModel,
+      nanoModel,
       handleBuiltInCommand,
       handleCustomCommand,
       input,
@@ -1302,6 +1321,25 @@ export function useChatComposerState({
             stageTagSource: 'task_context',
           },
         });
+      } else if (provider === 'nano') {
+        console.log('[DEBUG] Sending nano-command');
+        sendMessage({
+          type: 'nano-command',
+          command: messageContent,
+          sessionId: effectiveSessionId,
+          options: {
+            cwd: resolvedProjectPath,
+            projectPath: resolvedProjectPath,
+            sessionId: effectiveSessionId,
+            resume: Boolean(effectiveSessionId),
+            model: nanoModel,
+            toolsSettings,
+            telemetryEnabled,
+            sessionMode: isNewSession ? newSessionMode : selectedSession?.mode,
+            stageTagKeys: pendingStageTagKeys,
+            stageTagSource: 'task_context',
+          },
+        });
       } else {
         console.log('[DEBUG] Sending claude-command');
         sendMessage({
@@ -1354,6 +1392,7 @@ export function useChatComposerState({
       geminiModel,
       openrouterModel,
       localModel,
+      nanoModel,
       isLoading,
       onSessionActive,
       pendingViewSessionRef,

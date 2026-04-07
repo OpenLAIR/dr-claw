@@ -1,13 +1,14 @@
 import { useTranslation } from 'react-i18next';
 import { useCallback, useMemo, useRef } from 'react';
-import type { RefObject } from 'react';
+import type { Dispatch, RefObject, SetStateAction } from 'react';
 
 import MessageComponent from './MessageComponent';
 import AgentTurnContainer from './AgentTurnContainer';
 import ProviderSelectionEmptyState from './ProviderSelectionEmptyState';
 import SessionProviderLogo from '../../../SessionProviderLogo';
 import { Markdown } from './Markdown';
-import type { ChatMessage } from '../../types/types';
+import type { AttachedPrompt, ChatMessage } from '../../types/types';
+import type { ProviderAvailability } from '../../types/types';
 import type { Project, ProjectSession, SessionMode, SessionProvider } from '../../../../types/app';
 import AssistantThinkingIndicator from './AssistantThinkingIndicator';
 import { getIntrinsicMessageKey } from '../../utils/messageKeys';
@@ -23,6 +24,24 @@ interface ChatMessagesPaneProps {
   selectedSession: ProjectSession | null;
   currentSessionId: string | null;
   provider: SessionProvider;
+  setProvider: (provider: SessionProvider) => void;
+  textareaRef: RefObject<HTMLTextAreaElement>;
+  setInput: Dispatch<SetStateAction<string>>;
+  setAttachedPrompt?: (prompt: AttachedPrompt | null) => void;
+  claudeModel: string;
+  setClaudeModel: (model: string) => void;
+  cursorModel: string;
+  setCursorModel: (model: string) => void;
+  codexModel: string;
+  setCodexModel: (model: string) => void;
+  geminiModel: string;
+  setGeminiModel: (model: string) => void;
+  openrouterModel: string;
+  setOpenrouterModel: (model: string) => void;
+  localModel: string;
+  setLocalModel: (model: string) => void;
+  nanoModel: string;
+  setNanoModel: (model: string) => void;
   isLoadingMoreMessages: boolean;
   hasMoreMessages: boolean;
   totalMessages: number;
@@ -47,7 +66,9 @@ interface ChatMessagesPaneProps {
   isLoading: boolean;
   statusText?: string | null;
   intakeGreeting?: string | null;
+  providerAvailability: Record<SessionProvider, ProviderAvailability>;
   newSessionMode?: SessionMode;
+  onNewSessionModeChange?: (mode: SessionMode) => void;
   onRetry?: () => void;
 }
 
@@ -60,6 +81,24 @@ export default function ChatMessagesPane({
   selectedSession,
   currentSessionId,
   provider,
+  setProvider,
+  textareaRef,
+  setInput,
+  setAttachedPrompt,
+  claudeModel,
+  setClaudeModel,
+  cursorModel,
+  setCursorModel,
+  codexModel,
+  setCodexModel,
+  geminiModel,
+  setGeminiModel,
+  openrouterModel,
+  setOpenrouterModel,
+  localModel,
+  setLocalModel,
+  nanoModel,
+  setNanoModel,
   isLoadingMoreMessages,
   hasMoreMessages,
   totalMessages,
@@ -84,7 +123,9 @@ export default function ChatMessagesPane({
   isLoading,
   statusText,
   intakeGreeting,
+  providerAvailability,
   newSessionMode = 'research',
+  onNewSessionModeChange,
   onRetry,
 }: ChatMessagesPaneProps) {
   const { t } = useTranslation('chat');
@@ -145,11 +186,7 @@ export default function ChatMessagesPane({
       ref={scrollContainerRef}
       onWheel={onWheel}
       onTouchMove={onTouchMove}
-      className={`overflow-x-hidden px-0 py-3 sm:p-4 relative ${
-        chatMessages.length === 0 && !selectedSession && !currentSessionId
-          ? 'flex-shrink-0'
-          : 'flex-1 overflow-y-auto'
-      }`}
+      className="flex-1 overflow-y-auto overflow-x-hidden px-0 py-3 sm:p-4 relative"
     >
       <div className="max-w-5xl mx-auto space-y-3 sm:space-y-4">
       {isLoadingSessionMessages && chatMessages.length === 0 ? (
@@ -164,6 +201,29 @@ export default function ChatMessagesPane({
           <ProviderSelectionEmptyState
             selectedSession={selectedSession}
             currentSessionId={currentSessionId}
+            provider={provider}
+            setProvider={setProvider}
+            textareaRef={textareaRef}
+            claudeModel={claudeModel}
+            setClaudeModel={setClaudeModel}
+            cursorModel={cursorModel}
+            setCursorModel={setCursorModel}
+            codexModel={codexModel}
+            setCodexModel={setCodexModel}
+            geminiModel={geminiModel}
+            setGeminiModel={setGeminiModel}
+            openrouterModel={openrouterModel}
+            setOpenrouterModel={setOpenrouterModel}
+            localModel={localModel}
+            setLocalModel={setLocalModel}
+            nanoModel={nanoModel}
+            setNanoModel={setNanoModel}
+            projectName={selectedProject.name}
+            setInput={setInput}
+            setAttachedPrompt={setAttachedPrompt}
+            providerAvailability={providerAvailability}
+            newSessionMode={newSessionMode}
+            onNewSessionModeChange={onNewSessionModeChange}
           />
           {intakeGreeting && (
             <div className="flex flex-col w-full mb-6 mt-4">
@@ -182,7 +242,23 @@ export default function ChatMessagesPane({
               </div>
             </div>
           )}
-          {/* Workspace QA guidance is shown as placeholder text in the composer */}
+          {!intakeGreeting && !selectedSession && !currentSessionId && newSessionMode === 'workspace_qa' && (
+            <div className="flex flex-col w-full mb-6 mt-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-sm flex-shrink-0">
+                  <SessionProviderLogo provider={provider} className="w-full h-full" />
+                </div>
+                <div className="text-xs font-semibold text-gray-900 dark:text-white">
+                  {t('session.mode.workspaceQaTitle')}
+                </div>
+              </div>
+              <div className="w-full pl-0">
+                <Markdown className="prose prose-md max-w-none dark:prose-invert prose-gray text-[15.5px] leading-relaxed">
+                  {t('session.mode.workspaceQaGreeting')}
+                </Markdown>
+              </div>
+            </div>
+          )}
         </>
       ) : (
         <>

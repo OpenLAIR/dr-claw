@@ -276,7 +276,8 @@
       "google": "by Google",
       "cursorEditor": "AI Code Editor",
       "openrouter": "Any Model via API",
-      "local": "Run on Your GPU"
+      "local": "Run on Your GPU",
+      "nano": "Python harness (stream-json)"
     },
     "readyPrompt": {
       "claude": "Ready to use Claude with {{model}}. Start typing your message below.",
@@ -285,6 +286,7 @@
       "codex": "Ready to use Codex with {{model}}. Start typing your message below.",
       "openrouter": "Ready to use OpenRouter with {{model}}. Start typing your message below.",
       "local": "Ready to use Local GPU with {{model}}. Start typing your message below.",
+      "nano": "Ready to use Nano Claw Code with {{model}}. Start typing your message below.",
       "default": "Select a provider above to begin"
     }
   },

@@ -13,6 +13,7 @@ _PROVIDER_COMMAND_TYPES = {
     "cursor": "cursor-command",
     "codex": "codex-command",
     "gemini": "gemini-command",
+    "nano": "nano-command",
 }
 _COMPLETE_EVENT_TYPES = {
     "claude-complete",

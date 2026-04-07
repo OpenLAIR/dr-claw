@@ -1040,6 +1040,20 @@ function mapIndexedSessionToProjectSession(session, provider) {
     };
   }
 
+  if (provider === 'nano') {
+    return {
+      id: session.id,
+      summary: baseName || 'Nano Claw Code Session',
+      name: baseName || 'Nano Claw Code Session',
+      createdAt,
+      lastActivity,
+      messageCount,
+      mode,
+      tags,
+      __provider: 'nano',
+    };
+  }
+
   return {
     id: session.id,
     summary: baseName || 'New Session',
@@ -1062,6 +1076,8 @@ function getSessionPlaceholderName(provider) {
       return 'Gemini Session';
     case 'openrouter':
       return 'OpenRouter Session';
+    case 'nano':
+      return 'Nano Claw Code Session';
     default:
       return 'New Session';
   }

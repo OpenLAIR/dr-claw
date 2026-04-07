@@ -88,6 +88,8 @@ function buildCliInstallHint(agent) {
       return 'Gemini CLI is not installed. Install it first, then retry login.';
     case 'openrouter':
       return 'Set OPENROUTER_API_KEY in your .env file. Get a key at https://openrouter.ai/keys';
+    case 'nano':
+      return 'nano-claw-code is not on PATH. Install from https://github.com/OpenLAIR/nano-claw-code or set NANO_CLAW_CODE_COMMAND to the executable.';
     default:
       return 'Required CLI is not installed. Install it first, then retry login.';
   }
@@ -367,6 +369,42 @@ router.get('/gemini/status', async (req, res) => {
       authenticated: false,
       email: null,
       error: error.message
+    });
+  }
+});
+
+router.get('/nano/status', async (req, res) => {
+  try {
+    const resolvedCliCommand = await resolveAvailableCliCommand({
+      envVarName: 'NANO_CLAW_CODE_COMMAND',
+      defaultCommands: ['nano-claw-code'],
+      args: ['--version'],
+      appendWindowsSuffixes: true,
+    });
+
+    if (!resolvedCliCommand) {
+      return res.json(buildStatusPayload({
+        authenticated: false,
+        email: null,
+        error: 'nano-claw-code CLI not found',
+        cliAvailable: false,
+        cliCommand: 'nano-claw-code',
+        installHint: buildCliInstallHint('nano'),
+      }, 'nano'));
+    }
+
+    return res.json(buildStatusPayload({
+      authenticated: true,
+      email: 'Nano Claw Code',
+      cliAvailable: true,
+      cliCommand: resolvedCliCommand,
+    }, 'nano'));
+  } catch (error) {
+    console.error('Error checking Nano Claw Code status:', error);
+    res.status(500).json({
+      authenticated: false,
+      email: null,
+      error: error.message,
     });
   }
 });

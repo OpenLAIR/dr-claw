@@ -45,7 +45,7 @@ export const getSessionDate = (session: SessionWithProvider): Date => {
     return new Date(session.createdAt || 0);
   }
 
-  if (session.__provider === 'codex' || session.__provider === 'gemini') {
+  if (session.__provider === 'codex' || session.__provider === 'gemini' || session.__provider === 'openrouter' || session.__provider === 'nano') {
     return new Date(session.lastActivity || session.createdAt || 0);
   }
 
@@ -60,6 +60,8 @@ export const getSessionName = (session: SessionWithProvider, t: TFunction): stri
     name = session.summary || session.name || t('projects.codexSession');
   } else if (session.__provider === 'gemini') {
     name = session.summary || session.name || 'Gemini Session';
+  } else if (session.__provider === 'nano') {
+    name = session.summary || session.name || 'Nano Claw Code Session';
   } else {
     name = session.summary || t('projects.newSession');
   }
@@ -87,7 +89,7 @@ export const getSessionTime = (session: SessionWithProvider): string => {
     return String(session.createdAt || '');
   }
 
-  if (session.__provider === 'codex' || session.__provider === 'gemini') {
+  if (session.__provider === 'codex' || session.__provider === 'gemini' || session.__provider === 'openrouter' || session.__provider === 'nano') {
     return String(session.lastActivity || session.createdAt || '');
   }
 

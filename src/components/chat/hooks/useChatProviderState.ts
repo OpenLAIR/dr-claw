@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { authenticatedFetch } from '../../../utils/api';
-import { CLAUDE_MODELS, CODEX_MODELS, CURSOR_MODELS, GEMINI_MODELS, LOCAL_MODELS, OPENROUTER_MODELS } from '../../../../shared/modelConstants';
+import { CLAUDE_MODELS, CODEX_MODELS, CURSOR_MODELS, GEMINI_MODELS, LOCAL_MODELS, NANO_CLAW_CODE_MODELS, OPENROUTER_MODELS } from '../../../../shared/modelConstants';
 import type { PendingPermissionRequest, PermissionMode, Provider } from '../types/types';
 import type { ProjectSession, SessionProvider } from '../../../types/app';
 
@@ -31,6 +31,9 @@ export function useChatProviderState({ selectedSession }: UseChatProviderStateAr
   });
   const [localModel, setLocalModel] = useState<string>(() => {
     return localStorage.getItem('local-model') || LOCAL_MODELS.DEFAULT;
+  });
+  const [nanoModel, setNanoModel] = useState<string>(() => {
+    return localStorage.getItem('nano-claw-code-model') || NANO_CLAW_CODE_MODELS.DEFAULT;
   });
 
   const lastProviderRef = useRef(provider);
@@ -137,6 +140,8 @@ export function useChatProviderState({ selectedSession }: UseChatProviderStateAr
     setOpenrouterModel,
     localModel,
     setLocalModel,
+    nanoModel,
+    setNanoModel,
     permissionMode,
     setPermissionMode,
     pendingPermissionRequests,

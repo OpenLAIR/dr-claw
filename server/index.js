@@ -51,6 +51,7 @@ import { spawnGemini, abortGeminiSession, isGeminiSessionActive, getGeminiSessio
 import { queryGeminiApi, abortGeminiApiSession, isGeminiApiSessionActive, getGeminiApiSessionStartTime, getActiveGeminiApiSessions } from './gemini-api.js';
 import { queryOpenRouter, abortOpenRouterSession, isOpenRouterSessionActive, getOpenRouterSessionStartTime, getActiveOpenRouterSessions } from './openrouter.js';
 import { queryLocalGPU, abortLocalGPUSession, isLocalGPUSessionActive, getLocalGPUSessionStartTime, getActiveLocalGPUSessions } from './local-gpu.js';
+import { spawnNanoClawCode, abortNanoClawCodeSession, isNanoClawCodeSessionActive, getNanoClawCodeSessionStartTime, getActiveNanoClawCodeSessions } from './nano-claw-code.js';
 import gitRoutes from './routes/git.js';
 import authRoutes from './routes/auth.js';
 import mcpRoutes from './routes/mcp.js';
@@ -1780,6 +1781,35 @@ function handleChatConnection(ws, request) {
                         writer.send({ type: 'localgpu-error', error: error.message || 'Local GPU query failed', sessionId });
                     }
                 });
+            } else if (data.type === 'nano-command') {
+                console.log('[DEBUG] Nano Claw Code message:', data.command || '[Continue/Resume]');
+                console.log('📁 Project:', data.options?.projectPath || data.options?.cwd || 'Unknown');
+                console.log('🔄 Session:', data.options?.sessionId ? 'Resume' : 'New');
+                console.log('🤖 Model:', data.options?.model || 'default');
+                const commandTelemetryEnabled = data.options?.telemetryEnabled !== false;
+                const sessionId = data.options?.sessionId || data.sessionId;
+
+                if (sessionId && isNanoClawCodeSessionActive(sessionId)) {
+                    console.log(`[WARN] Nano Claw Code session ${sessionId} is already active. Ignoring concurrent request.`);
+                    return;
+                }
+
+                enqueueConversationTelemetry(
+                    {
+                        name: 'agent_dialogue_meta',
+                        direction: 'user_to_agent',
+                        provider: 'nano',
+                        sessionId: sessionId || null,
+                        projectPath: data.options?.projectPath || data.options?.cwd || null,
+                        transportType: data.type,
+                    },
+                    { ...telemetryContext, telemetryEnabled: commandTelemetryEnabled },
+                );
+                writer.telemetryContext = { ...telemetryContext, provider: 'nano', telemetryEnabled: commandTelemetryEnabled };
+                writer.setProjectPath(data.options?.projectPath || data.options?.cwd || null);
+                spawnNanoClawCode(data.command, { ...data.options, env: sessionEnv }, writer).catch(error => {
+                    console.error('[ERROR] Nano Claw Code error:', error);
+                });
             } else if (data.type === 'cursor-resume') {
                 // Backward compatibility: treat as cursor-command with resume and no prompt
                 console.log('[DEBUG] Cursor resume session (compat):', data.sessionId);
@@ -1819,6 +1849,8 @@ function handleChatConnection(ws, request) {
                     success = abortOpenRouterSession(data.sessionId);
                 } else if (provider === 'local') {
                     success = abortLocalGPUSession(data.sessionId);
+                } else if (provider === 'nano') {
+                    success = abortNanoClawCodeSession(data.sessionId);
                 } else {
                     // Use Claude Agents SDK
                     success = await abortClaudeSDKSession(data.sessionId);
@@ -1873,6 +1905,9 @@ function handleChatConnection(ws, request) {
                 } else if (provider === 'local') {
                     isActive = isLocalGPUSessionActive(sessionId);
                     startTime = getLocalGPUSessionStartTime(sessionId);
+                } else if (provider === 'nano') {
+                    isActive = isNanoClawCodeSessionActive(sessionId);
+                    startTime = getNanoClawCodeSessionStartTime(sessionId);
                 } else {
                     // Use Claude Agents SDK
                     isActive = isClaudeSDKSessionActive(sessionId);
@@ -1893,7 +1928,8 @@ function handleChatConnection(ws, request) {
                     cursor: getActiveCursorSessions(),
                     codex: getActiveCodexSessions(),
                     gemini: [...getActiveGeminiApiSessions(), ...getActiveGeminiSessions()],
-                    local: getActiveLocalGPUSessions()
+                    local: getActiveLocalGPUSessions(),
+                    nano: getActiveNanoClawCodeSessions(),
                 };
 
                 writer.send({
