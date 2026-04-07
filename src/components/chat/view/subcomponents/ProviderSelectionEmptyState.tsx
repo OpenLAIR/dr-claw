@@ -18,7 +18,7 @@ export default function ProviderSelectionEmptyState({
 
   if (!selectedSession && !currentSessionId) {
     return (
-      <div className="w-full max-w-3xl mx-auto px-4 pt-4 pb-8">
+      <div className="w-full max-w-3xl mx-auto px-4 pt-4 pb-4">
         <div className="text-left">
           {username && (
             <p className="text-base sm:text-lg font-medium text-muted-foreground/70">
