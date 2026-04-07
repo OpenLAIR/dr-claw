@@ -12,16 +12,22 @@ describe('safePath', () => {
     assert.equal(result, path.resolve(ROOT, 'src/index.js'));
   });
 
-  it('returns root when path is empty/null', () => {
+  it('returns root when path is empty/null/undefined', () => {
     assert.equal(safePath('', ROOT), ROOT);
     assert.equal(safePath(null, ROOT), ROOT);
     assert.equal(safePath(undefined, ROOT), ROOT);
   });
 
-  it('blocks absolute paths', () => {
+  it('allows absolute paths that land inside root', () => {
+    const absInside = path.join(ROOT, 'src/file.js');
+    const result = safePath(absInside, ROOT);
+    assert.ok(result.startsWith(ROOT));
+  });
+
+  it('blocks absolute paths outside root', () => {
     assert.throws(
       () => safePath('/etc/passwd', ROOT),
-      /Path traversal blocked.*absolute path/,
+      /Path traversal blocked/,
     );
   });
 
@@ -44,10 +50,19 @@ describe('safePath', () => {
     assert.equal(result, path.resolve(ROOT, 'lib/utils.js'));
   });
 
-  it('blocks home directory references', () => {
+  it('blocks home directory references via traversal', () => {
     assert.throws(
-      () => safePath(path.join('..', '..', os.homedir(), '.ssh', 'id_rsa'), ROOT),
+      () => safePath(`../${path.relative(path.dirname(ROOT), os.homedir())}/.ssh/id_rsa`, ROOT),
       /Path traversal blocked/,
+    );
+  });
+
+  it('blocks null bytes in path', () => {
+    // Null bytes should not bypass the check
+    assert.throws(
+      () => safePath('src/\0/../../../etc/passwd', ROOT),
+      // Either our check catches it or Node's fs throws
+      (err) => err instanceof Error,
     );
   });
 });

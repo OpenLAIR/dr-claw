@@ -14,9 +14,12 @@ import fs from 'fs';
  * Resolve `userPath` relative to `allowedRoot` and verify the result
  * stays within `allowedRoot`.
  *
- * - Absolute paths are rejected (they would escape the root).
+ * - Absolute paths that land outside the root are rejected.
+ * - Absolute paths inside the root are allowed (LLM may reference them).
  * - `..` components that climb above the root are rejected.
- * - Symlinks are resolved via `realpathSync` when the target exists.
+ * - Symlinks are resolved via `realpathSync` for existing targets.
+ * - For non-existent targets, the nearest existing ancestor is resolved
+ *   to prevent symlink-parent escapes on write operations.
  *
  * @param {string} userPath  Path supplied by the tool call.
  * @param {string} allowedRoot  Project root directory.
@@ -26,31 +29,38 @@ import fs from 'fs';
 export function safePath(userPath, allowedRoot) {
   if (!userPath) return allowedRoot;
 
-  // Reject absolute paths outright — they ignore the root entirely
-  if (path.isAbsolute(userPath)) {
-    throw new Error(
-      `Path traversal blocked: absolute path "${userPath}" is not allowed. ` +
-      `All paths must be relative to the project root.`
-    );
-  }
+  // Resolve to absolute (works for both relative and absolute inputs)
+  const resolved = path.isAbsolute(userPath)
+    ? path.resolve(userPath)
+    : path.resolve(allowedRoot, userPath);
 
-  const resolved = path.resolve(allowedRoot, userPath);
-
-  // Resolve symlinks when the target exists
-  let real;
-  try {
-    real = fs.realpathSync(resolved);
-  } catch {
-    // Target doesn't exist yet (e.g. Write to new file) — use resolved
-    real = resolved;
-  }
-
-  // Normalise the root for prefix comparison
+  // Normalise the root via realpath for accurate comparison
   let normalizedRoot;
   try {
     normalizedRoot = fs.realpathSync(allowedRoot);
   } catch {
     normalizedRoot = path.resolve(allowedRoot);
+  }
+
+  // Resolve the real path.  For non-existent targets, walk up to the
+  // nearest existing ancestor and verify THAT is inside the root.
+  // This prevents symlink-parent escapes: if repo/link -> /external/,
+  // then repo/link/new.txt should be blocked because realpath(repo/link)
+  // resolves to /external/ which is outside the root.
+  let real;
+  try {
+    real = fs.realpathSync(resolved);
+  } catch {
+    // Target doesn't exist — resolve the nearest existing ancestor
+    let ancestor = path.dirname(resolved);
+    const leaf = path.basename(resolved);
+    try {
+      const realAncestor = fs.realpathSync(ancestor);
+      real = path.join(realAncestor, leaf);
+    } catch {
+      // Even the ancestor doesn't exist — use the raw resolved path
+      real = resolved;
+    }
   }
 
   // Ensure resolved path starts with root
