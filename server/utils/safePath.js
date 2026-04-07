@@ -51,14 +51,25 @@ export function safePath(userPath, allowedRoot) {
   try {
     real = fs.realpathSync(resolved);
   } catch {
-    // Target doesn't exist — resolve the nearest existing ancestor
-    let ancestor = path.dirname(resolved);
-    const leaf = path.basename(resolved);
-    try {
-      const realAncestor = fs.realpathSync(ancestor);
-      real = path.join(realAncestor, leaf);
-    } catch {
-      // Even the ancestor doesn't exist — use the raw resolved path
+    // Target doesn't exist — walk up to the nearest existing ancestor
+    // and resolve it.  This catches symlink escapes at any depth:
+    // e.g. repo/link/missing/deep/file.txt where link -> /external/
+    let current = resolved;
+    const trailing = [];
+    while (current !== path.dirname(current)) {
+      try {
+        const realAncestor = fs.realpathSync(current);
+        real = path.join(realAncestor, ...trailing);
+        break;
+      } catch {
+        trailing.unshift(path.basename(current));
+        current = path.dirname(current);
+      }
+    }
+    // If we walked all the way to the filesystem root without finding
+    // an existing ancestor, use the raw resolved path (will likely fail
+    // on the subsequent fs operation anyway).
+    if (!real) {
       real = resolved;
     }
   }
