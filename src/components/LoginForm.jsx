@@ -107,22 +107,6 @@ const LoginForm = () => {
               />
             </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1">
-                {isRegisterMode ? t('register.password') : t('login.password')}
-              </label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder={isRegisterMode ? t('register.placeholders.password') : t('login.placeholders.password')}
-                required
-                disabled={isLoading}
-              />
-            </div>
-
             {isRegisterMode && (
               <div>
                 <label htmlFor="notificationEmail" className="block text-sm font-medium text-foreground mb-1">
@@ -140,6 +124,22 @@ const LoginForm = () => {
                 />
               </div>
             )}
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1">
+                {isRegisterMode ? t('register.password') : t('login.password')}
+              </label>
+              <input
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder={isRegisterMode ? t('register.placeholders.password') : t('login.placeholders.password')}
+                required
+                disabled={isLoading}
+              />
+            </div>
 
             {isRegisterMode && (
               <div>
