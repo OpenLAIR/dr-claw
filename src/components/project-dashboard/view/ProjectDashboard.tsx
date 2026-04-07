@@ -704,10 +704,10 @@ export default function ProjectDashboard({
                           </span>
                         )}
                       </div>
-                      <p className="mt-1 break-all text-xs text-muted-foreground">
-                        {project.fullPath}
-                      </p>
                     </div>
+                    <p className="shrink-0 break-all text-[10px] text-muted-foreground/60 sm:text-right">
+                      {project.fullPath}
+                    </p>
 
                     <Button
                       variant="outline"
