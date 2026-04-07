@@ -3,8 +3,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { createRequire } from 'node:module';
+import crossSpawn from 'cross-spawn';
 
 const require = createRequire(import.meta.url);
+const spawnFunction = process.platform === 'win32' ? crossSpawn : spawn;
 const command = process.argv[2];
 const projectRoot = process.cwd();
 const statePath = path.join(projectRoot, '.native-runtime.json');
@@ -40,7 +42,7 @@ function checkNodeModules() {
 
 function run(bin, args, extraEnv = {}) {
   return new Promise((resolve, reject) => {
-    const child = spawn(bin, args, {
+    const child = spawnFunction(bin, args, {
       cwd: projectRoot,
       env: {
         ...process.env,

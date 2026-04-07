@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process';
+import crossSpawn from 'cross-spawn';
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
@@ -8,6 +9,7 @@ const projectRoot = process.cwd();
 const electronGypDir = path.join(projectRoot, '.electron-gyp');
 const electronCacheDir = path.join(projectRoot, '.electron-cache');
 const electronHomeDir = path.join(projectRoot, '.electron-home');
+const spawnFunction = process.platform === 'win32' ? crossSpawn : spawn;
 
 fs.mkdirSync(electronGypDir, { recursive: true });
 fs.mkdirSync(electronCacheDir, { recursive: true });
@@ -30,7 +32,7 @@ function npxBin() {
 
 function run(bin, args, extraEnv = {}) {
   return new Promise((resolve, reject) => {
-    const child = spawn(bin, args, {
+    const child = spawnFunction(bin, args, {
       cwd: projectRoot,
       env: {
         ...env,
