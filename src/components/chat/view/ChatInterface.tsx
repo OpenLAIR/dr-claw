@@ -291,6 +291,8 @@ function ChatInterface({
     setIntakeGreeting,
     setPendingStageTagKeys,
     submitProgrammaticInput,
+    btwOverlay,
+    closeBtwOverlay,
   } = useChatComposerState({
     selectedProject,
     selectedSession,
@@ -323,6 +325,7 @@ function ChatInterface({
     setIsUserScrolledUp,
     setPendingPermissionRequests,
     newSessionMode,
+    getChatMessagesForBtw: () => chatMessages,
   });
 
   useChatRealtimeHandlers({
@@ -932,6 +935,8 @@ function ChatInterface({
           providerAvailability={providerAvailability}
           newSessionMode={newSessionMode}
           onNewSessionModeChange={onNewSessionModeChange}
+          btwOverlay={btwOverlay}
+          onCloseBtwOverlay={closeBtwOverlay}
         />
 
         {isEmpty && newSessionMode === 'research' && (

@@ -41,6 +41,7 @@ import type { Project, ProjectSession, SessionProvider } from '../../../types/ap
 import { escapeRegExp } from '../utils/chatFormatting';
 import { isAutoResearchScenario } from '../utils/autoResearch';
 import type { SessionMode } from '../../../types/app';
+import type { BtwOverlayState } from '../view/subcomponents/BtwOverlay';
 
 type PendingViewSession = {
   sessionId: string | null;
@@ -79,6 +80,8 @@ interface UseChatComposerStateArgs {
   setIsUserScrolledUp: (isScrolledUp: boolean) => void;
   setPendingPermissionRequests: Dispatch<SetStateAction<PendingPermissionRequest[]>>;
   newSessionMode?: SessionMode;
+  /** Current chat messages for /btw context (Claude provider). */
+  getChatMessagesForBtw?: () => ChatMessage[];
 }
 
 interface MentionableFile {
@@ -175,6 +178,30 @@ function formatRejectedFileMessage(rejection: FileRejection) {
 const isTemporarySessionId = (sessionId: string | null | undefined) =>
   Boolean(sessionId && sessionId.startsWith('new-session-'));
 
+const BTW_TRANSCRIPT_MAX_CHARS = 120_000;
+
+function buildBtwTranscript(messages: ChatMessage[]): string {
+  const lines: string[] = [];
+  for (const m of messages) {
+    if (m.type !== 'user' && m.type !== 'assistant') {
+      continue;
+    }
+    const raw = typeof m.content === 'string' ? m.content : '';
+    const text = raw.trim();
+    if (!text) {
+      continue;
+    }
+    const label = m.type === 'user' ? 'User' : 'Assistant';
+    lines.push(`${label}: ${text}`);
+  }
+  let out = lines.join('\n\n');
+  if (out.length > BTW_TRANSCRIPT_MAX_CHARS) {
+    out = out.slice(out.length - BTW_TRANSCRIPT_MAX_CHARS);
+    out = '…(earlier messages omitted)\n\n' + out;
+  }
+  return out;
+}
+
 const getRouteSessionId = () => {
   if (typeof window === 'undefined') {
     return null;
@@ -224,6 +251,7 @@ export function useChatComposerState({
   setIsUserScrolledUp,
   setPendingPermissionRequests,
   newSessionMode = 'research',
+  getChatMessagesForBtw,
 }: UseChatComposerStateArgs) {
   const { t } = useTranslation('chat');
   const [input, setInput] = useState(() => {
@@ -271,6 +299,22 @@ export function useChatComposerState({
     }
   });
   const [intakeGreeting, setIntakeGreeting] = useState<string | null>(null);
+  const [btwOverlay, setBtwOverlay] = useState<BtwOverlayState>({
+    open: false,
+    question: '',
+    answer: '',
+    loading: false,
+    error: null,
+  });
+  const closeBtwOverlay = useCallback(() => {
+    setBtwOverlay({
+      open: false,
+      question: '',
+      answer: '',
+      loading: false,
+      error: null,
+    });
+  }, []);
   const [pendingStageTagKeys, setPendingStageTagKeys] = useState<string[]>([]);
   const [attachedPrompt, setAttachedPrompt] = useState<AttachedPrompt | null>(null);
 
@@ -529,6 +573,83 @@ export function useChatComposerState({
         }
 
         const result = (await response.json()) as CommandExecutionResult;
+        if (result.type === 'builtin' && result.action === 'btw') {
+          const { data } = result;
+          setInput('');
+          inputValueRef.current = '';
+          if (data?.error) {
+            setChatMessages((previous) => [
+              ...previous,
+              {
+                type: 'assistant',
+                content: `⚠️ ${data.error}`,
+                timestamp: Date.now(),
+              },
+            ]);
+            return;
+          }
+          if (provider !== 'claude') {
+            setChatMessages((previous) => [
+              ...previous,
+              {
+                type: 'assistant',
+                content:
+                  '`/btw` is only available with the Claude Code provider. Switch to Claude in the chat controls, then try again.',
+                timestamp: Date.now(),
+              },
+            ]);
+            return;
+          }
+          const question = typeof data?.question === 'string' ? data.question.trim() : '';
+          if (!question) {
+            return;
+          }
+          setBtwOverlay({
+            open: true,
+            question,
+            answer: '',
+            loading: true,
+            error: null,
+          });
+          try {
+            const transcript = buildBtwTranscript(getChatMessagesForBtw?.() ?? []);
+            const btwResponse = await authenticatedFetch('/api/claude/btw', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                question,
+                transcript,
+                projectPath: selectedProject.fullPath || selectedProject.path,
+                model: claudeModel,
+              }),
+            });
+            const payload = (await btwResponse.json().catch(() => ({}))) as {
+              answer?: string;
+              error?: string;
+              message?: string;
+            };
+            if (!btwResponse.ok) {
+              throw new Error(payload?.error || payload?.message || `Request failed (${btwResponse.status})`);
+            }
+            setBtwOverlay((previous) => ({
+              ...previous,
+              loading: false,
+              answer: typeof payload.answer === 'string' ? payload.answer : '',
+              error: null,
+            }));
+          } catch (btwErr) {
+            const msg = btwErr instanceof Error ? btwErr.message : 'Unknown error';
+            setBtwOverlay((previous) => ({
+              ...previous,
+              loading: false,
+              error: msg,
+              answer: '',
+            }));
+          }
+          return;
+        }
         if (result.type === 'builtin') {
           handleBuiltInCommand(result);
           setInput('');
@@ -554,6 +675,7 @@ export function useChatComposerState({
       codexModel,
       currentSessionId,
       cursorModel,
+      getChatMessagesForBtw,
       handleBuiltInCommand,
       handleCustomCommand,
       input,
@@ -799,7 +921,10 @@ export function useChatComposerState({
     ) => {
       event.preventDefault();
       const currentInput = inputValueRef.current;
-      if ((!currentInput.trim() && attachedFiles.length === 0 && !attachedPrompt) || isLoading || !selectedProject) {
+      if (!selectedProject) {
+        return;
+      }
+      if (!currentInput.trim() && attachedFiles.length === 0 && !attachedPrompt) {
         return;
       }
 
@@ -824,6 +949,10 @@ export function useChatComposerState({
           }
           return;
         }
+      }
+
+      if (isLoading) {
+        return;
       }
 
       const normalizedInput =
@@ -1674,5 +1803,7 @@ export function useChatComposerState({
     setIntakeGreeting,
     setPendingStageTagKeys,
     submitProgrammaticInput,
+    btwOverlay,
+    closeBtwOverlay,
   };
 }

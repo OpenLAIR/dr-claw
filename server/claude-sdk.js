@@ -872,6 +872,71 @@ function getActiveClaudeSDKSessions() {
   return getAllSessions();
 }
 
+const BTW_SYSTEM_PROMPT = `You answer a short side question for someone in the middle of a coding session.
+
+Rules:
+- You have NO tools. Do not claim to read files, run commands, or fetch URLs unless that information already appears in the conversation context below.
+- Use the "Conversation context" section plus general programming knowledge. If something is not in the context, say you do not see it there.
+- Be concise.`;
+
+/**
+ * One-shot, tool-free side question (Claude Code /btw-style). Does not resume the main SDK session.
+ */
+async function runClaudeBtw({ question, transcript, cwd, model }) {
+  const safeTranscript =
+    typeof transcript === 'string' && transcript.trim()
+      ? transcript
+      : '(No prior conversation in this session.)';
+  const userBlock = `## Conversation context\n\n${safeTranscript}\n\n---\n\n## Side question\n\n${question}`;
+
+  const sdkOptions = {
+    cwd: cwd || process.cwd(),
+    model: model || CLAUDE_MODELS.DEFAULT,
+    tools: [],
+    allowedTools: [],
+    settingSources: [],
+    systemPrompt: BTW_SYSTEM_PROMPT,
+    permissionMode: 'default',
+  };
+
+  const prevStreamTimeout = process.env.CLAUDE_CODE_STREAM_CLOSE_TIMEOUT;
+  process.env.CLAUDE_CODE_STREAM_CLOSE_TIMEOUT = '120000';
+
+  const queryInstance = query({
+    prompt: userBlock,
+    options: sdkOptions,
+  });
+
+  if (prevStreamTimeout !== undefined) {
+    process.env.CLAUDE_CODE_STREAM_CLOSE_TIMEOUT = prevStreamTimeout;
+  } else {
+    delete process.env.CLAUDE_CODE_STREAM_CLOSE_TIMEOUT;
+  }
+
+  let answer = '';
+  let lastError = null;
+
+  try {
+    for await (const message of queryInstance) {
+      if (message.type === 'result') {
+        if (message.subtype === 'success') {
+          answer = message.result || answer;
+        } else {
+          lastError = Array.isArray(message.errors) ? message.errors.join('\n') : 'Side question failed';
+        }
+      }
+    }
+  } catch (err) {
+    throw new Error(err?.message || String(err));
+  }
+
+  if (lastError) {
+    throw new Error(lastError);
+  }
+
+  return { answer: answer || '' };
+}
+
 // Export public API
 export {
   queryClaudeSDK,
@@ -880,5 +945,6 @@ export {
   getClaudeSDKSessionStartTime,
   getActiveClaudeSDKSessions,
   resolveToolApproval,
-  getContextWindowForModel
+  getContextWindowForModel,
+  runClaudeBtw,
 };

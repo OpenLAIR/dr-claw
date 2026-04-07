@@ -126,6 +126,12 @@ const builtInCommands = [
     description: 'Rewind the conversation to a previous state',
     namespace: 'builtin',
     metadata: { type: 'builtin' }
+  },
+  {
+    name: '/btw',
+    description: 'Ask a quick side question in an overlay (Claude only; does not add to chat history)',
+    namespace: 'builtin',
+    metadata: { type: 'builtin' }
   }
 ];
 
@@ -396,7 +402,25 @@ Custom commands can be created in:
         message: `Rewinding conversation by ${steps} step${steps > 1 ? 's' : ''}...`
       }
     };
-  }
+  },
+
+  '/btw': async (args) => {
+    const question = args.join(' ').trim();
+    if (!question) {
+      return {
+        type: 'builtin',
+        action: 'btw',
+        data: {
+          error: 'Usage: /btw <your question>',
+        },
+      };
+    }
+    return {
+      type: 'builtin',
+      action: 'btw',
+      data: { question },
+    };
+  },
 };
 
 /**
