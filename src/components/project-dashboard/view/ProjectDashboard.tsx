@@ -1,6 +1,7 @@
 import {
   Activity,
   ArrowRight,
+  ChevronDown,
   FolderOpen,
   FlaskConical,
   MessageSquare,
@@ -305,6 +306,7 @@ export default function ProjectDashboard({
   const [tokenUsageSummary, setTokenUsageSummary] = useState<ProjectTokenUsageSummary | null>(null);
   const [autoResearchStatuses, setAutoResearchStatuses] = useState<Record<string, AutoResearchStatus>>({});
   const [autoResearchLoading, setAutoResearchLoading] = useState<Record<string, boolean>>({});
+  const [expandedAutoResearch, setExpandedAutoResearch] = useState<Record<string, boolean>>({});
   const [autoResearchConfigByProject, setAutoResearchConfigByProject] = useState<Record<string, AutoResearchConfig>>({});
 
   const totals = useMemo(() => {
@@ -755,86 +757,94 @@ export default function ProjectDashboard({
                   </div>
 
 
-                  <div className="rounded border border-border/40 bg-background/50 px-2 py-1.5">
-                    {/* Header row: title + status + provider/model selects */}
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[10px] font-medium text-foreground">Auto Research</span>
-                      <span className="text-[9px] text-muted-foreground">
-                        {activeRun
-                          ? `Running ${activeRun.completedTasks ?? 0}/${activeRun.totalTasks ?? 0}`
-                          : autoResearch?.eligibility?.eligible
-                            ? `Ready via ${autoResearch.provider || 'claude'}`
-                            : getAutoResearchReasonLabel(autoResearchDisabledReason)}
-                      </span>
-                      {activeRun ? (
-                        <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-1.5 py-px text-[9px] font-medium text-amber-700 dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-200">
-                          {activeRun.status}
+                  <div className="rounded-lg border border-border/50 bg-background/70 shadow-sm">
+                    <button
+                      type="button"
+                      onClick={() => setExpandedAutoResearch((prev) => ({ ...prev, [project.name]: !prev[project.name] }))}
+                      className="w-full flex items-center justify-between gap-2 px-2.5 py-1.5 hover:bg-muted/30 transition-colors rounded-lg"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-[11px] font-medium text-foreground">Auto Research</span>
+                        <span className="text-[10px] text-muted-foreground truncate">
+                          {activeRun
+                            ? `Running ${activeRun.completedTasks ?? 0}/${activeRun.totalTasks ?? 0}`
+                            : autoResearch?.eligibility?.eligible
+                              ? `Ready via ${autoResearch.provider || 'claude'}`
+                              : getAutoResearchReasonLabel(autoResearchDisabledReason)}
                         </span>
-                      ) : latestRun ? (
-                        <span className="inline-flex items-center rounded-full border border-border/60 bg-background/75 px-1.5 py-px text-[9px] font-medium text-muted-foreground">
-                          Last: {latestRun.status}
-                        </span>
-                      ) : null}
-                      <div className="flex-1" />
-                      <select
-                        value={autoResearchConfigWithDefaults.provider}
-                        onChange={(event) => {
-                          handleAutoResearchProviderChange(project.name, event.target.value as AutoResearchProvider);
-                        }}
-                        className="rounded border border-border/60 bg-white px-1.5 py-0.5 text-[9px] dark:bg-slate-950"
-                        disabled={autoResearchBusy || Boolean(activeRun)}
-                      >
-                        {AUTO_RESEARCH_PROVIDER_OPTIONS.map((option) => (
-                          <option key={option.value} value={option.value}>{option.label}</option>
-                        ))}
-                      </select>
-                      <select
-                        value={autoResearchConfigWithDefaults.model}
-                        onChange={(event) => {
-                          handleAutoResearchModelChange(project.name, event.target.value, autoResearchConfigWithDefaults.provider);
-                        }}
-                        className="rounded border border-border/60 bg-white px-1.5 py-0.5 text-[9px] max-w-[120px] dark:bg-slate-950"
-                        disabled={autoResearchBusy || Boolean(activeRun)}
-                      >
-                        {AUTO_RESEARCH_MODELS_BY_PROVIDER[autoResearchConfigWithDefaults.provider].map((modelOption) => (
-                          <option key={modelOption.value} value={modelOption.value}>{modelOption.label}</option>
-                        ))}
-                      </select>
-                    </div>
-                    {latestRun?.error ? (
-                      <div className="mt-1 text-[9px] text-red-600 dark:text-red-400 truncate">{latestRun.error}</div>
-                    ) : null}
-                    {autoResearch?.pipeline?.nextTask?.title && !activeRun ? (
-                      <div className="mt-1 text-[9px] text-muted-foreground truncate">Next: {autoResearch.pipeline.nextTask.title}</div>
-                    ) : null}
-                    {hasAutoResearchRun ? (
-                      (() => {
-                        const openableSessionProvider =
-                          activeRun?.provider || latestRun?.provider || autoResearch?.provider || 'claude';
-                        const sessionButtonLabel = openableSessionId
-                          ? 'Open Session'
-                          : activeRun
-                            ? 'Preparing...'
-                            : 'Session N/A';
-                        return (
-                          <div className="mt-1" key="openable-session-action">
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {activeRun ? (
+                          <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-1.5 py-px text-[9px] font-medium text-amber-700 dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-200">
+                            {activeRun.status}
+                          </span>
+                        ) : latestRun ? (
+                          <span className="inline-flex items-center rounded-full border border-border/60 bg-background/75 px-1.5 py-px text-[9px] font-medium text-muted-foreground">
+                            {latestRun.status}
+                          </span>
+                        ) : null}
+                        <ChevronDown className={`w-3 h-3 text-muted-foreground transition-transform duration-150 ${expandedAutoResearch[project.name] ? 'rotate-180' : ''}`} />
+                      </div>
+                    </button>
+
+                    {expandedAutoResearch[project.name] && (
+                      <div className="px-2.5 pb-2 space-y-1.5">
+                        {latestRun?.error ? (
+                          <div className="text-[10px] text-red-600 dark:text-red-400">{latestRun.error}</div>
+                        ) : null}
+                        {autoResearch?.pipeline?.nextTask?.title && !activeRun ? (
+                          <div className="text-[10px] text-muted-foreground">Next: {autoResearch.pipeline.nextTask.title}</div>
+                        ) : null}
+                        {!activeRun ? (
+                          <div className="text-[10px] text-muted-foreground">{getAutoResearchHint(autoResearch)}</div>
+                        ) : null}
+                        <div className="flex flex-wrap gap-2">
+                          <label className="min-w-[130px] flex-1">
+                            <span className="mb-0.5 block text-[10px] font-medium text-muted-foreground">Provider</span>
+                            <select
+                              value={autoResearchConfigWithDefaults.provider}
+                              onChange={(event) => handleAutoResearchProviderChange(project.name, event.target.value as AutoResearchProvider)}
+                              className="w-full rounded-full border border-border/60 bg-white px-2.5 py-1 text-[11px] dark:bg-slate-950"
+                              disabled={autoResearchBusy || Boolean(activeRun)}
+                            >
+                              {AUTO_RESEARCH_PROVIDER_OPTIONS.map((option) => (
+                                <option key={option.value} value={option.value}>{option.label}</option>
+                              ))}
+                            </select>
+                          </label>
+                          <label className="min-w-[150px] flex-1">
+                            <span className="mb-0.5 block text-[10px] font-medium text-muted-foreground">Model</span>
+                            <select
+                              value={autoResearchConfigWithDefaults.model}
+                              onChange={(event) => handleAutoResearchModelChange(project.name, event.target.value, autoResearchConfigWithDefaults.provider)}
+                              className="w-full rounded-full border border-border/60 bg-white px-2.5 py-1 text-[11px] dark:bg-slate-950"
+                              disabled={autoResearchBusy || Boolean(activeRun)}
+                            >
+                              {AUTO_RESEARCH_MODELS_BY_PROVIDER[autoResearchConfigWithDefaults.provider].map((modelOption) => (
+                                <option key={modelOption.value} value={modelOption.value}>{modelOption.label}</option>
+                              ))}
+                            </select>
+                          </label>
+                        </div>
+                        {hasAutoResearchRun ? (() => {
+                          const openableSessionProvider = activeRun?.provider || latestRun?.provider || autoResearch?.provider || 'claude';
+                          const sessionButtonLabel = openableSessionId ? 'Open Session' : activeRun ? 'Preparing...' : 'Unavailable';
+                          return (
                             <Button
+                              key="openable-session-action"
                               variant="outline"
                               size="sm"
-                              className="h-6 rounded-full text-[10px] px-2 bg-white/60 backdrop-blur dark:bg-slate-950/35"
+                              className="rounded-full bg-white/60 backdrop-blur dark:bg-slate-950/35"
                               disabled={!openableSessionId}
-                              onClick={() => {
-                                if (!openableSessionId) return;
-                                onProjectAction(project, 'chat', openableSessionId, openableSessionProvider);
-                              }}
+                              onClick={() => { if (openableSessionId) onProjectAction(project, 'chat', openableSessionId, openableSessionProvider); }}
                             >
-                              <MessageSquare className="h-3 w-3" />
+                              <MessageSquare className="h-3.5 w-3.5" />
                               {sessionButtonLabel}
                             </Button>
-                          </div>
-                        );
-                      })()
-                    ) : null}
+                          );
+                        })() : null}
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex flex-wrap gap-2">
