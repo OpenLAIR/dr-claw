@@ -217,16 +217,6 @@ function getLastActivity(project: Project) {
   return project.createdAt ?? null;
 }
 
-function getRecentActivities(project: Project, count = 3) {
-  return getProjectSessions(project)
-    .map((session) => {
-      const date = session.updated_at || session.lastActivity || session.created_at || session.createdAt;
-      return date ? { title: session.title || session.name || session.id, date, provider: session.__provider } : null;
-    })
-    .filter((entry): entry is { title: string; date: string; provider?: SessionProvider } => Boolean(entry))
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, count);
-}
 
 function getTaskmasterMetadata(project: Project): TaskmasterMetadata | null {
   const metadata = project.taskmaster?.metadata;
@@ -666,7 +656,6 @@ export default function ProjectDashboard({
             const metadata = getTaskmasterMetadata(project);
             const progress = getProgress(project);
             const lastActivity = getLastActivity(project);
-            const recentActivities = getRecentActivities(project);
             const projectTokenUsage = tokenUsageSummary?.projects?.[project.name];
             const autoResearch = autoResearchStatuses[project.name];
             const activeRun = autoResearch?.activeRun;
