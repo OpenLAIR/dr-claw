@@ -556,6 +556,35 @@ export default function ChatComposer({
               {/* Controls row */}
               <div className="flex items-center gap-2 px-4 py-2">
                 {/* Left side */}
+                <div className="flex items-center gap-2.5">
+                  {/* Session modes — only in empty state */}
+                  {centered && onNewSessionModeChange && sessionModeChoices.map((choice) => {
+                    const active = newSessionMode === choice.id;
+                    const dotColor = choice.id === 'research' ? 'bg-sky-500' : 'bg-emerald-500';
+                    return (
+                      <button
+                        key={choice.id}
+                        type="button"
+                        onClick={() => onNewSessionModeChange(choice.id)}
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-medium transition-all duration-150 ${
+                          active
+                            ? 'bg-primary/10 text-primary'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-accent/40'
+                        }`}
+                      >
+                        <span className="flex items-center gap-1">
+                          <span className={`inline-block h-1.5 w-1.5 rounded-full ${active ? dotColor : 'bg-muted-foreground/40'}`} />
+                          {t(choice.titleKey)}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Spacer */}
+                <div className="flex-1" />
+
+                {/* Right side */}
                 <div className="flex items-center gap-1.5">
                   {/* Agent selector — only in empty state */}
                   {centered && providerAvailability && (
@@ -596,37 +625,8 @@ export default function ChatComposer({
                       )}
                     </>
                   )}
-                </div>
 
-                {/* Spacer */}
-                <div className="flex-1" />
-
-                {/* Right side */}
-                <div className="flex items-center gap-2.5">
-                  {/* Session modes — only in empty state */}
-                  {centered && onNewSessionModeChange && sessionModeChoices.map((choice) => {
-                    const active = newSessionMode === choice.id;
-                    const dotColor = choice.id === 'research' ? 'bg-sky-500' : 'bg-emerald-500';
-                    return (
-                      <button
-                        key={choice.id}
-                        type="button"
-                        onClick={() => onNewSessionModeChange(choice.id)}
-                        className={`rounded-full px-2 py-0.5 text-[10px] font-medium transition-all duration-150 ${
-                          active
-                            ? 'bg-primary/10 text-primary'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-accent/40'
-                        }`}
-                      >
-                        <span className="flex items-center gap-1">
-                          <span className={`inline-block h-1.5 w-1.5 rounded-full ${active ? dotColor : 'bg-muted-foreground/40'}`} />
-                          {t(choice.titleKey)}
-                        </span>
-                      </button>
-                    );
-                  })}
-
-                  {centered && <div className="h-4 border-l border-border/40" />}
+                  {centered && <div className="h-4 border-l border-border/40 mx-1" />}
 
                   <ChatInputControls
                     permissionMode={permissionMode}
