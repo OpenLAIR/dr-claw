@@ -540,6 +540,16 @@ export default function ChatComposer({
                     <Plus className="w-4 h-4" />
                   </button>
 
+                  {/* Skill shortcuts — only in normal chat mode */}
+                  {!centered && (
+                    <SkillDropdown
+                      setInput={setInput}
+                      textareaRef={textareaRef}
+                      setAttachedPrompt={setAttachedPrompt}
+                      t={t}
+                    />
+                  )}
+
                   {/* Session modes — only in empty state */}
                   {centered && onNewSessionModeChange && newSessionMode && (
                     <SessionModeSelector
@@ -563,16 +573,6 @@ export default function ChatComposer({
                       activeProvider={sessionProvider}
                       providerAvailability={providerAvailability}
                       onSelect={selectProvider}
-                      t={t}
-                    />
-                  )}
-
-                  {/* Skill shortcuts — only in normal chat mode */}
-                  {!centered && (
-                    <SkillDropdown
-                      setInput={setInput}
-                      textareaRef={textareaRef}
-                      setAttachedPrompt={setAttachedPrompt}
                       t={t}
                     />
                   )}
