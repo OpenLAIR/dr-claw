@@ -6,6 +6,7 @@ import { useTaskMaster } from '../../../contexts/TaskMasterContext';
 import { useTranslation } from 'react-i18next';
 import ChatMessagesPane from './subcomponents/ChatMessagesPane';
 import ChatComposer from './subcomponents/ChatComposer';
+import ProviderSelectionEmptyState from './subcomponents/ProviderSelectionEmptyState';
 import SkillShortcutsPanel from './subcomponents/SkillShortcutsPanel';
 import ChatContextSidebar from './subcomponents/ChatContextSidebar';
 import { RESUMING_STATUS_TEXT } from '../types/types';
@@ -711,7 +712,134 @@ function ChatInterface({
             </div>
           )}
           <div className={previewFile ? 'hidden' : 'flex min-h-0 flex-1 flex-col'}>
-        {shouldShowImportedProjectAnalysisPrompt && (
+        {/* Determine if we're in empty new-session state for centered layout */}
+        {(() => {
+          const isEmptyNewSession = chatMessages.length === 0 && !selectedSession && !currentSessionId;
+
+          const composerElement = (
+            <ChatComposer
+              pendingPermissionRequests={pendingPermissionRequests}
+              handlePermissionDecision={handlePermissionDecision}
+              handleGrantToolPermission={handleGrantToolPermission}
+              claudeStatus={claudeStatus ? { ...claudeStatus, text: statusTextOverride || claudeStatus.text } : claudeStatus}
+              isLoading={isLoading}
+              onAbortSession={handleAbortSession}
+              provider={provider}
+              permissionMode={permissionMode}
+              onModeSwitch={cyclePermissionMode}
+              codexModel={codexModel}
+              geminiModel={geminiModel}
+              thinkingMode={thinkingMode}
+              setThinkingMode={setThinkingMode}
+              codexReasoningEffort={codexReasoningEffort}
+              setCodexReasoningEffort={setCodexReasoningEffort}
+              geminiThinkingMode={geminiThinkingMode}
+              setGeminiThinkingMode={setGeminiThinkingMode}
+              tokenBudget={tokenBudget}
+              slashCommandsCount={slashCommandsCount}
+              onToggleCommandMenu={handleToggleCommandMenu}
+              hasInput={Boolean(input.trim()) || attachedFiles.length > 0}
+              onClearInput={handleClearInput}
+              isUserScrolledUp={isUserScrolledUp}
+              hasMessages={chatMessages.length > 0}
+              onScrollToBottom={scrollToBottomAndReset}
+              onSubmit={handleSubmit}
+              isDragActive={isDragActive}
+              attachedFiles={attachedFiles}
+              onRemoveFile={removeAttachedFile}
+              uploadingFiles={uploadingFiles}
+              fileErrors={fileErrors}
+              showFileDropdown={showFileDropdown}
+              filteredFiles={filteredFiles}
+              selectedFileIndex={selectedFileIndex}
+              onSelectFile={selectFile}
+              filteredCommands={filteredCommands}
+              selectedCommandIndex={selectedCommandIndex}
+              onCommandSelect={handleCommandSelect}
+              onCloseCommandMenu={resetCommandMenuState}
+              isCommandMenuOpen={showCommandMenu}
+              frequentCommands={commandQuery ? [] : frequentCommands}
+              getRootProps={getRootProps as (...args: unknown[]) => Record<string, unknown>}
+              getInputProps={getInputProps as (...args: unknown[]) => Record<string, unknown>}
+              openFilePicker={openFilePicker}
+              inputHighlightRef={inputHighlightRef}
+              renderInputWithMentions={renderInputWithMentions}
+              textareaRef={textareaRef}
+              input={input}
+              onInputChange={handleInputChange}
+              onTextareaClick={handleTextareaClick}
+              onTextareaKeyDown={handleKeyDown}
+              onTextareaPaste={handlePaste}
+              onTextareaScrollSync={syncInputOverlayScroll}
+              onTextareaInput={handleTextareaInput}
+              onInputFocusChange={handleInputFocusChange}
+              isInputFocused={isInputFocused}
+              placeholder={t('input.placeholder', {
+                provider: getProviderDisplayName(provider),
+              })}
+              isTextareaExpanded={isTextareaExpanded}
+              sendByCtrlEnter={sendByCtrlEnter}
+              onTranscript={handleTranscript}
+              projectName={selectedProject?.name}
+              attachedPrompt={attachedPrompt}
+              onRemoveAttachedPrompt={() => setAttachedPrompt(null)}
+              onUpdateAttachedPrompt={(text) =>
+                setAttachedPrompt((prev) => prev ? { ...prev, promptText: text } : null)
+              }
+              setProvider={(next) => { setProvider(next as Provider); localStorage.setItem('selected-provider', next); }}
+              claudeModel={claudeModel}
+              setClaudeModel={setClaudeModel}
+              cursorModel={cursorModel}
+              setCursorModel={setCursorModel}
+              setCodexModel={setCodexModel}
+              setGeminiModel={setGeminiModel}
+              openrouterModel={openrouterModel}
+              setOpenrouterModel={setOpenrouterModel}
+              localModel={localModel}
+              setLocalModel={setLocalModel}
+              providerAvailability={providerAvailability}
+              setAttachedPrompt={setAttachedPrompt}
+            />
+          );
+
+          if (isEmptyNewSession) {
+            return (
+              <div className="flex-1 flex flex-col items-center justify-center px-4 min-h-0">
+                <ProviderSelectionEmptyState
+                  selectedSession={selectedSession}
+                  currentSessionId={currentSessionId}
+                  provider={provider}
+                  setProvider={(nextProvider) => setProvider(nextProvider as Provider)}
+                  textareaRef={textareaRef}
+                  claudeModel={claudeModel}
+                  setClaudeModel={setClaudeModel}
+                  cursorModel={cursorModel}
+                  setCursorModel={setCursorModel}
+                  codexModel={codexModel}
+                  setCodexModel={setCodexModel}
+                  geminiModel={geminiModel}
+                  setGeminiModel={setGeminiModel}
+                  openrouterModel={openrouterModel}
+                  setOpenrouterModel={setOpenrouterModel}
+                  localModel={localModel}
+                  setLocalModel={setLocalModel}
+                  projectName={selectedProject.name}
+                  setInput={setInput}
+                  setAttachedPrompt={setAttachedPrompt}
+                  providerAvailability={providerAvailability}
+                  newSessionMode={newSessionMode}
+                  onNewSessionModeChange={onNewSessionModeChange}
+                />
+                <div className="w-full max-w-3xl">
+                  {composerElement}
+                </div>
+              </div>
+            );
+          }
+
+          return (
+            <>
+              {shouldShowImportedProjectAnalysisPrompt && (
           <div className="mx-auto mt-4 w-full max-w-3xl px-3 sm:px-4">
             <div className="rounded-xl border border-border bg-card/95 shadow-sm px-4 py-4 sm:px-5">
               <div className="flex flex-col gap-4">
@@ -832,94 +960,10 @@ function ChatInterface({
           onRetry={handleRetry}
         />
 
-        <div className="px-2 sm:px-4 max-w-5xl mx-auto w-full">
-          <div className="flex gap-4">
-            <div className="flex-1 min-w-0">
-              <SkillShortcutsPanel setInput={setInput} textareaRef={textareaRef} setAttachedPrompt={setAttachedPrompt} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <ChatTaskProgressPill
-                onStartTask={handleStartTaskInChat}
-                onShowAllTasks={() => setSidebarTab('research')}
-              />
-            </div>
-          </div>
-        </div>
-
-        <ChatComposer
-          pendingPermissionRequests={pendingPermissionRequests}
-          handlePermissionDecision={handlePermissionDecision}
-          handleGrantToolPermission={handleGrantToolPermission}
-          claudeStatus={claudeStatus ? { ...claudeStatus, text: statusTextOverride || claudeStatus.text } : claudeStatus}
-          isLoading={isLoading}
-          onAbortSession={handleAbortSession}
-          provider={provider}
-          permissionMode={permissionMode}
-          onModeSwitch={cyclePermissionMode}
-          codexModel={codexModel}
-          geminiModel={geminiModel}
-          thinkingMode={thinkingMode}
-          setThinkingMode={setThinkingMode}
-          codexReasoningEffort={codexReasoningEffort}
-          setCodexReasoningEffort={setCodexReasoningEffort}
-          geminiThinkingMode={geminiThinkingMode}
-          setGeminiThinkingMode={setGeminiThinkingMode}
-          tokenBudget={tokenBudget}
-          slashCommandsCount={slashCommandsCount}
-          onToggleCommandMenu={handleToggleCommandMenu}
-          hasInput={Boolean(input.trim()) || attachedFiles.length > 0}
-          onClearInput={handleClearInput}
-          isUserScrolledUp={isUserScrolledUp}
-          hasMessages={chatMessages.length > 0}
-          onScrollToBottom={scrollToBottomAndReset}
-          onSubmit={handleSubmit}
-          isDragActive={isDragActive}
-          attachedFiles={attachedFiles}
-          onRemoveFile={removeAttachedFile}
-          uploadingFiles={uploadingFiles}
-          fileErrors={fileErrors}
-          showFileDropdown={showFileDropdown}
-          filteredFiles={filteredFiles}
-          selectedFileIndex={selectedFileIndex}
-          onSelectFile={selectFile}
-          filteredCommands={filteredCommands}
-          selectedCommandIndex={selectedCommandIndex}
-          onCommandSelect={handleCommandSelect}
-          onCloseCommandMenu={resetCommandMenuState}
-          isCommandMenuOpen={showCommandMenu}
-          frequentCommands={commandQuery ? [] : frequentCommands}
-          getRootProps={getRootProps as (...args: unknown[]) => Record<string, unknown>}
-          getInputProps={getInputProps as (...args: unknown[]) => Record<string, unknown>}
-          openFilePicker={openFilePicker}
-          inputHighlightRef={inputHighlightRef}
-          renderInputWithMentions={renderInputWithMentions}
-          textareaRef={textareaRef}
-          input={input}
-          onInputChange={handleInputChange}
-          onTextareaClick={handleTextareaClick}
-          onTextareaKeyDown={handleKeyDown}
-          onTextareaPaste={handlePaste}
-          onTextareaScrollSync={syncInputOverlayScroll}
-          onTextareaInput={handleTextareaInput}
-          onInputFocusChange={handleInputFocusChange}
-          isInputFocused={isInputFocused}
-          placeholder={t('input.placeholder', {
-            provider: getProviderDisplayName(provider),
-          })}
-          isTextareaExpanded={isTextareaExpanded}
-          sendByCtrlEnter={sendByCtrlEnter}
-          onTranscript={handleTranscript}
-          projectName={selectedProject?.name}
-          onReferenceContext={(context) => {
-            setInput((prev) => prev ? `${prev}\n\n${context}` : context);
-          }}
-          attachedPrompt={attachedPrompt}
-          onRemoveAttachedPrompt={() => setAttachedPrompt(null)}
-          onUpdateAttachedPrompt={(text) =>
-            setAttachedPrompt((prev) => prev ? { ...prev, promptText: text } : null)
-          }
-        />
-
+        {composerElement}
+            </>
+          );
+        })()}
           </div>
         </div>
 
