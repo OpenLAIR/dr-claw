@@ -766,13 +766,6 @@ export default function ProjectDashboard({
                     ) : (
                       <span>{t('projectDashboard.noRecentActivity')}</span>
                     )}
-                    {metadata?.lastModified ? (
-                      <div className="text-muted-foreground/60">
-                        {t('projectDashboard.pipelineUpdated', {
-                          time: formatTimeAgo(metadata.lastModified, now, t),
-                        })}
-                      </div>
-                    ) : null}
                   </div>
 
                   <div className="rounded-lg border border-border/50 bg-background/70 px-2.5 py-2 shadow-sm">
