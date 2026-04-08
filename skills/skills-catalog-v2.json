@@ -1,7 +1,7 @@
 {
   "generatedAt": "2026-03-24T17:51:17.721Z",
   "schema": "skills-taxonomy-v2",
-  "totalSkills": 169,
+  "totalSkills": 170,
   "skills": [
     {
       "name": "academic-researcher",
@@ -7416,6 +7416,45 @@
         "ds-idea",
         "ds-experiment",
         "ds-analysis-campaign"
+      ]
+    },
+    {
+      "name": "ds-full-pipeline",
+      "primaryIntent": "research",
+      "intents": [
+        "research",
+        "experiment",
+        "writing"
+      ],
+      "capabilities": [
+        "agent-workflow",
+        "research-planning"
+      ],
+      "domains": [
+        "cs-ai"
+      ],
+      "keywords": [
+        "deepscientist",
+        "full-pipeline",
+        "end-to-end",
+        "autonomous",
+        "research"
+      ],
+      "source": "imported",
+      "status": "verified",
+      "summary": "DeepScientist full pipeline: scout → baseline → idea → experiment → analysis → optimize → write → review → finalize.",
+      "legacy": {
+        "dirPath": "ds-full-pipeline",
+        "skillFile": "skills/ds-full-pipeline/SKILL.md",
+        "topLevelGroup": "DeepScientist",
+        "collection": "DeepScientist"
+      },
+      "owner": "ResearAI/DeepScientist",
+      "relatedSkills": [
+        "ds-scout",
+        "ds-experiment",
+        "ds-write",
+        "ds-review"
       ]
     }
   ]
