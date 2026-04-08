@@ -20,6 +20,7 @@ import { writeProjectTemplates } from './templates/index.js';
 import { classifyError } from '../shared/errorClassifier.js';
 import { applyStageTagsToSession, recordIndexedSession } from './utils/sessionIndex.js';
 import { createRequestId, waitForToolApproval, matchesToolPermission } from './utils/permissions.js';
+import { buildMemoryBlock } from './utils/memoryPrompt.js';
 
 const execAsync = promisify(exec);
 
@@ -645,8 +646,9 @@ export async function queryOpenRouter(command, options = {}, ws) {
       projectName: workingDirectory ? encodeProjectPath(workingDirectory) : undefined,
     });
 
-    // ── Build conversation ─────────────────────────────────────────────
-    const systemContent = customSystemPrompt || await buildSystemPrompt(workingDirectory);
+    // ── Build conversation ───────────────────���─────────────────────────
+    const memoryBlock = options.userId ? buildMemoryBlock(options.userId) : '';
+    const systemContent = (customSystemPrompt || await buildSystemPrompt(workingDirectory)) + memoryBlock;
     const messages = [{ role: 'system', content: systemContent }];
 
     if (sessionId) {

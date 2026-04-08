@@ -12,6 +12,7 @@ import { buildTempAttachmentFilename, toPortableAtPath } from './utils/imageAtta
 import { splitLegacyGeminiThoughtContent } from '../shared/geminiThoughtParser.js';
 import { classifyError } from '../shared/errorClassifier.js';
 import { buildGeminiThinkingConfig } from '../shared/geminiThinkingSupport.js';
+import { buildMemoryBlock } from './utils/memoryPrompt.js';
 
 // Use cross-spawn on Windows for better command execution
 const spawnFunction = process.platform === 'win32' ? crossSpawn : spawn;
@@ -612,7 +613,10 @@ export async function spawnGemini(command, options = {}, ws) {
       if (attachmentResult.tempDir) {
         tempDirs.push(attachmentResult.tempDir);
       }
-      const effectivePrompt = `${attachmentResult.modifiedCommand}`;
+      const memoryBlock = options.userId ? buildMemoryBlock(options.userId) : '';
+      const effectivePrompt = memoryBlock
+        ? `${memoryBlock}\n\n${attachmentResult.modifiedCommand}`
+        : `${attachmentResult.modifiedCommand}`;
       args.push('--prompt', effectivePrompt);
 
       // Keep Gemini CLI in yolo mode internally and enforce policy in our own approval hook.

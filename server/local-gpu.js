@@ -19,6 +19,7 @@ import { writeProjectTemplates } from './templates/index.js';
 import { classifyError } from '../shared/errorClassifier.js';
 import { applyStageTagsToSession, recordIndexedSession } from './utils/sessionIndex.js';
 import { createRequestId, waitForToolApproval, matchesToolPermission } from './utils/permissions.js';
+import { buildMemoryBlock } from './utils/memoryPrompt.js';
 
 const execAsync = promisify(exec);
 const execFileAsync = promisify(execFile);
@@ -763,7 +764,8 @@ export async function queryLocalGPU(command, options = {}, ws) {
       projectName: workingDirectory ? encodeProjectPath(workingDirectory) : undefined,
     });
 
-    const systemContent = customSystemPrompt || await buildSystemPrompt(workingDirectory);
+    const memoryBlock = options.userId ? buildMemoryBlock(options.userId) : '';
+    const systemContent = (customSystemPrompt || await buildSystemPrompt(workingDirectory)) + memoryBlock;
     const messages = [{ role: 'system', content: systemContent }];
 
     if (sessionId) {

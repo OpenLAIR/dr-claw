@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Badge } from './ui/badge';
-import { X, Plus, Settings as SettingsIcon, Shield, AlertTriangle, Moon, Sun, Server, Edit3, Trash2, Globe, Terminal, Zap, FolderOpen, LogIn, Key, GitBranch, Check, Mail } from 'lucide-react';
+import { X, Plus, Settings as SettingsIcon, Shield, AlertTriangle, Moon, Sun, Server, Edit3, Trash2, Globe, Terminal, Zap, FolderOpen, LogIn, Key, GitBranch, Check, Mail, Brain } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import CredentialsSettings from './CredentialsSettings';
@@ -19,6 +19,7 @@ import AccountContent from './settings/AccountContent';
 import EmailSettingsContent from './settings/EmailSettingsContent';
 import PermissionsContent from './settings/PermissionsContent';
 import McpServersContent from './settings/McpServersContent';
+import MemoryContent from './settings/MemoryContent';
 import LanguageSelector from './LanguageSelector';
 
 const VALID_SETTINGS_TABS = new Set(['agents', 'email', 'appearance', 'git', 'api']);
@@ -68,7 +69,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
   );
   const [jsonValidationError, setJsonValidationError] = useState('');
   const [selectedAgent, setSelectedAgent] = useState('claude'); // 'claude', 'cursor', or 'codex'
-  const [selectedCategory, setSelectedCategory] = useState('account'); // 'account', 'email', 'permissions', or 'mcp'
+  const [selectedCategory, setSelectedCategory] = useState('account'); // 'account', 'email', 'permissions', 'mcp', or 'memory'
 
   // Code Editor settings
   const [codeEditorTheme, setCodeEditorTheme] = useState(() =>
@@ -1805,6 +1806,17 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
                       >
                         {t('tabs.mcpServers')}
                       </button>
+                      <button
+                        onClick={() => setSelectedCategory('memory')}
+                        className={`px-3 md:px-4 py-2 md:py-3 text-xs md:text-sm font-medium border-b-2 transition-colors whitespace-nowrap flex items-center gap-1.5 ${
+                          selectedCategory === 'memory'
+                            ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                            : 'border-transparent text-muted-foreground hover:text-foreground'
+                        }`}
+                      >
+                        <Brain className="w-4 h-4" />
+                        Memory
+                      </button>
                     </div>
                   </div>
 
@@ -1924,6 +1936,11 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
                         onEdit={(server) => openCodexMcpForm(server)}
                         onDelete={(serverId) => handleCodexMcpDelete(serverId)}
                       />
+                    )}
+
+                    {/* Memory Category */}
+                    {selectedCategory === 'memory' && (
+                      <MemoryContent />
                     )}
                   </div>
                 </div>

@@ -25,6 +25,7 @@ import { applyStageTagsToSession, recordIndexedSession } from './utils/sessionIn
 import { buildTempAttachmentFilename } from './utils/imageAttachmentFiles.js';
 
 import { createRequestId, waitForToolApproval, resolveToolApproval as resolvePermApproval, matchesToolPermission } from './utils/permissions.js';
+import { buildMemoryBlock } from './utils/memoryPrompt.js';
 
 const activeSessions = new Map();
 const pendingClaudeSessionIndexReconciles = new Map();
@@ -143,10 +144,12 @@ function mapCliOptionsToSDK(options = {}) {
   sdkOptions.model = options.model || CLAUDE_MODELS.DEFAULT;
   console.log(`Using model: ${sdkOptions.model}`);
 
-  // Map system prompt configuration
+  // Map system prompt configuration with optional user memory injection
+  const memoryBlock = options.userId ? buildMemoryBlock(options.userId) : '';
   sdkOptions.systemPrompt = {
     type: 'preset',
-    preset: 'claude_code'  // Required to use CLAUDE.md
+    preset: 'claude_code',  // Required to use CLAUDE.md
+    ...(memoryBlock ? { append: memoryBlock } : {}),
   };
 
   // Map setting sources for CLAUDE.md loading

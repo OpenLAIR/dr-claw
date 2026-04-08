@@ -162,6 +162,22 @@ const runMigrations = () => {
       CREATE INDEX IF NOT EXISTS idx_session_tag_links_tag ON session_tag_links(tag_id);
     `);
 
+    // Migration: user_memories table
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS user_memories (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        content TEXT NOT NULL,
+        category TEXT DEFAULT 'general',
+        is_enabled BOOLEAN DEFAULT 1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      );
+      CREATE INDEX IF NOT EXISTS idx_user_memories_user ON user_memories(user_id);
+      CREATE INDEX IF NOT EXISTS idx_user_memories_enabled ON user_memories(is_enabled);
+    `);
+
     console.log('Database migrations completed successfully');
   } catch (error) {
     console.error('Error running migrations:', error.message);
@@ -1839,6 +1855,77 @@ const referencesDb = {
   },
 };
 
+// User memories database operations
+const memoryDb = {
+  create: (userId, content, category = 'general') => {
+    try {
+      const stmt = db.prepare('INSERT INTO user_memories (user_id, content, category) VALUES (?, ?, ?)');
+      const result = stmt.run(userId, content, category);
+      return db.prepare('SELECT * FROM user_memories WHERE id = ?').get(result.lastInsertRowid);
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  getAll: (userId) => {
+    try {
+      return db.prepare('SELECT * FROM user_memories WHERE user_id = ? ORDER BY created_at DESC').all(userId);
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  getEnabled: (userId) => {
+    try {
+      return db.prepare('SELECT * FROM user_memories WHERE user_id = ? AND is_enabled = 1 ORDER BY created_at DESC').all(userId);
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  getById: (userId, memoryId) => {
+    try {
+      return db.prepare('SELECT * FROM user_memories WHERE id = ? AND user_id = ?').get(memoryId, userId);
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  update: (userId, memoryId, { content, category }) => {
+    try {
+      const fields = [];
+      const params = [];
+      if (content !== undefined) { fields.push('content = ?'); params.push(content); }
+      if (category !== undefined) { fields.push('category = ?'); params.push(category); }
+      if (fields.length === 0) return null;
+      fields.push('updated_at = CURRENT_TIMESTAMP');
+      params.push(memoryId, userId);
+      db.prepare(`UPDATE user_memories SET ${fields.join(', ')} WHERE id = ? AND user_id = ?`).run(...params);
+      return db.prepare('SELECT * FROM user_memories WHERE id = ? AND user_id = ?').get(memoryId, userId);
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  toggle: (userId, memoryId) => {
+    try {
+      db.prepare('UPDATE user_memories SET is_enabled = NOT is_enabled, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?').run(memoryId, userId);
+      return db.prepare('SELECT * FROM user_memories WHERE id = ? AND user_id = ?').get(memoryId, userId);
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  delete: (userId, memoryId) => {
+    try {
+      const result = db.prepare('DELETE FROM user_memories WHERE id = ? AND user_id = ?').run(memoryId, userId);
+      return result.changes > 0;
+    } catch (err) {
+      throw err;
+    }
+  },
+};
+
 export {
   db,
   initializeDatabase,
@@ -1852,5 +1939,6 @@ export {
   tagDb,
   projectDb,
   referencesDb,
+  memoryDb,
   normalizeSessionTimestamp
 };
