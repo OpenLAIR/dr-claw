@@ -62,7 +62,7 @@ Dr. Claw is a general-purpose AI research assistant designed to help researchers
 ## Product Screenshot
 
 <p align="center">
-  <img src="public/screenshots/new_claw.png" alt="Dr. Claw chat interface" width="1000">
+  <img src="public/screenshots/screenshot_v1_2.png" alt="Dr. Claw chat interface" width="1000">
 </p>
 
 <details>
