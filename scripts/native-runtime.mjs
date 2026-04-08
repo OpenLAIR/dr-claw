@@ -47,7 +47,7 @@ function run(bin, args, extraEnv = {}) {
         ...extraEnv,
       },
       stdio: 'inherit',
-      shell: false,
+      shell: process.platform === 'win32',
     });
 
     child.on('error', reject);
@@ -95,7 +95,7 @@ async function ensureElectronRuntime() {
   }
 
   console.log(`[native-runtime] Preparing Electron native modules for ${electronVersion}`);
-  await run('npx', [
+  await run(process.platform === 'win32' ? 'npx.cmd' : 'npx', [
     'electron-rebuild',
     '--force',
     '--version', electronVersion,
