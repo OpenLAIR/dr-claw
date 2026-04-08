@@ -21,7 +21,7 @@
     "dashboard": "仪表盘",
     "trash": "回收站",
     "chat": "聊天",
-    "survey": "调研",
+    "survey": "知识库",
     "shell": "终端",
     "files": "文件",
     "git": "代码历史",
@@ -84,26 +84,26 @@
     "logout": "退出登录"
   },
   "mobileNav": {
-    "survey": "调研",
+    "survey": "知识库",
     "researchLab": "实验室",
     "git": "Git",
     "trash": "回收站"
   },
   "surveyPage": {
-    "title": "调研阶段",
-    "description": "在一个页面中集中查看项目相关论文、文献图谱、调研笔记和阶段任务。",
-    "filterPlaceholder": "筛选论文、图谱和笔记...",
-    "loading": "正在加载调研资料...",
+    "title": "知识库",
+    "description": "浏览和预览项目知识文件，包括论文、图谱、报告和笔记。",
+    "filterPlaceholder": "筛选文件...",
+    "loading": "正在加载知识库...",
     "summary": {
       "papers": "论文",
       "reports": "报告",
       "graphs": "图谱",
-      "tasks": "调研任务"
+      "tasks": "任务"
     },
     "labels": {
-      "workspaceTag": "调研工作区",
-      "focusTag": "文献综述",
-      "library": "调研资料库",
+      "workspaceTag": "知识库",
+      "focusTag": "项目知识",
+      "library": "文件库",
       "preview": "预览"
     },
     "actions": {
@@ -111,28 +111,28 @@
       "expand": "展开"
     },
     "sections": {
-      "papers": "项目论文",
-      "reports": "调研报告",
-      "graphs": "文献图谱",
-      "notes": "调研笔记",
-      "tasks": "阶段任务",
+      "papers": "论文",
+      "reports": "报告",
+      "graphs": "图谱",
+      "notes": "笔记",
+      "tasks": "任务",
       "references": "文献库"
     },
     "errors": {
-      "loadFailed": "加载该项目的调研数据失败。"
+      "loadFailed": "加载该项目的知识库数据失败。"
     },
     "empty": {
-      "noSurveyFiles": "当前还没有在 Survey/ 或 Research/ 下发现调研相关文件。",
+      "noSurveyFiles": "当前还没有在 Survey/ 或 Research/ 下发现知识文件。",
       "noSectionFiles": "当前筛选条件下没有 {{section}} 文件。",
-      "noTasks": "当前还没有调研阶段任务。",
-      "noSelection": "选择论文、图谱、报告、笔记或任务后，可在此查看详情。",
+      "noTasks": "当前还没有任务。",
+      "noSelection": "选择文件或任务后，可在此查看详情。",
       "noTaskDescription": "该任务还没有描述。"
     },
     "preview": {
       "loading": "正在加载预览...",
-      "failed": "加载所选调研内容失败。",
-      "unsupported": "该文件类型暂时无法在调研页面中预览。",
-      "surveyTask": "调研任务",
+      "failed": "加载所选内容失败。",
+      "unsupported": "该文件类型暂时无法预览。",
+      "surveyTask": "任务",
       "taskDescription": "任务描述",
       "dragHint": "拖动可平移图谱",
       "zoomIn": "放大",

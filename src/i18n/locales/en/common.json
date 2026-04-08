@@ -21,7 +21,7 @@
     "dashboard": "Dashboard",
     "trash": "Trash",
     "chat": "Chat",
-    "survey": "Survey",
+    "survey": "Knowledge Base",
     "shell": "Shell",
     "files": "Files",
     "git": "Code History",
@@ -84,26 +84,26 @@
     "logout": "Logout"
   },
   "mobileNav": {
-    "survey": "Survey",
+    "survey": "KB",
     "researchLab": "Lab",
     "git": "Git",
     "trash": "Trash"
   },
   "surveyPage": {
-    "title": "Survey Stage",
-    "description": "Review project-related papers, literature graphs, survey notes, and stage tasks in one place.",
-    "filterPlaceholder": "Filter papers, graphs, and notes...",
-    "loading": "Loading survey materials...",
+    "title": "Knowledge Base",
+    "description": "Browse and preview project knowledge files including papers, graphs, reports, and notes.",
+    "filterPlaceholder": "Filter files...",
+    "loading": "Loading knowledge base...",
     "summary": {
       "papers": "Papers",
       "reports": "Reports",
       "graphs": "Graphs",
-      "tasks": "Survey Tasks"
+      "tasks": "Tasks"
     },
     "labels": {
-      "workspaceTag": "Survey Workspace",
-      "focusTag": "Literature Review",
-      "library": "Survey Library",
+      "workspaceTag": "Knowledge Base",
+      "focusTag": "Project Knowledge",
+      "library": "File Library",
       "preview": "Preview"
     },
     "actions": {
@@ -111,28 +111,28 @@
       "expand": "Expand"
     },
     "sections": {
-      "papers": "Project Papers",
-      "reports": "Survey Reports",
-      "graphs": "Literature Graphs",
-      "notes": "Survey Notes",
-      "tasks": "Stage Tasks",
-      "references": "Reference Library"
+      "papers": "Papers",
+      "reports": "Reports",
+      "graphs": "Graphs",
+      "notes": "Notes",
+      "tasks": "Tasks",
+      "references": "References"
     },
     "errors": {
-      "loadFailed": "Failed to load survey data for this project."
+      "loadFailed": "Failed to load knowledge base for this project."
     },
     "empty": {
-      "noSurveyFiles": "No survey-related files were found under Survey/ or Research/ yet.",
+      "noSurveyFiles": "No knowledge files found under Survey/ or Research/ yet.",
       "noSectionFiles": "No {{section}} files match the current filter.",
-      "noTasks": "No survey-stage tasks are available yet.",
-      "noSelection": "Select a paper, graph, report, note, or task to inspect it here.",
+      "noTasks": "No tasks available yet.",
+      "noSelection": "Select a file or task to preview it here.",
       "noTaskDescription": "This task does not have a description yet."
     },
     "preview": {
       "loading": "Loading preview...",
-      "failed": "Failed to load the selected survey item.",
-      "unsupported": "This file type is not previewable yet in the Survey page.",
-      "surveyTask": "Survey Task",
+      "failed": "Failed to load the selected item.",
+      "unsupported": "This file type is not previewable yet.",
+      "surveyTask": "Task",
       "taskDescription": "Task Description",
       "dragHint": "Drag to pan the diagram",
       "zoomIn": "Zoom In",

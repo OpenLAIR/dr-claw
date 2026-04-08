@@ -21,7 +21,7 @@
     "dashboard": "대시보드",
     "trash": "휴지통",
     "chat": "채팅",
-    "survey": "서베이",
+    "survey": "지식 베이스",
     "shell": "Shell",
     "files": "파일",
     "git": "코드 히스토리",
@@ -84,26 +84,26 @@
     "logout": "로그아웃"
   },
   "mobileNav": {
-    "survey": "서베이",
+    "survey": "지식 베이스",
     "researchLab": "랩",
     "git": "Git",
     "trash": "휴지통"
   },
   "surveyPage": {
-    "title": "서베이 단계",
-    "description": "프로젝트 관련 논문, 문헌 그래프, 조사 노트, 단계 작업을 한곳에서 검토합니다.",
-    "filterPlaceholder": "논문, 그래프, 노트 필터링...",
-    "loading": "서베이 자료를 불러오는 중...",
+    "title": "지식 베이스",
+    "description": "논문, 그래프, 리포트, 노트 등 프로젝트 지식 파일을 탐색하고 미리봅니다.",
+    "filterPlaceholder": "파일 필터링...",
+    "loading": "지식 베이스를 불러오는 중...",
     "summary": {
       "papers": "논문",
       "reports": "리포트",
       "graphs": "그래프",
-      "tasks": "서베이 작업"
+      "tasks": "작업"
     },
     "labels": {
-      "workspaceTag": "서베이 워크스페이스",
-      "focusTag": "문헌 리뷰",
-      "library": "서베이 라이브러리",
+      "workspaceTag": "지식 베이스",
+      "focusTag": "프로젝트 지식",
+      "library": "파일 라이브러리",
       "preview": "미리보기"
     },
     "actions": {
@@ -111,28 +111,28 @@
       "expand": "펼치기"
     },
     "sections": {
-      "papers": "프로젝트 논문",
-      "reports": "서베이 리포트",
-      "graphs": "문헌 그래프",
-      "notes": "서베이 노트",
-      "tasks": "단계 작업",
-      "references": "참고문헌 라이브러리"
+      "papers": "논문",
+      "reports": "리포트",
+      "graphs": "그래프",
+      "notes": "노트",
+      "tasks": "작업",
+      "references": "참고문헌"
     },
     "errors": {
-      "loadFailed": "이 프로젝트의 서베이 데이터를 불러오지 못했습니다."
+      "loadFailed": "이 프로젝트의 지식 베이스를 불러오지 못했습니다."
     },
     "empty": {
-      "noSurveyFiles": "아직 Survey/ 또는 Research/ 아래에 서베이 관련 파일이 없습니다.",
+      "noSurveyFiles": "아직 Survey/ 또는 Research/ 아래에 지식 파일이 없습니다.",
       "noSectionFiles": "현재 필터와 일치하는 {{section}} 파일이 없습니다.",
-      "noTasks": "서베이 단계 작업이 아직 없습니다.",
-      "noSelection": "논문, 그래프, 리포트, 노트 또는 작업을 선택하면 여기에서 확인할 수 있습니다.",
+      "noTasks": "작업이 아직 없습니다.",
+      "noSelection": "파일 또는 작업을 선택하면 여기에서 미리볼 수 있습니다.",
       "noTaskDescription": "이 작업에는 아직 설명이 없습니다."
     },
     "preview": {
       "loading": "미리보기를 불러오는 중...",
-      "failed": "선택한 서베이 항목을 불러오지 못했습니다.",
-      "unsupported": "이 파일 형식은 아직 서베이 페이지에서 미리볼 수 없습니다.",
-      "surveyTask": "서베이 작업",
+      "failed": "선택한 항목을 불러오지 못했습니다.",
+      "unsupported": "이 파일 형식은 아직 미리볼 수 없습니다.",
+      "surveyTask": "작업",
       "taskDescription": "작업 설명",
       "dragHint": "드래그해서 다이어그램을 이동하세요",
       "zoomIn": "확대",
