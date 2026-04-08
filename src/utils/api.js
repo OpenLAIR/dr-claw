@@ -428,4 +428,22 @@ export const api = {
     run: (command, cwd, skipSync) => authenticatedFetch('/api/compute/run', { method: 'POST', body: JSON.stringify({ command, cwd, skipSync }) }),
     status: () => authenticatedFetch('/api/compute/status'),
   },
+
+  // Community tools configuration
+  communityTools: {
+    configure: (projectPath, mcpBackend, apiKeys, gpuConfig) =>
+      authenticatedFetch('/api/community-tools/configure', {
+        method: 'POST',
+        body: JSON.stringify({ projectPath, mcpBackend, apiKeys, gpuConfig }),
+      }),
+    getStatus: (projectPath) =>
+      authenticatedFetch(`/api/community-tools/status?path=${encodeURIComponent(projectPath)}`),
+    getComputeNodes: () =>
+      authenticatedFetch('/api/community-tools/compute-nodes'),
+    detectGpu: (nodeId) =>
+      authenticatedFetch('/api/community-tools/detect-gpu', {
+        method: 'POST',
+        body: JSON.stringify({ nodeId }),
+      }),
+  },
 };
