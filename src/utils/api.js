@@ -157,6 +157,8 @@ export const api = {
     }),
   readFile: (projectName, filePath) =>
     authenticatedFetch(`/api/projects/${projectName}/file?filePath=${encodeURIComponent(filePath)}`),
+  resolveSkill: (skillName, workingDir) =>
+    authenticatedFetch(`/api/skills/resolve?name=${encodeURIComponent(skillName)}&workingDir=${encodeURIComponent(workingDir || '')}`),
   /** Fetch binary file content (e.g. PDF) as Blob. absolutePath must be the full filesystem path. */
   getFileContentBlob: (projectName, absolutePath) =>
     authenticatedFetch(`/api/projects/${projectName}/files/content?path=${encodeURIComponent(absolutePath)}`).then((r) => {

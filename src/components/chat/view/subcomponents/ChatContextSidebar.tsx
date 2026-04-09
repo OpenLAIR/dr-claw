@@ -336,6 +336,7 @@ export default function ChatContextSidebar({
   const [isResizing, setIsResizing] = useState(false);
   const [previewFile, setPreviewFile] = useState<SessionContextFileItem | SessionContextOutputItem | null>(null);
   const [previewTask, setPreviewTask] = useState<SessionContextTaskItem | null>(null);
+  const [previewContent, setPreviewContent] = useState<string | null>(null);
   const asideRef = useRef<HTMLElement | null>(null);
   const isCollapsed = controlledCollapsed ?? uncontrolledCollapsed;
   const isSidebarCollapsed = !isMobile && isCollapsed;
@@ -552,7 +553,7 @@ export default function ChatContextSidebar({
     }
     setPreviewFile(file);
   }, [markFileReviewed]);
-  const handleClosePreview = useCallback(() => { setPreviewFile(null); setPreviewTask(null); }, []);
+  const handleClosePreview = useCallback(() => { setPreviewFile(null); setPreviewTask(null); setPreviewContent(null); }, []);
   const handleOpenInEditor = useCallback((filePath: string) => {
     setPreviewFile(null);
     onFileOpen?.(filePath);
@@ -560,6 +561,44 @@ export default function ChatContextSidebar({
   const handleTaskPreview = useCallback((task: SessionContextTaskItem) => {
     setPreviewTask(task);
   }, []);
+  const handleSkillPreview = useCallback(async (entry: SessionContextTaskItem) => {
+    // If we already have a resolved path under the project, use the file preview directly
+    if (entry.path && sessionProjectPath && entry.path.startsWith(sessionProjectPath)) {
+      const relativePath = entry.path.slice(sessionProjectPath.length).replace(/^\//, '');
+      setPreviewContent(null);
+      setPreviewFile({
+        key: entry.key,
+        name: 'SKILL.md',
+        relativePath,
+        absolutePath: entry.path,
+        reasons: ['Skill'],
+        count: entry.count,
+        lastSeenAt: entry.lastSeenAt,
+      });
+      return;
+    }
+    // Resolve via API (handles paths outside project root and skills without stored path)
+    try {
+      const response = await api.resolveSkill(entry.label, sessionProjectPath);
+      if (!response.ok) {
+        setPreviewTask(entry);
+        return;
+      }
+      const data = await response.json();
+      setPreviewContent(data.content);
+      setPreviewFile({
+        key: entry.key,
+        name: 'SKILL.md',
+        relativePath: data.path,
+        absolutePath: data.path,
+        reasons: ['Skill'],
+        count: entry.count,
+        lastSeenAt: entry.lastSeenAt,
+      });
+    } catch {
+      setPreviewTask(entry);
+    }
+  }, [sessionProjectPath]);
   const toggleSection = useCallback((key: SidebarSectionKey) => {
     setCollapsedSections((current) => {
       const nextValue = { ...current, [key]: !current[key] };
@@ -831,16 +870,18 @@ export default function ChatContextSidebar({
                   <div className="h-px flex-1 bg-border/50" />
                 </div>
                 {(expandedLists.skills ? summary.skills : summary.skills.slice(0, 5)).map((entry) => (
-                  <div
+                  <button
+                    type="button"
                     key={entry.key}
-                    className="flex items-center gap-2 rounded-lg border border-violet-200/60 bg-violet-50/30 px-2.5 py-1.5 dark:border-violet-900/40 dark:bg-violet-950/20"
+                    onClick={() => handleSkillPreview(entry)}
+                    className="flex w-full items-center gap-2 rounded-lg border border-violet-200/60 bg-violet-50/30 px-2.5 py-1.5 text-left transition-all hover:border-violet-300 hover:bg-violet-50/50 dark:border-violet-900/40 dark:bg-violet-950/20 dark:hover:border-violet-800/60 dark:hover:bg-violet-950/30 cursor-pointer"
                   >
                     <Zap className="h-3 w-3 flex-shrink-0 text-violet-500/80" />
                     <span className="min-w-0 flex-1 truncate text-[12px] font-medium text-foreground">
                       {entry.label}
                     </span>
                     <ItemBadge>{formatTimeLabel(entry.lastSeenAt, i18n.language)}</ItemBadge>
-                  </div>
+                  </button>
                 ))}
                 {summary.skills.length > 5 && (
                   <button type="button" className="w-full rounded-lg px-2 py-1 text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors" onClick={() => toggleListExpansion('skills')}>
@@ -1025,6 +1066,7 @@ export default function ChatContextSidebar({
                   projectName={projectName}
                   file={previewFile}
                   onOpenInEditor={handleOpenInEditor}
+                  preloadedContent={previewContent}
                 />
               </div>
             )}
