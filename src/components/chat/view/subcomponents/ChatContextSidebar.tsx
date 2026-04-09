@@ -57,6 +57,7 @@ const SIDEBAR_SECTIONS_STORAGE_KEY = 'chat-session-context-sections';
 const DEFAULT_SIDEBAR_WIDTH = 480;
 const MIN_SIDEBAR_WIDTH = 360;
 const MAX_SIDEBAR_WIDTH = 840;
+const MIN_CHAT_AREA_WIDTH = 400;
 const SECTION_STYLES: Record<SectionTone, {
   panel: string;
   glow: string;
@@ -583,7 +584,11 @@ export default function ChatContextSidebar({
 
     const handleMouseMove = (event: globalThis.MouseEvent) => {
       const rightEdge = asideRef.current?.getBoundingClientRect().right ?? window.innerWidth;
-      const nextWidth = Math.min(MAX_SIDEBAR_WIDTH, Math.max(MIN_SIDEBAR_WIDTH, rightEdge - event.clientX));
+      const container = asideRef.current?.parentElement;
+      const containerWidth = container?.clientWidth ?? window.innerWidth;
+      const maxAvailable = Math.max(MIN_SIDEBAR_WIDTH, containerWidth - MIN_CHAT_AREA_WIDTH);
+      const effectiveMax = Math.min(MAX_SIDEBAR_WIDTH, maxAvailable);
+      const nextWidth = Math.min(effectiveMax, Math.max(MIN_SIDEBAR_WIDTH, rightEdge - event.clientX));
       setSidebarWidth(nextWidth);
     };
 
@@ -650,14 +655,14 @@ export default function ChatContextSidebar({
         className={`flex min-h-0 flex-col bg-gradient-to-b from-card via-card to-muted/20 backdrop-blur ${
           isMobile
             ? 'w-full border-t border-border/60'
-            : `flex-shrink-0 border-l border-border/60 ${isSidebarCollapsed ? 'w-[56px]' : ''}`
+            : `overflow-hidden border-l border-border/60 ${isSidebarCollapsed ? 'w-[56px] flex-shrink-0' : 'min-w-0'}`
         }`}
         style={!isMobile && !isSidebarCollapsed ? { width: `${sidebarWidth}px` } : undefined}
       >
       <div className="border-b border-border/60 px-4 py-3.5">
         <div className="flex items-center justify-between gap-3">
           {!isSidebarCollapsed && (
-            <div className="inline-flex items-center bg-muted/60 rounded-lg p-[3px] gap-[2px]">
+            <div className="inline-flex min-w-0 items-center overflow-x-auto bg-muted/60 rounded-lg p-[3px] gap-[2px]">
               {([
                 { id: 'context' as SidebarTab, icon: FolderSearch, labelKey: 'sessionContext.sidebarTabs.context' },
                 { id: 'research' as SidebarTab, icon: FlaskConical, labelKey: 'sessionContext.sidebarTabs.research' },
@@ -672,7 +677,7 @@ export default function ChatContextSidebar({
                     key={tab.id}
                     type="button"
                     onClick={() => onSidebarTabChange?.(tab.id)}
-                    className={`relative flex items-center gap-1.5 px-2.5 py-[5px] text-xs font-medium rounded-md transition-all duration-150 ${
+                    className={`relative flex flex-shrink-0 items-center gap-1.5 px-2.5 py-[5px] text-xs font-medium rounded-md transition-all duration-150 ${
                       isActive
                         ? 'bg-background text-foreground shadow-sm'
                         : 'text-muted-foreground hover:text-foreground'
@@ -685,7 +690,7 @@ export default function ChatContextSidebar({
               })}
             </div>
           )}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-shrink-0 items-center gap-2">
             {isLoadingTrace && activeSidebarTab === 'context' && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
             {!isMobile && (
               <button
