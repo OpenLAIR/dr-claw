@@ -87,6 +87,7 @@ interface ChatContextFilePreviewProps {
   file: PreviewFile;
   onOpenInEditor?: (filePath: string) => void;
   compact?: boolean;
+  preloadedContent?: string | null;
 }
 
 export default function ChatContextFilePreview({
@@ -94,6 +95,7 @@ export default function ChatContextFilePreview({
   file,
   onOpenInEditor,
   compact = false,
+  preloadedContent,
 }: ChatContextFilePreviewProps) {
   const { t } = useTranslation('chat');
   const [content, setContent] = useState('');
@@ -117,6 +119,12 @@ export default function ChatContextFilePreview({
     });
 
     if (!file) {
+      setLoading(false);
+      return undefined;
+    }
+
+    if (typeof preloadedContent === 'string') {
+      setContent(preloadedContent);
       setLoading(false);
       return undefined;
     }
@@ -188,7 +196,7 @@ export default function ChatContextFilePreview({
         URL.revokeObjectURL(objectUrl);
       }
     };
-  }, [file, previewKind, projectName]);
+  }, [file, preloadedContent, previewKind, projectName]);
 
   const openPath = file?.absolutePath || file?.relativePath || '';
   const emptyHeightClass = compact ? 'min-h-[180px]' : 'min-h-[240px]';

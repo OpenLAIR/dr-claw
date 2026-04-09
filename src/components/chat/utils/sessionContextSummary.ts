@@ -20,6 +20,7 @@ export interface SessionContextTaskItem {
   key: string;
   label: string;
   detail?: string;
+  path?: string;
   kind: 'task' | 'todo' | 'skill' | 'directory';
   count: number;
   lastSeenAt: string;
@@ -54,6 +55,7 @@ type TaskAccumulator = {
   key: string;
   label: string;
   detail?: string;
+  path?: string;
   kind: 'task' | 'todo' | 'skill' | 'directory';
   count: number;
   lastSeenAt: string;
@@ -146,6 +148,9 @@ const KNOWN_FILE_EXTENSIONS = new Set([
 ]);
 
 const normalizePath = (value: string) => value.replace(/\\/g, '/').replace(/\/+/g, '/');
+
+/** Matches SKILL.md paths under .claude/, .agents/, .gemini/, or plain skills/ directories. */
+const SKILL_MD_PATH_RE = /\/(?:\.(?:claude|agents|gemini)\/)?skills\/([^/]+)\/SKILL\.md$/i;
 
 const trimTrailingPathPunctuation = (value: string) => {
   let normalized = normalizePath(value).replace(/[),:;]+$/, '');
@@ -318,6 +323,12 @@ const extractSkillName = (message: ChatMessage): string | null => {
   const commandMatch = message.content.match(/<command-name>([^<]+)<\/command-name>/i);
   if (commandMatch?.[1]?.trim()) {
     return commandMatch[1].trim();
+  }
+
+  // Detect skillExpander format: "# Skill: skill-name" heading
+  const skillHeadingMatch = message.content.match(/^#\s+Skill:\s*(\S+)/m);
+  if (skillHeadingMatch?.[1]?.trim()) {
+    return skillHeadingMatch[1].trim();
   }
 
   const pathMatch = message.content.match(/Base directory for this skill:\s*(\S+)/i);
@@ -689,6 +700,7 @@ const addTask = (
   label: string,
   detail: string | undefined,
   timestamp: string,
+  path?: string,
 ) => {
   const normalizedLabel = String(label || '').trim();
   if (!normalizedLabel) {
@@ -703,6 +715,7 @@ const addTask = (
       existing.lastSeenAt = timestamp;
       existing.detail = detail || existing.detail;
     }
+    existing.path = path || existing.path;
     return;
   }
 
@@ -710,6 +723,7 @@ const addTask = (
     key,
     label: normalizedLabel,
     detail: detail || undefined,
+    path: path || undefined,
     kind,
     count: 1,
     lastSeenAt: timestamp,
@@ -799,7 +813,15 @@ export function deriveSessionContextSummary(
     const timestamp = toIsoTimestamp(message.timestamp);
     const skillName = extractSkillName(message);
     if (skillName) {
-      addTask(skills, 'skill', skillName, undefined, timestamp);
+      // Try to extract SKILL.md path from "Base directory for this skill:" in isSkillContent messages
+      let skillPath: string | undefined;
+      if (message.isSkillContent && typeof message.content === 'string') {
+        const baseMatch = message.content.match(/Base directory for this skill:\s*(\S+)/i);
+        if (baseMatch?.[1]) {
+          skillPath = `${baseMatch[1].trim().replace(/\/$/, '')}/SKILL.md`;
+        }
+      }
+      addTask(skills, 'skill', skillName, undefined, timestamp, skillPath);
     }
 
     if (message.isTaskNotification && typeof message.taskOutputFile === 'string' && message.taskOutputFile.trim()) {
@@ -820,9 +842,9 @@ export function deriveSessionContextSummary(
       case 'Read': {
         extractToolInputPaths(parsedInput).forEach((filePath) => {
           addFile(contextFiles, filePath, effectiveProjectRoot, 'Read', timestamp);
-          const skillMatch = filePath.match(/\/(?:\.claude\/)?skills\/([^/]+)\/SKILL\.md$/i);
+          const skillMatch = filePath.match(SKILL_MD_PATH_RE);
           if (skillMatch?.[1]) {
-            addTask(skills, 'skill', skillMatch[1], undefined, timestamp);
+            addTask(skills, 'skill', skillMatch[1], undefined, timestamp, filePath);
           }
         });
         break;
@@ -842,6 +864,10 @@ export function deriveSessionContextSummary(
         const shellContext = extractShellContext(parsedInput, message.toolResult);
         shellContext.files.forEach((filePath) => {
           addFile(contextFiles, filePath, effectiveProjectRoot, 'Shell', timestamp);
+          const skillMatch = filePath.match(SKILL_MD_PATH_RE);
+          if (skillMatch?.[1]) {
+            addTask(skills, 'skill', skillMatch[1], undefined, timestamp, filePath);
+          }
         });
         shellContext.directories.forEach((directoryPath) => {
           addTask(directories, 'directory', toRelativePath(directoryPath, effectiveProjectRoot) || directoryPath, 'Referenced in shell command', timestamp);
@@ -920,6 +946,10 @@ export function deriveSessionContextSummary(
       case 'FileChanges': {
         parseFileChanges(message.toolInput).forEach((filePath) => {
           addFile(outputFiles, filePath, effectiveProjectRoot, 'File change', timestamp);
+          const skillMatch = filePath.match(SKILL_MD_PATH_RE);
+          if (skillMatch?.[1]) {
+            addTask(skills, 'skill', skillMatch[1], undefined, timestamp, filePath);
+          }
         });
         break;
       }

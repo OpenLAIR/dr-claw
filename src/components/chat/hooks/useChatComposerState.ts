@@ -39,6 +39,7 @@ import { useFileMentions } from './useFileMentions';
 import { type SlashCommand, useSlashCommands } from './useSlashCommands';
 import type { Project, ProjectSession, SessionProvider } from '../../../types/app';
 import { escapeRegExp } from '../utils/chatFormatting';
+import { isAutoResearchScenario } from '../utils/autoResearch';
 import type { SessionMode } from '../../../types/app';
 
 type PendingViewSession = {
@@ -841,6 +842,11 @@ export function useChatComposerState({
         }
       }
 
+      // Auto-bypass permissions for autoresearch workflows
+      const effectivePermissionMode = isAutoResearchScenario(attachedPrompt?.scenarioId)
+        ? 'bypassPermissions'
+        : permissionMode;
+
       const selectedThinkingMode = thinkingModes.find((mode: { id: string; prefix?: string }) => mode.id === thinkingMode);
       if (selectedThinkingMode && selectedThinkingMode.prefix) {
         messageContent = `${selectedThinkingMode.prefix}: ${messageContent}`;
@@ -1080,7 +1086,7 @@ export function useChatComposerState({
             sessionId: effectiveSessionId,
             resume: Boolean(effectiveSessionId),
             model: geminiModel,
-            permissionMode,
+            permissionMode: effectivePermissionMode,
             thinkingMode: geminiThinkingMode,
             images: uploadedImages.length > 0 ? uploadedImages : undefined,
             toolsSettings,
@@ -1102,7 +1108,7 @@ export function useChatComposerState({
             sessionId: effectiveSessionId,
             resume: Boolean(effectiveSessionId),
             model: codexModel,
-            permissionMode: permissionMode === 'plan' ? 'default' : permissionMode,
+            permissionMode: effectivePermissionMode === 'plan' ? 'default' : effectivePermissionMode,
             modelReasoningEffort: codexReasoningEffort === 'default' ? undefined : codexReasoningEffort,
             attachments: codexAttachmentPayload,
             images: uploadedImages,
@@ -1124,7 +1130,7 @@ export function useChatComposerState({
             sessionId: effectiveSessionId,
             resume: Boolean(effectiveSessionId),
             model: openrouterModel,
-            permissionMode,
+            permissionMode: effectivePermissionMode,
             toolsSettings,
             telemetryEnabled,
             sessionMode: isNewSession ? newSessionMode : selectedSession?.mode,
@@ -1146,7 +1152,7 @@ export function useChatComposerState({
             model: localModel,
             serverUrl: localStorage.getItem('local-gpu-server-url') || 'http://localhost:11434',
             gpuId: localStorage.getItem('local-gpu-selected') || undefined,
-            permissionMode,
+            permissionMode: effectivePermissionMode,
             toolsSettings,
             telemetryEnabled,
             sessionMode: isNewSession ? newSessionMode : selectedSession?.mode,
@@ -1165,7 +1171,7 @@ export function useChatComposerState({
             sessionId: effectiveSessionId,
             resume: Boolean(effectiveSessionId),
             toolsSettings,
-            permissionMode,
+            permissionMode: effectivePermissionMode,
             model: claudeModel,
             images: uploadedImages.length > 0 ? uploadedImages : undefined,
             telemetryEnabled,

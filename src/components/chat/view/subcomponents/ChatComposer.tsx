@@ -28,6 +28,7 @@ import type { ProviderAvailability } from '../../types/types';
 import type { SessionMode, SessionProvider } from '../../../../types/app';
 import { CLAUDE_MODELS, CURSOR_MODELS, CODEX_MODELS, GEMINI_MODELS, LOCAL_MODELS, OPENROUTER_MODELS } from '../../../../../shared/modelConstants';
 import { authenticatedFetch } from '../../../../utils/api';
+import { isAutoResearchScenario } from '../../utils/autoResearch';
 
 // New subcomponents
 import SkillDropdown from './SkillDropdown';
@@ -630,10 +631,19 @@ export default function ChatComposer({
                     </>
                   )}
 
+                  {isAutoResearchScenario(attachedPrompt?.scenarioId) && (
+                    <span
+                      className="text-[10px] text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/30 px-1.5 py-0.5 rounded font-medium"
+                      title="Autoresearch mode: tool permissions are auto-approved"
+                    >
+                      Auto
+                    </span>
+                  )}
+
                   {centered && <div className="h-4 border-l border-border/40 mx-1" />}
 
                   <ChatInputControls
-                    permissionMode={permissionMode}
+                    permissionMode={isAutoResearchScenario(attachedPrompt?.scenarioId) ? 'bypassPermissions' : permissionMode}
                     onModeSwitch={onModeSwitch}
                     provider={provider}
                     codexModel={codexModel}

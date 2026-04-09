@@ -12,7 +12,7 @@ import type { PermissionMode, Provider, TokenBudget } from '../../types/types';
 
 interface ChatInputControlsProps {
   permissionMode: PermissionMode | string;
-  onModeSwitch: () => void;
+  onModeSwitch?: (() => void) | undefined;
   provider: Provider | string;
   codexModel: string;
   geminiModel: string;
@@ -63,8 +63,9 @@ export default function ChatInputControls({
     <>
       <button
         type="button"
-        onClick={onModeSwitch}
-        className={`${compact ? 'w-[8.5rem] whitespace-nowrap truncate px-2 py-1 rounded-lg text-[11px] text-center justify-center' : 'px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg text-xs sm:text-sm'} font-medium border transition-all duration-200 ${
+        onClick={onModeSwitch ?? undefined}
+        disabled={!onModeSwitch}
+        className={`${compact ? 'w-[8.5rem] whitespace-nowrap truncate px-2 py-1 rounded-lg text-[11px] text-center justify-center' : 'px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg text-xs sm:text-sm'} font-medium border transition-all duration-200 ${!onModeSwitch ? 'cursor-not-allowed opacity-80' : ''} ${
           permissionMode === 'default'
             ? 'bg-muted/50 text-muted-foreground border-border/60 hover:bg-muted'
             : permissionMode === 'acceptEdits'
@@ -73,7 +74,7 @@ export default function ChatInputControls({
                 ? 'bg-orange-50 dark:bg-orange-900/15 text-orange-700 dark:text-orange-300 border-orange-300/60 dark:border-orange-600/40 hover:bg-orange-100 dark:hover:bg-orange-900/25'
                 : 'bg-primary/5 text-primary border-primary/20 hover:bg-primary/10'
         }`}
-        title={t('input.clickToChangeMode')}
+        title={onModeSwitch ? t('input.clickToChangeMode') : t('input.autoResearchBypass', { defaultValue: 'Locked to Bypass for Auto Research' })}
       >
         <div className={`flex items-center gap-1.5 ${compact ? 'justify-center' : ''}`}>
           <div

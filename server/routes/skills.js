@@ -5,6 +5,7 @@ import os from 'os';
 import { fileURLToPath } from 'url';
 import { extractProjectDirectory, ensureProjectSkillLinks } from '../projects.js';
 import { FORBIDDEN_PATHS } from './projects.js';
+import { findSkillMdPath } from '../utils/skillExpander.js';
 
 const GLOBAL_SKILLS_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'skills');
 
@@ -222,6 +223,40 @@ async function validateZipBuffer(buffer) {
     zip,
   };
 }
+
+// GET /resolve — resolve a skill name to its SKILL.md path and content
+router.get('/resolve', async (req, res) => {
+  try {
+    const { name, workingDir } = req.query;
+    if (!name || typeof name !== 'string') {
+      return res.status(400).json({ error: 'name query parameter is required' });
+    }
+    // Prevent path traversal
+    if (/[/\\]|\.\./.test(name)) {
+      return res.status(400).json({ error: 'Invalid skill name' });
+    }
+    const effectiveWorkingDir = (typeof workingDir === 'string' && workingDir.trim()) || process.cwd();
+    // Validate workingDir: must be absolute and not a forbidden system path
+    if (effectiveWorkingDir !== process.cwd()) {
+      if (!path.isAbsolute(effectiveWorkingDir)) {
+        return res.status(400).json({ error: 'workingDir must be an absolute path' });
+      }
+      const normalized = path.normalize(effectiveWorkingDir);
+      if (FORBIDDEN_PATHS.some((fp) => normalized === fp || normalized.startsWith(fp + path.sep))) {
+        return res.status(400).json({ error: 'Invalid workingDir' });
+      }
+    }
+    const skillMdPath = await findSkillMdPath(name, effectiveWorkingDir);
+    if (!skillMdPath) {
+      return res.status(404).json({ error: 'Skill not found' });
+    }
+    const content = await fs.readFile(skillMdPath, 'utf-8');
+    res.json({ path: skillMdPath, content });
+  } catch (error) {
+    console.error('[skills] resolve error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // GET / — return the file tree of the global skills/ directory
 router.get('/', async (req, res) => {

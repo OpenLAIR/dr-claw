@@ -13,6 +13,7 @@ import { splitLegacyGeminiThoughtContent } from '../shared/geminiThoughtParser.j
 import { classifyError } from '../shared/errorClassifier.js';
 import { buildGeminiThinkingConfig } from '../shared/geminiThinkingSupport.js';
 import { buildMemoryBlock } from './utils/memoryPrompt.js';
+import { expandSkillCommand } from './utils/skillExpander.js';
 
 // Use cross-spawn on Windows for better command execution
 const spawnFunction = process.platform === 'win32' ? crossSpawn : spawn;
@@ -607,8 +608,12 @@ export async function spawnGemini(command, options = {}, ws) {
     }
 
     if (command && command.trim()) {
+      // Expand /skill-name slash commands into full SKILL.md instructions
+      // so the Gemini model receives actionable procedures.
+      const expandedCommand = await expandSkillCommand(command.trim(), workingDir);
+
       const effectiveAttachments = attachments || images;
-      const attachmentResult = await handleGeminiAttachments(command, effectiveAttachments, workingDir);
+      const attachmentResult = await handleGeminiAttachments(expandedCommand, effectiveAttachments, workingDir);
       tempFilePaths = attachmentResult.tempFilePaths;
       if (attachmentResult.tempDir) {
         tempDirs.push(attachmentResult.tempDir);
