@@ -276,6 +276,7 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
   const [copiedPath, setCopiedPath] = useState(null);
   const [loadingDirs, setLoadingDirs] = useState(new Set());
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  const [fullTreeForSearch, setFullTreeForSearch] = useState(null);
   const searchTimerRef = useRef(null);
   const uploadTargetDirRef = useRef('');
   const fileInputRef = useRef(null);
@@ -409,6 +410,7 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
 
   useEffect(() => {
     if (selectedProject) {
+      setFullTreeForSearch(null);
       fetchFiles();
     }
   }, [selectedProject]);
@@ -429,11 +431,35 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
     return () => { if (searchTimerRef.current) clearTimeout(searchTimerRef.current); };
   }, [searchQuery]);
 
+  // When search is active, fetch full tree to ensure deep files are searchable
   useEffect(() => {
     if (!debouncedSearchQuery.trim()) {
+      setFullTreeForSearch(null);
       setFilteredFiles(files);
-    } else {
-      const filtered = filterFiles(files, debouncedSearchQuery.toLowerCase());
+      return;
+    }
+
+    let cancelled = false;
+    const fetchAndFilter = async () => {
+      let sourceTree = fullTreeForSearch || files;
+
+      // Fetch full tree if we haven't already
+      if (!fullTreeForSearch && selectedProject) {
+        try {
+          const response = await api.getFiles(selectedProject.name, { maxDepth: 10 });
+          if (!cancelled && response.ok) {
+            const data = await response.json();
+            setFullTreeForSearch(data);
+            sourceTree = data;
+          }
+        } catch (error) {
+          console.error('Error fetching full tree for search:', error);
+        }
+      }
+
+      if (cancelled) return;
+
+      const filtered = filterFiles(sourceTree, debouncedSearchQuery.toLowerCase());
       setFilteredFiles(filtered);
 
       // Batch-collect all paths to expand, then update state once
@@ -452,8 +478,11 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
         pathsToExpand.forEach(p => next.add(p));
         return next;
       });
-    }
-  }, [files, debouncedSearchQuery]);
+    };
+
+    fetchAndFilter();
+    return () => { cancelled = true; };
+  }, [files, debouncedSearchQuery, selectedProject]);
 
   const filterFiles = (items, query) => {
     return items.reduce((filtered, item) => {
@@ -478,9 +507,7 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
   const fetchFiles = async () => {
     setLoading(true);
     try {
-      const response = await api.getFiles(selectedProject.name, {
-        metadata: viewMode !== 'simple',
-      });
+      const response = await api.getFiles(selectedProject.name);
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -641,6 +668,22 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
     );
   };
 
+  // ─── Directory children renderer (shared across view modes) ────────
+  const renderDirChildren = (item, level, renderFn) => {
+    if (loadingDirs.has(item.path)) {
+      return (
+        <div className="flex items-center gap-1.5 py-1" style={{ paddingLeft: `${(level + 1) * 16 + 4}px` }}>
+          <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
+          <span className="text-xs text-muted-foreground">{t('fileTree.loading')}</span>
+        </div>
+      );
+    }
+    if (item.children && item.children.length > 0) {
+      return renderFn(item.children, level + 1);
+    }
+    return null;
+  };
+
   // ─── Simple (Tree) View ────────────────────────────────────────────
   const renderFileTree = (items, level = 0) => {
     return items.map((item) => {
@@ -683,14 +726,7 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
                 style={{ left: `${level * 16 + 14}px` }}
                 aria-hidden="true"
               />
-              {loadingDirs.has(item.path) ? (
-                <div className="flex items-center gap-1.5 py-1" style={{ paddingLeft: `${(level + 1) * 16 + 4}px` }}>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">{t('fileTree.loading')}</span>
-                </div>
-              ) : item.children && item.children.length > 0 ? (
-                renderFileTree(item.children, level + 1)
-              ) : null}
+              {renderDirChildren(item, level, renderFileTree)}
             </div>
           )}
         </div>
@@ -750,14 +786,7 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
                 style={{ left: `${level * 16 + 14}px` }}
                 aria-hidden="true"
               />
-              {loadingDirs.has(item.path) ? (
-                <div className="flex items-center gap-1.5 py-1" style={{ paddingLeft: `${(level + 1) * 16 + 4}px` }}>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">{t('fileTree.loading')}</span>
-                </div>
-              ) : item.children && item.children.length > 0 ? (
-                renderDetailedView(item.children, level + 1)
-              ) : null}
+              {renderDirChildren(item, level, renderDetailedView)}
             </div>
           )}
         </div>
@@ -816,14 +845,7 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
                 style={{ left: `${level * 16 + 14}px` }}
                 aria-hidden="true"
               />
-              {loadingDirs.has(item.path) ? (
-                <div className="flex items-center gap-1.5 py-1" style={{ paddingLeft: `${(level + 1) * 16 + 4}px` }}>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">{t('fileTree.loading')}</span>
-                </div>
-              ) : item.children && item.children.length > 0 ? (
-                renderCompactView(item.children, level + 1)
-              ) : null}
+              {renderDirChildren(item, level, renderCompactView)}
             </div>
           )}
         </div>
