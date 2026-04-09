@@ -202,8 +202,10 @@ async function setupProjectsWatcher() {
                 // Clear project directory cache when files change
                 clearProjectDirectoryCache();
 
-                // Index CLI-created sessions accumulated during debounce window
-                const eventsToProcess = pendingClaudeSessionEvents.splice(0);
+                // Index CLI-created sessions accumulated during debounce window (deduplicated)
+                const eventsToProcess = [...new Map(
+                    pendingClaudeSessionEvents.splice(0).map(e => [`${e.projectName}/${e.sessionId}`, e])
+                ).values()];
                 for (const { projectName, sessionId } of eventsToProcess) {
                     try {
                         await reconcileClaudeSessionIndex(projectName, sessionId);
