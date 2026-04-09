@@ -22,6 +22,7 @@ import { applyStageTagsToSession, recordIndexedSession } from './utils/sessionIn
 import { classifyError, classifySDKError } from '../shared/errorClassifier.js';
 import { buildTempAttachmentFilename } from './utils/imageAttachmentFiles.js';
 import { buildCodexRealtimeTokenBudget } from './utils/sessionTokenUsage.js';
+import { expandSkillCommand } from './utils/skillExpander.js';
 
 // Track active sessions
 const activeCodexSessions = new Map();
@@ -446,14 +447,17 @@ export async function queryCodex(command, options = {}, ws) {
 
     publishSessionId(thread.id || sessionId || null);
 
-    const preparedInput = await prepareCodexInput(command, images, workingDirectory);
+    // Expand /skill-name slash commands into full SKILL.md instructions
+    const expandedCommand = await expandSkillCommand(command?.trim?.() || command, workingDirectory);
+
+    const preparedInput = await prepareCodexInput(expandedCommand, images, workingDirectory);
     tempImagePaths = preparedInput.tempImagePaths;
     tempDir = preparedInput.tempDir;
 
     // Execute with streaming
     // Prefer pre-uploaded attachments (buildCodexInput) over base64 temp images (prepareCodexInput)
     const codexInput = attachments
-      ? buildCodexInput(command, attachments)
+      ? buildCodexInput(expandedCommand, attachments)
       : preparedInput.input;
     const streamedTurn = await thread.runStreamed(codexInput, {
       signal: abortController.signal

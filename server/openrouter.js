@@ -21,6 +21,7 @@ import { classifyError } from '../shared/errorClassifier.js';
 import { applyStageTagsToSession, recordIndexedSession } from './utils/sessionIndex.js';
 import { createRequestId, waitForToolApproval, matchesToolPermission } from './utils/permissions.js';
 import { buildMemoryBlock } from './utils/memoryPrompt.js';
+import { expandSkillCommand } from './utils/skillExpander.js';
 
 const execAsync = promisify(exec);
 
@@ -659,8 +660,11 @@ export async function queryOpenRouter(command, options = {}, ws) {
       }
     }
 
-    messages.push({ role: 'user', content: command });
-    await appendSession(currentSessionId, { role: 'user', content: command }).catch(() => {});
+    // Expand /skill-name slash commands into full SKILL.md instructions
+    const expandedCommand = await expandSkillCommand(command?.trim?.() || command, workingDirectory);
+
+    messages.push({ role: 'user', content: expandedCommand });
+    await appendSession(currentSessionId, { role: 'user', content: expandedCommand }).catch(() => {});
 
     const tools = permissionMode === 'plan'
       ? TOOL_SCHEMAS.filter((t) => READ_ONLY_TOOLS.has(t.function.name))
