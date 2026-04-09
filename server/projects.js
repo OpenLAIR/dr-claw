@@ -1172,7 +1172,7 @@ async function reconcileClaudeSessionIndex(projectName, targetSessionId = null) 
     };
   }
 
-  return getSessions(projectName, 0, 0);
+  return getSessions(projectName, 0, Infinity);
 }
 
 async function reconcileGeminiSessionIndex(projectPath, options = {}) {
