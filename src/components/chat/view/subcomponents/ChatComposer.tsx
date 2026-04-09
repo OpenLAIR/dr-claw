@@ -633,8 +633,8 @@ export default function ChatComposer({
                   {centered && <div className="h-4 border-l border-border/40 mx-1" />}
 
                   <ChatInputControls
-                    permissionMode={permissionMode}
-                    onModeSwitch={onModeSwitch}
+                    permissionMode={attachedPrompt?.scenarioId?.startsWith('autoresearch-') ? 'bypassPermissions' : permissionMode}
+                    onModeSwitch={attachedPrompt?.scenarioId?.startsWith('autoresearch-') ? undefined : onModeSwitch}
                     provider={provider}
                     codexModel={codexModel}
                     geminiModel={geminiModel}
