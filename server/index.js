@@ -419,10 +419,12 @@ const wss = new WebSocketServer({
 // Make WebSocket server available to routes
 app.locals.wss = wss;
 
+// Parse VITE_PORT early so CORS reflects the actual frontend port.
+const CORS_VITE_PORT = parsePortNumber(process.env.VITE_PORT, DEFAULT_FRONTEND_PORT);
 app.use(cors({
   origin: process.env.DR_CLAW_CORS_ORIGINS
     ? process.env.DR_CLAW_CORS_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean)
-    : [`http://localhost:${getFrontendPortSync()}`, `http://127.0.0.1:${getFrontendPortSync()}`],
+    : [`http://localhost:${getFrontendPortSync(CORS_VITE_PORT)}`, `http://127.0.0.1:${getFrontendPortSync(CORS_VITE_PORT)}`],
   credentials: true,
 }));
 app.use(express.json({

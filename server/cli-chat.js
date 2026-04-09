@@ -12,61 +12,11 @@ import readline from 'readline';
 import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
-import { exec, spawn } from 'child_process';
+import { exec } from 'child_process';
 import { promisify } from 'util';
+import spawnAsync from './utils/spawnAsync.js';
 
 const execAsync = promisify(exec);
-
-function spawnAsync(command, args, options = {}) {
-  const maxBuffer = options.maxBuffer || 1024 * 1024; // 1 MB default
-  return new Promise((resolve, reject) => {
-    const child = spawn(command, args, {
-      ...options,
-      shell: false,
-    });
-
-    let stdout = '';
-    let stderr = '';
-    let truncated = false;
-
-    child.stdout.on('data', (data) => {
-      if (!truncated) {
-        stdout += data.toString();
-        if (stdout.length > maxBuffer) {
-          stdout = stdout.slice(0, maxBuffer);
-          truncated = true;
-          child.kill('SIGTERM');
-        }
-      }
-    });
-
-    child.stderr.on('data', (data) => {
-      if (stderr.length < maxBuffer) {
-        stderr += data.toString();
-        if (stderr.length > maxBuffer) {
-          stderr = stderr.slice(0, maxBuffer);
-        }
-      }
-    });
-
-    child.on('error', (error) => {
-      reject(error);
-    });
-
-    child.on('close', (code) => {
-      if (code === 0) {
-        resolve({ stdout, stderr });
-        return;
-      }
-
-      const error = new Error(`Command failed: ${command} ${args.join(' ')}`);
-      error.code = code;
-      error.stdout = stdout;
-      error.stderr = stderr;
-      reject(error);
-    });
-  });
-}
 
 const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 const MAX_AGENT_TURNS = 25;
