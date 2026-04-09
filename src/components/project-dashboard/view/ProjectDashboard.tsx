@@ -12,6 +12,9 @@ import { api } from '../../../utils/api';
 import { Button } from '../../ui/button';
 import { formatTimeAgo } from '../../../utils/dateUtils';
 import type { AppTab, Project, ProjectSession } from '../../../types/app';
+import { CLAUDE_MODELS, CODEX_MODELS, GEMINI_MODELS, OPENROUTER_MODELS } from '../../../../shared/modelConstants';
+
+type AutoResearchProvider = 'claude' | 'codex' | 'gemini' | 'openrouter';
 
 type ProjectDashboardProps = {
   projects: Project[];
