@@ -10,43 +10,49 @@ interface ChatTabBarProps {
 }
 
 export default function ChatTabBar({ tabs, processingSessions, onSwitchTab, onCloseTab, onNewTab }: ChatTabBarProps) {
-  if (tabs.length <= 1) return null;
+  if (tabs.length === 0) return null;
 
   return (
-    <div className="flex items-center border-b border-border/50 bg-background/80 px-1 h-9 shrink-0 overflow-x-auto">
+    <div className="flex items-center border-b border-border/50 bg-background/80 px-1 h-9 shrink-0 overflow-x-auto" role="tablist">
       {tabs.map(tab => {
         const isProcessing = tab.sessionId ? processingSessions.has(tab.sessionId) : false;
         return (
-          <button
-            key={tab.id}
-            onClick={() => onSwitchTab(tab.id)}
-            className={`
-              flex items-center gap-1.5 px-3 h-7 rounded-md text-xs shrink-0 max-w-[180px]
-              transition-colors group
-              ${tab.isActive
-                ? 'bg-accent text-accent-foreground'
-                : 'text-muted-foreground hover:bg-accent/50'}
-            `}
-          >
-            <span className="w-3 h-3 shrink-0 flex items-center justify-center">
-              {isProcessing ? (
-                <span className="block w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-              ) : (
-                <span className="block w-1.5 h-1.5 rounded-full bg-current opacity-40" />
-              )}
-            </span>
-
-            <span className="truncate">{tab.title}</span>
-
-            <span
-              role="button"
-              tabIndex={-1}
-              onClick={(e) => { e.stopPropagation(); onCloseTab(tab.id); }}
-              className="ml-1 opacity-0 group-hover:opacity-100 hover:bg-accent rounded p-0.5 cursor-pointer"
+          <div key={tab.id} className="flex items-center shrink-0 group">
+            <button
+              role="tab"
+              aria-selected={tab.isActive}
+              onClick={() => onSwitchTab(tab.id)}
+              className={`
+                flex items-center gap-1.5 px-3 h-7 rounded-l-md text-xs max-w-[160px]
+                transition-colors
+                ${tab.isActive
+                  ? 'bg-accent text-accent-foreground'
+                  : 'text-muted-foreground hover:bg-accent/50'}
+              `}
+            >
+              <span className="w-3 h-3 shrink-0 flex items-center justify-center">
+                {isProcessing ? (
+                  <span className="block w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                ) : (
+                  <span className="block w-1.5 h-1.5 rounded-full bg-current opacity-40" />
+                )}
+              </span>
+              <span className="truncate">{tab.title}</span>
+            </button>
+            <button
+              aria-label={`Close ${tab.title}`}
+              onClick={() => onCloseTab(tab.id)}
+              className={`
+                h-7 px-1 rounded-r-md transition-colors
+                opacity-0 group-hover:opacity-100 focus:opacity-100
+                ${tab.isActive
+                  ? 'bg-accent text-accent-foreground hover:bg-accent/80'
+                  : 'text-muted-foreground hover:bg-accent/50'}
+              `}
             >
               <X size={10} />
-            </span>
-          </button>
+            </button>
+          </div>
         );
       })}
 

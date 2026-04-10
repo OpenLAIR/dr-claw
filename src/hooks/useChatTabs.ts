@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import type { Project, ProjectSession, SessionProvider } from '../types/app';
 
 export interface ChatTab {
@@ -59,6 +59,8 @@ export function useChatTabs(
     });
   }, [selectedProject?.name]);
 
+  const pendingNavRef = useRef<string | null>(null);
+
   const closeTab = useCallback((tabId: string) => {
     setTabs(prev => {
       const idx = prev.findIndex(t => t.id === tabId);
@@ -70,9 +72,8 @@ export function useChatTabs(
         next[newActiveIdx] = { ...next[newActiveIdx], isActive: true };
         const activated = next[newActiveIdx];
         if (activated.sessionId) {
-          setTimeout(() => {
-            onNavigateToSession(activated.sessionId!, activated.provider || undefined, activated.projectName || undefined);
-          }, 0);
+          pendingNavRef.current = activated.sessionId;
+          onNavigateToSession(activated.sessionId, activated.provider || undefined, activated.projectName || undefined);
         }
       }
       return next;

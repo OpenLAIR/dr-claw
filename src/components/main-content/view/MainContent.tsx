@@ -96,6 +96,12 @@ function MainContent({
     }
   }, [selectedSession?.id, selectedProject?.name, activeTab]);
 
+  // When the active tab has sessionId=null (new chat), override selectedSession
+  // so ChatInterface shows the provider picker instead of stale conversation
+  const effectiveSession = chatTabs.activeTab
+    ? (chatTabs.activeTab.sessionId === null ? null : selectedSession)
+    : selectedSession;
+
   useEffect(() => {
     if (selectedProject && selectedProject !== currentProject) {
       setCurrentProject?.(selectedProject);
@@ -290,7 +296,7 @@ function MainContent({
             <ErrorBoundary showDetails>
               <ChatInterface
                 selectedProject={selectedProject}
-                selectedSession={selectedSession}
+                selectedSession={effectiveSession}
                 ws={ws}
                 sendMessage={sendMessage}
                 latestMessage={latestMessage}
