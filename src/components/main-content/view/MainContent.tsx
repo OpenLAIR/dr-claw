@@ -15,6 +15,8 @@ import MainContentStateView from './subcomponents/MainContentStateView';
 import EditorSidebar from './subcomponents/EditorSidebar';
 import type { MainContentProps } from '../types/types';
 
+import ChatTabBar from '../../chat/view/ChatTabBar';
+import { useChatTabs } from '../../../hooks/useChatTabs';
 import { useTaskMaster } from '../../../contexts/TaskMasterContext';
 import { useUiPreferences } from '../../../hooks/useUiPreferences';
 import { useEditorSidebar } from '../hooks/useEditorSidebar';
@@ -80,6 +82,15 @@ function MainContent({
     selectedProject,
     isMobile,
   });
+
+  const chatTabs = useChatTabs(selectedProject, onNavigateToSession);
+
+  // Sync external session selection into tab state
+  useEffect(() => {
+    if (selectedSession && selectedProject && activeTab === 'chat') {
+      chatTabs.openTab(selectedSession, selectedProject);
+    }
+  }, [selectedSession?.id, selectedProject?.name, activeTab]);
 
   useEffect(() => {
     if (selectedProject && selectedProject !== currentProject) {
@@ -264,7 +275,14 @@ function MainContent({
 
       <div className="flex-1 flex min-h-0 overflow-hidden">
         <div className={`flex flex-col min-h-0 overflow-hidden ${editorExpanded ? 'hidden' : ''} flex-1`}>
-          <div className={`h-full ${activeTab === 'chat' ? 'block' : 'hidden'}`}>
+          <div className={`h-full flex flex-col ${activeTab === 'chat' ? '' : 'hidden'}`}>
+            <ChatTabBar
+              tabs={chatTabs.tabs}
+              processingSessions={processingSessions}
+              onSwitchTab={chatTabs.switchTab}
+              onCloseTab={chatTabs.closeTab}
+              onNewTab={chatTabs.openNewTab}
+            />
             <ErrorBoundary showDetails>
               <ChatInterface
                 selectedProject={selectedProject}
