@@ -87,8 +87,12 @@ function MainContent({
 
   // Sync external session selection into tab state
   useEffect(() => {
-    if (selectedSession && selectedProject && activeTab === 'chat') {
+    if (activeTab !== 'chat') return;
+    if (selectedSession && selectedProject) {
       chatTabs.openTab(selectedSession, selectedProject);
+    } else if (!selectedSession && selectedProject && chatTabs.tabs.length > 0) {
+      // "New Session" was clicked (selectedSession=null) — open a new tab
+      chatTabs.openNewTab();
     }
   }, [selectedSession?.id, selectedProject?.name, activeTab]);
 
