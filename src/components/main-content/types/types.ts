@@ -6,6 +6,7 @@ import type {
   Project,
   ProjectSession,
   SessionMode,
+  SessionNavigationSource,
   SessionProvider,
   TrashProject,
 } from '../../../types/app';
@@ -81,7 +82,9 @@ export interface MainContentProps {
     targetSessionId: string,
     targetProvider?: SessionProvider,
     targetProjectName?: string,
+    options?: { source?: SessionNavigationSource },
   ) => void;
+  sessionNavigationSource: SessionNavigationSource;
   onShowSettings: () => void;
   externalMessageUpdate: number;
   pendingAutoIntake?: PendingAutoIntake | null;

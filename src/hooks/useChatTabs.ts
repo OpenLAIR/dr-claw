@@ -1,5 +1,10 @@
 import { useState, useCallback, useRef } from 'react';
-import type { Project, ProjectSession, SessionProvider } from '../types/app';
+import type {
+  Project,
+  ProjectSession,
+  SessionNavigationSource,
+  SessionProvider,
+} from '../types/app';
 
 export interface ChatTab {
   id: string;
@@ -18,11 +23,17 @@ export interface UseChatTabsReturn {
   closeTab: (tabId: string) => void;
   switchTab: (tabId: string) => void;
   updateTabTitle: (tabId: string, title: string) => void;
+  updateActiveTabSession: (session: ProjectSession, project: Project) => void;
 }
 
 export function useChatTabs(
   selectedProject: Project | null,
-  onNavigateToSession: (sessionId: string, provider?: SessionProvider, projectName?: string) => void,
+  onNavigateToSession: (
+    sessionId: string,
+    provider?: SessionProvider,
+    projectName?: string,
+    options?: { source?: SessionNavigationSource },
+  ) => void,
 ): UseChatTabsReturn {
   const [tabs, setTabs] = useState<ChatTab[]>([]);
 
@@ -95,6 +106,31 @@ export function useChatTabs(
     setTabs(prev => prev.map(t => t.id === tabId ? { ...t, title } : t));
   }, []);
 
+  // Update the active tab's sessionId when server assigns a real ID to a new conversation.
+  // This prevents a new tab from being created when the session-created event fires.
+  const updateActiveTabSession = useCallback((session: ProjectSession, project: Project) => {
+    setTabs(prev => {
+      const active = prev.find(t => t.isActive);
+      if (!active) return prev;
+      // If the active tab already has this sessionId, no change needed
+      if (active.sessionId === session.id) return prev;
+      // If another tab already has this sessionId, just switch to it
+      const existing = prev.find(t => t.sessionId === session.id);
+      if (existing) {
+        return prev.map(t => ({ ...t, isActive: t.id === existing.id }));
+      }
+      // Otherwise update the active tab in-place (new session ID assigned to current conversation)
+      return prev.map(t => t.isActive ? {
+        ...t,
+        id: session.id || t.id,
+        sessionId: session.id || null,
+        provider: session.__provider || t.provider,
+        projectName: project.name,
+        title: session.name || session.title || t.title,
+      } : t);
+    });
+  }, []);
+
   const activeTab = tabs.find(t => t.isActive) || null;
 
   return {
@@ -105,5 +141,6 @@ export function useChatTabs(
     closeTab,
     switchTab,
     updateTabTitle,
+    updateActiveTabSession,
   };
 }

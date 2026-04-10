@@ -15,6 +15,7 @@ import type {
   ProjectSession,
   ProjectsUpdatedMessage,
   PendingAutoIntake,
+  SessionNavigationSource,
   SessionMode,
   SessionProvider,
   SessionTag,
@@ -275,6 +276,7 @@ export function useProjectsState({
   const [pendingAutoIntake, setPendingAutoIntake] = useState<PendingAutoIntake | null>(null);
   const [importedProjectAnalysisPrompt, setImportedProjectAnalysisPrompt] = useState<ImportedProjectAnalysisPrompt | null>(null);
   const [newSessionMode, setNewSessionMode] = useState<SessionMode>(() => readStoredNewSessionMode());
+  const [sessionNavigationSource, setSessionNavigationSource] = useState<SessionNavigationSource>('user');
 
   const loadingProgressTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const projectsUpdateDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -609,10 +611,13 @@ export function useProjectsState({
     targetSessionId: string,
     targetProvider?: ProjectSession['__provider'],
     targetProjectName?: string,
+    options?: { source?: SessionNavigationSource },
   ) => {
     if (!targetSessionId) {
       return;
     }
+
+    setSessionNavigationSource(options?.source ?? 'user');
 
     const shouldSwitchTab = !selectedSession || selectedSession.id !== targetSessionId;
     let matchedProject: Project | null = null;
@@ -699,6 +704,7 @@ export function useProjectsState({
 
   const handleProjectSelect = useCallback(
     (project: Project) => {
+      setSessionNavigationSource('user');
       setSelectedProject(project);
       setSelectedSession(null);
       setActiveTab((currentTab) =>
@@ -717,6 +723,7 @@ export function useProjectsState({
 
   const handleSessionSelect = useCallback(
     (session: ProjectSession) => {
+      setSessionNavigationSource('user');
       setSelectedSession(session);
 
       if (session.mode) {
@@ -749,6 +756,7 @@ export function useProjectsState({
 
   const handleNewSession = useCallback(
     (project: Project, mode: SessionMode = 'research') => {
+      setSessionNavigationSource('user');
       setSelectedProject(project);
       setSelectedSession(null);
       setActiveTab('chat');
@@ -1054,6 +1062,7 @@ export function useProjectsState({
     externalMessageUpdate,
     importedProjectAnalysisPrompt,
     newSessionMode,
+    sessionNavigationSource,
     setNewSessionMode,
     setActiveTab,
     setSidebarOpen,

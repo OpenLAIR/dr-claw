@@ -10,7 +10,11 @@ interface ChatTabBarProps {
 }
 
 export default function ChatTabBar({ tabs, processingSessions, onSwitchTab, onCloseTab, onNewTab }: ChatTabBarProps) {
-  if (tabs.length === 0) return null;
+  // Keep this sibling mounted even with zero tabs so ChatInterface does not
+  // get remounted when the first real tab appears after session creation.
+  if (tabs.length === 0) {
+    return <div className="hidden" aria-hidden="true" />;
+  }
 
   return (
     <div className="flex items-center border-b border-border/50 bg-background/80 px-1 h-9 shrink-0 overflow-x-auto" role="tablist">

@@ -3,6 +3,7 @@ import type {
   PendingAutoIntake,
   Project,
   ProjectSession,
+  SessionNavigationSource,
   SessionMode,
   SessionProvider,
 } from '../../../types/app';
@@ -147,6 +148,7 @@ export interface ChatInterfaceProps {
     targetSessionId: string,
     targetProvider?: SessionProvider,
     targetProjectName?: string,
+    options?: { source?: SessionNavigationSource },
   ) => void;
   onShowSettings?: () => void;
   autoExpandTools?: boolean;

@@ -12,9 +12,28 @@ import {
   createCachedDiffCalculator,
   type DiffCalculator,
 } from '../utils/messageTransforms';
+import { shouldPreserveOptimisticMessagesOnSessionSelect } from './chatSessionTransition';
 
 const MESSAGES_PER_PAGE = 20;
 const INITIAL_VISIBLE_MESSAGES = 100;
+
+// In-memory cache for session messages to avoid re-fetching on tab switch.
+// Keyed by `${projectName}:${sessionId}`. Evicts oldest entry when over limit.
+const SESSION_MESSAGE_CACHE_MAX = 10;
+const sessionMessageCache = new Map<string, { messages: any[]; tokenUsage?: any; total: number; hasMore: boolean }>();
+function cacheSessionMessages(key: string, data: { messages: any[]; tokenUsage?: any; total: number; hasMore: boolean }) {
+  if (sessionMessageCache.size >= SESSION_MESSAGE_CACHE_MAX) {
+    const oldest = sessionMessageCache.keys().next().value;
+    if (oldest) sessionMessageCache.delete(oldest);
+  }
+  sessionMessageCache.set(key, data);
+}
+function getCachedSessionMessages(key: string) {
+  return sessionMessageCache.get(key) || null;
+}
+export function invalidateSessionMessageCache(projectName: string, sessionId: string) {
+  sessionMessageCache.delete(`${projectName}:${sessionId}`);
+}
 /** Grace period for WebSocket status-check response before clearing stale resume state */
 const STATUS_VALIDATION_TIMEOUT_MS = 5000;
 
@@ -139,6 +158,7 @@ export function useChatSessionState({
   const createDiff = useMemo<DiffCalculator>(() => createCachedDiffCalculator(), []);
 
   const pendingStatusValidationSessionIdRef = useRef(pendingStatusValidationSessionId);
+  const deferredPromotedSessionLoadRef = useRef<string | null>(null);
   useEffect(() => {
     pendingStatusValidationSessionIdRef.current = pendingStatusValidationSessionId;
   }, [pendingStatusValidationSessionId]);
@@ -166,7 +186,19 @@ export function useChatSessionState({
       }
 
       const isInitialLoad = !loadMore;
+
+      // Check in-memory cache for initial loads (tab switching)
+      const cacheKey = `${projectName}:${sessionId}`;
       if (isInitialLoad) {
+        const cached = getCachedSessionMessages(cacheKey);
+        if (cached) {
+          if (cached.tokenUsage) setTokenBudget(cached.tokenUsage);
+          setHasMoreMessages(cached.hasMore);
+          setTotalMessages(cached.total);
+          messagesOffsetRef.current = cached.messages.length;
+          setIsLoadingSessionMessages(false);
+          return cached.messages;
+        }
         setIsLoadingSessionMessages(true);
       } else {
         setIsLoadingMoreMessages(true);
@@ -196,6 +228,9 @@ export function useChatSessionState({
           setHasMoreMessages(Boolean(data.hasMore));
           setTotalMessages(Number(data.total || 0));
           messagesOffsetRef.current = currentOffset + loadedCount;
+          if (isInitialLoad) {
+            cacheSessionMessages(cacheKey, { messages: data.messages || [], tokenUsage: data.tokenUsage, total: Number(data.total || 0), hasMore: Boolean(data.hasMore) });
+          }
           return data.messages || [];
         }
 
@@ -203,6 +238,9 @@ export function useChatSessionState({
         setHasMoreMessages(false);
         setTotalMessages(messages.length);
         messagesOffsetRef.current = messages.length;
+        if (isInitialLoad) {
+          cacheSessionMessages(cacheKey, { messages, tokenUsage: data.tokenUsage, total: messages.length, hasMore: false });
+        }
         return messages;
       } catch (error) {
         console.error('Error loading session messages:', error);
@@ -388,12 +426,30 @@ export function useChatSessionState({
   useEffect(() => {
     const loadMessages = async () => {
       if (selectedSession && selectedProject) {
+        if (
+          deferredPromotedSessionLoadRef.current
+          && deferredPromotedSessionLoadRef.current !== selectedSession.id
+        ) {
+          deferredPromotedSessionLoadRef.current = null;
+        }
+
         const currentProvider = selectedSession.__provider || (localStorage.getItem('selected-provider') as Provider) || 'claude';
         isLoadingSessionRef.current = true;
+        const shouldPreserveOptimisticMessages = shouldPreserveOptimisticMessagesOnSessionSelect({
+          currentSessionId,
+          nextSelectedSessionId: selectedSession.id,
+          pendingViewSessionId: pendingViewSessionRef.current?.sessionId || null,
+          deferredLoadSessionId: deferredPromotedSessionLoadRef.current,
+          chatMessageCount: chatMessages.length,
+          isSystemSessionChange,
+        });
+        if (shouldPreserveOptimisticMessages) {
+          deferredPromotedSessionLoadRef.current = selectedSession.id;
+        }
 
         const sessionChanged = currentSessionId !== null && currentSessionId !== selectedSession.id;
         if (sessionChanged) {
-          if (!isSystemSessionChange) {
+          if (!shouldPreserveOptimisticMessages) {
             resetStreamingState();
             pendingViewSessionRef.current = null;
             setChatMessages([]);
@@ -439,18 +495,18 @@ export function useChatSessionState({
           setCurrentSessionId(selectedSession.id);
           sessionStorage.setItem('cursorSessionId', selectedSession.id);
 
-          if (!isSystemSessionChange) {
+          if (!shouldPreserveOptimisticMessages) {
             const projectPath = selectedProject.fullPath || selectedProject.path || '';
             const converted = await loadCursorSessionMessages(projectPath, selectedSession.id);
             setSessionMessages([]);
             setChatMessages(converted);
-          } else {
+          } else if (isSystemSessionChange) {
             setIsSystemSessionChange(false);
           }
         } else {
           setCurrentSessionId(selectedSession.id);
 
-          if (!isSystemSessionChange) {
+          if (!shouldPreserveOptimisticMessages) {
             const messages = await loadSessionMessages(
               selectedProject.name,
               selectedSession.id,
@@ -458,11 +514,12 @@ export function useChatSessionState({
               currentProvider,
             );
             setSessionMessages(messages);
-          } else {
+          } else if (isSystemSessionChange) {
             setIsSystemSessionChange(false);
           }
         }
       } else {
+        deferredPromotedSessionLoadRef.current = null;
         if (!isSystemSessionChange) {
           resetStreamingState();
           pendingViewSessionRef.current = null;

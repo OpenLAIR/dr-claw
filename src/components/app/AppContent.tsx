@@ -53,6 +53,7 @@ export default function AppContent() {
     externalMessageUpdate,
     importedProjectAnalysisPrompt,
     newSessionMode,
+    sessionNavigationSource,
     setNewSessionMode,
     setActiveTab,
     setSidebarOpen,
@@ -287,8 +288,9 @@ export default function AppContent() {
           onSessionNotProcessing={markSessionAsNotProcessing}
           processingSessions={processingSessions}
           onReplaceTemporarySession={replaceTemporarySession}
-          onNavigateToSession={(targetSessionId: string, targetProvider?, targetProjectName?) =>
-            handleNavigateToSession(targetSessionId, targetProvider, targetProjectName)}
+          onNavigateToSession={(targetSessionId: string, targetProvider?, targetProjectName?, options?) =>
+            handleNavigateToSession(targetSessionId, targetProvider, targetProjectName, options)}
+          sessionNavigationSource={sessionNavigationSource}
           onShowSettings={() => setShowSettings(true)}
           externalMessageUpdate={externalMessageUpdate}
           pendingAutoIntake={pendingAutoIntake}

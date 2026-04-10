@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 import ChatInterface from '../../chat/view/ChatInterface';
 import SkillsDashboard from '../../SkillsDashboard';
@@ -23,6 +23,7 @@ import { useEditorSidebar } from '../hooks/useEditorSidebar';
 import type { Project } from '../../../types/app';
 import type { Reference } from '../../references/types';
 import { queueSkillCommandDraft } from '../../../utils/skillCommandDraft';
+import { resolveChatTabSyncAction } from './chatTabSync';
 
 type TaskMasterContextValue = {
   currentProject?: Project | null;
@@ -51,6 +52,7 @@ function MainContent({
   processingSessions,
   onReplaceTemporarySession,
   onNavigateToSession,
+  sessionNavigationSource,
   onShowSettings,
   externalMessageUpdate,
   pendingAutoIntake,
@@ -85,22 +87,40 @@ function MainContent({
 
   const chatTabs = useChatTabs(selectedProject, onNavigateToSession);
 
-  // Sync external session selection into tab state
+  // Track previous selectedSession ID to detect user-initiated navigation
+  // (sidebar click, project switch) vs system-initiated changes (session-created).
+  // Only sync tabs on user navigation — system changes must NOT create/update tabs.
+  const prevSessionRef = useRef<string | null | undefined>(undefined);
   useEffect(() => {
-    if (activeTab !== 'chat') return;
-    if (selectedSession && selectedProject) {
-      chatTabs.openTab(selectedSession, selectedProject);
-    } else if (!selectedSession && selectedProject && chatTabs.tabs.length > 0) {
-      // "New Session" was clicked (selectedSession=null) — open a new tab
-      chatTabs.openNewTab();
-    }
-  }, [selectedSession?.id, selectedProject?.name, activeTab]);
+    const prevId = prevSessionRef.current;
+    const currId = selectedSession?.id ?? null;
+    prevSessionRef.current = currId;
 
-  // When the active tab has sessionId=null (new chat), override selectedSession
-  // so ChatInterface shows the provider picker instead of stale conversation
-  const effectiveSession = chatTabs.activeTab
-    ? (chatTabs.activeTab.sessionId === null ? null : selectedSession)
-    : selectedSession;
+    if (prevId === undefined) return;
+
+    const action = resolveChatTabSyncAction({
+      activeAppTab: activeTab,
+      hasSelectedProject: Boolean(selectedProject),
+      nextSessionId: currId,
+      activeChatTabSessionId: chatTabs.activeTab?.sessionId,
+      tabCount: chatTabs.tabs.length,
+      navigationSource: sessionNavigationSource,
+    });
+
+    if (action === 'open-new-tab') {
+      chatTabs.openNewTab();
+      return;
+    }
+
+    if (action === 'update-active-tab-session' && currId && selectedProject) {
+      chatTabs.updateActiveTabSession(selectedSession!, selectedProject);
+      return;
+    }
+
+    if (action === 'open-tab' && currId && selectedProject) {
+      chatTabs.openTab(selectedSession!, selectedProject);
+    }
+  }, [selectedSession?.id, selectedProject?.name, activeTab, sessionNavigationSource]);
 
   useEffect(() => {
     if (selectedProject && selectedProject !== currentProject) {
@@ -296,7 +316,7 @@ function MainContent({
             <ErrorBoundary showDetails>
               <ChatInterface
                 selectedProject={selectedProject}
-                selectedSession={effectiveSession}
+                selectedSession={selectedSession}
                 ws={ws}
                 sendMessage={sendMessage}
                 latestMessage={latestMessage}
