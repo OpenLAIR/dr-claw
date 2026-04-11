@@ -22,6 +22,7 @@ import { classifyError } from '../shared/errorClassifier.js';
 import { applyStageTagsToSession, recordIndexedSession } from './utils/sessionIndex.js';
 import { createRequestId, waitForToolApproval, matchesToolPermission } from './utils/permissions.js';
 import { buildMemoryBlock } from './utils/memoryPrompt.js';
+import { COMPUTE_GUARD_BLOCK } from './utils/computeGuardPrompt.js';
 import { expandSkillCommand } from './utils/skillExpander.js';
 import { safePath } from './utils/safePath.js';
 
@@ -658,7 +659,7 @@ export async function queryOpenRouter(command, options = {}, ws) {
 
     // ── Build conversation ───────────────────���─────────────────────────
     const memoryBlock = options.userId ? buildMemoryBlock(options.userId) : '';
-    const systemContent = (customSystemPrompt || await buildSystemPrompt(workingDirectory)) + memoryBlock;
+    const systemContent = (customSystemPrompt || await buildSystemPrompt(workingDirectory)) + memoryBlock + COMPUTE_GUARD_BLOCK;
     const messages = [{ role: 'system', content: systemContent }];
 
     if (sessionId) {

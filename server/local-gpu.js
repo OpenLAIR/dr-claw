@@ -20,6 +20,7 @@ import { classifyError } from '../shared/errorClassifier.js';
 import { applyStageTagsToSession, recordIndexedSession } from './utils/sessionIndex.js';
 import { createRequestId, waitForToolApproval, matchesToolPermission } from './utils/permissions.js';
 import { buildMemoryBlock } from './utils/memoryPrompt.js';
+import { COMPUTE_GUARD_BLOCK } from './utils/computeGuardPrompt.js';
 
 const execAsync = promisify(exec);
 const execFileAsync = promisify(execFile);
@@ -765,7 +766,7 @@ export async function queryLocalGPU(command, options = {}, ws) {
     });
 
     const memoryBlock = options.userId ? buildMemoryBlock(options.userId) : '';
-    const systemContent = (customSystemPrompt || await buildSystemPrompt(workingDirectory)) + memoryBlock;
+    const systemContent = (customSystemPrompt || await buildSystemPrompt(workingDirectory)) + memoryBlock + COMPUTE_GUARD_BLOCK;
     const messages = [{ role: 'system', content: systemContent }];
 
     if (sessionId) {

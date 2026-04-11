@@ -13,6 +13,7 @@ import { splitLegacyGeminiThoughtContent } from '../shared/geminiThoughtParser.j
 import { classifyError } from '../shared/errorClassifier.js';
 import { buildGeminiThinkingConfig } from '../shared/geminiThinkingSupport.js';
 import { buildMemoryBlock } from './utils/memoryPrompt.js';
+import { COMPUTE_GUARD_BLOCK } from './utils/computeGuardPrompt.js';
 import { expandSkillCommand } from './utils/skillExpander.js';
 
 // Use cross-spawn on Windows for better command execution
@@ -621,8 +622,9 @@ export async function spawnGemini(command, options = {}, ws) {
       // Memory is prepended to the user prompt because Gemini CLI uses --prompt flag
       // and does not expose a separate system instruction API.
       const memoryBlock = options.userId ? buildMemoryBlock(options.userId) : '';
-      const effectivePrompt = memoryBlock
-        ? `${memoryBlock}\n\n${attachmentResult.modifiedCommand}`
+      const guardedMemory = (memoryBlock + COMPUTE_GUARD_BLOCK).trim();
+      const effectivePrompt = guardedMemory
+        ? `${guardedMemory}\n\n${attachmentResult.modifiedCommand}`
         : `${attachmentResult.modifiedCommand}`;
       args.push('--prompt', effectivePrompt);
 

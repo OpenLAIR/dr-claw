@@ -14,6 +14,7 @@ import { buildGeminiThinkingConfig } from '../shared/geminiThinkingSupport.js';
 import { spawnGemini } from './gemini-cli.js';
 import { BTW_SYSTEM_PROMPT, buildBtwUserMessage } from './utils/btw.js';
 import { GEMINI_MODELS } from '../shared/modelConstants.js';
+import { COMPUTE_GUARD_BLOCK } from './utils/computeGuardPrompt.js';
 
 const execAsync = promisify(exec);
 const execFileAsync = promisify(execFile);
@@ -1532,7 +1533,7 @@ export async function queryGeminiApi(command, options = {}, ws) {
       projectName: workingDirectory ? encodeProjectPath(workingDirectory) : undefined,
     });
 
-    const systemText = customSystemPrompt || await buildSystemPrompt(workingDirectory);
+    const systemText = (customSystemPrompt || await buildSystemPrompt(workingDirectory)) + COMPUTE_GUARD_BLOCK;
     const systemInstruction = { parts: [{ text: systemText }] };
     const contents = [];
 

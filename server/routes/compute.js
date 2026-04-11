@@ -495,6 +495,125 @@ router.get('/local/monitor', async (_req, res) => {
   }
 });
 
+// GET /api/compute/check-available - Quick compute availability check for aris-compute-guard
+router.get('/check-available', async (_req, res) => {
+  const { exec } = await import('child_process');
+  const os = await import('os');
+  const { promisify } = await import('util');
+  const execAsync = promisify(exec);
+
+  const run = async (cmd) => {
+    try {
+      const { stdout } = await execAsync(cmd, { timeout: 15000 });
+      return stdout.trim();
+    } catch {
+      return '';
+    }
+  };
+
+  try {
+    const platform = os.default.platform();
+    const result = {
+      available: false,
+      environment: 'local',
+      reason: '',
+      gpus: [],
+      freeGpuCount: 0,
+      suggestions: [],
+    };
+
+    // Check for NVIDIA GPU via nvidia-smi
+    const gpuRaw = await run(
+      'nvidia-smi --query-gpu=index,name,memory.used,memory.total --format=csv,noheader,nounits'
+    );
+
+    if (gpuRaw) {
+      for (const line of gpuRaw.split('\n')) {
+        const parts = line.split(',').map(s => s.trim());
+        if (parts.length >= 4) {
+          const memUsed = parseFloat(parts[2]) || 0;
+          const memTotal = parseFloat(parts[3]) || 0;
+          const isFree = memUsed < 500;
+          result.gpus.push({
+            index: parseInt(parts[0]) || 0,
+            name: parts[1] || 'Unknown',
+            memUsedMB: memUsed,
+            memTotalMB: memTotal,
+            free: isFree,
+          });
+          if (isFree) result.freeGpuCount++;
+        }
+      }
+
+      if (result.freeGpuCount > 0) {
+        result.available = true;
+        result.reason = `${result.freeGpuCount} free GPU(s) detected via CUDA`;
+      } else {
+        result.reason = 'All GPUs are occupied (memory.used >= 500 MiB on every GPU)';
+        result.suggestions.push(
+          'Free up GPU memory by stopping other processes (check with nvidia-smi)',
+          'Use gpu: modal in CLAUDE.md for serverless GPU',
+          'Use gpu: vast in CLAUDE.md to rent on-demand GPU',
+        );
+      }
+    } else if (platform === 'darwin') {
+      // macOS — check for MPS
+      const mpsCheck = await run(
+        'python3 -c "import torch; print(hasattr(torch.backends, \'mps\') and torch.backends.mps.is_available())" 2>/dev/null'
+      );
+
+      if (mpsCheck === 'True') {
+        result.available = true;
+        result.reason = 'Apple MPS (Metal Performance Shaders) available';
+        result.gpus.push({ index: 0, name: 'Apple MPS', memUsedMB: 0, memTotalMB: 0, free: true });
+        result.freeGpuCount = 1;
+      } else {
+        result.available = false;
+        result.reason = 'No GPU available — macOS without MPS support or PyTorch not installed';
+        result.suggestions.push(
+          'Install PyTorch with MPS support: pip install torch',
+          'Use gpu: modal in CLAUDE.md for serverless GPU',
+          'Use gpu: vast in CLAUDE.md to rent on-demand GPU',
+        );
+      }
+    } else {
+      result.available = false;
+      result.reason = 'No GPU detected — nvidia-smi not found and not on macOS';
+      result.suggestions.push(
+        'Install NVIDIA drivers and CUDA toolkit',
+        'Use gpu: modal in CLAUDE.md for serverless GPU',
+        'Use gpu: vast in CLAUDE.md to rent on-demand GPU',
+        'Configure a remote GPU server with gpu: remote in CLAUDE.md',
+      );
+    }
+
+    // Also check remote compute node availability
+    let remoteAvailable = false;
+    try {
+      const activeNode = await getActiveNode();
+      if (activeNode) {
+        result.remoteNode = { name: activeNode.name, host: activeNode.host };
+        remoteAvailable = true;
+      }
+    } catch { /* no remote node configured */ }
+
+    if (!result.available && remoteAvailable) {
+      result.suggestions.unshift('An active remote compute node is configured — consider using gpu: remote');
+    }
+
+    res.json({ success: true, ...result, timestamp: Date.now() });
+  } catch (error) {
+    console.error('Error checking compute availability:', error);
+    res.json({
+      success: false,
+      available: false,
+      reason: `Compute check failed: ${error.message}`,
+      suggestions: ['Check system configuration and try again'],
+      timestamp: Date.now(),
+    });
+  }
+});
+
 router.get('/status', async (req, res) => {
   try {
     const node = await getActiveNode();

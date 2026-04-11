@@ -108,6 +108,22 @@ const TOOLS = [
       properties: {},
     },
   },
+  {
+    name: 'compute_check_available',
+    description:
+      'Check whether compute resources (GPU) are available for running experiments. Returns COMPUTE_OK=true/false with details. Use this BEFORE running any experiment to avoid hallucinating results when no GPU is available. If COMPUTE_OK=false, STOP and inform the user — do NOT proceed with experiments.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        environment: {
+          type: 'string',
+          enum: ['local', 'remote', 'auto'],
+          description: 'Which environment to check. "auto" checks remote first (if configured), then local. Default: auto.',
+          default: 'auto',
+        },
+      },
+    },
+  },
 ];
 
 // ─── Tool handlers ───
@@ -185,6 +201,124 @@ async function handleTool(name, args) {
         (j) => `${j.jobId}\t${j.name}\t${j.partition}\t${j.state}\t${j.elapsed}\t${j.timeLimit}`,
       );
       return [header, ...rows].join('\n');
+    }
+
+    case 'compute_check_available': {
+      const env = args.environment || 'auto';
+      const lines = [];
+      let available = false;
+
+      const checkRemote = async () => {
+        const node = await getActiveNode();
+        if (!node) return null;
+        try {
+          const gpuOut = await ComputeNode.run({
+            nodeId: node.id,
+            command: 'nvidia-smi --query-gpu=index,name,memory.used,memory.total --format=csv,noheader,nounits 2>/dev/null || echo "NO_GPU"',
+            skipSync: true,
+          });
+          if (gpuOut.includes('NO_GPU')) {
+            return { available: false, reason: `Remote node "${node.name}" has no GPU` };
+          }
+          let freeCount = 0;
+          const gpuLines = [];
+          for (const line of gpuOut.split('\n')) {
+            const parts = line.split(',').map(s => s.trim());
+            if (parts.length >= 4) {
+              const used = parseFloat(parts[2]) || 0;
+              const total = parseFloat(parts[3]) || 0;
+              const isFree = used < 500;
+              if (isFree) freeCount++;
+              gpuLines.push(`  GPU ${parts[0]}: ${parts[1]} — ${used}/${total} MiB${isFree ? ' (FREE)' : ' (BUSY)'}`);
+            }
+          }
+          return {
+            available: freeCount > 0,
+            reason: freeCount > 0
+              ? `Remote node "${node.name}": ${freeCount} free GPU(s)`
+              : `Remote node "${node.name}": all GPUs occupied`,
+            details: gpuLines.join('\n'),
+          };
+        } catch (err) {
+          return { available: false, reason: `Remote node "${node.name}" unreachable: ${err.message}` };
+        }
+      };
+
+      const checkLocal = async () => {
+        const { exec } = await import('child_process');
+        const { promisify } = await import('util');
+        const execAsync = promisify(exec);
+        const run = async (cmd) => { try { return (await execAsync(cmd, { timeout: 15000 })).stdout.trim(); } catch { return ''; } };
+
+        const gpuOut = await run('nvidia-smi --query-gpu=index,name,memory.used,memory.total --format=csv,noheader,nounits');
+        if (gpuOut) {
+          let freeCount = 0;
+          const gpuLines = [];
+          for (const line of gpuOut.split('\n')) {
+            const parts = line.split(',').map(s => s.trim());
+            if (parts.length >= 4) {
+              const used = parseFloat(parts[2]) || 0;
+              const total = parseFloat(parts[3]) || 0;
+              const isFree = used < 500;
+              if (isFree) freeCount++;
+              gpuLines.push(`  GPU ${parts[0]}: ${parts[1]} — ${used}/${total} MiB${isFree ? ' (FREE)' : ' (BUSY)'}`);
+            }
+          }
+          return {
+            available: freeCount > 0,
+            reason: freeCount > 0 ? `Local: ${freeCount} free CUDA GPU(s)` : 'Local: all CUDA GPUs occupied',
+            details: gpuLines.join('\n'),
+          };
+        }
+
+        const mpsOut = await run('python3 -c "import torch; print(hasattr(torch.backends, \'mps\') and torch.backends.mps.is_available())" 2>/dev/null');
+        if (mpsOut === 'True') {
+          return { available: true, reason: 'Local: Apple MPS available', details: '  GPU 0: Apple MPS (Metal)' };
+        }
+
+        return {
+          available: false,
+          reason: 'Local: no GPU detected (no CUDA, no MPS)',
+          details: '  nvidia-smi not found, PyTorch MPS not available',
+        };
+      };
+
+      if (env === 'remote') {
+        const r = await checkRemote();
+        if (!r) {
+          lines.push('COMPUTE_OK=false', 'REASON=No active remote compute node configured.');
+        } else {
+          available = r.available;
+          lines.push(`COMPUTE_OK=${r.available}`, `REASON=${r.reason}`);
+          if (r.details) lines.push(r.details);
+        }
+      } else if (env === 'local') {
+        const r = await checkLocal();
+        available = r.available;
+        lines.push(`COMPUTE_OK=${r.available}`, `REASON=${r.reason}`);
+        if (r.details) lines.push(r.details);
+      } else {
+        const remote = await checkRemote();
+        if (remote?.available) {
+          available = true;
+          lines.push(`COMPUTE_OK=true`, `REASON=${remote.reason} (remote)`, remote.details || '');
+        } else {
+          const local = await checkLocal();
+          available = local.available;
+          lines.push(`COMPUTE_OK=${local.available}`, `REASON=${local.reason} (local)`);
+          if (local.details) lines.push(local.details);
+          if (remote) lines.push(`(Remote also checked: ${remote.reason})`);
+        }
+      }
+
+      if (!available) {
+        lines.push('', 'ACTION REQUIRED: Do NOT proceed with experiment execution.',
+          'Inform the user that compute resources are unavailable.',
+          'Do NOT fabricate or hallucinate experiment results.',
+          'Suggest: gpu: modal (serverless), gpu: vast (on-demand), or configure a remote server.');
+      }
+
+      return lines.filter(Boolean).join('\n');
     }
 
     default:

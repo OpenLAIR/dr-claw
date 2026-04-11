@@ -49,6 +49,38 @@ If none exist, ask the user what experiments to implement.
 
 ## Workflow
 
+### Phase 0: Compute Resource Guard (MANDATORY)
+
+**Before parsing the experiment plan or writing any code**, verify that compute resources are available by running `/aris-compute-guard`.
+
+If `/aris-compute-guard` is not available as a sub-skill, perform the check inline:
+
+1. Read `CLAUDE.md` to determine the target environment (`gpu: local`, `remote`, `vast`, or `modal`)
+2. Check GPU availability:
+   - **Local (Linux):** `nvidia-smi --query-gpu=index,memory.used,memory.total --format=csv,noheader` — free if `memory.used < 500 MiB`
+   - **Local (Mac):** `python3 -c "import torch; print(torch.backends.mps.is_available())"`
+   - **Remote:** `ssh <server> nvidia-smi --query-gpu=index,memory.used,memory.total --format=csv,noheader`
+   - **Modal:** `modal token verify` — always available if authenticated
+
+**If compute is NOT available → STOP the entire bridge workflow.**
+
+```
+⚠️ COMPUTE RESOURCES UNAVAILABLE — Experiment Bridge Halted
+
+Cannot proceed with implementing and deploying experiments because compute
+resources are not available.
+
+[reason and suggestions]
+
+I will NOT proceed with code implementation or experiment deployment, as there
+is no compute target to run the experiments on. Please resolve the compute
+issue and re-run /aris-experiment-bridge.
+```
+
+**Do NOT implement experiment code if you cannot deploy it.** Writing code without a deployment target wastes time and may lead to hallucinated results during the collection phase.
+
+**If compute IS available → proceed to Phase 1.**
+
 ### Phase 1: Parse the Experiment Plan
 
 Read `EXPERIMENT_PLAN.md` and extract:

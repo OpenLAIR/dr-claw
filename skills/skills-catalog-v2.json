@@ -1,7 +1,7 @@
 {
   "generatedAt": "2026-03-24T17:51:17.721Z",
   "schema": "skills-taxonomy-v2",
-  "totalSkills": 170,
+  "totalSkills": 171,
   "skills": [
     {
       "name": "academic-researcher",
@@ -5235,6 +5235,51 @@
         "aris-novelty-check",
         "aris-research-review",
         "aris-research-refine"
+      ]
+    },
+    {
+      "name": "aris-compute-guard",
+      "primaryIntent": "experiment",
+      "intents": [
+        "experiment",
+        "infrastructure-check"
+      ],
+      "capabilities": [
+        "compute-validation",
+        "infrastructure-ops"
+      ],
+      "domains": [
+        "cs-ai"
+      ],
+      "keywords": [
+        "aris",
+        "compute",
+        "guard",
+        "gpu",
+        "check",
+        "availability",
+        "stop",
+        "resource",
+        "nvidia-smi",
+        "mps",
+        "cuda",
+        "pre-flight"
+      ],
+      "source": "imported",
+      "status": "verified",
+      "summary": "Mandatory pre-flight compute resource check before running experiments. Detects GPU/compute availability and STOPS the pipeline if resources are unavailable, preventing hallucinated results.",
+      "legacy": {
+        "dirPath": "aris-compute-guard",
+        "skillFile": "skills/aris-compute-guard/SKILL.md",
+        "topLevelGroup": "ARIS",
+        "collection": "ARIS Research Pipeline"
+      },
+      "owner": "wanshuiyin/ARIS",
+      "relatedSkills": [
+        "aris-run-experiment",
+        "aris-experiment-bridge",
+        "aris-monitor-experiment",
+        "aris-system-profile"
       ]
     },
     {

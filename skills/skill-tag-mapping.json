@@ -626,6 +626,11 @@
       "en": "Stage: Analysis",
       "ko": "단계: 분석"
     },
+    "aris-compute-guard": {
+      "zh": "阶段: 实验开发",
+      "en": "Stage: Experiment Dev",
+      "ko": "단계: 실험 개발"
+    },
     "aris-run-experiment": {
       "zh": "阶段: 实验开发",
       "en": "Stage: Experiment Dev",
@@ -1374,6 +1379,11 @@
       "ko": "영역: cs"
     },
     "aris-analyze-results": {
+      "zh": "领域: cs",
+      "en": "Domain: cs",
+      "ko": "영역: cs"
+    },
+    "aris-compute-guard": {
       "zh": "领域: cs",
       "en": "Domain: cs",
       "ko": "영역: cs"

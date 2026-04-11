@@ -72,6 +72,7 @@
   },
   "experiment": {
     "base": [
+      "aris-compute-guard",
       "inno-code-survey",
       "dataset-discovery",
       "inno-experiment-dev",

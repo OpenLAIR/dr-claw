@@ -15,6 +15,24 @@ Deploy and run ML experiment: $ARGUMENTS
 
 ## Workflow
 
+### Step 0: Compute Resource Guard (MANDATORY)
+
+**Before doing ANYTHING else**, run `/aris-compute-guard` to verify that compute resources are actually available.
+
+If `/aris-compute-guard` is not available as a sub-skill, perform the check inline:
+
+1. **Local GPU (Linux):** Run `nvidia-smi --query-gpu=index,memory.used,memory.total --format=csv,noheader`. A GPU is free if `memory.used < 500 MiB`.
+2. **Local GPU (Mac):** Run `python3 -c "import torch; print(torch.backends.mps.is_available())"`.
+3. **Remote server:** Run `ssh <server> nvidia-smi --query-gpu=index,memory.used,memory.total --format=csv,noheader`.
+4. **Modal:** Check `modal token verify` — Modal is serverless and always available if configured.
+
+**If compute resources are NOT available:**
+- **STOP IMMEDIATELY.** Do NOT proceed to any further steps.
+- Report to the user: which resources are missing, what they need to fix, and alternative options (Modal serverless, Vast.ai, remote server).
+- **Do NOT fabricate, imagine, or hallucinate experiment results.** This is critical — running experiments without actual compute resources produces no real results.
+
+**If compute resources ARE available:** Print a brief confirmation and proceed to Step 1.
+
 ### Step 1: Detect Environment
 
 Read the project's `CLAUDE.md` to determine the experiment environment:
