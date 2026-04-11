@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   GUIDED_PROMPT_SCENARIOS,
@@ -50,6 +50,18 @@ export default function GuidedPromptStarter({
   const [availableSkills, setAvailableSkills] = useState<Set<string> | null>(null);
   const [autoResearchOpen, setAutoResearchOpen] = useState(false);
   const [expandedGuidedPack, setExpandedGuidedPack] = useState<string | null>(null);
+  const autoResearchRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (autoResearchRef.current && !autoResearchRef.current.contains(e.target as Node)) {
+        setAutoResearchOpen(false);
+        setExpandedGuidedPack(null);
+      }
+    };
+    if (autoResearchOpen) document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [autoResearchOpen]);
 
   useEffect(() => {
     let cancelled = false;
@@ -152,7 +164,7 @@ export default function GuidedPromptStarter({
   return (
     <div className="flex flex-wrap justify-center gap-2.5 max-w-3xl mx-auto px-4 mt-6">
       {/* Auto Research dropdown button — reads from Research Hub packs */}
-      <div className="relative">
+      <div ref={autoResearchRef} className="relative">
         <button
           type="button"
           onClick={() => setAutoResearchOpen(!autoResearchOpen)}
