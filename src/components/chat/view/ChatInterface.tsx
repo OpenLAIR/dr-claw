@@ -6,6 +6,7 @@ import { useTaskMaster } from '../../../contexts/TaskMasterContext';
 import { useTranslation } from 'react-i18next';
 import ChatMessagesPane from './subcomponents/ChatMessagesPane';
 import ChatComposer from './subcomponents/ChatComposer';
+import BtwOverlay from './subcomponents/BtwOverlay';
 import ChatContextSidebar from './subcomponents/ChatContextSidebar';
 import ChatContextFilePreview, { type PreviewFileTarget } from './subcomponents/ChatContextFilePreview';
 import GuidedPromptStarter from './subcomponents/GuidedPromptStarter';
@@ -237,6 +238,10 @@ function ChatInterface({
     pendingViewSessionRef,
   });
 
+  const chatMessagesForBtwRef = useRef(chatMessages);
+  chatMessagesForBtwRef.current = chatMessages;
+  const getChatMessagesForBtw = useCallback(() => chatMessagesForBtwRef.current, []);
+
   const {
     input,
     setInput,
@@ -325,7 +330,7 @@ function ChatInterface({
     setIsUserScrolledUp,
     setPendingPermissionRequests,
     newSessionMode,
-    getChatMessagesForBtw: () => chatMessages,
+    getChatMessagesForBtw,
   });
 
   useChatRealtimeHandlers({
@@ -354,11 +359,8 @@ function ChatInterface({
     onNavigateToSession,
   });
 
-  const chatMessagesRef = useRef(chatMessages);
-  chatMessagesRef.current = chatMessages;
-
   const handleRetry = useCallback(() => {
-    const msgs = chatMessagesRef.current;
+    const msgs = chatMessagesForBtwRef.current;
     let lastUserMessage: (typeof msgs)[number] | undefined;
     for (let i = msgs.length - 1; i >= 0; i--) {
       if (msgs[i].type === 'user') { lastUserMessage = msgs[i]; break; }
@@ -935,8 +937,6 @@ function ChatInterface({
           providerAvailability={providerAvailability}
           newSessionMode={newSessionMode}
           onNewSessionModeChange={onNewSessionModeChange}
-          btwOverlay={btwOverlay}
-          onCloseBtwOverlay={closeBtwOverlay}
         />
 
         {isEmpty && newSessionMode === 'research' && (
@@ -1024,6 +1024,7 @@ function ChatInterface({
       )}
 
       <QuickSettingsPanel />
+      <BtwOverlay state={btwOverlay} onClose={closeBtwOverlay} />
     </>
   );
 }

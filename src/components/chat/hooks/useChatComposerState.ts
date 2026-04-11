@@ -43,6 +43,14 @@ import { isAutoResearchScenario } from '../utils/autoResearch';
 import type { SessionMode } from '../../../types/app';
 import type { BtwOverlayState } from '../view/subcomponents/BtwOverlay';
 
+const CLOSED_BTW_OVERLAY: BtwOverlayState = {
+  open: false,
+  question: '',
+  answer: '',
+  loading: false,
+  error: null,
+};
+
 type PendingViewSession = {
   sessionId: string | null;
   startedAt: number;
@@ -196,8 +204,12 @@ function buildBtwTranscript(messages: ChatMessage[]): string {
   }
   let out = lines.join('\n\n');
   if (out.length > BTW_TRANSCRIPT_MAX_CHARS) {
-    out = out.slice(out.length - BTW_TRANSCRIPT_MAX_CHARS);
-    out = '…(earlier messages omitted)\n\n' + out;
+    let cutPos = out.length - BTW_TRANSCRIPT_MAX_CHARS;
+    const nextBoundary = out.indexOf('\n\n', cutPos);
+    if (nextBoundary !== -1 && nextBoundary < cutPos + 2000) {
+      cutPos = nextBoundary + 2;
+    }
+    out = '…(earlier messages omitted)\n\n' + out.slice(cutPos);
   }
   return out;
 }
@@ -299,21 +311,12 @@ export function useChatComposerState({
     }
   });
   const [intakeGreeting, setIntakeGreeting] = useState<string | null>(null);
-  const [btwOverlay, setBtwOverlay] = useState<BtwOverlayState>({
-    open: false,
-    question: '',
-    answer: '',
-    loading: false,
-    error: null,
-  });
+  const [btwOverlay, setBtwOverlay] = useState<BtwOverlayState>(CLOSED_BTW_OVERLAY);
+  const btwAbortRef = useRef<AbortController | null>(null);
   const closeBtwOverlay = useCallback(() => {
-    setBtwOverlay({
-      open: false,
-      question: '',
-      answer: '',
-      loading: false,
-      error: null,
-    });
+    btwAbortRef.current?.abort();
+    btwAbortRef.current = null;
+    setBtwOverlay(CLOSED_BTW_OVERLAY);
   }, []);
   const [pendingStageTagKeys, setPendingStageTagKeys] = useState<string[]>([]);
   const [attachedPrompt, setAttachedPrompt] = useState<AttachedPrompt | null>(null);
@@ -604,6 +607,9 @@ export function useChatComposerState({
           if (!question) {
             return;
           }
+          btwAbortRef.current?.abort();
+          const abortController = new AbortController();
+          btwAbortRef.current = abortController;
           setBtwOverlay({
             open: true,
             question,
@@ -624,6 +630,7 @@ export function useChatComposerState({
                 projectPath: selectedProject.fullPath || selectedProject.path,
                 model: claudeModel,
               }),
+              signal: abortController.signal,
             });
             const payload = (await btwResponse.json().catch(() => ({}))) as {
               answer?: string;
@@ -640,6 +647,9 @@ export function useChatComposerState({
               error: null,
             }));
           } catch (btwErr) {
+            if (abortController.signal.aborted) {
+              return;
+            }
             const msg = btwErr instanceof Error ? btwErr.message : 'Unknown error';
             setBtwOverlay((previous) => ({
               ...previous,
@@ -935,6 +945,9 @@ export function useChatComposerState({
         const matchedCommand = slashCommands.find((command: SlashCommand) => command.name === commandName);
 
         if (matchedCommand) {
+          if (isLoading && commandName !== '/btw') {
+            return;
+          }
           await executeCommand(matchedCommand, trimmedInput);
           setInput('');
           inputValueRef.current = '';

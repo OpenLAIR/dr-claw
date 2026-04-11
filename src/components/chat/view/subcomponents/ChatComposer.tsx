@@ -4,7 +4,7 @@ import { MicButton } from '../../../MicButton.jsx';
 import ImageAttachment from './ImageAttachment';
 import PermissionRequestsBanner from './PermissionRequestsBanner';
 import ChatInputControls from './ChatInputControls';
-import BtwOverlay, { type BtwOverlayState } from './BtwOverlay';
+
 import ReferencePicker from '../../../references/view/ReferencePicker';
 import PromptBadgeDropdown from './PromptBadgeDropdown';
 import { Plus } from 'lucide-react';
@@ -170,17 +170,7 @@ interface ChatComposerProps {
   providerAvailability?: Record<SessionProvider, ProviderAvailability>;
   newSessionMode?: SessionMode;
   onNewSessionModeChange?: (mode: SessionMode) => void;
-  btwOverlay?: BtwOverlayState;
-  onCloseBtwOverlay?: () => void;
 }
-
-const CLOSED_BTW_OVERLAY: BtwOverlayState = {
-  open: false,
-  question: '',
-  answer: '',
-  loading: false,
-  error: null,
-};
 
 export default function ChatComposer({
   pendingPermissionRequests,
@@ -265,8 +255,6 @@ export default function ChatComposer({
   providerAvailability,
   newSessionMode,
   onNewSessionModeChange,
-  btwOverlay = CLOSED_BTW_OVERLAY,
-  onCloseBtwOverlay = () => undefined,
 }: ChatComposerProps) {
   const { t } = useTranslation('chat');
   const [showReferencePicker, setShowReferencePicker] = useState(false);
@@ -368,7 +356,6 @@ export default function ChatComposer({
   ];
 
   return (
-    <>
     <div className={`p-2 sm:p-4 md:p-4 flex-shrink-0 ${centered ? 'pb-2 sm:pb-3' : 'pb-2 sm:pb-4 md:pb-6'} ${mobileFloatingClass}`}>
       <div className={`${centered ? 'max-w-3xl' : 'max-w-5xl'} mx-auto mb-3`}>
         <PermissionRequestsBanner
@@ -520,13 +507,9 @@ export default function ChatComposer({
               onBlur={() => onInputFocusChange?.(false)}
               onInput={onTextareaInput}
               placeholder={placeholder}
-              disabled={isLoading && !input.trim().startsWith('/btw ')}
-              className={`chat-input-placeholder block w-full pl-5 ${centered ? 'pr-16 pt-4 pb-2 min-h-[72px] max-h-[200px] text-sm' : 'pr-20 sm:pr-40 py-1.5 sm:py-4 min-h-[50px] sm:min-h-[80px] max-h-[40vh] sm:max-h-[300px] text-base'} bg-transparent rounded-3xl focus:outline-none text-foreground placeholder-muted-foreground/50 disabled:opacity-50 resize-none overflow-y-auto leading-6 transition-all duration-200`}
+              className={`chat-input-placeholder block w-full pl-5 ${centered ? 'pr-16 pt-4 pb-2 min-h-[72px] max-h-[200px] text-sm' : 'pr-20 sm:pr-40 py-1.5 sm:py-4 min-h-[50px] sm:min-h-[80px] max-h-[40vh] sm:max-h-[300px] text-base'} bg-transparent rounded-3xl focus:outline-none text-foreground placeholder-muted-foreground/50 resize-none overflow-y-auto leading-6 transition-all duration-200 ${isLoading && !input.trim().startsWith('/') ? 'opacity-50' : ''}`}
               style={{ height: centered ? '72px' : '50px' }}
             />
-
-
-
             <div className={`absolute ${centered ? 'right-11' : 'right-14'} top-1/2 transform -translate-y-1/2`}>
               <MicButton onTranscript={onTranscript} className={centered ? '!w-7 !h-7' : '!w-9 !h-9'} />
             </div>
@@ -535,7 +518,7 @@ export default function ChatComposer({
               type="submit"
               disabled={
                 (!input.trim() && attachedFiles.length === 0 && !attachedPrompt) ||
-                (isLoading && !input.trim().startsWith('/'))
+                (isLoading && !input.trim().startsWith('/btw '))
               }
               onMouseDown={(event) => {
                 event.preventDefault();
@@ -689,7 +672,5 @@ export default function ChatComposer({
         </div>
       </form>}
     </div>
-    <BtwOverlay state={btwOverlay} onClose={onCloseBtwOverlay} />
-    </>
   );
 }

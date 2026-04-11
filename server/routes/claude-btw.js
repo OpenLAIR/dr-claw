@@ -3,6 +3,9 @@ import { runClaudeBtw } from '../claude-sdk.js';
 
 const router = express.Router();
 
+const MAX_QUESTION_CHARS = 2000;
+const MAX_TRANSCRIPT_CHARS = 150_000;
+
 /**
  * POST /api/claude/btw
  * Ephemeral side question (no tools, separate from main chat session).
@@ -14,22 +17,38 @@ router.post('/btw', async (req, res) => {
     if (!q) {
       return res.status(400).json({ error: 'question is required' });
     }
+    if (q.length > MAX_QUESTION_CHARS) {
+      return res.status(400).json({ error: `question exceeds ${MAX_QUESTION_CHARS} character limit` });
+    }
 
-    const text = typeof transcript === 'string' ? transcript : '';
+    const raw = typeof transcript === 'string' ? transcript : '';
+    const text = raw.length > MAX_TRANSCRIPT_CHARS ? raw.slice(raw.length - MAX_TRANSCRIPT_CHARS) : raw;
     const cwd = typeof projectPath === 'string' && projectPath.trim() ? projectPath.trim() : undefined;
     const modelId = typeof model === 'string' && model.trim() ? model.trim() : undefined;
+
+    const ac = new AbortController();
+    res.on('close', () => {
+      if (!res.writableFinished) {
+        ac.abort();
+      }
+    });
 
     const { answer } = await runClaudeBtw({
       question: q,
       transcript: text,
       cwd,
       model: modelId,
+      signal: ac.signal,
     });
 
-    res.json({ answer });
+    if (!res.headersSent) {
+      res.json({ answer });
+    }
   } catch (error) {
-    console.error('[ERROR] /api/claude/btw:', error.message);
-    res.status(500).json({ error: error.message || 'btw request failed' });
+    if (!res.headersSent) {
+      console.error('[ERROR] /api/claude/btw:', error.message);
+      res.status(500).json({ error: error.message || 'btw request failed' });
+    }
   }
 });
 

@@ -882,7 +882,7 @@ Rules:
 /**
  * One-shot, tool-free side question (Claude Code /btw-style). Does not resume the main SDK session.
  */
-async function runClaudeBtw({ question, transcript, cwd, model }) {
+async function runClaudeBtw({ question, transcript, cwd, model, signal }) {
   const safeTranscript =
     typeof transcript === 'string' && transcript.trim()
       ? transcript
@@ -902,22 +902,19 @@ async function runClaudeBtw({ question, transcript, cwd, model }) {
   const prevStreamTimeout = process.env.CLAUDE_CODE_STREAM_CLOSE_TIMEOUT;
   process.env.CLAUDE_CODE_STREAM_CLOSE_TIMEOUT = '120000';
 
-  const queryInstance = query({
-    prompt: userBlock,
-    options: sdkOptions,
-  });
-
-  if (prevStreamTimeout !== undefined) {
-    process.env.CLAUDE_CODE_STREAM_CLOSE_TIMEOUT = prevStreamTimeout;
-  } else {
-    delete process.env.CLAUDE_CODE_STREAM_CLOSE_TIMEOUT;
-  }
-
   let answer = '';
   let lastError = null;
 
   try {
+    const queryInstance = query({
+      prompt: userBlock,
+      options: sdkOptions,
+    });
+
     for await (const message of queryInstance) {
+      if (signal?.aborted) {
+        break;
+      }
       if (message.type === 'result') {
         if (message.subtype === 'success') {
           answer = message.result || answer;
@@ -927,7 +924,20 @@ async function runClaudeBtw({ question, transcript, cwd, model }) {
       }
     }
   } catch (err) {
+    if (signal?.aborted) {
+      return { answer: '' };
+    }
     throw new Error(err?.message || String(err));
+  } finally {
+    if (prevStreamTimeout !== undefined) {
+      process.env.CLAUDE_CODE_STREAM_CLOSE_TIMEOUT = prevStreamTimeout;
+    } else {
+      delete process.env.CLAUDE_CODE_STREAM_CLOSE_TIMEOUT;
+    }
+  }
+
+  if (signal?.aborted) {
+    return { answer: '' };
   }
 
   if (lastError) {
