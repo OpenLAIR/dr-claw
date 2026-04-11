@@ -21,6 +21,11 @@
     "retry": "重试",
     "usageLimitHint": "使用限制重置后可以重试"
   },
+  "messageActions": {
+    "copy": "复制",
+    "resend": "重发",
+    "edit": "修改"
+  },
   "tools": {
     "settings": "工具设置",
     "error": "工具错误",

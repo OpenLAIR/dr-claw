@@ -21,6 +21,11 @@
     "retry": "재시도",
     "usageLimitHint": "사용량 제한이 재설정되면 재시도할 수 있습니다"
   },
+  "messageActions": {
+    "copy": "복사",
+    "resend": "다시 보내기",
+    "edit": "수정"
+  },
   "tools": {
     "settings": "도구 설정",
     "error": "도구 오류",

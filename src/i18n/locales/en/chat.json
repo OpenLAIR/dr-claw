@@ -21,6 +21,11 @@
     "retry": "Retry",
     "usageLimitHint": "You can retry when your usage limit resets"
   },
+  "messageActions": {
+    "copy": "Copy",
+    "resend": "Resend",
+    "edit": "Edit"
+  },
   "tools": {
     "settings": "Tool Settings",
     "error": "Tool Error",

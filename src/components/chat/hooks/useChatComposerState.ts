@@ -113,6 +113,11 @@ interface UploadedProjectFile {
   size?: number;
 }
 
+interface ProgrammaticMessageDraft {
+  content?: string;
+  attachedPrompt?: AttachedPrompt | null;
+}
+
 const createFakeSubmitEvent = () => {
   return { preventDefault: () => undefined } as unknown as FormEvent<HTMLFormElement>;
 };
@@ -329,6 +334,9 @@ export function useChatComposerState({
     ((event: FormEvent<HTMLFormElement> | MouseEvent | TouchEvent | KeyboardEvent<HTMLTextAreaElement>) => Promise<void>) | null
   >(null);
   const inputValueRef = useRef(input);
+  const attachedFilesRef = useRef<File[]>([]);
+  const attachedPromptRef = useRef<AttachedPrompt | null>(null);
+  const pendingStageTagKeysRef = useRef<string[]>([]);
   const abortTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -343,6 +351,18 @@ export function useChatComposerState({
   useEffect(() => {
     setPendingStageTagKeys([]);
   }, [selectedProject?.name, selectedSession?.id]);
+
+  useEffect(() => {
+    attachedFilesRef.current = attachedFiles;
+  }, [attachedFiles]);
+
+  useEffect(() => {
+    attachedPromptRef.current = attachedPrompt;
+  }, [attachedPrompt]);
+
+  useEffect(() => {
+    pendingStageTagKeysRef.current = pendingStageTagKeys;
+  }, [pendingStageTagKeys]);
 
   useEffect(() => {
     safeLocalStorage.setItem('codex-reasoning-effort', codexReasoningEffort);
@@ -505,32 +525,6 @@ export function useChatComposerState({
       }
     }, 0);
   }, [setChatMessages]);
-
-  const submitProgrammaticInput = useCallback((content: string) => {
-    const nextContent = content || '';
-    setInput(nextContent);
-    inputValueRef.current = nextContent;
-
-    const attemptSubmit = (attempt = 0) => {
-      if (handleSubmitRef.current) {
-        handleSubmitRef.current(createFakeSubmitEvent());
-        return;
-      }
-
-      if (attempt >= PROGRAMMATIC_SUBMIT_MAX_RETRIES) {
-        console.warn('[Chat] Programmatic submit skipped because handleSubmit was not ready');
-        return;
-      }
-
-      setTimeout(() => {
-        attemptSubmit(attempt + 1);
-      }, PROGRAMMATIC_SUBMIT_RETRY_DELAY_MS);
-    };
-
-    setTimeout(() => {
-      attemptSubmit();
-    }, 0);
-  }, []);
 
   const executeCommand = useCallback(
     async (command: SlashCommand, rawInput?: string) => {
@@ -744,6 +738,55 @@ export function useChatComposerState({
     onExecuteCommand: executeCommand,
   });
 
+  const applyProgrammaticDraft = useCallback((draft: ProgrammaticMessageDraft) => {
+    const nextContent = draft.content || '';
+    const nextAttachedPrompt = draft.attachedPrompt ?? null;
+
+    setInput(nextContent);
+    inputValueRef.current = nextContent;
+    setAttachedPrompt(nextAttachedPrompt);
+    attachedPromptRef.current = nextAttachedPrompt;
+
+    setAttachedFiles([]);
+    attachedFilesRef.current = [];
+    setUploadingFiles(new Map());
+    setFileErrors(new Map());
+    setPendingStageTagKeys([]);
+    pendingStageTagKeysRef.current = [];
+    resetCommandMenuState();
+  }, [resetCommandMenuState]);
+
+  const submitProgrammaticMessage = useCallback((draft: ProgrammaticMessageDraft) => {
+    applyProgrammaticDraft(draft);
+
+    const attemptSubmit = (attempt = 0) => {
+      if (handleSubmitRef.current) {
+        handleSubmitRef.current(createFakeSubmitEvent());
+        return;
+      }
+
+      if (attempt >= PROGRAMMATIC_SUBMIT_MAX_RETRIES) {
+        console.warn('[Chat] Programmatic submit skipped because handleSubmit was not ready');
+        return;
+      }
+
+      setTimeout(() => {
+        attemptSubmit(attempt + 1);
+      }, PROGRAMMATIC_SUBMIT_RETRY_DELAY_MS);
+    };
+
+    setTimeout(() => {
+      attemptSubmit();
+    }, 0);
+  }, [applyProgrammaticDraft]);
+
+  const submitProgrammaticInput = useCallback((content: string, options?: { attachedPrompt?: AttachedPrompt | null }) => {
+    submitProgrammaticMessage({
+      content,
+      attachedPrompt: options?.attachedPrompt ?? null,
+    });
+  }, [submitProgrammaticMessage]);
+
   const {
     showFileDropdown,
     filteredFiles,
@@ -766,6 +809,33 @@ export function useChatComposerState({
     inputHighlightRef.current.scrollTop = target.scrollTop;
     inputHighlightRef.current.scrollLeft = target.scrollLeft;
   }, []);
+
+  const syncTextareaLayout = useCallback((nextValue: string, focus: boolean) => {
+    setTimeout(() => {
+      if (!textareaRef.current) {
+        return;
+      }
+
+      const textarea = textareaRef.current;
+      if (focus) {
+        textarea.focus();
+      }
+
+      textarea.style.height = 'auto';
+      textarea.style.height = `${textarea.scrollHeight}px`;
+      const cursor = nextValue.length;
+      textarea.setSelectionRange(cursor, cursor);
+      syncInputOverlayScroll(textarea);
+
+      const lineHeight = parseInt(window.getComputedStyle(textarea).lineHeight);
+      setIsTextareaExpanded(textarea.scrollHeight > lineHeight * 2);
+    }, 0);
+  }, [syncInputOverlayScroll]);
+
+  const loadMessageIntoComposer = useCallback((draft: ProgrammaticMessageDraft) => {
+    applyProgrammaticDraft(draft);
+    syncTextareaLayout(draft.content || '', true);
+  }, [applyProgrammaticDraft, syncTextareaLayout]);
 
   const handleAttachmentFiles = useCallback((files: File[]) => {
     const validFiles: File[] = [];
@@ -958,10 +1028,11 @@ export function useChatComposerState({
     ) => {
       event.preventDefault();
       const currentInput = inputValueRef.current;
-      if (!selectedProject) {
-        return;
-      }
-      if (!currentInput.trim() && attachedFiles.length === 0 && !attachedPrompt) {
+      const currentAttachedFiles = attachedFilesRef.current;
+      const currentAttachedPrompt = attachedPromptRef.current;
+      const currentStageTagKeys = pendingStageTagKeysRef.current;
+
+      if ((!currentInput.trim() && currentAttachedFiles.length === 0 && !currentAttachedPrompt) || isLoading || !selectedProject) {
         return;
       }
 
@@ -979,9 +1050,13 @@ export function useChatComposerState({
           setInput('');
           inputValueRef.current = '';
           setAttachedPrompt(null);
+          attachedPromptRef.current = null;
           setAttachedFiles([]);
+          attachedFilesRef.current = [];
           setUploadingFiles(new Map());
           setFileErrors(new Map());
+          setPendingStageTagKeys([]);
+          pendingStageTagKeysRef.current = [];
           resetCommandMenuState();
           setIsTextareaExpanded(false);
           if (textareaRef.current) {
@@ -1003,11 +1078,11 @@ export function useChatComposerState({
       let messageContent = normalizedInput;
 
       // Prepend attached prompt text if present
-      if (attachedPrompt) {
+      if (currentAttachedPrompt) {
         if (currentInput.trim()) {
-          messageContent = `${attachedPrompt.promptText}\n\n${normalizedInput}`;
+          messageContent = `${currentAttachedPrompt.promptText}\n\n${normalizedInput}`;
         } else {
-          messageContent = attachedPrompt.promptText;
+          messageContent = currentAttachedPrompt.promptText;
         }
       }
 
@@ -1044,11 +1119,11 @@ export function useChatComposerState({
         | undefined;
       let messageAttachments: ChatAttachment[] = [];
 
-      if (attachedFiles.length > 0) {
+      if (currentAttachedFiles.length > 0) {
         let uploadedFiles: UploadedProjectFile[] = [];
 
         try {
-          uploadedFiles = await uploadFilesToProject(attachedFiles);
+          uploadedFiles = await uploadFilesToProject(currentAttachedFiles);
         } catch (error) {
           const message = error instanceof Error ? error.message : 'Unknown error';
           console.error('File upload failed:', error);
@@ -1063,7 +1138,7 @@ export function useChatComposerState({
           return;
         }
 
-        messageAttachments = attachedFiles.map((file, index) => {
+        messageAttachments = currentAttachedFiles.map((file, index) => {
           const uploadedFile = uploadedFiles[index];
           const uploadedPath = uploadedFile?.path && typeof uploadedFile.path === 'string' ? uploadedFile.path : undefined;
 
@@ -1092,7 +1167,7 @@ export function useChatComposerState({
               uploadedFile: UploadedProjectFile,
               index: number,
             ) => {
-              const sourceFile = attachedFiles[index];
+              const sourceFile = currentAttachedFiles[index];
               const uploadedPath =
                 uploadedFile?.path && typeof uploadedFile.path === 'string' ? uploadedFile.path : null;
 
@@ -1115,7 +1190,7 @@ export function useChatComposerState({
           );
         }
 
-        const imageFiles = attachedFiles.filter((file) => isImageAttachment(file));
+        const imageFiles = currentAttachedFiles.filter((file) => isImageAttachment(file));
         if (imageFiles.length > 0) {
           try {
             uploadedImages = await uploadPreviewImages(imageFiles);
@@ -1128,10 +1203,11 @@ export function useChatComposerState({
       const userMessage: ChatMessage = {
         type: 'user',
         content: normalizedInput,
+        submittedContent: messageContent,
         images: uploadedImages.length > 0 ? uploadedImages : undefined,
         attachments: messageAttachments.length > 0 ? messageAttachments : undefined,
         timestamp: new Date(),
-        ...(attachedPrompt ? { attachedPrompt } : {}),
+        ...(currentAttachedPrompt ? { attachedPrompt: currentAttachedPrompt } : {}),
       };
 
       setChatMessages((previous) => [...previous, userMessage]);
@@ -1239,7 +1315,7 @@ export function useChatComposerState({
             toolsSettings,
             telemetryEnabled,
             sessionMode: isNewSession ? newSessionMode : selectedSession?.mode,
-            stageTagKeys: pendingStageTagKeys,
+            stageTagKeys: currentStageTagKeys,
             stageTagSource: 'task_context',
           },
         });
@@ -1261,7 +1337,7 @@ export function useChatComposerState({
             toolsSettings,
             telemetryEnabled,
             sessionMode: isNewSession ? newSessionMode : selectedSession?.mode,
-            stageTagKeys: pendingStageTagKeys,
+            stageTagKeys: currentStageTagKeys,
             stageTagSource: 'task_context',
           },
         });
@@ -1283,7 +1359,7 @@ export function useChatComposerState({
             images: uploadedImages,
             telemetryEnabled,
             sessionMode: isNewSession ? newSessionMode : selectedSession?.mode,
-            stageTagKeys: pendingStageTagKeys,
+            stageTagKeys: currentStageTagKeys,
             stageTagSource: 'task_context',
           },
         });
@@ -1303,7 +1379,7 @@ export function useChatComposerState({
             toolsSettings,
             telemetryEnabled,
             sessionMode: isNewSession ? newSessionMode : selectedSession?.mode,
-            stageTagKeys: pendingStageTagKeys,
+            stageTagKeys: currentStageTagKeys,
             stageTagSource: 'task_context',
           },
         });
@@ -1344,7 +1420,7 @@ export function useChatComposerState({
             toolsSettings,
             telemetryEnabled,
             sessionMode: isNewSession ? newSessionMode : selectedSession?.mode,
-            stageTagKeys: pendingStageTagKeys,
+            stageTagKeys: currentStageTagKeys,
             stageTagSource: 'task_context',
           },
         });
@@ -1364,7 +1440,7 @@ export function useChatComposerState({
             images: uploadedImages.length > 0 ? uploadedImages : undefined,
             telemetryEnabled,
             sessionMode: isNewSession ? newSessionMode : selectedSession?.mode,
-            stageTagKeys: pendingStageTagKeys,
+            stageTagKeys: currentStageTagKeys,
             stageTagSource: 'task_context',
           },
         });
@@ -1373,13 +1449,16 @@ export function useChatComposerState({
       setInput('');
       inputValueRef.current = '';
       setPendingStageTagKeys([]);
+      pendingStageTagKeysRef.current = [];
       resetCommandMenuState();
       setAttachedFiles([]);
+      attachedFilesRef.current = [];
       setUploadingFiles(new Map());
       setFileErrors(new Map());
       setIsTextareaExpanded(false);
       setThinkingMode('none');
       setAttachedPrompt(null);
+      attachedPromptRef.current = null;
 
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto';
@@ -1416,7 +1495,6 @@ export function useChatComposerState({
       setClaudeStatus,
       setIsLoading,
       setIsUserScrolledUp,
-      pendingStageTagKeys,
       slashCommands,
       thinkingMode,
       t,
@@ -1641,9 +1719,13 @@ export function useChatComposerState({
     setInput('');
     inputValueRef.current = '';
     setPendingStageTagKeys([]);
+    pendingStageTagKeysRef.current = [];
     setAttachedFiles([]);
+    attachedFilesRef.current = [];
     setUploadingFiles(new Map());
     setFileErrors(new Map());
+    setAttachedPrompt(null);
+    attachedPromptRef.current = null;
     resetCommandMenuState();
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -1865,5 +1947,7 @@ export function useChatComposerState({
     submitProgrammaticInput,
     btwOverlay,
     closeBtwOverlay,
+    submitProgrammaticMessage,
+    loadMessageIntoComposer,
   };
 }

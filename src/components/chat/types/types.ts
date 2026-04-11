@@ -54,6 +54,7 @@ export interface AttachedPrompt {
 export interface ChatMessage {
   type: string;
   content?: string;
+  submittedContent?: string;
   timestamp: string | number | Date;
   images?: ChatImage[];
   attachments?: ChatAttachment[];
