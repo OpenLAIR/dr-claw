@@ -4,6 +4,7 @@ import CodexLogo from './CodexLogo';
 import CursorLogo from './CursorLogo';
 import GeminiLogo from './GeminiLogo';
 import LocalGpuLogo from './LocalGpuLogo';
+import NanoClaudeLogo from './NanoClaudeLogo';
 import OpenRouterLogo from './OpenRouterLogo';
 
 type SessionProviderLogoProps = {
@@ -33,6 +34,10 @@ export default function SessionProviderLogo({
 
   if (provider === 'local') {
     return <LocalGpuLogo className={className} />;
+  }
+
+  if (provider === 'nano') {
+    return <NanoClaudeLogo className={className} />;
   }
 
   return <ClaudeLogo className={className} />;

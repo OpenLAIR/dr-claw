@@ -205,7 +205,7 @@ export function getProviderDisplayName(provider: string): string {
     return 'Local GPU';
   }
   if (provider === 'nano') {
-    return 'Nano Claw Code';
+    return 'Nano Claude Code';
   }
   return 'Claude';
 }

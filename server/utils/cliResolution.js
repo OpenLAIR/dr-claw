@@ -9,6 +9,7 @@ function isCommandNotFoundExitCode(code) {
  *
  * @param {Object} options
  * @param {string} options.envVarName Environment variable name containing an override command.
+ * @param {string[]} [options.legacyEnvVarNames=[]] Older env var names checked after envVarName (migration).
  * @param {string[]} options.defaultCommands Fallback command names in preference order.
  * @param {string} [options.platform=process.platform] Runtime platform, used for Windows suffix handling.
  * @param {boolean} [options.appendWindowsSuffixes=false] Whether to append .cmd/.exe candidates on Windows.
@@ -16,11 +17,19 @@ function isCommandNotFoundExitCode(code) {
  */
 function getCliCommandCandidates({
     envVarName,
+    legacyEnvVarNames = [],
     defaultCommands,
     platform = process.platform,
     appendWindowsSuffixes = false
 }) {
-    const envCommand = String(process.env[envVarName] || '').trim();
+    let envCommand = '';
+    for (const key of [envVarName, ...legacyEnvVarNames].filter(Boolean)) {
+        const s = String(process.env[key] || '').trim();
+        if (s) {
+            envCommand = s;
+            break;
+        }
+    }
     const rawCandidates = [];
 
     if (envCommand) {
@@ -131,6 +140,7 @@ function checkCommandAvailable(command, args = ['--help'], { platform = process.
  *
  * @param {Object} options
  * @param {string} options.envVarName Environment variable with command override.
+ * @param {string[]} [options.legacyEnvVarNames=[]] Older env vars (after envVarName) for migration.
  * @param {string[]} options.defaultCommands Fallback command names in preference order.
  * @param {string[]} [options.args=['--help']] Probe arguments.
  * @param {string} [options.platform=process.platform] Runtime platform.
@@ -140,6 +150,7 @@ function checkCommandAvailable(command, args = ['--help'], { platform = process.
  */
 async function resolveAvailableCliCommand({
     envVarName,
+    legacyEnvVarNames = [],
     defaultCommands,
     args = ['--help'],
     platform = process.platform,
@@ -148,6 +159,7 @@ async function resolveAvailableCliCommand({
 }) {
     const candidates = getCliCommandCandidates({
         envVarName,
+        legacyEnvVarNames,
         defaultCommands,
         platform,
         appendWindowsSuffixes

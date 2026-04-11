@@ -18,6 +18,29 @@ const INITIAL_VISIBLE_MESSAGES = 100;
 /** Grace period for WebSocket status-check response before clearing stale resume state */
 const STATUS_VALIDATION_TIMEOUT_MS = 5000;
 
+/**
+ * Prefer session.__provider; else infer from project session lists.
+ * Never fall back to chat composer `selected-provider` — if that is "nano", every unmatched session
+ * would request provider=nano and load empty history.
+ */
+function resolveSessionProviderForLoad(session: ProjectSession | null, project: Project | null): Provider | string {
+  if (session?.__provider) {
+    return session.__provider;
+  }
+  if (!session?.id || !project) {
+    return 'claude';
+  }
+  const { id } = session;
+  if (project.nanoSessions?.some((s) => s.id === id)) return 'nano';
+  if (project.localSessions?.some((s) => s.id === id)) return 'local';
+  if (project.openrouterSessions?.some((s) => s.id === id)) return 'openrouter';
+  if (project.geminiSessions?.some((s) => s.id === id)) return 'gemini';
+  if (project.codexSessions?.some((s) => s.id === id)) return 'codex';
+  if (project.cursorSessions?.some((s) => s.id === id)) return 'cursor';
+  if (project.sessions?.some((s) => s.id === id)) return 'claude';
+  return 'claude';
+}
+
 type PendingViewSession = {
   sessionId: string | null;
   startedAt: number;
@@ -282,7 +305,7 @@ export function useChatSessionState({
         return false;
       }
 
-      const sessionProvider = selectedSession.__provider || 'claude';
+      const sessionProvider = resolveSessionProviderForLoad(selectedSession, selectedProject) as Provider | string;
       if (sessionProvider === 'cursor') {
         return false;
       }
@@ -388,7 +411,7 @@ export function useChatSessionState({
   useEffect(() => {
     const loadMessages = async () => {
       if (selectedSession && selectedProject) {
-        const currentProvider = selectedSession.__provider || (localStorage.getItem('selected-provider') as Provider) || 'claude';
+        const currentProvider = resolveSessionProviderForLoad(selectedSession, selectedProject) as Provider | string;
         isLoadingSessionRef.current = true;
 
         const sessionChanged = currentSessionId !== null && currentSessionId !== selectedSession.id;
@@ -508,7 +531,7 @@ export function useChatSessionState({
 
     const reloadExternalMessages = async () => {
       try {
-        const provider = (localStorage.getItem('selected-provider') as Provider) || 'claude';
+        const provider = resolveSessionProviderForLoad(selectedSession, selectedProject) as Provider;
 
         if (provider === 'cursor') {
           const projectPath = selectedProject.fullPath || selectedProject.path || '';
@@ -522,7 +545,7 @@ export function useChatSessionState({
           selectedProject.name,
           selectedSession.id,
           false,
-          selectedSession.__provider || 'claude',
+          provider,
         );
         setSessionMessages(messages);
 
@@ -571,7 +594,7 @@ export function useChatSessionState({
       return;
     }
 
-    const sessionProvider = selectedSession.__provider || 'claude';
+    const sessionProvider = resolveSessionProviderForLoad(selectedSession, selectedProject) as Provider | string;
     if (sessionProvider === 'cursor') {
       setTokenBudget(null);
       return;
@@ -593,7 +616,7 @@ export function useChatSessionState({
     };
 
     fetchInitialTokenUsage();
-  }, [selectedProject, selectedSession?.id, selectedSession?.__provider]);
+  }, [selectedProject, selectedSession]);
 
   const visibleMessages = useMemo(() => {
     if (chatMessages.length <= visibleMessageCount) {
@@ -740,7 +763,7 @@ export function useChatSessionState({
   const loadAllMessages = useCallback(async () => {
     if (!selectedSession || !selectedProject) return;
     if (isLoadingAllMessages) return;
-    const sessionProvider = selectedSession.__provider || 'claude';
+    const sessionProvider = resolveSessionProviderForLoad(selectedSession, selectedProject) as Provider | string;
     if (sessionProvider === 'cursor') {
       setVisibleMessageCount(Infinity);
       setAllMessagesLoaded(true);

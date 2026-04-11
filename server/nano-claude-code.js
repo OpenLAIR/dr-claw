@@ -1,36 +1,59 @@
 /**
- * Nano Claw Code provider — spawns the nano-claw-code CLI in stream-json harness mode.
+ * Nano Claude Code provider — spawns the nano-claude-code CLI in stream-json harness mode.
  * Uses the same WebSocket shapes as Claude (claude-response / claude-complete) for UI reuse.
  *
- * Requires a nano-claw-code build that supports:
+ * Requires a nano-claude-code build that supports:
  *   --output-format stream-json -p "..." --dangerously-skip-permissions
- *   --session-file <name.json> and --resume <name.json> for multi-turn persistence
+ *   --session-file <path.json> and --resume <path.json> for multi-turn persistence (absolute path under ~/.dr-claw/nano-sessions)
  *   result lines may include nano_session_file (optional)
- * Install: https://github.com/OpenLAIR/nano-claw-code — use main after the harness session patches land, or pip install -e from that repo.
+ * Install: https://github.com/OpenLAIR/nano-claude-code — pip install from that repo or use the published CLI name on PATH.
  */
 
 import { spawn } from 'child_process';
 import crossSpawn from 'cross-spawn';
 import crypto from 'crypto';
-import { encodeProjectPath, ensureProjectSkillLinks, reconcileClaudeSessionIndex } from './projects.js';
+import { encodeProjectPath, ensureProjectSkillLinks } from './projects.js';
 import { writeProjectTemplates } from './templates/index.js';
 import { applyStageTagsToSession, recordIndexedSession } from './utils/sessionIndex.js';
+import { ensureNanoDrClawSessionsRoot, resolveNanoSessionAbsPath } from './nanoSessionPaths.js';
 
 const spawnFunction = process.platform === 'win32' ? crossSpawn : spawn;
 
 const activeNanoSessions = new Map();
 
+let nanoShutdownHooksInstalled = false;
+
+function installNanoProcessShutdownHooks() {
+  if (nanoShutdownHooksInstalled) {
+    return;
+  }
+  nanoShutdownHooksInstalled = true;
+  const shutdown = () => {
+    for (const { process: childProc } of activeNanoSessions.values()) {
+      try {
+        if (childProc && !childProc.killed) {
+          childProc.kill('SIGTERM');
+        }
+      } catch (_) {
+        // ignore
+      }
+    }
+    activeNanoSessions.clear();
+  };
+  process.on('exit', shutdown);
+  for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
+    process.on(sig, shutdown);
+  }
+}
+
 function resolveNanoCommand() {
-  const explicit = String(process.env.NANO_CLAW_CODE_COMMAND || '').trim();
+  const explicit = String(
+    process.env.NANO_CLAUDE_CODE_COMMAND || ''
+  ).trim();
   if (explicit) {
     return explicit;
   }
-  return 'nano-claw-code';
-}
-
-function sessionFileBasename(sessionId) {
-  const safe = String(sessionId || '').replace(/[^a-zA-Z0-9._-]/g, '');
-  return safe ? `drclaw-nano-${safe}.json` : null;
+  return 'nano-claude-code';
 }
 
 async function persistNanoSessionMetadata(sessionId, projectPath, sessionMode) {
@@ -41,17 +64,18 @@ async function persistNanoSessionMetadata(sessionId, projectPath, sessionMode) {
       sessionId,
       encodeProjectPath(projectPath),
       'nano',
-      'Nano Claw Code Session',
+      'Nano Claude Code Session',
       new Date().toISOString(),
       0,
-      { sessionMode: sessionMode || 'research' },
+      { sessionMode: sessionMode || 'research', projectPath },
     );
   } catch (error) {
     console.warn('[Nano] Failed to persist session metadata:', error.message);
   }
 }
 
-export async function spawnNanoClawCode(command, options = {}, ws) {
+export async function spawnNanoClaudeCode(command, options = {}, ws) {
+  installNanoProcessShutdownHooks();
   const {
     sessionId,
     projectPath,
@@ -72,17 +96,20 @@ export async function spawnNanoClawCode(command, options = {}, ws) {
     console.warn('[Nano] Project template setup:', error.message);
   }
 
-  const streaming = String(process.env.NANO_CLAW_CODE_STREAMING || '').trim() === '1';
+  const streaming = String(
+    process.env.NANO_CLAUDE_CODE_STREAMING || ''
+  ).trim() === '1';
 
   const isPlaceholderSession =
     !sessionId ||
     String(sessionId).startsWith('new-session-');
 
   const capturedSessionId = isPlaceholderSession ? crypto.randomUUID() : String(sessionId);
-  const sessionFile = sessionFileBasename(capturedSessionId);
 
-  if (!sessionFile) {
-    const err = 'Invalid Nano Claw Code session id';
+  await ensureNanoDrClawSessionsRoot();
+  const sessionAbsPath = resolveNanoSessionAbsPath(capturedSessionId);
+  if (!sessionAbsPath) {
+    const err = 'Invalid Nano Claude Code session id';
     ws.send({ type: 'claude-error', error: err, sessionId: null });
     return Promise.reject(new Error(err));
   }
@@ -110,6 +137,7 @@ export async function spawnNanoClawCode(command, options = {}, ws) {
       sessionId: capturedSessionId,
       provider: 'nano',
       mode: sessionMode || 'research',
+      projectName: encodeProjectPath(workingDir),
     });
   }
 
@@ -124,10 +152,10 @@ export async function spawnNanoClawCode(command, options = {}, ws) {
     '--output-format', 'stream-json',
     '-p', command,
     '--dangerously-skip-permissions',
-    '--session-file', sessionFile,
+    '--session-file', sessionAbsPath,
   ];
   if (!isPlaceholderSession) {
-    args.push('--resume', sessionFile);
+    args.push('--resume', sessionAbsPath);
   }
   if (streaming) {
     args.push('--streaming');
@@ -254,15 +282,10 @@ export async function spawnNanoClawCode(command, options = {}, ws) {
         exitCode: code,
         isNewSession: isPlaceholderSession && Boolean(command && String(command).trim()),
       });
-      try {
-        await reconcileClaudeSessionIndex(encodeProjectPath(workingDir), capturedSessionId);
-      } catch (error) {
-        console.warn('[Nano] Session index reconcile:', error.message);
-      }
       if (code === 0) {
         resolve();
       } else {
-        reject(new Error(`nano-claw-code exited with code ${code}`));
+        reject(new Error(`nano-claude-code exited with code ${code}`));
       }
     });
 
@@ -278,7 +301,7 @@ export async function spawnNanoClawCode(command, options = {}, ws) {
   });
 }
 
-export function abortNanoClawCodeSession(sessionId) {
+export function abortNanoClaudeCodeSession(sessionId) {
   const sessionData = activeNanoSessions.get(sessionId);
   if (sessionData?.process) {
     console.log(`[Nano] Aborting session: ${sessionId}`);
@@ -289,15 +312,29 @@ export function abortNanoClawCodeSession(sessionId) {
   return false;
 }
 
-export function isNanoClawCodeSessionActive(sessionId) {
+export function isNanoClaudeCodeSessionActive(sessionId) {
   return activeNanoSessions.has(sessionId);
 }
 
-export function getNanoClawCodeSessionStartTime(sessionId) {
+export function getNanoClaudeCodeSessionStartTime(sessionId) {
   const sessionData = activeNanoSessions.get(sessionId);
   return sessionData ? sessionData.startTime : null;
 }
 
-export function getActiveNanoClawCodeSessions() {
+export function getActiveNanoClaudeCodeSessions() {
   return Array.from(activeNanoSessions.keys());
+}
+
+/** Kill all in-flight Nano CLI children (e.g. before process exit). */
+export function killAllNanoClaudeCodeChildren() {
+  for (const { process: childProc } of activeNanoSessions.values()) {
+    try {
+      if (childProc && !childProc.killed) {
+        childProc.kill('SIGTERM');
+      }
+    } catch (_) {
+      // ignore
+    }
+  }
+  activeNanoSessions.clear();
 }

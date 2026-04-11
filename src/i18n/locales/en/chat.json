@@ -286,7 +286,7 @@
       "codex": "Ready to use Codex with {{model}}. Start typing your message below.",
       "openrouter": "Ready to use OpenRouter with {{model}}. Start typing your message below.",
       "local": "Ready to use Local GPU with {{model}}. Start typing your message below.",
-      "nano": "Ready to use Nano Claw Code with {{model}}. Start typing your message below.",
+      "nano": "Ready to use Nano Claude Code with {{model}}. Start typing your message below.",
       "default": "Select a provider above to begin"
     }
   },

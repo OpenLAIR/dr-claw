@@ -20,7 +20,7 @@ import { authenticatedFetch } from '../../../utils/api';
 import { readCliAvailability, writeCliAvailability } from '../../../utils/cliAvailability';
 import { Button } from '../../ui/button';
 import type { PendingAutoIntake } from '../../../types/app';
-import { CLAUDE_MODELS, CURSOR_MODELS, CODEX_MODELS, GEMINI_MODELS, LOCAL_MODELS, NANO_CLAW_CODE_MODELS, OPENROUTER_MODELS } from '../../../../shared/modelConstants';
+import { CLAUDE_MODELS, CURSOR_MODELS, CODEX_MODELS, GEMINI_MODELS, LOCAL_MODELS, NANO_CLAUDE_CODE_MODELS, OPENROUTER_MODELS } from '../../../../shared/modelConstants';
 import { getProviderDisplayName } from '../utils/chatFormatting';
 import CodeEditor from '../../CodeEditor';
 import type { EditingFile } from '../../main-content/types/types';
@@ -34,7 +34,7 @@ const DEFAULT_PROVIDER_AVAILABILITY: Record<Provider, ProviderAvailability> = {
   gemini: { cliAvailable: true, cliCommand: 'gemini', installHint: null },
   openrouter: { cliAvailable: true, cliCommand: 'openrouter', installHint: null },
   local: { cliAvailable: true, cliCommand: null, installHint: null },
-  nano: { cliAvailable: true, cliCommand: 'nano-claw-code', installHint: null },
+  nano: { cliAvailable: true, cliCommand: 'nano-claude-code', installHint: null },
 };
 
 const INTAKE_GREETING = `Hello! I'm your Dr. Claw research assistant, here to help you set up your research pipeline.\n\nTo get started, could you tell me about your research field or topic?`;
@@ -67,7 +67,7 @@ const getProviderModelConfig = (provider: Provider) => {
   if (provider === 'gemini') return GEMINI_MODELS;
   if (provider === 'openrouter') return OPENROUTER_MODELS;
   if (provider === 'local') return LOCAL_MODELS;
-  if (provider === 'nano') return NANO_CLAW_CODE_MODELS;
+  if (provider === 'nano') return NANO_CLAUDE_CODE_MODELS;
   return CURSOR_MODELS;
 };
 
@@ -424,7 +424,7 @@ function ChatInterface({
         { provider: 'codex', endpoint: '/api/cli/codex/status', fallbackCommand: 'codex' },
         { provider: 'gemini', endpoint: '/api/cli/gemini/status', fallbackCommand: 'gemini' },
         { provider: 'openrouter', endpoint: '/api/cli/openrouter/status', fallbackCommand: 'openrouter' },
-        { provider: 'nano', endpoint: '/api/cli/nano/status', fallbackCommand: 'nano-claw-code' },
+        { provider: 'nano', endpoint: '/api/cli/nano/status', fallbackCommand: 'nano-claude-code' },
       ];
 
       const results = await Promise.all(checks.map(async ({ provider: nextProvider, endpoint, fallbackCommand }) => {

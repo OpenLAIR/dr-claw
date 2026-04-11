@@ -61,7 +61,7 @@ export const getSessionName = (session: SessionWithProvider, t: TFunction): stri
   } else if (session.__provider === 'gemini') {
     name = session.summary || session.name || 'Gemini Session';
   } else if (session.__provider === 'nano') {
-    name = session.summary || session.name || 'Nano Claw Code Session';
+    name = session.summary || session.name || 'Nano Claude Code Session';
   } else {
     name = session.summary || t('projects.newSession');
   }
@@ -155,7 +155,13 @@ export const getAllSessions = (
     __projectName: project.name,
   }));
 
-  return [...claudeSessions, ...cursorSessions, ...codexSessions, ...geminiSessions, ...openrouterSessions, ...localSessions].sort(
+  const nanoSessions = (project.nanoSessions || []).map((session) => ({
+    ...session,
+    __provider: 'nano' as const,
+    __projectName: project.name,
+  }));
+
+  return [...claudeSessions, ...cursorSessions, ...codexSessions, ...geminiSessions, ...openrouterSessions, ...localSessions, ...nanoSessions].sort(
     (a, b) => getSessionDate(b).getTime() - getSessionDate(a).getTime(),
   );
 };

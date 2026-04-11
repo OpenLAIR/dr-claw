@@ -3,7 +3,7 @@ import { Check, Search, Plus, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../../contexts/AuthContext';
 import SessionProviderLogo from '../../../SessionProviderLogo';
-import { CLAUDE_MODELS, CURSOR_MODELS, CODEX_MODELS, GEMINI_MODELS, LOCAL_MODELS, NANO_CLAW_CODE_MODELS, OPENROUTER_MODELS } from '../../../../../shared/modelConstants';
+import { CLAUDE_MODELS, CURSOR_MODELS, CODEX_MODELS, GEMINI_MODELS, LOCAL_MODELS, NANO_CLAUDE_CODE_MODELS, OPENROUTER_MODELS } from '../../../../../shared/modelConstants';
 import { authenticatedFetch } from '../../../../utils/api';
 import type { ProjectSession, SessionMode, SessionProvider } from '../../../../types/app';
 import GuidedPromptStarter from './GuidedPromptStarter';
@@ -57,7 +57,7 @@ const PROVIDERS: ProviderDef[] = [
   },
   {
     id: 'nano',
-    name: 'Nano Claw Code',
+    name: 'Nano Claude Code',
     infoKey: 'providerSelection.providerInfo.nano',
     accent: 'border-amber-600 dark:border-amber-400',
     ring: 'ring-amber-600/15',
@@ -112,7 +112,7 @@ function getModelConfig(p: SessionProvider) {
   if (p === 'gemini') return GEMINI_MODELS;
   if (p === 'openrouter') return OPENROUTER_MODELS;
   if (p === 'local') return LOCAL_MODELS;
-  if (p === 'nano') return NANO_CLAW_CODE_MODELS;
+  if (p === 'nano') return NANO_CLAUDE_CODE_MODELS;
   return CURSOR_MODELS;
 }
 
@@ -214,7 +214,7 @@ export default function ProviderSelectionEmptyState({
     else if (provider === 'gemini') { setGeminiModel(value); localStorage.setItem('gemini-model', value); }
     else if (provider === 'openrouter') { setOpenrouterModel(value); localStorage.setItem('openrouter-model', value); }
     else if (provider === 'local') { setLocalModel(value); localStorage.setItem('local-model', value); }
-    else if (provider === 'nano') { setNanoModel(value); localStorage.setItem('nano-claw-code-model', value); }
+    else if (provider === 'nano') { setNanoModel(value); localStorage.setItem('nano-claude-code-model', value); }
     else { setCursorModel(value); localStorage.setItem('cursor-model', value); }
   };
 

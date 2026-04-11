@@ -13,6 +13,8 @@ function defaultSessionName(provider) {
       return 'OpenRouter Session';
     case 'local':
       return 'Local GPU Session';
+    case 'nano':
+      return 'Nano Claude Code Session';
     default:
       return 'New Session';
   }

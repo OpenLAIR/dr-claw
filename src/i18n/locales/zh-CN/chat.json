@@ -286,7 +286,7 @@
       "codex": "已准备好使用 Codex {{model}}。在下方输入您的消息。",
       "openrouter": "已准备好使用 OpenRouter {{model}}。在下方输入您的消息。",
       "local": "已准备好使用本地 GPU {{model}}。在下方输入您的消息。",
-      "nano": "已准备好使用 Nano Claw Code {{model}}。在下方输入您的消息。",
+      "nano": "已准备好使用 Nano Claude Code {{model}}。在下方输入您的消息。",
       "default": "请在上方选择一个供应商以开始"
     }
   },

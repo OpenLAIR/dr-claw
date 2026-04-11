@@ -57,6 +57,18 @@ const c = {
 const packageJsonPath = path.join(__dirname, '../package.json');
 const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 
+function stripOptionalEnvQuotes(raw) {
+    const v = String(raw).trim();
+    if (v.length >= 2) {
+        const open = v[0];
+        const close = v[v.length - 1];
+        if ((open === '"' && close === '"') || (open === "'" && close === "'")) {
+            return v.slice(1, -1);
+        }
+    }
+    return v;
+}
+
 // Load environment variables from .env file if it exists
 function loadEnvFile() {
     try {
@@ -67,7 +79,7 @@ function loadEnvFile() {
             if (trimmedLine && !trimmedLine.startsWith('#')) {
                 const [key, ...valueParts] = trimmedLine.split('=');
                 if (key && valueParts.length > 0 && !process.env[key]) {
-                    process.env[key] = valueParts.join('=').trim();
+                    process.env[key] = stripOptionalEnvQuotes(valueParts.join('='));
                 }
             }
         });

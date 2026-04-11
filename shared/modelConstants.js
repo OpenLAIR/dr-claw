@@ -112,9 +112,9 @@ export const OPENROUTER_MODELS = {
 };
 
 /**
- * Nano Claw Code — Anthropic/OpenRouter/OpenAI-compat model ids (see nano-claw-code config.MODELS)
+ * Nano Claude Code — Anthropic/OpenRouter/OpenAI-compat model ids (see nano-claude-code config.MODELS)
  */
-export const NANO_CLAW_CODE_MODELS = {
+export const NANO_CLAUDE_CODE_MODELS = {
   OPTIONS: [
     { value: 'claude-sonnet-4-6', label: 'Claude Sonnet 4.6' },
     { value: 'claude-opus-4-20250514', label: 'Claude Opus 4' },
@@ -123,7 +123,10 @@ export const NANO_CLAW_CODE_MODELS = {
 
   ALLOWS_CUSTOM: true,
 
-  DEFAULT: (typeof process !== 'undefined' && process.env?.NANO_CLAW_CODE_MODEL) || 'claude-sonnet-4-6'
+  DEFAULT:
+    (typeof process !== 'undefined' &&
+      process.env?.NANO_CLAUDE_CODE_MODEL) ||
+    'claude-sonnet-4-6'
 };
 
 /**

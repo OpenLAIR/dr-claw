@@ -13,9 +13,9 @@ import { spawnGemini } from '../gemini-cli.js';
 import { queryGeminiApi } from '../gemini-api.js';
 import { queryOpenRouter } from '../openrouter.js';
 import { queryLocalGPU } from '../local-gpu.js';
-import { spawnNanoClawCode } from '../nano-claw-code.js';
+import { spawnNanoClaudeCode } from '../nano-claude-code.js';
 import { Octokit } from '@octokit/rest';
-import { CLAUDE_MODELS, CURSOR_MODELS, CODEX_MODELS, GEMINI_MODELS, LOCAL_MODELS, NANO_CLAW_CODE_MODELS, OPENROUTER_MODELS } from '../../shared/modelConstants.js';
+import { CLAUDE_MODELS, CURSOR_MODELS, CODEX_MODELS, GEMINI_MODELS, LOCAL_MODELS, NANO_CLAUDE_CODE_MODELS, OPENROUTER_MODELS } from '../../shared/modelConstants.js';
 import { IS_PLATFORM } from '../constants/config.js';
 import { getGeminiApiKeyForUser, withGeminiApiKeyEnv } from '../utils/geminiApiKey.js';
 
@@ -1028,13 +1028,13 @@ router.post('/', validateExternalApiKey, async (req, res) => {
         permissionMode: 'bypassPermissions',
       }, writer);
     } else if (provider === 'nano') {
-      console.log('🤖 Starting Nano Claw Code session');
+      console.log('🤖 Starting Nano Claude Code session');
 
-      await spawnNanoClawCode(message.trim(), {
+      await spawnNanoClaudeCode(message.trim(), {
         projectPath: finalProjectPath,
         cwd: finalProjectPath,
         sessionId: null,
-        model: model || NANO_CLAW_CODE_MODELS.DEFAULT,
+        model: model || NANO_CLAUDE_CODE_MODELS.DEFAULT,
         env: sessionEnv,
       }, writer);
     }

@@ -281,7 +281,7 @@ hooks/
 ### 3.6 Nano Claude Code 接入完善 (PR #141 基础上)
 
 **现状**: 
-- `server/nano-claw-code.js` 已实现 stream-json harness
+- `server/nano-claude-code.js` 已实现 stream-json harness
 - 映射到 `claude-response` / `claude-complete` WebSocket 消息（复用现有 UI）
 - 多轮对话需要上游 CLI 支持 `--session-file` + `--resume`
 
@@ -476,4 +476,4 @@ Client A (Desktop)                Server                Client B (Mobile)
 | DB schema | server/database/db.js | session_metadata, projects 表 |
 | Skill 扩展 | server/utils/skillExpander.js | 全文 142 行 |
 | /btw overlay | PR #138 | server/routes/claude-btw.js, BtwOverlay.tsx |
-| Nano provider | PR #141 | server/nano-claw-code.js (303 行) |
+| Nano provider | PR #141 | server/nano-claude-code.js (303 行) |

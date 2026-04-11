@@ -77,6 +77,7 @@ export interface Project {
   geminiSessions?: ProjectSession[];
   openrouterSessions?: ProjectSession[];
   localSessions?: ProjectSession[];
+  nanoSessions?: ProjectSession[];
   sessionMeta?: ProjectSessionMeta;
   taskmaster?: ProjectTaskmasterInfo;
   [key: string]: unknown;

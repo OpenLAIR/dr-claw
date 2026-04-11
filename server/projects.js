@@ -84,6 +84,7 @@ import {
   normalizeSessionMode,
   readExplicitSessionModeFromMetadata,
 } from './utils/sessionMode.js';
+import { resolveNanoSessionAbsPath, safeNanoSessionFilename } from './nanoSessionPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DRCLAW_SKILLS_DIR = path.join(__dirname, '..', 'skills');
@@ -1043,8 +1044,8 @@ function mapIndexedSessionToProjectSession(session, provider) {
   if (provider === 'nano') {
     return {
       id: session.id,
-      summary: baseName || 'Nano Claw Code Session',
-      name: baseName || 'Nano Claw Code Session',
+      summary: baseName || 'Nano Claude Code Session',
+      name: baseName || 'Nano Claude Code Session',
       createdAt,
       lastActivity,
       messageCount,
@@ -1077,7 +1078,7 @@ function getSessionPlaceholderName(provider) {
     case 'openrouter':
       return 'OpenRouter Session';
     case 'nano':
-      return 'Nano Claw Code Session';
+      return 'Nano Claude Code Session';
     default:
       return 'New Session';
   }
@@ -1188,7 +1189,7 @@ async function reconcileClaudeSessionIndex(projectName, targetSessionId = null) 
     };
   }
 
-  return getSessions(projectName, 0, Infinity);
+  return getSessions(projectName, 0, 0);
 }
 
 async function reconcileGeminiSessionIndex(projectPath, options = {}) {
@@ -1400,6 +1401,7 @@ async function getProjects(userId, progressCallback = null) {
       const geminiSessions = projectSessions.filter((session) => session.provider === 'gemini');
       const openrouterSessions = projectSessions.filter((session) => session.provider === 'openrouter');
       const localSessions = projectSessions.filter((session) => session.provider === 'local');
+      const nanoSessions = projectSessions.filter((session) => session.provider === 'nano');
 
       project.sessions = claudeSessions.slice(0, 5).map((session) => mapIndexedSessionToProjectSession(session, 'claude'));
       project.sessionMeta = {
@@ -1411,6 +1413,7 @@ async function getProjects(userId, progressCallback = null) {
       project.geminiSessions = geminiSessions.slice(0, 5).map((session) => mapIndexedSessionToProjectSession(session, 'gemini'));
       project.openrouterSessions = openrouterSessions.slice(0, 5).map((session) => mapIndexedSessionToProjectSession(session, 'openrouter'));
       project.localSessions = localSessions.slice(0, 5).map((session) => mapIndexedSessionToProjectSession(session, 'local'));
+      project.nanoSessions = nanoSessions.slice(0, 5).map((session) => mapIndexedSessionToProjectSession(session, 'nano'));
 
       const taskmasterResult = await detectTaskMasterFolder(actualProjectDir).catch(() => null);
 
@@ -1895,6 +1898,119 @@ async function parseAgentTools(filePath) {
   return tools;
 }
 
+function extractNanoMessageText(content) {
+  if (typeof content === 'string') {
+    return content;
+  }
+  if (!Array.isArray(content)) {
+    return '';
+  }
+  const parts = [];
+  for (const block of content) {
+    if (typeof block === 'string') {
+      parts.push(block);
+    } else if (block && typeof block === 'object') {
+      if (block.type === 'text' && block.text) {
+        parts.push(String(block.text));
+      }
+    }
+  }
+  return parts.join('\n');
+}
+
+/**
+ * Real cwd for Nano session files. encodeProjectPath ↔ simple decode in extractProjectDirectory
+ * is lossy; session metadata and projects.path store the authoritative path.
+ */
+async function resolveNanoProjectDirectory(projectName, sessionId) {
+  const { sessionDb, projectDb } = await import('./database/db.js');
+  const session = sessionDb.getSessionById(sessionId);
+  const metaPath = session?.metadata?.projectPath;
+  if (typeof metaPath === 'string' && metaPath.trim()) {
+    return metaPath.trim();
+  }
+  const projectRow = projectDb.getProjectById(projectName);
+  if (projectRow?.path && typeof projectRow.path === 'string' && projectRow.path.trim()) {
+    return projectRow.path.trim();
+  }
+  return extractProjectDirectory(projectName);
+}
+
+/** Prefer ~/.dr-claw/nano-sessions; fall back to legacy <projectCwd>/drclaw-nano-*.json */
+async function findNanoSessionStoragePath(projectName, sessionId) {
+  const central = resolveNanoSessionAbsPath(sessionId);
+  if (central) {
+    try {
+      await fs.access(central);
+      return central;
+    } catch (_) {
+      // legacy below
+    }
+  }
+  const basename = safeNanoSessionFilename(sessionId);
+  if (!basename) {
+    return null;
+  }
+  try {
+    const projectPath = await resolveNanoProjectDirectory(projectName, sessionId);
+    const legacy = path.join(projectPath, basename);
+    await fs.access(legacy);
+    return legacy;
+  } catch (_) {
+    return null;
+  }
+}
+
+async function unlinkNanoSessionFilesEverywhere(projectName, sessionId) {
+  let deleted = false;
+  const central = resolveNanoSessionAbsPath(sessionId);
+  if (central) {
+    try {
+      await fs.unlink(central);
+      deleted = true;
+    } catch (e) {
+      if (e?.code !== 'ENOENT') {
+        throw e;
+      }
+    }
+  }
+  const basename = safeNanoSessionFilename(sessionId);
+  if (basename) {
+    try {
+      const projectPath = await resolveNanoProjectDirectory(projectName, sessionId);
+      const legacy = path.join(projectPath, basename);
+      await fs.unlink(legacy);
+      deleted = true;
+    } catch (e) {
+      if (e?.code !== 'ENOENT') {
+        throw e;
+      }
+    }
+  }
+  return deleted;
+}
+
+/** Maps nano-claude-code session.json (title, messages[]) to Dr. Claw chat message shape. */
+function nanoSessionJsonToMessages(data) {
+  const rawMessages = Array.isArray(data.messages) ? data.messages : [];
+  const savedAt = data.saved_at || '';
+  const out = [];
+  for (const m of rawMessages) {
+    const role = m.role;
+    if (role !== 'user' && role !== 'assistant') {
+      continue;
+    }
+    const text = extractNanoMessageText(m.content);
+    out.push({
+      type: 'message',
+      role,
+      content: text || '',
+      timestamp: savedAt,
+    });
+  }
+  return out;
+}
+
 // Get messages for a specific session with pagination support
 async function getSessionMessages(projectName, sessionId, limit = null, offset = 0, provider = 'claude', userId = null) {
   console.log(`[DEBUG] getSessionMessages - project: ${projectName}, session: ${sessionId}, provider: ${provider}`);
@@ -2133,6 +2249,36 @@ async function getSessionMessages(projectName, sessionId, limit = null, offset =
     }
   }
 
+  if (String(provider || '').toLowerCase() === 'nano') {
+    console.log('[DEBUG] Reading Nano Claude Code session file');
+    try {
+      const nanoPath = await findNanoSessionStoragePath(projectName, sessionId);
+      if (!nanoPath) {
+        return limit === null ? [] : { messages: [], total: 0, hasMore: false };
+      }
+      const raw = await fs.readFile(nanoPath, 'utf-8');
+      const data = JSON.parse(raw);
+      const messages = nanoSessionJsonToMessages(data);
+      console.log(`[DEBUG] Found ${messages.length} messages in Nano session file at ${nanoPath}`);
+      const total = messages.length;
+      if (limit === null) {
+        return messages;
+      }
+      const startIndex = Math.max(0, total - offset - limit);
+      const endIndex = total - offset;
+      return {
+        messages: messages.slice(startIndex, endIndex),
+        total,
+        hasMore: startIndex > 0,
+        offset,
+        limit,
+      };
+    } catch (e) {
+      console.warn(`Could not read Nano session ${sessionId}:`, e.message);
+      return limit === null ? [] : { messages: [], total: 0, hasMore: false };
+    }
+  }
+
   const projectDir = path.join(os.homedir(), '.claude', 'projects', projectName);
 
   try {
@@ -2350,6 +2496,31 @@ async function deleteSession(projectName, sessionId, provider = 'claude') {
     }
 
     throw new Error(`Local GPU session ${sessionId} not found in file system or index`);
+  }
+
+  if (String(provider || '').toLowerCase() === 'nano') {
+    if (!safeNanoSessionFilename(sessionId)) {
+      throw new Error('Invalid Nano session id');
+    }
+    let deletedFile = false;
+    try {
+      deletedFile = await unlinkNanoSessionFilesEverywhere(projectName, sessionId);
+    } catch (e) {
+      console.error(`[Nano] Failed to delete session ${sessionId}:`, e.message);
+      throw new Error(`Failed to delete Nano session: ${e.message}`);
+    }
+
+    const deletedIndex = indexedSession?.provider === 'nano' || deletedFile;
+    if (deletedIndex) {
+      sessionDb.deleteSession(sessionId);
+    }
+
+    if (deletedFile || deletedIndex) {
+      console.log(`[Nano] Deleted session ${sessionId}${deletedFile ? ' (removed session file if present)' : ' from index only'}`);
+      return true;
+    }
+
+    throw new Error(`Nano session ${sessionId} not found in file system or index`);
   }
 
   const projectDir = path.join(os.homedir(), '.claude', 'projects', projectName);
@@ -4058,6 +4229,26 @@ async function renameSession(projectName, sessionId, newSummary, provider = 'cla
     } catch (e) {
       console.error(`[Gemini] Failed to rename session ${sessionId}:`, e.message);
       throw new Error(`Failed to rename Gemini session: ${e.message}`);
+    }
+  } else if (String(provider || '').toLowerCase() === 'nano') {
+    if (!safeNanoSessionFilename(sessionId)) {
+      throw new Error('Invalid Nano session id');
+    }
+    const nanoPath = await findNanoSessionStoragePath(projectName, sessionId);
+    if (!nanoPath) {
+      throw new Error(`Nano session ${sessionId} file not found`);
+    }
+    try {
+      const raw = await fs.readFile(nanoPath, 'utf-8');
+      const data = JSON.parse(raw);
+      data.title = trimmedSummary;
+      await fs.writeFile(nanoPath, JSON.stringify(data, null, 2), 'utf-8');
+      sessionDb.updateSessionName(sessionId, trimmedSummary);
+      console.log(`[Nano] Renamed session ${sessionId} to "${trimmedSummary}"`);
+      return true;
+    } catch (e) {
+      console.error(`[Nano] Failed to rename session ${sessionId}:`, e.message);
+      throw new Error(`Failed to rename Nano session: ${e.message}`);
     }
   }
   // 2. Handle Cursor sessions (SQLite)

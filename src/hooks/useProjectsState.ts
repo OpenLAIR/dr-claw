@@ -103,7 +103,8 @@ const projectsHaveChanges = (
       serialize(nextProject.codexSessions) !== serialize(prevProject.codexSessions) ||
       serialize(nextProject.geminiSessions) !== serialize(prevProject.geminiSessions) ||
       serialize(nextProject.openrouterSessions) !== serialize(prevProject.openrouterSessions) ||
-      serialize(nextProject.localSessions) !== serialize(prevProject.localSessions)
+      serialize(nextProject.localSessions) !== serialize(prevProject.localSessions) ||
+      serialize(nextProject.nanoSessions) !== serialize(prevProject.nanoSessions)
     );
   });
 };
@@ -116,6 +117,7 @@ const getProjectSessions = (project: Project): ProjectSession[] => {
     ...(project.geminiSessions ?? []),
     ...(project.openrouterSessions ?? []),
     ...(project.localSessions ?? []),
+    ...(project.nanoSessions ?? []),
   ];
 };
 
@@ -178,6 +180,7 @@ const applySessionTagsToProject = (
   const nextGeminiSessions = applySessionTagsToList(project.geminiSessions, detail, 'gemini');
   const nextOpenrouterSessions = applySessionTagsToList(project.openrouterSessions, detail, 'openrouter');
   const nextLocalSessions = applySessionTagsToList(project.localSessions, detail, 'local');
+  const nextNanoSessions = applySessionTagsToList(project.nanoSessions, detail, 'nano');
 
   if (
     nextClaudeSessions === project.sessions &&
@@ -185,7 +188,8 @@ const applySessionTagsToProject = (
     nextCodexSessions === project.codexSessions &&
     nextGeminiSessions === project.geminiSessions &&
     nextOpenrouterSessions === project.openrouterSessions &&
-    nextLocalSessions === project.localSessions
+    nextLocalSessions === project.localSessions &&
+    nextNanoSessions === project.nanoSessions
   ) {
     return project;
   }
@@ -198,6 +202,7 @@ const applySessionTagsToProject = (
     geminiSessions: nextGeminiSessions,
     openrouterSessions: nextOpenrouterSessions,
     localSessions: nextLocalSessions,
+    nanoSessions: nextNanoSessions,
   };
 };
 
@@ -442,6 +447,7 @@ export function useProjectsState({
           geminiSessions: updateSessionList(project.geminiSessions, 'gemini'),
           openrouterSessions: updateSessionList(project.openrouterSessions, 'openrouter'),
           localSessions: updateSessionList(project.localSessions, 'local'),
+          nanoSessions: updateSessionList(project.nanoSessions, 'nano'),
         };
 
         if (createdProjectName && project.name === createdProjectName && createdProvider) {
@@ -451,13 +457,18 @@ export function useProjectsState({
             : createdProvider === 'gemini' ? 'geminiSessions'
             : createdProvider === 'openrouter' ? 'openrouterSessions'
             : createdProvider === 'local' ? 'localSessions'
+            : createdProvider === 'nano' ? 'nanoSessions'
             : null;
 
           if (sessionArrayKey) {
             const arr = (nextProject[sessionArrayKey] as ProjectSession[] | undefined) || [];
             const alreadyExists = arr.some((s) => s.id === latestMessage.sessionId);
             if (!alreadyExists) {
-              const fallbackName = createdProvider === 'local' ? 'Local GPU Session' : 'New Session';
+              const fallbackName = createdProvider === 'local'
+                ? 'Local GPU Session'
+                : createdProvider === 'nano'
+                  ? 'Nano Claude Code Session'
+                  : 'New Session';
               const newSession: ProjectSession = {
                 id: latestMessage.sessionId as string,
                 name: createdDisplayName || fallbackName,
@@ -664,6 +675,13 @@ export function useProjectsState({
         matchedSession = { ...localSession, __provider: 'local' };
         break;
       }
+
+      const nanoSession = project.nanoSessions?.find((session) => session.id === targetSessionId);
+      if (nanoSession) {
+        matchedProject = project;
+        matchedSession = { ...nanoSession, __provider: 'nano' };
+        break;
+      }
     }
 
     const providerHint = targetProvider ?? matchedSession?.__provider;
@@ -702,7 +720,7 @@ export function useProjectsState({
       setSelectedProject(project);
       setSelectedSession(null);
       setActiveTab((currentTab) =>
-        currentTab === 'dashboard' || currentTab === 'trash' || currentTab === 'news' || currentTab === 'skills' || currentTab === 'compute'
+        currentTab === 'dashboard' || currentTab === 'trash' || currentTab === 'news' || currentTab === 'skills'
           ? 'chat'
           : currentTab,
       );
@@ -851,32 +869,10 @@ export function useProjectsState({
     }
   }, [isMobile, navigate]);
 
-  const handleOpenAutoResearch = useCallback(() => {
-    setSelectedProject(null);
-    setSelectedSession(null);
-    setActiveTab('autoresearch');
-    navigate('/');
-
-    if (isMobile) {
-      setSidebarOpen(false);
-    }
-  }, [isMobile, navigate]);
-
   const handleOpenNews = useCallback(() => {
     setSelectedProject(null);
     setSelectedSession(null);
     setActiveTab('news');
-    navigate('/');
-
-    if (isMobile) {
-      setSidebarOpen(false);
-    }
-  }, [isMobile, navigate]);
-
-  const handleOpenCompute = useCallback(() => {
-    setSelectedProject(null);
-    setSelectedSession(null);
-    setActiveTab('compute');
     navigate('/');
 
     if (isMobile) {
@@ -903,6 +899,7 @@ export function useProjectsState({
           geminiSessions: filterOut(project.geminiSessions),
           openrouterSessions: filterOut(project.openrouterSessions),
           localSessions: filterOut(project.localSessions),
+          nanoSessions: filterOut(project.nanoSessions),
           sessionMeta: {
             ...project.sessionMeta,
             total: Math.max(0, (project.sessionMeta?.total as number | undefined ?? 0) - 1),
@@ -1000,9 +997,7 @@ export function useProjectsState({
       onOpenDashboard: handleOpenDashboard,
       onOpenTrash: handleOpenTrash,
       onOpenSkills: handleOpenSkills,
-      onOpenAutoResearch: handleOpenAutoResearch,
       onOpenNews: handleOpenNews,
-      onOpenCompute: handleOpenCompute,
       onImportedProjectCreated: handleProjectCreatedWithIntake,
       importedProjectAnalysisPrompt,
       onDismissImportedProjectAnalysisPrompt: clearImportedProjectAnalysisPrompt,
@@ -1012,9 +1007,7 @@ export function useProjectsState({
       activeTab,
       clearImportedProjectAnalysisPrompt,
       handleNewSession,
-      handleOpenCompute,
       handleOpenDashboard,
-      handleOpenAutoResearch,
       handleOpenNews,
       handleOpenSkills,
       handleOpenTrash,
@@ -1069,9 +1062,7 @@ export function useProjectsState({
     handleOpenDashboard,
     handleOpenTrash,
     handleOpenSkills,
-    handleOpenAutoResearch,
     handleOpenNews,
-    handleOpenCompute,
     handleNewSession,
     handleStartWorkspaceQa,
     handleChatFromReference,

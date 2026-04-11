@@ -25,6 +25,9 @@ const PROVIDER_INSTALLERS = {
       darwin: [
         { bin: 'brew', args: ['install', 'claude-code'], label: 'brew install claude-code' },
       ],
+      linux: [
+        { bin: 'npm', args: ['install', '-g', '@anthropic-ai/claude-code'], label: 'npm install -g @anthropic-ai/claude-code' },
+      ],
       win32: [
         { bin: 'winget', args: ['install', '--id', 'Anthropic.ClaudeCode', '-e'], label: 'winget install Anthropic.ClaudeCode' },
       ],
@@ -51,6 +54,9 @@ const PROVIDER_INSTALLERS = {
       darwin: [
         { bin: 'npm', args: ['install', '-g', '@openai/codex'], label: 'npm install -g @openai/codex' },
       ],
+      linux: [
+        { bin: 'npm', args: ['install', '-g', '@openai/codex'], label: 'npm install -g @openai/codex' },
+      ],
       win32: [
         { bin: 'npm.cmd', args: ['install', '-g', '@openai/codex'], label: 'npm install -g @openai/codex' },
       ],
@@ -64,8 +70,39 @@ const PROVIDER_INSTALLERS = {
       darwin: [
         { bin: 'npm', args: ['install', '-g', '@google/gemini-cli'], label: 'npm install -g @google/gemini-cli' },
       ],
+      linux: [
+        { bin: 'npm', args: ['install', '-g', '@google/gemini-cli'], label: 'npm install -g @google/gemini-cli' },
+      ],
       win32: [
         { bin: 'npm.cmd', args: ['install', '-g', '@google/gemini-cli'], label: 'npm install -g @google/gemini-cli' },
+      ],
+    },
+  },
+  nano: {
+    displayName: 'Nano Claude Code',
+    docsUrl: 'https://github.com/OpenLAIR/nano-claude-code',
+    fallbackDownloadUrl: 'https://github.com/OpenLAIR/nano-claude-code',
+    commands: {
+      darwin: [
+        {
+          bin: 'pip3',
+          args: ['install', '-U', 'git+https://github.com/OpenLAIR/nano-claude-code.git'],
+          label: 'pip3 install from GitHub (recommended)',
+        },
+      ],
+      linux: [
+        {
+          bin: 'pip3',
+          args: ['install', '-U', 'git+https://github.com/OpenLAIR/nano-claude-code.git'],
+          label: 'pip3 install from GitHub (use a venv if your distro manages system Python)',
+        },
+      ],
+      win32: [
+        {
+          bin: 'pip',
+          args: ['install', '-U', 'git+https://github.com/OpenLAIR/nano-claude-code.git'],
+          label: 'pip install from GitHub',
+        },
       ],
     },
   },
@@ -89,7 +126,7 @@ function buildCliInstallHint(agent) {
     case 'openrouter':
       return 'Set OPENROUTER_API_KEY in your .env file. Get a key at https://openrouter.ai/keys';
     case 'nano':
-      return 'nano-claw-code is not on PATH. Install from https://github.com/OpenLAIR/nano-claw-code or set NANO_CLAW_CODE_COMMAND to the executable.';
+      return 'nano-claude-code is not on PATH. Install from https://github.com/OpenLAIR/nano-claude-code or set NANO_CLAUDE_CODE_COMMAND to the executable.';
     default:
       return 'Required CLI is not installed. Install it first, then retry login.';
   }
@@ -219,6 +256,30 @@ router.get('/providers', async (_req, res) => {
   }
 });
 
+async function checkNanoCliForInstall() {
+  const resolvedCliCommand = await resolveAvailableCliCommand({
+    envVarName: 'NANO_CLAUDE_CODE_COMMAND',
+    defaultCommands: ['nano-claude-code'],
+    args: ['--version'],
+    appendWindowsSuffixes: true,
+  });
+  if (!resolvedCliCommand) {
+    return {
+      authenticated: false,
+      email: null,
+      error: 'nano-claude-code CLI not found',
+      cliAvailable: false,
+      cliCommand: 'nano-claude-code',
+    };
+  }
+  return {
+    authenticated: true,
+    email: 'Nano Claude Code',
+    cliAvailable: true,
+    cliCommand: resolvedCliCommand,
+  };
+}
+
 router.post('/install/:provider', async (req, res) => {
   const provider = String(req.params.provider || '').toLowerCase();
   const definition = getInstallerDefinition(provider);
@@ -232,7 +293,7 @@ router.post('/install/:provider', async (req, res) => {
     return res.status(400).json({
       ok: false,
       provider,
-      error: `No automatic installer is configured for ${definition.displayName} on ${process.platform}`,
+      error: `No automatic installer is configured for ${definition.displayName} on ${process.platform}. See the official docs for manual Linux steps.`,
       docsUrl: definition.docsUrl,
       downloadUrl: definition.fallbackDownloadUrl,
     });
@@ -247,7 +308,9 @@ router.post('/install/:provider', async (req, res) => {
       ? checkCursorStatus
       : provider === 'codex'
         ? checkCodexCredentials
-        : checkGeminiCredentials;
+        : provider === 'nano'
+          ? checkNanoCliForInstall
+          : checkGeminiCredentials;
 
   const latestStatus = await checker();
 
@@ -376,8 +439,8 @@ router.get('/gemini/status', async (req, res) => {
 router.get('/nano/status', async (req, res) => {
   try {
     const resolvedCliCommand = await resolveAvailableCliCommand({
-      envVarName: 'NANO_CLAW_CODE_COMMAND',
-      defaultCommands: ['nano-claw-code'],
+      envVarName: 'NANO_CLAUDE_CODE_COMMAND',
+      defaultCommands: ['nano-claude-code'],
       args: ['--version'],
       appendWindowsSuffixes: true,
     });
@@ -386,21 +449,21 @@ router.get('/nano/status', async (req, res) => {
       return res.json(buildStatusPayload({
         authenticated: false,
         email: null,
-        error: 'nano-claw-code CLI not found',
+        error: 'nano-claude-code CLI not found',
         cliAvailable: false,
-        cliCommand: 'nano-claw-code',
+        cliCommand: 'nano-claude-code',
         installHint: buildCliInstallHint('nano'),
       }, 'nano'));
     }
 
     return res.json(buildStatusPayload({
       authenticated: true,
-      email: 'Nano Claw Code',
+      email: 'Nano Claude Code',
       cliAvailable: true,
       cliCommand: resolvedCliCommand,
     }, 'nano'));
   } catch (error) {
-    console.error('Error checking Nano Claw Code status:', error);
+    console.error('Error checking Nano Claude Code status:', error);
     res.status(500).json({
       authenticated: false,
       email: null,
@@ -452,9 +515,16 @@ async function checkGeminiCredentials() {
       };
     }
 
-    // Check for OAuth credentials file first (preferred — zero-config for Gemini CLI users)
-    let oauthEmail = null;
-    let hasOAuth = false;
+    if (process.env.GOOGLE_API_KEY) {
+      console.log('[DEBUG] Gemini: Found GOOGLE_API_KEY in environment');
+      return {
+        authenticated: true,
+        email: 'API Key (Env)',
+        cliAvailable: true,
+        cliCommand
+      };
+    }
+
     const oauthPath = path.join(os.homedir(), '.gemini', 'oauth_creds.json');
     console.log(`[DEBUG] Gemini: Checking for OAuth file at ${oauthPath}`);
     try {
@@ -462,22 +532,27 @@ async function checkGeminiCredentials() {
       const creds = JSON.parse(content);
 
       if (creds.refresh_token || creds.access_token) {
-        hasOAuth = true;
-        oauthEmail = creds.email || null;
+        let email = creds.email || 'OAuth (Config)';
 
-        // Try to extract email from id_token if available
-        if (!oauthEmail && creds.id_token) {
+        if (!creds.email && creds.id_token) {
           try {
             const parts = creds.id_token.split('.');
             if (parts.length >= 2) {
               const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
-              oauthEmail = payload.email || null;
+              email = payload.email || email;
             }
           } catch (jwtError) {
             console.warn('[DEBUG] Gemini: Failed to decode id_token', jwtError.message);
           }
         }
-        console.log(`[DEBUG] Gemini: OAuth available as ${oauthEmail || 'unknown'}`);
+
+        console.log(`[DEBUG] Gemini: Authenticated via OAuth as ${email}`);
+        return {
+          authenticated: true,
+          email: email,
+          cliAvailable: true,
+          cliCommand
+        };
       } else {
         console.log('[DEBUG] Gemini: OAuth file found but no tokens present');
       }
@@ -489,48 +564,6 @@ async function checkGeminiCredentials() {
       }
     }
 
-    const hasApiKey = Boolean(process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY);
-
-    // Determine active auth method and display
-    if (hasApiKey && hasOAuth) {
-      console.log('[DEBUG] Gemini: Both API Key and OAuth available — using API Key (Direct API)');
-      return {
-        authenticated: true,
-        email: oauthEmail || 'Google Account',
-        method: 'api-key',
-        methodLabel: 'Direct API (API Key + OAuth)',
-        hasOAuth: true,
-        hasApiKey: true,
-        cliAvailable: true,
-        cliCommand
-      };
-    } else if (hasApiKey) {
-      console.log('[DEBUG] Gemini: Authenticated via API Key');
-      return {
-        authenticated: true,
-        email: 'Direct API (API Key)',
-        method: 'api-key',
-        methodLabel: 'Direct API',
-        hasOAuth: false,
-        hasApiKey: true,
-        cliAvailable: true,
-        cliCommand
-      };
-    } else if (hasOAuth) {
-      console.log(`[DEBUG] Gemini: Authenticated via OAuth as ${oauthEmail}`);
-      return {
-        authenticated: true,
-        email: oauthEmail || 'Google OAuth',
-        method: 'oauth',
-        methodLabel: 'OAuth (Code Assist)',
-        hasOAuth: true,
-        hasApiKey: false,
-        cliAvailable: true,
-        cliCommand
-      };
-    }
-
-    // Fallback to legacy config file check
     const configPath = path.join(os.homedir(), '.gemini', 'config.json');
     console.log(`[DEBUG] Gemini: Checking for legacy config at ${configPath}`);
     try {
