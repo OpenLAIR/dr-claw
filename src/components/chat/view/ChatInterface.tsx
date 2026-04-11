@@ -1,7 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import QuickSettingsPanel from '../../QuickSettingsPanel';
-import ChatTaskProgressPill from './subcomponents/ChatTaskProgressPill';
-import { useTasksSettings } from '../../../contexts/TasksSettingsContext';
 import { useTaskMaster } from '../../../contexts/TaskMasterContext';
 import { useTranslation } from 'react-i18next';
 import ChatMessagesPane from './subcomponents/ChatMessagesPane';
@@ -107,7 +105,6 @@ function ChatInterface({
   newSessionMode = 'research',
   onNewSessionModeChange,
 }: ChatInterfaceProps) {
-  const { tasksEnabled, isTaskMasterInstalled } = useTasksSettings();
   const { refreshTasks } = useTaskMaster();
   const { t } = useTranslation('chat');
   const [isShellEditPromptOpen, setIsShellEditPromptOpen] = useState(false);
@@ -698,12 +695,6 @@ function ChatInterface({
             </p>
           </div>
         </div>
-        <div className="flex justify-end px-4 pb-4">
-          <ChatTaskProgressPill
-            onStartTask={handleStartTaskInChat}
-            onShowAllTasks={() => setSidebarTab('research')}
-          />
-        </div>
       </>
     );
   }
@@ -846,20 +837,6 @@ function ChatInterface({
           onNewSessionModeChange={onNewSessionModeChange}
           onRetry={handleRetry}
         />
-
-        <div className="px-2 sm:px-4 max-w-5xl mx-auto w-full">
-          <div className="flex gap-4">
-            <div className="flex-1 min-w-0">
-              <SkillShortcutsPanel setInput={setInput} textareaRef={textareaRef} setAttachedPrompt={setAttachedPrompt} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <ChatTaskProgressPill
-                onStartTask={handleStartTaskInChat}
-                onShowAllTasks={() => setSidebarTab('research')}
-              />
-            </div>
-          </div>
-        </div>
 
         <ChatComposer
           pendingPermissionRequests={pendingPermissionRequests}
