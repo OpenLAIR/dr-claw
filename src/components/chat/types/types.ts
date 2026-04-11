@@ -162,6 +162,7 @@ export interface ChatInterfaceProps {
   importedProjectAnalysisPrompt?: ImportedProjectAnalysisPrompt | null;
   clearImportedProjectAnalysisPrompt?: () => void;
   initialInputDraft?: string | null;
+  onOpenShellForSession?: () => void;
   newSessionMode?: SessionMode;
   onNewSessionModeChange?: (mode: SessionMode) => void;
 }

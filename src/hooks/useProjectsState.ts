@@ -880,6 +880,28 @@ export function useProjectsState({
     }
   }, [isMobile, navigate]);
 
+  const handleOpenAutoResearch = useCallback(() => {
+    setSelectedProject(null);
+    setSelectedSession(null);
+    setActiveTab('autoresearch');
+    navigate('/');
+
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  }, [isMobile, navigate]);
+
+  const handleOpenCompute = useCallback(() => {
+    setSelectedProject(null);
+    setSelectedSession(null);
+    setActiveTab('compute');
+    navigate('/');
+
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  }, [isMobile, navigate]);
+
   const handleSessionDelete = useCallback(
     (sessionIdToDelete: string) => {
       if (selectedSession?.id === sessionIdToDelete) {
@@ -998,6 +1020,8 @@ export function useProjectsState({
       onOpenTrash: handleOpenTrash,
       onOpenSkills: handleOpenSkills,
       onOpenNews: handleOpenNews,
+      onOpenAutoResearch: handleOpenAutoResearch,
+      onOpenCompute: handleOpenCompute,
       onImportedProjectCreated: handleProjectCreatedWithIntake,
       importedProjectAnalysisPrompt,
       onDismissImportedProjectAnalysisPrompt: clearImportedProjectAnalysisPrompt,
@@ -1008,6 +1032,8 @@ export function useProjectsState({
       clearImportedProjectAnalysisPrompt,
       handleNewSession,
       handleOpenDashboard,
+      handleOpenAutoResearch,
+      handleOpenCompute,
       handleOpenNews,
       handleOpenSkills,
       handleOpenTrash,
@@ -1063,6 +1089,8 @@ export function useProjectsState({
     handleOpenTrash,
     handleOpenSkills,
     handleOpenNews,
+    handleOpenAutoResearch,
+    handleOpenCompute,
     handleNewSession,
     handleStartWorkspaceQa,
     handleChatFromReference,

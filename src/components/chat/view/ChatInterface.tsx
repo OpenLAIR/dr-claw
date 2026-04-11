@@ -122,10 +122,10 @@ function ChatInterface({
     setPreviewFile(null);
   }, []);
 
-  const [sidebarTab, setSidebarTab] = useState<'context' | 'research' | 'files'>(() => {
+  const [sidebarTab, setSidebarTab] = useState<'context' | 'research' | 'files' | 'shell' | 'git'>(() => {
     if (typeof window === 'undefined') return 'context';
     const stored = window.localStorage.getItem('chat-sidebar-active-tab');
-    return (stored === 'research' || stored === 'files') ? stored : 'context';
+    return (stored === 'research' || stored === 'files' || stored === 'shell' || stored === 'git') ? stored : 'context';
   });
 
   useEffect(() => {
@@ -887,6 +887,7 @@ function ChatInterface({
           renderInputWithMentions={renderInputWithMentions}
           textareaRef={textareaRef}
           input={input}
+          setInput={setInput}
           onInputChange={handleInputChange}
           onTextareaClick={handleTextareaClick}
           onTextareaKeyDown={handleKeyDown}
