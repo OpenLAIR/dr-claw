@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useMemo } from 'react';
 import type { Dispatch, RefObject, SetStateAction } from 'react';
 
 import MessageComponent from './MessageComponent';
@@ -17,8 +17,6 @@ import { getProviderDisplayName } from '../../utils/chatFormatting';
 
 interface ChatMessagesPaneProps {
   scrollContainerRef: RefObject<HTMLDivElement>;
-  onWheel: () => void;
-  onTouchMove: () => void;
   isLoadingSessionMessages: boolean;
   chatMessages: ChatMessage[];
   selectedSession: ProjectSession | null;
@@ -40,8 +38,6 @@ interface ChatMessagesPaneProps {
   setOpenrouterModel: (model: string) => void;
   localModel: string;
   setLocalModel: (model: string) => void;
-  nanoModel: string;
-  setNanoModel: (model: string) => void;
   isLoadingMoreMessages: boolean;
   hasMoreMessages: boolean;
   totalMessages: number;
@@ -74,8 +70,6 @@ interface ChatMessagesPaneProps {
 
 export default function ChatMessagesPane({
   scrollContainerRef,
-  onWheel,
-  onTouchMove,
   isLoadingSessionMessages,
   chatMessages,
   selectedSession,
@@ -97,8 +91,6 @@ export default function ChatMessagesPane({
   setOpenrouterModel,
   localModel,
   setLocalModel,
-  nanoModel,
-  setNanoModel,
   isLoadingMoreMessages,
   hasMoreMessages,
   totalMessages,
@@ -129,33 +121,29 @@ export default function ChatMessagesPane({
   onRetry,
 }: ChatMessagesPaneProps) {
   const { t } = useTranslation('chat');
-  const messageKeyMapRef = useRef<WeakMap<ChatMessage, string>>(new WeakMap());
-  const allocatedKeysRef = useRef<Set<string>>(new Set());
-  const generatedMessageKeyCounterRef = useRef(0);
-
-  // Keep keys stable across prepends so existing MessageComponent instances retain local state.
-  const getMessageKey = useCallback((message: ChatMessage) => {
-    const existingKey = messageKeyMapRef.current.get(message);
-    if (existingKey) {
-      return existingKey;
-    }
-
+  const getMessageKey = useCallback((message: ChatMessage, fallbackIndex?: number) => {
     const intrinsicKey = getIntrinsicMessageKey(message);
-    let candidateKey = intrinsicKey;
-
-    if (!candidateKey || allocatedKeysRef.current.has(candidateKey)) {
-      do {
-        generatedMessageKeyCounterRef.current += 1;
-        candidateKey = intrinsicKey
-          ? `${intrinsicKey}-${generatedMessageKeyCounterRef.current}`
-          : `message-generated-${generatedMessageKeyCounterRef.current}`;
-      } while (allocatedKeysRef.current.has(candidateKey));
+    if (intrinsicKey) {
+      return intrinsicKey;
     }
 
-    allocatedKeysRef.current.add(candidateKey);
-    messageKeyMapRef.current.set(message, candidateKey);
-    return candidateKey;
+    const parsedTimestamp = new Date(message.timestamp).getTime();
+    if (Number.isFinite(parsedTimestamp)) {
+      return `message-${message.type}-${parsedTimestamp}-${fallbackIndex ?? 0}`;
+    }
+
+    return `message-${message.type}-fallback-${fallbackIndex ?? 0}`;
   }, []);
+
+  const getAgentTurnKey = useCallback((messages: ChatMessage[], fallbackIndex: number) => {
+    if (!messages.length) {
+      return `agent-turn-empty-${fallbackIndex}`;
+    }
+
+    const firstMessageKey = getMessageKey(messages[0], fallbackIndex);
+    const lastMessageKey = getMessageKey(messages[messages.length - 1], fallbackIndex);
+    return `agent-turn-${firstMessageKey}-${lastMessageKey}-${messages.length}`;
+  }, [getMessageKey]);
 
   const groupedItems = useMemo(
     () => groupMessagesIntoTurns(visibleMessages, isLoading),
@@ -184,8 +172,6 @@ export default function ChatMessagesPane({
   return (
     <div
       ref={scrollContainerRef}
-      onWheel={onWheel}
-      onTouchMove={onTouchMove}
       className="flex-1 overflow-y-auto overflow-x-hidden px-0 py-3 sm:p-4 relative"
     >
       <div className="max-w-5xl mx-auto space-y-3 sm:space-y-4">
@@ -216,8 +202,6 @@ export default function ChatMessagesPane({
             setOpenrouterModel={setOpenrouterModel}
             localModel={localModel}
             setLocalModel={setLocalModel}
-            nanoModel={nanoModel}
-            setNanoModel={setNanoModel}
             projectName={selectedProject.name}
             setInput={setInput}
             setAttachedPrompt={setAttachedPrompt}
@@ -342,7 +326,7 @@ export default function ChatMessagesPane({
             if (item.kind === 'user' || item.kind === 'standalone') {
               return (
                 <MessageComponent
-                  key={getMessageKey(item.message)}
+                  key={getMessageKey(item.message, index)}
                   message={item.message}
                   index={index}
                   prevMessage={null}
@@ -364,7 +348,7 @@ export default function ChatMessagesPane({
             // kind === 'agent-turn'
             return (
               <AgentTurnContainer
-                key={`agent-turn-${index}`}
+                key={getAgentTurnKey(item.allMessages, index)}
                 turn={item}
                 getMessageKey={getMessageKey}
                 createDiff={createDiff}

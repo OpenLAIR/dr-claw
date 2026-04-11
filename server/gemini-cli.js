@@ -931,7 +931,13 @@ export async function spawnGemini(command, options = {}, ws) {
                   stageTagKeys,
                   tagSource: stageTagSource,
                 });
-                ws.send({ type: 'session-created', sessionId: capturedSessionId, provider: 'gemini', mode: sessionMode || 'research' });
+                ws.send({
+                  type: 'session-created',
+                  sessionId: capturedSessionId,
+                  provider: 'gemini',
+                  mode: sessionMode || 'research',
+                  projectName: workingDir ? encodeProjectPath(workingDir) : undefined,
+                });
               }
             }
             break;

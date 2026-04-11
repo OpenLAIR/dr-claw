@@ -1,5 +1,40 @@
 # Changelog
 
+## Unreleased
+
+### Public Upstream Sync - 2026-04-11
+
+#### Included in this upstream-safe branch
+- Chat composer queue and steer workflow:
+  - Added durable queued-turn data structures and queue reconciliation helpers.
+  - Added steer promotion, paused queue handling, queued-turn resume, and queue cleanup after turn settlement.
+  - Added queue/session-scope tests for `codexQueue`, `sessionLoadGuards`, `sessionSnapshotCache`, and `sessionScope`.
+- Session stability and protocol hardening:
+  - Added explicit WebSocket lifecycle protocol messages: `session-accepted`, `session-busy`, `session-state-changed`.
+  - Added project-scoped event enrichment for session lifecycle payloads to avoid cross-session/cross-project ambiguity.
+  - Added lifecycle projection from provider completion/error messages into normalized session-state events.
+  - Added session-created `projectName` metadata for Claude/Cursor/Gemini session initialization paths.
+- Nano chain compatibility:
+  - Preserved Nano command path and active session reporting in WebSocket session status flows.
+  - Ensured session lifecycle protocol is emitted consistently for Nano just like other providers.
+
+#### Explicitly excluded (local/private only, not part of upstream PR)
+- Codex-only product strategy and provider lock-in controls.
+- External auth / license refresh-heartbeat-offline-grace stack.
+- Project root hard-cut and Codex session backfill private policy behavior.
+- LingZhi/LingzhiLab branding replacements and private demo/link route changes.
+
+#### Cross-platform notes
+- No platform-specific server behavior was hardcoded for this sync.
+- Session protocol additions are transport-level and provider-agnostic; Windows-specific stability paths do not alter macOS behavior.
+
+#### Validation
+- Passed: `node --check server/index.js`
+- Passed: `node --check server/claude-sdk.js`
+- Passed: `node --check server/cursor-cli.js`
+- Passed: `node --check server/gemini-cli.js`
+- Not runnable in current environment (missing local dev dependencies): `vitest`, `tsc`
+
 ## Dr. Claw v1.1.1 - 2026-03-30
 
 ### Highlights

@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Check, Search, Plus, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../../../contexts/AuthContext';
 import SessionProviderLogo from '../../../SessionProviderLogo';
-import { CLAUDE_MODELS, CURSOR_MODELS, CODEX_MODELS, GEMINI_MODELS, LOCAL_MODELS, NANO_CLAUDE_CODE_MODELS, OPENROUTER_MODELS } from '../../../../../shared/modelConstants';
+import { CLAUDE_MODELS, CURSOR_MODELS, CODEX_MODELS, GEMINI_MODELS, LOCAL_MODELS, OPENROUTER_MODELS } from '../../../../../shared/modelConstants';
 import { authenticatedFetch } from '../../../../utils/api';
 import type { ProjectSession, SessionMode, SessionProvider } from '../../../../types/app';
 import GuidedPromptStarter from './GuidedPromptStarter';
 import type { AttachedPrompt, ProviderAvailability } from '../../types/types';
+import { isProviderAllowed } from '../../../../utils/providerPolicy';
 
 interface ProviderSelectionEmptyStateProps {
   selectedSession: ProjectSession | null;
@@ -27,8 +27,6 @@ interface ProviderSelectionEmptyStateProps {
   setOpenrouterModel: (model: string) => void;
   localModel: string;
   setLocalModel: (model: string) => void;
-  nanoModel: string;
-  setNanoModel: (model: string) => void;
   projectName: string;
   setInput: React.Dispatch<React.SetStateAction<string>>;
   setAttachedPrompt?: (prompt: AttachedPrompt | null) => void;
@@ -46,7 +44,7 @@ type ProviderDef = {
   check: string;
 };
 
-const PROVIDERS: ProviderDef[] = [
+const ALL_PROVIDER_DEFS: ProviderDef[] = [
   {
     id: 'claude',
     name: 'Claude Code',
@@ -54,14 +52,6 @@ const PROVIDERS: ProviderDef[] = [
     accent: 'border-primary',
     ring: 'ring-primary/15',
     check: 'bg-primary text-primary-foreground',
-  },
-  {
-    id: 'nano',
-    name: 'Nano Claude Code',
-    infoKey: 'providerSelection.providerInfo.nano',
-    accent: 'border-amber-600 dark:border-amber-400',
-    ring: 'ring-amber-600/15',
-    check: 'bg-amber-600 text-white',
   },
   {
     id: 'gemini',
@@ -106,23 +96,24 @@ const PROVIDERS: ProviderDef[] = [
   },
 ];
 
+const PROVIDERS: ProviderDef[] = ALL_PROVIDER_DEFS.filter((provider) => isProviderAllowed(provider.id));
+
 function getModelConfig(p: SessionProvider) {
   if (p === 'claude') return CLAUDE_MODELS;
   if (p === 'codex') return CODEX_MODELS;
   if (p === 'gemini') return GEMINI_MODELS;
   if (p === 'openrouter') return OPENROUTER_MODELS;
   if (p === 'local') return LOCAL_MODELS;
-  if (p === 'nano') return NANO_CLAUDE_CODE_MODELS;
-  return CURSOR_MODELS;
+  if (p === 'cursor') return CURSOR_MODELS;
+  return CODEX_MODELS;
 }
 
-function getModelValue(p: SessionProvider, c: string, cu: string, co: string, g: string, or: string, lo: string, na: string) {
+function getModelValue(p: SessionProvider, c: string, cu: string, co: string, g: string, or: string, lo: string) {
   if (p === 'claude') return c;
   if (p === 'codex') return co;
   if (p === 'gemini') return g;
   if (p === 'openrouter') return or;
   if (p === 'local') return lo;
-  if (p === 'nano') return na;
   return cu;
 }
 
@@ -144,8 +135,6 @@ export default function ProviderSelectionEmptyState({
   setOpenrouterModel,
   localModel,
   setLocalModel,
-  nanoModel,
-  setNanoModel,
   projectName,
   setInput,
   setAttachedPrompt,
@@ -154,8 +143,101 @@ export default function ProviderSelectionEmptyState({
   onNewSessionModeChange,
 }: ProviderSelectionEmptyStateProps) {
   const { t } = useTranslation('chat');
-  const { user } = useAuth();
-  const username = (user as { username?: string } | null)?.username ?? null;
+  const hasProviderChoices = PROVIDERS.length > 1;
+
+  const sessionModeChoices: Array<{ id: SessionMode; titleKey: string; descriptionKey: string }> = [
+    {
+      id: 'research',
+      titleKey: 'session.mode.researchTitle',
+      descriptionKey: 'session.mode.researchDescription',
+    },
+    {
+      id: 'workspace_qa',
+      titleKey: 'session.mode.workspaceQaTitle',
+      descriptionKey: 'session.mode.workspaceQaDescription',
+    },
+  ];
+
+  const [ollamaModels, setOllamaModels] = useState<Array<{ value: string; label: string }>>([]);
+  const [isLoadingOllamaModels, setIsLoadingOllamaModels] = useState(false);
+
+  useEffect(() => {
+    if (provider !== 'local') return;
+    setIsLoadingOllamaModels(true);
+    const serverUrl = localStorage.getItem('local-gpu-server-url') || 'http://localhost:11434';
+    authenticatedFetch(`/api/cli/local/models?serverUrl=${encodeURIComponent(serverUrl)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.models?.length) {
+          const opts = data.models.map((m: any) => ({
+            value: m.name,
+            label: `${m.displayName || m.name}${m.size ? ` (${m.size})` : ''}`,
+          }));
+          setOllamaModels(opts);
+          if (!localModel && opts.length > 0) {
+            const small = data.models.find((m: any) => m.sizeB && m.sizeB <= 14);
+            const pick = small ? small.name : opts[0].value;
+            setLocalModel(pick);
+            localStorage.setItem('local-model', pick);
+          }
+        }
+      })
+      .catch(() => {})
+      .finally(() => setIsLoadingOllamaModels(false));
+  }, [provider, localModel, setLocalModel]);
+
+  useEffect(() => {
+    if (hasProviderChoices) {
+      return;
+    }
+
+    const enforcedProvider = PROVIDERS[0]?.id ?? 'codex';
+    if (provider === enforcedProvider) {
+      return;
+    }
+
+    setProvider(enforcedProvider);
+    localStorage.setItem('selected-provider', enforcedProvider);
+  }, [hasProviderChoices, provider, setProvider]);
+
+  const selectProvider = (next: SessionProvider) => {
+    if (providerAvailability[next]?.cliAvailable === false) {
+      return;
+    }
+
+    setProvider(next);
+    localStorage.setItem('selected-provider', next);
+    setTimeout(() => textareaRef.current?.focus(), 100);
+  };
+
+  const handleModelChange = (value: string) => {
+    if (provider === 'claude') { setClaudeModel(value); localStorage.setItem('claude-model', value); }
+    else if (provider === 'codex') { setCodexModel(value); localStorage.setItem('codex-model', value); }
+    else if (provider === 'gemini') { setGeminiModel(value); localStorage.setItem('gemini-model', value); }
+    else if (provider === 'openrouter') { setOpenrouterModel(value); localStorage.setItem('openrouter-model', value); }
+    else if (provider === 'local') { setLocalModel(value); localStorage.setItem('local-model', value); }
+    else { setCursorModel(value); localStorage.setItem('cursor-model', value); }
+  };
+
+  const rawModelConfig = getModelConfig(provider);
+  const modelConfig = provider === 'local' && ollamaModels.length > 0
+    ? { ...rawModelConfig, OPTIONS: ollamaModels }
+    : rawModelConfig;
+  const currentModel = getModelValue(provider, claudeModel, cursorModel, codexModel, geminiModel, openrouterModel, localModel);
+  const readyPromptKey =
+    provider === 'claude'
+      ? 'providerSelection.readyPrompt.claude'
+      : provider === 'codex'
+        ? 'providerSelection.readyPrompt.codex'
+        : provider === 'gemini'
+          ? 'providerSelection.readyPrompt.gemini'
+          : provider === 'openrouter'
+            ? 'providerSelection.readyPrompt.openrouter'
+            : provider === 'local'
+              ? 'providerSelection.readyPrompt.local'
+              : provider === 'cursor'
+                ? 'providerSelection.readyPrompt.cursor'
+                : 'providerSelection.readyPrompt.default';
 
   const sessionModeChoices: Array<{ id: SessionMode; titleKey: string; descriptionKey: string }> = [
     {
@@ -246,11 +328,6 @@ export default function ProviderSelectionEmptyState({
         <div className="w-full max-w-2xl">
           <div className="max-w-2xl mx-auto">
             <div className="max-w-2xl mx-auto mb-6">
-              {username ? (
-                <p className="text-base sm:text-lg font-medium text-muted-foreground/70 mb-3">
-                  {t('guidedStarter.greeting', { username })}
-                </p>
-              ) : null}
               <div className="mb-3 flex items-center justify-between gap-3">
                 <h2 className="text-[11px] sm:text-xs font-medium uppercase tracking-[0.22em] text-muted-foreground/75">
                   {t('session.mode.title')}
@@ -320,62 +397,66 @@ export default function ProviderSelectionEmptyState({
             )}
 
             <div className="max-w-xl mx-auto mt-8 sm:mt-10">
-              <div className="text-center mb-3">
-                <h2 className="text-[11px] sm:text-xs font-medium uppercase tracking-[0.22em] text-muted-foreground/75">
-                  {t('providerSelection.title')}
-                </h2>
-              </div>
+              {hasProviderChoices && (
+                <>
+                  <div className="text-center mb-3">
+                    <h2 className="text-[11px] sm:text-xs font-medium uppercase tracking-[0.22em] text-muted-foreground/75">
+                      {t('providerSelection.title')}
+                    </h2>
+                  </div>
 
-              <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-2.5 mb-3">
-                {PROVIDERS.map((p) => {
-                  const active = provider === p.id;
-                  const unavailable = providerAvailability[p.id]?.cliAvailable === false;
-                  const unavailableReason = providerAvailability[p.id]?.installHint
-                    || t('providerSelection.installRequired', { provider: p.name });
+                  <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-2.5 mb-3">
+                    {PROVIDERS.map((p) => {
+                      const active = provider === p.id;
+                      const unavailable = providerAvailability[p.id]?.cliAvailable === false;
+                      const unavailableReason = providerAvailability[p.id]?.installHint
+                        || t('providerSelection.installRequired', { provider: p.name });
 
-                  return (
-                    <button
-                      key={p.id}
-                      onClick={() => selectProvider(p.id)}
-                      type="button"
-                      disabled={unavailable}
-                      title={unavailable ? unavailableReason : undefined}
-                      className={`
-                        relative flex items-center justify-center gap-2 px-3 py-2
-                        rounded-full border transition-all duration-150
-                        ${unavailable
-                          ? 'border-border/60 bg-muted/25 opacity-45 cursor-not-allowed grayscale'
-                          : 'active:scale-[0.97]'
-                        }
-                        ${!unavailable && active
-                          ? `${p.accent} ${p.ring} ring-1 bg-card/90 shadow-sm`
-                          : !unavailable
-                            ? 'border-border/70 bg-card/35 hover:bg-card/55 hover:border-border'
-                            : ''
-                        }
-                      `}
-                    >
-                      <SessionProviderLogo
-                        provider={p.id}
-                        className={`w-[18px] h-[18px] shrink-0 transition-transform duration-150 ${active ? 'scale-105' : ''}`}
-                      />
-                      <div className="flex flex-col items-start text-left">
-                        <p className="text-[11px] font-medium text-foreground leading-none">{p.name}</p>
-                        {unavailable && (
-                          <p className="text-[9px] text-muted-foreground leading-none mt-1">
-                            {t('providerSelection.notInstalled')}
-                          </p>
-                        )}
-                      </div>
-                      {active && (
-                        <div className={`absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full ${p.check} flex items-center justify-center shadow-sm`}>
-                          <Check className="w-2 h-2" strokeWidth={3} />
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
+                      return (
+                        <button
+                          key={p.id}
+                          onClick={() => selectProvider(p.id)}
+                          type="button"
+                          disabled={unavailable}
+                          title={unavailable ? unavailableReason : undefined}
+                          className={`
+                            relative flex items-center justify-center gap-2 px-3 py-2
+                            rounded-full border transition-all duration-150
+                            ${unavailable
+                              ? 'border-border/60 bg-muted/25 opacity-45 cursor-not-allowed grayscale'
+                              : 'active:scale-[0.97]'
+                            }
+                            ${!unavailable && active
+                              ? `${p.accent} ${p.ring} ring-1 bg-card/90 shadow-sm`
+                              : !unavailable
+                                ? 'border-border/70 bg-card/35 hover:bg-card/55 hover:border-border'
+                                : ''
+                            }
+                          `}
+                        >
+                          <SessionProviderLogo
+                            provider={p.id}
+                            className={`w-[18px] h-[18px] shrink-0 transition-transform duration-150 ${active ? 'scale-105' : ''}`}
+                          />
+                          <div className="flex flex-col items-start text-left">
+                            <p className="text-[11px] font-medium text-foreground leading-none">{p.name}</p>
+                            {unavailable && (
+                              <p className="text-[9px] text-muted-foreground leading-none mt-1">
+                                {t('providerSelection.notInstalled')}
+                              </p>
+                            )}
+                          </div>
+                          {active && (
+                            <div className={`absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full ${p.check} flex items-center justify-center shadow-sm`}>
+                              <Check className="w-2 h-2" strokeWidth={3} />
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
 
               <div className={`transition-all duration-200 ${provider ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1 pointer-events-none'}`}>
                 <div className="flex items-center justify-center gap-2 mb-2">

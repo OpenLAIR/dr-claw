@@ -1,15 +1,13 @@
-import CommandMenu from '../../../CommandMenu';
-import ClaudeStatus from '../../../ClaudeStatus';
-import { MicButton } from '../../../MicButton.jsx';
-import ImageAttachment from './ImageAttachment';
-import PermissionRequestsBanner from './PermissionRequestsBanner';
-import ChatInputControls from './ChatInputControls';
-
-import ReferencePicker from '../../../references/view/ReferencePicker';
-import PromptBadgeDropdown from './PromptBadgeDropdown';
-import { Plus } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import { useState, useEffect } from 'react';
+import CommandMenu from "../../../CommandMenu";
+import ClaudeStatus from "../../../ClaudeStatus";
+import { MicButton } from "../../../MicButton.jsx";
+import ImageAttachment from "./ImageAttachment";
+import PermissionRequestsBanner from "./PermissionRequestsBanner";
+import ChatInputControls from "./ChatInputControls";
+import ReferencePicker from "../../../references/view/ReferencePicker";
+import PromptBadgeDropdown from "./PromptBadgeDropdown";
+import { useTranslation } from "react-i18next";
+import { useState } from "react";
 import type {
   ChangeEvent,
   ClipboardEvent,
@@ -21,23 +19,17 @@ import type {
   RefObject,
   SetStateAction,
   TouchEvent,
-} from 'react';
-import type { CodexReasoningEffortId } from '../../constants/codexReasoningEfforts';
-import type { GeminiThinkingModeId } from '../../../../../shared/geminiThinkingSupport';
-import type { AttachedPrompt, PendingPermissionRequest, PermissionMode, Provider, TokenBudget } from '../../types/types';
-import type { ProviderAvailability } from '../../types/types';
-import type { SessionMode, SessionProvider } from '../../../../types/app';
-import { CLAUDE_MODELS, CURSOR_MODELS, CODEX_MODELS, GEMINI_MODELS, LOCAL_MODELS, OPENROUTER_MODELS } from '../../../../../shared/modelConstants';
-import { authenticatedFetch } from '../../../../utils/api';
-import { isAutoResearchScenario } from '../../utils/autoResearch';
-
-// New subcomponents
-import SkillDropdown from './SkillDropdown';
-import AutoResearchDropdown from './AutoResearchDropdown';
-import ModelSelector from './ModelSelector';
-import AgentSelector, { type ProviderDef } from './AgentSelector';
-import OpenRouterModelInput from './OpenRouterModelInput';
-import SessionModeSelector from './SessionModeSelector';
+} from "react";
+import type { CodexReasoningEffortId } from "../../constants/codexReasoningEfforts";
+import type { GeminiThinkingModeId } from "../../../../../shared/geminiThinkingSupport";
+import type {
+  AttachedPrompt,
+  PendingPermissionRequest,
+  PermissionMode,
+  Provider,
+  QueuedTurn,
+  TokenBudget,
+} from "../../types/types";
 
 interface MentionableFile {
   name: string;
@@ -58,39 +50,21 @@ interface SlashCommand {
   [key: string]: unknown;
 }
 
-const PROVIDERS: ProviderDef[] = [
-  { id: 'claude', name: 'Claude Code', accent: 'border-primary', ring: 'ring-primary/15', check: 'bg-primary text-primary-foreground' },
-  { id: 'gemini', name: 'Gemini CLI', accent: 'border-blue-500 dark:border-blue-400', ring: 'ring-blue-500/15', check: 'bg-blue-500 text-white' },
-  { id: 'codex', name: 'Codex', accent: 'border-emerald-600 dark:border-emerald-400', ring: 'ring-emerald-600/15', check: 'bg-emerald-600 dark:bg-emerald-500 text-white' },
-  { id: 'openrouter', name: 'OpenRouter', accent: 'border-violet-500 dark:border-violet-400', ring: 'ring-violet-500/15', check: 'bg-violet-500 text-white' },
-  { id: 'local', name: 'Local GPU', accent: 'border-emerald-500 dark:border-emerald-400', ring: 'ring-emerald-500/15', check: 'bg-emerald-500 text-white' },
-];
-
-function getModelConfig(p: SessionProvider) {
-  if (p === 'claude') return CLAUDE_MODELS;
-  if (p === 'codex') return CODEX_MODELS;
-  if (p === 'gemini') return GEMINI_MODELS;
-  if (p === 'openrouter') return OPENROUTER_MODELS;
-  if (p === 'local') return LOCAL_MODELS;
-  return CURSOR_MODELS;
-}
-
-function getModelValue(p: SessionProvider, c: string, cu: string, co: string, g: string, or: string, lo: string) {
-  if (p === 'claude') return c;
-  if (p === 'codex') return co;
-  if (p === 'gemini') return g;
-  if (p === 'openrouter') return or;
-  if (p === 'local') return lo;
-  return cu;
-}
-
 interface ChatComposerProps {
   pendingPermissionRequests: PendingPermissionRequest[];
   handlePermissionDecision: (
     requestIds: string | string[],
-    decision: { allow?: boolean; message?: string; rememberEntry?: string | null; updatedInput?: unknown },
+    decision: {
+      allow?: boolean;
+      message?: string;
+      rememberEntry?: string | null;
+      updatedInput?: unknown;
+    },
   ) => void;
-  handleGrantToolPermission: (suggestion: { entry: string; toolName: string }) => { success: boolean };
+  handleGrantToolPermission: (suggestion: {
+    entry: string;
+    toolName: string;
+  }) => { success: boolean };
   claudeStatus: { text: string; tokens: number; can_interrupt: boolean } | null;
   isLoading: boolean;
   onAbortSession: () => void;
@@ -113,7 +87,12 @@ interface ChatComposerProps {
   isUserScrolledUp: boolean;
   hasMessages: boolean;
   onScrollToBottom: () => void;
-  onSubmit: (event: FormEvent<HTMLFormElement> | MouseEvent<HTMLButtonElement> | TouchEvent<HTMLButtonElement>) => void;
+  onSubmit: (
+    event:
+      | FormEvent<HTMLFormElement>
+      | MouseEvent<HTMLButtonElement>
+      | TouchEvent<HTMLButtonElement>,
+  ) => void;
   isDragActive: boolean;
   attachedFiles: File[];
   onRemoveFile: (index: number) => void;
@@ -125,7 +104,11 @@ interface ChatComposerProps {
   onSelectFile: (file: MentionableFile) => void;
   filteredCommands: SlashCommand[];
   selectedCommandIndex: number;
-  onCommandSelect: (command: SlashCommand, index: number, isHover: boolean) => void;
+  onCommandSelect: (
+    command: SlashCommand,
+    index: number,
+    isHover: boolean,
+  ) => void;
   onCloseCommandMenu: () => void;
   isCommandMenuOpen: boolean;
   frequentCommands: SlashCommand[];
@@ -136,7 +119,6 @@ interface ChatComposerProps {
   renderInputWithMentions: (text: string) => ReactNode;
   textareaRef: RefObject<HTMLTextAreaElement>;
   input: string;
-  setInput: Dispatch<SetStateAction<string>>;
   onInputChange: (event: ChangeEvent<HTMLTextAreaElement>) => void;
   onTextareaClick: (event: MouseEvent<HTMLTextAreaElement>) => void;
   onTextareaKeyDown: (event: KeyboardEvent<HTMLTextAreaElement>) => void;
@@ -154,22 +136,13 @@ interface ChatComposerProps {
   attachedPrompt: AttachedPrompt | null;
   onRemoveAttachedPrompt: () => void;
   onUpdateAttachedPrompt: (promptText: string) => void;
-  centered?: boolean;
-  setAttachedPrompt?: (prompt: AttachedPrompt | null) => void;
-  setProvider?: (next: SessionProvider) => void;
-  claudeModel?: string;
-  setClaudeModel?: (model: string) => void;
-  cursorModel?: string;
-  setCursorModel?: (model: string) => void;
-  setCodexModel?: (model: string) => void;
-  setGeminiModel?: (model: string) => void;
-  openrouterModel?: string;
-  setOpenrouterModel?: (model: string) => void;
-  localModel?: string;
-  setLocalModel?: (model: string) => void;
-  providerAvailability?: Record<SessionProvider, ProviderAvailability>;
-  newSessionMode?: SessionMode;
-  onNewSessionModeChange?: (mode: SessionMode) => void;
+  steerMode: boolean;
+  onSteerModeChange: Dispatch<SetStateAction<boolean>>;
+  queuedTurns: QueuedTurn[];
+  queuePaused: boolean;
+  onRemoveQueuedTurn: (turnId: string) => void;
+  onPromoteQueuedTurnToSteer: (turnId: string) => void;
+  onResumeQueuedTurns: () => void;
 }
 
 export default function ChatComposer({
@@ -221,7 +194,6 @@ export default function ChatComposer({
   renderInputWithMentions,
   textareaRef,
   input,
-  setInput,
   onInputChange,
   onTextareaClick,
   onTextareaKeyDown,
@@ -239,24 +211,15 @@ export default function ChatComposer({
   attachedPrompt,
   onRemoveAttachedPrompt,
   onUpdateAttachedPrompt,
-  centered,
-  setAttachedPrompt,
-  setProvider,
-  claudeModel: claudeModelProp,
-  setClaudeModel,
-  cursorModel: cursorModelProp,
-  setCursorModel,
-  setCodexModel,
-  setGeminiModel,
-  openrouterModel: openrouterModelProp,
-  setOpenrouterModel,
-  localModel: localModelProp,
-  setLocalModel,
-  providerAvailability,
-  newSessionMode,
-  onNewSessionModeChange,
+  steerMode,
+  onSteerModeChange,
+  queuedTurns,
+  queuePaused,
+  onRemoveQueuedTurn,
+  onPromoteQueuedTurnToSteer,
+  onResumeQueuedTurns,
 }: ChatComposerProps) {
-  const { t } = useTranslation('chat');
+  const { t } = useTranslation("chat");
   const [showReferencePicker, setShowReferencePicker] = useState(false);
   const AnyCommandMenu = CommandMenu as any;
   const textareaRect = textareaRef.current?.getBoundingClientRect();
@@ -268,96 +231,20 @@ export default function ChatComposer({
 
   // Detect if the AskUserQuestion interactive panel is active
   const hasQuestionPanel = pendingPermissionRequests.some(
-    (r) => r.toolName === 'AskUserQuestion'
+    (r) => r.toolName === "AskUserQuestion",
   );
 
   // On mobile, when input is focused, float the input box at the bottom
   const mobileFloatingClass = isInputFocused
-    ? 'max-sm:fixed max-sm:bottom-0 max-sm:left-0 max-sm:right-0 max-sm:z-50 max-sm:bg-background max-sm:shadow-[0_-4px_20px_rgba(0,0,0,0.15)]'
-    : '';
-
-  // Provider/model handling for centered mode
-  const sessionProvider = provider as SessionProvider;
-  const currentModel = getModelValue(sessionProvider, claudeModelProp || '', cursorModelProp || '', codexModel, geminiModel, openrouterModelProp || '', localModelProp || '');
-
-  const [ollamaModels, setOllamaModels] = useState<Array<{ value: string; label: string }>>([]);
-  const [isLoadingOllamaModels, setIsLoadingOllamaModels] = useState(false);
-  const [ollamaModelsError, setOllamaModelsError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (sessionProvider !== 'local') return;
-    let cancelled = false;
-    setIsLoadingOllamaModels(true);
-    setOllamaModelsError(null);
-    const serverUrl = localStorage.getItem('local-gpu-server-url') || 'http://localhost:11434';
-    authenticatedFetch(`/api/cli/local/models?serverUrl=${encodeURIComponent(serverUrl)}`)
-      .then(async (res) => ({ ok: res.ok, status: res.status, data: await res.json().catch(() => ({})) }))
-      .then((data) => {
-        if (cancelled) return;
-        if (data.ok && data.data.models?.length) {
-          const opts = data.data.models.map((m: any) => ({
-            value: m.name,
-            label: `${m.displayName || m.name}${m.size ? ` (${m.size})` : ''}`,
-          }));
-          setOllamaModels(opts);
-          setOllamaModelsError(null);
-          if (!localModelProp && opts.length > 0) {
-            const small = data.data.models.find((m: any) => m.sizeB && m.sizeB <= 14);
-            const pick = small ? small.name : opts[0].value;
-            setLocalModel?.(pick);
-            localStorage.setItem('local-model', pick);
-          }
-          return;
-        }
-        setOllamaModels([]);
-        if (data.status === 503) {
-          setOllamaModelsError(t('localModels.notRunning'));
-          return;
-        }
-        setOllamaModelsError(data.data?.error || t('localModels.loadFailed'));
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setOllamaModels([]);
-        setOllamaModelsError(t('localModels.networkError'));
-      })
-      .finally(() => {
-        if (!cancelled) setIsLoadingOllamaModels(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [sessionProvider, localModelProp, setLocalModel, t]);
-
-  const rawModelConfig = getModelConfig(sessionProvider);
-  const modelConfig = sessionProvider === 'local' && ollamaModels.length > 0
-    ? { ...rawModelConfig, OPTIONS: ollamaModels }
-    : rawModelConfig;
-
-  const selectProvider = (next: SessionProvider) => {
-    if (providerAvailability?.[next]?.cliAvailable === false) return;
-    setProvider?.(next);
-    localStorage.setItem('selected-provider', next);
-    setTimeout(() => textareaRef.current?.focus(), 100);
-  };
-
-  const handleModelChange = (value: string) => {
-    if (sessionProvider === 'claude') { setClaudeModel?.(value); localStorage.setItem('claude-model', value); }
-    else if (sessionProvider === 'codex') { setCodexModel?.(value); localStorage.setItem('codex-model', value); }
-    else if (sessionProvider === 'gemini') { setGeminiModel?.(value); localStorage.setItem('gemini-model', value); }
-    else if (sessionProvider === 'openrouter') { setOpenrouterModel?.(value); localStorage.setItem('openrouter-model', value); }
-    else if (sessionProvider === 'local') { setLocalModel?.(value); localStorage.setItem('local-model', value); }
-    else { setCursorModel?.(value); localStorage.setItem('cursor-model', value); }
-  };
-
-  const sessionModeChoices: Array<{ id: SessionMode; titleKey: string }> = [
-    { id: 'research', titleKey: 'session.mode.researchTitle' },
-    { id: 'workspace_qa', titleKey: 'session.mode.workspaceQaTitle' },
-  ];
+    ? "max-sm:fixed max-sm:bottom-0 max-sm:left-0 max-sm:right-0 max-sm:z-50 max-sm:bg-background max-sm:shadow-[0_-4px_20px_rgba(0,0,0,0.15)]"
+    : "";
+  const disableComposer = isLoading && provider !== "codex";
 
   return (
-    <div className={`p-2 sm:p-4 md:p-4 flex-shrink-0 ${centered ? 'pb-2 sm:pb-3' : 'pb-2 sm:pb-4 md:pb-6'} ${mobileFloatingClass}`}>
-      <div className={`${centered ? 'max-w-3xl' : 'max-w-5xl'} mx-auto mb-3`}>
+    <div
+      className={`p-2 sm:p-4 md:p-4 flex-shrink-0 pb-2 sm:pb-4 md:pb-6 ${mobileFloatingClass}`}
+    >
+      <div className="max-w-5xl mx-auto mb-3">
         <PermissionRequestsBanner
           provider={provider}
           pendingPermissionRequests={pendingPermissionRequests}
@@ -365,7 +252,7 @@ export default function ChatComposer({
           handleGrantToolPermission={handleGrantToolPermission}
         />
 
-        {!centered && !hasQuestionPanel && (
+        {!hasQuestionPanel && (
           <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
             <ClaudeStatus
               status={claudeStatus}
@@ -373,304 +260,353 @@ export default function ChatComposer({
               onAbort={onAbortSession}
               provider={provider}
             />
-            {isUserScrolledUp && hasMessages && (
-              <button
-                onClick={onScrollToBottom}
-                className="w-7 h-7 sm:w-8 sm:h-8 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg shadow-sm flex items-center justify-center transition-all duration-200 hover:scale-105"
-              >
-                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                </svg>
-              </button>
-            )}
+            <ChatInputControls
+              permissionMode={permissionMode}
+              onModeSwitch={onModeSwitch}
+              provider={provider}
+              codexModel={codexModel}
+              geminiModel={geminiModel}
+              thinkingMode={thinkingMode}
+              setThinkingMode={setThinkingMode}
+              codexReasoningEffort={codexReasoningEffort}
+              setCodexReasoningEffort={setCodexReasoningEffort}
+              geminiThinkingMode={geminiThinkingMode}
+              setGeminiThinkingMode={setGeminiThinkingMode}
+              tokenBudget={tokenBudget}
+              slashCommandsCount={slashCommandsCount}
+              onToggleCommandMenu={onToggleCommandMenu}
+              hasInput={hasInput}
+              onClearInput={onClearInput}
+              isUserScrolledUp={isUserScrolledUp}
+              hasMessages={hasMessages}
+              onScrollToBottom={onScrollToBottom}
+            />
           </div>
         )}
       </div>
 
-      {!hasQuestionPanel && <form onSubmit={onSubmit as (event: FormEvent<HTMLFormElement>) => void} className={`relative mx-auto ${centered ? 'max-w-3xl' : 'max-w-5xl'}`}>
-        {isDragActive && (
-          <div className="absolute inset-0 bg-primary/15 border-2 border-dashed border-primary/50 rounded-3xl flex items-center justify-center z-50">
-            <div className="bg-card rounded-xl p-4 shadow-lg border border-border/30">
-              <svg className="w-8 h-8 text-primary mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                />
-              </svg>
-              <p className="text-sm font-medium">{t('input.dropFilesHere')}</p>
-            </div>
-          </div>
-        )}
-
-        {attachedFiles.length > 0 && (
-          <div className="mb-2 p-2 bg-muted/40 rounded-xl">
-            <div className="flex flex-wrap gap-2">
-              {attachedFiles.map((file, index) => (
-                <ImageAttachment
-                  key={index}
-                  file={file}
-                  onRemove={() => onRemoveFile(index)}
-                  uploadProgress={uploadingFiles.get(getFileKey(file))}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {fileErrors.size > 0 && (
-          <div className="mb-2 rounded-xl border border-red-500/20 bg-red-500/5 px-3 py-2 text-sm text-red-600">
-            {[...new Set(fileErrors.values())].map((error) => (
-              <div key={error} className="truncate">
-                {error}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {showFileDropdown && filteredFiles.length > 0 && (
-          <div className="absolute bottom-full left-0 right-0 mb-2 bg-card/95 backdrop-blur-md border border-border/50 rounded-xl shadow-lg max-h-48 overflow-y-auto z-50">
-            {filteredFiles.map((file, index) => (
-              <div
-                key={file.path}
-                className={`px-4 py-3 cursor-pointer border-b border-border/30 last:border-b-0 touch-manipulation ${
-                  index === selectedFileIndex
-                    ? 'bg-primary/8 text-primary'
-                    : 'hover:bg-accent/50 text-foreground'
-                }`}
-                onMouseDown={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                }}
-                onClick={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  onSelectFile(file);
-                }}
-              >
-                <div className="font-medium text-sm">{file.name}</div>
-                <div className="text-xs text-muted-foreground font-mono">{file.path}</div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {showReferencePicker && projectName && onReferenceContext && (
-          <ReferencePicker
-            projectName={projectName}
-            onSelect={(context) => {
-              onReferenceContext?.(context);
-            }}
-            onClose={() => setShowReferencePicker(false)}
-          />
-        )}
-
-        <AnyCommandMenu
-          commands={filteredCommands}
-          selectedIndex={selectedCommandIndex}
-          onSelect={onCommandSelect}
-          onClose={onCloseCommandMenu}
-          position={commandMenuPosition}
-          isOpen={isCommandMenuOpen}
-          frequentCommands={frequentCommands}
-        />
-
-        <div
-          {...getRootProps()}
-          className={`relative bg-card/80 backdrop-blur-sm rounded-3xl shadow-sm border border-border/50 focus-within:shadow-md focus-within:border-primary/30 focus-within:ring-1 focus-within:ring-primary/15 transition-all duration-200 ${isTextareaExpanded ? 'chat-input-expanded' : ''}`}
+      {!hasQuestionPanel && (
+        <form
+          onSubmit={onSubmit as (event: FormEvent<HTMLFormElement>) => void}
+          className="relative max-w-5xl mx-auto"
         >
-          <input {...getInputProps()} />
-          {attachedPrompt && (
-            <PromptBadgeDropdown
-              prompt={attachedPrompt}
-              onRemove={onRemoveAttachedPrompt}
-              onUpdate={onUpdateAttachedPrompt}
-            />
-          )}
-          <div aria-hidden="true" className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
-            <div className={`chat-input-placeholder block w-full pl-5 ${centered ? 'pr-16 pt-4 pb-2 text-sm' : 'pr-20 sm:pr-40 py-1.5 sm:py-4 text-base'} text-transparent leading-6 whitespace-pre-wrap break-words`}>
-              {renderInputWithMentions(input)}
-            </div>
-          </div>
-
-          <div className="relative z-10">
-            <textarea
-              ref={textareaRef}
-              value={input}
-              onChange={onInputChange}
-              onClick={onTextareaClick}
-              onKeyDown={onTextareaKeyDown}
-              onPaste={onTextareaPaste}
-              onScroll={(event) => onTextareaScrollSync(event.target as HTMLTextAreaElement)}
-              onFocus={() => onInputFocusChange?.(true)}
-              onBlur={() => onInputFocusChange?.(false)}
-              onInput={onTextareaInput}
-              placeholder={placeholder}
-              className={`chat-input-placeholder block w-full pl-5 ${centered ? 'pr-16 pt-4 pb-2 min-h-[72px] max-h-[200px] text-sm' : 'pr-20 sm:pr-40 py-1.5 sm:py-4 min-h-[50px] sm:min-h-[80px] max-h-[40vh] sm:max-h-[300px] text-base'} bg-transparent rounded-3xl focus:outline-none text-foreground placeholder-muted-foreground/50 resize-none overflow-y-auto leading-6 transition-all duration-200 ${isLoading && !input.trim().startsWith('/') ? 'opacity-50' : ''}`}
-              style={{ height: centered ? '72px' : '50px' }}
-            />
-            <div className={`absolute ${centered ? 'right-11' : 'right-14'} top-1/2 transform -translate-y-1/2`}>
-              <MicButton onTranscript={onTranscript} className={centered ? '!w-7 !h-7' : '!w-9 !h-9'} />
-            </div>
-
-            <button
-              type="submit"
-              disabled={
-                (!input.trim() && attachedFiles.length === 0 && !attachedPrompt) ||
-                (isLoading && !input.trim().startsWith('/btw '))
-              }
-              onMouseDown={(event) => {
-                event.preventDefault();
-                onSubmit(event);
-              }}
-              onTouchStart={(event) => {
-                event.preventDefault();
-                onSubmit(event);
-              }}
-              className={`absolute right-2 top-1/2 transform -translate-y-1/2 ${centered ? 'w-8 h-8 rounded-lg' : 'w-10 h-10 sm:w-11 sm:h-11 rounded-xl'} bg-primary hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed flex items-center justify-center transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-1 focus:ring-offset-background`}
-            >
-              <svg className={`${centered ? 'w-3.5 h-3.5' : 'w-4 h-4 sm:w-[18px] sm:h-[18px]'} text-primary-foreground transform rotate-90`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-              </svg>
-            </button>
-
-            {!centered && (
-              <div
-                className={`absolute bottom-1 left-5 right-14 sm:right-40 text-xs text-muted-foreground/50 pointer-events-none hidden sm:block transition-opacity duration-200 ${
-                  input.trim() ? 'opacity-0' : 'opacity-100'
-                }`}
-              >
-                {sendByCtrlEnter ? t('input.hintText.ctrlEnter') : t('input.hintText.enter')}
-              </div>
-            )}
-          </div>
-
-          {/* Bottom toolbar inside text box */}
-          {!hasQuestionPanel && (
-            <div className="relative z-10 border-t border-border/30">
-              {/* Controls row */}
-              <div className="flex items-center gap-2 px-4 py-2">
-                {/* Left side */}
-                <div className="flex items-center gap-2.5">
+          {provider === "codex" && queuedTurns.length > 0 && (
+            <div className="mb-2 rounded-xl border border-border/60 bg-muted/30 px-3 py-2">
+              <div className="mb-1 flex items-center justify-between gap-2">
+                <div className="text-xs font-medium text-foreground">
+                  Queued Turns ({queuedTurns.length})
+                </div>
+                {queuePaused && (
                   <button
                     type="button"
-                    onClick={openFilePicker}
-                    className="p-1 hover:bg-accent/60 rounded-full transition-colors flex items-center justify-center text-muted-foreground"
-                    title={t('input.attachFiles')}
+                    onClick={onResumeQueuedTurns}
+                    className="rounded-md bg-primary px-2 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
                   >
-                    <Plus className="w-4 h-4" />
+                    Continue Queue
                   </button>
-
-                  {/* Skill shortcuts — only in normal chat mode */}
-                  {!centered && (
-                    <>
-                      <AutoResearchDropdown
-                        setInput={setInput}
-                        textareaRef={textareaRef}
-                        setAttachedPrompt={setAttachedPrompt}
-                      />
-                      <SkillDropdown
-                        setInput={setInput}
-                        textareaRef={textareaRef}
-                        setAttachedPrompt={setAttachedPrompt}
-                        t={t}
-                      />
-                    </>
-                  )}
-
-                  {/* Session modes — only in empty state */}
-                  {centered && onNewSessionModeChange && newSessionMode && (
-                    <SessionModeSelector
-                      choices={sessionModeChoices}
-                      activeMode={newSessionMode}
-                      onSelect={onNewSessionModeChange}
-                      t={t}
-                    />
-                  )}
-                </div>
-
-                {/* Spacer */}
-                <div className="flex-1" />
-
-                {/* Right side */}
-                <div className="flex items-center gap-1.5">
-                  {/* Agent selector — only in empty state */}
-                  {centered && providerAvailability && (
-                    <AgentSelector
-                      providers={PROVIDERS}
-                      activeProvider={sessionProvider}
-                      providerAvailability={providerAvailability}
-                      onSelect={selectProvider}
-                      t={t}
-                    />
-                  )}
-
-                  {/* Model selector */}
-                  {modelConfig && (
-                    <>
-                      {(modelConfig as any).ALLOWS_CUSTOM ? (
-                        <OpenRouterModelInput value={currentModel} options={modelConfig.OPTIONS} onChange={handleModelChange} />
-                      ) : (modelConfig as any).IS_LOCAL && modelConfig.OPTIONS.length === 0 ? (
-                        <span
-                          className="text-[10px] text-muted-foreground/70 px-2 py-0.5 border border-border/50 rounded-lg"
-                          title={ollamaModelsError || undefined}
-                        >
-                          {isLoadingOllamaModels
-                            ? t('localModels.loading')
-                            : ollamaModelsError || t('localModels.empty')}
-                        </span>
-                      ) : (
-                        <ModelSelector
-                          value={currentModel}
-                          options={modelConfig.OPTIONS}
-                          onChange={handleModelChange}
-                        />
-                      )}
-                    </>
-                  )}
-
-                  {isAutoResearchScenario(attachedPrompt?.scenarioId) && (
-                    <span
-                      className="text-[10px] text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/30 px-1.5 py-0.5 rounded font-medium"
-                      title="Autoresearch mode: tool permissions are auto-approved"
-                    >
-                      Auto
+                )}
+              </div>
+              <div className="max-h-28 overflow-y-auto space-y-1 pr-1">
+                {queuedTurns.map((turn, index) => (
+                  <div
+                    key={turn.id}
+                    className="flex items-center gap-2 rounded-md bg-background/80 px-2 py-1"
+                  >
+                    <span className="text-[11px] text-muted-foreground">
+                      #{index + 1}
                     </span>
-                  )}
-
-                  {centered && <div className="h-4 border-l border-border/40 mx-1" />}
-
-                  <ChatInputControls
-                    permissionMode={isAutoResearchScenario(attachedPrompt?.scenarioId) ? 'bypassPermissions' : permissionMode}
-                    onModeSwitch={onModeSwitch}
-                    provider={provider}
-                    codexModel={codexModel}
-                    geminiModel={geminiModel}
-                    thinkingMode={thinkingMode}
-                    setThinkingMode={setThinkingMode}
-                    codexReasoningEffort={codexReasoningEffort}
-                    setCodexReasoningEffort={setCodexReasoningEffort}
-                    geminiThinkingMode={geminiThinkingMode}
-                    setGeminiThinkingMode={setGeminiThinkingMode}
-                    tokenBudget={tokenBudget}
-                    slashCommandsCount={slashCommandsCount}
-                    onToggleCommandMenu={onToggleCommandMenu}
-                    hasInput={hasInput}
-                    onClearInput={onClearInput}
-                    isUserScrolledUp={isUserScrolledUp}
-                    hasMessages={hasMessages}
-                    onScrollToBottom={onScrollToBottom}
-                    hideCommandMenu
-                    compact
-                  />
-                </div>
+                    <span
+                      className={`text-[11px] font-medium ${
+                        turn.kind === "steer"
+                          ? "text-amber-600 dark:text-amber-400"
+                          : "text-muted-foreground"
+                      }`}
+                    >
+                      {turn.kind === "steer" ? "STEER" : "QUEUE"}
+                    </span>
+                    <span className="min-w-0 flex-1 truncate text-xs text-foreground">
+                      {turn.text}
+                    </span>
+                    <span className="text-[11px] text-muted-foreground">
+                      {turn.status === "paused" ? "paused" : "queued"}
+                    </span>
+                    {turn.kind !== "steer" && (
+                      <button
+                        type="button"
+                        onClick={() => onPromoteQueuedTurnToSteer(turn.id)}
+                        className="rounded-md px-1.5 py-0.5 text-[11px] text-amber-700 hover:bg-amber-500/10 transition-colors"
+                        title="Convert queued turn to steer"
+                      >
+                        Steer
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => onRemoveQueuedTurn(turn.id)}
+                      className="rounded-md px-1.5 py-0.5 text-[11px] text-red-600 hover:bg-red-500/10 transition-colors"
+                      title="Remove queued turn"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
           )}
 
-        </div>
-      </form>}
+          {isDragActive && (
+            <div className="absolute inset-0 bg-primary/15 border-2 border-dashed border-primary/50 rounded-2xl flex items-center justify-center z-50">
+              <div className="bg-card rounded-xl p-4 shadow-lg border border-border/30">
+                <svg
+                  className="w-8 h-8 text-primary mx-auto mb-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                  />
+                </svg>
+                <p className="text-sm font-medium">
+                  {t("input.dropFilesHere")}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {attachedFiles.length > 0 && (
+            <div className="mb-2 p-2 bg-muted/40 rounded-xl">
+              <div className="flex flex-wrap gap-2">
+                {attachedFiles.map((file, index) => (
+                  <ImageAttachment
+                    key={index}
+                    file={file}
+                    onRemove={() => onRemoveFile(index)}
+                    uploadProgress={uploadingFiles.get(getFileKey(file))}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {fileErrors.size > 0 && (
+            <div className="mb-2 rounded-xl border border-red-500/20 bg-red-500/5 px-3 py-2 text-sm text-red-600">
+              {[...new Set(fileErrors.values())].map((error) => (
+                <div key={error} className="truncate">
+                  {error}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {showFileDropdown && filteredFiles.length > 0 && (
+            <div className="absolute bottom-full left-0 right-0 mb-2 bg-card/95 backdrop-blur-md border border-border/50 rounded-xl shadow-lg max-h-48 overflow-y-auto z-50">
+              {filteredFiles.map((file, index) => (
+                <div
+                  key={file.path}
+                  className={`px-4 py-3 cursor-pointer border-b border-border/30 last:border-b-0 touch-manipulation ${
+                    index === selectedFileIndex
+                      ? "bg-primary/8 text-primary"
+                      : "hover:bg-accent/50 text-foreground"
+                  }`}
+                  onMouseDown={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                  }}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    onSelectFile(file);
+                  }}
+                >
+                  <div className="font-medium text-sm">{file.name}</div>
+                  <div className="text-xs text-muted-foreground font-mono">
+                    {file.path}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {showReferencePicker && projectName && onReferenceContext && (
+            <ReferencePicker
+              projectName={projectName}
+              onSelect={(context) => {
+                onReferenceContext?.(context);
+              }}
+              onClose={() => setShowReferencePicker(false)}
+            />
+          )}
+
+          <AnyCommandMenu
+            commands={filteredCommands}
+            selectedIndex={selectedCommandIndex}
+            onSelect={onCommandSelect}
+            onClose={onCloseCommandMenu}
+            position={commandMenuPosition}
+            isOpen={isCommandMenuOpen}
+            frequentCommands={frequentCommands}
+          />
+
+          <div
+            {...getRootProps()}
+            className={`relative bg-card/80 backdrop-blur-sm rounded-2xl shadow-sm border border-border/50 focus-within:shadow-md focus-within:border-primary/30 focus-within:ring-1 focus-within:ring-primary/15 transition-all duration-200 overflow-hidden ${
+              isTextareaExpanded ? "chat-input-expanded" : ""
+            }`}
+          >
+            <input {...getInputProps()} />
+            {attachedPrompt && (
+              <PromptBadgeDropdown
+                prompt={attachedPrompt}
+                onRemove={onRemoveAttachedPrompt}
+                onUpdate={onUpdateAttachedPrompt}
+              />
+            )}
+            <div
+              ref={inputHighlightRef}
+              aria-hidden="true"
+              className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl"
+            >
+              <div
+                className={`chat-input-placeholder block w-full ${projectName ? "pl-[5.5rem]" : "pl-12"} pr-20 sm:pr-40 py-1.5 sm:py-4 text-transparent text-base leading-6 whitespace-pre-wrap break-words`}
+              >
+                {renderInputWithMentions(input)}
+              </div>
+            </div>
+
+            <div className="relative z-10">
+              <textarea
+                ref={textareaRef}
+                value={input}
+                onChange={onInputChange}
+                onClick={onTextareaClick}
+                onKeyDown={onTextareaKeyDown}
+                onPaste={onTextareaPaste}
+                onScroll={(event) =>
+                  onTextareaScrollSync(event.target as HTMLTextAreaElement)
+                }
+                onFocus={() => onInputFocusChange?.(true)}
+                onBlur={() => onInputFocusChange?.(false)}
+                onInput={onTextareaInput}
+                placeholder={placeholder}
+                disabled={disableComposer}
+                className={`chat-input-placeholder block w-full ${projectName ? "pl-[5.5rem]" : "pl-12"} pr-20 sm:pr-40 py-1.5 sm:py-4 bg-transparent rounded-2xl focus:outline-none text-foreground placeholder-muted-foreground/50 disabled:opacity-50 resize-none min-h-[50px] sm:min-h-[80px] max-h-[40vh] sm:max-h-[300px] overflow-y-auto text-base leading-6 transition-all duration-200`}
+                style={{ height: "50px" }}
+              />
+
+              <div className="absolute left-1 top-1/2 transform -translate-y-1/2 flex items-center">
+                <button
+                  type="button"
+                  onClick={openFilePicker}
+                  className="p-2 hover:bg-accent/60 rounded-xl transition-colors"
+                  title={t("input.attachFiles")}
+                >
+                  <svg
+                    className="w-5 h-5 text-muted-foreground"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
+                    />
+                  </svg>
+                </button>
+                {projectName && onReferenceContext && (
+                  <button
+                    type="button"
+                    onClick={() => setShowReferencePicker(!showReferencePicker)}
+                    className="p-2 hover:bg-accent/60 rounded-xl transition-colors"
+                    title={t("input.attachReferences")}
+                  >
+                    <svg
+                      className="w-5 h-5 text-muted-foreground"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                      />
+                    </svg>
+                  </button>
+                )}
+              </div>
+
+              <div className="absolute right-14 top-1/2 transform -translate-y-1/2">
+                <MicButton onTranscript={onTranscript} className="!w-9 !h-9" />
+              </div>
+
+              {provider === "codex" && (
+                <button
+                  type="button"
+                  onClick={() => onSteerModeChange((previous) => !previous)}
+                  className={`absolute right-24 top-1/2 transform -translate-y-1/2 rounded-lg px-2 py-1 text-[11px] font-medium transition-colors ${
+                    steerMode
+                      ? "bg-amber-500 text-amber-950 hover:bg-amber-400"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  }`}
+                  title="Toggle steer mode for high-priority queued instruction"
+                >
+                  Steer
+                </button>
+              )}
+
+              <button
+                type="submit"
+                disabled={
+                  (!input.trim() &&
+                    attachedFiles.length === 0 &&
+                    !attachedPrompt) ||
+                  disableComposer
+                }
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  onSubmit(event);
+                }}
+                onTouchStart={(event) => {
+                  event.preventDefault();
+                  onSubmit(event);
+                }}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 w-10 h-10 sm:w-11 sm:h-11 bg-primary hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed rounded-xl flex items-center justify-center transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-1 focus:ring-offset-background"
+              >
+                <svg
+                  className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-primary-foreground transform rotate-90"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2.2}
+                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                  />
+                </svg>
+              </button>
+
+              <div
+                className={`absolute bottom-1 ${projectName ? "left-[5.5rem]" : "left-12"} right-14 sm:right-40 text-xs text-muted-foreground/50 pointer-events-none hidden sm:block transition-opacity duration-200 ${
+                  input.trim() ? "opacity-0" : "opacity-100"
+                }`}
+              >
+                {sendByCtrlEnter
+                  ? t("input.hintText.ctrlEnter")
+                  : t("input.hintText.enter")}
+              </div>
+            </div>
+          </div>
+        </form>
+      )}
     </div>
   );
 }
