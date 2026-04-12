@@ -841,7 +841,7 @@ function ChatInterface({
           loadAllJustFinished={loadAllJustFinished}
           showLoadAllOverlay={showLoadAllOverlay}
           createDiff={createDiff}
-          onFileOpen={handleFilePreview}
+          onFileOpen={onFileOpen}
           onShowSettings={onShowSettings}
           onGrantToolPermission={handleGrantToolPermission}
           onSuggestShellEdit={handleOpenShellEditPrompt}
