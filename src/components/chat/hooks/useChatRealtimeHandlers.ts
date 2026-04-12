@@ -340,7 +340,10 @@ export function useChatRealtimeHandlers({
                 const resultStr = typeof part.content === 'string' ? part.content : JSON.stringify(part.content);
                 const parsedAnswers = parseAskUserAnswers(resultStr);
                 if (parsedAnswers) {
-                  result.toolInput = mergeAnswersIntoToolInput(String(message.toolInput || '{}'), parsedAnswers);
+                  const inputStr = typeof message.toolInput === 'string'
+                    ? message.toolInput
+                    : JSON.stringify(message.toolInput || {});
+                  result.toolInput = mergeAnswersIntoToolInput(inputStr, parsedAnswers);
                 }
               }
               if (message.isSubagentContainer && message.subagentState) {

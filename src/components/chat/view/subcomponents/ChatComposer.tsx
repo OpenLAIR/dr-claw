@@ -364,38 +364,39 @@ export default function ChatComposer({
   ];
 
   return (
-    <div className={`p-2 sm:p-4 md:p-4 flex-shrink-0 ${centered ? 'pb-2 sm:pb-3' : 'pb-2 sm:pb-4 md:pb-6'} ${mobileFloatingClass}`}>
-      <div className={`${centered ? 'max-w-3xl' : 'max-w-5xl'} mx-auto mb-3`}>
+    <div className={`px-2 pt-0 sm:px-4 sm:pt-1 md:px-4 md:pt-1 flex-shrink-0 ${centered ? 'pb-2 sm:pb-3' : 'pb-2 sm:pb-4 md:pb-6'} ${mobileFloatingClass}`}>
+      <div className={`${centered ? 'max-w-3xl' : 'max-w-5xl'} mx-auto`}>
         <PermissionRequestsBanner
           provider={provider}
           pendingPermissionRequests={pendingPermissionRequests}
           handlePermissionDecision={handlePermissionDecision}
           handleGrantToolPermission={handleGrantToolPermission}
         />
-
-        {!centered && !hasQuestionPanel && (
-          <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
-            <ClaudeStatus
-              status={claudeStatus}
-              isLoading={isLoading}
-              onAbort={onAbortSession}
-              provider={provider}
-            />
-            {isUserScrolledUp && hasMessages && (
-              <button
-                onClick={onScrollToBottom}
-                className="w-7 h-7 sm:w-8 sm:h-8 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg shadow-sm flex items-center justify-center transition-all duration-200 hover:scale-105"
-              >
-                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                </svg>
-              </button>
-            )}
-          </div>
-        )}
       </div>
 
       {!hasQuestionPanel && <form onSubmit={onSubmit as (event: FormEvent<HTMLFormElement>) => void} className={`relative mx-auto ${centered ? 'max-w-3xl' : 'max-w-5xl'}`}>
+        {!centered && !hasQuestionPanel && (isLoading || (isUserScrolledUp && hasMessages)) && (
+          <div className="pointer-events-none absolute bottom-full left-0 right-0 flex justify-center pb-1.5">
+            <div className="pointer-events-auto relative flex items-center">
+              <ClaudeStatus
+                status={claudeStatus}
+                isLoading={isLoading}
+                onAbort={onAbortSession}
+                provider={provider}
+              />
+              {isUserScrolledUp && hasMessages && (
+                <button
+                  onClick={onScrollToBottom}
+                  className={`w-7 h-7 sm:w-8 sm:h-8 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg shadow-sm flex items-center justify-center transition-all duration-200 hover:scale-105 ${isLoading ? 'absolute left-full ml-2' : ''}`}
+                >
+                  <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          </div>
+        )}
         {isDragActive && (
           <div className="absolute inset-0 bg-primary/15 border-2 border-dashed border-primary/50 rounded-3xl flex items-center justify-center z-50">
             <div className="bg-card rounded-xl p-4 shadow-lg border border-border/30">
@@ -666,9 +667,6 @@ export default function ChatComposer({
                     onToggleCommandMenu={onToggleCommandMenu}
                     hasInput={hasInput}
                     onClearInput={onClearInput}
-                    isUserScrolledUp={isUserScrolledUp}
-                    hasMessages={hasMessages}
-                    onScrollToBottom={onScrollToBottom}
                     hideCommandMenu
                     compact
                   />

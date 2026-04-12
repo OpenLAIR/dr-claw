@@ -4,7 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
-import { ExternalLink, FileText } from 'lucide-react';
+import { ExternalLink, FileText, X } from 'lucide-react';
 
 import { Button } from '../../../ui/button';
 import { api } from '../../../../utils/api';
@@ -91,6 +91,7 @@ interface ChatContextFilePreviewProps {
   projectName: string;
   file: PreviewFile;
   onOpenInEditor?: (filePath: string) => void;
+  onClose?: () => void;
   compact?: boolean;
   preloadedContent?: string | null;
 }
@@ -99,6 +100,7 @@ export default function ChatContextFilePreview({
   projectName,
   file,
   onOpenInEditor,
+  onClose,
   compact = false,
   preloadedContent,
 }: ChatContextFilePreviewProps) {
@@ -218,18 +220,32 @@ export default function ChatContextFilePreview({
             {file?.relativePath || t('sessionContext.preview.selectFile')}
           </div>
         </div>
-        {file && (
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            onClick={() => onOpenInEditor?.(openPath)}
-            className={compact ? 'h-7 px-2 text-[11px]' : undefined}
-          >
-            <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
-            {t('sessionContext.preview.open')}
-          </Button>
-        )}
+        <div className="flex items-center gap-1 shrink-0">
+          {file && (
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => onOpenInEditor?.(openPath)}
+              className={compact ? 'h-7 px-2 text-[11px]' : undefined}
+            >
+              <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
+              {t('sessionContext.preview.open')}
+            </Button>
+          )}
+          {onClose && (
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={onClose}
+              className="h-8 w-8 p-0"
+              title={t('sessionContext.preview.closePreview')}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </div>
 
       {loading && (

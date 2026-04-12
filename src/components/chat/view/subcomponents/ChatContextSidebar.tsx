@@ -1058,21 +1058,13 @@ export default function ChatContextSidebar({
             className="relative flex max-h-[85vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <button
-              type="button"
-              onClick={handleClosePreview}
-              className="absolute right-3 top-3 z-10 inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
-              title={t('sessionContext.preview.closePreview')}
-            >
-              <X className="h-5 w-5" />
-            </button>
-
             {previewFile && (
               <div className="min-h-0 flex-1 overflow-y-auto">
                 <ChatContextFilePreview
                   projectName={projectName}
                   file={previewFile}
                   onOpenInEditor={handleOpenInEditor}
+                  onClose={handleClosePreview}
                   preloadedContent={previewContent}
                 />
               </div>
@@ -1080,18 +1072,28 @@ export default function ChatContextSidebar({
 
             {previewTask && !previewFile && (
               <div className="min-h-0 flex-1 overflow-y-auto p-5">
-                <div className="mb-4 flex items-center gap-3">
-                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-sky-200/80 bg-sky-50/95 text-sky-700 shadow-sm dark:border-sky-900/40 dark:bg-sky-950/30 dark:text-sky-200">
-                    <ClipboardList className="h-4 w-4" />
-                  </span>
-                  <div>
-                    <div className="text-sm font-semibold text-foreground">{previewTask.label}</div>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <ItemBadge>{getTaskKindLabel(previewTask.kind)}</ItemBadge>
-                      <ItemBadge>{formatTimeLabel(previewTask.lastSeenAt, i18n.language)}</ItemBadge>
-                      <ItemBadge>{previewTask.count}x</ItemBadge>
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-sky-200/80 bg-sky-50/95 text-sky-700 shadow-sm dark:border-sky-900/40 dark:bg-sky-950/30 dark:text-sky-200">
+                      <ClipboardList className="h-4 w-4" />
+                    </span>
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold text-foreground truncate">{previewTask.label}</div>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <ItemBadge>{getTaskKindLabel(previewTask.kind)}</ItemBadge>
+                        <ItemBadge>{formatTimeLabel(previewTask.lastSeenAt, i18n.language)}</ItemBadge>
+                        <ItemBadge>{previewTask.count}x</ItemBadge>
+                      </div>
                     </div>
                   </div>
+                  <button
+                    type="button"
+                    onClick={handleClosePreview}
+                    className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+                    title={t('sessionContext.preview.closePreview')}
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
                 {previewTask.detail && (
                   <div className="rounded-xl border border-border/60 bg-muted/10 p-4">

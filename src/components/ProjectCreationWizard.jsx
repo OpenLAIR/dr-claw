@@ -11,7 +11,7 @@ const ProjectCreationWizard = ({ onClose, onProjectCreated }) => {
   const { t } = useTranslation();
   // Wizard state
   const [step, setStep] = useState(1); // 1: Choose type, 2: Configure, 3: Confirm
-  const [workspaceType, setWorkspaceType] = useState('existing'); // 'existing' or 'new' - default to 'existing'
+  const [workspaceType, setWorkspaceType] = useState('new'); // 'existing' or 'new' - default to 'new'
 
   // Form state
   const [workspacePath, setWorkspacePath] = useState('');
