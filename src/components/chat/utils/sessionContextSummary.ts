@@ -497,12 +497,12 @@ export function deriveSessionContextSummary(
       }
 
       case 'WebSearch': {
-        const queries = Array.isArray(parsedInput?.queries)
-          ? parsedInput.queries
+        const queries: unknown[] = Array.isArray(parsedInput?.queries)
+          ? (parsedInput.queries as unknown[])
           : [];
-        const normalizedQueries = queries
+        const normalizedQueries: string[] = queries
           .map((entry: unknown) => (typeof entry === 'string' ? entry.trim() : ''))
-          .filter(Boolean);
+          .filter((entry): entry is string => Boolean(entry));
         if (typeof parsedInput?.query === 'string' && parsedInput.query.trim()) {
           normalizedQueries.unshift(parsedInput.query.trim());
         }
