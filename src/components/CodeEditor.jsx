@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { python } from '@codemirror/lang-python';
@@ -11,7 +11,7 @@ import { StreamLanguage } from '@codemirror/language';
 import { EditorView, showPanel, ViewPlugin } from '@codemirror/view';
 import { unifiedMergeView, getChunks } from '@codemirror/merge';
 import { showMinimap } from '@replit/codemirror-minimap';
-import { X, Save, Download, Maximize2, Minimize2, Settings as SettingsIcon, FileText, MessageSquarePlus } from 'lucide-react';
+import { X, Save, Download, Maximize2, Minimize2, Settings as SettingsIcon, FileText, MessageSquarePlus, ExternalLink } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -19,10 +19,11 @@ import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark as prismOneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { api } from '../utils/api';
+import { api, authenticatedFetch } from '../utils/api';
 import { useTranslation } from 'react-i18next';
 import { Eye, Code2 } from 'lucide-react';
 import JsonTreeViewer from './JsonTreeViewer';
+import MarkdownSelectionPopup from './MarkdownSelectionPopup';
 
 // Custom .env file syntax highlighting
 const envLanguage = StreamLanguage.define({
@@ -102,41 +103,176 @@ function MarkdownCodeBlock({ inline, className, children, ...props }) {
   );
 }
 
-const markdownPreviewComponents = {
-  code: MarkdownCodeBlock,
-  blockquote: ({ children }) => (
-    <blockquote className="border-l-4 border-gray-300 dark:border-gray-600 pl-4 italic text-gray-600 dark:text-gray-400 my-2">
-      {children}
-    </blockquote>
-  ),
-  a: ({ href, children }) => (
-    <a href={href} className="text-blue-600 dark:text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">
-      {children}
-    </a>
-  ),
-  table: ({ children }) => (
-    <div className="overflow-x-auto my-2">
-      <table className="min-w-full border-collapse border border-gray-200 dark:border-gray-700">{children}</table>
-    </div>
-  ),
-  thead: ({ children }) => <thead className="bg-gray-50 dark:bg-gray-800">{children}</thead>,
-  th: ({ children }) => (
-    <th className="px-3 py-2 text-left text-sm font-semibold border border-gray-200 dark:border-gray-700">{children}</th>
-  ),
-  td: ({ children }) => (
-    <td className="px-3 py-2 align-top text-sm border border-gray-200 dark:border-gray-700">{children}</td>
-  ),
-};
+/**
+ * Link component with hover tooltip for local .md links (Think Mode results).
+ * Shows Open / Delete actions on hover.
+ */
+function MdLinkWithTooltip({ href, children, onOpenLinkedFile, onDeleteLink }) {
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const tooltipTimeout = useRef(null);
+  const containerRef = useRef(null);
 
-function MarkdownPreview({ content }) {
+  const isLocalMd = href && !href.startsWith('http') && !href.startsWith('//') && href.endsWith('.md');
+
+  const handleMouseEnter = () => {
+    if (!isLocalMd) return;
+    clearTimeout(tooltipTimeout.current);
+    setShowTooltip(true);
+  };
+
+  const handleMouseLeave = () => {
+    tooltipTimeout.current = setTimeout(() => {
+      setShowTooltip(false);
+      setConfirmDelete(false);
+    }, 200);
+  };
+
+  const handleTooltipEnter = () => {
+    clearTimeout(tooltipTimeout.current);
+  };
+
+  const handleTooltipLeave = () => {
+    tooltipTimeout.current = setTimeout(() => {
+      setShowTooltip(false);
+      setConfirmDelete(false);
+    }, 200);
+  };
+
+  useEffect(() => {
+    return () => clearTimeout(tooltipTimeout.current);
+  }, []);
+
+  if (!isLocalMd) {
+    return (
+      <a href={href} className="text-blue-600 dark:text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">
+        {children}
+      </a>
+    );
+  }
+
+  return (
+    <span className="relative inline-block" ref={containerRef}>
+      <a
+        href="#"
+        className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onClick={(e) => {
+          e.preventDefault();
+          onOpenLinkedFile?.(href);
+        }}
+      >
+        {children}
+      </a>
+      {showTooltip && (
+        <div
+          className="absolute z-[60] bottom-full left-1/2 -translate-x-1/2 mb-1.5"
+          onMouseEnter={handleTooltipEnter}
+          onMouseLeave={handleTooltipLeave}
+        >
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-600 px-1 py-1 flex items-center gap-1 whitespace-nowrap">
+            {!confirmDelete ? (
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onOpenLinkedFile?.(href);
+                  }}
+                  className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition-colors"
+                >
+                  <ExternalLink className="w-3 h-3" />
+                  Open
+                </button>
+                <div className="w-px h-4 bg-gray-200 dark:bg-gray-600" />
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setConfirmDelete(true);
+                  }}
+                  className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors"
+                >
+                  <X className="w-3 h-3" />
+                  Delete
+                </button>
+              </>
+            ) : (
+              <>
+                <span className="text-xs text-gray-600 dark:text-gray-300 px-1">Delete this note?</span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDeleteLink?.(href, children);
+                    setShowTooltip(false);
+                    setConfirmDelete(false);
+                  }}
+                  className="px-2 py-1 text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded transition-colors"
+                >
+                  Confirm
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setConfirmDelete(false);
+                  }}
+                  className="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                >
+                  Cancel
+                </button>
+              </>
+            )}
+          </div>
+          {/* Arrow pointing down */}
+          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px">
+            <div className="w-2 h-2 rotate-45 bg-white dark:bg-gray-800 border-r border-b border-gray-200 dark:border-gray-600" />
+          </div>
+        </div>
+      )}
+    </span>
+  );
+}
+
+function buildMarkdownComponents(onOpenLinkedFile, onDeleteLink) {
+  return {
+    code: MarkdownCodeBlock,
+    blockquote: ({ children }) => (
+      <blockquote className="border-l-4 border-gray-300 dark:border-gray-600 pl-4 italic text-gray-600 dark:text-gray-400 my-2">
+        {children}
+      </blockquote>
+    ),
+    a: ({ href, children }) => (
+      <MdLinkWithTooltip href={href} onOpenLinkedFile={onOpenLinkedFile} onDeleteLink={onDeleteLink}>
+        {children}
+      </MdLinkWithTooltip>
+    ),
+    table: ({ children }) => (
+      <div className="overflow-x-auto my-2">
+        <table className="min-w-full border-collapse border border-gray-200 dark:border-gray-700">{children}</table>
+      </div>
+    ),
+    thead: ({ children }) => <thead className="bg-gray-50 dark:bg-gray-800">{children}</thead>,
+    th: ({ children }) => (
+      <th className="px-3 py-2 text-left text-sm font-semibold border border-gray-200 dark:border-gray-700">{children}</th>
+    ),
+    td: ({ children }) => (
+      <td className="px-3 py-2 align-top text-sm border border-gray-200 dark:border-gray-700">{children}</td>
+    ),
+  };
+}
+
+function MarkdownPreview({ content, onOpenLinkedFile, onDeleteLink }) {
   const remarkPlugins = useMemo(() => [remarkGfm, remarkMath], []);
   const rehypePlugins = useMemo(() => [rehypeRaw, rehypeKatex], []);
+  const components = useMemo(
+    () => buildMarkdownComponents(onOpenLinkedFile, onDeleteLink),
+    [onOpenLinkedFile, onDeleteLink]
+  );
 
   return (
     <ReactMarkdown
       remarkPlugins={remarkPlugins}
       rehypePlugins={rehypePlugins}
-      components={markdownPreviewComponents}
+      components={components}
     >
       {content}
     </ReactMarkdown>
@@ -184,8 +320,11 @@ function CodeEditor({ file, onClose, projectPath, selectedProject = null, onStar
   });
   const [candidates, setCandidates] = useState(null);
   const [resolvedPath, setResolvedPath] = useState(null);
+  const [overlayContent, setOverlayContent] = useState(null); // { content, title }
   const editorRef = useRef(null);
   const abortRef = useRef(null);
+  const markdownPreviewRef = useRef(null);
+  const savedScrollTopRef = useRef(0);
 
   const handleAbortAndClose = () => {
     abortRef.current?.abort();
@@ -240,6 +379,86 @@ function CodeEditor({ file, onClose, projectPath, selectedProject = null, onStar
       }),
     );
   };
+
+  const handleStartSessionFromSelection = (prompt, _mode) => {
+    if (!selectedProject || !onStartWorkspaceQa) return;
+    onStartWorkspaceQa(selectedProject, prompt);
+  };
+
+  // Handle opening a linked .md file (Think Mode result) in the overlay
+  const handleOpenLinkedFile = useCallback(async (href) => {
+    if (!href || !file.projectName) return;
+    try {
+      // Resolve relative href to full path
+      const currentPath = resolvedPath || file.path;
+      const lastSlash = currentPath.lastIndexOf('/');
+      const dir = lastSlash >= 0 ? currentPath.substring(0, lastSlash + 1) : '';
+      const linkedPath = `${dir}${href}`;
+
+      const res = await authenticatedFetch(
+        `/api/projects/${file.projectName}/files/content?path=${encodeURIComponent(linkedPath)}`
+      );
+      if (!res.ok) throw new Error(`Failed to load: ${res.status}`);
+      const text = await res.text();
+      // Save current scroll position before switching to overlay
+      if (markdownPreviewRef.current) {
+        savedScrollTopRef.current = markdownPreviewRef.current.scrollTop;
+      }
+      setOverlayContent({ content: text, title: href });
+      // Scroll to top so the linked file starts at the beginning
+      if (markdownPreviewRef.current) {
+        markdownPreviewRef.current.scrollTop = 0;
+      }
+    } catch (err) {
+      console.error('Failed to open linked file:', err);
+    }
+  }, [file.projectName, file.path, resolvedPath]);
+
+  // Handle deleting a linked .md file and removing the hyperlink from content
+  const handleDeleteLink = useCallback(async (href, linkText) => {
+    if (!href || !file.projectName) return;
+    try {
+      // Resolve the linked file path
+      const currentPath = resolvedPath || file.path;
+      const lastSlash = currentPath.lastIndexOf('/');
+      const dir = lastSlash >= 0 ? currentPath.substring(0, lastSlash + 1) : '';
+      const linkedPath = `${dir}${href}`;
+
+      // Delete the linked file
+      await api.deleteFile(file.projectName, linkedPath);
+
+      // Remove the hyperlink from content
+      const escapedHref = href.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+      // First, try to remove entire annotation lines (> 📎 [text](href) generated by Think/Research mode)
+      // Match the full line including leading newline and trailing newline
+      const annotationPattern = new RegExp(
+        `\\n> 📎 \\[[^\\]]*?\\]\\(${escapedHref}\\)\\n?`,
+        'g'
+      );
+      let updatedContent = content.replace(annotationPattern, '\n');
+
+      // If no annotation line was removed, fall back to inline link removal: [text](href) → text
+      if (updatedContent === content) {
+        const linkPattern = new RegExp(
+          `\\[([^\\]]*?)\\]\\(${escapedHref}\\)`,
+          'g'
+        );
+        updatedContent = content.replace(linkPattern, '$1');
+      }
+      if (updatedContent !== content) {
+        setContent(updatedContent);
+        // Auto-save the updated content
+        try {
+          await api.saveFile(file.projectName, resolvedPath || file.path, updatedContent);
+        } catch (saveErr) {
+          console.error('Failed to save after link removal:', saveErr);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to delete linked file:', err);
+    }
+  }, [file.projectName, file.path, resolvedPath, content]);
 
   // Reset disambiguation state when file changes
   useEffect(() => {
@@ -1042,9 +1261,64 @@ function CodeEditor({ file, onClose, projectPath, selectedProject = null, onStar
               <img src={blobUrl} alt={file.name} className="max-w-full max-h-full object-contain rounded" />
             </div>
           ) : viewMode === 'preview' && isMarkdownFile ? (
-            <div className="h-full overflow-y-auto bg-white dark:bg-gray-900">
-              <div className="max-w-4xl mx-auto px-8 py-6 prose prose-sm dark:prose-invert prose-headings:font-semibold prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-code:text-sm prose-pre:bg-gray-900 prose-img:rounded-lg max-w-none">
-                <MarkdownPreview content={content} />
+            <div className="h-full overflow-y-auto bg-white dark:bg-gray-900 relative" ref={markdownPreviewRef}>
+              {/* Overlay: linked file view */}
+              {overlayContent && (
+                <>
+                  <div className="sticky top-0 z-30 flex items-center justify-between px-4 py-2 bg-blue-50 dark:bg-blue-900/30 border-b border-blue-200 dark:border-blue-700">
+                    <span className="text-xs font-medium text-blue-700 dark:text-blue-300 truncate">
+                      {overlayContent.title}
+                    </span>
+                    <button
+                      onClick={() => {
+                        setOverlayContent(null);
+                        // Restore scroll position to where the user was before opening the overlay
+                        requestAnimationFrame(() => {
+                          if (markdownPreviewRef.current) {
+                            markdownPreviewRef.current.scrollTop = savedScrollTopRef.current;
+                          }
+                        });
+                      }}
+                      className="flex items-center gap-1 px-2 py-0.5 text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-800/50 rounded transition-colors"
+                    >
+                      <X className="w-3 h-3" />
+                      Close
+                    </button>
+                  </div>
+                  <div className="max-w-4xl mx-auto px-8 py-6 prose prose-sm dark:prose-invert prose-headings:font-semibold prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-code:text-sm prose-pre:bg-gray-900 prose-img:rounded-lg max-w-none">
+                    <MarkdownPreview content={overlayContent.content} />
+                  </div>
+                </>
+              )}
+              {/* Original file + selection popup: hidden while overlay is open, but always mounted */}
+              <div style={{ display: overlayContent ? 'none' : undefined }}>
+                <div className="max-w-4xl mx-auto px-8 py-6 prose prose-sm dark:prose-invert prose-headings:font-semibold prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-code:text-sm prose-pre:bg-gray-900 prose-img:rounded-lg max-w-none">
+                  <MarkdownPreview content={content} onOpenLinkedFile={handleOpenLinkedFile} onDeleteLink={handleDeleteLink} />
+                </div>
+                <MarkdownSelectionPopup
+                  containerRef={markdownPreviewRef}
+                  onStartSession={handleStartSessionFromSelection}
+                  onOpenOverlay={(overlay) => {
+                    if (markdownPreviewRef.current) {
+                      savedScrollTopRef.current = markdownPreviewRef.current.scrollTop;
+                    }
+                    setOverlayContent(overlay);
+                    requestAnimationFrame(() => {
+                      if (markdownPreviewRef.current) markdownPreviewRef.current.scrollTop = 0;
+                    });
+                  }}
+                  projectName={file.projectName}
+                  mdContent={content}
+                  onContentChange={setContent}
+                  filePath={resolvedPath || file.path}
+                  onSaveFile={async (newContent) => {
+                    try {
+                      await api.saveFile(file.projectName, resolvedPath || file.path, newContent);
+                    } catch (err) {
+                      console.error('Auto-save failed:', err);
+                    }
+                  }}
+                />
               </div>
             </div>
           ) : viewMode === 'preview' && isJsonFile ? (

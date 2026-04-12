@@ -72,6 +72,7 @@ import computeRoutes from './routes/compute.js';
 import newsRoutes from './routes/news.js';
 import autoResearchRoutes from './routes/auto-research.js';
 import referencesRoutes from './routes/references.js';
+import quickQaRoutes from './routes/quick-qa.js';
 import { initializeDatabase, sessionDb, tagDb } from './database/db.js';
 import { validateApiKey, authenticateToken, authenticateWebSocket } from './middleware/auth.js';
 import { IS_PLATFORM } from './constants/config.js';
@@ -530,6 +531,8 @@ app.use('/api/auto-research', authenticateToken, autoResearchRoutes);
 
 // References (literature library) API Routes (protected)
 app.use('/api/references', authenticateToken, referencesRoutes);
+
+app.use('/api/quick-qa', authenticateToken, quickQaRoutes);
 
 // Agent API Routes (uses API key authentication)
 app.use('/api/agent', agentRoutes);
