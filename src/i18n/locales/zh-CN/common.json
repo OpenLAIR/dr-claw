@@ -343,9 +343,9 @@
       "usingProvidedToken": "使用提供的令牌",
       "noAuthentication": "无身份验证",
       "sshKey": "SSH 密钥",
-      "existingInfo": "工作区将被添加到您的项目列表中，并可用于 Claude/Cursor 会话。",
+      "existingInfo": "工作区将被添加到您的项目列表中，并可用于研究会话。",
       "newWithClone": "仓库将从此文件夹克隆。",
-      "newEmpty": "工作区将被添加到您的项目列表中，并可用于 Claude/Cursor 会话。",
+      "newEmpty": "工作区将被添加到您的项目列表中，并可用于研究会话。",
       "cloningRepository": "正在克隆仓库..."
     },
     "buttons": {

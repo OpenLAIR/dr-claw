@@ -656,6 +656,9 @@ export const TOOL_CONFIGS: Record<string, ToolDisplayConfig> = {
       title: (input: any) => {
         const count = input.questions?.length || 0;
         const hasAnswers = input.answers && Object.keys(input.answers).length > 0;
+        if (count === 0) {
+          return hasAnswers ? 'Questions — answered' : 'Questions';
+        }
         if (count === 1) {
           const header = input.questions[0]?.header || 'Question';
           return hasAnswers ? `${header} — answered` : header;

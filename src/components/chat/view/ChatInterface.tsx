@@ -26,8 +26,6 @@ import { CLAUDE_MODELS, CURSOR_MODELS, CODEX_MODELS, GEMINI_MODELS, LOCAL_MODELS
 import { getProviderDisplayName } from '../utils/chatFormatting';
 import { normalizePath, toRelativePath, isSafePath, fileNameFromPath } from '../../../utils/pathUtils';
 import { useDeviceSettings } from '../../../hooks/useDeviceSettings';
-import { X } from 'lucide-react';
-
 
 const DEFAULT_PROVIDER_AVAILABILITY: Record<Provider, ProviderAvailability> = {
   claude: { cliAvailable: true, cliCommand: 'claude', installHint: null },
@@ -990,19 +988,12 @@ function ChatInterface({
             className="relative flex max-h-[85vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-xl"
             onClick={(event) => event.stopPropagation()}
           >
-            <button
-              type="button"
-              onClick={handleClosePreview}
-              className="absolute right-3 top-3 z-10 inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
-              title={t('sessionContext.preview.closePreview')}
-            >
-              <X className="h-5 w-5" />
-            </button>
             <div className="min-h-0 flex-1 overflow-y-auto">
               <ChatContextFilePreview
                 projectName={selectedProject.name}
                 file={previewFile}
                 onOpenInEditor={handleOpenPreviewInEditor}
+                onClose={handleClosePreview}
               />
             </div>
           </div>
