@@ -5,6 +5,16 @@ import { queueWorkspaceQaDraft } from '../utils/workspaceQa';
 import { queueReferenceChatDraft } from '../utils/referenceChatDraft';
 import type { Reference } from '../components/references/types';
 import { formatReferenceChatPrompt } from '../components/references/types';
+import {
+  OPTIMISTIC_SESSION_CREATED_EVENT,
+  type OptimisticSessionCreatedDetail,
+} from '../constants/sessionEvents';
+import { normalizeProvider } from '../utils/providerPolicy';
+import {
+  hasTrackedTemporarySession,
+  isTrackedSessionActive,
+  upsertProjectSession,
+} from './projectsSessionSync';
 import type {
   AppSocketMessage,
   AppTab,
@@ -401,6 +411,54 @@ export function useProjectsState({
   }, []);
 
   useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const handleOptimisticSessionCreated = (event: Event) => {
+      const detail = (event as CustomEvent<OptimisticSessionCreatedDetail>).detail;
+      if (
+        !detail ||
+        !detail.projectName ||
+        !detail.sessionId ||
+        !detail.provider
+      ) {
+        return;
+      }
+
+      const sessionMode: SessionMode = isSessionMode(detail.mode) ? detail.mode : 'research';
+      const createdAt = detail.createdAt || new Date().toISOString();
+      const displayName = detail.displayName || detail.summary;
+
+      setProjects((prevProjects) => prevProjects.map((project) => {
+        if (project.name !== detail.projectName) {
+          return project;
+        }
+
+        return upsertProjectSession(project, {
+          projectName: detail.projectName,
+          provider: detail.provider,
+          sessionId: detail.sessionId,
+          mode: sessionMode,
+          displayName,
+          createdAt,
+        });
+      }));
+    };
+
+    window.addEventListener(
+      OPTIMISTIC_SESSION_CREATED_EVENT,
+      handleOptimisticSessionCreated as EventListener,
+    );
+    return () => {
+      window.removeEventListener(
+        OPTIMISTIC_SESSION_CREATED_EVENT,
+        handleOptimisticSessionCreated as EventListener,
+      );
+    };
+  }, []);
+
+  useEffect(() => {
     if (!latestMessage) {
       return;
     }
@@ -409,9 +467,29 @@ export function useProjectsState({
       const rawMode = latestMessage.mode;
       const modeValue = typeof rawMode === 'string' ? rawMode : null;
       const sessionMode: SessionMode = isSessionMode(modeValue) ? modeValue : 'research';
-      const createdProvider = latestMessage.provider as ProjectSession['__provider'];
+      const createdProvider = normalizeProvider(
+        latestMessage.provider as ProjectSession['__provider'],
+      ) as ProjectSession['__provider'];
       const createdDisplayName = latestMessage.displayName as string | undefined;
       const createdProjectName = latestMessage.projectName as string | undefined;
+      const fallbackProjectName =
+        selectedSession?.__projectName ||
+        selectedProject?.name ||
+        null;
+      const effectiveProjectName = createdProjectName || fallbackProjectName;
+      const selectedSessionProvider = normalizeProvider(
+        (selectedSession?.__provider || createdProvider || 'claude') as SessionProvider,
+      ) as SessionProvider;
+      const selectedSessionProjectName =
+        selectedSession?.__projectName || selectedProject?.name || null;
+      const temporarySessionIdToReplace =
+        selectedSession?.id?.startsWith('new-session-') &&
+          selectedSessionProvider === createdProvider &&
+          selectedSessionProjectName &&
+          effectiveProjectName &&
+          selectedSessionProjectName === effectiveProjectName
+          ? selectedSession.id
+          : null;
 
       setProjects((prevProjects) => prevProjects.map((project) => {
         const updateSessionList = (
@@ -450,52 +528,58 @@ export function useProjectsState({
           nanoSessions: updateSessionList(project.nanoSessions, 'nano'),
         };
 
-        if (createdProjectName && project.name === createdProjectName && createdProvider) {
-          const sessionArrayKey = createdProvider === 'claude' ? 'sessions'
-            : createdProvider === 'cursor' ? 'cursorSessions'
-            : createdProvider === 'codex' ? 'codexSessions'
-            : createdProvider === 'gemini' ? 'geminiSessions'
-            : createdProvider === 'openrouter' ? 'openrouterSessions'
-            : createdProvider === 'local' ? 'localSessions'
-            : createdProvider === 'nano' ? 'nanoSessions'
-            : null;
-
-          if (sessionArrayKey) {
-            const arr = (nextProject[sessionArrayKey] as ProjectSession[] | undefined) || [];
-            const alreadyExists = arr.some((s) => s.id === latestMessage.sessionId);
-            if (!alreadyExists) {
-              const fallbackName = createdProvider === 'local'
-                ? 'Local GPU Session'
-                : createdProvider === 'nano'
-                  ? 'Nano Claude Code Session'
-                  : 'New Session';
-              const newSession: ProjectSession = {
-                id: latestMessage.sessionId as string,
-                name: createdDisplayName || fallbackName,
-                summary: createdDisplayName || fallbackName,
-                mode: sessionMode,
-                __provider: createdProvider,
-                __projectName: project.name,
-                createdAt: new Date().toISOString(),
-                lastActivity: new Date().toISOString(),
-              };
-              (nextProject as Record<string, unknown>)[sessionArrayKey] = [newSession, ...arr];
-            }
-          }
+        if (effectiveProjectName && project.name === effectiveProjectName && createdProvider) {
+          return upsertProjectSession(nextProject, {
+            projectName: effectiveProjectName,
+            provider: createdProvider,
+            sessionId: latestMessage.sessionId as string,
+            mode: sessionMode,
+            displayName: createdDisplayName,
+            createdAt: new Date().toISOString(),
+            temporarySessionId: temporarySessionIdToReplace,
+          });
         }
 
         return nextProject;
       }));
 
       setSelectedSession((previous) => {
-        if (!previous || previous.id !== latestMessage.sessionId) {
+        if (!previous) {
           return previous;
         }
 
-        return {
-          ...previous,
-          mode: sessionMode,
-        };
+        if (previous.id === latestMessage.sessionId) {
+          return {
+            ...previous,
+            mode: sessionMode,
+            __provider: previous.__provider || createdProvider,
+            __projectName: previous.__projectName || effectiveProjectName || undefined,
+          };
+        }
+
+        if (
+          previous.id.startsWith('new-session-') &&
+          temporarySessionIdToReplace &&
+          previous.id === temporarySessionIdToReplace
+        ) {
+          return {
+            ...previous,
+            id: latestMessage.sessionId as string,
+            mode: sessionMode,
+            name: createdDisplayName || previous.name,
+            summary: createdDisplayName || previous.summary,
+            __provider: createdProvider,
+            __projectName: effectiveProjectName || previous.__projectName,
+            createdAt: previous.createdAt || new Date().toISOString(),
+            lastActivity: new Date().toISOString(),
+          };
+        }
+
+        if (previous.id !== latestMessage.sessionId) {
+          return previous;
+        }
+
+        return previous;
       });
     }
 
@@ -545,7 +629,11 @@ export function useProjectsState({
           const changedSessionId = filename.replace('.jsonl', '');
 
           if (changedSessionId === selectedSession.id) {
-            const isSessionActive = activeSessions.has(selectedSession.id);
+            const isSessionActive = isTrackedSessionActive(activeSessions, {
+              sessionId: selectedSession.id,
+              provider: selectedSession.__provider,
+              projectName: selectedSession.__projectName || selectedProject.name,
+            });
 
             if (!isSessionActive) {
               setExternalMessageUpdate((prev) => prev + 1);
@@ -555,8 +643,15 @@ export function useProjectsState({
       }
 
       const hasActiveSession =
-        (selectedSession && activeSessions.has(selectedSession.id)) ||
-        (activeSessions.size > 0 && Array.from(activeSessions).some((id) => id.startsWith('new-session-')));
+        Boolean(
+          selectedSession &&
+          isTrackedSessionActive(activeSessions, {
+            sessionId: selectedSession.id,
+            provider: selectedSession.__provider,
+            projectName: selectedSession.__projectName || selectedProject?.name,
+          }),
+        ) ||
+        hasTrackedTemporarySession(activeSessions);
 
       const updatedProjects = projectsMessage.projects;
 
@@ -592,8 +687,19 @@ export function useProjectsState({
         return;
       }
 
+      const normalizedSelectedProvider = normalizeProvider(
+        (selectedSession.__provider || 'claude') as SessionProvider,
+      ) as SessionProvider;
+      const selectedSessionProjectName =
+        selectedSession.__projectName || selectedProject.name;
       const updatedSelectedSession = getProjectSessions(updatedSelectedProject).find(
-        (session) => session.id === selectedSession.id,
+        (session) => (
+          session.id === selectedSession.id
+          && normalizeProvider(
+            (session.__provider || 'claude') as SessionProvider,
+          ) === normalizedSelectedProvider
+          && (session.__projectName || updatedSelectedProject.name) === selectedSessionProjectName
+        ),
       );
 
       if (!updatedSelectedSession) {

@@ -5,6 +5,7 @@ import type { TFunction } from 'i18next';
 import { cn } from '../../../../lib/utils';
 import { formatTimeAgo } from '../../../../utils/dateUtils';
 import type { Project, ProjectSession, SessionProvider } from '../../../../types/app';
+import { DEFAULT_PROVIDER, normalizeProvider } from '../../../../utils/providerPolicy';
 import type { SessionWithProvider, TouchHandlerFactory } from '../../types/types';
 import { createSessionViewModel } from '../../utils/utils';
 import SessionProviderLogo from '../../../SessionProviderLogo';
@@ -58,7 +59,18 @@ export default function SidebarSessionItem({
   t,
 }: SidebarSessionItemProps) {
   const sessionView = createSessionViewModel(session, currentTime, t);
-  const isSelected = selectedSession?.id === session.id;
+  const sessionProjectName = session.__projectName || project.name;
+  const sessionEditKey = `${sessionProjectName}::${session.__provider || DEFAULT_PROVIDER}::${session.id}`;
+  const selectedSessionProjectName =
+    typeof selectedSession?.__projectName === 'string'
+      ? selectedSession.__projectName
+      : null;
+  const isSelected =
+    selectedSession?.id === session.id
+    && normalizeProvider(
+      (selectedSession?.__provider as SessionProvider | undefined) || DEFAULT_PROVIDER,
+    ) === normalizeProvider(session.__provider || DEFAULT_PROVIDER)
+    && selectedSessionProjectName === sessionProjectName;
 
   const selectMobileSession = () => {
     onProjectSelect(project);
@@ -214,7 +226,7 @@ export default function SidebarSessionItem({
 
         {!sessionView.isCursorSession && (
           <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
-            {editingSession === session.id && !sessionView.isCodexSession ? (
+            {editingSession === sessionEditKey && !sessionView.isCodexSession ? (
               <>
                 <input
                   type="text"
@@ -260,7 +272,7 @@ export default function SidebarSessionItem({
                     className="w-6 h-6 bg-gray-50 hover:bg-gray-100 dark:bg-gray-900/20 dark:hover:bg-gray-900/40 rounded flex items-center justify-center"
                     onClick={(event) => {
                       event.stopPropagation();
-                      onStartEditingSession(session.id, session.summary || t('projects.newSession'));
+                      onStartEditingSession(sessionEditKey, session.summary || t('projects.newSession'));
                     }}
                     title={t('tooltips.editSessionName')}
                   >

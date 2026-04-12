@@ -15,6 +15,7 @@ import {
   filterProjects,
   getAllSessions,
   loadStarredProjects,
+  prependSelectedSessionIfMissing,
   persistStarredProjects,
   readProjectSortOrder,
   sortProjects,
@@ -193,8 +194,16 @@ export function useSidebarController({
   );
 
   const getProjectSessions = useCallback(
-    (project: Project) => getAllSessions(project, additionalSessions),
-    [additionalSessions],
+    (project: Project) => {
+      const sessions = getAllSessions(project, additionalSessions);
+      return prependSelectedSessionIfMissing(
+        sessions,
+        project.name,
+        selectedSession,
+        selectedProject?.name || null,
+      );
+    },
+    [additionalSessions, selectedProject?.name, selectedSession],
   );
 
   const projectsWithSessionMeta = useMemo(

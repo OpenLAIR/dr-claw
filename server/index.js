@@ -42,7 +42,7 @@ import pty from 'node-pty';
 import fetch from 'node-fetch';
 import mime from 'mime-types';
 
-import { getProjects, getTrashedProjects, getSessions, getSessionMessages, renameProject, renameSession, deleteSession, deleteProject, restoreProject, deleteTrashedProject, addProjectManually, extractProjectDirectory, clearProjectDirectoryCache } from './projects.js';
+import { getProjects, getTrashedProjects, getSessions, getSessionMessages, renameProject, renameSession, deleteSession, deleteProject, restoreProject, deleteTrashedProject, addProjectManually, extractProjectDirectory, clearProjectDirectoryCache, encodeProjectPath, resolveCodexSessionFilePath } from './projects.js';
 import { getProjectTokenUsageSummary } from './project-token-usage.js';
 import { queryClaudeSDK, abortClaudeSDKSession, isClaudeSDKSessionActive, getClaudeSDKSessionStartTime, getActiveClaudeSDKSessions, resolveToolApproval } from './claude-sdk.js';
 import { spawnCursor, abortCursorSession, isCursorSessionActive, getCursorSessionStartTime, getActiveCursorSessions } from './cursor-cli.js';
@@ -71,7 +71,7 @@ import computeRoutes from './routes/compute.js';
 import newsRoutes from './routes/news.js';
 import autoResearchRoutes from './routes/auto-research.js';
 import referencesRoutes from './routes/references.js';
-import { initializeDatabase, sessionDb, tagDb } from './database/db.js';
+import { initializeDatabase, projectDb, sessionDb, tagDb } from './database/db.js';
 import { validateApiKey, authenticateToken, authenticateWebSocket } from './middleware/auth.js';
 import { IS_PLATFORM } from './constants/config.js';
 import { enqueueTelemetryEvent } from './telemetry.js';
@@ -1358,6 +1358,135 @@ wss.on('connection', (ws, request) => {
     }
 });
 
+function inferProviderFromMessageType(type, fallbackProvider = null) {
+    const messageType = String(type || '');
+    if (messageType.startsWith('claude-')) return 'claude';
+    if (messageType.startsWith('cursor-')) return 'cursor';
+    if (messageType.startsWith('codex-')) return 'codex';
+    if (messageType.startsWith('gemini-')) return 'gemini';
+    if (messageType.startsWith('openrouter-')) return 'openrouter';
+    if (messageType.startsWith('localgpu-')) return 'local';
+    if (messageType.startsWith('nano-')) return 'nano';
+    return fallbackProvider || null;
+}
+
+const DEBUG_SESSION_LIFECYCLE = process.env.DEBUG_SESSION_LIFECYCLE === '1';
+const warnedUnknownLifecycleProjectPaths = new Set();
+
+function isKnownLifecycleProjectPath(projectPath) {
+    if (typeof projectPath !== 'string' || projectPath.trim().length === 0) {
+        return false;
+    }
+
+    const normalizedPath = path.resolve(projectPath);
+    if (!fs.existsSync(normalizedPath)) {
+        return false;
+    }
+
+    const encodedProjectName = encodeProjectPath(normalizedPath);
+    return Boolean(
+        projectDb.getProjectByPath(normalizedPath) ||
+        projectDb.getProjectById(encodedProjectName),
+    );
+}
+
+function warnUnknownLifecycleProjectPath(projectPath) {
+    const normalizedPath = path.resolve(projectPath);
+    if (warnedUnknownLifecycleProjectPaths.has(normalizedPath)) {
+        return;
+    }
+
+    warnedUnknownLifecycleProjectPaths.add(normalizedPath);
+    console.warn(`[WARN] Ignoring lifecycle projectPath that is not a known project: ${normalizedPath}`);
+}
+
+function resolveProjectName(projectName = null, projectPath = null) {
+    if (typeof projectName === 'string' && projectName.trim().length > 0) {
+        return projectName;
+    }
+
+    if (typeof projectPath !== 'string' || projectPath.trim().length === 0) {
+        return null;
+    }
+
+    const normalizedProjectPath = path.resolve(projectPath);
+    if (!isKnownLifecycleProjectPath(normalizedProjectPath)) {
+        warnUnknownLifecycleProjectPath(normalizedProjectPath);
+        return null;
+    }
+
+    try {
+        return encodeProjectPath(normalizedProjectPath);
+    } catch (error) {
+        if (DEBUG_SESSION_LIFECYCLE) {
+            console.debug('[DEBUG] Failed to encode project path for lifecycle payload:', normalizedProjectPath, error?.message || error);
+        }
+        return null;
+    }
+}
+
+function enrichSessionEventPayload(payload, fallbackProjectPath = null) {
+    if (!payload || typeof payload !== 'object') {
+        return payload;
+    }
+
+    const messageType = String(payload.type || '');
+    if (!messageType.startsWith('session-')) {
+        return payload;
+    }
+
+    const resolvedProjectName = resolveProjectName(
+        payload.projectName,
+        payload.projectPath || fallbackProjectPath || null,
+    );
+    if (!resolvedProjectName || payload.projectName === resolvedProjectName) {
+        return payload;
+    }
+
+    return {
+        ...payload,
+        projectName: resolvedProjectName,
+    };
+}
+
+function buildLifecycleMessageFromPayload(payload, fallbackProvider = null, fallbackProjectName = null) {
+    if (!payload || typeof payload !== 'object') {
+        return null;
+    }
+
+    const messageType = String(payload.type || '');
+    let state = null;
+
+    if (messageType === 'cursor-result' || messageType.endsWith('-complete')) {
+        state = 'completed';
+    } else if (messageType.endsWith('-error')) {
+        state = 'failed';
+    }
+
+    if (!state) {
+        return null;
+    }
+
+    const provider = inferProviderFromMessageType(
+        messageType,
+        typeof payload.provider === 'string' ? payload.provider : fallbackProvider,
+    );
+    const projectName = resolveProjectName(
+        payload.projectName || fallbackProjectName || null,
+        payload.projectPath || null,
+    );
+
+    return {
+        type: 'session-state-changed',
+        provider,
+        sessionId: payload.actualSessionId || payload.sessionId || null,
+        state,
+        reason: messageType,
+        changedAt: Date.now(),
+        ...(projectName ? { projectName } : {}),
+    };
+}
+
 /**
  * WebSocket Writer - Wrapper for WebSocket to match SSEStreamWriter interface
  */
@@ -1372,9 +1501,18 @@ class WebSocketWriter {
 
   send(data) {
     if (this.ws.readyState === 1) { // WebSocket.OPEN
-      // Providers send raw objects, we stringify for WebSocket
-      this.ws.send(JSON.stringify(data));
-      trackAgentResponseTelemetry(data, this.telemetryContext);
+      const outboundData = enrichSessionEventPayload(data, this.projectPath);
+      this.ws.send(JSON.stringify(outboundData));
+      trackAgentResponseTelemetry(outboundData, this.telemetryContext);
+
+      const lifecycle = buildLifecycleMessageFromPayload(
+        outboundData,
+        this.telemetryContext?.provider || null,
+        resolveProjectName(outboundData?.projectName, this.projectPath),
+      );
+      if (lifecycle) {
+        this.ws.send(JSON.stringify(lifecycle));
+      }
     }
   }
 
@@ -1519,10 +1657,87 @@ function handleChatConnection(ws, request) {
     // Wrap WebSocket with writer for consistent interface with SSEStreamWriter
     const writer = new WebSocketWriter(ws, telemetryContext);
 
+    const sendSessionStateChanged = ({
+        provider,
+        sessionId = null,
+        state,
+        reason = null,
+        projectPath = null,
+        projectName = null,
+    }) => {
+        const resolvedProjectName = resolveProjectName(projectName, projectPath || writer.getProjectPath() || null);
+        writer.send({
+            type: 'session-state-changed',
+            provider,
+            sessionId,
+            state,
+            reason,
+            changedAt: Date.now(),
+            ...(resolvedProjectName ? { projectName: resolvedProjectName } : {}),
+        });
+    };
+
+    const sendSessionAccepted = ({
+        provider,
+        sessionId = null,
+        requestType,
+        projectPath = null,
+        projectName = null,
+    }) => {
+        const resolvedProjectName = resolveProjectName(projectName, projectPath || writer.getProjectPath() || null);
+        writer.send({
+            type: 'session-accepted',
+            provider,
+            sessionId,
+            requestType,
+            acceptedAt: Date.now(),
+            ...(resolvedProjectName ? { projectName: resolvedProjectName } : {}),
+        });
+        // Keep these writes adjacent and synchronous so clients always see
+        // `session-accepted` before the corresponding `running` state transition.
+        sendSessionStateChanged({
+            provider,
+            sessionId,
+            state: 'running',
+            reason: 'command-accepted',
+            projectPath,
+            projectName: resolvedProjectName,
+        });
+    };
+
+    const sendSessionBusy = ({
+        provider,
+        sessionId = null,
+        requestType,
+        projectPath = null,
+        projectName = null,
+    }) => {
+        const resolvedProjectName = resolveProjectName(projectName, projectPath || writer.getProjectPath() || null);
+        writer.send({
+            type: 'session-busy',
+            provider,
+            sessionId,
+            requestType,
+            projectPath,
+            isProcessing: true,
+            reason: 'session-already-active',
+            message: 'Session is already running. Wait for completion or stop it before sending another command.',
+            reportedAt: Date.now(),
+            ...(resolvedProjectName ? { projectName: resolvedProjectName } : {}),
+        });
+        sendSessionStateChanged({
+            provider,
+            sessionId,
+            state: 'running',
+            reason: 'session-already-active',
+            projectPath,
+            projectName: resolvedProjectName,
+        });
+    };
+
     ws.on('message', async (message) => {
         try {
             const data = JSON.parse(message);
-            console.log(`[DEBUG] Received WebSocket message: ${data.type}`);
             
             if (data.type === 'telemetry-settings') {
                 const enabled = data.enabled !== false;
@@ -1553,8 +1768,21 @@ function handleChatConnection(ws, request) {
                 const sessionId = data.options?.sessionId || data.sessionId;
                 if (sessionId && isClaudeSDKSessionActive(sessionId)) {
                     console.log(`[WARN] Session ${sessionId} is already active. Ignoring concurrent request.`);
+                    sendSessionBusy({
+                        provider: 'claude',
+                        sessionId,
+                        requestType: data.type,
+                        projectPath: data.options?.projectPath || data.options?.cwd || null,
+                    });
                     return;
                 }
+
+                sendSessionAccepted({
+                    provider: 'claude',
+                    sessionId,
+                    requestType: data.type,
+                    projectPath: data.options?.projectPath || data.options?.cwd || null,
+                });
                 
                 queryClaudeSDK(data.command, { ...data.options, env: sessionEnv }, writer).catch(error => {
                     console.error('[ERROR] Claude query error:', error);
@@ -1569,6 +1797,12 @@ function handleChatConnection(ws, request) {
                 
                 if (sessionId && isCursorSessionActive(sessionId)) {
                     console.log(`[WARN] Cursor session ${sessionId} is already active. Ignoring concurrent request.`);
+                    sendSessionBusy({
+                        provider: 'cursor',
+                        sessionId,
+                        requestType: data.type,
+                        projectPath: data.options?.projectPath || data.options?.cwd || null,
+                    });
                     return;
                 }
                 
@@ -1585,6 +1819,12 @@ function handleChatConnection(ws, request) {
                 );
                 writer.telemetryContext = { ...telemetryContext, provider: 'cursor', telemetryEnabled: commandTelemetryEnabled };
                 writer.setProjectPath(data.options?.projectPath || data.options?.cwd || null);
+                sendSessionAccepted({
+                    provider: 'cursor',
+                    sessionId,
+                    requestType: data.type,
+                    projectPath: data.options?.projectPath || data.options?.cwd || null,
+                });
                 spawnCursor(data.command, { ...data.options, env: sessionEnv }, writer).catch(error => {
                     console.error('[ERROR] Cursor spawn error:', error);
                 });
@@ -1598,6 +1838,12 @@ function handleChatConnection(ws, request) {
                 
                 if (sessionId && isCodexSessionActive(sessionId)) {
                     console.log(`[WARN] Codex session ${sessionId} is already active. Ignoring concurrent request.`);
+                    sendSessionBusy({
+                        provider: 'codex',
+                        sessionId,
+                        requestType: data.type,
+                        projectPath: data.options?.projectPath || data.options?.cwd || null,
+                    });
                     return;
                 }
                 
@@ -1614,6 +1860,12 @@ function handleChatConnection(ws, request) {
                 );
                 writer.telemetryContext = { ...telemetryContext, provider: 'codex', telemetryEnabled: commandTelemetryEnabled };
                 writer.setProjectPath(data.options?.projectPath || data.options?.cwd || null);
+                sendSessionAccepted({
+                    provider: 'codex',
+                    sessionId,
+                    requestType: data.type,
+                    projectPath: data.options?.projectPath || data.options?.cwd || null,
+                });
                 queryCodex(data.command, { ...data.options, env: sessionEnv }, writer).catch(error => {
                     console.error('[ERROR] Codex query error:', error);
                 });
@@ -1627,6 +1879,12 @@ function handleChatConnection(ws, request) {
                 
                 if (sessionId && isGeminiSessionActive(sessionId)) {
                     console.log(`[WARN] Gemini session ${sessionId} is already active. Ignoring concurrent request.`);
+                    sendSessionBusy({
+                        provider: 'gemini',
+                        sessionId,
+                        requestType: data.type,
+                        projectPath: data.options?.projectPath || data.options?.cwd || null,
+                    });
                     return;
                 }
                 
@@ -1643,6 +1901,12 @@ function handleChatConnection(ws, request) {
                 );
                 writer.telemetryContext = { ...telemetryContext, provider: 'gemini', telemetryEnabled: commandTelemetryEnabled };
                 writer.setProjectPath(data.options?.projectPath || data.options?.cwd || null);
+                sendSessionAccepted({
+                    provider: 'gemini',
+                    sessionId,
+                    requestType: data.type,
+                    projectPath: data.options?.projectPath || data.options?.cwd || null,
+                });
                 spawnGemini(data.command, { ...data.options, env: sessionEnv }, writer).catch(error => {
                     console.error('[ERROR] Gemini spawn error:', error);
                 });
@@ -1656,6 +1920,12 @@ function handleChatConnection(ws, request) {
 
                 if (sessionId && isOpenRouterSessionActive(sessionId)) {
                     console.log(`[WARN] OpenRouter session ${sessionId} is already active. Ignoring concurrent request.`);
+                    sendSessionBusy({
+                        provider: 'openrouter',
+                        sessionId,
+                        requestType: data.type,
+                        projectPath: data.options?.projectPath || data.options?.cwd || null,
+                    });
                     return;
                 }
 
@@ -1672,6 +1942,12 @@ function handleChatConnection(ws, request) {
                 );
                 writer.telemetryContext = { ...telemetryContext, provider: 'openrouter', telemetryEnabled: commandTelemetryEnabled };
                 writer.setProjectPath(data.options?.projectPath || data.options?.cwd || null);
+                sendSessionAccepted({
+                    provider: 'openrouter',
+                    sessionId,
+                    requestType: data.type,
+                    projectPath: data.options?.projectPath || data.options?.cwd || null,
+                });
                 queryOpenRouter(data.command, { ...data.options, env: sessionEnv }, writer).catch(error => {
                     console.error('[ERROR] OpenRouter query error:', error);
                 });
@@ -1686,6 +1962,12 @@ function handleChatConnection(ws, request) {
 
                 if (sessionId && isLocalGPUSessionActive(sessionId)) {
                     console.log(`[WARN] Local GPU session ${sessionId} is already active. Ignoring concurrent request.`);
+                    sendSessionBusy({
+                        provider: 'local',
+                        sessionId,
+                        requestType: data.type,
+                        projectPath: data.options?.projectPath || data.options?.cwd || null,
+                    });
                     return;
                 }
 
@@ -1702,6 +1984,12 @@ function handleChatConnection(ws, request) {
                 );
                 writer.telemetryContext = { ...telemetryContext, provider: 'local', telemetryEnabled: commandTelemetryEnabled };
                 writer.setProjectPath(data.options?.projectPath || data.options?.cwd || null);
+                sendSessionAccepted({
+                    provider: 'local',
+                    sessionId,
+                    requestType: data.type,
+                    projectPath: data.options?.projectPath || data.options?.cwd || null,
+                });
                 queryLocalGPU(data.command, { ...data.options, env: sessionEnv }, writer).catch(error => {
                     console.error('[ERROR] Local GPU query error:', error);
                 });
@@ -1715,6 +2003,12 @@ function handleChatConnection(ws, request) {
 
                 if (sessionId && isNanoClaudeCodeSessionActive(sessionId)) {
                     console.log(`[WARN] Nano Claude Code session ${sessionId} is already active. Ignoring concurrent request.`);
+                    sendSessionBusy({
+                        provider: 'nano',
+                        sessionId,
+                        requestType: data.type,
+                        projectPath: data.options?.projectPath || data.options?.cwd || null,
+                    });
                     return;
                 }
 
@@ -1731,6 +2025,12 @@ function handleChatConnection(ws, request) {
                 );
                 writer.telemetryContext = { ...telemetryContext, provider: 'nano', telemetryEnabled: commandTelemetryEnabled };
                 writer.setProjectPath(data.options?.projectPath || data.options?.cwd || null);
+                sendSessionAccepted({
+                    provider: 'nano',
+                    sessionId,
+                    requestType: data.type,
+                    projectPath: data.options?.projectPath || data.options?.cwd || null,
+                });
                 spawnNanoClaudeCode(data.command, { ...data.options, env: sessionEnv }, writer).catch(error => {
                     console.error('[ERROR] Nano Claude Code error:', error);
                 });
@@ -1741,9 +2041,22 @@ function handleChatConnection(ws, request) {
                 
                 if (sessionId && isCursorSessionActive(sessionId)) {
                     console.log(`[WARN] Cursor session ${sessionId} is already active. Ignoring concurrent request.`);
+                    sendSessionBusy({
+                        provider: 'cursor',
+                        sessionId,
+                        requestType: data.type,
+                        projectPath: data.options?.projectPath || data.options?.cwd || null,
+                    });
                     return;
                 }
-                
+
+                writer.setProjectPath(data.options?.projectPath || data.options?.cwd || null);
+                sendSessionAccepted({
+                    provider: 'cursor',
+                    sessionId: data.sessionId || null,
+                    requestType: data.type,
+                    projectPath: data.options?.projectPath || data.options?.cwd || null,
+                });
                 spawnCursor('', {
                     sessionId: data.sessionId,
                     resume: true,
@@ -1780,6 +2093,13 @@ function handleChatConnection(ws, request) {
                     provider,
                     success
                 });
+                sendSessionStateChanged({
+                    provider,
+                    sessionId: data.sessionId,
+                    state: success ? 'aborted' : 'running',
+                    reason: success ? 'session-aborted' : 'abort-failed',
+                    projectPath: data.options?.projectPath || data.options?.cwd || null,
+                });
             } else if (data.type === 'claude-permission-response') {
                 // Relay UI approval decisions back into the SDK control flow.
                 // This does not persist permissions; it only resolves the in-flight request,
@@ -1800,6 +2120,13 @@ function handleChatConnection(ws, request) {
                     sessionId: data.sessionId,
                     provider: 'cursor',
                     success
+                });
+                sendSessionStateChanged({
+                    provider: 'cursor',
+                    sessionId: data.sessionId,
+                    state: success ? 'aborted' : 'running',
+                    reason: success ? 'session-aborted' : 'abort-failed',
+                    projectPath: data.options?.projectPath || data.options?.cwd || null,
                 });
             } else if (data.type === 'check-session-status') {
                 // Check if a specific session is currently processing
@@ -2728,28 +3055,7 @@ app.get('/api/projects/:projectName/sessions/:sessionId/token-usage', authentica
 
     // Handle Codex sessions
     if (provider === 'codex') {
-      const codexSessionsDir = path.join(homeDir, '.codex', 'sessions');
-
-      // Find the session file by searching for the session ID
-      const findSessionFile = async (dir) => {
-        try {
-          const entries = await fsPromises.readdir(dir, { withFileTypes: true });
-          for (const entry of entries) {
-            const fullPath = path.join(dir, entry.name);
-            if (entry.isDirectory()) {
-              const found = await findSessionFile(fullPath);
-              if (found) return found;
-            } else if (entry.name.includes(safeSessionId) && entry.name.endsWith('.jsonl')) {
-              return fullPath;
-            }
-          }
-        } catch (error) {
-          // Skip directories we can't read
-        }
-        return null;
-      };
-
-      const sessionFilePath = await findSessionFile(codexSessionsDir);
+      const sessionFilePath = await resolveCodexSessionFilePath(safeSessionId);
 
       if (!sessionFilePath) {
         return res.status(404).json({ error: 'Codex session file not found', sessionId: safeSessionId });

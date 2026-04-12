@@ -680,7 +680,8 @@ async function queryClaudeSDK(command, options = {}, ws) {
             type: 'session-created',
             sessionId: capturedSessionId,
             provider: 'claude',
-            mode: sessionMode || 'research'
+            mode: sessionMode || 'research',
+            projectName: sessionProjectPath ? encodeProjectPath(sessionProjectPath) : undefined,
           });
         } else {
           console.log('Not sending session-created. sessionId:', sessionId, 'sessionCreatedSent:', sessionCreatedSent);
@@ -778,6 +779,7 @@ async function queryClaudeSDK(command, options = {}, ws) {
         sessionId: capturedSessionId,
         provider: 'claude',
         mode: sessionMode || 'research',
+        projectName: sessionProjectPath ? encodeProjectPath(sessionProjectPath) : undefined,
       });
     }
 

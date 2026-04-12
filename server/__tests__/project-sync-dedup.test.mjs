@@ -8,11 +8,56 @@ const originalUserProfile = process.env.USERPROFILE;
 const originalDatabasePath = process.env.DATABASE_PATH;
 
 let tempRoot = null;
+let activeDatabaseModule = null;
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function closeTestDatabase() {
+  if (!activeDatabaseModule?.db?.close) {
+    return;
+  }
+
+  const maxAttempts = 6;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      activeDatabaseModule.db.close();
+      activeDatabaseModule = null;
+      return;
+    } catch (error) {
+      if (attempt === maxAttempts) {
+        throw error;
+      }
+      await sleep(30 * attempt);
+    }
+  }
+}
+
+async function removeTempRootWithRetry(targetPath) {
+  if (!targetPath) {
+    return;
+  }
+
+  const maxAttempts = 8;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      await rm(targetPath, { recursive: true, force: true });
+      return;
+    } catch (error) {
+      if (error?.code !== 'EBUSY' || attempt === maxAttempts) {
+        throw error;
+      }
+      await sleep(50 * attempt);
+    }
+  }
+}
 
 async function loadTestModules() {
   vi.resetModules();
   const database = await import('../database/db.js');
   await database.initializeDatabase();
+  activeDatabaseModule = database;
   const projects = await import('../projects.js');
   return { projects, database };
 }
@@ -32,6 +77,8 @@ describe('project sync and dedup (PR #89)', () => {
   });
 
   afterEach(async () => {
+    await closeTestDatabase();
+
     vi.resetModules();
 
     if (originalHome === undefined) delete process.env.HOME;
@@ -44,7 +91,7 @@ describe('project sync and dedup (PR #89)', () => {
     else process.env.DATABASE_PATH = originalDatabasePath;
 
     if (tempRoot) {
-      await rm(tempRoot, { recursive: true, force: true });
+      await removeTempRootWithRetry(tempRoot);
       tempRoot = null;
     }
   });
@@ -168,6 +215,21 @@ describe('project sync and dedup (PR #89)', () => {
       expect(callsAfterSecond).toBe(callsAfterFirst);
 
       upsertSpy.mockRestore();
+    });
+  });
+
+  describe('owner id fallback guard', () => {
+    it('falls back to the authenticated user when project config owner is invalid', async () => {
+      const { projects, database } = await loadTestModules();
+      const userId = createTestUser(database, 'owner-fallback-user');
+
+      const resolvedOwner = await projects.resolveValidProjectOwnerUserId(
+        { ownerUserId: 9999 },
+        null,
+        userId,
+      );
+
+      expect(resolvedOwner).toBe(userId);
     });
   });
 });
