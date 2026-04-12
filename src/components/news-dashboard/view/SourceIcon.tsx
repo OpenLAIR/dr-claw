@@ -5,6 +5,7 @@ const SOURCE_ICONS: Record<NewsSourceKey, { light: string; dark?: string }> = {
   huggingface: { light: '/icons/news/huggingface.svg' },
   x: { light: '/icons/news/x-black.png', dark: '/icons/news/x-white.png' },
   xiaohongshu: { light: '/icons/news/xiaohongshu.png' },
+  exa: { light: '/icons/news/exa.svg' },
 };
 
 /**

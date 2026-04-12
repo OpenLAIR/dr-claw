@@ -18,6 +18,7 @@ const SOURCE_LABEL_KEYS: Record<NewsSourceKey, string> = {
   huggingface: 'sources.huggingfaceFeed',
   x: 'sources.x',
   xiaohongshu: 'sources.xiaohongshu',
+  exa: 'sources.exa',
 };
 
 const SOURCE_BORDER_COLORS: Record<NewsSourceKey, string> = {
@@ -25,6 +26,7 @@ const SOURCE_BORDER_COLORS: Record<NewsSourceKey, string> = {
   huggingface: 'border-yellow-200/60 dark:border-yellow-800/40',
   x: 'border-gray-300/60 dark:border-gray-700/40',
   xiaohongshu: 'border-red-200/60 dark:border-red-800/40',
+  exa: 'border-blue-200/60 dark:border-blue-800/40',
 };
 
 const SOURCE_HEADER_COLORS: Record<NewsSourceKey, string> = {
@@ -32,6 +34,7 @@ const SOURCE_HEADER_COLORS: Record<NewsSourceKey, string> = {
   huggingface: 'text-yellow-700 dark:text-yellow-300',
   x: 'text-gray-700 dark:text-gray-300',
   xiaohongshu: 'text-red-600 dark:text-red-300',
+  exa: 'text-blue-700 dark:text-blue-300',
 };
 
 const SOURCE_BADGE_COLORS: Record<NewsSourceKey, string> = {
@@ -39,6 +42,7 @@ const SOURCE_BADGE_COLORS: Record<NewsSourceKey, string> = {
   huggingface: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950/40 dark:text-yellow-300',
   x: 'bg-gray-200 text-gray-700 dark:bg-gray-800/50 dark:text-gray-300',
   xiaohongshu: 'bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-300',
+  exa: 'bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300',
 };
 
 function SetupGuide({ sourceKey, onOpenSettings }: { sourceKey: NewsSourceKey; onOpenSettings: (key: NewsSourceKey) => void }) {

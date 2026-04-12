@@ -8,13 +8,14 @@ import UnifiedFeed from './UnifiedFeed';
 import { useNewsDashboardData } from './useNewsDashboardData';
 import type { NewsSourceKey } from './useNewsDashboardData';
 
-const ALL_SOURCES: NewsSourceKey[] = ['arxiv', 'huggingface', 'x', 'xiaohongshu'];
+const ALL_SOURCES: NewsSourceKey[] = ['arxiv', 'huggingface', 'x', 'xiaohongshu', 'exa'];
 
 const SOURCE_LABEL_KEYS: Record<NewsSourceKey, string> = {
   arxiv: 'sources.arxiv',
   huggingface: 'sources.huggingface',
   x: 'sources.x',
   xiaohongshu: 'sources.xiaohongshuShort',
+  exa: 'sources.exa',
 };
 
 const SOURCE_STAT_ACCENTS: Record<NewsSourceKey, string> = {
@@ -22,6 +23,7 @@ const SOURCE_STAT_ACCENTS: Record<NewsSourceKey, string> = {
   huggingface: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950/50 dark:text-yellow-300',
   x: 'bg-gray-200 text-gray-700 dark:bg-gray-800/50 dark:text-gray-300',
   xiaohongshu: 'bg-red-100 text-red-600 dark:bg-red-950/50 dark:text-red-300',
+  exa: 'bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300',
 };
 
 function StatCard({ label, value, accent }: { label: string; value: string | number; accent?: string }) {

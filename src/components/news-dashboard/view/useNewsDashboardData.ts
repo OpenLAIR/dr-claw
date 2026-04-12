@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '../../../utils/api';
 import type { NewsItem } from './NewsItemCard';
 
-export type NewsSourceKey = 'arxiv' | 'huggingface' | 'x' | 'xiaohongshu';
+export type NewsSourceKey = 'arxiv' | 'huggingface' | 'x' | 'xiaohongshu' | 'exa';
 
 export type SourceInfo = {
   key: NewsSourceKey;
@@ -31,7 +31,7 @@ export type ResearchDomain = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SourceConfig = Record<string, any>;
 
-const ALL_SOURCES: NewsSourceKey[] = ['arxiv', 'huggingface', 'x', 'xiaohongshu'];
+const ALL_SOURCES: NewsSourceKey[] = ['arxiv', 'huggingface', 'x', 'xiaohongshu', 'exa'];
 
 export function useNewsDashboardData() {
   const [sources, setSources] = useState<SourceInfo[]>([]);

@@ -13,6 +13,7 @@ const SOURCE_LABEL_KEYS: Record<NewsSourceKey, string> = {
   huggingface: 'sources.huggingface',
   x: 'sources.x',
   xiaohongshu: 'sources.xiaohongshu',
+  exa: 'sources.exa',
 };
 
 const SOURCE_INACTIVE_COLORS: Record<NewsSourceKey, string> = {
@@ -20,6 +21,7 @@ const SOURCE_INACTIVE_COLORS: Record<NewsSourceKey, string> = {
   huggingface: 'bg-transparent text-yellow-800/60 hover:bg-yellow-100/50 dark:text-yellow-400/60 dark:hover:bg-yellow-950/30',
   x: 'bg-transparent text-gray-600/60 hover:bg-gray-200/50 dark:text-gray-400/60 dark:hover:bg-gray-800/30',
   xiaohongshu: 'bg-transparent text-red-600/60 hover:bg-red-100/50 dark:text-red-400/60 dark:hover:bg-red-950/30',
+  exa: 'bg-transparent text-blue-700/60 hover:bg-blue-100/50 dark:text-blue-400/60 dark:hover:bg-blue-950/30',
 };
 
 const SOURCE_ACTIVE_COLORS: Record<NewsSourceKey, string> = {
@@ -27,9 +29,10 @@ const SOURCE_ACTIVE_COLORS: Record<NewsSourceKey, string> = {
   huggingface: 'bg-yellow-500 text-white shadow-md ring-2 ring-yellow-500/30 hover:bg-yellow-600 dark:bg-yellow-600 dark:ring-yellow-400/30 dark:hover:bg-yellow-500',
   x: 'bg-gray-800 text-white shadow-md ring-2 ring-gray-800/30 hover:bg-gray-900 dark:bg-gray-600 dark:ring-gray-500/30 dark:hover:bg-gray-500',
   xiaohongshu: 'bg-red-500 text-white shadow-md ring-2 ring-red-500/30 hover:bg-red-600 dark:bg-red-600 dark:ring-red-400/30 dark:hover:bg-red-500',
+  exa: 'bg-blue-600 text-white shadow-md ring-2 ring-blue-600/30 hover:bg-blue-700 dark:bg-blue-700 dark:ring-blue-500/30 dark:hover:bg-blue-600',
 };
 
-const ALL_SOURCES: NewsSourceKey[] = ['arxiv', 'huggingface', 'x', 'xiaohongshu'];
+const ALL_SOURCES: NewsSourceKey[] = ['arxiv', 'huggingface', 'x', 'xiaohongshu', 'exa'];
 
 export default function SourceFilterBar({
   activeSource,

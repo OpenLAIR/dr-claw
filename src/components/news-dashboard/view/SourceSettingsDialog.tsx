@@ -26,6 +26,7 @@ const SOURCE_TITLE_KEYS: Record<NewsSourceKey, string> = {
   huggingface: 'settings.huggingfaceTitle',
   x: 'settings.xTitle',
   xiaohongshu: 'settings.xiaohongshuTitle',
+  exa: 'settings.exaTitle',
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -501,6 +502,47 @@ export default function SourceSettingsDialog({
               className="mt-1.5 w-full rounded-lg border border-border/50 bg-background px-3 py-2 text-sm focus:border-primary/40 focus:outline-none focus:ring-1 focus:ring-primary/20"
             />
           </div>
+        )}
+
+        {sourceKey === 'exa' && (
+          <>
+            <div className="rounded-xl border border-border/40 bg-background/50 p-3.5">
+              <label className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">{t('settings.exaSearchQueries')}</label>
+              <input
+                value={config.queries || ''}
+                onChange={(e) => updateField('queries', e.target.value)}
+                placeholder={t('settings.exaSearchQueriesPlaceholder')}
+                className="mt-1.5 w-full rounded-lg border border-border/50 bg-background px-3 py-2 text-sm focus:border-primary/40 focus:outline-none focus:ring-1 focus:ring-primary/20"
+              />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="rounded-xl border border-border/40 bg-background/50 p-3.5">
+                <label className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">{t('settings.exaCategory')}</label>
+                <select
+                  value={config.category || ''}
+                  onChange={(e) => updateField('category', e.target.value)}
+                  className="mt-1.5 w-full rounded-lg border border-border/50 bg-background px-3 py-2 text-sm focus:border-primary/40 focus:outline-none focus:ring-1 focus:ring-primary/20"
+                >
+                  <option value="">All</option>
+                  <option value="research paper">Research Paper</option>
+                  <option value="news">News</option>
+                  <option value="company">Company</option>
+                  <option value="personal site">Personal Site</option>
+                </select>
+              </div>
+              <div className="rounded-xl border border-border/40 bg-background/50 p-3.5">
+                <label className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">{t('settings.exaDays')}</label>
+                <EditableNumberInput
+                  min={1}
+                  max={365}
+                  fallback={30}
+                  value={config.days}
+                  onCommit={(value) => updateField('days', value)}
+                  className="mt-1.5 w-full rounded-lg border border-border/50 bg-background px-3 py-2 text-sm font-medium tabular-nums focus:border-primary/40 focus:outline-none focus:ring-1 focus:ring-primary/20"
+                />
+              </div>
+            </div>
+          </>
         )}
 
         {/* Common fields */}
