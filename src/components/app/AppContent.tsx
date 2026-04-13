@@ -54,6 +54,7 @@ export default function AppContent() {
     importedProjectAnalysisPrompt,
     newSessionMode,
     sessionNavigationSource,
+    resetSessionNavigationSource,
     setNewSessionMode,
     setActiveTab,
     setSidebarOpen,
@@ -65,6 +66,7 @@ export default function AppContent() {
     sidebarSharedProps,
     handleProjectSelect,
     handleNavigateToSession,
+    handleNewSession,
     handleStartWorkspaceQa,
     handleChatFromReference,
     pendingAutoIntake,
@@ -291,6 +293,7 @@ export default function AppContent() {
           onNavigateToSession={(targetSessionId: string, targetProvider?, targetProjectName?, options?) =>
             handleNavigateToSession(targetSessionId, targetProvider, targetProjectName, options)}
           sessionNavigationSource={sessionNavigationSource}
+          onResetNavigationSource={resetSessionNavigationSource}
           onShowSettings={() => setShowSettings(true)}
           externalMessageUpdate={externalMessageUpdate}
           pendingAutoIntake={pendingAutoIntake}
@@ -302,6 +305,7 @@ export default function AppContent() {
           onChatFromReference={handleChatFromReference}
           newSessionMode={newSessionMode}
           onNewSessionModeChange={setNewSessionMode}
+          onNewSession={handleNewSession}
         />
       </div>
 

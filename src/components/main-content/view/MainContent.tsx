@@ -53,6 +53,7 @@ function MainContent({
   onReplaceTemporarySession,
   onNavigateToSession,
   sessionNavigationSource,
+  onResetNavigationSource,
   onShowSettings,
   externalMessageUpdate,
   pendingAutoIntake,
@@ -64,6 +65,7 @@ function MainContent({
   onChatFromReference,
   newSessionMode,
   onNewSessionModeChange,
+  onNewSession,
 }: MainContentProps) {
   const { preferences } = useUiPreferences();
   const { autoExpandTools, showRawParameters, showThinking, autoScrollToBottom, sendByCtrlEnter } = preferences;
@@ -120,7 +122,16 @@ function MainContent({
     if (action === 'open-tab' && currId && selectedProject) {
       chatTabs.openTab(selectedSession!, selectedProject);
     }
+
+    // Reset navigation source after consumption to prevent stale classification
+    onResetNavigationSource();
   }, [selectedSession?.id, selectedProject?.name, activeTab, sessionNavigationSource]);
+
+  // When the active tab has no session (new chat via [+]), pass null to ChatInterface
+  // so it shows the provider picker instead of the previous conversation.
+  const effectiveSession = chatTabs.activeTab?.sessionId === null
+    ? null
+    : selectedSession;
 
   useEffect(() => {
     if (selectedProject && selectedProject !== currentProject) {
@@ -311,12 +322,17 @@ function MainContent({
               processingSessions={processingSessions}
               onSwitchTab={chatTabs.switchTab}
               onCloseTab={chatTabs.closeTab}
-              onNewTab={chatTabs.openNewTab}
+              onNewTab={() => {
+                if (selectedProject && onNewSession) {
+                  onNewSession(selectedProject);
+                }
+                chatTabs.openNewTab();
+              }}
             />
             <ErrorBoundary showDetails>
               <ChatInterface
                 selectedProject={selectedProject}
-                selectedSession={selectedSession}
+                selectedSession={effectiveSession}
                 ws={ws}
                 sendMessage={sendMessage}
                 latestMessage={latestMessage}

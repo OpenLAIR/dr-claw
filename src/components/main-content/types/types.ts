@@ -85,6 +85,7 @@ export interface MainContentProps {
     options?: { source?: SessionNavigationSource },
   ) => void;
   sessionNavigationSource: SessionNavigationSource;
+  onResetNavigationSource: () => void;
   onShowSettings: () => void;
   externalMessageUpdate: number;
   pendingAutoIntake?: PendingAutoIntake | null;
@@ -96,6 +97,7 @@ export interface MainContentProps {
   onChatFromReference?: (project: Project, ref: Reference) => void;
   newSessionMode?: SessionMode;
   onNewSessionModeChange?: (mode: SessionMode) => void;
+  onNewSession?: (project: Project, mode?: SessionMode) => void;
 }
 
 export interface MainContentHeaderProps {

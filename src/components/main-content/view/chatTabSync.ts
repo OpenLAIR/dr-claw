@@ -31,6 +31,8 @@ export function resolveChatTabSyncAction({
   }
 
   if (!nextSessionId) {
+    // If the active tab is already a "new chat" tab (sessionId === null), skip
+    if (activeChatTabSessionId === null) return 'noop';
     return tabCount > 0 ? 'open-new-tab' : 'noop';
   }
 

@@ -819,6 +819,9 @@ export function useChatRealtimeHandlers({
           null;
         flushAndFinalizePendingStream();
         clearLoadingIndicators();
+        if (selectedProject?.name && erroredSessionId) {
+          invalidateSessionMessageCache(selectedProject.name, erroredSessionId);
+        }
         markSessionsAsCompleted(erroredSessionId, currentSessionId, selectedSession?.id);
         // Clear pendingSessionId for the errored session (not all sessions — other tabs may be active)
         if (typeof window !== 'undefined') {
@@ -884,6 +887,9 @@ export function useChatRealtimeHandlers({
         if (isLegacyTaskMasterInstallError(latestMessage.error)) break;
         flushAndFinalizePendingStream();
         clearLoadingIndicators();
+        if (selectedProject?.name && (latestMessage.sessionId || currentSessionId)) {
+          invalidateSessionMessageCache(selectedProject.name, latestMessage.sessionId || currentSessionId!);
+        }
         markSessionsAsCompleted(latestMessage.sessionId, currentSessionId, selectedSession?.id);
         setPendingPermissionRequests([]);
         setChatMessages((previous) => [
@@ -1306,6 +1312,9 @@ export function useChatRealtimeHandlers({
         if (isLegacyTaskMasterInstallError(latestMessage.error)) break;
         flushAndFinalizePendingStream();
         clearLoadingIndicators();
+        if (selectedProject?.name && (latestMessage.sessionId || currentSessionId)) {
+          invalidateSessionMessageCache(selectedProject.name, (latestMessage.sessionId || currentSessionId)!);
+        }
         markSessionsAsCompleted(latestMessage.sessionId, currentSessionId, selectedSession?.id);
         setPendingPermissionRequests([]);
         setChatMessages((previous) => [...previous, { type: 'error', content: latestMessage.error || 'An error occurred with Codex', timestamp: new Date(), errorType: latestMessage.errorType, isRetryable: latestMessage.isRetryable === true }]);

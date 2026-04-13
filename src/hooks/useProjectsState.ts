@@ -1063,6 +1063,7 @@ export function useProjectsState({
     importedProjectAnalysisPrompt,
     newSessionMode,
     sessionNavigationSource,
+    resetSessionNavigationSource: () => setSessionNavigationSource('user'),
     setNewSessionMode,
     setActiveTab,
     setSidebarOpen,

@@ -29,7 +29,12 @@ function cacheSessionMessages(key: string, data: { messages: any[]; tokenUsage?:
   sessionMessageCache.set(key, data);
 }
 function getCachedSessionMessages(key: string) {
-  return sessionMessageCache.get(key) || null;
+  const data = sessionMessageCache.get(key);
+  if (!data) return null;
+  // Bump to most-recent position (LRU): delete + re-insert
+  sessionMessageCache.delete(key);
+  sessionMessageCache.set(key, data);
+  return data;
 }
 export function invalidateSessionMessageCache(projectName: string, sessionId: string) {
   sessionMessageCache.delete(`${projectName}:${sessionId}`);
