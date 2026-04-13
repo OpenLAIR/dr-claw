@@ -26,6 +26,7 @@ import type { PendingAutoIntake } from '../../../types/app';
 import type { EditingFile, DiffInfo } from '../../main-content/types/types';
 import { CLAUDE_MODELS, CURSOR_MODELS, CODEX_MODELS, GEMINI_MODELS, LOCAL_MODELS, NANO_CLAUDE_CODE_MODELS, OPENROUTER_MODELS } from '../../../../shared/modelConstants';
 import { getProviderDisplayName } from '../utils/chatFormatting';
+import { buildEditableMessageDraft, buildReplayMessageDraft, getChatMessageId, getMessageReplayContent } from '../utils/chatMessages';
 import { normalizePath, toRelativePath, isSafePath, fileNameFromPath } from '../../../utils/pathUtils';
 import { useDeviceSettings } from '../../../hooks/useDeviceSettings';
 
@@ -369,14 +370,13 @@ function ChatInterface({
       if (msgs[i].type === 'user') { lastUserMessage = msgs[i]; break; }
     }
     if (!lastUserMessage) return;
-    submitProgrammaticMessage({
-      content: lastUserMessage.content || '',
-      attachedPrompt: lastUserMessage.attachedPrompt ?? null,
-    });
+    const replayDraft = buildReplayMessageDraft(lastUserMessage);
+    if (!replayDraft) return;
+    submitProgrammaticMessage(replayDraft);
   }, [submitProgrammaticMessage]);
 
   const handleCopyMessage = useCallback(async (message: ChatMessage) => {
-    const text = String(message.submittedContent || message.content || '').trim();
+    const text = getMessageReplayContent(message).trim();
     if (!text || typeof navigator === 'undefined' || !navigator.clipboard?.writeText) {
       return false;
     }
@@ -391,27 +391,27 @@ function ChatInterface({
   }, []);
 
   const handleResendMessage = useCallback((message: ChatMessage) => {
-    const content = typeof message.content === 'string' ? message.content : '';
-    if (!content.trim() && !message.attachedPrompt) {
+    const replayDraft = buildReplayMessageDraft(message);
+    if (!replayDraft) {
       return;
     }
 
-    submitProgrammaticMessage({
-      content,
-      attachedPrompt: message.attachedPrompt ?? null,
-    });
+    submitProgrammaticMessage(replayDraft);
   }, [submitProgrammaticMessage]);
 
   const handleEditMessage = useCallback((message: ChatMessage) => {
-    const content =
-      typeof message.content === 'string'
-        ? message.content
-        : String(message.submittedContent || '');
-    scrollToBottomAndReset();
-    loadMessageIntoComposer({
-      content,
-      attachedPrompt: message.attachedPrompt ?? null,
+    const editableDraft = buildEditableMessageDraft(message);
+    if (!editableDraft) {
+      return;
+    }
+
+    const didLoad = loadMessageIntoComposer({
+      ...editableDraft,
+      editingMessageId: getChatMessageId(message),
     });
+    if (didLoad) {
+      scrollToBottomAndReset();
+    }
   }, [loadMessageIntoComposer, scrollToBottomAndReset]);
 
   const autoIntakeTriggeredRef = useRef(false);
@@ -894,6 +894,7 @@ function ChatInterface({
           onCopyMessage={handleCopyMessage}
           onResendMessage={handleResendMessage}
           onEditMessage={handleEditMessage}
+          onSuggestShellEdit={handleOpenShellEditPrompt}
         />
 
         <ChatComposer
@@ -1030,6 +1031,33 @@ function ChatInterface({
           onStartTask={handleStartTaskInChat}
         />
       </div>
+
+      {isShellEditPromptOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={handleCloseShellEditPrompt}
+          />
+          <div className="relative z-10 w-full max-w-md rounded-2xl border border-border bg-background shadow-2xl">
+            <div className="px-5 py-4">
+              <h3 className="text-base font-semibold text-foreground">
+                {t('shell.historyEdit.promptTitle')}
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                {t('shell.historyEdit.promptDescription')}
+              </p>
+            </div>
+            <div className="flex items-center justify-end gap-2 border-t border-border px-5 py-4">
+              <Button variant="outline" onClick={handleCloseShellEditPrompt}>
+                {t('shell.historyEdit.cancel')}
+              </Button>
+              <Button onClick={handleConfirmOpenShell}>
+                {t('shell.historyEdit.confirm')}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <QuickSettingsPanel />
       <BtwOverlay state={btwOverlay} onClose={closeBtwOverlay} />

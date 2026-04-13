@@ -13,6 +13,7 @@ import AssistantThinkingIndicator from './AssistantThinkingIndicator';
 import { getIntrinsicMessageKey } from '../../utils/messageKeys';
 import { groupMessagesIntoTurns } from '../../utils/groupAgentTurns';
 import { getProviderDisplayName } from '../../utils/chatFormatting';
+import { findLatestEditableUserMessage } from '../../utils/chatMessages';
 
 interface ChatMessagesPaneProps {
   scrollContainerRef: RefObject<HTMLDivElement>;
@@ -51,6 +52,7 @@ interface ChatMessagesPaneProps {
   onCopyMessage?: (message: ChatMessage) => Promise<boolean> | boolean;
   onResendMessage?: (message: ChatMessage) => void;
   onEditMessage?: (message: ChatMessage) => void;
+  onSuggestShellEdit?: () => void;
 }
 
 export default function ChatMessagesPane({
@@ -90,6 +92,7 @@ export default function ChatMessagesPane({
   onCopyMessage,
   onResendMessage,
   onEditMessage,
+  onSuggestShellEdit,
 }: ChatMessagesPaneProps) {
   const { t } = useTranslation('chat');
   const messageKeyMapRef = useRef<WeakMap<ChatMessage, string>>(new WeakMap());
@@ -123,6 +126,10 @@ export default function ChatMessagesPane({
   const groupedItems = useMemo(
     () => groupMessagesIntoTurns(visibleMessages, isLoading),
     [visibleMessages, isLoading]
+  );
+  const latestEditableUserMessage = useMemo(
+    () => findLatestEditableUserMessage(chatMessages, Boolean(selectedSession)),
+    [chatMessages, selectedSession],
   );
   return (
     <div
@@ -267,6 +274,8 @@ export default function ChatMessagesPane({
                   onCopyMessage={onCopyMessage}
                   onResendMessage={onResendMessage}
                   onEditMessage={onEditMessage}
+                  canSuggestShellEdit={item.message === latestEditableUserMessage}
+                  onSuggestShellEdit={item.message === latestEditableUserMessage ? onSuggestShellEdit : undefined}
                   disableUserActions={isLoading}
                 />
               );

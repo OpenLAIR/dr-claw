@@ -229,9 +229,11 @@ export const convertCursorSessionMessages = (blobs: CursorBlob[], projectPath: s
 
             if (part?.type === 'tool-call' || part?.type === 'tool_use') {
               if (textParts.length > 0 || reasoningText) {
+                const textContent = textParts.join('\n');
                 converted.push({
                   type: role,
-                  content: textParts.join('\n'),
+                  content: textContent,
+                  ...(role === 'user' ? { submittedContent: textContent } : {}),
                   reasoning: reasoningText ?? undefined,
                   timestamp: new Date(Date.now() + blobIdx * 1000),
                   blobId: blob.id,
@@ -360,6 +362,7 @@ export const convertCursorSessionMessages = (blobs: CursorBlob[], projectPath: s
       const message: ChatMessage = {
         type: role,
         content: text,
+        ...(role === 'user' ? { submittedContent: text } : {}),
         timestamp: new Date(Date.now() + blobIdx * 1000),
         blobId: blob.id,
         sequence: blob.sequence,
@@ -495,6 +498,7 @@ export const convertSessionMessages = (rawMessages: any[]): ChatMessage[] => {
         converted.push({
           type: 'user',
           content: unescapeWithMathProtection(visibleText),
+          submittedContent: unescapeWithMathProtection(rawText),
           timestamp: message.timestamp || new Date().toISOString(),
           isSkillContent: true,
         });
@@ -509,6 +513,7 @@ export const convertSessionMessages = (rawMessages: any[]): ChatMessage[] => {
         converted.push({
           type: 'user',
           content: unescapeWithMathProtection(visibleText),
+          submittedContent: unescapeWithMathProtection(rawText),
           timestamp: message.timestamp || new Date().toISOString(),
         });
       }

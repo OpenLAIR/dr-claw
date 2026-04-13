@@ -24,7 +24,11 @@
   "messageActions": {
     "copy": "复制",
     "resend": "重发",
-    "edit": "修改"
+    "edit": "修改",
+    "editedVersion": "已修改消息",
+    "superseded": "已被后续修改替代",
+    "attachmentsUnsupported": "当前带附件的消息暂不支持重发或修改。",
+    "confirmReplaceDraft": "要用这条消息替换你当前未发送的草稿吗？"
   },
   "tools": {
     "settings": "工具设置",

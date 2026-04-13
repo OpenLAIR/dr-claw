@@ -22,7 +22,9 @@ import type { GeminiThinkingModeId } from '../../../../shared/geminiThinkingSupp
 import { getSupportedGeminiThinkingModes } from '../../../../shared/geminiThinkingSupport';
 
 import { grantToolPermission } from '../utils/chatPermissions';
+import { applyEditedMessageToHistory, createChatMessageId } from '../utils/chatMessages';
 import { clearSessionTimerStart, getProviderSettingsKey, persistSessionTimerStart, safeLocalStorage } from '../utils/chatStorage';
+import { hasUnsavedComposerDraft, normalizeProgrammaticDraft, resolveLineHeightPx } from '../utils/composerUtils';
 import { consumeWorkspaceQaDraft, WORKSPACE_QA_DRAFT_EVENT } from '../../../utils/workspaceQa';
 import { consumeReferenceChatDraft, REFERENCE_CHAT_DRAFT_EVENT } from '../../../utils/referenceChatDraft';
 import { consumeSkillCommandDraft, SKILL_COMMAND_DRAFT_EVENT } from '../../../utils/skillCommandDraft';
@@ -116,6 +118,7 @@ interface UploadedProjectFile {
 interface ProgrammaticMessageDraft {
   content?: string;
   attachedPrompt?: AttachedPrompt | null;
+  editingMessageId?: string | null;
 }
 
 const createFakeSubmitEvent = () => {
@@ -333,11 +336,15 @@ export function useChatComposerState({
   const handleSubmitRef = useRef<
     ((event: FormEvent<HTMLFormElement> | MouseEvent | TouchEvent | KeyboardEvent<HTMLTextAreaElement>) => Promise<void>) | null
   >(null);
+  // Programmatic draft loads and async submit callbacks must read the latest composer state
+  // without waiting for a rerender, so the mutable refs intentionally mirror state here.
   const inputValueRef = useRef(input);
   const attachedFilesRef = useRef<File[]>([]);
   const attachedPromptRef = useRef<AttachedPrompt | null>(null);
   const pendingStageTagKeysRef = useRef<string[]>([]);
   const abortTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const textareaLayoutTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingEditedMessageIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     return () => {
@@ -345,11 +352,16 @@ export function useChatComposerState({
         clearTimeout(abortTimeoutRef.current);
         abortTimeoutRef.current = null;
       }
+      if (textareaLayoutTimeoutRef.current) {
+        clearTimeout(textareaLayoutTimeoutRef.current);
+        textareaLayoutTimeoutRef.current = null;
+      }
     };
   }, []);
 
   useEffect(() => {
     setPendingStageTagKeys([]);
+    pendingEditedMessageIdRef.current = null;
   }, [selectedProject?.name, selectedSession?.id]);
 
   useEffect(() => {
@@ -739,13 +751,29 @@ export function useChatComposerState({
   });
 
   const applyProgrammaticDraft = useCallback((draft: ProgrammaticMessageDraft) => {
-    const nextContent = draft.content || '';
-    const nextAttachedPrompt = draft.attachedPrompt ?? null;
+    if (
+      hasUnsavedComposerDraft(
+        inputValueRef.current,
+        attachedFilesRef.current,
+        attachedPromptRef.current,
+      )
+    ) {
+      const confirmed = window.confirm(
+        t('messageActions.confirmReplaceDraft', {
+          defaultValue: 'Replace your current unsent draft with this message?',
+        }),
+      );
+      if (!confirmed) {
+        return false;
+      }
+    }
 
-    setInput(nextContent);
-    inputValueRef.current = nextContent;
-    setAttachedPrompt(nextAttachedPrompt);
-    attachedPromptRef.current = nextAttachedPrompt;
+    const normalizedDraft = normalizeProgrammaticDraft(draft);
+
+    setInput(normalizedDraft.content);
+    inputValueRef.current = normalizedDraft.content;
+    setAttachedPrompt(normalizedDraft.attachedPrompt);
+    attachedPromptRef.current = normalizedDraft.attachedPrompt;
 
     setAttachedFiles([]);
     attachedFilesRef.current = [];
@@ -753,11 +781,16 @@ export function useChatComposerState({
     setFileErrors(new Map());
     setPendingStageTagKeys([]);
     pendingStageTagKeysRef.current = [];
+    pendingEditedMessageIdRef.current = draft.editingMessageId ?? null;
     resetCommandMenuState();
-  }, [resetCommandMenuState]);
+    return true;
+  }, [resetCommandMenuState, t]);
 
   const submitProgrammaticMessage = useCallback((draft: ProgrammaticMessageDraft) => {
-    applyProgrammaticDraft(draft);
+    const didApplyDraft = applyProgrammaticDraft(draft);
+    if (!didApplyDraft) {
+      return false;
+    }
 
     const attemptSubmit = (attempt = 0) => {
       if (handleSubmitRef.current) {
@@ -778,6 +811,7 @@ export function useChatComposerState({
     setTimeout(() => {
       attemptSubmit();
     }, 0);
+    return true;
   }, [applyProgrammaticDraft]);
 
   const submitProgrammaticInput = useCallback((content: string, options?: { attachedPrompt?: AttachedPrompt | null }) => {
@@ -811,12 +845,17 @@ export function useChatComposerState({
   }, []);
 
   const syncTextareaLayout = useCallback((nextValue: string, focus: boolean) => {
-    setTimeout(() => {
-      if (!textareaRef.current) {
+    if (textareaLayoutTimeoutRef.current) {
+      clearTimeout(textareaLayoutTimeoutRef.current);
+    }
+
+    textareaLayoutTimeoutRef.current = setTimeout(() => {
+      textareaLayoutTimeoutRef.current = null;
+      const textarea = textareaRef.current;
+      if (!textarea) {
         return;
       }
 
-      const textarea = textareaRef.current;
       if (focus) {
         textarea.focus();
       }
@@ -827,14 +866,21 @@ export function useChatComposerState({
       textarea.setSelectionRange(cursor, cursor);
       syncInputOverlayScroll(textarea);
 
-      const lineHeight = parseInt(window.getComputedStyle(textarea).lineHeight);
+      const computedStyle = window.getComputedStyle(textarea);
+      const lineHeight = resolveLineHeightPx(computedStyle.lineHeight, computedStyle.fontSize);
       setIsTextareaExpanded(textarea.scrollHeight > lineHeight * 2);
     }, 0);
   }, [syncInputOverlayScroll]);
 
   const loadMessageIntoComposer = useCallback((draft: ProgrammaticMessageDraft) => {
-    applyProgrammaticDraft(draft);
-    syncTextareaLayout(draft.content || '', true);
+    const didApplyDraft = applyProgrammaticDraft(draft);
+    if (!didApplyDraft) {
+      return false;
+    }
+
+    const normalizedDraft = normalizeProgrammaticDraft(draft);
+    syncTextareaLayout(normalizedDraft.content, true);
+    return true;
   }, [applyProgrammaticDraft, syncTextareaLayout]);
 
   const handleAttachmentFiles = useCallback((files: File[]) => {
@@ -1051,6 +1097,7 @@ export function useChatComposerState({
           inputValueRef.current = '';
           setAttachedPrompt(null);
           attachedPromptRef.current = null;
+          pendingEditedMessageIdRef.current = null;
           setAttachedFiles([]);
           attachedFilesRef.current = [];
           setUploadingFiles(new Map());
@@ -1200,17 +1247,22 @@ export function useChatComposerState({
         }
       }
 
+      const editedMessageId = pendingEditedMessageIdRef.current;
+      const userMessageId = createChatMessageId();
       const userMessage: ChatMessage = {
+        messageId: userMessageId,
         type: 'user',
         content: normalizedInput,
         submittedContent: messageContent,
         images: uploadedImages.length > 0 ? uploadedImages : undefined,
         attachments: messageAttachments.length > 0 ? messageAttachments : undefined,
         timestamp: new Date(),
+        ...(editedMessageId ? { editedFromMessageId: editedMessageId } : {}),
         ...(currentAttachedPrompt ? { attachedPrompt: currentAttachedPrompt } : {}),
       };
 
-      setChatMessages((previous) => [...previous, userMessage]);
+      setChatMessages((previous) => applyEditedMessageToHistory(previous, userMessage, editedMessageId));
+      pendingEditedMessageIdRef.current = null;
       if (abortTimeoutRef.current) {
         clearTimeout(abortTimeoutRef.current);
         abortTimeoutRef.current = null;
@@ -1459,6 +1511,7 @@ export function useChatComposerState({
       setThinkingMode('none');
       setAttachedPrompt(null);
       attachedPromptRef.current = null;
+      pendingEditedMessageIdRef.current = null;
 
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto';
@@ -1532,20 +1585,7 @@ export function useChatComposerState({
     const applyDraft = (draft: string) => {
       setInput(draft);
       inputValueRef.current = draft;
-
-      setTimeout(() => {
-        if (!textareaRef.current) {
-          return;
-        }
-
-        textareaRef.current.focus();
-        textareaRef.current.style.height = 'auto';
-        textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-        const cursor = draft.length;
-        textareaRef.current.setSelectionRange(cursor, cursor);
-        const lineHeight = parseInt(window.getComputedStyle(textareaRef.current).lineHeight);
-        setIsTextareaExpanded(textareaRef.current.scrollHeight > lineHeight * 2);
-      }, 0);
+      syncTextareaLayout(draft, true);
     };
 
     const applyQueuedDraft = () => {
@@ -1618,7 +1658,8 @@ export function useChatComposerState({
     // Re-run when input changes so restored drafts get the same autosize behavior as typed text.
     textareaRef.current.style.height = 'auto';
     textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-    const lineHeight = parseInt(window.getComputedStyle(textareaRef.current).lineHeight);
+    const computedStyle = window.getComputedStyle(textareaRef.current);
+    const lineHeight = resolveLineHeightPx(computedStyle.lineHeight, computedStyle.fontSize);
     const expanded = textareaRef.current.scrollHeight > lineHeight * 2;
     setIsTextareaExpanded(expanded);
   }, [input]);
@@ -1709,7 +1750,8 @@ export function useChatComposerState({
       setCursorPosition(target.selectionStart);
       syncInputOverlayScroll(target);
 
-      const lineHeight = parseInt(window.getComputedStyle(target).lineHeight);
+      const computedStyle = window.getComputedStyle(target);
+      const lineHeight = resolveLineHeightPx(computedStyle.lineHeight, computedStyle.fontSize);
       setIsTextareaExpanded(target.scrollHeight > lineHeight * 2);
     },
     [setCursorPosition, syncInputOverlayScroll],
@@ -1726,6 +1768,7 @@ export function useChatComposerState({
     setFileErrors(new Map());
     setAttachedPrompt(null);
     attachedPromptRef.current = null;
+    pendingEditedMessageIdRef.current = null;
     resetCommandMenuState();
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -1807,21 +1850,11 @@ export function useChatComposerState({
     setInput((previousInput) => {
       const newInput = previousInput.trim() ? `${previousInput} ${text}` : text;
       inputValueRef.current = newInput;
-
-      setTimeout(() => {
-        if (!textareaRef.current) {
-          return;
-        }
-
-        textareaRef.current.style.height = 'auto';
-        textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-        const lineHeight = parseInt(window.getComputedStyle(textareaRef.current).lineHeight);
-        setIsTextareaExpanded(textareaRef.current.scrollHeight > lineHeight * 2);
-      }, 0);
+      syncTextareaLayout(newInput, false);
 
       return newInput;
     });
-  }, []);
+  }, [syncTextareaLayout]);
 
   const handleGrantToolPermission = useCallback(
     (suggestion: { entry: string; toolName: string }) => {

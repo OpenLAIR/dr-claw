@@ -24,7 +24,11 @@
   "messageActions": {
     "copy": "복사",
     "resend": "다시 보내기",
-    "edit": "수정"
+    "edit": "수정",
+    "editedVersion": "수정된 메시지",
+    "superseded": "나중 수정본으로 대체됨",
+    "attachmentsUnsupported": "첨부 파일이 있는 메시지는 지금 다시 보내기나 수정이 지원되지 않습니다.",
+    "confirmReplaceDraft": "현재 작성 중인 초안을 이 메시지로 바꾸시겠습니까?"
   },
   "tools": {
     "settings": "도구 설정",
