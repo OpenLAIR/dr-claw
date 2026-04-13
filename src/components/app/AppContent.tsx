@@ -290,8 +290,8 @@ export default function AppContent() {
           onSessionNotProcessing={markSessionAsNotProcessing}
           processingSessions={processingSessions}
           onReplaceTemporarySession={replaceTemporarySession}
-          onNavigateToSession={(targetSessionId: string, targetProvider?, targetProjectName?) =>
-            handleNavigateToSession(targetSessionId, targetProvider, targetProjectName)}
+          onNavigateToSession={(targetSessionId: string, targetProvider?, targetProjectName?, options?) =>
+            handleNavigateToSession(targetSessionId, targetProvider, targetProjectName, options)}
           onShowSettings={() => setShowSettings(true)}
           externalMessageUpdate={externalMessageUpdate}
           pendingAutoIntake={pendingAutoIntake}

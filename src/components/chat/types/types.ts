@@ -4,6 +4,7 @@ import type {
   Project,
   ProjectSession,
   SessionMode,
+  SessionNavigationSource,
   SessionProvider,
 } from '../../../types/app';
 
@@ -146,6 +147,7 @@ export interface ChatInterfaceProps {
     targetSessionId: string,
     targetProvider?: SessionProvider,
     targetProjectName?: string,
+    options?: { source?: SessionNavigationSource },
   ) => void;
   onShowSettings?: () => void;
   autoExpandTools?: boolean;

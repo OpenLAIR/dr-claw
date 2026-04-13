@@ -82,6 +82,7 @@ export interface MainContentProps {
     targetSessionId: string,
     targetProvider?: SessionProvider,
     targetProjectName?: string,
+    options?: { source?: SessionNavigationSource },
   ) => void;
   onShowSettings: () => void;
   externalMessageUpdate: number;

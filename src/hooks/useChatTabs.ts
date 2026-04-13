@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import type {
   Project,
   ProjectSession,
@@ -26,6 +26,35 @@ export interface UseChatTabsReturn {
   updateActiveTabSession: (session: ProjectSession, project: Project) => void;
 }
 
+type ChatTabNavigationTarget =
+  | { kind: 'none' }
+  | { kind: 'root' }
+  | {
+      kind: 'session';
+      sessionId: string;
+      provider?: SessionProvider;
+      projectName?: string;
+    };
+
+export function getChatTabNavigationTarget(
+  tab?: Pick<ChatTab, 'sessionId' | 'provider' | 'projectName'> | null,
+): ChatTabNavigationTarget {
+  if (!tab) {
+    return { kind: 'none' };
+  }
+
+  if (!tab.sessionId) {
+    return { kind: 'root' };
+  }
+
+  return {
+    kind: 'session',
+    sessionId: tab.sessionId,
+    provider: tab.provider || undefined,
+    projectName: tab.projectName || undefined,
+  };
+}
+
 export function useChatTabs(
   selectedProject: Project | null,
   onNavigateToSession: (
@@ -34,6 +63,7 @@ export function useChatTabs(
     projectName?: string,
     options?: { source?: SessionNavigationSource },
   ) => void,
+  onActivateBlankTab?: () => void,
 ): UseChatTabsReturn {
   const [tabs, setTabs] = useState<ChatTab[]>([]);
 
@@ -70,8 +100,6 @@ export function useChatTabs(
     });
   }, [selectedProject?.name]);
 
-  const pendingNavRef = useRef<string | null>(null);
-
   const closeTab = useCallback((tabId: string) => {
     setTabs(prev => {
       const idx = prev.findIndex(t => t.id === tabId);
@@ -81,26 +109,40 @@ export function useChatTabs(
       if (closing.isActive && next.length > 0) {
         const newActiveIdx = Math.min(idx, next.length - 1);
         next[newActiveIdx] = { ...next[newActiveIdx], isActive: true };
-        const activated = next[newActiveIdx];
-        if (activated.sessionId) {
-          pendingNavRef.current = activated.sessionId;
-          onNavigateToSession(activated.sessionId, activated.provider || undefined, activated.projectName || undefined);
+        const navigationTarget = getChatTabNavigationTarget(next[newActiveIdx]);
+        if (navigationTarget.kind === 'session') {
+          onNavigateToSession(
+            navigationTarget.sessionId,
+            navigationTarget.provider,
+            navigationTarget.projectName,
+            { source: 'user' },
+          );
+        } else if (navigationTarget.kind === 'root') {
+          onActivateBlankTab?.();
         }
       }
       return next;
     });
-  }, [onNavigateToSession]);
+  }, [onActivateBlankTab, onNavigateToSession]);
 
   const switchTab = useCallback((tabId: string) => {
     setTabs(prev => {
       const target = prev.find(t => t.id === tabId);
       if (!target || target.isActive) return prev;
-      if (target.sessionId) {
-        onNavigateToSession(target.sessionId, target.provider || undefined, target.projectName || undefined);
+      const navigationTarget = getChatTabNavigationTarget(target);
+      if (navigationTarget.kind === 'session') {
+        onNavigateToSession(
+          navigationTarget.sessionId,
+          navigationTarget.provider,
+          navigationTarget.projectName,
+          { source: 'user' },
+        );
+      } else if (navigationTarget.kind === 'root') {
+        onActivateBlankTab?.();
       }
       return prev.map(t => ({ ...t, isActive: t.id === tabId }));
     });
-  }, [onNavigateToSession]);
+  }, [onActivateBlankTab, onNavigateToSession]);
 
   const updateTabTitle = useCallback((tabId: string, title: string) => {
     setTabs(prev => prev.map(t => t.id === tabId ? { ...t, title } : t));

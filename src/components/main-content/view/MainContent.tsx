@@ -71,7 +71,15 @@ function MainContent({
   const { currentProject, setCurrentProject } = useTaskMaster() as TaskMasterContextValue;
   const shouldShowTasksTab = false;
 
-  const chatTabs = useChatTabs(selectedProject, onNavigateToSession);
+  const chatTabs = useChatTabs(
+    selectedProject,
+    onNavigateToSession,
+    () => {
+      if (selectedProject && onNewSession) {
+        onNewSession(selectedProject, newSessionMode);
+      }
+    },
+  );
 
   // Sync selectedSession changes into tab state using navigation source to
   // distinguish user sidebar clicks from system session-created events.

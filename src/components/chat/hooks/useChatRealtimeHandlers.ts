@@ -17,7 +17,7 @@ import { invalidateSessionMessageCache } from './useChatSessionState';
 import { RESUMING_STATUS_TEXT } from '../types/types';
 import i18n from '../../../i18n/config';
 import type { ChatMessage, PendingPermissionRequest } from '../types/types';
-import type { Project, ProjectSession, SessionProvider } from '../../../types/app';
+import type { Project, ProjectSession, SessionNavigationSource, SessionProvider } from '../../../types/app';
 
 type PendingViewSession = {
   sessionId: string | null;
@@ -67,7 +67,45 @@ interface UseChatRealtimeHandlersArgs {
     sessionId: string,
     sessionProvider?: SessionProvider,
     targetProjectName?: string,
+    options?: { source?: SessionNavigationSource },
   ) => void;
+}
+
+type FinalizeSessionLifecycleOptions = {
+  projectName?: string | null;
+  clearSessionTimerStart?: (sessionId: string) => void;
+  onSessionInactive?: (sessionId?: string | null) => void;
+  onSessionNotProcessing?: (sessionId?: string | null) => void;
+  onSessionStatusResolved?: (sessionId?: string | null, isProcessing?: boolean) => void;
+  invalidateSessionCache?: (projectName: string, sessionId: string) => void;
+};
+
+export function finalizeSessionLifecycle(
+  sessionIds: Array<string | null | undefined>,
+  {
+    projectName,
+    clearSessionTimerStart: clearTimer = clearSessionTimerStart,
+    onSessionInactive,
+    onSessionNotProcessing,
+    onSessionStatusResolved,
+    invalidateSessionCache = invalidateSessionMessageCache,
+  }: FinalizeSessionLifecycleOptions,
+) {
+  const normalizedSessionIds = Array.from(
+    new Set(
+      sessionIds.filter((sessionId): sessionId is string => typeof sessionId === 'string' && sessionId.length > 0),
+    ),
+  );
+
+  normalizedSessionIds.forEach((sessionId) => {
+    clearTimer(sessionId);
+    onSessionInactive?.(sessionId);
+    onSessionNotProcessing?.(sessionId);
+    onSessionStatusResolved?.(sessionId, false);
+    if (projectName) {
+      invalidateSessionCache(projectName, sessionId);
+    }
+  });
 }
 
 const appendStreamingChunk = (
@@ -438,13 +476,12 @@ export function useChatRealtimeHandlers({
         latestMessage.type === 'gemini-error');
 
     const handleBackgroundLifecycle = (sessionId?: string) => {
-      if (!sessionId) {
-        return;
-      }
-      clearSessionTimerStart(sessionId);
-      onSessionInactive?.(sessionId);
-      onSessionNotProcessing?.(sessionId);
-      onSessionStatusResolved?.(sessionId, false);
+      finalizeSessionLifecycle([sessionId], {
+        projectName: selectedProject?.name,
+        onSessionInactive,
+        onSessionNotProcessing,
+        onSessionStatusResolved,
+      });
     };
 
     const persistStartTime = (startTime?: number | null, ...sessionIds: Array<string | null | undefined>) => {
@@ -494,12 +531,11 @@ export function useChatRealtimeHandlers({
     };
 
     const markSessionsAsCompleted = (...sessionIds: Array<string | null | undefined>) => {
-      const normalizedSessionIds = sessionIds.filter((id): id is string => typeof id === 'string' && id.length > 0);
-      normalizedSessionIds.forEach((sessionId) => {
-        clearSessionTimerStart(sessionId);
-        onSessionInactive?.(sessionId);
-        onSessionNotProcessing?.(sessionId);
-        onSessionStatusResolved?.(sessionId, false);
+      finalizeSessionLifecycle(sessionIds, {
+        projectName: selectedProject?.name,
+        onSessionInactive,
+        onSessionNotProcessing,
+        onSessionStatusResolved,
       });
     };
 
@@ -553,7 +589,7 @@ export function useChatRealtimeHandlers({
           }
           setIsSystemSessionChange(true);
           onReplaceTemporarySession?.(latestMessage.sessionId);
-          onNavigateToSession?.(latestMessage.sessionId, createdSessionProvider, selectedProject?.name);
+          onNavigateToSession?.(latestMessage.sessionId, createdSessionProvider, selectedProject?.name, { source: 'system' });
           setPendingPermissionRequests((previous) =>
             previous.map((request) =>
               request.sessionId ? request : { ...request, sessionId: latestMessage.sessionId },
@@ -606,7 +642,7 @@ export function useChatRealtimeHandlers({
           if (!currentSessionId || structuredMessageData.session_id !== currentSessionId) {
             console.log('Claude CLI session duplication or new init detected');
             setIsSystemSessionChange(true);
-            onNavigateToSession?.(structuredMessageData.session_id, 'claude', selectedProject?.name);
+            onNavigateToSession?.(structuredMessageData.session_id, 'claude', selectedProject?.name, { source: 'system' });
             return;
           }
         }
@@ -661,7 +697,7 @@ export function useChatRealtimeHandlers({
           if (!currentSessionId || structuredMessageData.session_id !== currentSessionId) {
             console.log('Gemini CLI session init detected');
             setIsSystemSessionChange(true);
-            onNavigateToSession?.(structuredMessageData.session_id, 'gemini', selectedProject?.name);
+            onNavigateToSession?.(structuredMessageData.session_id, 'gemini', selectedProject?.name, { source: 'system' });
             return;
           }
         }
@@ -785,9 +821,6 @@ export function useChatRealtimeHandlers({
         const completedSessionId = latestMessage.sessionId || currentSessionId || pendingSessionId;
         flushAndFinalizePendingStream();
         clearLoadingIndicators();
-        if (selectedProject?.name && completedSessionId) {
-          invalidateSessionMessageCache(selectedProject.name, completedSessionId);
-        }
         markSessionsAsCompleted(completedSessionId, currentSessionId, selectedSession?.id, pendingSessionId);
         if (pendingSessionId && !currentSessionId && latestMessage.exitCode === 0) {
           setCurrentSessionId(pendingSessionId);
@@ -815,9 +848,6 @@ export function useChatRealtimeHandlers({
           null;
         flushAndFinalizePendingStream();
         clearLoadingIndicators();
-        if (selectedProject?.name && erroredSessionId) {
-          invalidateSessionMessageCache(selectedProject.name, erroredSessionId);
-        }
         markSessionsAsCompleted(erroredSessionId, currentSessionId, selectedSession?.id);
         // Clear pendingSessionId for the errored session (not all sessions — other tabs may be active)
         if (typeof window !== 'undefined') {
@@ -857,7 +887,7 @@ export function useChatRealtimeHandlers({
             if (!isSystemInitForView) return;
             if (!currentSessionId || cursorData.session_id !== currentSessionId) {
               setIsSystemSessionChange(true);
-              onNavigateToSession?.(cursorData.session_id, 'cursor', selectedProject?.name);
+              onNavigateToSession?.(cursorData.session_id, 'cursor', selectedProject?.name, { source: 'system' });
             }
           }
         } catch (error) {
@@ -883,9 +913,6 @@ export function useChatRealtimeHandlers({
         if (isLegacyTaskMasterInstallError(latestMessage.error)) break;
         flushAndFinalizePendingStream();
         clearLoadingIndicators();
-        if (selectedProject?.name && (latestMessage.sessionId || currentSessionId)) {
-          invalidateSessionMessageCache(selectedProject.name, (latestMessage.sessionId || currentSessionId)!);
-        }
         markSessionsAsCompleted(latestMessage.sessionId, currentSessionId, selectedSession?.id);
         setPendingPermissionRequests([]);
         setChatMessages((previous) => [
@@ -1288,15 +1315,12 @@ export function useChatRealtimeHandlers({
         const codexActualSessionId = latestMessage.actualSessionId || codexPendingSessionId;
         const codexCompletedSessionId = latestMessage.sessionId || currentSessionId || codexPendingSessionId;
         clearLoadingIndicators();
-        if (selectedProject?.name && codexCompletedSessionId) {
-          invalidateSessionMessageCache(selectedProject.name, codexCompletedSessionId);
-        }
         markSessionsAsCompleted(codexCompletedSessionId, codexActualSessionId, currentSessionId, selectedSession?.id, codexPendingSessionId);
         if (codexPendingSessionId && !currentSessionId) {
           setCurrentSessionId(codexActualSessionId);
           setIsSystemSessionChange(true);
           if (codexActualSessionId) {
-            onNavigateToSession?.(codexActualSessionId, 'codex', selectedProject?.name);
+            onNavigateToSession?.(codexActualSessionId, 'codex', selectedProject?.name, { source: 'system' });
           }
           sessionStorage.removeItem('pendingSessionId');
         }
@@ -1308,9 +1332,6 @@ export function useChatRealtimeHandlers({
         if (isLegacyTaskMasterInstallError(latestMessage.error)) break;
         flushAndFinalizePendingStream();
         clearLoadingIndicators();
-        if (selectedProject?.name && (latestMessage.sessionId || currentSessionId)) {
-          invalidateSessionMessageCache(selectedProject.name, (latestMessage.sessionId || currentSessionId)!);
-        }
         markSessionsAsCompleted(latestMessage.sessionId, currentSessionId, selectedSession?.id);
         setPendingPermissionRequests([]);
         setChatMessages((previous) => [...previous, { type: 'error', content: latestMessage.error || 'An error occurred with Codex', timestamp: new Date(), errorType: latestMessage.errorType, isRetryable: latestMessage.isRetryable === true }]);

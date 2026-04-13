@@ -243,11 +243,11 @@ const isUpdateAdditive = (
   );
 };
 
-  const buildTransientSession = (
-    sessionId: string,
-    provider: ProjectSession['__provider'] = 'claude',
-    projectName?: string,
-  ): ProjectSession => ({
+const buildTransientSession = (
+  sessionId: string,
+  provider: ProjectSession['__provider'] = 'claude',
+  projectName?: string,
+): ProjectSession => ({
     id: sessionId,
     name: 'Auto Research Session',
     summary: 'Auto Research Session',
@@ -257,6 +257,10 @@ const isUpdateAdditive = (
     createdAt: new Date().toISOString(),
     lastActivity: new Date().toISOString(),
   });
+
+export const resolveSessionNavigationSource = (
+  source?: SessionNavigationSource,
+): SessionNavigationSource => source ?? 'user';
 
 export function useProjectsState({
   sessionId,
@@ -622,10 +626,13 @@ export function useProjectsState({
     targetSessionId: string,
     targetProvider?: ProjectSession['__provider'],
     targetProjectName?: string,
+    options?: { source?: SessionNavigationSource },
   ) => {
     if (!targetSessionId) {
       return;
     }
+
+    setSessionNavigationSource(resolveSessionNavigationSource(options?.source));
 
     const shouldSwitchTab = !selectedSession || selectedSession.id !== targetSessionId;
     let matchedProject: Project | null = null;
