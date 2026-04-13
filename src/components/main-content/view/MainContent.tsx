@@ -12,12 +12,10 @@ import NewsDashboard from '../../news-dashboard/view/NewsDashboard';
 
 import MainContentHeader from './subcomponents/MainContentHeader';
 import MainContentStateView from './subcomponents/MainContentStateView';
-import EditorSidebar from './subcomponents/EditorSidebar';
 import type { MainContentProps } from '../types/types';
 
 import { useTaskMaster } from '../../../contexts/TaskMasterContext';
 import { useUiPreferences } from '../../../hooks/useUiPreferences';
-import { useEditorSidebar } from '../hooks/useEditorSidebar';
 import type { Project } from '../../../types/app';
 import type { Reference } from '../../references/types';
 import { queueSkillCommandDraft } from '../../../utils/skillCommandDraft';
@@ -66,20 +64,6 @@ function MainContent({
 
   const { currentProject, setCurrentProject } = useTaskMaster() as TaskMasterContextValue;
   const shouldShowTasksTab = false;
-
-  const {
-    editingFile,
-    editorWidth,
-    editorExpanded,
-    resizeHandleRef,
-    handleFileOpen,
-    handleCloseEditor,
-    handleToggleEditorExpand,
-    handleResizeStart,
-  } = useEditorSidebar({
-    selectedProject,
-    isMobile,
-  });
 
   useEffect(() => {
     if (selectedProject && selectedProject !== currentProject) {
@@ -263,7 +247,7 @@ function MainContent({
       />
 
       <div className="flex-1 flex min-h-0 overflow-hidden">
-        <div className={`flex flex-col min-h-0 overflow-hidden ${editorExpanded ? 'hidden' : ''} flex-1`}>
+        <div className="flex flex-1 flex-col min-h-0 overflow-hidden">
           <div className={`h-full ${activeTab === 'chat' ? 'block' : 'hidden'}`}>
             <ErrorBoundary showDetails>
               <ChatInterface
@@ -272,7 +256,6 @@ function MainContent({
                 ws={ws}
                 sendMessage={sendMessage}
                 latestMessage={latestMessage}
-                onFileOpen={handleFileOpen}
                 onInputFocusChange={onInputFocusChange}
                 onSessionActive={onSessionActive}
                 onSessionInactive={onSessionInactive}
@@ -310,21 +293,6 @@ function MainContent({
 
           <div className={`h-full overflow-hidden ${activeTab === 'preview' ? 'block' : 'hidden'}`} />
         </div>
-
-        <EditorSidebar
-          editingFile={editingFile}
-          isMobile={isMobile}
-          editorExpanded={editorExpanded}
-          editorWidth={editorWidth}
-          resizeHandleRef={resizeHandleRef}
-          onResizeStart={handleResizeStart}
-          onCloseEditor={handleCloseEditor}
-          onToggleEditorExpand={handleToggleEditorExpand}
-          projectPath={selectedProject.path}
-          selectedProject={selectedProject}
-          onStartWorkspaceQa={onStartWorkspaceQa}
-          fillSpace={false}
-        />
       </div>
     </div>
   );
