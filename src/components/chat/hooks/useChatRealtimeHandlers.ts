@@ -18,6 +18,7 @@ import { RESUMING_STATUS_TEXT } from '../types/types';
 import i18n from '../../../i18n/config';
 import type { ChatMessage, PendingPermissionRequest } from '../types/types';
 import type { Project, ProjectSession, SessionNavigationSource, SessionProvider } from '../../../types/app';
+import { useSessionTabsStore } from '../../../stores/useSessionTabsStore';
 
 type PendingViewSession = {
   sessionId: string | null;
@@ -539,10 +540,42 @@ export function useChatRealtimeHandlers({
       });
     };
 
+    // Route messages for background (non-active) sessions to the tab store
+    const updateBackgroundSessionStatus = (bgSessionId: string, msgType: string) => {
+      const store = useSessionTabsStore.getState();
+      const isTabOpen = store.tabs.some((t) => t.id === bgSessionId);
+      if (!isTabOpen) return;
+
+      const prevSeq = store.backgroundStatus[bgSessionId]?.messageSeq ?? 0;
+      const isComplete = lifecycleMessageTypes.has(msgType);
+      if (isComplete) {
+        const wasLoading = store.backgroundStatus[bgSessionId]?.isLoading ?? false;
+        store.setBackgroundStatus(bgSessionId, {
+          isLoading: false,
+          statusText: null,
+          hasUnread: wasLoading,
+          messageSeq: prevSeq + 1,
+        });
+      } else if (msgType.endsWith('-status') || msgType.endsWith('-response') || msgType.endsWith('-output')) {
+        const statusText = latestMessage.data?.status || latestMessage.data?.text || null;
+        const tokens = typeof latestMessage.data?.tokens === 'number' ? latestMessage.data.tokens : undefined;
+        store.setBackgroundStatus(bgSessionId, {
+          isLoading: true,
+          hasUnread: false,
+          ...(statusText != null && { statusText: String(statusText) }),
+          ...(tokens != null && { tokenCount: tokens }),
+          messageSeq: prevSeq + 1,
+        });
+      }
+    };
+
     if (!shouldBypassSessionFilter) {
       if (!activeViewSessionId) {
         if (latestMessage.sessionId && lifecycleMessageTypes.has(String(latestMessage.type))) {
           handleBackgroundLifecycle(latestMessage.sessionId);
+        }
+        if (latestMessage.sessionId) {
+          updateBackgroundSessionStatus(latestMessage.sessionId, String(latestMessage.type));
         }
         if (!isUnscopedError) {
           return;
@@ -554,6 +587,9 @@ export function useChatRealtimeHandlers({
       }
 
       if (latestMessage.sessionId !== activeViewSessionId) {
+        if (latestMessage.sessionId) {
+          updateBackgroundSessionStatus(latestMessage.sessionId, String(latestMessage.type));
+        }
         if (latestMessage.sessionId && lifecycleMessageTypes.has(String(latestMessage.type))) {
           handleBackgroundLifecycle(latestMessage.sessionId);
         }
@@ -588,6 +624,13 @@ export function useChatRealtimeHandlers({
             pendingViewSessionRef.current.sessionId = latestMessage.sessionId;
           }
           setIsSystemSessionChange(true);
+          if (temporarySessionId) {
+            useSessionTabsStore.getState().replaceTabSessionId(
+              temporarySessionId,
+              { id: latestMessage.sessionId, __provider: createdSessionProvider, __projectName: selectedProject?.name } as ProjectSession,
+              selectedProject?.name || '',
+            );
+          }
           onReplaceTemporarySession?.(latestMessage.sessionId);
           onNavigateToSession?.(latestMessage.sessionId, createdSessionProvider, selectedProject?.name, { source: 'system' });
           setPendingPermissionRequests((previous) =>

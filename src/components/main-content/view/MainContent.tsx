@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useEffect } from 'react';
 
 import ChatInterface from '../../chat/view/ChatInterface';
 import SkillsDashboard from '../../SkillsDashboard';
@@ -10,12 +10,11 @@ import ProjectDashboard from '../../project-dashboard/view/ProjectDashboard';
 import TrashDashboard from '../../project-dashboard/view/TrashDashboard';
 import NewsDashboard from '../../news-dashboard/view/NewsDashboard';
 
-import ChatTabBar from '../../chat/view/ChatTabBar';
-import { useChatTabs } from '../../../hooks/useChatTabs';
 import MainContentHeader from './subcomponents/MainContentHeader';
 import MainContentStateView from './subcomponents/MainContentStateView';
+import SessionTabBar from '../../chat/view/subcomponents/SessionTabBar';
+import SplitPaneContainer from '../../chat/view/subcomponents/SplitPaneContainer';
 import type { MainContentProps } from '../types/types';
-import { resolveChatTabSyncAction } from './chatTabSync';
 
 import { useTaskMaster } from '../../../contexts/TaskMasterContext';
 import { useUiPreferences } from '../../../hooks/useUiPreferences';
@@ -70,74 +69,6 @@ function MainContent({
 
   const { currentProject, setCurrentProject } = useTaskMaster() as TaskMasterContextValue;
   const shouldShowTasksTab = false;
-
-  const handleActivateBlankTab = useCallback(() => {
-    if (selectedProject && onNewSession) {
-      onNewSession(selectedProject, newSessionMode);
-    }
-  }, [selectedProject, onNewSession, newSessionMode]);
-
-  const chatTabs = useChatTabs(
-    selectedProject,
-    onNavigateToSession,
-    handleActivateBlankTab,
-  );
-
-  const {
-    activeTab: chatActiveTab,
-    tabs: chatTabList,
-    openNewTab,
-    openTab,
-    updateActiveTabSession,
-    switchTab,
-    closeTab,
-  } = chatTabs;
-  const chatActiveTabSessionId = chatActiveTab?.sessionId;
-  const chatTabCount = chatTabList.length;
-
-  // Sync selectedSession changes into tab state using navigation source to
-  // distinguish user sidebar clicks from system session-created events. Runs
-  // on first render too so a pre-selected session (e.g. from URL) gets a tab.
-  useEffect(() => {
-    const currId = selectedSession?.id ?? null;
-
-    const action = resolveChatTabSyncAction({
-      activeAppTab: activeTab,
-      hasSelectedProject: Boolean(selectedProject),
-      nextSessionId: currId,
-      activeChatTabSessionId: chatActiveTabSessionId,
-      tabCount: chatTabCount,
-      navigationSource: sessionNavigationSource,
-    });
-
-    if (action === 'open-new-tab') {
-      openNewTab();
-    } else if (action === 'update-active-tab-session' && currId && selectedProject) {
-      updateActiveTabSession(selectedSession!, selectedProject);
-    } else if (action === 'open-tab' && currId && selectedProject) {
-      openTab(selectedSession!, selectedProject);
-    }
-
-    if (action !== 'noop') {
-      onResetNavigationSource();
-    }
-  }, [
-    selectedSession,
-    selectedProject,
-    activeTab,
-    sessionNavigationSource,
-    chatActiveTabSessionId,
-    chatTabCount,
-    openNewTab,
-    openTab,
-    updateActiveTabSession,
-    onResetNavigationSource,
-  ]);
-
-  // When the active tab has no session (new chat via [+]), pass null to ChatInterface
-  const effectiveSession = chatActiveTabSessionId === null
-    ? null
-    : selectedSession;
 
   useEffect(() => {
     if (selectedProject && selectedProject !== currentProject) {
@@ -222,7 +153,6 @@ function MainContent({
           <SkillsDashboard
             onSendToChat={(command: string) => {
               queueSkillCommandDraft(command);
-              // Select the most recent project if available, then switch to chat
               const recentProject = projects?.[0];
               if (recentProject) {
                 onProjectSelect(recentProject);
@@ -323,49 +253,44 @@ function MainContent({
       <div className="flex-1 flex min-h-0 overflow-hidden">
         <div className="flex flex-1 flex-col min-h-0 overflow-hidden">
           <div className={`h-full flex flex-col ${activeTab === 'chat' ? '' : 'hidden'}`}>
-            <ChatTabBar
-              tabs={chatTabList}
-              processingSessions={processingSessions}
-              onSwitchTab={switchTab}
-              onCloseTab={closeTab}
-              onNewTab={() => {
-                if (selectedProject && onNewSession) {
-                  onNewSession(selectedProject);
-                }
-                openNewTab();
-              }}
-            />
-            <ErrorBoundary showDetails>
-              <ChatInterface
-                selectedProject={selectedProject}
-                selectedSession={effectiveSession}
-                ws={ws}
-                sendMessage={sendMessage}
-                latestMessage={latestMessage}
-                onInputFocusChange={onInputFocusChange}
-                onSessionActive={onSessionActive}
-                onSessionInactive={onSessionInactive}
-                onSessionProcessing={onSessionProcessing}
-                onSessionNotProcessing={onSessionNotProcessing}
-                processingSessions={processingSessions}
-                onReplaceTemporarySession={onReplaceTemporarySession}
-                onNavigateToSession={onNavigateToSession}
-                onShowSettings={onShowSettings}
-                autoExpandTools={autoExpandTools}
-                showRawParameters={showRawParameters}
-                showThinking={showThinking}
-                autoScrollToBottom={autoScrollToBottom}
-                sendByCtrlEnter={sendByCtrlEnter}
-                externalMessageUpdate={externalMessageUpdate}
-                onStartWorkspaceQa={onStartWorkspaceQa}
-                pendingAutoIntake={pendingAutoIntake}
-                clearPendingAutoIntake={clearPendingAutoIntake}
-                importedProjectAnalysisPrompt={importedProjectAnalysisPrompt}
-                clearImportedProjectAnalysisPrompt={clearImportedProjectAnalysisPrompt}
-                newSessionMode={newSessionMode}
-                onNewSessionModeChange={onNewSessionModeChange}
-              />
-            </ErrorBoundary>
+            <SessionTabBar />
+            <div className="flex-1 min-h-0">
+              <ErrorBoundary showDetails>
+                <SplitPaneContainer
+                  ChatInterfaceComponent={ChatInterface}
+                  baseChatProps={{
+                    selectedProject,
+                    selectedSession,
+                    ws,
+                    sendMessage,
+                    latestMessage,
+                    onInputFocusChange,
+                    onSessionActive,
+                    onSessionInactive,
+                    onSessionProcessing,
+                    onSessionNotProcessing,
+                    processingSessions,
+                    onReplaceTemporarySession,
+                    onNavigateToSession,
+                    onShowSettings,
+                    autoExpandTools,
+                    showRawParameters,
+                    showThinking,
+                    autoScrollToBottom,
+                    sendByCtrlEnter,
+                    externalMessageUpdate,
+                    onStartWorkspaceQa,
+                    pendingAutoIntake,
+                    clearPendingAutoIntake,
+                    importedProjectAnalysisPrompt,
+                    clearImportedProjectAnalysisPrompt,
+                    newSessionMode,
+                    onNewSessionModeChange,
+                  }}
+                  projects={projects}
+                />
+              </ErrorBoundary>
+            </div>
           </div>
 
           {activeTab === 'survey' && (

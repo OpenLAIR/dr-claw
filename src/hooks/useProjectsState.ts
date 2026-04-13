@@ -21,6 +21,7 @@ import type {
   SessionTag,
   TrashProject,
 } from '../types/app';
+import { useSessionTabsStore } from '../stores/useSessionTabsStore';
 
 declare global {
   interface Window {
@@ -707,6 +708,11 @@ export function useProjectsState({
       setSelectedSession(sessionToSelect);
     }
 
+    if (sessionToSelect) {
+      const pName = projectToSelect?.name || selectedProject?.name || '';
+      useSessionTabsStore.getState().addTab(sessionToSelect, pName);
+    }
+
     if (shouldSwitchTab) {
       setActiveTab('chat');
     }
@@ -745,6 +751,9 @@ export function useProjectsState({
   const handleSessionSelect = useCallback(
     (session: ProjectSession) => {
       setSelectedSession(session);
+
+      const projectName = session.__projectName || selectedProject?.name || '';
+      useSessionTabsStore.getState().addTab(session, projectName);
 
       if (session.mode) {
         persistNewSessionMode(session.mode);
