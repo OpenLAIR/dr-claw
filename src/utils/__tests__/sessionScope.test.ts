@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildSessionScopeKey,
+  isSessionScopeKeyTemporary,
+  isTemporarySessionId,
   parseSessionScopeKey,
   scopeKeyMatchesScope,
 } from "../sessionScope";
@@ -85,5 +87,15 @@ describe("sessionScope", () => {
     expect(scopeKeyMatchesScope(scopeKey, undefined, "codex", "session-1")).toBe(false);
     expect(scopeKeyMatchesScope(scopeKey, "project-a", "codex", "")).toBe(false);
     expect(scopeKeyMatchesScope(scopeKey, "project-a", "codex", undefined)).toBe(false);
+  });
+
+  it("treats both new-session and temp session ids as temporary", () => {
+    expect(isTemporarySessionId("new-session-1")).toBe(true);
+    expect(isTemporarySessionId("temp-1")).toBe(true);
+    expect(isTemporarySessionId("sess-1")).toBe(false);
+
+    expect(isSessionScopeKeyTemporary("project-a::codex::new-session-2")).toBe(true);
+    expect(isSessionScopeKeyTemporary("project-a::codex::temp-2")).toBe(true);
+    expect(isSessionScopeKeyTemporary("project-a::codex::sess-2")).toBe(false);
   });
 });

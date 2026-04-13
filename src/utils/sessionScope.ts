@@ -54,7 +54,13 @@ export function getSessionIdFromScopeKey(scopeKey: string | null | undefined): s
 }
 
 export function isTemporarySessionId(sessionId: string | null | undefined): boolean {
-  return Boolean(sessionId && sessionId.startsWith('new-session-'));
+  return Boolean(
+    sessionId
+    && (
+      sessionId.startsWith('new-session-')
+      || sessionId.startsWith('temp-')
+    ),
+  );
 }
 
 export function isSessionScopeKeyTemporary(scopeKey: string | null | undefined): boolean {

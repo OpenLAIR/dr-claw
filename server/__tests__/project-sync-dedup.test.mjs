@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { mkdtemp, mkdir, rm } from 'fs/promises';
+import { mkdtemp, mkdir, rm, writeFile } from 'fs/promises';
 import os from 'os';
 import path from 'path';
 
@@ -230,6 +230,45 @@ describe('project sync and dedup (PR #89)', () => {
       );
 
       expect(resolvedOwner).toBe(userId);
+    });
+
+    it('does not assign unowned projects during anonymous bootstrap in multi-user mode', async () => {
+      const { projects, database } = await loadTestModules();
+      createTestUser(database, 'multi-user-1');
+      createTestUser(database, 'multi-user-2');
+
+      const workspaceRoot = path.join(tempRoot, 'dr-claw');
+      const projectDir = path.join(workspaceRoot, 'ownerless-bootstrap-project');
+      await mkdir(projectDir, { recursive: true });
+
+      const projectName = projects.encodeProjectPath(projectDir);
+      const configDir = path.join(tempRoot, '.dr-claw');
+      await mkdir(configDir, { recursive: true });
+      await writeFile(
+        path.join(configDir, 'project-config.json'),
+        JSON.stringify({
+          [projectName]: {
+            originalPath: projectDir,
+          },
+        }, null, 2),
+        'utf8',
+      );
+
+      database.projectDb.upsertProject(
+        projectName,
+        null,
+        'Ownerless Bootstrap Project',
+        projectDir,
+        0,
+        null,
+        null,
+      );
+
+      await projects.getProjects(null);
+
+      const dbRow = database.projectDb.getProjectById(projectName);
+      expect(dbRow).not.toBeNull();
+      expect(dbRow.user_id).toBeNull();
     });
   });
 });

@@ -68,11 +68,15 @@ function readStoredChatMessages(
   projectName: string,
   sessionId: string,
   provider: Provider | string | null | undefined,
+  options: {
+    allowLegacyFallback?: boolean;
+  } = {},
 ): ChatMessage[] {
   const candidateKeys = buildSessionMessageCacheCandidateKeys(
     projectName,
     sessionId,
     provider,
+    options,
   );
 
   for (const key of candidateKeys) {
@@ -177,14 +181,17 @@ export function useChatSessionState({
 
   const [chatMessages, _setChatMessages] = useState<ChatMessage[]>(() => {
     if (typeof window !== 'undefined' && selectedProject && selectedSession?.id) {
-      const inferredProvider = selectedSession.__provider
+      const providerHint = selectedSession.__provider
         || (activeProvider as Provider | undefined)
-        || (window.localStorage.getItem('selected-provider') as Provider | null)
+        || (window.localStorage.getItem('selected-provider') as Provider | null);
+      const inferredProvider = providerHint
         || resolveSessionProviderForLoad(selectedSession, selectedProject);
+      const allowLegacyFallback = !providerHint;
       return readStoredChatMessages(
         selectedProject.name,
         selectedSession.id,
         normalizeProvider(inferredProvider || DEFAULT_PROVIDER),
+        { allowLegacyFallback },
       );
     }
     return [];

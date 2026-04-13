@@ -263,7 +263,13 @@ function formatRejectedFileMessage(rejection: FileRejection) {
 }
 
 const isTemporarySessionId = (sessionId: string | null | undefined) =>
-  Boolean(sessionId && sessionId.startsWith("new-session-"));
+  Boolean(
+    sessionId
+    && (
+      sessionId.startsWith("new-session-")
+      || sessionId.startsWith("temp-")
+    ),
+  );
 
 const BTW_TRANSCRIPT_MAX_CHARS = 120_000;
 

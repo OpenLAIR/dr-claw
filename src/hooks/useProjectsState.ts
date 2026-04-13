@@ -10,6 +10,7 @@ import {
   type OptimisticSessionCreatedDetail,
 } from '../constants/sessionEvents';
 import { normalizeProvider } from '../utils/providerPolicy';
+import { isTemporarySessionId } from '../utils/sessionScope';
 import {
   hasTrackedTemporarySession,
   isTrackedSessionActive,
@@ -483,12 +484,12 @@ export function useProjectsState({
       const selectedSessionProjectName =
         selectedSession?.__projectName || selectedProject?.name || null;
       const temporarySessionIdToReplace =
-        selectedSession?.id?.startsWith('new-session-') &&
+        isTemporarySessionId(selectedSession?.id) &&
           selectedSessionProvider === createdProvider &&
           selectedSessionProjectName &&
           effectiveProjectName &&
           selectedSessionProjectName === effectiveProjectName
-          ? selectedSession.id
+          ? selectedSession?.id || null
           : null;
 
       setProjects((prevProjects) => prevProjects.map((project) => {
@@ -558,7 +559,7 @@ export function useProjectsState({
         }
 
         if (
-          previous.id.startsWith('new-session-') &&
+          isTemporarySessionId(previous.id) &&
           temporarySessionIdToReplace &&
           previous.id === temporarySessionIdToReplace
         ) {

@@ -229,9 +229,7 @@ async function resolveValidProjectOwnerUserId(
     return normalizedFallbackUserId;
   }
 
-  const firstUser = userDb.getFirstUser();
-  const firstUserId = normalizeUserIdCandidate(firstUser?.id);
-  return firstUserId;
+  return null;
 }
 
 function getDeletedProjectsStore(config) {
