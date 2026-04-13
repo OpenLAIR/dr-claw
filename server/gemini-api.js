@@ -18,7 +18,8 @@ import { GEMINI_MODELS } from '../shared/modelConstants.js';
 const execAsync = promisify(exec);
 const execFileAsync = promisify(execFile);
 
-export const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta';
+export const GEMINI_API_BASE =
+  process.env.GEMINI_API_BASE || 'https://generativelanguage.googleapis.com/v1beta';
 const CODE_ASSIST_BASE = 'https://cloudcode-pa.googleapis.com/v1internal';
 const MAX_AGENT_TURNS = 30;
 const BASH_TIMEOUT_MS = 120_000;
