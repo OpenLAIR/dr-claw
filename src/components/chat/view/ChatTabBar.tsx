@@ -23,6 +23,7 @@ export default function ChatTabBar({ tabs, processingSessions, onSwitchTab, onCl
         return (
           <div key={tab.id} className="flex items-center shrink-0 group">
             <button
+              type="button"
               role="tab"
               aria-selected={tab.isActive}
               onClick={() => onSwitchTab(tab.id)}
@@ -44,6 +45,7 @@ export default function ChatTabBar({ tabs, processingSessions, onSwitchTab, onCl
               <span className="truncate">{tab.title}</span>
             </button>
             <button
+              type="button"
               aria-label={`Close ${tab.title}`}
               onClick={() => onCloseTab(tab.id)}
               className={`
@@ -61,6 +63,8 @@ export default function ChatTabBar({ tabs, processingSessions, onSwitchTab, onCl
       })}
 
       <button
+        type="button"
+        aria-label="New chat tab"
         onClick={onNewTab}
         className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:bg-accent/50 shrink-0"
         title="New chat tab"
