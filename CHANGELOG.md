@@ -20,6 +20,9 @@
   - Preserved Nano command path and active session reporting in WebSocket session status flows.
   - Ensured session lifecycle protocol is emitted consistently for Nano just like other providers.
 
+#### Migration notes
+- **Message cache key change**: Session message cache keys are now scoped by provider (`chat_messages_{project}_{provider}_{session}`). Existing localStorage entries keyed the old way (`chat_messages_{project}_{session}`) will not be read by default. To migrate, set `allowLegacyFallback: true` when calling `getSessionMessageCacheKeys()`. Users upgrading from builds prior to this sync may see empty transcript history on first load for previously-active sessions; the data is still in localStorage and can be recovered by enabling the legacy fallback or manually re-keying the entries.
+
 #### Explicitly excluded (local/private only, not part of upstream PR)
 - Codex-only product strategy and provider lock-in controls.
 - External auth / license refresh-heartbeat-offline-grace stack.

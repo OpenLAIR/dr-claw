@@ -43,6 +43,12 @@ import fetch from 'node-fetch';
 import mime from 'mime-types';
 
 import { getProjects, getTrashedProjects, getSessions, getSessionMessages, renameProject, renameSession, deleteSession, deleteProject, restoreProject, deleteTrashedProject, addProjectManually, extractProjectDirectory, clearProjectDirectoryCache, encodeProjectPath, resolveCodexSessionFilePath } from './projects.js';
+import {
+    inferProviderFromMessageType as _inferProviderFromMessageType,
+    resolveProjectName as _resolveProjectName,
+    enrichSessionEventPayload as _enrichSessionEventPayload,
+    buildLifecycleMessageFromPayload as _buildLifecycleMessageFromPayload,
+} from './utils/sessionLifecycle.js';
 import { getProjectTokenUsageSummary } from './project-token-usage.js';
 import { queryClaudeSDK, abortClaudeSDKSession, isClaudeSDKSessionActive, getClaudeSDKSessionStartTime, getActiveClaudeSDKSessions, resolveToolApproval } from './claude-sdk.js';
 import { spawnCursor, abortCursorSession, isCursorSessionActive, getCursorSessionStartTime, getActiveCursorSessions } from './cursor-cli.js';
@@ -1358,17 +1364,7 @@ wss.on('connection', (ws, request) => {
     }
 });
 
-function inferProviderFromMessageType(type, fallbackProvider = null) {
-    const messageType = String(type || '');
-    if (messageType.startsWith('claude-')) return 'claude';
-    if (messageType.startsWith('cursor-')) return 'cursor';
-    if (messageType.startsWith('codex-')) return 'codex';
-    if (messageType.startsWith('gemini-')) return 'gemini';
-    if (messageType.startsWith('openrouter-')) return 'openrouter';
-    if (messageType.startsWith('localgpu-')) return 'local';
-    if (messageType.startsWith('nano-')) return 'nano';
-    return fallbackProvider || null;
-}
+// --- Session lifecycle helpers (delegated to server/utils/sessionLifecycle.js) ---
 
 const DEBUG_SESSION_LIFECYCLE = process.env.DEBUG_SESSION_LIFECYCLE === '1';
 const warnedUnknownLifecycleProjectPaths = new Set();
@@ -1400,91 +1396,43 @@ function warnUnknownLifecycleProjectPath(projectPath) {
     console.warn(`[WARN] Ignoring lifecycle projectPath that is not a known project: ${normalizedPath}`);
 }
 
-function resolveProjectName(projectName = null, projectPath = null) {
-    if (typeof projectName === 'string' && projectName.trim().length > 0) {
-        return projectName;
-    }
+function inferProviderFromMessageType(type, fallbackProvider = null) {
+    return _inferProviderFromMessageType(type, fallbackProvider);
+}
 
-    if (typeof projectPath !== 'string' || projectPath.trim().length === 0) {
-        return null;
-    }
-
-    const normalizedProjectPath = path.resolve(projectPath);
-    if (!isKnownLifecycleProjectPath(normalizedProjectPath)) {
-        warnUnknownLifecycleProjectPath(normalizedProjectPath);
-        return null;
-    }
-
-    try {
-        return encodeProjectPath(normalizedProjectPath);
-    } catch (error) {
-        if (DEBUG_SESSION_LIFECYCLE) {
-            console.debug('[DEBUG] Failed to encode project path for lifecycle payload:', normalizedProjectPath, error?.message || error);
+/** Shared deps object that wires the extracted helpers to real DB + fs. */
+const _lifecycleDeps = {
+    isKnownPath(projectPath) {
+        const normalizedPath = path.resolve(projectPath);
+        if (!isKnownLifecycleProjectPath(normalizedPath)) {
+            warnUnknownLifecycleProjectPath(normalizedPath);
+            return false;
         }
-        return null;
-    }
+        return true;
+    },
+    encodePath(projectPath) {
+        const normalizedPath = path.resolve(projectPath);
+        try {
+            return encodeProjectPath(normalizedPath);
+        } catch (error) {
+            if (DEBUG_SESSION_LIFECYCLE) {
+                console.debug('[DEBUG] Failed to encode project path for lifecycle payload:', normalizedPath, error?.message || error);
+            }
+            throw error;
+        }
+    },
+};
+
+function resolveProjectName(projectName = null, projectPath = null) {
+    return _resolveProjectName(projectName, projectPath, _lifecycleDeps);
 }
 
 function enrichSessionEventPayload(payload, fallbackProjectPath = null) {
-    if (!payload || typeof payload !== 'object') {
-        return payload;
-    }
-
-    const messageType = String(payload.type || '');
-    if (!messageType.startsWith('session-')) {
-        return payload;
-    }
-
-    const resolvedProjectName = resolveProjectName(
-        payload.projectName,
-        payload.projectPath || fallbackProjectPath || null,
-    );
-    if (!resolvedProjectName || payload.projectName === resolvedProjectName) {
-        return payload;
-    }
-
-    return {
-        ...payload,
-        projectName: resolvedProjectName,
-    };
+    return _enrichSessionEventPayload(payload, fallbackProjectPath, _lifecycleDeps);
 }
 
 function buildLifecycleMessageFromPayload(payload, fallbackProvider = null, fallbackProjectName = null) {
-    if (!payload || typeof payload !== 'object') {
-        return null;
-    }
-
-    const messageType = String(payload.type || '');
-    let state = null;
-
-    if (messageType === 'cursor-result' || messageType.endsWith('-complete')) {
-        state = 'completed';
-    } else if (messageType.endsWith('-error')) {
-        state = 'failed';
-    }
-
-    if (!state) {
-        return null;
-    }
-
-    const provider = inferProviderFromMessageType(
-        messageType,
-        typeof payload.provider === 'string' ? payload.provider : fallbackProvider,
-    );
-    const projectName = resolveProjectName(
-        payload.projectName || fallbackProjectName || null,
-        payload.projectPath || null,
-    );
-
-    return {
-        type: 'session-state-changed',
-        provider,
-        sessionId: payload.actualSessionId || payload.sessionId || null,
-        state,
-        reason: messageType,
-        changedAt: Date.now(),
-        ...(projectName ? { projectName } : {}),
-    };
+    return _buildLifecycleMessageFromPayload(payload, fallbackProvider, fallbackProjectName, _lifecycleDeps);
 }
 
 /**
