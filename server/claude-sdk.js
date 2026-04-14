@@ -26,6 +26,7 @@ import { buildTempAttachmentFilename } from './utils/imageAttachmentFiles.js';
 
 import { createRequestId, waitForToolApproval, resolveToolApproval as resolvePermApproval, matchesToolPermission } from './utils/permissions.js';
 import { buildMemoryBlock } from './utils/memoryPrompt.js';
+import { BTW_SYSTEM_PROMPT, buildBtwUserMessage } from './utils/btw.js';
 
 const activeSessions = new Map();
 const pendingClaudeSessionIndexReconciles = new Map();
@@ -874,22 +875,11 @@ function getActiveClaudeSDKSessions() {
   return getAllSessions();
 }
 
-const BTW_SYSTEM_PROMPT = `You answer a short side question for someone in the middle of a coding session.
-
-Rules:
-- You have NO tools. Do not claim to read files, run commands, or fetch URLs unless that information already appears in the conversation context below.
-- Use the "Conversation context" section plus general programming knowledge. If something is not in the context, say you do not see it there.
-- Be concise.`;
-
 /**
  * One-shot, tool-free side question (Claude Code /btw-style). Does not resume the main SDK session.
  */
 async function runClaudeBtw({ question, transcript, cwd, model, signal }) {
-  const safeTranscript =
-    typeof transcript === 'string' && transcript.trim()
-      ? transcript
-      : '(No prior conversation in this session.)';
-  const userBlock = `## Conversation context\n\n${safeTranscript}\n\n---\n\n## Side question\n\n${question}`;
+  const userBlock = buildBtwUserMessage(question, transcript);
 
   const sdkOptions = {
     cwd: cwd || process.cwd(),

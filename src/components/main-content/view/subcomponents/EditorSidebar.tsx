@@ -26,17 +26,18 @@ export default function EditorSidebar({
 
   if (isMobile || poppedOut) {
     return (
-      <AnyCodeEditor
-        file={editingFile}
-        onClose={() => {
-          setPoppedOut(false);
-          onCloseEditor();
-        }}
-        projectPath={projectPath}
-        selectedProject={selectedProject}
-        onStartWorkspaceQa={onStartWorkspaceQa}
-        isSidebar={false}
-      />
+        <AnyCodeEditor
+          file={editingFile}
+          onClose={() => {
+            setPoppedOut(false);
+            onCloseEditor();
+          }}
+          projectPath={projectPath}
+          selectedProject={selectedProject}
+          onStartWorkspaceQa={onStartWorkspaceQa}
+          displayMode="modal"
+          isSidebar={false}
+        />
     );
   }
 
@@ -65,6 +66,7 @@ export default function EditorSidebar({
           projectPath={projectPath}
           selectedProject={selectedProject}
           onStartWorkspaceQa={onStartWorkspaceQa}
+          displayMode="sidebar"
           isSidebar
           isExpanded={editorExpanded}
           onToggleExpand={onToggleEditorExpand}

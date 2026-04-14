@@ -16,6 +16,7 @@ import { ScrollArea } from './ui/scroll-area';
 import { Button } from './ui/button';
 import { api } from '../utils/api';
 import useLocalStorage from '../hooks/useLocalStorage';
+import JsonTreeViewer from './JsonTreeViewer';
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
@@ -2031,18 +2032,18 @@ function FileViewer({ projectName, file, onClose }) {
   const [viewMode, setViewMode] = useState('preview');
   const [showExpandedPreview, setShowExpandedPreview] = useState(false);
   const previewKind = useMemo(() => getArtifactPreviewKind(file), [file]);
-  const isPreviewRenderable = previewKind === 'markdown' || previewKind === 'html';
-  const isTextEditable = previewKind === 'text' || previewKind === 'markdown' || previewKind === 'html';
+  const isPreviewRenderable = previewKind === 'markdown' || previewKind === 'html' || previewKind === 'json';
+  const isTextEditable = previewKind === 'text' || previewKind === 'markdown' || previewKind === 'html' || previewKind === 'json';
   const supportsBlobPreview = previewKind === 'pdf' || previewKind === 'image' || previewKind === 'audio' || previewKind === 'video';
   const canExpandPreview = previewKind !== 'unsupported';
   const viewerHeight = previewKind === 'pdf'
-    ? '70vh'
+    ? '78vh'
     : previewKind === 'video'
       ? '32rem'
       : previewKind === 'image'
         ? '30rem'
-        : previewKind === 'markdown' || previewKind === 'html'
-          ? '40rem'
+        : previewKind === 'markdown' || previewKind === 'html' || previewKind === 'json'
+          ? '48rem'
           : '28rem';
 
   useEffect(() => {
@@ -2209,12 +2210,25 @@ function FileViewer({ projectName, file, onClose }) {
 
     if (previewKind === 'html' && viewMode === 'preview') {
       return (
-        <div className="flex-1 min-h-0 overflow-auto bg-muted/10 p-3">
+        <div className="flex-1 min-h-0 overflow-auto bg-muted/10 p-4">
           <iframe
             title={file.name}
             srcDoc={content}
             sandbox="allow-scripts allow-same-origin"
-            className={`w-full rounded-2xl border border-border/60 bg-white shadow-sm ${expanded ? 'h-full min-h-[72vh]' : 'h-full min-h-[32rem]'}`}
+            className={`w-full rounded-2xl border border-border/60 bg-white shadow-sm ${expanded ? 'h-full min-h-[78vh]' : 'h-full min-h-[40rem]'}`}
+          />
+        </div>
+      );
+    }
+
+    if (previewKind === 'json' && viewMode === 'preview') {
+      return (
+        <div className="flex-1 min-h-0 overflow-auto bg-muted/10 p-4">
+          <JsonTreeViewer
+            content={content}
+            defaultExpandDepth={1}
+            className={`${expanded ? 'min-h-[78vh]' : 'min-h-[40rem]'}`}
+            invalidFallbackClassName={expanded ? 'min-h-[78vh]' : 'min-h-[40rem]'}
           />
         </div>
       );
@@ -2312,7 +2326,7 @@ function FileViewer({ projectName, file, onClose }) {
   return (
     <>
       <div
-        className="flex min-h-[320px] max-h-[85vh] flex-col overflow-hidden rounded-[30px] border border-border/60 bg-card/80 shadow-sm backdrop-blur resize-y"
+        className="flex min-h-[360px] max-h-[88vh] flex-col overflow-hidden rounded-[30px] border border-border/60 bg-card/80 shadow-sm backdrop-blur resize-y"
         style={{ height: viewerHeight }}
       >
         <div className="flex flex-shrink-0 items-center justify-between border-b border-border/60 bg-gradient-to-r from-slate-50 via-white to-cyan-50 px-4 py-3 dark:from-slate-950 dark:via-slate-900 dark:to-cyan-950/20">

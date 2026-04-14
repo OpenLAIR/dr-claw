@@ -151,7 +151,7 @@ interface UseChatComposerStateArgs {
     SetStateAction<PendingPermissionRequest[]>
   >;
   newSessionMode?: SessionMode;
-  /** Current chat messages for /btw context (Claude provider). */
+  /** Current chat messages for /btw context. */
   getChatMessagesForBtw?: () => ChatMessage[];
 }
 
@@ -946,6 +946,98 @@ export function useChatComposerState({
         }
 
         const result = (await response.json()) as CommandExecutionResult;
+        if (result.type === 'builtin' && result.action === 'btw') {
+          const { data } = result;
+          setInput('');
+          inputValueRef.current = '';
+          if (data?.error) {
+            setChatMessages((previous) => [
+              ...previous,
+              {
+                type: 'assistant',
+                content: `⚠️ ${data.error}`,
+                timestamp: Date.now(),
+              },
+            ]);
+            return;
+          }
+          const btwSupportedProviders = new Set(['claude', 'gemini', 'codex']);
+          if (!btwSupportedProviders.has(provider)) {
+            setChatMessages((previous) => [
+              ...previous,
+              {
+                type: 'assistant',
+                content:
+                  '`/btw` is available with Claude, Gemini, and Codex providers. Switch to one of them in the chat controls, then try again.',
+                timestamp: Date.now(),
+              },
+            ]);
+            return;
+          }
+          const question = typeof data?.question === 'string' ? data.question.trim() : '';
+          if (!question) {
+            return;
+          }
+          btwAbortRef.current?.abort();
+          const abortController = new AbortController();
+          btwAbortRef.current = abortController;
+          setBtwOverlay({
+            open: true,
+            question,
+            answer: '',
+            loading: true,
+            error: null,
+          });
+          try {
+            const transcript = buildBtwTranscript(getChatMessagesForBtw?.() ?? []);
+            const btwModel =
+              provider === 'gemini'
+                ? geminiModel
+                : provider === 'codex'
+                  ? codexModel
+                  : claudeModel;
+            const btwResponse = await authenticatedFetch('/api/btw', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                question,
+                transcript,
+                projectPath: selectedProject.fullPath || selectedProject.path,
+                model: btwModel,
+                provider,
+              }),
+              signal: abortController.signal,
+            });
+            const payload = (await btwResponse.json().catch(() => ({}))) as {
+              answer?: string;
+              error?: string;
+              message?: string;
+            };
+            if (!btwResponse.ok) {
+              throw new Error(payload?.error || payload?.message || `Request failed (${btwResponse.status})`);
+            }
+            setBtwOverlay((previous) => ({
+              ...previous,
+              loading: false,
+              answer: typeof payload.answer === 'string' ? payload.answer : '',
+              error: null,
+            }));
+          } catch (btwErr) {
+            if (abortController.signal.aborted) {
+              return;
+            }
+            const msg = btwErr instanceof Error ? btwErr.message : 'Unknown error';
+            setBtwOverlay((previous) => ({
+              ...previous,
+              loading: false,
+              error: msg,
+              answer: '',
+            }));
+          }
+          return;
+        }
         if (result.type === "builtin") {
           handleBuiltInCommand(result);
           setInput("");

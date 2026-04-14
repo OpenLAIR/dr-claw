@@ -16,6 +16,7 @@
 import { Codex } from '@openai/codex-sdk';
 import { promises as fs } from 'fs';
 import path from 'path';
+import os from 'os';
 import { encodeProjectPath, reconcileCodexSessionIndex } from './projects.js';
 import { sessionDb } from './database/db.js';
 import { applyStageTagsToSession, recordIndexedSession } from './utils/sessionIndex.js';
@@ -24,6 +25,8 @@ import { buildTempAttachmentFilename } from './utils/imageAttachmentFiles.js';
 import { buildCodexRealtimeTokenBudget } from './utils/sessionTokenUsage.js';
 import { expandSkillCommand } from './utils/skillExpander.js';
 import { buildCodexSessionCreatedEvent } from './utils/codexSessionEvents.js';
+import { CODEX_MODELS } from '../shared/modelConstants.js';
+import { BTW_SYSTEM_PROMPT, buildBtwUserMessage } from './utils/btw.js';
 
 // Track active sessions
 const activeCodexSessions = new Map();
@@ -710,6 +713,62 @@ function sendMessage(ws, data) {
   } catch (error) {
     console.error('[Codex] Error sending message:', error);
   }
+}
+
+/**
+ * Resolve an OpenAI API key from environment or ~/.codex/auth.json.
+ */
+async function resolveOpenAIApiKey(env) {
+  if (env?.OPENAI_API_KEY) return env.OPENAI_API_KEY;
+  if (process.env.OPENAI_API_KEY) return process.env.OPENAI_API_KEY;
+  try {
+    const authPath = path.join(os.homedir(), '.codex', 'auth.json');
+    const content = await fs.readFile(authPath, 'utf8');
+    const auth = JSON.parse(content);
+    if (auth?.OPENAI_API_KEY) return auth.OPENAI_API_KEY;
+  } catch {
+    // auth.json missing or unreadable
+  }
+  return null;
+}
+
+/**
+ * One-shot, tool-free side question for the /btw overlay.
+ * Bypasses the Codex SDK and calls the OpenAI Chat Completions API directly.
+ */
+export async function runCodexBtw({ question, transcript, model, env, signal }) {
+  const apiKey = await resolveOpenAIApiKey(env);
+  if (!apiKey) {
+    throw new Error('No OpenAI API key available for Codex /btw');
+  }
+
+  const userBlock = buildBtwUserMessage(question, transcript);
+  const effectiveModel = model || CODEX_MODELS.DEFAULT;
+
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: effectiveModel,
+      messages: [
+        { role: 'system', content: BTW_SYSTEM_PROMPT },
+        { role: 'user', content: userBlock },
+      ],
+    }),
+    signal,
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text().catch(() => '');
+    throw new Error(`OpenAI API error (${response.status}): ${errorBody.slice(0, 500)}`);
+  }
+
+  const data = await response.json();
+  const answer = data?.choices?.[0]?.message?.content || '';
+  return { answer };
 }
 
 // Clean up old completed sessions periodically

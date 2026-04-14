@@ -27,6 +27,7 @@ import MermaidDiagramViewer from './MermaidDiagramViewer';
 import { saveSurveyDiagramSource } from '../utils/diagramWindow';
 import ReferencesPanel from '../../references/view/ReferencesPanel';
 import type { Reference } from '../../references/types';
+import JsonTreeViewer from '../../JsonTreeViewer';
 
 type SurveyPageProps = {
   selectedProject: Project;
@@ -222,11 +223,13 @@ function PreviewContent({
   return (
     <>
       {file.previewKind === 'pdf' && preview.pdfUrl ? (
-        <iframe
-          title={file.name}
-          src={preview.pdfUrl}
-          className="h-full w-full rounded-xl border border-border/50 bg-background shadow-sm"
-        />
+        <div className="h-full min-h-[48rem]">
+          <iframe
+            title={file.name}
+            src={preview.pdfUrl}
+            className="h-full w-full rounded-xl border border-border/50 bg-background shadow-sm"
+          />
+        </div>
       ) : null}
 
       {preview.mermaidSvg ? (
@@ -234,24 +237,37 @@ function PreviewContent({
       ) : null}
 
       {file.previewKind === 'html' && preview.content ? (
-        <iframe
-          title={file.name}
-          srcDoc={preview.content}
-          sandbox="allow-scripts allow-same-origin"
-          className="h-full w-full rounded-xl border border-border/50 bg-white shadow-sm"
-        />
+        <div className="h-full min-h-[42rem]">
+          <iframe
+            title={file.name}
+            srcDoc={preview.content}
+            sandbox="allow-scripts allow-same-origin"
+            className="h-full w-full rounded-xl border border-border/50 bg-white shadow-sm"
+          />
+        </div>
       ) : null}
 
       {file.previewKind === 'markdown' && preview.content ? (
-        <div className="prose prose-sm max-w-none rounded-xl border border-border/50 bg-background/60 p-6 shadow-sm dark:prose-invert">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{preview.content}</ReactMarkdown>
+        <div className="min-h-[42rem] overflow-auto rounded-xl border border-border/50 bg-background/60 p-6 shadow-sm">
+          <div className="prose prose-sm max-w-none dark:prose-invert">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{preview.content}</ReactMarkdown>
+          </div>
         </div>
       ) : null}
 
       {(file.previewKind === 'json' || file.previewKind === 'text') && preview.content ? (
-        <pre className="overflow-x-auto whitespace-pre-wrap rounded-xl border border-border/50 bg-background/80 p-5 text-sm text-foreground shadow-sm">
-          {preview.content}
-        </pre>
+        file.previewKind === 'json' ? (
+          <JsonTreeViewer
+            content={preview.content}
+            defaultExpandDepth={1}
+            className="min-h-[42rem]"
+            invalidFallbackClassName="min-h-[42rem]"
+          />
+        ) : (
+          <pre className="min-h-[42rem] overflow-x-auto whitespace-pre-wrap rounded-xl border border-border/50 bg-background/80 p-5 text-sm text-foreground shadow-sm">
+            {preview.content}
+          </pre>
+        )
       ) : null}
 
       {file.previewKind === 'unsupported' ? (
@@ -560,11 +576,13 @@ export default function SurveyPage({ selectedProject, onChatFromReference }: Sur
                   : t('surveyPage.preview.failed')}
             </div>
           ) : (
-            <PreviewContent
-              file={selectedItem.value}
-              preview={preview}
-              onOpenMermaidWindow={handleOpenMermaidWindow}
-            />
+            <div className="h-full min-h-[42rem]">
+              <PreviewContent
+                file={selectedItem.value}
+                preview={preview}
+                onOpenMermaidWindow={handleOpenMermaidWindow}
+              />
+            </div>
           )}
         </div>
 

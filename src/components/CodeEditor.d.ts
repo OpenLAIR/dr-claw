@@ -16,6 +16,7 @@ interface CodeEditorProps {
   projectPath?: string;
   selectedProject?: Project | null;
   onStartWorkspaceQa?: ((project: Project, prompt: string) => void) | null;
+  displayMode?: 'sidebar' | 'modal' | 'embedded';
   isSidebar?: boolean;
   isExpanded?: boolean;
   onToggleExpand?: (() => void) | null;

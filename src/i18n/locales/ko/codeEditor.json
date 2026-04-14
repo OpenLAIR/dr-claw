@@ -22,6 +22,8 @@
     "exitFullscreen": "전체화면 종료",
     "fullscreen": "전체화면",
     "close": "닫기",
+    "previewFile": "파일 미리보기",
+    "editFile": "파일 편집",
     "previewMarkdown": "마크다운 미리보기",
     "editMarkdown": "마크다운 편집"
   },

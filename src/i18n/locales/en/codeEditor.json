@@ -22,6 +22,8 @@
     "exitFullscreen": "Exit fullscreen",
     "fullscreen": "Fullscreen",
     "close": "Close",
+    "previewFile": "Preview file",
+    "editFile": "Edit file",
     "previewMarkdown": "Preview markdown",
     "editMarkdown": "Edit markdown"
   },

@@ -65,6 +65,7 @@ import taskmasterRoutes from './routes/taskmaster.js';
 import mcpUtilsRoutes from './routes/mcp-utils.js';
 import commandsRoutes from './routes/commands.js';
 import claudeBtwRoutes from './routes/claude-btw.js';
+import btwRoutes from './routes/btw.js';
 import settingsRoutes from './routes/settings.js';
 import agentRoutes from './routes/agent.js';
 import projectsRoutes, { WORKSPACES_ROOT, getWorkspacesRoot, validateWorkspacePath } from './routes/projects.js';
@@ -501,7 +502,9 @@ app.use('/api/mcp-utils', authenticateToken, mcpUtilsRoutes);
 // Commands API Routes (protected)
 app.use('/api/commands', authenticateToken, commandsRoutes);
 
-// Claude ephemeral side question (/btw)
+// Ephemeral side question (/btw) — unified multi-provider endpoint
+app.use('/api/btw', authenticateToken, btwRoutes);
+// Legacy Claude-only /btw endpoint (backward compat)
 app.use('/api/claude', authenticateToken, claudeBtwRoutes);
 
 // Settings API Routes (protected)

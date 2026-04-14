@@ -129,7 +129,7 @@ const builtInCommands = [
   },
   {
     name: '/btw',
-    description: 'Ask a quick side question in an overlay (Claude only; does not add to chat history)',
+    description: 'Ask a quick side question in an overlay (does not add to chat history)',
     namespace: 'builtin',
     metadata: { type: 'builtin' }
   }

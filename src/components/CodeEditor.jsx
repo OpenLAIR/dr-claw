@@ -22,6 +22,7 @@ import { oneDark as prismOneDark } from 'react-syntax-highlighter/dist/esm/style
 import { api } from '../utils/api';
 import { useTranslation } from 'react-i18next';
 import { Eye, Code2 } from 'lucide-react';
+import JsonTreeViewer from './JsonTreeViewer';
 
 // Custom .env file syntax highlighting
 const envLanguage = StreamLanguage.define({
@@ -149,8 +150,12 @@ const UNSUPPORTED_EXTENSIONS = new Set([
   'bin', 'exe', 'dll', 'npy', 'npz', 'pkl', 'pt', 'pth', 'ckpt', 'onnx',
 ]);
 
-function CodeEditor({ file, onClose, projectPath, selectedProject = null, onStartWorkspaceQa = null, isSidebar = false, isExpanded = false, onToggleExpand = null, onPopOut = null }) {
+function CodeEditor({ file, onClose, projectPath, selectedProject = null, onStartWorkspaceQa = null, displayMode = undefined, isSidebar = false, isExpanded = false, onToggleExpand = null, onPopOut = null }) {
   const { t } = useTranslation(['codeEditor', 'common']);
+  const resolvedDisplayMode = displayMode || (isSidebar ? 'sidebar' : 'modal');
+  const isSidebarMode = resolvedDisplayMode === 'sidebar';
+  const isModalMode = resolvedDisplayMode === 'modal';
+  const isEmbeddedMode = resolvedDisplayMode === 'embedded';
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -173,9 +178,9 @@ function CodeEditor({ file, onClose, projectPath, selectedProject = null, onStar
   const [fontSize, setFontSize] = useState(() => {
     return localStorage.getItem('codeEditorFontSize') || '12';
   });
-  const [markdownPreview, setMarkdownPreview] = useState(() => {
+  const [viewMode, setViewMode] = useState(() => {
     const ext = file?.name?.split('.').pop()?.toLowerCase();
-    return ext === 'md' || ext === 'markdown';
+    return ['md', 'markdown', 'json', 'html', 'htm'].includes(ext) ? 'preview' : 'edit';
   });
   const [candidates, setCandidates] = useState(null);
   const [resolvedPath, setResolvedPath] = useState(null);
@@ -187,18 +192,24 @@ function CodeEditor({ file, onClose, projectPath, selectedProject = null, onStar
     onClose();
   };
 
+  // File type detection
+  const fileExt = useMemo(() => file.name.split('.').pop()?.toLowerCase() || '', [file.name]);
+
   // Check if file is markdown
   const isMarkdownFile = useMemo(() => {
     const ext = file.name.split('.').pop()?.toLowerCase();
     return ext === 'md' || ext === 'markdown';
   }, [file.name]);
-
-  // File type detection
-  const fileExt = useMemo(() => file.name.split('.').pop()?.toLowerCase() || '', [file.name]);
+  const isJsonFile = useMemo(() => fileExt === 'json', [fileExt]);
+  const isHtmlFile = useMemo(() => fileExt === 'html' || fileExt === 'htm', [fileExt]);
   const isPdf = useMemo(() => fileExt === 'pdf', [fileExt]);
   const isImage = useMemo(() => IMAGE_EXTENSIONS.has(fileExt), [fileExt]);
   const isUnsupported = useMemo(() => UNSUPPORTED_EXTENSIONS.has(fileExt), [fileExt]);
   const isBinary = isPdf || isImage;
+  const supportsPreviewMode = useMemo(
+    () => !isBinary && !isUnsupported && (isMarkdownFile || isJsonFile || isHtmlFile),
+    [isBinary, isUnsupported, isMarkdownFile, isJsonFile, isHtmlFile],
+  );
   const [blobUrl, setBlobUrl] = useState(null);
   const absoluteFilePath = useMemo(() => {
     if (!file?.path) {
@@ -235,7 +246,7 @@ function CodeEditor({ file, onClose, projectPath, selectedProject = null, onStar
     setResolvedPath(null);
     setCandidates(null);
     const ext = file?.name?.split('.').pop()?.toLowerCase();
-    setMarkdownPreview(ext === 'md' || ext === 'markdown');
+    setViewMode(['md', 'markdown', 'json', 'html', 'htm'].includes(ext) ? 'preview' : 'edit');
   }, [file?.path, file?.name]);
 
   // Create minimap extension with chunk-based gutters
@@ -304,7 +315,7 @@ function CodeEditor({ file, onClose, projectPath, selectedProject = null, onStar
   }, [file.diffInfo, showDiff]);
 
   // Whether toolbar has any buttons worth showing
-  const hasToolbarButtons = !!(file.diffInfo || (isSidebar && onPopOut) || (isSidebar && onToggleExpand));
+  const hasToolbarButtons = !!(file.diffInfo || (isSidebarMode && onPopOut) || (isSidebarMode && onToggleExpand));
 
   // Create editor toolbar panel - only when there are buttons to show
   const editorToolbarPanel = useMemo(() => {
@@ -363,7 +374,7 @@ function CodeEditor({ file, onClose, projectPath, selectedProject = null, onStar
         }
 
         // Pop out button (only in sidebar mode with onPopOut)
-        if (isSidebar && onPopOut) {
+        if (isSidebarMode && onPopOut) {
           toolbarHTML += `
             <button class="cm-toolbar-btn cm-popout-btn" title="Open in modal">
               <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -374,7 +385,7 @@ function CodeEditor({ file, onClose, projectPath, selectedProject = null, onStar
         }
 
         // Expand button (only in sidebar mode)
-        if (isSidebar && onToggleExpand) {
+        if (isSidebarMode && onToggleExpand) {
           toolbarHTML += `
             <button class="cm-toolbar-btn cm-expand-btn" title="${isExpanded ? t('toolbar.collapse') : t('toolbar.expand')}">
               <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -430,14 +441,14 @@ function CodeEditor({ file, onClose, projectPath, selectedProject = null, onStar
           });
         }
 
-        if (isSidebar && onPopOut) {
+        if (isSidebarMode && onPopOut) {
           const popoutBtn = dom.querySelector('.cm-popout-btn');
           popoutBtn?.addEventListener('click', () => {
             onPopOut();
           });
         }
 
-        if (isSidebar && onToggleExpand) {
+        if (isSidebarMode && onToggleExpand) {
           const expandBtn = dom.querySelector('.cm-expand-btn');
           expandBtn?.addEventListener('click', () => {
             onToggleExpand();
@@ -455,7 +466,7 @@ function CodeEditor({ file, onClose, projectPath, selectedProject = null, onStar
     };
 
     return [showPanel.of(createPanel)];
-  }, [file.diffInfo, showDiff, isSidebar, isExpanded, onToggleExpand, onPopOut]);
+  }, [file.diffInfo, showDiff, isSidebarMode, isExpanded, onToggleExpand, onPopOut]);
 
   // Get language extension based on file extension
   const getLanguageExtension = (filename) => {
@@ -717,8 +728,18 @@ function CodeEditor({ file, onClose, projectPath, selectedProject = null, onStar
             }
           `}
         </style>
-        {isSidebar ? (
+        {isSidebarMode ? (
           <div className="w-full h-full flex items-center justify-center bg-background relative">
+            <button onClick={handleAbortAndClose} className="absolute top-2 right-2 p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded z-10">
+              <X className="w-4 h-4 text-gray-500" />
+            </button>
+            <div className="flex items-center gap-3">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              <span className="text-gray-900 dark:text-white">{t('loading', { fileName: file.name })}</span>
+            </div>
+          </div>
+        ) : isEmbeddedMode ? (
+          <div className="w-full h-full bg-background p-8 flex items-center justify-center relative">
             <button onClick={handleAbortAndClose} className="absolute top-2 right-2 p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded z-10">
               <X className="w-4 h-4 text-gray-500" />
             </button>
@@ -778,12 +799,26 @@ function CodeEditor({ file, onClose, projectPath, selectedProject = null, onStar
       </div>
     );
 
-    if (isSidebar) {
+    if (isSidebarMode) {
       return (
         <div className="w-full h-full flex flex-col bg-background relative">
           <button onClick={onClose} className="absolute top-2 right-2 p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded z-10">
             <X className="w-4 h-4 text-gray-500" />
           </button>
+          {pickerContent}
+        </div>
+      );
+    }
+
+    if (isEmbeddedMode) {
+      return (
+        <div className="w-full h-full bg-white dark:bg-gray-900 flex flex-col">
+          <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+            <span className="text-sm font-medium text-gray-900 dark:text-white truncate">{file.name}</span>
+            <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded">
+              <X className="w-4 h-4 text-gray-500" />
+            </button>
+          </div>
           {pickerContent}
         </div>
       );
@@ -877,19 +912,21 @@ function CodeEditor({ file, onClose, projectPath, selectedProject = null, onStar
           }
         `}
       </style>
-      <div className={isSidebar ?
-        'w-full h-full flex flex-col' :
-        `fixed inset-0 z-[9999] ${
-          // Mobile: native fullscreen, Desktop: modal with backdrop
-          'md:bg-black/50 md:flex md:items-center md:justify-center md:p-4'
-        } ${isFullscreen ? 'md:p-0' : ''}`}>
-        <div className={isSidebar ?
-          'bg-background flex flex-col w-full h-full' :
-          `bg-background shadow-2xl flex flex-col ${
-          // Mobile: always fullscreen, Desktop: modal sizing
-          'w-full h-full md:rounded-lg md:shadow-2xl' +
-          (isFullscreen ? ' md:w-full md:h-full md:rounded-none' : ' md:w-full md:max-w-6xl md:h-[80vh] md:max-h-[80vh]')
-        }`}>
+      <div className={isSidebarMode
+        ? 'w-full h-full flex flex-col'
+        : isEmbeddedMode
+          ? 'absolute inset-0 z-40 flex flex-col bg-background'
+          : `fixed inset-0 z-[9999] ${
+              'md:bg-black/50 md:flex md:items-center md:justify-center md:p-4'
+            } ${isFullscreen ? 'md:p-0' : ''}`}>
+        <div className={isSidebarMode
+          ? 'bg-background flex flex-col w-full h-full'
+          : isEmbeddedMode
+            ? 'bg-background flex flex-col w-full h-full'
+            : `bg-background shadow-2xl flex flex-col ${
+                'w-full h-full md:rounded-lg md:shadow-2xl' +
+                (isFullscreen ? ' md:w-full md:h-full md:rounded-none' : ' md:w-full md:max-w-6xl md:h-[80vh] md:max-h-[80vh]')
+              }`}>
         {/* Header */}
         <div className="flex items-center justify-between px-3 py-1.5 border-b border-border flex-shrink-0 min-w-0">
           <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -917,17 +954,17 @@ function CodeEditor({ file, onClose, projectPath, selectedProject = null, onStar
               </button>
             )}
 
-            {!isBinary && !isUnsupported && isMarkdownFile && (
+            {supportsPreviewMode && (
               <button
-                onClick={() => setMarkdownPreview(!markdownPreview)}
+                onClick={() => setViewMode((current) => (current === 'preview' ? 'edit' : 'preview'))}
                 className={`p-1.5 rounded-md min-w-[36px] min-h-[36px] md:min-w-0 md:min-h-0 flex items-center justify-center transition-colors ${
-                  markdownPreview
+                  viewMode === 'preview'
                     ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30'
                     : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800'
                 }`}
-                title={markdownPreview ? t('actions.editMarkdown') : t('actions.previewMarkdown')}
+                title={viewMode === 'preview' ? t('actions.editFile') : t('actions.previewFile')}
               >
-                {markdownPreview ? <Code2 className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {viewMode === 'preview' ? <Code2 className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             )}
 
@@ -970,7 +1007,7 @@ function CodeEditor({ file, onClose, projectPath, selectedProject = null, onStar
               </button>
             )}
 
-            {!isSidebar && (
+            {isModalMode && (
               <button
                 onClick={toggleFullscreen}
                 className="hidden md:flex p-1.5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 items-center justify-center"
@@ -1004,11 +1041,24 @@ function CodeEditor({ file, onClose, projectPath, selectedProject = null, onStar
             <div className="h-full overflow-auto flex items-center justify-center bg-muted/30 p-4">
               <img src={blobUrl} alt={file.name} className="max-w-full max-h-full object-contain rounded" />
             </div>
-          ) : markdownPreview && isMarkdownFile ? (
+          ) : viewMode === 'preview' && isMarkdownFile ? (
             <div className="h-full overflow-y-auto bg-white dark:bg-gray-900">
               <div className="max-w-4xl mx-auto px-8 py-6 prose prose-sm dark:prose-invert prose-headings:font-semibold prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-code:text-sm prose-pre:bg-gray-900 prose-img:rounded-lg max-w-none">
                 <MarkdownPreview content={content} />
               </div>
+            </div>
+          ) : viewMode === 'preview' && isJsonFile ? (
+            <div className="h-full overflow-auto bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.08),transparent_28%),linear-gradient(180deg,rgba(248,250,252,0.92),rgba(255,255,255,0.94))] p-4 dark:bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.10),transparent_28%),linear-gradient(180deg,rgba(15,23,42,0.98),rgba(2,6,23,0.98))]">
+              <JsonTreeViewer content={content} defaultExpandDepth={1} className="min-h-full" />
+            </div>
+          ) : viewMode === 'preview' && isHtmlFile ? (
+            <div className="h-full overflow-auto bg-muted/20 p-4">
+              <iframe
+                title={file.name}
+                srcDoc={content}
+                sandbox="allow-scripts allow-same-origin"
+                className="h-full min-h-[42rem] w-full rounded-2xl border border-border/60 bg-white shadow-sm"
+              />
             </div>
           ) : (
             <CodeMirror
