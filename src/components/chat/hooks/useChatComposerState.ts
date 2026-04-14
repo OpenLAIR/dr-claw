@@ -2047,12 +2047,11 @@ export function useChatComposerState({
         currentSessionId === sessionToActivate;
       const isCodexSessionBusy =
         resolvedProvider === "codex" &&
-        (hasProcessingSession(
+        hasProcessingSession(
           sessionToActivate,
           resolvedProvider,
           selectedProject?.name || currentProjectName,
-        ) ||
-          (isLoading && isCurrentViewSession));
+        );
       const useSteerForThisSubmit =
         resolvedProvider === "codex" && (steerMode || forceSteerForSubmit);
 
