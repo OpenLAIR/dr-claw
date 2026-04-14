@@ -10,8 +10,9 @@
 import { Router } from 'express';
 import { query } from '@anthropic-ai/claude-agent-sdk';
 import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
+import { join, dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
+import { projectDb } from '../database/db.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -21,11 +22,31 @@ const router = Router();
 // Active query abort controllers
 const activeQueries = new Map();
 
+// Set stream timeout once at module level to avoid per-request race conditions
+process.env.CLAUDE_CODE_STREAM_CLOSE_TIMEOUT = '300000';
+
+/**
+ * Validate that projectPath is a known project directory.
+ * Returns the resolved absolute path, or null if invalid.
+ */
+function validateProjectPath(projectPath) {
+  if (!projectPath || typeof projectPath !== 'string') return null;
+  const resolved = resolve(projectPath);
+  // Check that the path corresponds to a registered project
+  const allProjects = projectDb.getAllProjects() || [];
+  const isKnown = allProjects.some(p => {
+    if (!p.path) return false;
+    const projResolved = resolve(p.path);
+    return resolved === projResolved || resolved.startsWith(projResolved + '/');
+  });
+  return isKnown ? resolved : null;
+}
+
 const FAST_SYSTEM_PROMPT = `You are a helpful assistant providing quick, concise answers about text selected from markdown documents. Keep responses brief and direct. Use markdown formatting in your response when appropriate.`;
 
 const THINK_SYSTEM_PROMPT = `You are a deep-thinking assistant. Provide a detailed, well-reasoned analysis with thorough explanations. Break down concepts, explore implications, and provide comprehensive insights. Use markdown formatting with clear structure (headings, lists, etc.).`;
 
-// Load the inno-deep-research skill as the Deep Research system prompt
+// Load the inno-deep-research skill as the Deep Research system prompt (uses sonnet model)
 let RESEARCH_SYSTEM_PROMPT;
 try {
   const skillPath = join(__dirname, '../../skills/inno-deep-research/SKILL.md');
@@ -75,6 +96,9 @@ async function handleQueryRequest(req, res) {
   const config = MODE_CONFIG[mode] || MODE_CONFIG.fast;
   const queryId = `quick-qa-${mode}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
+  // Validate projectPath to prevent path traversal
+  const validatedCwd = validateProjectPath(projectPath) || process.cwd();
+
   // Set up SSE
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
@@ -95,14 +119,11 @@ async function handleQueryRequest(req, res) {
 
   const prompt = buildPrompt(selectedText, question, mode);
 
-  const prevStreamTimeout = process.env.CLAUDE_CODE_STREAM_CLOSE_TIMEOUT;
-  process.env.CLAUDE_CODE_STREAM_CLOSE_TIMEOUT = '300000';
-
   try {
     const conversation = query({
       prompt,
       options: {
-        cwd: projectPath || process.cwd(),
+        cwd: validatedCwd,
         model: config.model,
         systemPrompt: config.systemPrompt,
         tools: [],
@@ -147,11 +168,6 @@ async function handleQueryRequest(req, res) {
     }
   } finally {
     activeQueries.delete(queryId);
-    if (prevStreamTimeout !== undefined) {
-      process.env.CLAUDE_CODE_STREAM_CLOSE_TIMEOUT = prevStreamTimeout;
-    } else {
-      delete process.env.CLAUDE_CODE_STREAM_CLOSE_TIMEOUT;
-    }
     res.end();
   }
 }

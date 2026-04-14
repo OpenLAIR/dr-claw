@@ -109,9 +109,8 @@ function findMarkdownSpan(mdContent, plainText) {
  * block that contains the selected text and return its end position so we can
  * append a link annotation after it.
  *
- * Strategy: extract distinctive tokens from the selected text, search for
- * markdown table rows (lines starting with |) that contain those tokens,
- * then return the full table block range.
+ * Detects table blocks (lines starting with |), fenced code blocks (``` or ~~~),
+ * and blockquote blocks (lines starting with >).
  *
  * Returns { blockEnd: number, label: string } or null.
  */
@@ -123,39 +122,64 @@ function findContainingBlock(mdContent, plainText) {
   if (tokens.length === 0) return null;
 
   const lines = mdContent.split('\n');
+  const blocks = [];
 
-  // 1. Identify all table blocks (groups of consecutive lines starting with |)
-  const tableBlocks = [];
-  let blockStart = -1;
-  for (let i = 0; i < lines.length; i++) {
-    const isTableLine = lines[i].trim().startsWith('|');
-    if (isTableLine && blockStart === -1) {
-      blockStart = i;
-    } else if (!isTableLine && blockStart !== -1) {
-      tableBlocks.push({ start: blockStart, end: i - 1 });
-      blockStart = -1;
+  // Identify table blocks, fenced code blocks, and blockquote blocks
+  let i = 0;
+  while (i < lines.length) {
+    const trimmed = lines[i].trim();
+
+    // Fenced code block (``` or ~~~)
+    if (trimmed.startsWith('```') || trimmed.startsWith('~~~')) {
+      const fence = trimmed.slice(0, 3);
+      const blockStart = i;
+      i++;
+      while (i < lines.length && !lines[i].trim().startsWith(fence)) {
+        i++;
+      }
+      blocks.push({ start: blockStart, end: i < lines.length ? i : lines.length - 1 });
+      i++;
+      continue;
     }
-  }
-  if (blockStart !== -1) {
-    tableBlocks.push({ start: blockStart, end: lines.length - 1 });
+
+    // Table block (consecutive lines starting with |)
+    if (trimmed.startsWith('|')) {
+      const blockStart = i;
+      while (i < lines.length && lines[i].trim().startsWith('|')) {
+        i++;
+      }
+      blocks.push({ start: blockStart, end: i - 1 });
+      continue;
+    }
+
+    // Blockquote block (consecutive lines starting with >)
+    if (trimmed.startsWith('>')) {
+      const blockStart = i;
+      while (i < lines.length && lines[i].trim().startsWith('>')) {
+        i++;
+      }
+      blocks.push({ start: blockStart, end: i - 1 });
+      continue;
+    }
+
+    i++;
   }
 
-  if (tableBlocks.length === 0) return null;
+  if (blocks.length === 0) return null;
 
-  // 2. Score each table block by how many tokens it contains
+  // Score each block by how many tokens it contains
   let bestBlock = null;
   let bestScore = 0;
 
-  for (const block of tableBlocks) {
-    // Combine all lines of this table into one string for matching
-    let tableText = '';
-    for (let i = block.start; i <= block.end; i++) {
-      tableText += lines[i] + '\n';
+  for (const block of blocks) {
+    let blockText = '';
+    for (let j = block.start; j <= block.end; j++) {
+      blockText += lines[j] + '\n';
     }
 
     let score = 0;
     for (const token of tokens) {
-      if (tableText.includes(token)) score++;
+      if (blockText.includes(token)) score++;
     }
 
     if (score > bestScore) {
@@ -168,10 +192,10 @@ function findContainingBlock(mdContent, plainText) {
   const minScore = tokens.length >= 3 ? 2 : 1;
   if (bestScore < minScore || !bestBlock) return null;
 
-  // Compute the character offset of the end of the table block
+  // Compute the character offset of the end of the block
   let blockEnd = 0;
-  for (let i = 0; i <= bestBlock.end; i++) {
-    blockEnd += lines[i].length + 1; // +1 for \n
+  for (let j = 0; j <= bestBlock.end; j++) {
+    blockEnd += lines[j].length + 1; // +1 for \n
   }
 
   const label = tokens.slice(0, 3).join(' ');
@@ -181,16 +205,23 @@ function findContainingBlock(mdContent, plainText) {
 /**
  * Find the next available _XX.md suffix (01–99) for a given base path.
  * baseName: filename without extension, e.g. "notes"
- * dir: directory path, e.g. "docs/"
  * existingContent: the current markdown content (used to scan for existing links)
+ * existingFiles: array of filenames already on disk in the same directory
  */
-function findNextSuffix(existingContent, baseName) {
+function findNextSuffix(existingContent, baseName, existingFiles = []) {
   const used = new Set();
-  // Scan for patterns like baseName_01.md, baseName_02.md, etc. in existing links
-  const regex = new RegExp(`${baseName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}_(\\d{2})\\.md`, 'g');
+  const escapedBase = baseName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`${escapedBase}_(\\d{2})\\.md`, 'g');
+  // Scan markdown content for existing links
   let match;
   while ((match = regex.exec(existingContent)) !== null) {
     used.add(parseInt(match[1], 10));
+  }
+  // Also scan filesystem filenames to avoid overwriting unlinked files
+  const fileRegex = new RegExp(`^${escapedBase}_(\\d{2})\\.md$`);
+  for (const f of existingFiles) {
+    const fm = fileRegex.exec(f);
+    if (fm) used.add(parseInt(fm[1], 10));
   }
   for (let i = 1; i <= 99; i++) {
     if (!used.has(i)) return String(i).padStart(2, '0');
@@ -313,7 +344,7 @@ function MarkdownSelectionPopup({ containerRef, onStartSession, onOpenOverlay, p
       clearTimeout(timer);
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [popupState]);
+  }, [popupState, handleClose]);
 
   // Auto-focus input only when the user switches mode tabs (not on initial popup)
   const hasInteracted = useRef(false);
@@ -479,6 +510,8 @@ function MarkdownSelectionPopup({ containerRef, onStartSession, onOpenOverlay, p
 
     autoSavedRef.current = true;
 
+    let mounted = true;
+
     (async () => {
       try {
         const modeLabel = activeMode === 'think' ? 'Think' : 'Deep Research';
@@ -490,7 +523,24 @@ function MarkdownSelectionPopup({ containerRef, onStartSession, onOpenOverlay, p
         const dotIdx = fileName.lastIndexOf('.');
         const baseName = dotIdx > 0 ? fileName.substring(0, dotIdx) : fileName;
 
-        const suffix = findNextSuffix(mdContent, baseName);
+        // List existing files in the directory to avoid suffix collisions
+        let existingFiles = [];
+        try {
+          const dirPath = dir || '.';
+          const res = await api.getFiles(projectName, { path: dirPath, maxDepth: 1 });
+          if (res.ok) {
+            const files = await res.json();
+            existingFiles = (Array.isArray(files) ? files : []).map(
+              f => (typeof f === 'string' ? f : f.name || '').split('/').pop()
+            );
+          }
+        } catch {
+          // Fall back to content-only scan
+        }
+
+        if (!mounted) return;
+
+        const suffix = findNextSuffix(mdContent, baseName, existingFiles);
         if (!suffix) return;
 
         const newFileName = `${baseName}_${suffix}.md`;
@@ -505,6 +555,7 @@ function MarkdownSelectionPopup({ containerRef, onStartSession, onOpenOverlay, p
 
         // Save the new .md file
         await api.saveFile(projectName, newFilePath, newFileContent);
+        if (!mounted) return;
 
         // Insert hyperlink on the selected text in the original content
         const matchedSpan = findMarkdownSpan(mdContent, selectedText);
@@ -529,9 +580,11 @@ function MarkdownSelectionPopup({ containerRef, onStartSession, onOpenOverlay, p
               .map((l) => l.trim())
               .map(stripMd)
               .find((l) => l.length > 15 && !l.endsWith(':') && !l.endsWith('：'));
-            const linkLabel = summaryLine
+            const rawLabel = summaryLine
               ? summaryLine.slice(0, 80) + (summaryLine.length > 80 ? '...' : '')
               : question.trim() || `${modeLabel} Note`;
+            // Escape markdown link-breaking characters in the label
+            const linkLabel = rawLabel.replace(/[[\]()]/g, '\\$&');
             const annotation = `\n> 📎 [${linkLabel}](${newFileName})\n`;
             const updatedContent =
               mdContent.slice(0, block.blockEnd) +
@@ -545,6 +598,8 @@ function MarkdownSelectionPopup({ containerRef, onStartSession, onOpenOverlay, p
         console.error('Failed to auto-save Think Mode result:', err);
       }
     })();
+
+    return () => { mounted = false; };
   }, [popupState, fullResult, isBackgroundMode, filePath, mdContent, onContentChange, onSaveFile, projectName, activeMode, question, selectedText]);
 
   /**
