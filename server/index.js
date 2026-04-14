@@ -1399,10 +1399,6 @@ function warnUnknownLifecycleProjectPath(projectPath) {
     console.warn(`[WARN] Ignoring lifecycle projectPath that is not a known project: ${normalizedPath}`);
 }
 
-function inferProviderFromMessageType(type, fallbackProvider = null) {
-    return _inferProviderFromMessageType(type, fallbackProvider);
-}
-
 /** Shared deps object that wires the extracted helpers to real DB + fs. */
 const _lifecycleDeps = {
     isKnownPath(projectPath) {
