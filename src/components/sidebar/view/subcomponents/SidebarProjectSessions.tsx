@@ -93,7 +93,7 @@ export default function SidebarProjectSessions({
       ) : (
         sessions.map((session) => (
           <SidebarSessionItem
-            key={session.id}
+            key={`${project.name}::${session.__provider || 'claude'}::${session.id}`}
             project={project}
             session={session}
             selectedSession={selectedSession}

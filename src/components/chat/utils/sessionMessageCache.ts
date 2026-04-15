@@ -1,15 +1,8 @@
 import type { Provider } from '../types/types';
+import { buildChatMessagesStorageKey } from './chatStorage';
 import { DEFAULT_PROVIDER, normalizeProvider } from '../../../utils/providerPolicy';
 
-const CHAT_MESSAGES_PREFIX = 'chat_messages_';
-
-function buildChatMessagesStorageKey(
-  projectName: string,
-  sessionId: string,
-  provider: string,
-): string {
-  return `${CHAT_MESSAGES_PREFIX}${projectName}_${provider}_${sessionId}`;
-}
+const LEGACY_CHAT_MESSAGES_PREFIX = 'chat_messages_';
 
 type SessionMessageCacheLookupOptions = {
   allowLegacyFallback?: boolean;
@@ -35,7 +28,7 @@ export function buildSessionMessageCacheCandidateKeys(
     new Set([
       providerScopedKey,
       buildChatMessagesStorageKey(projectName, sessionId, DEFAULT_PROVIDER),
-      `${CHAT_MESSAGES_PREFIX}${projectName}_${sessionId}`,
+      `${LEGACY_CHAT_MESSAGES_PREFIX}${projectName}_${sessionId}`,
     ].filter(Boolean)),
   );
 }

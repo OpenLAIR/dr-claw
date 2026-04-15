@@ -1,6 +1,7 @@
 import type { TFunction } from 'i18next';
-import type { Project } from '../../../types/app';
+import type { Project, ProjectSession, SessionProvider } from '../../../types/app';
 import { stripInternalContextPrefix } from '../../../utils/sessionFormatting';
+import { DEFAULT_PROVIDER, normalizeProvider } from '../../../utils/providerPolicy';
 import type {
   AdditionalSessionsByProject,
   ProjectSortOrder,
@@ -123,7 +124,11 @@ export const getAllSessions = (
   const claudeSessions = [
     ...(project.sessions || []),
     ...(additionalSessions[project.name] || []),
-  ].map((session) => ({ ...session, __provider: 'claude' as const, __projectName: project.name }));
+  ].map((session) => ({
+    ...session,
+    __provider: normalizeProvider((session.__provider || 'claude') as SessionProvider),
+    __projectName: session.__projectName || project.name,
+  }));
 
   const cursorSessions = (project.cursorSessions || []).map((session) => ({
     ...session,
@@ -162,6 +167,60 @@ export const getAllSessions = (
   }));
 
   return [...claudeSessions, ...cursorSessions, ...codexSessions, ...geminiSessions, ...openrouterSessions, ...localSessions, ...nanoSessions].sort(
+    (a, b) => getSessionDate(b).getTime() - getSessionDate(a).getTime(),
+  );
+};
+
+const buildSessionIdentityKey = (
+  session: Pick<ProjectSession, 'id' | '__provider' | '__projectName'>,
+  projectName: string,
+): string => {
+  const scopedProjectName = session.__projectName || projectName;
+  const scopedProvider = normalizeProvider((session.__provider || DEFAULT_PROVIDER) as SessionProvider);
+  return `${scopedProjectName}::${scopedProvider}::${session.id}`;
+};
+
+export const prependSelectedSessionIfMissing = (
+  sessions: SessionWithProvider[],
+  projectName: string,
+  selectedSession: ProjectSession | null,
+  selectedProjectName: string | null,
+): SessionWithProvider[] => {
+  if (!selectedSession?.id) {
+    return sessions;
+  }
+
+  const scopedProjectName = selectedSession.__projectName || selectedProjectName;
+  if (!scopedProjectName || scopedProjectName !== projectName) {
+    return sessions;
+  }
+
+  const selectedIdentityKey = buildSessionIdentityKey(selectedSession, projectName);
+  const alreadyPresent = sessions.some(
+    (session) => buildSessionIdentityKey(session, projectName) === selectedIdentityKey,
+  );
+  if (alreadyPresent) {
+    return sessions;
+  }
+
+  const fallbackTimestamp = new Date().toISOString();
+  const optimisticSession: SessionWithProvider = {
+    ...selectedSession,
+    __provider: normalizeProvider((selectedSession.__provider || DEFAULT_PROVIDER) as SessionProvider),
+    __projectName: projectName,
+    createdAt:
+      selectedSession.createdAt ||
+      selectedSession.created_at ||
+      fallbackTimestamp,
+    lastActivity:
+      selectedSession.lastActivity ||
+      selectedSession.updated_at ||
+      selectedSession.createdAt ||
+      selectedSession.created_at ||
+      fallbackTimestamp,
+  };
+
+  return [optimisticSession, ...sessions].sort(
     (a, b) => getSessionDate(b).getTime() - getSessionDate(a).getTime(),
   );
 };
