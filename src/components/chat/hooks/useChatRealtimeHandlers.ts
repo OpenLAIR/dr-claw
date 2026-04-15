@@ -1,23 +1,41 @@
-import { useEffect, useRef } from 'react';
-import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
+import { useEffect, useRef } from "react";
+import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import {
   buildAssistantMessages,
   decodeHtmlEntities,
   formatUsageLimitText,
   unescapeWithMathProtection,
-} from '../utils/chatFormatting';
-import { parseAskUserAnswers, mergeAnswersIntoToolInput } from '../utils/messageTransforms';
+} from "../utils/chatFormatting";
 import {
+  parseAskUserAnswers,
+  mergeAnswersIntoToolInput,
+} from "../utils/messageTransforms";
+import {
+  buildChatMessagesStorageKey,
+  clearScopedPendingSessionId,
   clearSessionTimerStart,
   moveSessionTimerStart,
   persistSessionTimerStart,
+  persistScopedPendingSessionId,
+  persistScopedProviderSessionId,
+  readScopedPendingSessionId,
   safeLocalStorage,
-} from '../utils/chatStorage';
+} from "../utils/chatStorage";
+import {
+  emitSessionFilterDebugLog,
+  syncSessionFilterDebugSetting,
+} from "../utils/sessionFilterDebug";
 import { invalidateSessionMessageCache } from './useChatSessionState';
-import { RESUMING_STATUS_TEXT } from '../types/types';
-import i18n from '../../../i18n/config';
-import type { ChatMessage, PendingPermissionRequest } from '../types/types';
-import type { Project, ProjectSession, SessionNavigationSource, SessionProvider } from '../../../types/app';
+import { RESUMING_STATUS_TEXT } from "../types/types";
+import i18n from "../../../i18n/config";
+import type { ChatMessage, PendingPermissionRequest } from "../types/types";
+import type {
+  Project,
+  ProjectSession,
+  SessionNavigationSource,
+  SessionProvider,
+} from "../../../types/app";
+import { isProviderAllowed, normalizeProvider } from "../../../utils/providerPolicy";
 
 type PendingViewSession = {
   sessionId: string | null;
@@ -40,6 +58,8 @@ type LatestChatMessage = {
   [key: string]: any;
 };
 
+const warnedUnknownProviders = new Set<string>();
+
 interface UseChatRealtimeHandlersArgs {
   latestMessage: LatestChatMessage | null;
   provider: SessionProvider;
@@ -50,25 +70,65 @@ interface UseChatRealtimeHandlersArgs {
   setChatMessages: Dispatch<SetStateAction<ChatMessage[]>>;
   setIsLoading: (loading: boolean) => void;
   setCanAbortSession: (canAbort: boolean) => void;
-  setClaudeStatus: Dispatch<SetStateAction<{ text: string; tokens: number; can_interrupt: boolean; startTime?: number } | null>>;
+  setClaudeStatus: Dispatch<
+    SetStateAction<{
+      text: string;
+      tokens: number;
+      can_interrupt: boolean;
+      startTime?: number;
+    } | null>
+  >;
   setStatusTextOverride: Dispatch<SetStateAction<string | null>>;
   setTokenBudget: (budget: Record<string, unknown> | null) => void;
   setIsSystemSessionChange: (isSystemSessionChange: boolean) => void;
-  setPendingPermissionRequests: Dispatch<SetStateAction<PendingPermissionRequest[]>>;
+  setPendingPermissionRequests: Dispatch<
+    SetStateAction<PendingPermissionRequest[]>
+  >;
   pendingViewSessionRef: MutableRefObject<PendingViewSession | null>;
   streamBufferRef: MutableRefObject<string>;
   streamTimerRef: MutableRefObject<number | null>;
-  onSessionInactive?: (sessionId?: string | null) => void;
-  onSessionProcessing?: (sessionId?: string | null) => void;
-  onSessionNotProcessing?: (sessionId?: string | null) => void;
-  onSessionStatusResolved?: (sessionId?: string | null, isProcessing?: boolean) => void;
-  onReplaceTemporarySession?: (sessionId?: string | null) => void;
+  onSessionInactive?: (
+    sessionId?: string | null,
+    provider?: SessionProvider | null,
+    projectName?: string | null,
+  ) => void;
+  onSessionProcessing?: (
+    sessionId?: string | null,
+    provider?: SessionProvider | null,
+    projectName?: string | null,
+  ) => void;
+  onSessionNotProcessing?: (
+    sessionId?: string | null,
+    provider?: SessionProvider | null,
+    projectName?: string | null,
+  ) => void;
+  onSessionStatusResolved?: (
+    sessionId?: string | null,
+    isProcessing?: boolean,
+  ) => void;
+  onCodexTurnStarted?: (sessionId?: string | null) => void;
+  onCodexTurnSettled?: (
+    sessionId?: string | null,
+    outcome?: "complete" | "error" | "aborted",
+  ) => void;
+  onCodexSessionBusy?: (sessionId?: string | null) => void;
+  onCodexSessionIdResolved?: (
+    previousSessionId?: string | null,
+    actualSessionId?: string | null,
+  ) => void;
+  onReplaceTemporarySession?: (
+    sessionId?: string | null,
+    provider?: SessionProvider | null,
+    projectName?: string | null,
+    previousSessionId?: string | null,
+  ) => void;
   onNavigateToSession?: (
     sessionId: string,
     sessionProvider?: SessionProvider,
     targetProjectName?: string,
     options?: { source?: SessionNavigationSource },
   ) => void;
+  sendMessage?: (message: Record<string, unknown>) => void;
 }
 
 type FinalizeSessionLifecycleOptions = {
@@ -121,15 +181,25 @@ const appendStreamingChunk = (
     const updated = [...previous];
     const lastIndex = updated.length - 1;
     const last = updated[lastIndex];
-    if (last && last.type === 'assistant' && !last.isToolUse && last.isStreaming) {
+    if (
+      last &&
+      last.type === "assistant" &&
+      !last.isToolUse &&
+      last.isStreaming
+    ) {
       const nextContent = newline
         ? last.content
           ? `${last.content}\n${chunk}`
           : chunk
-        : `${last.content || ''}${chunk}`;
+        : `${last.content || ""}${chunk}`;
       updated[lastIndex] = { ...last, content: nextContent };
     } else {
-      updated.push({ type: 'assistant', content: chunk, timestamp: new Date(), isStreaming: true });
+      updated.push({
+        type: "assistant",
+        content: chunk,
+        timestamp: new Date(),
+        isStreaming: true,
+      });
     }
     return updated;
   });
@@ -137,14 +207,21 @@ const appendStreamingChunk = (
 
 // NOTE: unescapeWithMathProtection, formatUsageLimitText, and splitLegacyGeminiThoughtContent
 // are safe no-ops for non-Gemini text, so no provider guard is needed here.
-const finalizeStreamingMessage = (setChatMessages: Dispatch<SetStateAction<ChatMessage[]>>) => {
+const finalizeStreamingMessage = (
+  setChatMessages: Dispatch<SetStateAction<ChatMessage[]>>,
+) => {
   setChatMessages((previous) => {
     const updated = [...previous];
     const lastIndex = updated.length - 1;
     const last = updated[lastIndex];
-    if (last && last.type === 'assistant' && last.isStreaming) {
-      const normalizedContent = unescapeWithMathProtection(formatUsageLimitText(String(last.content || '')));
-      const messages = buildAssistantMessages(normalizedContent, last.timestamp || new Date());
+    if (last && last.type === "assistant" && last.isStreaming) {
+      const normalizedContent = unescapeWithMathProtection(
+        formatUsageLimitText(String(last.content || "")),
+      );
+      const messages = buildAssistantMessages(
+        normalizedContent,
+        last.timestamp || new Date(),
+      );
       updated.splice(
         lastIndex,
         1,
@@ -161,12 +238,15 @@ const finalizeStreamingMessage = (setChatMessages: Dispatch<SetStateAction<ChatM
 };
 
 const isLegacyTaskMasterInstallError = (value: unknown): boolean => {
-  const normalized = String(value || '').toLowerCase();
-  if (!normalized.includes('taskmaster')) {
+  const normalized = String(value || "").toLowerCase();
+  if (!normalized.includes("taskmaster")) {
     return false;
   }
 
-  return normalized.includes('not installed') || normalized.includes('not configured');
+  return (
+    normalized.includes("not installed") ||
+    normalized.includes("not configured")
+  );
 };
 
 export function useChatRealtimeHandlers({
@@ -191,13 +271,25 @@ export function useChatRealtimeHandlers({
   onSessionProcessing,
   onSessionNotProcessing,
   onSessionStatusResolved,
+  onCodexTurnStarted,
+  onCodexTurnSettled,
+  onCodexSessionBusy,
+  onCodexSessionIdResolved,
   onReplaceTemporarySession,
   onNavigateToSession,
+  sendMessage,
 }: UseChatRealtimeHandlersArgs) {
   const lastProcessedMessageRef = useRef<LatestChatMessage | null>(null);
 
+  useEffect(() => {
+    syncSessionFilterDebugSetting(sendMessage);
+  }, [sendMessage]);
+
   // Helper: Handle structured assistant content
-  const handleStructuredAssistantMessage = (structuredData: any, rawData: any) => {
+  const handleStructuredAssistantMessage = (
+    structuredData: any,
+    rawData: any,
+  ) => {
     // New assistant message = previous tool execution done; clear override.
     // If this message contains a new Bash tool_use, it will be re-set below (React batches both updates).
     setStatusTextOverride(null);
@@ -207,11 +299,11 @@ export function useChatRealtimeHandlers({
     const childToolUpdates: { parentId: string; child: any }[] = [];
 
     structuredData.content.forEach((part: any) => {
-      if (part.type === 'thinking' || part.type === 'reasoning') {
-        const thinkingText = part.thinking || part.reasoning || part.text || '';
+      if (part.type === "thinking" || part.type === "reasoning") {
+        const thinkingText = part.thinking || part.reasoning || part.text || "";
         if (thinkingText.trim()) {
           newMessages.push({
-            type: 'assistant',
+            type: "assistant",
             content: unescapeWithMathProtection(thinkingText),
             timestamp: new Date(),
             isThinking: true,
@@ -221,12 +313,12 @@ export function useChatRealtimeHandlers({
         return;
       }
 
-      if (part.type === 'tool_use') {
-        if (['Bash', 'run_shell_command'].includes(part.name)) {
+      if (part.type === "tool_use") {
+        if (["Bash", "run_shell_command"].includes(part.name)) {
           // Set running code status when command starts
-          setStatusTextOverride(i18n.t('chat:status.runningCode'));
+          setStatusTextOverride(i18n.t("chat:status.runningCode"));
         }
-        const toolInput = part.input ? JSON.stringify(part.input, null, 2) : '';
+        const toolInput = part.input ? JSON.stringify(part.input, null, 2) : "";
 
         if (parentToolUseId) {
           childToolUpdates.push({
@@ -242,10 +334,10 @@ export function useChatRealtimeHandlers({
           return;
         }
 
-        const isSubagentContainer = part.name === 'Task';
+        const isSubagentContainer = part.name === "Task";
         newMessages.push({
-          type: 'assistant',
-          content: '',
+          type: "assistant",
+          content: "",
           timestamp: new Date(),
           isToolUse: true,
           toolName: part.name,
@@ -260,7 +352,7 @@ export function useChatRealtimeHandlers({
         return;
       }
 
-      if (part.type === 'text' && part.text?.trim()) {
+      if (part.type === "text" && part.text?.trim()) {
         let content = decodeHtmlEntities(part.text);
         content = formatUsageLimitText(content);
         newMessages.push(...buildAssistantMessages(content, new Date()));
@@ -273,7 +365,9 @@ export function useChatRealtimeHandlers({
         if (childToolUpdates.length > 0) {
           updated = updated.map((message) => {
             if (!message.isSubagentContainer) return message;
-            const updates = childToolUpdates.filter((u) => u.parentId === message.toolId);
+            const updates = childToolUpdates.filter(
+              (u) => u.parentId === message.toolId,
+            );
             if (updates.length === 0) return message;
             const existingChildren = message.subagentState?.childTools || [];
             const newChildren = updates.map((u) => u.child);
@@ -281,7 +375,8 @@ export function useChatRealtimeHandlers({
               ...message,
               subagentState: {
                 childTools: [...existingChildren, ...newChildren],
-                currentToolIndex: existingChildren.length + newChildren.length - 1,
+                currentToolIndex:
+                  existingChildren.length + newChildren.length - 1,
                 isComplete: false,
               },
             };
@@ -309,23 +404,28 @@ export function useChatRealtimeHandlers({
   // Helper: Handle user tool results
   const handleUserToolResults = (structuredData: any, rawData: any) => {
     const parentToolUseId = rawData?.parentToolUseId;
-    const toolResults = structuredData.content.filter((part: any) => part.type === 'tool_result');
-    const textParts = structuredData.content.filter((part: any) => part.type === 'text');
+    const toolResults = structuredData.content.filter(
+      (part: any) => part.type === "tool_result",
+    );
+    const textParts = structuredData.content.filter(
+      (part: any) => part.type === "text",
+    );
 
     if (textParts.length > 0) {
-      const textContent = textParts.map((p: any) => p.text || '').join('\n');
+      const textContent = textParts.map((p: any) => p.text || "").join("\n");
       const isSkillText =
-        textContent.includes('Base directory for this skill:') ||
-        textContent.startsWith('<command-name>') ||
-        textContent.startsWith('<command-message>') ||
-        textContent.startsWith('<command-args>') ||
-        textContent.startsWith('<local-command-stdout>') ||
-        (toolResults.length > 0 && !textContent.startsWith('<system-reminder>'));
+        textContent.includes("Base directory for this skill:") ||
+        textContent.startsWith("<command-name>") ||
+        textContent.startsWith("<command-message>") ||
+        textContent.startsWith("<command-args>") ||
+        textContent.startsWith("<local-command-stdout>") ||
+        (toolResults.length > 0 &&
+          !textContent.startsWith("<system-reminder>"));
       if (isSkillText && textContent.trim()) {
         setChatMessages((previous) => [
           ...previous,
           {
-            type: 'user',
+            type: "user",
             content: textContent,
             timestamp: new Date(),
             isSkillContent: true,
@@ -341,20 +441,26 @@ export function useChatRealtimeHandlers({
       setChatMessages((previous) =>
         previous.map((message) => {
           for (const part of toolResults) {
-            if (parentToolUseId && message.toolId === parentToolUseId && message.isSubagentContainer) {
-              const updatedChildren = message.subagentState!.childTools.map((child: any) => {
-                if (child.toolId === part.tool_use_id) {
-                  return {
-                    ...child,
-                    toolResult: {
-                      content: part.content,
-                      isError: part.is_error,
-                      timestamp: new Date(),
-                    },
-                  };
-                }
-                return child;
-              });
+            if (
+              parentToolUseId &&
+              message.toolId === parentToolUseId &&
+              message.isSubagentContainer
+            ) {
+              const updatedChildren = message.subagentState!.childTools.map(
+                (child: any) => {
+                  if (child.toolId === part.tool_use_id) {
+                    return {
+                      ...child,
+                      toolResult: {
+                        content: part.content,
+                        isError: part.is_error,
+                        timestamp: new Date(),
+                      },
+                    };
+                  }
+                  return child;
+                },
+              );
               if (updatedChildren !== message.subagentState!.childTools) {
                 return {
                   ...message,
@@ -375,8 +481,11 @@ export function useChatRealtimeHandlers({
                   timestamp: new Date(),
                 },
               };
-              if (message.toolName === 'AskUserQuestion' && part.content) {
-                const resultStr = typeof part.content === 'string' ? part.content : JSON.stringify(part.content);
+              if (message.toolName === "AskUserQuestion" && part.content) {
+                const resultStr =
+                  typeof part.content === "string"
+                    ? part.content
+                    : JSON.stringify(part.content);
                 const parsedAnswers = parseAskUserAnswers(resultStr);
                 if (parsedAnswers) {
                   const inputStr = typeof message.toolInput === 'string'
@@ -406,76 +515,363 @@ export function useChatRealtimeHandlers({
     }
 
     if (lastProcessedMessageRef.current === latestMessage) {
+      emitSessionFilterDebugLog(
+        {
+          reason: "dropped:duplicate-message-reference",
+          messageType: String(latestMessage.type || ""),
+          routedSessionId: latestMessage.actualSessionId || latestMessage.sessionId || null,
+          actualSessionId: latestMessage.actualSessionId || null,
+        },
+        sendMessage,
+      );
       return;
     }
     lastProcessedMessageRef.current = latestMessage;
 
     const messageData = latestMessage.data?.message || latestMessage.data;
     const structuredMessageData =
-      messageData && typeof messageData === 'object' ? (messageData as Record<string, any>) : null;
+      messageData && typeof messageData === "object"
+        ? (messageData as Record<string, any>)
+        : null;
     const rawStructuredData =
-      latestMessage.data && typeof latestMessage.data === 'object'
+      latestMessage.data && typeof latestMessage.data === "object"
         ? (latestMessage.data as Record<string, any>)
         : null;
 
-    const globalMessageTypes = ['projects_updated', 'taskmaster-project-updated', 'session-created', 'session-aborted'];
-    const isGlobalMessage = globalMessageTypes.includes(String(latestMessage.type));
+    const globalMessageTypes = [
+      "projects_updated",
+      "taskmaster-project-updated",
+      "session-created",
+      "session-aborted",
+      "session-status",
+      "session-accepted",
+      "session-busy",
+      "session-state-changed",
+    ];
+    const isGlobalMessage = globalMessageTypes.includes(
+      String(latestMessage.type),
+    );
     const lifecycleMessageTypes = new Set([
-      'claude-complete',
-      'codex-complete',
-      'gemini-complete',
-      'openrouter-complete',
-      'localgpu-complete',
-      'cursor-result',
-      'session-aborted',
-      'claude-error',
-      'cursor-error',
-      'codex-error',
-      'gemini-error',
-      'openrouter-error',
-      'localgpu-error',
-      'session-busy',
+      "claude-complete",
+      "codex-complete",
+      "gemini-complete",
+      "openrouter-complete",
+      "localgpu-complete",
+      "cursor-complete",
+      "cursor-result",
+      "session-aborted",
+      "claude-error",
+      "cursor-error",
+      "codex-error",
+      "gemini-error",
+      "openrouter-error",
+      "localgpu-error",
     ]);
 
     const isClaudeSystemInit =
-      latestMessage.type === 'claude-response' &&
+      latestMessage.type === "claude-response" &&
       structuredMessageData &&
-      structuredMessageData.type === 'system' &&
-      structuredMessageData.subtype === 'init';
+      structuredMessageData.type === "system" &&
+      structuredMessageData.subtype === "init";
 
     const isGeminiSystemInit =
-      latestMessage.type === 'gemini-response' &&
+      latestMessage.type === "gemini-response" &&
       structuredMessageData &&
-      structuredMessageData.type === 'system' &&
-      structuredMessageData.subtype === 'init';
+      structuredMessageData.type === "system" &&
+      structuredMessageData.subtype === "init";
 
     const isCursorSystemInit =
-      latestMessage.type === 'cursor-system' &&
+      latestMessage.type === "cursor-system" &&
       rawStructuredData &&
-      rawStructuredData.type === 'system' &&
-      rawStructuredData.subtype === 'init';
+      rawStructuredData.type === "system" &&
+      rawStructuredData.subtype === "init";
 
-    const systemInitSessionId = isClaudeSystemInit || isGeminiSystemInit
-      ? structuredMessageData?.session_id
-      : isCursorSystemInit
-      ? rawStructuredData?.session_id
-      : null;
+    const systemInitSessionId =
+      isClaudeSystemInit || isGeminiSystemInit
+        ? structuredMessageData?.session_id
+        : isCursorSystemInit
+          ? rawStructuredData?.session_id
+          : null;
 
     const activeViewSessionId =
-      selectedSession?.id || currentSessionId || pendingViewSessionRef.current?.sessionId || null;
+      selectedSession?.id ||
+      currentSessionId ||
+      pendingViewSessionRef.current?.sessionId ||
+      null;
+    const pendingViewSessionId = pendingViewSessionRef.current?.sessionId || null;
+    const isPendingViewSession =
+      Boolean(pendingViewSessionRef.current?.startedAt) &&
+      !selectedSession?.id &&
+      !currentSessionId;
+    const inferredMessageProvider = (() => {
+      const messageType = String(latestMessage.type || "");
+      if (messageType.startsWith("claude-")) return "claude";
+      if (messageType.startsWith("cursor-")) return "cursor";
+      if (messageType.startsWith("codex-")) return "codex";
+      if (messageType.startsWith("gemini-")) return "gemini";
+      if (messageType.startsWith("openrouter-")) return "openrouter";
+      if (messageType.startsWith("localgpu-")) return "local";
+      if (
+        messageType === "session-created" ||
+        messageType === "session-status" ||
+        messageType === "session-aborted" ||
+        messageType === "session-accepted" ||
+        messageType === "session-busy" ||
+        messageType === "session-state-changed"
+      ) {
+        return typeof latestMessage.provider === "string"
+          ? (latestMessage.provider as SessionProvider)
+          : null;
+      }
+      return null;
+    })();
+    const resolveProvider = (
+      providerValue?: string | null,
+      fallback?: SessionProvider | null,
+    ): SessionProvider => {
+      const candidate =
+        typeof providerValue === "string" && providerValue.length > 0
+          ? providerValue
+          : fallback || inferredMessageProvider || provider;
+
+      if (typeof candidate === "string") {
+        const normalizedCandidate = candidate.trim().toLowerCase();
+        if (
+          normalizedCandidate &&
+          !isProviderAllowed(normalizedCandidate) &&
+          !warnedUnknownProviders.has(normalizedCandidate)
+        ) {
+          warnedUnknownProviders.add(normalizedCandidate);
+          console.warn(
+            `[chat] Unknown provider "${candidate}" on message type "${String(latestMessage.type || "")}", falling back to default provider`,
+          );
+        }
+      }
+
+      return normalizeProvider(candidate as SessionProvider);
+    };
+    const resolveProjectName = (
+      projectNameValue?: string | null,
+    ): string | null => {
+      if (typeof projectNameValue === "string" && projectNameValue.length > 0) {
+        return projectNameValue;
+      }
+      return selectedProject?.name || selectedSession?.__projectName || null;
+    };
+    const latestMessageProvider = resolveProvider(
+      typeof latestMessage.provider === "string" ? latestMessage.provider : null,
+    );
+    const latestMessageProjectName = resolveProjectName(
+      typeof latestMessage.projectName === "string"
+        ? latestMessage.projectName
+        : null,
+    );
+    const activeViewProvider = resolveProvider(
+      selectedSession?.__provider || provider,
+      provider,
+    );
+    const activeViewProjectName =
+      selectedSession?.__projectName || selectedProject?.name || null;
+    const routedMessageSessionId =
+      latestMessage.actualSessionId || latestMessage.sessionId || null;
+    const temporaryActiveSessionId =
+      activeViewSessionId?.startsWith("new-session-")
+        ? activeViewSessionId
+        : null;
+    const shouldRebindTemporarySession =
+      Boolean(
+        temporaryActiveSessionId &&
+          (inferredMessageProvider === "codex" || inferredMessageProvider === "gemini") &&
+          routedMessageSessionId &&
+          routedMessageSessionId !== temporaryActiveSessionId,
+      ) && !selectedSession?.id;
+
+    if (
+      shouldRebindTemporarySession &&
+      temporaryActiveSessionId &&
+      routedMessageSessionId
+    ) {
+      if (inferredMessageProvider === "codex") {
+        onCodexSessionIdResolved?.(
+          temporaryActiveSessionId,
+          routedMessageSessionId,
+        );
+      }
+      onReplaceTemporarySession?.(
+        routedMessageSessionId,
+        inferredMessageProvider as "codex" | "gemini",
+        latestMessageProjectName,
+        temporaryActiveSessionId,
+      );
+
+      if (pendingViewSessionRef.current?.sessionId === temporaryActiveSessionId) {
+        pendingViewSessionRef.current = {
+          ...pendingViewSessionRef.current,
+          sessionId: routedMessageSessionId,
+        };
+      }
+
+      if (currentSessionId === temporaryActiveSessionId) {
+        setCurrentSessionId(routedMessageSessionId);
+      }
+    }
+
     const isSystemInitForView =
-      systemInitSessionId && (!activeViewSessionId || systemInitSessionId === activeViewSessionId);
-    const shouldBypassSessionFilter = isGlobalMessage || Boolean(isSystemInitForView);
+      systemInitSessionId &&
+      (!activeViewSessionId || systemInitSessionId === activeViewSessionId);
+    const isMessageInActiveScope = (
+      sessionId?: string | null,
+      sessionProvider: SessionProvider = latestMessageProvider,
+      projectName: string | null = latestMessageProjectName,
+    ): boolean => {
+      if (!sessionId || !activeViewSessionId) {
+        return false;
+      }
+
+      if (sessionId !== activeViewSessionId) {
+        return false;
+      }
+
+      if (sessionProvider !== activeViewProvider) {
+        return false;
+      }
+
+      if (
+        activeViewProjectName &&
+        projectName &&
+        activeViewProjectName !== projectName
+      ) {
+        return false;
+      }
+
+      return true;
+    };
+    const shouldBypassSessionFilter =
+      isGlobalMessage ||
+      Boolean(isSystemInitForView) ||
+      Boolean(isPendingViewSession && inferredMessageProvider === provider) ||
+      shouldRebindTemporarySession;
     const isUnscopedError =
       !latestMessage.sessionId &&
       pendingViewSessionRef.current &&
-      !pendingViewSessionRef.current.sessionId &&
-      (latestMessage.type === 'claude-error' ||
-        latestMessage.type === 'cursor-error' ||
-        latestMessage.type === 'codex-error' ||
-        latestMessage.type === 'gemini-error');
+      (!pendingViewSessionId ||
+        pendingViewSessionId.startsWith("new-session-")) &&
+      (latestMessage.type === "claude-error" ||
+        latestMessage.type === "cursor-error" ||
+        latestMessage.type === "codex-error" ||
+        latestMessage.type === "gemini-error" ||
+        latestMessage.type === "openrouter-error" ||
+        latestMessage.type === "localgpu-error");
+    const logFilterDecision = (reason: string, extra: Record<string, unknown> = {}) => {
+      emitSessionFilterDebugLog(
+        {
+          reason,
+          messageType: String(latestMessage.type || ""),
+          routedSessionId: routedMessageSessionId,
+          actualSessionId: latestMessage.actualSessionId || null,
+          sessionProvider: latestMessageProvider,
+          messageProjectName: latestMessageProjectName,
+          activeViewSessionId,
+          activeViewProvider,
+          activeViewProjectName,
+          isGlobalMessage,
+          isPendingViewSession: Boolean(pendingViewSessionRef.current),
+          shouldRebindTemporarySession,
+          isUnscopedError: Boolean(isUnscopedError),
+          shouldBypassSessionFilter: Boolean(shouldBypassSessionFilter),
+          extra,
+        },
+        sendMessage,
+      );
+    };
+
+    if (latestMessage.type === "codex-complete") {
+      const completedSessionId =
+        latestMessage.sessionId || currentSessionId || null;
+      const actualSessionId =
+        latestMessage.actualSessionId || completedSessionId;
+      if (
+        currentSessionId &&
+        currentSessionId.startsWith("new-session-") &&
+        actualSessionId &&
+        currentSessionId !== actualSessionId
+      ) {
+        onCodexSessionIdResolved?.(currentSessionId, actualSessionId);
+      }
+      if (
+        completedSessionId &&
+        actualSessionId &&
+        completedSessionId !== actualSessionId
+      ) {
+        onCodexSessionIdResolved?.(completedSessionId, actualSessionId);
+      }
+      onCodexTurnSettled?.(actualSessionId || completedSessionId, "complete");
+    } else if (latestMessage.type === "codex-error") {
+      onCodexTurnSettled?.(
+        routedMessageSessionId || currentSessionId || null,
+        "error",
+      );
+    } else if (
+      latestMessage.type === "session-aborted" &&
+      latestMessage.provider === "codex"
+    ) {
+      onCodexTurnSettled?.(
+        routedMessageSessionId || currentSessionId || null,
+        "aborted",
+      );
+    }
+
+    if (latestMessage.type === "codex-response" && routedMessageSessionId) {
+      const codexData = latestMessage.data;
+      if (
+        codexData &&
+        (codexData.type === "turn_started" ||
+          (codexData.type === "item" && codexData.lifecycle === "started"))
+      ) {
+        onCodexTurnStarted?.(routedMessageSessionId);
+      }
+    }
+
+    const notifySessionProcessing = (
+      sessionId?: string | null,
+      sessionProvider: SessionProvider = latestMessageProvider,
+      projectName: string | null = latestMessageProjectName,
+    ) => {
+      onSessionProcessing?.(sessionId, sessionProvider, projectName);
+      onSessionStatusResolved?.(sessionId, true);
+    };
+
+    const notifySessionCompleted = (
+      sessionId?: string | null,
+      sessionProvider: SessionProvider = latestMessageProvider,
+      projectName: string | null = latestMessageProjectName,
+    ) => {
+      onSessionInactive?.(sessionId, sessionProvider, projectName);
+      onSessionNotProcessing?.(sessionId, sessionProvider, projectName);
+      onSessionStatusResolved?.(sessionId, false);
+    };
+
+    const clearScopedMessageCache = (
+      sessionId?: string | null,
+      sessionProvider: SessionProvider = latestMessageProvider,
+      projectName: string | null = latestMessageProjectName,
+    ) => {
+      const storageKey = buildChatMessagesStorageKey(
+        projectName,
+        sessionId,
+        sessionProvider,
+      );
+      if (storageKey) {
+        safeLocalStorage.removeItem(storageKey);
+      }
+    };
 
     const handleBackgroundLifecycle = (sessionId?: string) => {
+      if (!sessionId) {
+        return;
+      }
+      clearSessionTimerStart(sessionId);
+      notifySessionCompleted(sessionId, latestMessageProvider, latestMessageProjectName);
       finalizeSessionLifecycle([sessionId], {
         projectName: selectedProject?.name,
         onSessionInactive,
@@ -484,12 +880,34 @@ export function useChatRealtimeHandlers({
       });
     };
 
-    const persistStartTime = (startTime?: number | null, ...sessionIds: Array<string | null | undefined>) => {
+    const getLifecycleSessionIds = () => {
+      const ids: string[] = [];
+      if (latestMessage.sessionId) {
+        ids.push(latestMessage.sessionId);
+      }
+
+      if (
+        latestMessage.actualSessionId &&
+        latestMessage.actualSessionId !== latestMessage.sessionId
+      ) {
+        ids.push(latestMessage.actualSessionId);
+      }
+
+      return [...new Set(ids)];
+    };
+
+    const persistStartTime = (
+      startTime?: number | null,
+      ...sessionIds: Array<string | null | undefined>
+    ) => {
       if (!Number.isFinite(startTime)) {
         return;
       }
 
-      const targetSessionId = sessionIds.find((sessionId): sessionId is string => typeof sessionId === 'string' && sessionId.length > 0);
+      const targetSessionId = sessionIds.find(
+        (sessionId): sessionId is string =>
+          typeof sessionId === "string" && sessionId.length > 0,
+      );
       if (!targetSessionId) {
         return;
       }
@@ -497,7 +915,10 @@ export function useChatRealtimeHandlers({
       persistSessionTimerStart(targetSessionId, startTime);
     };
 
-    const syncClaudeStatusStartTime = (startTime?: number | null, fallbackText = 'Processing') => {
+    const syncClaudeStatusStartTime = (
+      startTime?: number | null,
+      fallbackText = "Processing",
+    ) => {
       if (!Number.isFinite(startTime)) {
         return;
       }
@@ -507,7 +928,8 @@ export function useChatRealtimeHandlers({
       setClaudeStatus((prev) => ({
         text: prev?.text || fallbackText,
         tokens: prev?.tokens || 0,
-        can_interrupt: prev?.can_interrupt !== undefined ? prev.can_interrupt : true,
+        can_interrupt:
+          prev?.can_interrupt !== undefined ? prev.can_interrupt : true,
         startTime: normalizedStartTime,
       }));
     };
@@ -525,12 +947,25 @@ export function useChatRealtimeHandlers({
         streamTimerRef.current = null;
       }
       const chunk = streamBufferRef.current;
-      streamBufferRef.current = '';
+      streamBufferRef.current = "";
       appendStreamingChunk(setChatMessages, chunk, false);
       finalizeStreamingMessage(setChatMessages);
     };
 
-    const markSessionsAsCompleted = (...sessionIds: Array<string | null | undefined>) => {
+    const markSessionsAsCompleted = (
+      ...sessionIds: Array<string | null | undefined>
+    ) => {
+      const normalizedSessionIds = sessionIds.filter(
+        (id): id is string => typeof id === "string" && id.length > 0,
+      );
+      normalizedSessionIds.forEach((sessionId) => {
+        clearSessionTimerStart(sessionId);
+        notifySessionCompleted(
+          sessionId,
+          latestMessageProvider,
+          latestMessageProjectName,
+        );
+      });
       finalizeSessionLifecycle(sessionIds, {
         projectName: selectedProject?.name,
         onSessionInactive,
@@ -541,76 +976,361 @@ export function useChatRealtimeHandlers({
 
     if (!shouldBypassSessionFilter) {
       if (!activeViewSessionId) {
-        if (latestMessage.sessionId && lifecycleMessageTypes.has(String(latestMessage.type))) {
-          handleBackgroundLifecycle(latestMessage.sessionId);
+        if (lifecycleMessageTypes.has(String(latestMessage.type))) {
+          getLifecycleSessionIds().forEach((sessionId) => {
+            handleBackgroundLifecycle(sessionId);
+          });
         }
         if (!isUnscopedError) {
+          logFilterDecision("dropped:no-active-view-session");
           return;
         }
       }
 
-      if (!latestMessage.sessionId && !isUnscopedError) {
+      if (!routedMessageSessionId && !isUnscopedError) {
+        logFilterDecision("dropped:missing-session-id");
         return;
       }
 
-      if (latestMessage.sessionId !== activeViewSessionId) {
-        if (latestMessage.sessionId && lifecycleMessageTypes.has(String(latestMessage.type))) {
-          handleBackgroundLifecycle(latestMessage.sessionId);
+      if (routedMessageSessionId && activeViewSessionId && routedMessageSessionId !== activeViewSessionId) {
+        if (lifecycleMessageTypes.has(String(latestMessage.type))) {
+          getLifecycleSessionIds().forEach((sessionId) => {
+            handleBackgroundLifecycle(sessionId);
+          });
         }
+        logFilterDecision("dropped:session-id-mismatch", {
+          expectedSessionId: activeViewSessionId,
+          actualSessionId: routedMessageSessionId,
+        });
+        return;
+      }
+
+      if (latestMessageProvider !== activeViewProvider) {
+        if (lifecycleMessageTypes.has(String(latestMessage.type))) {
+          getLifecycleSessionIds().forEach((sessionId) => {
+            handleBackgroundLifecycle(sessionId);
+          });
+        }
+        logFilterDecision("dropped:provider-mismatch", {
+          expectedProvider: activeViewProvider,
+          actualProvider: latestMessageProvider,
+        });
+        return;
+      }
+
+      if (
+        activeViewProjectName &&
+        latestMessageProjectName &&
+        activeViewProjectName !== latestMessageProjectName
+      ) {
+        if (lifecycleMessageTypes.has(String(latestMessage.type))) {
+          getLifecycleSessionIds().forEach((sessionId) => {
+            handleBackgroundLifecycle(sessionId);
+          });
+        }
+        logFilterDecision("dropped:project-mismatch", {
+          expectedProjectName: activeViewProjectName,
+          actualProjectName: latestMessageProjectName,
+        });
         return;
       }
     }
 
     switch (latestMessage.type) {
-      case 'session-created':
-        if (latestMessage.sessionId && (!currentSessionId || currentSessionId.startsWith('new-session-'))) {
+      case "session-accepted": {
+        const acceptedSessionId =
+          routedMessageSessionId ||
+          pendingViewSessionRef.current?.sessionId ||
+          currentSessionId ||
+          selectedSession?.id ||
+          null;
+        const acceptedAt = Number.isFinite(latestMessage.acceptedAt)
+          ? (latestMessage.acceptedAt as number)
+          : Date.now();
+        const acceptedProvider = resolveProvider(
+          typeof latestMessage.provider === "string"
+            ? latestMessage.provider
+            : provider,
+        );
+        const acceptedProjectName = resolveProjectName(
+          typeof latestMessage.projectName === "string"
+            ? latestMessage.projectName
+            : selectedProject?.name || null,
+        );
+        const isCurrentSession =
+          !acceptedSessionId ||
+          isMessageInActiveScope(
+            acceptedSessionId,
+            acceptedProvider,
+            acceptedProjectName,
+          );
+
+        if (acceptedSessionId) {
+          persistStartTime(
+            acceptedAt,
+            acceptedSessionId,
+            currentSessionId,
+            selectedSession?.id,
+          );
+          notifySessionProcessing(
+            acceptedSessionId,
+            acceptedProvider,
+            acceptedProjectName,
+          );
+        }
+
+        if (isCurrentSession) {
+          setIsLoading(true);
+          setCanAbortSession(true);
+          syncClaudeStatusStartTime(acceptedAt, "Processing");
+        }
+        break;
+      }
+
+      case "session-busy": {
+        const busySessionId =
+          routedMessageSessionId ||
+          pendingViewSessionRef.current?.sessionId ||
+          currentSessionId ||
+          selectedSession?.id ||
+          null;
+        const busyAt = Number.isFinite(latestMessage.reportedAt)
+          ? (latestMessage.reportedAt as number)
+          : Date.now();
+        const busyProvider = resolveProvider(
+          typeof latestMessage.provider === "string"
+            ? latestMessage.provider
+            : provider,
+        );
+        const busyProjectName = resolveProjectName(
+          typeof latestMessage.projectName === "string"
+            ? latestMessage.projectName
+            : selectedProject?.name || null,
+        );
+        const isCurrentSession =
+          !busySessionId ||
+          isMessageInActiveScope(busySessionId, busyProvider, busyProjectName);
+
+        if (busySessionId) {
+          persistStartTime(
+            busyAt,
+            busySessionId,
+            currentSessionId,
+            selectedSession?.id,
+          );
+          notifySessionProcessing(busySessionId, busyProvider, busyProjectName);
+        }
+
+        if (busyProvider === "codex") {
+          onCodexSessionBusy?.(busySessionId);
+        }
+
+        if (isCurrentSession) {
+          const busyMessage = String(
+            latestMessage.message ||
+              "Session is busy. Waiting for the current turn to finish.",
+          );
+          setIsLoading(true);
+          setCanAbortSession(true);
+          setStatusTextOverride(busyMessage);
+          setChatMessages((previous) => {
+            const lastMessage = previous[previous.length - 1];
+            if (
+              lastMessage &&
+              lastMessage.type === "assistant" &&
+              String(lastMessage.content || "") === busyMessage
+            ) {
+              return previous;
+            }
+            return [
+              ...previous,
+              {
+                type: "assistant",
+                content: busyMessage,
+                timestamp: new Date(),
+              },
+            ];
+          });
+        }
+        break;
+      }
+
+      case "session-state-changed": {
+        const stateSessionId =
+          typeof routedMessageSessionId === "string"
+            ? routedMessageSessionId
+            : null;
+        if (!stateSessionId) {
+          break;
+        }
+
+        const state = String(latestMessage.state || "").toLowerCase();
+        const stateProvider = resolveProvider(
+          typeof latestMessage.provider === "string"
+            ? latestMessage.provider
+            : provider,
+        );
+        const stateProjectName = resolveProjectName(
+          typeof latestMessage.projectName === "string"
+            ? latestMessage.projectName
+            : selectedProject?.name || null,
+        );
+        const isCurrentSession =
+          isMessageInActiveScope(
+            stateSessionId,
+            stateProvider,
+            stateProjectName,
+          );
+        const isProcessingState =
+          state === "running" ||
+          state === "queued" ||
+          state === "in_progress" ||
+          state === "waiting_user";
+        const isTerminalState =
+          state === "completed" ||
+          state === "failed" ||
+          state === "aborted" ||
+          state === "error" ||
+          state === "idle";
+
+        if (isProcessingState) {
+          notifySessionProcessing(stateSessionId, stateProvider, stateProjectName);
+          if (isCurrentSession) {
+            setIsLoading(true);
+            setCanAbortSession(true);
+          }
+          break;
+        }
+
+        if (isTerminalState) {
+          clearSessionTimerStart(stateSessionId);
+          notifySessionCompleted(stateSessionId, stateProvider, stateProjectName);
+          if (isCurrentSession) {
+            clearLoadingIndicators();
+          }
+        }
+        break;
+      }
+
+      case "session-created":
+        if (
+          latestMessage.sessionId &&
+          (!currentSessionId || currentSessionId.startsWith("new-session-"))
+        ) {
           const createdSessionProvider =
-            (latestMessage.provider as SessionProvider | undefined) || provider;
+            resolveProvider(
+              typeof latestMessage.provider === "string"
+                ? latestMessage.provider
+                : provider,
+            );
+          const explicitProjectName = resolveProjectName(
+            typeof latestMessage.projectName === "string"
+              ? latestMessage.projectName
+              : null,
+          );
+          const createdProjectName =
+            explicitProjectName
+            || (pendingViewSessionRef.current ? selectedProject?.name || null : null);
           const pendingStartTime = pendingViewSessionRef.current?.startedAt;
-          const temporarySessionId = currentSessionId?.startsWith('new-session-') ? currentSessionId : null;
+          const pendingTemporarySessionId = pendingViewSessionRef.current
+            ?.sessionId?.startsWith("new-session-")
+            ? pendingViewSessionRef.current.sessionId
+            : null;
+          const temporarySessionId = currentSessionId?.startsWith(
+            "new-session-",
+          )
+            ? currentSessionId
+            : pendingTemporarySessionId;
           if (temporarySessionId) {
             moveSessionTimerStart(temporarySessionId, latestMessage.sessionId);
+            if (createdSessionProvider === "codex") {
+              onCodexSessionIdResolved?.(
+                temporarySessionId,
+                latestMessage.sessionId,
+              );
+            }
           }
           persistStartTime(
-            typeof latestMessage.startTime === 'number' ? latestMessage.startTime : pendingStartTime,
+            typeof latestMessage.startTime === "number"
+              ? latestMessage.startTime
+              : pendingStartTime,
             latestMessage.sessionId,
           );
-          if (selectedProject && latestMessage.mode) {
-            safeLocalStorage.setItem(`session_mode_${selectedProject.name}_${latestMessage.sessionId}`, String(latestMessage.mode));
+          if (createdProjectName && latestMessage.mode) {
+            safeLocalStorage.setItem(
+              `session_mode_${createdProjectName}_${latestMessage.sessionId}`,
+              String(latestMessage.mode),
+            );
           }
-          sessionStorage.setItem('pendingSessionId', latestMessage.sessionId);
-          if ((latestMessage as any).provider === 'gemini') {
-            sessionStorage.setItem('geminiSessionId', latestMessage.sessionId);
-          } else if (latestMessage.model) {
-            sessionStorage.setItem('cursorSessionId', latestMessage.sessionId);
+          persistScopedPendingSessionId(
+            createdProjectName,
+            createdSessionProvider,
+            latestMessage.sessionId,
+          );
+          if (
+            createdSessionProvider === "gemini" ||
+            createdSessionProvider === "cursor"
+          ) {
+            persistScopedProviderSessionId(
+              createdProjectName,
+              createdSessionProvider,
+              latestMessage.sessionId,
+            );
           }
-          if (pendingViewSessionRef.current && !pendingViewSessionRef.current.sessionId) {
+          if (
+            pendingViewSessionRef.current &&
+            (!pendingViewSessionRef.current.sessionId ||
+              pendingViewSessionRef.current.sessionId.startsWith(
+                "new-session-",
+              ))
+          ) {
             pendingViewSessionRef.current.sessionId = latestMessage.sessionId;
           }
           setIsSystemSessionChange(true);
-          onReplaceTemporarySession?.(latestMessage.sessionId);
-          onNavigateToSession?.(latestMessage.sessionId, createdSessionProvider, selectedProject?.name, { source: 'system' });
+          onReplaceTemporarySession?.(
+            latestMessage.sessionId,
+            createdSessionProvider,
+            createdProjectName,
+            temporarySessionId,
+          );
+          if (createdProjectName || pendingViewSessionRef.current) {
+            onNavigateToSession?.(latestMessage.sessionId, createdSessionProvider, createdProjectName || undefined, { source: 'system' });
+          }
           setPendingPermissionRequests((previous) =>
             previous.map((request) =>
-              request.sessionId ? request : { ...request, sessionId: latestMessage.sessionId },
+              request.sessionId
+                ? request
+                : { ...request, sessionId: latestMessage.sessionId },
             ),
           );
         }
         break;
 
-      case 'token-budget':
+      case "token-budget":
         if (latestMessage.data) {
           setTokenBudget(latestMessage.data);
         }
         break;
 
-      case 'claude-response': {
-        if (messageData && typeof messageData === 'object' && messageData.type) {
+      case "claude-response": {
+        if (
+          messageData &&
+          typeof messageData === "object" &&
+          messageData.type
+        ) {
           if (Number.isFinite(messageData.startTime)) {
-            persistStartTime(messageData.startTime, latestMessage.sessionId, currentSessionId, selectedSession?.id);
+            persistStartTime(
+              messageData.startTime,
+              latestMessage.sessionId,
+              currentSessionId,
+              selectedSession?.id,
+            );
             syncClaudeStatusStartTime(messageData.startTime);
           }
-          if (messageData.type === 'content_block_delta' && messageData.delta?.text) {
+          if (
+            messageData.type === "content_block_delta" &&
+            messageData.delta?.text
+          ) {
             setIsLoading(true);
             setStatusTextOverride(null);
             const decodedText = decodeHtmlEntities(messageData.delta.text);
@@ -618,54 +1338,87 @@ export function useChatRealtimeHandlers({
             if (!streamTimerRef.current) {
               streamTimerRef.current = window.setTimeout(() => {
                 const chunk = streamBufferRef.current;
-                streamBufferRef.current = '';
+                streamBufferRef.current = "";
                 streamTimerRef.current = null;
                 appendStreamingChunk(setChatMessages, chunk, false);
               }, 30);
             }
             return;
           }
-          if (messageData.type === 'content_block_stop') {
+          if (messageData.type === "content_block_stop") {
             if (streamTimerRef.current) {
               clearTimeout(streamTimerRef.current);
               streamTimerRef.current = null;
             }
             const chunk = streamBufferRef.current;
-            streamBufferRef.current = '';
+            streamBufferRef.current = "";
             appendStreamingChunk(setChatMessages, chunk, false);
             finalizeStreamingMessage(setChatMessages);
             return;
           }
         }
 
-        if (isClaudeSystemInit && structuredMessageData?.session_id && isSystemInitForView) {
-          if (!currentSessionId || structuredMessageData.session_id !== currentSessionId) {
-            console.log('Claude CLI session duplication or new init detected');
+        if (
+          isClaudeSystemInit &&
+          structuredMessageData?.session_id &&
+          isSystemInitForView
+        ) {
+          if (
+            !currentSessionId ||
+            structuredMessageData.session_id !== currentSessionId
+          ) {
             setIsSystemSessionChange(true);
             onNavigateToSession?.(structuredMessageData.session_id, 'claude', selectedProject?.name, { source: 'system' });
             return;
           }
         }
 
-        if (structuredMessageData && Array.isArray(structuredMessageData.content) && structuredMessageData.role === 'assistant') {
-          handleStructuredAssistantMessage(structuredMessageData, rawStructuredData);
-        } else if (structuredMessageData && structuredMessageData.role === 'assistant' && typeof structuredMessageData.content === 'string' && structuredMessageData.content.trim()) {
+        if (
+          structuredMessageData &&
+          Array.isArray(structuredMessageData.content) &&
+          structuredMessageData.role === "assistant"
+        ) {
+          handleStructuredAssistantMessage(
+            structuredMessageData,
+            rawStructuredData,
+          );
+        } else if (
+          structuredMessageData &&
+          structuredMessageData.role === "assistant" &&
+          typeof structuredMessageData.content === "string" &&
+          structuredMessageData.content.trim()
+        ) {
           handleSimpleAssistantMessage(structuredMessageData);
         }
 
-        if (structuredMessageData?.role === 'user' && Array.isArray(structuredMessageData.content)) {
+        if (
+          structuredMessageData?.role === "user" &&
+          Array.isArray(structuredMessageData.content)
+        ) {
           handleUserToolResults(structuredMessageData, rawStructuredData);
         }
         break;
       }
 
-      case 'gemini-response': {
-        if (messageData && typeof messageData === 'object' && messageData.type) {
+      case "gemini-response": {
+        if (
+          messageData &&
+          typeof messageData === "object" &&
+          messageData.type
+        ) {
           if (Number.isFinite(messageData.startTime)) {
-            persistStartTime(messageData.startTime, latestMessage.sessionId, currentSessionId, selectedSession?.id);
+            persistStartTime(
+              messageData.startTime,
+              latestMessage.sessionId,
+              currentSessionId,
+              selectedSession?.id,
+            );
             syncClaudeStatusStartTime(messageData.startTime);
           }
-          if (messageData.type === 'content_block_delta' && messageData.delta?.text) {
+          if (
+            messageData.type === "content_block_delta" &&
+            messageData.delta?.text
+          ) {
             setIsLoading(true);
             setStatusTextOverride(null);
             const decodedText = decodeHtmlEntities(messageData.delta.text);
@@ -673,57 +1426,83 @@ export function useChatRealtimeHandlers({
             if (!streamTimerRef.current) {
               streamTimerRef.current = window.setTimeout(() => {
                 const chunk = streamBufferRef.current;
-                streamBufferRef.current = '';
+                streamBufferRef.current = "";
                 streamTimerRef.current = null;
                 appendStreamingChunk(setChatMessages, chunk, false);
               }, 30);
             }
             return;
           }
-          if (messageData.type === 'content_block_stop') {
+          if (messageData.type === "content_block_stop") {
             if (streamTimerRef.current) {
               clearTimeout(streamTimerRef.current);
               streamTimerRef.current = null;
             }
             const chunk = streamBufferRef.current;
-            streamBufferRef.current = '';
+            streamBufferRef.current = "";
             appendStreamingChunk(setChatMessages, chunk, false);
             finalizeStreamingMessage(setChatMessages);
             return;
           }
         }
 
-        if (isGeminiSystemInit && structuredMessageData?.session_id && isSystemInitForView) {
-          if (!currentSessionId || structuredMessageData.session_id !== currentSessionId) {
-            console.log('Gemini CLI session init detected');
+        if (
+          isGeminiSystemInit &&
+          structuredMessageData?.session_id &&
+          isSystemInitForView
+        ) {
+          if (
+            !currentSessionId ||
+            structuredMessageData.session_id !== currentSessionId
+          ) {
             setIsSystemSessionChange(true);
             onNavigateToSession?.(structuredMessageData.session_id, 'gemini', selectedProject?.name, { source: 'system' });
             return;
           }
         }
 
-        if (structuredMessageData && Array.isArray(structuredMessageData.content) && structuredMessageData.role === 'assistant') {
-          handleStructuredAssistantMessage(structuredMessageData, rawStructuredData);
-        } else if (structuredMessageData && structuredMessageData.role === 'assistant' && typeof structuredMessageData.content === 'string' && structuredMessageData.content.trim()) {
+        if (
+          structuredMessageData &&
+          Array.isArray(structuredMessageData.content) &&
+          structuredMessageData.role === "assistant"
+        ) {
+          handleStructuredAssistantMessage(
+            structuredMessageData,
+            rawStructuredData,
+          );
+        } else if (
+          structuredMessageData &&
+          structuredMessageData.role === "assistant" &&
+          typeof structuredMessageData.content === "string" &&
+          structuredMessageData.content.trim()
+        ) {
           handleSimpleAssistantMessage(structuredMessageData);
         }
 
-        if (structuredMessageData?.role === 'user' && Array.isArray(structuredMessageData.content)) {
+        if (
+          structuredMessageData?.role === "user" &&
+          Array.isArray(structuredMessageData.content)
+        ) {
           handleUserToolResults(structuredMessageData, rawStructuredData);
         }
         break;
       }
 
-      case 'localgpu-response':
-      case 'openrouter-response': {
+      case "localgpu-response":
+      case "openrouter-response": {
         const orData = latestMessage.data;
-        if (orData && typeof orData === 'object') {
+        if (orData && typeof orData === "object") {
           if (Number.isFinite(orData.startTime)) {
-            persistStartTime(orData.startTime, latestMessage.sessionId, currentSessionId, selectedSession?.id);
+            persistStartTime(
+              orData.startTime,
+              latestMessage.sessionId,
+              currentSessionId,
+              selectedSession?.id,
+            );
             syncClaudeStatusStartTime(orData.startTime);
           }
 
-          if (orData.type === 'assistant_message' && orData.message?.content) {
+          if (orData.type === "assistant_message" && orData.message?.content) {
             setIsLoading(true);
             setStatusTextOverride(null);
             const text = orData.message.content;
@@ -731,7 +1510,7 @@ export function useChatRealtimeHandlers({
             if (!streamTimerRef.current) {
               streamTimerRef.current = window.setTimeout(() => {
                 const chunk = streamBufferRef.current;
-                streamBufferRef.current = '';
+                streamBufferRef.current = "";
                 streamTimerRef.current = null;
                 appendStreamingChunk(setChatMessages, chunk, false);
               }, 30);
@@ -739,28 +1518,32 @@ export function useChatRealtimeHandlers({
             return;
           }
 
-          if (orData.type === 'structured_turn' && orData.message) {
+          if (orData.type === "structured_turn" && orData.message) {
             flushAndFinalizePendingStream();
             handleStructuredAssistantMessage(orData.message, orData);
             return;
           }
 
-          if (orData.type === 'structured_result' && orData.message) {
+          if (orData.type === "structured_result" && orData.message) {
             handleUserToolResults(orData.message, orData);
             return;
           }
 
-          if (orData.type === 'tool_use') {
+          if (orData.type === "tool_use") {
             flushAndFinalizePendingStream();
-            if (['Bash', 'bash', 'run_shell_command'].includes(orData.toolName)) {
-              setStatusTextOverride(i18n.t('chat:status.runningCode'));
+            if (
+              ["Bash", "bash", "run_shell_command"].includes(orData.toolName)
+            ) {
+              setStatusTextOverride(i18n.t("chat:status.runningCode"));
             }
-            const toolInput = orData.toolInput ? JSON.stringify(orData.toolInput, null, 2) : '';
+            const toolInput = orData.toolInput
+              ? JSON.stringify(orData.toolInput, null, 2)
+              : "";
             setChatMessages((prev) => [
               ...prev,
               {
-                type: 'assistant' as const,
-                content: '',
+                type: "assistant" as const,
+                content: "",
                 timestamp: new Date(),
                 isToolUse: true,
                 toolName: orData.toolName,
@@ -772,12 +1555,15 @@ export function useChatRealtimeHandlers({
             return;
           }
 
-          if (orData.type === 'tool_result') {
+          if (orData.type === "tool_result") {
             setStatusTextOverride(null);
             setChatMessages((prev) => {
               const updated = [...prev];
               for (let i = updated.length - 1; i >= 0; i--) {
-                if (updated[i].isToolUse && updated[i].toolId === orData.toolCallId) {
+                if (
+                  updated[i].isToolUse &&
+                  updated[i].toolId === orData.toolCallId
+                ) {
                   updated[i] = {
                     ...updated[i],
                     toolResult: {
@@ -797,14 +1583,16 @@ export function useChatRealtimeHandlers({
         break;
       }
 
-      case 'claude-output': {
-        const cleaned = String(latestMessage.data || '');
+      case "claude-output": {
+        const cleaned = String(latestMessage.data || "");
         if (cleaned.trim()) {
-          streamBufferRef.current += streamBufferRef.current ? `\n${cleaned}` : cleaned;
+          streamBufferRef.current += streamBufferRef.current
+            ? `\n${cleaned}`
+            : cleaned;
           if (!streamTimerRef.current) {
             streamTimerRef.current = window.setTimeout(() => {
               const chunk = streamBufferRef.current;
-              streamBufferRef.current = '';
+              streamBufferRef.current = "";
               streamTimerRef.current = null;
               appendStreamingChunk(setChatMessages, chunk, true);
             }, 30);
@@ -813,30 +1601,51 @@ export function useChatRealtimeHandlers({
         break;
       }
 
-      case 'claude-complete':
-      case 'gemini-complete':
-      case 'openrouter-complete':
-      case 'localgpu-complete': {
-        const pendingSessionId = sessionStorage.getItem('pendingSessionId');
-        const completedSessionId = latestMessage.sessionId || currentSessionId || pendingSessionId;
+      case "claude-complete":
+      case "cursor-complete":
+      case "gemini-complete":
+      case "openrouter-complete":
+      case "localgpu-complete": {
+        const pendingSessionId = readScopedPendingSessionId(
+          latestMessageProjectName,
+          latestMessageProvider,
+        );
+        const completedSessionId =
+          latestMessage.sessionId || currentSessionId || pendingSessionId;
         flushAndFinalizePendingStream();
         clearLoadingIndicators();
-        markSessionsAsCompleted(completedSessionId, currentSessionId, selectedSession?.id, pendingSessionId);
-        if (pendingSessionId && !currentSessionId && latestMessage.exitCode === 0) {
+        markSessionsAsCompleted(
+          completedSessionId,
+          currentSessionId,
+          selectedSession?.id,
+          pendingSessionId,
+        );
+        if (
+          pendingSessionId &&
+          !currentSessionId &&
+          latestMessage.exitCode === 0
+        ) {
           setCurrentSessionId(pendingSessionId);
-          sessionStorage.removeItem('pendingSessionId');
+          clearScopedPendingSessionId(
+            latestMessageProjectName,
+            latestMessageProvider,
+          );
         }
-        if (selectedProject && latestMessage.exitCode === 0) {
-          safeLocalStorage.removeItem(`chat_messages_${selectedProject.name}`);
+        if (latestMessage.exitCode === 0) {
+          clearScopedMessageCache(
+            completedSessionId || pendingSessionId,
+            latestMessageProvider,
+            latestMessageProjectName,
+          );
         }
         setPendingPermissionRequests([]);
         break;
       }
 
-      case 'claude-error':
-      case 'gemini-error':
-      case 'openrouter-error':
-      case 'localgpu-error': {
+      case "claude-error":
+      case "gemini-error":
+      case "openrouter-error":
+      case "localgpu-error": {
         if (isLegacyTaskMasterInstallError(latestMessage.error)) {
           break;
         }
@@ -848,28 +1657,45 @@ export function useChatRealtimeHandlers({
           null;
         flushAndFinalizePendingStream();
         clearLoadingIndicators();
-        markSessionsAsCompleted(erroredSessionId, currentSessionId, selectedSession?.id);
-        // Clear pendingSessionId for the errored session (not all sessions — other tabs may be active)
-        if (typeof window !== 'undefined') {
-          const pendingSessionId = sessionStorage.getItem('pendingSessionId');
-          if (pendingSessionId && (!erroredSessionId || pendingSessionId === erroredSessionId)) {
-            sessionStorage.removeItem('pendingSessionId');
-          }
+        markSessionsAsCompleted(
+          erroredSessionId,
+          currentSessionId,
+          selectedSession?.id,
+        );
+        // Clear pendingSessionId for the errored session (not all sessions 鈥?other tabs may be active)
+        const pendingSessionId = readScopedPendingSessionId(
+          latestMessageProjectName,
+          latestMessageProvider,
+        );
+        if (
+          pendingSessionId &&
+          (!erroredSessionId || pendingSessionId === erroredSessionId)
+        ) {
+          clearScopedPendingSessionId(
+            latestMessageProjectName,
+            latestMessageProvider,
+          );
         }
         setPendingPermissionRequests([]);
-        const details = typeof latestMessage.details === 'string' ? latestMessage.details.trim() : '';
+        const details =
+          typeof latestMessage.details === "string"
+            ? latestMessage.details.trim()
+            : "";
         const errorContent = details
           ? `Error: ${latestMessage.error}\n\n<details><summary>Technical details</summary>\n\n\`\`\`text\n${details.slice(0, 8000)}\n\`\`\`\n</details>`
           : `Error: ${latestMessage.error}`;
         setChatMessages((previous) => {
           const last = previous[previous.length - 1];
-          if (last?.type === 'error' && String(last.content || '') === errorContent) {
+          if (
+            last?.type === "error" &&
+            String(last.content || "") === errorContent
+          ) {
             return previous;
           }
           return [
             ...previous,
             {
-              type: 'error',
+              type: "error",
               content: errorContent,
               timestamp: new Date(),
               errorType: latestMessage.errorType,
@@ -880,27 +1706,35 @@ export function useChatRealtimeHandlers({
         break;
       }
 
-      case 'cursor-system':
+      case "cursor-system":
         try {
           const cursorData = latestMessage.data;
-          if (cursorData && cursorData.type === 'system' && cursorData.subtype === 'init' && cursorData.session_id) {
+          if (
+            cursorData &&
+            cursorData.type === "system" &&
+            cursorData.subtype === "init" &&
+            cursorData.session_id
+          ) {
             if (!isSystemInitForView) return;
-            if (!currentSessionId || cursorData.session_id !== currentSessionId) {
+            if (
+              !currentSessionId ||
+              cursorData.session_id !== currentSessionId
+            ) {
               setIsSystemSessionChange(true);
               onNavigateToSession?.(cursorData.session_id, 'cursor', selectedProject?.name, { source: 'system' });
             }
           }
         } catch (error) {
-          console.warn('Error handling cursor-system message:', error);
+          console.warn("Error handling cursor-system message:", error);
         }
         break;
 
-      case 'cursor-tool-use':
+      case "cursor-tool-use":
         setChatMessages((previous) => [
           ...previous,
           {
-            type: 'assistant',
-            content: `Using tool: ${latestMessage.tool} ${latestMessage.input ? `with ${latestMessage.input}` : ''}`,
+            type: "assistant",
+            content: `Using tool: ${latestMessage.tool} ${latestMessage.input ? `with ${latestMessage.input}` : ""}`,
             timestamp: new Date(),
             isToolUse: true,
             toolName: latestMessage.tool,
@@ -909,127 +1743,190 @@ export function useChatRealtimeHandlers({
         ]);
         break;
 
-      case 'cursor-error':
+      case "cursor-error":
         if (isLegacyTaskMasterInstallError(latestMessage.error)) break;
         flushAndFinalizePendingStream();
         clearLoadingIndicators();
-        markSessionsAsCompleted(latestMessage.sessionId, currentSessionId, selectedSession?.id);
+        markSessionsAsCompleted(
+          latestMessage.sessionId,
+          currentSessionId,
+          selectedSession?.id,
+        );
         setPendingPermissionRequests([]);
         setChatMessages((previous) => [
           ...previous,
-          { type: 'error', content: `Cursor error: ${latestMessage.error || 'Unknown error'}`, timestamp: new Date(), errorType: latestMessage.errorType, isRetryable: latestMessage.isRetryable === true },
+          {
+            type: "error",
+            content: `Cursor error: ${latestMessage.error || "Unknown error"}`,
+            timestamp: new Date(),
+            errorType: latestMessage.errorType,
+            isRetryable: latestMessage.isRetryable === true,
+          },
         ]);
         break;
 
-      case 'cursor-result': {
-        const cursorCompletedSessionId = latestMessage.sessionId || currentSessionId;
-        const pendingCursorSessionId = sessionStorage.getItem('pendingSessionId');
-        
+      case "cursor-result": {
+        const cursorCompletedSessionId =
+          latestMessage.sessionId || currentSessionId;
+        const pendingCursorSessionId =
+          readScopedPendingSessionId(latestMessageProjectName, "cursor");
+
         if (Number.isFinite(latestMessage.startTime)) {
-          persistStartTime(latestMessage.startTime, latestMessage.sessionId, currentSessionId, selectedSession?.id);
+          persistStartTime(
+            latestMessage.startTime,
+            latestMessage.sessionId,
+            currentSessionId,
+            selectedSession?.id,
+          );
           syncClaudeStatusStartTime(latestMessage.startTime);
         }
 
         clearLoadingIndicators();
-        markSessionsAsCompleted(cursorCompletedSessionId, currentSessionId, selectedSession?.id, pendingCursorSessionId);
+        markSessionsAsCompleted(
+          cursorCompletedSessionId,
+          currentSessionId,
+          selectedSession?.id,
+          pendingCursorSessionId,
+        );
         try {
           const resultData = latestMessage.data || {};
-          const textResult = typeof resultData.result === 'string' ? resultData.result : '';
+          const textResult =
+            typeof resultData.result === "string" ? resultData.result : "";
           if (streamTimerRef.current) {
             clearTimeout(streamTimerRef.current);
             streamTimerRef.current = null;
           }
           const pendingChunk = streamBufferRef.current;
-          streamBufferRef.current = '';
+          streamBufferRef.current = "";
           setChatMessages((previous) => {
             const updated = [...previous];
             const lastIndex = updated.length - 1;
             const last = updated[lastIndex];
-            if (last && last.type === 'assistant' && !last.isToolUse && last.isStreaming) {
-              const finalContent = textResult && textResult.trim() ? textResult : `${last.content || ''}${pendingChunk || ''}`;
-              updated[lastIndex] = { ...last, content: finalContent, isStreaming: false };
+            if (
+              last &&
+              last.type === "assistant" &&
+              !last.isToolUse &&
+              last.isStreaming
+            ) {
+              const finalContent =
+                textResult && textResult.trim()
+                  ? textResult
+                  : `${last.content || ""}${pendingChunk || ""}`;
+              updated[lastIndex] = {
+                ...last,
+                content: finalContent,
+                isStreaming: false,
+              };
             } else if (textResult && textResult.trim()) {
-              updated.push({ type: resultData.is_error ? 'error' : 'assistant', content: textResult, timestamp: new Date(), isStreaming: false });
+              updated.push({
+                type: resultData.is_error ? "error" : "assistant",
+                content: textResult,
+                timestamp: new Date(),
+                isStreaming: false,
+              });
             }
             return updated;
           });
         } catch (error) {
-          console.warn('Error handling cursor-result message:', error);
+          console.warn("Error handling cursor-result message:", error);
         }
-        if (cursorCompletedSessionId && !currentSessionId && cursorCompletedSessionId === pendingCursorSessionId) {
+        if (
+          cursorCompletedSessionId &&
+          !currentSessionId &&
+          cursorCompletedSessionId === pendingCursorSessionId
+        ) {
           setCurrentSessionId(cursorCompletedSessionId);
-          sessionStorage.removeItem('pendingSessionId');
-          if (window.refreshProjects) setTimeout(() => window.refreshProjects?.(), 500);
+          clearScopedPendingSessionId(latestMessageProjectName, "cursor");
+          if (window.refreshProjects)
+            setTimeout(() => window.refreshProjects?.(), 500);
         }
         break;
       }
 
-      case 'cursor-output':
+      case "cursor-output":
         try {
           if (Number.isFinite(latestMessage.startTime)) {
-            persistStartTime(latestMessage.startTime, latestMessage.sessionId, currentSessionId, selectedSession?.id);
+            persistStartTime(
+              latestMessage.startTime,
+              latestMessage.sessionId,
+              currentSessionId,
+              selectedSession?.id,
+            );
             syncClaudeStatusStartTime(latestMessage.startTime);
           }
           setIsLoading(true);
-          const raw = String(latestMessage.data ?? '');
+          const raw = String(latestMessage.data ?? "");
           const cleaned = raw
-            .replace(/\x1b\[[0-9;?]*[A-Za-z]/g, '')
-            .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '')
+            .replace(/\x1b\[[0-9;?]*[A-Za-z]/g, "")
+            .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "")
             .trim();
           if (cleaned) {
-            streamBufferRef.current += streamBufferRef.current ? `\n${cleaned}` : cleaned;
+            streamBufferRef.current += streamBufferRef.current
+              ? `\n${cleaned}`
+              : cleaned;
             if (!streamTimerRef.current) {
               streamTimerRef.current = window.setTimeout(() => {
                 const chunk = streamBufferRef.current;
-                streamBufferRef.current = '';
+                streamBufferRef.current = "";
                 streamTimerRef.current = null;
                 appendStreamingChunk(setChatMessages, chunk, true);
               }, 100);
             }
           }
         } catch (error) {
-          console.warn('Error handling cursor-output message:', error);
+          console.warn("Error handling cursor-output message:", error);
         }
         break;
 
-      case 'codex-response': {
+      case "codex-response": {
         const codexData = latestMessage.data;
         if (!codexData) break;
 
         if (Number.isFinite(codexData.startTime)) {
-          persistStartTime(codexData.startTime, latestMessage.sessionId, currentSessionId, selectedSession?.id);
+          persistStartTime(
+            codexData.startTime,
+            latestMessage.sessionId,
+            currentSessionId,
+            selectedSession?.id,
+          );
           syncClaudeStatusStartTime(codexData.startTime);
         }
 
         setIsLoading(true);
-        if (codexData.type === 'item') {
+        if (codexData.type === "item") {
           const itemId = codexData.itemId;
           const lifecycle = codexData.lifecycle; // 'started' | 'completed' | 'other'
 
           switch (codexData.itemType) {
-            case 'agent_message':
+            case "agent_message":
               if (codexData.message?.content?.trim()) {
                 const content = decodeHtmlEntities(codexData.message.content);
 
                 // Server marks system prompts; also detect on frontend as fallback
-                const isSystemPrompt = codexData.isSystemPrompt ||
+                const isSystemPrompt =
+                  codexData.isSystemPrompt ||
                   /^#\s+(AGENTS|SKILL|INSTRUCTIONS)/m.test(content) ||
-                  content.includes('<INSTRUCTIONS>') ||
-                  content.includes('</INSTRUCTIONS>') ||
+                  content.includes("<INSTRUCTIONS>") ||
+                  content.includes("</INSTRUCTIONS>") ||
                   /^#+\s+.*instructions\s+for\s+\//im.test(content) ||
-                  (content.includes('Base directory for this skill:') && content.length > 500) ||
-                  (content.length > 2000 && /^\d+\)\s/m.test(content) && /\bskill\b/i.test(content)) ||
-                  ((content.match(/SKILL\.md\)/g) || []).length >= 3) ||
-                  content.includes('### How to use skills') ||
-                  content.includes('## How to use skills') ||
-                  (content.includes('Trigger rules:') && content.includes('skill') && content.length > 500);
+                  (content.includes("Base directory for this skill:") &&
+                    content.length > 500) ||
+                  (content.length > 2000 &&
+                    /^\d+\)\s/m.test(content) &&
+                    /\bskill\b/i.test(content)) ||
+                  (content.match(/SKILL\.md\)/g) || []).length >= 3 ||
+                  content.includes("### How to use skills") ||
+                  content.includes("## How to use skills") ||
+                  (content.includes("Trigger rules:") &&
+                    content.includes("skill") &&
+                    content.length > 500);
 
                 if (isSystemPrompt) {
                   // Show as collapsed skill content
                   setChatMessages((previous) => [
                     ...previous,
                     {
-                      type: 'user',
+                      type: "user",
                       content,
                       timestamp: new Date(),
                       isSkillContent: true,
@@ -1039,7 +1936,7 @@ export function useChatRealtimeHandlers({
                   setChatMessages((previous) => [
                     ...previous,
                     {
-                      type: 'assistant',
+                      type: "assistant",
                       content,
                       timestamp: new Date(),
                     },
@@ -1048,14 +1945,14 @@ export function useChatRealtimeHandlers({
               }
               break;
 
-            case 'reasoning':
+            case "reasoning":
               // Codex reasoning items are very brief status notes (e.g. "Planning API path inspection")
               // They add noise without value - skip them entirely for Codex sessions
               break;
 
-            case 'command_execution':
-              if (lifecycle !== 'completed') {
-                setStatusTextOverride(i18n.t('chat:status.runningCode'));
+            case "command_execution":
+              if (lifecycle !== "completed") {
+                setStatusTextOverride(i18n.t("chat:status.runningCode"));
               } else {
                 setStatusTextOverride(null);
               }
@@ -1065,7 +1962,7 @@ export function useChatRealtimeHandlers({
                 // Wrap command in object format expected by Bash ToolRenderer
                 const bashToolInput = { command: codexData.command };
 
-                if (lifecycle === 'completed' && itemId) {
+                if (lifecycle === "completed" && itemId) {
                   // Update existing tool message if it was added on 'started'
                   setChatMessages((previous) => {
                     const existingIdx = previous.findIndex(
@@ -1075,10 +1972,13 @@ export function useChatRealtimeHandlers({
                       const updated = [...previous];
                       updated[existingIdx] = {
                         ...updated[existingIdx],
-                        toolResult: output != null ? {
-                          content: output,
-                          isError: exitCode != null && exitCode !== 0,
-                        } : null,
+                        toolResult:
+                          output != null
+                            ? {
+                                content: output,
+                                isError: exitCode != null && exitCode !== 0,
+                              }
+                            : null,
                         exitCode,
                       };
                       return updated;
@@ -1087,16 +1987,19 @@ export function useChatRealtimeHandlers({
                     return [
                       ...previous,
                       {
-                        type: 'assistant',
-                        content: '',
+                        type: "assistant",
+                        content: "",
                         timestamp: new Date(),
                         isToolUse: true,
-                        toolName: 'Bash',
+                        toolName: "Bash",
                         toolInput: bashToolInput,
-                        toolResult: output != null ? {
-                          content: output,
-                          isError: exitCode != null && exitCode !== 0,
-                        } : null,
+                        toolResult:
+                          output != null
+                            ? {
+                                content: output,
+                                isError: exitCode != null && exitCode !== 0,
+                              }
+                            : null,
                         exitCode,
                         codexItemId: itemId,
                       },
@@ -1107,16 +2010,19 @@ export function useChatRealtimeHandlers({
                   setChatMessages((previous) => [
                     ...previous,
                     {
-                      type: 'assistant',
-                      content: '',
+                      type: "assistant",
+                      content: "",
                       timestamp: new Date(),
                       isToolUse: true,
-                      toolName: 'Bash',
+                      toolName: "Bash",
                       toolInput: bashToolInput,
-                      toolResult: output != null ? {
-                        content: output,
-                        isError: exitCode != null && exitCode !== 0,
-                        } : null,
+                      toolResult:
+                        output != null
+                          ? {
+                              content: output,
+                              isError: exitCode != null && exitCode !== 0,
+                            }
+                          : null,
                       exitCode,
                       codexItemId: itemId,
                     },
@@ -1125,13 +2031,16 @@ export function useChatRealtimeHandlers({
               }
               break;
 
-            case 'file_change':
+            case "file_change":
               if (codexData.changes?.length > 0) {
                 const changesList = codexData.changes
-                  .map((change: { kind: string; path: string }) => `${change.kind}: ${change.path}`)
-                  .join('\n');
+                  .map(
+                    (change: { kind: string; path: string }) =>
+                      `${change.kind}: ${change.path}`,
+                  )
+                  .join("\n");
 
-                if (lifecycle === 'completed' && itemId) {
+                if (lifecycle === "completed" && itemId) {
                   setChatMessages((previous) => {
                     const existingIdx = previous.findIndex(
                       (m) => m.codexItemId === itemId && m.isToolUse,
@@ -1151,11 +2060,11 @@ export function useChatRealtimeHandlers({
                     return [
                       ...previous,
                       {
-                        type: 'assistant',
-                        content: '',
+                        type: "assistant",
+                        content: "",
                         timestamp: new Date(),
                         isToolUse: true,
-                        toolName: 'FileChanges',
+                        toolName: "FileChanges",
                         toolInput: changesList,
                         toolResult: {
                           content: `Status: ${codexData.status}`,
@@ -1169,16 +2078,18 @@ export function useChatRealtimeHandlers({
                   setChatMessages((previous) => [
                     ...previous,
                     {
-                      type: 'assistant',
-                      content: '',
+                      type: "assistant",
+                      content: "",
                       timestamp: new Date(),
                       isToolUse: true,
-                      toolName: 'FileChanges',
+                      toolName: "FileChanges",
                       toolInput: changesList,
-                      toolResult: codexData.status ? {
-                        content: `Status: ${codexData.status}`,
-                        isError: false,
-                      } : null,
+                      toolResult: codexData.status
+                        ? {
+                            content: `Status: ${codexData.status}`,
+                            isError: false,
+                          }
+                        : null,
                       codexItemId: itemId,
                     },
                   ]);
@@ -1186,14 +2097,17 @@ export function useChatRealtimeHandlers({
               }
               break;
 
-            case 'mcp_tool_call': {
+            case "mcp_tool_call": {
               const toolResult = codexData.result
-                ? { content: JSON.stringify(codexData.result, null, 2), isError: false }
+                ? {
+                    content: JSON.stringify(codexData.result, null, 2),
+                    isError: false,
+                  }
                 : codexData.error?.message
-                ? { content: codexData.error.message, isError: true }
-                : null;
+                  ? { content: codexData.error.message, isError: true }
+                  : null;
 
-              if (lifecycle === 'completed' && itemId) {
+              if (lifecycle === "completed" && itemId) {
                 setChatMessages((previous) => {
                   const existingIdx = previous.findIndex(
                     (m) => m.codexItemId === itemId && m.isToolUse,
@@ -1209,8 +2123,8 @@ export function useChatRealtimeHandlers({
                   return [
                     ...previous,
                     {
-                      type: 'assistant',
-                      content: '',
+                      type: "assistant",
+                      content: "",
                       timestamp: new Date(),
                       isToolUse: true,
                       toolName: `${codexData.server}:${codexData.tool}`,
@@ -1224,8 +2138,8 @@ export function useChatRealtimeHandlers({
                 setChatMessages((previous) => [
                   ...previous,
                   {
-                    type: 'assistant',
-                    content: '',
+                    type: "assistant",
+                    content: "",
                     timestamp: new Date(),
                     isToolUse: true,
                     toolName: `${codexData.server}:${codexData.tool}`,
@@ -1238,9 +2152,9 @@ export function useChatRealtimeHandlers({
               break;
             }
 
-            case 'web_search': {
-              const query = codexData.query || 'Searching...';
-              if (lifecycle === 'completed' && itemId) {
+            case "web_search": {
+              const query = codexData.query || "Searching...";
+              if (lifecycle === "completed" && itemId) {
                 // Update existing or add new
                 setChatMessages((previous) => {
                   const existingIdx = previous.findIndex(
@@ -1253,11 +2167,11 @@ export function useChatRealtimeHandlers({
                   return [
                     ...previous,
                     {
-                      type: 'assistant',
-                      content: '',
+                      type: "assistant",
+                      content: "",
                       timestamp: new Date(),
                       isToolUse: true,
-                      toolName: 'WebSearch',
+                      toolName: "WebSearch",
                       toolInput: { command: query },
                       toolResult: null,
                       codexItemId: itemId,
@@ -1268,11 +2182,11 @@ export function useChatRealtimeHandlers({
                 setChatMessages((previous) => [
                   ...previous,
                   {
-                    type: 'assistant',
-                    content: '',
+                    type: "assistant",
+                    content: "",
                     timestamp: new Date(),
                     isToolUse: true,
-                    toolName: 'WebSearch',
+                    toolName: "WebSearch",
                     toolInput: { command: query },
                     toolResult: null,
                     codexItemId: itemId,
@@ -1282,12 +2196,12 @@ export function useChatRealtimeHandlers({
               break;
             }
 
-            case 'error':
+            case "error":
               if (codexData.message?.content) {
                 setChatMessages((previous) => [
                   ...previous,
                   {
-                    type: 'error',
+                    type: "error",
                     content: codexData.message.content,
                     timestamp: new Date(),
                   },
@@ -1296,97 +2210,222 @@ export function useChatRealtimeHandlers({
               break;
 
             default:
-              console.log('[Codex] Unhandled item type:', codexData.itemType, codexData);
+              console.log(
+                "[Codex] Unhandled item type:",
+                codexData.itemType,
+                codexData,
+              );
           }
         }
 
-        if (codexData.type === 'turn_complete' || codexData.type === 'turn_failed') {
+        if (
+          codexData.type === "turn_complete" ||
+          codexData.type === "turn_failed"
+        ) {
           clearLoadingIndicators();
-          markSessionsAsCompleted(latestMessage.sessionId, currentSessionId, selectedSession?.id);
-          if (codexData.type === 'turn_failed') {
-            setChatMessages((previous) => [...previous, { type: 'error', content: codexData.error?.message || 'Turn failed', timestamp: new Date() }]);
+          markSessionsAsCompleted(
+            routedMessageSessionId,
+            currentSessionId,
+            selectedSession?.id,
+          );
+          if (codexData.type === "turn_failed") {
+            setChatMessages((previous) => [
+              ...previous,
+              {
+                type: "error",
+                content: codexData.error?.message || "Turn failed",
+                timestamp: new Date(),
+              },
+            ]);
           }
         }
         break;
       }
 
-      case 'codex-complete': {
-        const codexPendingSessionId = sessionStorage.getItem('pendingSessionId');
-        const codexActualSessionId = latestMessage.actualSessionId || codexPendingSessionId;
-        const codexCompletedSessionId = latestMessage.sessionId || currentSessionId || codexPendingSessionId;
+      case "codex-complete": {
+        const codexPendingSessionId =
+          readScopedPendingSessionId(latestMessageProjectName, "codex");
+        const codexActualSessionId =
+          latestMessage.actualSessionId ||
+          codexPendingSessionId ||
+          routedMessageSessionId;
+        const codexCompletedSessionId =
+          routedMessageSessionId || currentSessionId || codexPendingSessionId;
         clearLoadingIndicators();
-        markSessionsAsCompleted(codexCompletedSessionId, codexActualSessionId, currentSessionId, selectedSession?.id, codexPendingSessionId);
-        if (codexPendingSessionId && !currentSessionId) {
-          setCurrentSessionId(codexActualSessionId);
+        markSessionsAsCompleted(
+          codexCompletedSessionId,
+          codexActualSessionId,
+          currentSessionId,
+          selectedSession?.id,
+          codexPendingSessionId,
+        );
+
+        const shouldSyncToActualSessionId =
+          Boolean(codexActualSessionId) &&
+          codexActualSessionId !== currentSessionId &&
+          ((currentSessionId && currentSessionId.startsWith("new-session-")) ||
+            Boolean(codexPendingSessionId));
+
+        if (shouldSyncToActualSessionId) {
+          setCurrentSessionId(codexActualSessionId || null);
           setIsSystemSessionChange(true);
           if (codexActualSessionId) {
             onNavigateToSession?.(codexActualSessionId, 'codex', selectedProject?.name, { source: 'system' });
           }
-          sessionStorage.removeItem('pendingSessionId');
         }
-        if (selectedProject) safeLocalStorage.removeItem(`chat_messages_${selectedProject.name}`);
+
+        if (codexPendingSessionId) {
+          clearScopedPendingSessionId(latestMessageProjectName, "codex");
+        }
+
+        clearScopedMessageCache(
+          codexCompletedSessionId || codexActualSessionId,
+          "codex",
+          latestMessageProjectName,
+        );
         break;
       }
 
-      case 'codex-error':
+      case "codex-error":
         if (isLegacyTaskMasterInstallError(latestMessage.error)) break;
         flushAndFinalizePendingStream();
         clearLoadingIndicators();
-        markSessionsAsCompleted(latestMessage.sessionId, currentSessionId, selectedSession?.id);
+        markSessionsAsCompleted(
+          routedMessageSessionId,
+          currentSessionId,
+          selectedSession?.id,
+        );
         setPendingPermissionRequests([]);
-        setChatMessages((previous) => [...previous, { type: 'error', content: latestMessage.error || 'An error occurred with Codex', timestamp: new Date(), errorType: latestMessage.errorType, isRetryable: latestMessage.isRetryable === true }]);
+        setChatMessages((previous) => [
+          ...previous,
+          {
+            type: "error",
+            content: latestMessage.error || "An error occurred with Codex",
+            timestamp: new Date(),
+            errorType: latestMessage.errorType,
+            isRetryable: latestMessage.isRetryable === true,
+          },
+        ]);
         break;
 
-      case 'session-aborted': {
-        const pendingSessionId = typeof window !== 'undefined' ? sessionStorage.getItem('pendingSessionId') : null;
-        const abortedSessionId = latestMessage.sessionId || currentSessionId;
+      case "session-aborted": {
+        const abortedProvider = resolveProvider(
+          typeof latestMessage.provider === "string"
+            ? latestMessage.provider
+            : provider,
+        );
+        const abortedProjectName = resolveProjectName(
+          typeof latestMessage.projectName === "string"
+            ? latestMessage.projectName
+            : selectedProject?.name || null,
+        );
+        const pendingSessionId = readScopedPendingSessionId(
+          abortedProjectName,
+          abortedProvider,
+        );
+        const abortedSessionId = routedMessageSessionId || currentSessionId;
         if (latestMessage.success !== false) {
           clearLoadingIndicators();
-          markSessionsAsCompleted(abortedSessionId, currentSessionId, selectedSession?.id, pendingSessionId);
-          if (pendingSessionId && (!abortedSessionId || pendingSessionId === abortedSessionId)) sessionStorage.removeItem('pendingSessionId');
+          markSessionsAsCompleted(
+            abortedSessionId,
+            currentSessionId,
+            selectedSession?.id,
+            pendingSessionId,
+          );
+          if (
+            pendingSessionId &&
+            (!abortedSessionId || pendingSessionId === abortedSessionId)
+          )
+            clearScopedPendingSessionId(abortedProjectName, abortedProvider);
           setPendingPermissionRequests([]);
-          setChatMessages((previous) => [...previous, { type: 'assistant', content: 'Session interrupted by user.', timestamp: new Date() }]);
+          setChatMessages((previous) => [
+            ...previous,
+            {
+              type: "assistant",
+              content: "Session interrupted by user.",
+              timestamp: new Date(),
+            },
+          ]);
         } else {
           clearLoadingIndicators();
           setPendingPermissionRequests([]);
-          setChatMessages((previous) => [...previous, { type: 'error', content: 'Session has already finished.', timestamp: new Date() }]);
+          setChatMessages((previous) => [
+            ...previous,
+            {
+              type: "error",
+              content: "Session has already finished.",
+              timestamp: new Date(),
+            },
+          ]);
         }
         break;
       }
 
-      case 'session-busy':
-        console.warn(`[session-busy] Session ${latestMessage.sessionId} is already processing (${latestMessage.provider})`);
-        setChatMessages((previous) => {
-          const busyMsg = 'This session is still processing. Please wait for the current response to complete.';
-          const last = previous[previous.length - 1];
-          if (last?.type === 'error' && last.content === busyMsg) return previous;
-          return [...previous, { type: 'error', content: busyMsg, timestamp: new Date() }];
-        });
-        break;
+      case "session-status": {
+        const statusSessionId = routedMessageSessionId;
+        if (!statusSessionId) {
+          break;
+        }
 
-      case 'session-status': {
-        const statusSessionId = latestMessage.sessionId;
-        const isCurrentSession = statusSessionId === currentSessionId || (selectedSession && statusSessionId === selectedSession.id);
-        if (isCurrentSession && latestMessage.isProcessing) {
-          persistStartTime(latestMessage.startTime, statusSessionId, currentSessionId, selectedSession?.id);
+        const statusProvider = resolveProvider(
+          typeof latestMessage.provider === "string"
+            ? latestMessage.provider
+            : provider,
+        );
+        const statusProjectName = resolveProjectName(
+          typeof latestMessage.projectName === "string"
+            ? latestMessage.projectName
+            : selectedProject?.name || null,
+        );
+        const isCurrentSession = isMessageInActiveScope(
+          statusSessionId,
+          statusProvider,
+          statusProjectName,
+        );
+        if (latestMessage.isProcessing) {
+          persistStartTime(
+            latestMessage.startTime,
+            statusSessionId,
+            currentSessionId,
+            selectedSession?.id,
+          );
+          notifySessionProcessing(
+            statusSessionId,
+            statusProvider,
+            statusProjectName,
+          );
+
+          if (!isCurrentSession) {
+            break;
+          }
+
           setIsLoading(true);
           setCanAbortSession(true);
-          onSessionProcessing?.(statusSessionId);
-          onSessionStatusResolved?.(statusSessionId, true);
           // If we have a startTime from the backend, sync our status
           if (Number.isFinite(latestMessage.startTime)) {
-            syncClaudeStatusStartTime(latestMessage.startTime, RESUMING_STATUS_TEXT);
+            syncClaudeStatusStartTime(
+              latestMessage.startTime,
+              RESUMING_STATUS_TEXT,
+            );
           }
-        } else if (isCurrentSession && latestMessage.isProcessing === false) {
+        } else if (latestMessage.isProcessing === false) {
           clearSessionTimerStart(statusSessionId);
+          notifySessionCompleted(
+            statusSessionId,
+            statusProvider,
+            statusProjectName,
+          );
+
+          if (!isCurrentSession) {
+            break;
+          }
+
           clearLoadingIndicators();
-          onSessionNotProcessing?.(statusSessionId);
-          onSessionStatusResolved?.(statusSessionId, false);
         }
         break;
       }
 
-      case 'claude-permission-request': {
+      case "claude-permission-request": {
         const { requestId, toolName, input: toolInput } = latestMessage;
         if (!requestId || !toolName) break;
 
@@ -1398,43 +2437,58 @@ export function useChatRealtimeHandlers({
               requestId,
               toolName,
               input: toolInput,
-              sessionId: latestMessage.sessionId || currentSessionId,
+              sessionId: routedMessageSessionId || currentSessionId,
               receivedAt: new Date(),
             },
           ];
         });
-        
+
         // Ensure UI is in loading/waiting state
         setIsLoading(true);
         setCanAbortSession(true);
         break;
       }
 
-      case 'claude-permission-cancelled': {
+      case "claude-permission-cancelled": {
         const { requestId } = latestMessage;
         if (!requestId) break;
-        setPendingPermissionRequests((previous) => previous.filter((p) => p.requestId !== requestId));
+        setPendingPermissionRequests((previous) =>
+          previous.filter((p) => p.requestId !== requestId),
+        );
         break;
       }
 
-      case 'claude-status':
-      case 'gemini-status': {
+      case "claude-status":
+      case "gemini-status": {
         const statusData = latestMessage.data;
         if (!statusData) break;
-        persistStartTime(statusData.startTime, latestMessage.sessionId, currentSessionId, selectedSession?.id);
-        const statusInfo = { 
-          text: statusData.message || statusData.status || (typeof statusData === 'string' ? statusData : 'Working...'), 
-          tokens: statusData.tokens || statusData.token_count || 0, 
-          can_interrupt: statusData.can_interrupt !== undefined ? statusData.can_interrupt : true,
-          startTime: statusData.startTime // Use startTime from message if provided
+        persistStartTime(
+          statusData.startTime,
+          routedMessageSessionId,
+          currentSessionId,
+          selectedSession?.id,
+        );
+        const statusInfo = {
+          text:
+            statusData.message ||
+            statusData.status ||
+            (typeof statusData === "string" ? statusData : "Working..."),
+          tokens: statusData.tokens || statusData.token_count || 0,
+          can_interrupt:
+            statusData.can_interrupt !== undefined
+              ? statusData.can_interrupt
+              : true,
+          startTime: statusData.startTime, // Use startTime from message if provided
         };
-        
+
         // Use updater function to preserve existing startTime if not provided in message
-        setClaudeStatus(prev => ({
+        setClaudeStatus((prev) => ({
           ...statusInfo,
-          startTime: Number.isFinite(statusInfo.startTime) ? statusInfo.startTime : prev?.startTime
+          startTime: Number.isFinite(statusInfo.startTime)
+            ? statusInfo.startTime
+            : prev?.startTime,
         }));
-        
+
         setIsLoading(true);
         setCanAbortSession(statusInfo.can_interrupt);
         break;
@@ -1444,9 +2498,30 @@ export function useChatRealtimeHandlers({
         break;
     }
   }, [
-    latestMessage, provider, selectedProject, selectedSession, currentSessionId, setCurrentSessionId,
-    setChatMessages, setIsLoading, setCanAbortSession, setClaudeStatus, setStatusTextOverride, setTokenBudget,
-    setIsSystemSessionChange, setPendingPermissionRequests, onSessionInactive, onSessionProcessing,
-    onSessionNotProcessing, onSessionStatusResolved, onReplaceTemporarySession, onNavigateToSession,
+    latestMessage,
+    provider,
+    selectedProject,
+    selectedSession,
+    currentSessionId,
+    setCurrentSessionId,
+    setChatMessages,
+    setIsLoading,
+    setCanAbortSession,
+    setClaudeStatus,
+    setStatusTextOverride,
+    setTokenBudget,
+    setIsSystemSessionChange,
+    setPendingPermissionRequests,
+    onSessionInactive,
+    onSessionProcessing,
+    onSessionNotProcessing,
+    onSessionStatusResolved,
+    onCodexTurnStarted,
+    onCodexTurnSettled,
+    onCodexSessionBusy,
+    onCodexSessionIdResolved,
+    onReplaceTemporarySession,
+    onNavigateToSession,
+    sendMessage,
   ]);
 }

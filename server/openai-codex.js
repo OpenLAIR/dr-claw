@@ -24,6 +24,7 @@ import { classifyError, classifySDKError } from '../shared/errorClassifier.js';
 import { buildTempAttachmentFilename } from './utils/imageAttachmentFiles.js';
 import { buildCodexRealtimeTokenBudget } from './utils/sessionTokenUsage.js';
 import { expandSkillCommand } from './utils/skillExpander.js';
+import { buildCodexSessionCreatedEvent } from './utils/codexSessionEvents.js';
 import { CODEX_MODELS } from '../shared/modelConstants.js';
 import { BTW_SYSTEM_PROMPT, buildBtwUserMessage } from './utils/btw.js';
 
@@ -414,7 +415,8 @@ export async function queryCodex(command, options = {}, ws) {
       codex,
       status: 'running',
       abortController,
-      startTime: Date.now()
+      startTime: Date.now(),
+      writer: ws,
     });
 
     const publishSessionId = (resolvedSessionId) => {
@@ -440,12 +442,11 @@ export async function queryCodex(command, options = {}, ws) {
         });
       }
 
-      sendMessage(ws, {
-        type: 'session-created',
+      sendMessage(ws, buildCodexSessionCreatedEvent({
         sessionId: currentSessionId,
-        provider: 'codex',
-        mode: sessionMode || 'research'
-      });
+        sessionMode: sessionMode || 'research',
+        projectName: workingDirectory ? encodeProjectPath(workingDirectory) : null,
+      }));
     };
 
     publishSessionId(thread.id || sessionId || null);
@@ -694,6 +695,16 @@ export function getActiveCodexSessions() {
   }
 
   return sessions;
+}
+
+export function rebindCodexSessionWriter(sessionId, newWriter) {
+  const session = activeCodexSessions.get(sessionId);
+  if (!session || !session.writer) return false;
+  if (typeof session.writer.replaceSocket === 'function') {
+    session.writer.replaceSocket(newWriter.ws || newWriter);
+    return true;
+  }
+  return false;
 }
 
 /**

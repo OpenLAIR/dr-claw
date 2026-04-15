@@ -136,6 +136,21 @@ export interface Question {
   multiSelect?: boolean;
 }
 
+export type QueuedTurnKind = 'normal' | 'steer';
+export type QueuedTurnStatus = 'queued' | 'paused';
+
+export interface QueuedTurn {
+  id: string;
+  sessionId: string;
+  text: string;
+  kind: QueuedTurnKind;
+  status: QueuedTurnStatus;
+  createdAt: number;
+  projectName?: string;
+  projectPath?: string;
+  sessionMode?: SessionMode;
+}
+
 export interface ChatInterfaceProps {
   selectedProject: Project | null;
   selectedSession: ProjectSession | null;
@@ -143,12 +158,33 @@ export interface ChatInterfaceProps {
   sendMessage: (message: unknown) => void;
   latestMessage: any;
   onInputFocusChange?: (focused: boolean) => void;
-  onSessionActive?: (sessionId?: string | null) => void;
-  onSessionInactive?: (sessionId?: string | null) => void;
-  onSessionProcessing?: (sessionId?: string | null) => void;
-  onSessionNotProcessing?: (sessionId?: string | null) => void;
+  onSessionActive?: (
+    sessionId?: string | null,
+    provider?: SessionProvider | null,
+    projectName?: string | null,
+  ) => void;
+  onSessionInactive?: (
+    sessionId?: string | null,
+    provider?: SessionProvider | null,
+    projectName?: string | null,
+  ) => void;
+  onSessionProcessing?: (
+    sessionId?: string | null,
+    provider?: SessionProvider | null,
+    projectName?: string | null,
+  ) => void;
+  onSessionNotProcessing?: (
+    sessionId?: string | null,
+    provider?: SessionProvider | null,
+    projectName?: string | null,
+  ) => void;
   processingSessions?: Set<string>;
-  onReplaceTemporarySession?: (sessionId?: string | null) => void;
+  onReplaceTemporarySession?: (
+    sessionId?: string | null,
+    provider?: SessionProvider | null,
+    projectName?: string | null,
+    previousSessionId?: string | null,
+  ) => void;
   onNavigateToSession?: (
     targetSessionId: string,
     targetProvider?: SessionProvider,
@@ -163,13 +199,14 @@ export interface ChatInterfaceProps {
   sendByCtrlEnter?: boolean;
   externalMessageUpdate?: number;
   onTaskClick?: (...args: unknown[]) => void;
-  onStartWorkspaceQa?: (project: Project, prompt: string) => void;
+  onShowAllTasks?: (() => void) | null;
+  onStartWorkspaceQa?: ((project: Project, prompt: string) => void) | null;
   pendingAutoIntake?: PendingAutoIntake | null;
   clearPendingAutoIntake?: () => void;
   importedProjectAnalysisPrompt?: ImportedProjectAnalysisPrompt | null;
   clearImportedProjectAnalysisPrompt?: () => void;
-  initialInputDraft?: string | null;
   onOpenShellForSession?: () => void;
+  initialInputDraft?: string | null;
   newSessionMode?: SessionMode;
   onNewSessionModeChange?: (mode: SessionMode) => void;
 }
