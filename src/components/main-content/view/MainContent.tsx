@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect } from 'react';
 
 import ChatInterface from '../../chat/view/ChatInterface';
 import SkillsDashboard from '../../SkillsDashboard';
@@ -71,48 +71,71 @@ function MainContent({
   const { currentProject, setCurrentProject } = useTaskMaster() as TaskMasterContextValue;
   const shouldShowTasksTab = false;
 
+  const handleActivateBlankTab = useCallback(() => {
+    if (selectedProject && onNewSession) {
+      onNewSession(selectedProject, newSessionMode);
+    }
+  }, [selectedProject, onNewSession, newSessionMode]);
+
   const chatTabs = useChatTabs(
     selectedProject,
     onNavigateToSession,
-    () => {
-      if (selectedProject && onNewSession) {
-        onNewSession(selectedProject, newSessionMode);
-      }
-    },
+    handleActivateBlankTab,
   );
 
-  // Sync selectedSession changes into tab state using navigation source to
-  // distinguish user sidebar clicks from system session-created events.
-  const prevSessionRef = useRef<string | null | undefined>(undefined);
-  useEffect(() => {
-    const prevId = prevSessionRef.current;
-    const currId = selectedSession?.id ?? null;
-    prevSessionRef.current = currId;
+  const {
+    activeTab: chatActiveTab,
+    tabs: chatTabList,
+    openNewTab,
+    openTab,
+    updateActiveTabSession,
+    switchTab,
+    closeTab,
+  } = chatTabs;
+  const chatActiveTabSessionId = chatActiveTab?.sessionId;
+  const chatTabCount = chatTabList.length;
 
-    if (prevId === undefined) return;
+  // Sync selectedSession changes into tab state using navigation source to
+  // distinguish user sidebar clicks from system session-created events. Runs
+  // on first render too so a pre-selected session (e.g. from URL) gets a tab.
+  useEffect(() => {
+    const currId = selectedSession?.id ?? null;
 
     const action = resolveChatTabSyncAction({
       activeAppTab: activeTab,
       hasSelectedProject: Boolean(selectedProject),
       nextSessionId: currId,
-      activeChatTabSessionId: chatTabs.activeTab?.sessionId,
-      tabCount: chatTabs.tabs.length,
+      activeChatTabSessionId: chatActiveTabSessionId,
+      tabCount: chatTabCount,
       navigationSource: sessionNavigationSource,
     });
 
     if (action === 'open-new-tab') {
-      chatTabs.openNewTab();
+      openNewTab();
     } else if (action === 'update-active-tab-session' && currId && selectedProject) {
-      chatTabs.updateActiveTabSession(selectedSession!, selectedProject);
+      updateActiveTabSession(selectedSession!, selectedProject);
     } else if (action === 'open-tab' && currId && selectedProject) {
-      chatTabs.openTab(selectedSession!, selectedProject);
+      openTab(selectedSession!, selectedProject);
     }
 
-    onResetNavigationSource();
-  }, [selectedSession?.id, selectedProject?.name, activeTab, sessionNavigationSource]);
+    if (action !== 'noop') {
+      onResetNavigationSource();
+    }
+  }, [
+    selectedSession,
+    selectedProject,
+    activeTab,
+    sessionNavigationSource,
+    chatActiveTabSessionId,
+    chatTabCount,
+    openNewTab,
+    openTab,
+    updateActiveTabSession,
+    onResetNavigationSource,
+  ]);
 
   // When the active tab has no session (new chat via [+]), pass null to ChatInterface
-  const effectiveSession = chatTabs.activeTab?.sessionId === null
+  const effectiveSession = chatActiveTabSessionId === null
     ? null
     : selectedSession;
 
@@ -301,15 +324,15 @@ function MainContent({
         <div className="flex flex-1 flex-col min-h-0 overflow-hidden">
           <div className={`h-full flex flex-col ${activeTab === 'chat' ? '' : 'hidden'}`}>
             <ChatTabBar
-              tabs={chatTabs.tabs}
+              tabs={chatTabList}
               processingSessions={processingSessions}
-              onSwitchTab={chatTabs.switchTab}
-              onCloseTab={chatTabs.closeTab}
+              onSwitchTab={switchTab}
+              onCloseTab={closeTab}
               onNewTab={() => {
                 if (selectedProject && onNewSession) {
                   onNewSession(selectedProject);
                 }
-                chatTabs.openNewTab();
+                openNewTab();
               }}
             />
             <ErrorBoundary showDetails>
