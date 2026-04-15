@@ -2082,7 +2082,6 @@ export function useChatComposerState({
 
       const currentAttachedFiles = attachedFilesRef.current;
       const currentAttachedPrompt = attachedPromptRef.current;
-      const currentStageTagKeys = pendingStageTagKeysRef.current;
 
       const trimmedInput = currentInput.trim();
       if (trimmedInput.startsWith("/")) {
