@@ -54,7 +54,7 @@ import { queryClaudeSDK, abortClaudeSDKSession, isClaudeSDKSessionActive, getCla
 import { spawnCursor, abortCursorSession, isCursorSessionActive, getCursorSessionStartTime, getActiveCursorSessions } from './cursor-cli.js';
 import { queryCodex, abortCodexSession, isCodexSessionActive, getCodexSessionStartTime, getActiveCodexSessions, rebindCodexSessionWriter } from './openai-codex.js';
 import { spawnGemini, abortGeminiSession, isGeminiSessionActive, getGeminiSessionStartTime, getActiveGeminiSessions, rebindGeminiSessionWriter } from './gemini-cli.js';
-import { queryOpenRouter, abortOpenRouterSession, isOpenRouterSessionActive, getOpenRouterSessionStartTime, getActiveOpenRouterSessions, rebindOpenRouterSessionWriter } from './openrouter.js';
+import { queryOpenRouter, abortOpenRouterSession, isOpenRouterSessionActive, getOpenRouterSessionStartTime, rebindOpenRouterSessionWriter } from './openrouter.js';
 import { queryLocalGPU, abortLocalGPUSession, isLocalGPUSessionActive, getLocalGPUSessionStartTime, getActiveLocalGPUSessions, rebindLocalGPUSessionWriter } from './local-gpu.js';
 import { spawnNanoClaudeCode, abortNanoClaudeCodeSession, isNanoClaudeCodeSessionActive, getNanoClaudeCodeSessionStartTime, getActiveNanoClaudeCodeSessions, rebindNanoClaudeCodeSessionWriter } from './nano-claude-code.js';
 import gitRoutes from './routes/git.js';
