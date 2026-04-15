@@ -129,6 +129,21 @@ export interface Question {
   multiSelect?: boolean;
 }
 
+export type QueuedTurnKind = 'normal' | 'steer';
+export type QueuedTurnStatus = 'queued' | 'paused';
+
+export interface QueuedTurn {
+  id: string;
+  sessionId: string;
+  text: string;
+  kind: QueuedTurnKind;
+  status: QueuedTurnStatus;
+  createdAt: number;
+  projectName?: string;
+  projectPath?: string;
+  sessionMode?: SessionMode;
+}
+
 export interface ChatInterfaceProps {
   selectedProject: Project | null;
   selectedSession: ProjectSession | null;
