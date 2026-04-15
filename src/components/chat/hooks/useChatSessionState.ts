@@ -6,6 +6,7 @@ import { RESUMING_STATUS_TEXT } from '../types/types';
 import type { ChatMessage, Provider, TokenBudget } from '../types/types';
 import type { Project, ProjectSession } from '../../../types/app';
 import { clearSessionTimerStart, readSessionTimerStart, safeLocalStorage } from '../utils/chatStorage';
+import { hydrateStoredChatMessages } from '../utils/chatMessages';
 import {
   convertCursorSessionMessages,
   convertSessionMessages,
@@ -103,7 +104,7 @@ export function useChatSessionState({
       const saved = safeLocalStorage.getItem(`chat_messages_${selectedProject.name}`);
       if (saved) {
         try {
-          return JSON.parse(saved) as ChatMessage[];
+          return hydrateStoredChatMessages(JSON.parse(saved) as ChatMessage[]);
         } catch {
           console.error('Failed to parse saved chat messages, resetting');
           safeLocalStorage.removeItem(`chat_messages_${selectedProject.name}`);
@@ -118,15 +119,7 @@ export function useChatSessionState({
   const setChatMessages = useCallback((updater: React.SetStateAction<ChatMessage[]>) => {
     _setChatMessages((prev) => {
       const next = typeof updater === 'function' ? updater(prev) : updater;
-      let hasChanges = false;
-      const final = next.map((msg) => {
-        if (!msg.id && !msg.messageId && !msg.toolId && !msg.toolCallId && !msg.blobId && !msg.rowid && !msg.sequence) {
-          hasChanges = true;
-          return { ...msg, messageId: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15) };
-        }
-        return msg;
-      });
-      return hasChanges ? final : next;
+      return hydrateStoredChatMessages(next);
     });
   }, []);
 

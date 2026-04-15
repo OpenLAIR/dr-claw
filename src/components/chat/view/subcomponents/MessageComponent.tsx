@@ -1,5 +1,5 @@
 import React, { memo, useMemo } from 'react';
-import { FileImage, FileText, User, RefreshCw } from 'lucide-react';
+import { Check, Copy, FileImage, FileText, Pencil, RefreshCw, User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import SessionProviderLogo from '../../../SessionProviderLogo';
 import type {
@@ -10,6 +10,7 @@ import type {
 } from '../../types/types';
 import { Markdown } from './Markdown';
 import { formatUsageLimitText, getProviderDisplayName } from '../../utils/chatFormatting';
+import { getMessageReplayContent } from '../../utils/chatMessages';
 import { getPermissionSuggestion } from '../../utils/chatPermissions';
 import type { Project } from '../../../../types/app';
 import { ToolRenderer, shouldHideToolResult } from '../../tools';
@@ -28,8 +29,6 @@ interface MessageComponentProps {
   onFileOpen?: (filePath: string, diffInfo?: unknown) => void;
   onShowSettings?: () => void;
   onGrantToolPermission?: (suggestion: PermissionSuggestion) => PermissionGrantResult | null | undefined;
-  canSuggestShellEdit?: boolean;
-  onSuggestShellEdit?: () => void;
   autoExpandTools?: boolean;
   showRawParameters?: boolean;
   showThinking?: boolean;
@@ -37,6 +36,12 @@ interface MessageComponentProps {
   selectedProject?: Project | null;
   provider: Provider | string;
   onRetry?: () => void;
+  onCopyMessage?: (message: ChatMessage) => Promise<boolean> | boolean;
+  onResendMessage?: (message: ChatMessage) => void;
+  onEditMessage?: (message: ChatMessage) => void;
+  canSuggestShellEdit?: boolean;
+  onSuggestShellEdit?: () => void;
+  disableUserActions?: boolean;
 }
 
 type InteractiveOption = {
@@ -66,7 +71,7 @@ function extractSkillContentTitle(content: string, fallback: string): string {
   return fallback;
 }
 
-const MessageComponent = memo(({ message, index, prevMessage, createDiff, onFileOpen, onShowSettings, onGrantToolPermission, canSuggestShellEdit, onSuggestShellEdit, autoExpandTools, showRawParameters, showThinking, hideThinkingFold, selectedProject, provider, onRetry }: MessageComponentProps) => {
+const MessageComponent = memo(({ message, index, prevMessage, createDiff, onFileOpen, onShowSettings, onGrantToolPermission, autoExpandTools, showRawParameters, showThinking, hideThinkingFold, selectedProject, provider, onRetry, onCopyMessage, onResendMessage, onEditMessage, canSuggestShellEdit, onSuggestShellEdit, disableUserActions }: MessageComponentProps) => {
   const { t } = useTranslation('chat');
   const isGrouped = prevMessage && prevMessage.type === message.type &&
                    ((prevMessage.type === 'assistant') ||
@@ -77,11 +82,26 @@ const MessageComponent = memo(({ message, index, prevMessage, createDiff, onFile
   const [isExpanded, setIsExpanded] = React.useState(false);
   const permissionSuggestion = getPermissionSuggestion(message, provider);
   const [permissionGrantState, setPermissionGrantState] = React.useState<PermissionGrantState>('idle');
+  const [didCopy, setDidCopy] = React.useState(false);
 
 
   React.useEffect(() => {
     setPermissionGrantState('idle');
   }, [permissionSuggestion?.entry, message.toolId]);
+
+  React.useEffect(() => {
+    if (!didCopy) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setDidCopy(false);
+    }, 1500);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [didCopy]);
 
   React.useEffect(() => {
     const node = messageRef.current;
@@ -118,6 +138,21 @@ const MessageComponent = memo(({ message, index, prevMessage, createDiff, onFile
   }
 
   const visibleAttachments = Array.isArray(message.attachments) ? message.attachments : [];
+  const hasReplayableAttachments = visibleAttachments.length > 0 || (Array.isArray(message.images) && message.images.length > 0);
+  const replayContent = getMessageReplayContent(message);
+  const hasVisibleUserText = typeof message.content === 'string' && message.content.trim().length > 0;
+  const hasAttachedPrompt = Boolean(message.attachedPrompt);
+  const hasReplayableUserContent = replayContent.trim().length > 0 || hasAttachedPrompt;
+  const isSupersededUserMessage = Boolean(message.isSuperseded);
+  const canCopyMessage = Boolean(onCopyMessage && replayContent.trim().length > 0);
+  const showResendMessage = Boolean(onResendMessage && !isSupersededUserMessage && hasReplayableUserContent);
+  const showEditMessage = Boolean(onEditMessage && !isSupersededUserMessage && (hasVisibleUserText || hasAttachedPrompt || replayContent.trim().length > 0));
+  const replayAttachmentTooltip = hasReplayableAttachments
+    ? t('messageActions.attachmentsUnsupported', {
+        defaultValue: 'Resend and edit are unavailable for messages with attachments right now.',
+      })
+    : null;
+  const actionButtonClass = 'inline-flex items-center gap-1 rounded-full border border-blue-200/80 bg-white/90 px-2.5 py-1 text-[11px] font-medium text-blue-700 transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-blue-800/60 dark:bg-slate-900/80 dark:text-blue-300 dark:hover:bg-blue-950/40';
 
   return (
     <div
@@ -175,12 +210,27 @@ const MessageComponent = memo(({ message, index, prevMessage, createDiff, onFile
                 onClick={onSuggestShellEdit}
                 className="text-[11px] font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
                 title={t('shell.historyEdit.action')}
+                aria-label={t('shell.historyEdit.action')}
               >
                 {t('shell.historyEdit.action')}
               </button>
             </div>
           )}
           <div className="bg-blue-600 text-white rounded-2xl rounded-tr-none px-4 py-2.5 shadow-sm max-w-[90%] sm:max-w-[85%]">
+            {(message.editedFromMessageId || message.isSuperseded) && (
+              <div className="mb-1.5 flex flex-wrap gap-1.5">
+                {message.editedFromMessageId && (
+                  <span className="inline-flex items-center rounded-full bg-blue-500/20 px-2.5 py-1 text-[11px] font-medium text-blue-100">
+                    {t('messageActions.editedVersion', { defaultValue: 'Edited message' })}
+                  </span>
+                )}
+                {message.isSuperseded && (
+                  <span className="inline-flex items-center rounded-full bg-slate-900/20 px-2.5 py-1 text-[11px] font-medium text-blue-100">
+                    {t('messageActions.superseded', { defaultValue: 'Superseded by later edit' })}
+                  </span>
+                )}
+              </div>
+            )}
             {message.attachedPrompt && (
               <div className={message.content?.trim() ? 'mb-1.5' : ''}>
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-100 text-xs font-medium">
@@ -251,6 +301,59 @@ const MessageComponent = memo(({ message, index, prevMessage, createDiff, onFile
               </div>
             )}
           </div>
+          {(canCopyMessage || showResendMessage || showEditMessage) && (
+            <div className="mt-2 mr-1 flex flex-wrap items-center justify-end gap-1.5">
+              {canCopyMessage && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (didCopy) {
+                      setDidCopy(false);
+                    }
+                    const copied = await onCopyMessage?.(message);
+                    if (copied) {
+                      setDidCopy(true);
+                    }
+                  }}
+                  className={actionButtonClass}
+                  title={didCopy ? t('codeBlock.copied') : t('messageActions.copy')}
+                  aria-label={didCopy ? t('codeBlock.copied') : t('messageActions.copy')}
+                >
+                  {didCopy ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                  <span>{didCopy ? t('codeBlock.copied') : t('messageActions.copy')}</span>
+                  <span className="sr-only" aria-live="polite">
+                    {didCopy ? t('codeBlock.copied') : ''}
+                  </span>
+                </button>
+              )}
+              {showResendMessage && (
+                <button
+                  type="button"
+                  onClick={() => onResendMessage?.(message)}
+                  disabled={disableUserActions || Boolean(replayAttachmentTooltip)}
+                  className={actionButtonClass}
+                  title={replayAttachmentTooltip || t('messageActions.resend')}
+                  aria-label={t('messageActions.resend')}
+                >
+                  <RefreshCw className="h-3.5 w-3.5" />
+                  <span>{t('messageActions.resend')}</span>
+                </button>
+              )}
+              {showEditMessage && (
+                <button
+                  type="button"
+                  onClick={() => onEditMessage?.(message)}
+                  disabled={disableUserActions || Boolean(replayAttachmentTooltip)}
+                  className={actionButtonClass}
+                  title={replayAttachmentTooltip || t('messageActions.edit')}
+                  aria-label={t('messageActions.edit')}
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                  <span>{t('messageActions.edit')}</span>
+                </button>
+              )}
+            </div>
+          )}
           {!isGrouped && (
             <div className="text-[10px] text-gray-400 mt-1 mr-1">
               {formattedTime}

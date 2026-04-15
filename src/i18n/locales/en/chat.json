@@ -21,6 +21,15 @@
     "retry": "Retry",
     "usageLimitHint": "You can retry when your usage limit resets"
   },
+  "messageActions": {
+    "copy": "Copy",
+    "resend": "Resend",
+    "edit": "Edit",
+    "editedVersion": "Edited message",
+    "superseded": "Superseded by later edit",
+    "attachmentsUnsupported": "Resend and edit are unavailable for messages with attachments right now.",
+    "confirmReplaceDraft": "Replace your current unsent draft with this message?"
+  },
   "tools": {
     "settings": "Tool Settings",
     "error": "Tool Error",
