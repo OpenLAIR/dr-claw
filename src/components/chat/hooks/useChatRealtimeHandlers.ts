@@ -25,12 +25,14 @@ import {
   emitSessionFilterDebugLog,
   syncSessionFilterDebugSetting,
 } from "../utils/sessionFilterDebug";
+import { invalidateSessionMessageCache } from './useChatSessionState';
 import { RESUMING_STATUS_TEXT } from "../types/types";
 import i18n from "../../../i18n/config";
 import type { ChatMessage, PendingPermissionRequest } from "../types/types";
 import type {
   Project,
   ProjectSession,
+  SessionNavigationSource,
   SessionProvider,
 } from "../../../types/app";
 import { isProviderAllowed, normalizeProvider } from "../../../utils/providerPolicy";
@@ -124,8 +126,46 @@ interface UseChatRealtimeHandlersArgs {
     sessionId: string,
     sessionProvider?: SessionProvider,
     targetProjectName?: string,
+    options?: { source?: SessionNavigationSource },
   ) => void;
   sendMessage?: (message: Record<string, unknown>) => void;
+}
+
+type FinalizeSessionLifecycleOptions = {
+  projectName?: string | null;
+  clearSessionTimerStart?: (sessionId: string) => void;
+  onSessionInactive?: (sessionId?: string | null) => void;
+  onSessionNotProcessing?: (sessionId?: string | null) => void;
+  onSessionStatusResolved?: (sessionId?: string | null, isProcessing?: boolean) => void;
+  invalidateSessionCache?: (projectName: string, sessionId: string) => void;
+};
+
+export function finalizeSessionLifecycle(
+  sessionIds: Array<string | null | undefined>,
+  {
+    projectName,
+    clearSessionTimerStart: clearTimer = clearSessionTimerStart,
+    onSessionInactive,
+    onSessionNotProcessing,
+    onSessionStatusResolved,
+    invalidateSessionCache = invalidateSessionMessageCache,
+  }: FinalizeSessionLifecycleOptions,
+) {
+  const normalizedSessionIds = Array.from(
+    new Set(
+      sessionIds.filter((sessionId): sessionId is string => typeof sessionId === 'string' && sessionId.length > 0),
+    ),
+  );
+
+  normalizedSessionIds.forEach((sessionId) => {
+    clearTimer(sessionId);
+    onSessionInactive?.(sessionId);
+    onSessionNotProcessing?.(sessionId);
+    onSessionStatusResolved?.(sessionId, false);
+    if (projectName) {
+      invalidateSessionCache(projectName, sessionId);
+    }
+  });
 }
 
 const appendStreamingChunk = (
@@ -832,6 +872,12 @@ export function useChatRealtimeHandlers({
       }
       clearSessionTimerStart(sessionId);
       notifySessionCompleted(sessionId, latestMessageProvider, latestMessageProjectName);
+      finalizeSessionLifecycle([sessionId], {
+        projectName: selectedProject?.name,
+        onSessionInactive,
+        onSessionNotProcessing,
+        onSessionStatusResolved,
+      });
     };
 
     const getLifecycleSessionIds = () => {
@@ -919,6 +965,12 @@ export function useChatRealtimeHandlers({
           latestMessageProvider,
           latestMessageProjectName,
         );
+      });
+      finalizeSessionLifecycle(sessionIds, {
+        projectName: selectedProject?.name,
+        onSessionInactive,
+        onSessionNotProcessing,
+        onSessionStatusResolved,
       });
     };
 
@@ -1242,11 +1294,7 @@ export function useChatRealtimeHandlers({
             temporarySessionId,
           );
           if (createdProjectName || pendingViewSessionRef.current) {
-            onNavigateToSession?.(
-              latestMessage.sessionId,
-              createdSessionProvider,
-              createdProjectName || undefined,
-            );
+            onNavigateToSession?.(latestMessage.sessionId, createdSessionProvider, createdProjectName || undefined, { source: 'system' });
           }
           setPendingPermissionRequests((previous) =>
             previous.map((request) =>
@@ -1320,11 +1368,7 @@ export function useChatRealtimeHandlers({
             structuredMessageData.session_id !== currentSessionId
           ) {
             setIsSystemSessionChange(true);
-            onNavigateToSession?.(
-              structuredMessageData.session_id,
-              "claude",
-              latestMessageProjectName || undefined,
-            );
+            onNavigateToSession?.(structuredMessageData.session_id, 'claude', selectedProject?.name, { source: 'system' });
             return;
           }
         }
@@ -1412,11 +1456,7 @@ export function useChatRealtimeHandlers({
             structuredMessageData.session_id !== currentSessionId
           ) {
             setIsSystemSessionChange(true);
-            onNavigateToSession?.(
-              structuredMessageData.session_id,
-              "gemini",
-              latestMessageProjectName || undefined,
-            );
+            onNavigateToSession?.(structuredMessageData.session_id, 'gemini', selectedProject?.name, { source: 'system' });
             return;
           }
         }
@@ -1681,11 +1721,7 @@ export function useChatRealtimeHandlers({
               cursorData.session_id !== currentSessionId
             ) {
               setIsSystemSessionChange(true);
-              onNavigateToSession?.(
-                cursorData.session_id,
-                "cursor",
-                latestMessageProjectName || undefined,
-              );
+              onNavigateToSession?.(cursorData.session_id, 'cursor', selectedProject?.name, { source: 'system' });
             }
           }
         } catch (error) {
@@ -2234,11 +2270,7 @@ export function useChatRealtimeHandlers({
           setCurrentSessionId(codexActualSessionId || null);
           setIsSystemSessionChange(true);
           if (codexActualSessionId) {
-            onNavigateToSession?.(
-              codexActualSessionId,
-              "codex",
-              latestMessageProjectName || undefined,
-            );
+            onNavigateToSession?.(codexActualSessionId, 'codex', selectedProject?.name, { source: 'system' });
           }
         }
 

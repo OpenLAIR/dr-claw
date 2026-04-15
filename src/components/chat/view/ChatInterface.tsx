@@ -13,6 +13,7 @@ import GuidedPromptStarter from './subcomponents/GuidedPromptStarter';
 import { RESUMING_STATUS_TEXT } from '../types/types';
 import type { ChatInterfaceProps } from '../types/types';
 import type { ProviderAvailability } from '../types/types';
+import type { ChatMessage } from '../types/types';
 import { useChatProviderState } from '../hooks/useChatProviderState';
 import { useChatSessionState } from '../hooks/useChatSessionState';
 import { useChatRealtimeHandlers } from '../hooks/useChatRealtimeHandlers';
@@ -25,6 +26,7 @@ import type { PendingAutoIntake } from '../../../types/app';
 import type { EditingFile, DiffInfo } from '../../main-content/types/types';
 import { CLAUDE_MODELS, CURSOR_MODELS, CODEX_MODELS, GEMINI_MODELS, LOCAL_MODELS, NANO_CLAUDE_CODE_MODELS, OPENROUTER_MODELS } from '../../../../shared/modelConstants';
 import { getProviderDisplayName } from '../utils/chatFormatting';
+import { buildEditableMessageDraft, buildReplayMessageDraft, getChatMessageId, getMessageReplayContent } from '../utils/chatMessages';
 import { normalizePath, toRelativePath, isSafePath, fileNameFromPath } from '../../../utils/pathUtils';
 import { useDeviceSettings } from '../../../hooks/useDeviceSettings';
 
@@ -298,6 +300,8 @@ function ChatInterface({
     submitProgrammaticInput,
     btwOverlay,
     closeBtwOverlay,
+    submitProgrammaticMessage,
+    loadMessageIntoComposer,
   } = useChatComposerState({
     selectedProject,
     selectedSession,
@@ -363,13 +367,54 @@ function ChatInterface({
 
   const handleRetry = useCallback(() => {
     const msgs = chatMessagesForBtwRef.current;
-    let lastUserMessage: (typeof msgs)[number] | undefined;
+    let lastUserMessage: ChatMessage | undefined;
     for (let i = msgs.length - 1; i >= 0; i--) {
       if (msgs[i].type === 'user') { lastUserMessage = msgs[i]; break; }
     }
-    if (!lastUserMessage?.content) return;
-    submitProgrammaticInput(lastUserMessage.content);
-  }, [submitProgrammaticInput]);
+    if (!lastUserMessage) return;
+    const replayDraft = buildReplayMessageDraft(lastUserMessage);
+    if (!replayDraft) return;
+    submitProgrammaticMessage(replayDraft);
+  }, [submitProgrammaticMessage]);
+
+  const handleCopyMessage = useCallback(async (message: ChatMessage) => {
+    const text = getMessageReplayContent(message).trim();
+    if (!text || typeof navigator === 'undefined' || !navigator.clipboard?.writeText) {
+      return false;
+    }
+
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (error) {
+      console.error('Failed to copy message text:', error);
+      return false;
+    }
+  }, []);
+
+  const handleResendMessage = useCallback((message: ChatMessage) => {
+    const replayDraft = buildReplayMessageDraft(message);
+    if (!replayDraft) {
+      return;
+    }
+
+    submitProgrammaticMessage(replayDraft);
+  }, [submitProgrammaticMessage]);
+
+  const handleEditMessage = useCallback((message: ChatMessage) => {
+    const editableDraft = buildEditableMessageDraft(message);
+    if (!editableDraft) {
+      return;
+    }
+
+    const didLoad = loadMessageIntoComposer({
+      ...editableDraft,
+      editingMessageId: getChatMessageId(message),
+    });
+    if (didLoad) {
+      scrollToBottomAndReset();
+    }
+  }, [loadMessageIntoComposer, scrollToBottomAndReset]);
 
   const autoIntakeTriggeredRef = useRef(false);
   const lastAutoIntakeTriggerIdRef = useRef<string | null>(null);
@@ -840,7 +885,6 @@ function ChatInterface({
           onFileOpen={handleFileOpen}
           onShowSettings={onShowSettings}
           onGrantToolPermission={handleGrantToolPermission}
-          onSuggestShellEdit={handleOpenShellEditPrompt}
           autoExpandTools={autoExpandTools}
           showRawParameters={showRawParameters}
           showThinking={showThinking}
@@ -849,6 +893,10 @@ function ChatInterface({
           statusText={statusTextOverride || claudeStatus?.text}
           newSessionMode={newSessionMode}
           onRetry={handleRetry}
+          onCopyMessage={handleCopyMessage}
+          onResendMessage={handleResendMessage}
+          onEditMessage={handleEditMessage}
+          onSuggestShellEdit={handleOpenShellEditPrompt}
         />
 
         <ChatComposer

@@ -4,6 +4,7 @@ import type {
   Project,
   ProjectSession,
   SessionMode,
+  SessionNavigationSource,
   SessionProvider,
 } from '../../../types/app';
 
@@ -52,7 +53,10 @@ export interface AttachedPrompt {
 
 export interface ChatMessage {
   type: string;
+  id?: string | number;
+  messageId?: string;
   content?: string;
+  submittedContent?: string;
   timestamp: string | number | Date;
   images?: ChatImage[];
   attachments?: ChatAttachment[];
@@ -73,6 +77,9 @@ export interface ChatMessage {
     currentToolIndex: number;
     isComplete: boolean;
   };
+  editedFromMessageId?: string;
+  isSuperseded?: boolean;
+  supersededByMessageId?: string;
   attachedPrompt?: AttachedPrompt;
   errorType?: 'usage_limit' | 'overloaded' | 'network' | 'auth' | 'unknown';
   isRetryable?: boolean;
@@ -182,6 +189,7 @@ export interface ChatInterfaceProps {
     targetSessionId: string,
     targetProvider?: SessionProvider,
     targetProjectName?: string,
+    options?: { source?: SessionNavigationSource },
   ) => void;
   onShowSettings?: () => void;
   autoExpandTools?: boolean;

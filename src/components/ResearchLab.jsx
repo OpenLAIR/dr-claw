@@ -16,6 +16,7 @@ import { ScrollArea } from './ui/scroll-area';
 import { Button } from './ui/button';
 import { api } from '../utils/api';
 import useLocalStorage from '../hooks/useLocalStorage';
+import { useTaskMaster } from '../contexts/TaskMasterContext';
 import JsonTreeViewer from './JsonTreeViewer';
 
 /* ------------------------------------------------------------------ */
@@ -2472,6 +2473,7 @@ function UsageGuideNotice({
 
 function ResearchLab({ selectedProject, onNavigateToChat, compact = false, onFileOpen, onStartTask }) {
   const { t } = useTranslation('common');
+  const { currentProject, nextTask: guidedNextTask } = useTaskMaster();
   const [loading, setLoading] = useState(false);
   const [instance, setInstance] = useState(null);
   const [researchBrief, setResearchBrief] = useState(null);
@@ -2681,7 +2683,10 @@ function ResearchLab({ selectedProject, onNavigateToChat, compact = false, onFil
     () => buildPipelineStageOverview(normalizedTasks, artifacts),
     [normalizedTasks, artifacts],
   );
-  const nextTask = useMemo(() => getNextTask(normalizedTasks), [normalizedTasks]);
+  const localNextTask = useMemo(() => getNextTask(normalizedTasks), [normalizedTasks]);
+  const nextTask = currentProject?.name === selectedProject?.name
+    ? (guidedNextTask || localNextTask)
+    : localNextTask;
   const sourcePapers = useMemo(
     () => getSourcePapers(instance, researchBrief),
     [instance, researchBrief],
@@ -2933,7 +2938,6 @@ function ResearchLab({ selectedProject, onNavigateToChat, compact = false, onFil
                             const prompt = nextTask.nextActionPrompt || nextTask.guidance?.nextActionPrompt || '';
                             if (onStartTask) {
                               onStartTask(prompt, nextTask);
-                              if (onNavigateToChat) onNavigateToChat();
                             } else if (onNavigateToChat) {
                               onNavigateToChat();
                             }

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 
 import ChatInterface from '../../chat/view/ChatInterface';
 import SkillsDashboard from '../../SkillsDashboard';
@@ -10,9 +10,12 @@ import ProjectDashboard from '../../project-dashboard/view/ProjectDashboard';
 import TrashDashboard from '../../project-dashboard/view/TrashDashboard';
 import NewsDashboard from '../../news-dashboard/view/NewsDashboard';
 
+import ChatTabBar from '../../chat/view/ChatTabBar';
+import { useChatTabs } from '../../../hooks/useChatTabs';
 import MainContentHeader from './subcomponents/MainContentHeader';
 import MainContentStateView from './subcomponents/MainContentStateView';
 import type { MainContentProps } from '../types/types';
+import { resolveChatTabSyncAction } from './chatTabSync';
 
 import { useTaskMaster } from '../../../contexts/TaskMasterContext';
 import { useUiPreferences } from '../../../hooks/useUiPreferences';
@@ -58,12 +61,83 @@ function MainContent({
   onChatFromReference,
   newSessionMode,
   onNewSessionModeChange,
+  sessionNavigationSource,
+  onResetNavigationSource,
+  onNewSession,
 }: MainContentProps) {
   const { preferences } = useUiPreferences();
   const { autoExpandTools, showRawParameters, showThinking, autoScrollToBottom, sendByCtrlEnter } = preferences;
 
   const { currentProject, setCurrentProject } = useTaskMaster() as TaskMasterContextValue;
   const shouldShowTasksTab = false;
+
+  const handleActivateBlankTab = useCallback(() => {
+    if (selectedProject && onNewSession) {
+      onNewSession(selectedProject, newSessionMode);
+    }
+  }, [selectedProject, onNewSession, newSessionMode]);
+
+  const chatTabs = useChatTabs(
+    selectedProject,
+    onNavigateToSession,
+    handleActivateBlankTab,
+  );
+
+  const {
+    activeTab: chatActiveTab,
+    tabs: chatTabList,
+    openNewTab,
+    openTab,
+    updateActiveTabSession,
+    switchTab,
+    closeTab,
+  } = chatTabs;
+  const chatActiveTabSessionId = chatActiveTab?.sessionId;
+  const chatTabCount = chatTabList.length;
+
+  // Sync selectedSession changes into tab state using navigation source to
+  // distinguish user sidebar clicks from system session-created events. Runs
+  // on first render too so a pre-selected session (e.g. from URL) gets a tab.
+  useEffect(() => {
+    const currId = selectedSession?.id ?? null;
+
+    const action = resolveChatTabSyncAction({
+      activeAppTab: activeTab,
+      hasSelectedProject: Boolean(selectedProject),
+      nextSessionId: currId,
+      activeChatTabSessionId: chatActiveTabSessionId,
+      tabCount: chatTabCount,
+      navigationSource: sessionNavigationSource,
+    });
+
+    if (action === 'open-new-tab') {
+      openNewTab();
+    } else if (action === 'update-active-tab-session' && currId && selectedProject) {
+      updateActiveTabSession(selectedSession!, selectedProject);
+    } else if (action === 'open-tab' && currId && selectedProject) {
+      openTab(selectedSession!, selectedProject);
+    }
+
+    if (action !== 'noop') {
+      onResetNavigationSource();
+    }
+  }, [
+    selectedSession,
+    selectedProject,
+    activeTab,
+    sessionNavigationSource,
+    chatActiveTabSessionId,
+    chatTabCount,
+    openNewTab,
+    openTab,
+    updateActiveTabSession,
+    onResetNavigationSource,
+  ]);
+
+  // When the active tab has no session (new chat via [+]), pass null to ChatInterface
+  const effectiveSession = chatActiveTabSessionId === null
+    ? null
+    : selectedSession;
 
   useEffect(() => {
     if (selectedProject && selectedProject !== currentProject) {
@@ -248,11 +322,23 @@ function MainContent({
 
       <div className="flex-1 flex min-h-0 overflow-hidden">
         <div className="flex flex-1 flex-col min-h-0 overflow-hidden">
-          <div className={`h-full ${activeTab === 'chat' ? 'block' : 'hidden'}`}>
+          <div className={`h-full flex flex-col ${activeTab === 'chat' ? '' : 'hidden'}`}>
+            <ChatTabBar
+              tabs={chatTabList}
+              processingSessions={processingSessions}
+              onSwitchTab={switchTab}
+              onCloseTab={closeTab}
+              onNewTab={() => {
+                if (selectedProject && onNewSession) {
+                  onNewSession(selectedProject);
+                }
+                openNewTab();
+              }}
+            />
             <ErrorBoundary showDetails>
               <ChatInterface
                 selectedProject={selectedProject}
-                selectedSession={selectedSession}
+                selectedSession={effectiveSession}
                 ws={ws}
                 sendMessage={sendMessage}
                 latestMessage={latestMessage}

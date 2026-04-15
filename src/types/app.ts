@@ -2,6 +2,8 @@ export type SessionProvider = 'claude' | 'cursor' | 'codex' | 'gemini' | 'openro
 
 export type SessionMode = 'research' | 'workspace_qa';
 
+export type SessionNavigationSource = 'user' | 'system';
+
 export interface SessionTag {
   id: number;
   projectName?: string;

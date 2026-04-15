@@ -27,6 +27,7 @@ import type {
   ProjectsUpdatedMessage,
   PendingAutoIntake,
   SessionMode,
+  SessionNavigationSource,
   SessionProvider,
   SessionTag,
   TrashProject,
@@ -253,11 +254,11 @@ const isUpdateAdditive = (
   );
 };
 
-  const buildTransientSession = (
-    sessionId: string,
-    provider: ProjectSession['__provider'] = 'claude',
-    projectName?: string,
-  ): ProjectSession => ({
+const buildTransientSession = (
+  sessionId: string,
+  provider: ProjectSession['__provider'] = 'claude',
+  projectName?: string,
+): ProjectSession => ({
     id: sessionId,
     name: 'Auto Research Session',
     summary: 'Auto Research Session',
@@ -267,6 +268,10 @@ const isUpdateAdditive = (
     createdAt: new Date().toISOString(),
     lastActivity: new Date().toISOString(),
   });
+
+export const resolveSessionNavigationSource = (
+  source?: SessionNavigationSource,
+): SessionNavigationSource => source ?? 'user';
 
 export function useProjectsState({
   sessionId,
@@ -279,6 +284,7 @@ export function useProjectsState({
   const [trashProjects, setTrashProjects] = useState<TrashProject[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [selectedSession, setSelectedSession] = useState<ProjectSession | null>(null);
+  const [sessionNavigationSource, setSessionNavigationSource] = useState<SessionNavigationSource>('user');
   const [activeTab, setActiveTab] = useState<AppTab>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isLoadingProjects, setIsLoadingProjects] = useState(true);
@@ -727,10 +733,13 @@ export function useProjectsState({
     targetSessionId: string,
     targetProvider?: ProjectSession['__provider'],
     targetProjectName?: string,
+    options?: { source?: SessionNavigationSource },
   ) => {
     if (!targetSessionId) {
       return;
     }
+
+    setSessionNavigationSource(resolveSessionNavigationSource(options?.source));
 
     const shouldSwitchTab = !selectedSession || selectedSession.id !== targetSessionId;
     let matchedProject: Project | null = null;
@@ -874,6 +883,7 @@ export function useProjectsState({
 
   const handleNewSession = useCallback(
     (project: Project, mode: SessionMode = 'research') => {
+      setSessionNavigationSource('user');
       setSelectedProject(project);
       setSelectedSession(null);
       setActiveTab('chat');
@@ -1180,6 +1190,8 @@ export function useProjectsState({
     externalMessageUpdate,
     importedProjectAnalysisPrompt,
     newSessionMode,
+    sessionNavigationSource,
+    resetSessionNavigationSource: () => setSessionNavigationSource('user'),
     setNewSessionMode,
     setActiveTab,
     setSidebarOpen,
