@@ -8,12 +8,57 @@ const originalUserProfile = process.env.USERPROFILE;
 const originalDatabasePath = process.env.DATABASE_PATH;
 
 let tempRoot = null;
+let activeDatabaseModule = null;
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function closeTestDatabase() {
+  if (!activeDatabaseModule?.db?.close) {
+    return;
+  }
+
+  const maxAttempts = 6;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      activeDatabaseModule.db.close();
+      activeDatabaseModule = null;
+      return;
+    } catch (error) {
+      if (attempt === maxAttempts) {
+        throw error;
+      }
+      await sleep(30 * attempt);
+    }
+  }
+}
+
+async function removeTempRootWithRetry(targetPath) {
+  if (!targetPath) {
+    return;
+  }
+
+  const maxAttempts = 8;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      await rm(targetPath, { recursive: true, force: true });
+      return;
+    } catch (error) {
+      if (error?.code !== 'EBUSY' || attempt === maxAttempts) {
+        throw error;
+      }
+      await sleep(50 * attempt);
+    }
+  }
+}
 
 async function loadTestModules() {
   vi.resetModules();
   const projects = await import('../projects.js');
   const database = await import('../database/db.js');
   await database.initializeDatabase();
+  activeDatabaseModule = database;
   return { projects, database };
 }
 
@@ -26,6 +71,8 @@ describe('Gemini API session indexing', () => {
   });
 
   afterEach(async () => {
+    await closeTestDatabase();
+
     vi.resetModules();
 
     if (originalHome === undefined) delete process.env.HOME;
@@ -38,7 +85,7 @@ describe('Gemini API session indexing', () => {
     else process.env.DATABASE_PATH = originalDatabasePath;
 
     if (tempRoot) {
-      await rm(tempRoot, { recursive: true, force: true });
+      await removeTempRootWithRetry(tempRoot);
       tempRoot = null;
     }
   });

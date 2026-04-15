@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { mkdtemp, mkdir, rm, writeFile } from 'fs/promises';
+import { mkdtemp, mkdir, rm, unlink, writeFile } from 'fs/promises';
 import os from 'os';
 import path from 'path';
 
@@ -8,12 +8,57 @@ const originalUserProfile = process.env.USERPROFILE;
 const originalDatabasePath = process.env.DATABASE_PATH;
 
 let tempRoot = null;
+let activeDatabaseModule = null;
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function closeTestDatabase() {
+  if (!activeDatabaseModule?.db?.close) {
+    return;
+  }
+
+  const maxAttempts = 6;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      activeDatabaseModule.db.close();
+      activeDatabaseModule = null;
+      return;
+    } catch (error) {
+      if (attempt === maxAttempts) {
+        throw error;
+      }
+      await sleep(30 * attempt);
+    }
+  }
+}
+
+async function removeTempRootWithRetry(targetPath) {
+  if (!targetPath) {
+    return;
+  }
+
+  const maxAttempts = 8;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      await rm(targetPath, { recursive: true, force: true });
+      return;
+    } catch (error) {
+      if (error?.code !== 'EBUSY' || attempt === maxAttempts) {
+        throw error;
+      }
+      await sleep(50 * attempt);
+    }
+  }
+}
 
 async function loadTestModules() {
   vi.resetModules();
   const projects = await import('../projects.js');
   const database = await import('../database/db.js');
   await database.initializeDatabase();
+  activeDatabaseModule = database;
   return { projects, database };
 }
 
@@ -71,6 +116,8 @@ describe('session deletion fallbacks', () => {
   });
 
   afterEach(async () => {
+    await closeTestDatabase();
+
     vi.resetModules();
 
     if (originalHome === undefined) delete process.env.HOME;
@@ -83,7 +130,7 @@ describe('session deletion fallbacks', () => {
     else process.env.DATABASE_PATH = originalDatabasePath;
 
     if (tempRoot) {
-      await rm(tempRoot, { recursive: true, force: true });
+      await removeTempRootWithRetry(tempRoot);
       tempRoot = null;
     }
   });
@@ -142,6 +189,42 @@ describe('session deletion fallbacks', () => {
     const assistantMessages = result.messages.filter((entry) => entry?.message?.role === 'assistant');
 
     expect(assistantMessages.some((entry) => entry.message.content.includes('Codex responded successfully'))).toBe(true);
+  });
+
+  it('short-circuits temporary Codex session ids without not-found warnings', async () => {
+    const { projects } = await loadTestModules();
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const result = await projects.getCodexSessionMessages('new-session-12345');
+    expect(result).toEqual({ messages: [], total: 0, hasMore: false });
+
+    expect(
+      warnSpy.mock.calls.some((args) =>
+        String(args?.[0] || '').includes('Codex session file not found'),
+      ),
+    ).toBe(false);
+
+    warnSpy.mockRestore();
+  });
+
+  it('invalidates cached Codex session file path when the source file is deleted', async () => {
+    const { projects } = await loadTestModules();
+    const sessionId = '019d3967-a181-7171-9e9f-7b73811c0d99';
+
+    const sessionFile = await writeCodexSessionFile({
+      relativePath: path.join('2026', '04', '12', 'rollout-mismatched-cache-test.jsonl'),
+      sessionId,
+      cwd: path.join(tempRoot, 'workspace', 'proj-cache'),
+      userMessage: 'Cache locator test',
+      assistantMessage: 'Cache locator reply',
+    });
+
+    const resolvedPath = await projects.resolveCodexSessionFilePath(sessionId);
+    expect(resolvedPath).toBe(sessionFile);
+
+    await unlink(sessionFile);
+    const resolvedAfterDeletion = await projects.resolveCodexSessionFilePath(sessionId);
+    expect(resolvedAfterDeletion).toBeNull();
   });
 
   it('indexes Codex sessions using the real session id from metadata', async () => {

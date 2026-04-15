@@ -9,7 +9,8 @@
  * 1. **Claude Projects** (stored in ~/.claude/projects/)
  *    - Each project is a directory named with the project path encoded (/ replaced with -)
  *    - Contains .jsonl files with conversation history including 'cwd' field
- *    - Project metadata stored in ~/.claude/project-config.json
+ *    - Project metadata stored in ~/.dr-claw/project-config.json
+ *      (with one-time fallback migration from ~/.claude/project-config.json)
  *
  * 2. **Cursor Projects** (stored in ~/.cursor/chats/)
  *    - Each project directory is named with MD5 hash of the absolute project path
@@ -32,7 +33,7 @@
  *
  * 3. **Manual Project Addition**:
  *    - Users can manually add project paths via UI
- *    - Stored in ~/.claude/project-config.json with 'manuallyAdded' flag
+ *    - Stored in ~/.dr-claw/project-config.json with 'manuallyAdded' flag
  *    - Allows discovering Cursor sessions for projects without Claude sessions
  *
  * ## Critical Limitations
@@ -46,7 +47,7 @@
  *
  * ## Error Handling
  *
- * - Missing ~/.claude directory is handled gracefully with automatic creation
+ * - Missing project config directory is handled gracefully with automatic creation
  * - ENOENT errors are caught and handled without crashing
  * - Empty arrays returned when no projects/sessions exist
  *
@@ -93,10 +94,89 @@ const PROJECT_PIPELINE_FOLDERS = ['Survey', 'Ideation', 'Experiment', 'Publicati
 const LEGACY_DEFAULT_WORKSPACES_ROOT = path.join(os.homedir(), 'vibelab');
 const CURRENT_DEFAULT_WORKSPACES_ROOT = path.join(os.homedir(), 'dr-claw');
 const DELETED_PROJECTS_CONFIG_KEY = '_deletedProjects';
+const PROJECT_CONFIG_FILENAME = 'project-config.json';
+const CURRENT_PROJECT_CONFIG_DIR = path.join(os.homedir(), '.dr-claw');
+const LEGACY_PROJECT_CONFIG_DIR = path.join(os.homedir(), '.claude');
+const CURRENT_PROJECT_CONFIG_PATH = path.join(CURRENT_PROJECT_CONFIG_DIR, PROJECT_CONFIG_FILENAME);
+const LEGACY_PROJECT_CONFIG_PATH = path.join(LEGACY_PROJECT_CONFIG_DIR, PROJECT_CONFIG_FILENAME);
 
 let projectConfigMutationQueue = Promise.resolve();
 const _lastBootstrapByUser = new Map(); // userId -> timestamp
 const BOOTSTRAP_STALENESS_MS = 60_000; // Only re-scan legacy sources every 60 seconds
+
+function decodeUtf16BeBuffer(buffer) {
+  if (!Buffer.isBuffer(buffer) || buffer.length === 0) {
+    return '';
+  }
+
+  const swapped = Buffer.allocUnsafe(buffer.length);
+  for (let index = 0; index < buffer.length - 1; index += 2) {
+    swapped[index] = buffer[index + 1];
+    swapped[index + 1] = buffer[index];
+  }
+  if (buffer.length % 2 === 1) {
+    swapped[buffer.length - 1] = 0x00;
+  }
+  return swapped.toString('utf16le');
+}
+
+function parseJsonAllowBom(rawText) {
+  const candidates = [];
+
+  if (Buffer.isBuffer(rawText)) {
+    if (rawText.length >= 2) {
+      if (rawText[0] === 0xFF && rawText[1] === 0xFE) {
+        candidates.push(rawText.slice(2).toString('utf16le'));
+      } else if (rawText[0] === 0xFE && rawText[1] === 0xFF) {
+        candidates.push(decodeUtf16BeBuffer(rawText.slice(2)));
+      }
+    }
+
+    candidates.push(rawText.toString('utf8'));
+
+    const sampleLength = Math.min(rawText.length, 256);
+    let evenZeroCount = 0;
+    let oddZeroCount = 0;
+    for (let index = 0; index < sampleLength; index += 1) {
+      if (rawText[index] === 0x00) {
+        if (index % 2 === 0) {
+          evenZeroCount += 1;
+        } else {
+          oddZeroCount += 1;
+        }
+      }
+    }
+
+    if (oddZeroCount > sampleLength * 0.2 && evenZeroCount < sampleLength * 0.05) {
+      candidates.push(rawText.toString('utf16le'));
+    }
+    if (evenZeroCount > sampleLength * 0.2 && oddZeroCount < sampleLength * 0.05) {
+      candidates.push(decodeUtf16BeBuffer(rawText));
+    }
+  } else if (typeof rawText === 'string') {
+    candidates.push(rawText);
+  } else {
+    candidates.push(String(rawText ?? ''));
+  }
+
+  let lastError = null;
+  const seen = new Set();
+  for (const candidate of candidates) {
+    const normalized = String(candidate).replace(/^\uFEFF+/, '').replace(/\u0000/g, '');
+    const dedupeKey = normalized.slice(0, 512);
+    if (seen.has(dedupeKey)) {
+      continue;
+    }
+    seen.add(dedupeKey);
+    try {
+      return JSON.parse(normalized);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError || new Error('Invalid JSON content');
+}
 
 function isProjectTrashed(projectInfo = null, dbEntry = null) {
   return Boolean(projectInfo?.trash?.trashedAt || dbEntry?.metadata?.trash?.trashedAt);
@@ -116,6 +196,40 @@ function getProjectOwnerUserId(projectInfo = null, dbEntry = null) {
     ?? projectInfo?.trash?.ownerUserId
     ?? projectInfo?.deleted?.ownerUserId
     ?? null;
+}
+
+function normalizeUserIdCandidate(userId) {
+  if (userId === null || userId === undefined || userId === '') {
+    return null;
+  }
+
+  const parsed = Number(userId);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return null;
+  }
+  return Math.trunc(parsed);
+}
+
+async function resolveValidProjectOwnerUserId(
+  projectInfo = null,
+  dbEntry = null,
+  fallbackUserId = null,
+) {
+  const { userDb } = await import('./database/db.js');
+
+  const candidateOwnerId = normalizeUserIdCandidate(
+    getProjectOwnerUserId(projectInfo, dbEntry) ?? fallbackUserId,
+  );
+  if (candidateOwnerId && userDb.getUserById(candidateOwnerId)) {
+    return candidateOwnerId;
+  }
+
+  const normalizedFallbackUserId = normalizeUserIdCandidate(fallbackUserId);
+  if (normalizedFallbackUserId && userDb.getUserById(normalizedFallbackUserId)) {
+    return normalizedFallbackUserId;
+  }
+
+  return null;
 }
 
 function getDeletedProjectsStore(config) {
@@ -143,8 +257,8 @@ async function readProjectInstanceId(projectPath) {
   }
 
   try {
-    const instanceRaw = await fs.readFile(path.join(projectPath, 'instance.json'), 'utf8');
-    const instanceData = JSON.parse(instanceRaw);
+    const instanceRaw = await fs.readFile(path.join(projectPath, 'instance.json'));
+    const instanceData = parseJsonAllowBom(instanceRaw);
     return typeof instanceData?.instance_id === 'string' && instanceData.instance_id.trim()
       ? instanceData.instance_id.trim()
       : null;
@@ -217,7 +331,7 @@ async function bootstrapProjectsIndexFromLegacySources(config, projectDb, userId
     }
 
     const existing = projectDb.getProjectById(projectName);
-    const ownerUserId = existing?.user_id ?? getProjectOwnerUserId(projectInfo, existing) ?? userId ?? null;
+    const ownerUserId = await resolveValidProjectOwnerUserId(projectInfo, existing, userId);
     const metadata = { ...(existing?.metadata || {}) };
 
     if (isManuallyAdded) {
@@ -292,6 +406,79 @@ function collectCodexProjectCandidates(sessionsByProject = new Map()) {
 
 const CODEX_SYNC_COOLDOWN_MS = 30_000;
 let lastCodexSyncTimestamp = 0;
+const CODEX_SESSION_FILE_PATH_CACHE = new Map(); // sessionId -> absolute jsonl path
+const CODEX_SESSIONS_INDEX_CACHE_TTL_MS = 10_000;
+let codexSessionsIndexCache = null;
+let codexSessionsIndexPromise = null;
+
+function normalizeCodexSessionId(sessionId) {
+  return typeof sessionId === 'string' ? sessionId.trim() : '';
+}
+
+function isTemporaryCodexSessionId(sessionId) {
+  const normalizedSessionId = normalizeCodexSessionId(sessionId);
+  if (!normalizedSessionId) {
+    return false;
+  }
+  return normalizedSessionId.startsWith('new-session-') || normalizedSessionId.startsWith('temp-');
+}
+
+function rememberCodexSessionFilePath(sessionId, filePath) {
+  const normalizedSessionId = normalizeCodexSessionId(sessionId);
+  if (!normalizedSessionId || !filePath) {
+    return;
+  }
+  CODEX_SESSION_FILE_PATH_CACHE.set(normalizedSessionId, filePath);
+}
+
+function clearCachedCodexSessionFilePath(sessionId, filePath = null) {
+  const normalizedSessionId = normalizeCodexSessionId(sessionId);
+  if (!normalizedSessionId) {
+    return;
+  }
+
+  const cachedPath = CODEX_SESSION_FILE_PATH_CACHE.get(normalizedSessionId);
+  if (filePath && cachedPath && cachedPath !== filePath) {
+    return;
+  }
+  CODEX_SESSION_FILE_PATH_CACHE.delete(normalizedSessionId);
+}
+
+function readCachedCodexSessionFilePath(sessionId) {
+  const normalizedSessionId = normalizeCodexSessionId(sessionId);
+  if (!normalizedSessionId) {
+    return null;
+  }
+
+  const cachedPath = CODEX_SESSION_FILE_PATH_CACHE.get(normalizedSessionId);
+  if (!cachedPath) {
+    return null;
+  }
+
+  if (fsSync.existsSync(cachedPath)) {
+    return cachedPath;
+  }
+
+  CODEX_SESSION_FILE_PATH_CACHE.delete(normalizedSessionId);
+  return null;
+}
+
+function invalidateCodexSessionsIndexCache() {
+  codexSessionsIndexCache = null;
+}
+
+function readCachedCodexSessionsIndex() {
+  if (!codexSessionsIndexCache?.sessionsByProject) {
+    return null;
+  }
+
+  if ((Date.now() - codexSessionsIndexCache.builtAt) > CODEX_SESSIONS_INDEX_CACHE_TTL_MS) {
+    codexSessionsIndexCache = null;
+    return null;
+  }
+
+  return codexSessionsIndexCache.sessionsByProject;
+}
 
 async function syncDiscoveredProjectsFromCodexSessions(config, projectDb, userId = null, visibleWorkspaceRoots = []) {
   const now = Date.now();
@@ -321,7 +508,7 @@ async function syncDiscoveredProjectsFromCodexSessions(config, projectDb, userId
       continue;
     }
 
-    const ownerUserId = existing?.user_id ?? getProjectOwnerUserId(projectInfo, existing) ?? userId ?? null;
+    const ownerUserId = await resolveValidProjectOwnerUserId(projectInfo, existing, userId);
     const metadata = { ...(existing?.metadata || {}) };
 
     if (projectInfo?.trash?.trashedAt) {
@@ -463,8 +650,8 @@ async function detectTaskMasterFolder(projectPath) {
         if (fileStatus['tasks/tasks.json']) {
             try {
                 const tasksPath = path.join(taskMasterPath, 'tasks/tasks.json');
-                const tasksContent = await fs.readFile(tasksPath, 'utf8');
-                const tasksData = JSON.parse(tasksContent);
+                const tasksContent = await fs.readFile(tasksPath);
+                const tasksData = parseJsonAllowBom(tasksContent);
 
                 // Handle both tagged and legacy formats
                 let tasks = [];
@@ -550,12 +737,31 @@ function clearProjectDirectoryCache() {
   projectDirectoryCache.clear();
 }
 
+async function resolveProjectConfigPath() {
+  if (fsSync.existsSync(CURRENT_PROJECT_CONFIG_PATH)) {
+    return CURRENT_PROJECT_CONFIG_PATH;
+  }
+
+  if (!fsSync.existsSync(LEGACY_PROJECT_CONFIG_PATH)) {
+    return CURRENT_PROJECT_CONFIG_PATH;
+  }
+
+  try {
+    await fs.mkdir(CURRENT_PROJECT_CONFIG_DIR, { recursive: true });
+    await fs.copyFile(LEGACY_PROJECT_CONFIG_PATH, CURRENT_PROJECT_CONFIG_PATH);
+    return CURRENT_PROJECT_CONFIG_PATH;
+  } catch (error) {
+    console.warn('[projects] Failed to migrate legacy project config, using legacy path:', error.message);
+    return LEGACY_PROJECT_CONFIG_PATH;
+  }
+}
+
 // Load project configuration file
 async function loadProjectConfig() {
-  const configPath = path.join(os.homedir(), '.claude', 'project-config.json');
+  const configPath = await resolveProjectConfigPath();
   try {
-    const configData = await fs.readFile(configPath, 'utf8');
-    return JSON.parse(configData);
+    const configData = await fs.readFile(configPath);
+    return parseJsonAllowBom(configData);
   } catch (error) {
     // Return empty config if file doesn't exist
     return {};
@@ -783,12 +989,11 @@ async function migrateLegacyProjects(config, projectDb) {
 
 // Save project configuration file
 async function saveProjectConfig(config) {
-  const claudeDir = path.join(os.homedir(), '.claude');
-  const configPath = path.join(claudeDir, 'project-config.json');
+  const configPath = CURRENT_PROJECT_CONFIG_PATH;
 
-  // Ensure the .claude directory exists
+  // Ensure the .dr-claw directory exists
   try {
-    await fs.mkdir(claudeDir, { recursive: true });
+    await fs.mkdir(CURRENT_PROJECT_CONFIG_DIR, { recursive: true });
   } catch (error) {
     if (error.code !== 'EEXIST') {
       throw error;
@@ -1459,7 +1664,7 @@ async function getTrashedProjects(userId = null) {
       continue;
     }
 
-    const ownerUserId = getProjectOwnerUserId(projectInfo, dbEntry);
+    const ownerUserId = await resolveValidProjectOwnerUserId(projectInfo, dbEntry, userId);
     if (userId && ownerUserId !== userId) {
       continue;
     }
@@ -2606,7 +2811,7 @@ async function deleteProject(projectName, force = false, userId = null) {
     const existing = projectDb.getProjectById(projectName);
     const initialConfig = await loadProjectConfig();
     const initialProjectInfo = initialConfig[projectName];
-    const ownerUserId = existing?.user_id ?? getProjectOwnerUserId(initialProjectInfo, existing) ?? userId ?? null;
+    const ownerUserId = await resolveValidProjectOwnerUserId(initialProjectInfo, existing, userId);
 
     if (userId && ownerUserId && ownerUserId !== userId) {
       throw new Error('You do not have permission to delete this project');
@@ -2709,7 +2914,7 @@ async function restoreProject(projectName, userId = null) {
   const config = await loadProjectConfig();
   const existing = projectDb.getProjectById(projectName);
   const projectInfo = config[projectName];
-  const ownerUserId = existing?.user_id ?? getProjectOwnerUserId(projectInfo, existing) ?? userId ?? null;
+  const ownerUserId = await resolveValidProjectOwnerUserId(projectInfo, existing, userId);
 
   if (userId && ownerUserId && ownerUserId !== userId) {
     throw new Error('You do not have permission to restore this project');
@@ -2764,7 +2969,7 @@ async function deleteTrashedProject(projectName, mode = 'logical', userId = null
   const config = await loadProjectConfig();
   const existing = projectDb.getProjectById(projectName);
   const projectInfo = config[projectName];
-  const ownerUserId = existing?.user_id ?? getProjectOwnerUserId(projectInfo, existing) ?? userId ?? null;
+  const ownerUserId = await resolveValidProjectOwnerUserId(projectInfo, existing, userId);
 
   if (userId && ownerUserId && ownerUserId !== userId) {
     throw new Error('You do not have permission to delete this trashed project');
@@ -3403,6 +3608,12 @@ async function getGeminiSessions(projectPath, optionsOrUserId = null) {
       ? dedupedSessions.filter((session) => session.id === targetSessionId)
       : dedupedSessions;
 
+    for (const session of filteredSessions) {
+      if (session?.id && session?.filePath) {
+        rememberCodexSessionFilePath(session.id, session.filePath);
+      }
+    }
+
     if (syncIndex) {
       const { sessionDb } = await import('./database/db.js');
       const projectName = providedProjectName || encodeProjectPath(projectPath);
@@ -3618,57 +3829,93 @@ async function findCodexJsonlFiles(dir) {
   return files;
 }
 
-async function buildCodexSessionsIndex() {
-  const codexSessionsDir = path.join(os.homedir(), '.codex', 'sessions');
-  const sessionsByProject = new Map();
-
-  try {
-    await fs.access(codexSessionsDir);
-  } catch (error) {
-    return sessionsByProject;
+async function buildCodexSessionsIndex(options = {}) {
+  const { forceRefresh = false } = options;
+  if (!forceRefresh) {
+    const cachedIndex = readCachedCodexSessionsIndex();
+    if (cachedIndex) {
+      return cachedIndex;
+    }
+  } else {
+    invalidateCodexSessionsIndexCache();
   }
 
-  const jsonlFiles = await findCodexJsonlFiles(codexSessionsDir);
+  if (codexSessionsIndexPromise) {
+    return codexSessionsIndexPromise;
+  }
 
-  for (const filePath of jsonlFiles) {
+  const buildPromise = (async () => {
+    const codexSessionsDir = path.join(os.homedir(), '.codex', 'sessions');
+    const sessionsByProject = new Map();
+
     try {
-      const sessionData = await parseCodexSessionFile(filePath);
-      if (!sessionData || !sessionData.id) {
-        continue;
-      }
-
-      const normalizedProjectPath = await normalizeComparablePath(sessionData.cwd);
-      if (!normalizedProjectPath) {
-        continue;
-      }
-
-      const session = {
-        id: sessionData.id,
-        summary: sessionData.summary || 'Codex Session',
-        messageCount: sessionData.messageCount || 0,
-        lastActivity: sessionData.timestamp ? new Date(sessionData.timestamp) : new Date(),
-        cwd: sessionData.cwd,
-        model: sessionData.model,
-        mode: normalizeSessionMode(sessionData.mode),
-        filePath,
-        provider: 'codex',
-      };
-
-      if (!sessionsByProject.has(normalizedProjectPath)) {
-        sessionsByProject.set(normalizedProjectPath, []);
-      }
-
-      sessionsByProject.get(normalizedProjectPath).push(session);
+      await fs.access(codexSessionsDir);
     } catch (error) {
-      console.warn(`Could not parse Codex session file ${filePath}:`, error.message);
+      codexSessionsIndexCache = {
+        builtAt: Date.now(),
+        sessionsByProject,
+      };
+      return sessionsByProject;
+    }
+
+    const jsonlFiles = await findCodexJsonlFiles(codexSessionsDir);
+
+    for (const filePath of jsonlFiles) {
+      try {
+        const sessionData = await parseCodexSessionFile(filePath);
+        if (!sessionData || !sessionData.id) {
+          continue;
+        }
+
+        const normalizedProjectPath = await normalizeComparablePath(sessionData.cwd);
+        if (!normalizedProjectPath) {
+          continue;
+        }
+
+        const session = {
+          id: sessionData.id,
+          summary: sessionData.summary || 'Codex Session',
+          messageCount: sessionData.messageCount || 0,
+          lastActivity: sessionData.timestamp ? new Date(sessionData.timestamp) : new Date(),
+          cwd: sessionData.cwd,
+          model: sessionData.model,
+          mode: normalizeSessionMode(sessionData.mode),
+          filePath,
+          provider: 'codex',
+        };
+
+        rememberCodexSessionFilePath(session.id, filePath);
+
+        if (!sessionsByProject.has(normalizedProjectPath)) {
+          sessionsByProject.set(normalizedProjectPath, []);
+        }
+
+        sessionsByProject.get(normalizedProjectPath).push(session);
+      } catch (error) {
+        console.warn(`Could not parse Codex session file ${filePath}:`, error.message);
+      }
+    }
+
+    for (const sessions of sessionsByProject.values()) {
+      sessions.sort((a, b) => new Date(b.lastActivity) - new Date(a.lastActivity));
+    }
+
+    codexSessionsIndexCache = {
+      builtAt: Date.now(),
+      sessionsByProject,
+    };
+
+    return sessionsByProject;
+  })();
+
+  codexSessionsIndexPromise = buildPromise;
+  try {
+    return await buildPromise;
+  } finally {
+    if (codexSessionsIndexPromise === buildPromise) {
+      codexSessionsIndexPromise = null;
     }
   }
-
-  for (const sessions of sessionsByProject.values()) {
-    sessions.sort((a, b) => new Date(b.lastActivity) - new Date(a.lastActivity));
-  }
-
-  return sessionsByProject;
 }
 
 // Fetch Codex sessions for a given project path
@@ -3841,40 +4088,64 @@ function isCodexSystemPromptContent(text) {
   return false;
 }
 
+async function resolveCodexSessionFilePath(sessionId) {
+  const normalizedSessionId = normalizeCodexSessionId(sessionId);
+  if (!normalizedSessionId || isTemporaryCodexSessionId(normalizedSessionId)) {
+    return null;
+  }
+
+  const cachedPath = readCachedCodexSessionFilePath(normalizedSessionId);
+  if (cachedPath) {
+    return cachedPath;
+  }
+
+  // Warm index-level cache once so repeated session switches do not rescan the tree.
+  await buildCodexSessionsIndex();
+  const indexedCachedPath = readCachedCodexSessionFilePath(normalizedSessionId);
+  if (indexedCachedPath) {
+    return indexedCachedPath;
+  }
+
+  // If cache is stale, force one refresh before falling back to per-file probing.
+  await buildCodexSessionsIndex({ forceRefresh: true });
+  const refreshedCachedPath = readCachedCodexSessionFilePath(normalizedSessionId);
+  if (refreshedCachedPath) {
+    return refreshedCachedPath;
+  }
+
+  const codexSessionsDir = path.join(os.homedir(), '.codex', 'sessions');
+  const jsonlFiles = await findCodexJsonlFiles(codexSessionsDir);
+
+  for (const filePath of jsonlFiles) {
+    if (path.basename(filePath).includes(normalizedSessionId)) {
+      rememberCodexSessionFilePath(normalizedSessionId, filePath);
+      return filePath;
+    }
+  }
+
+  for (const filePath of jsonlFiles) {
+    const sessionData = await parseCodexSessionFile(filePath);
+    if (sessionData?.id === normalizedSessionId) {
+      rememberCodexSessionFilePath(normalizedSessionId, filePath);
+      return filePath;
+    }
+  }
+
+  return null;
+}
+
 // Get messages for a specific Codex session
 async function getCodexSessionMessages(sessionId, limit = null, offset = 0) {
   try {
-    const codexSessionsDir = path.join(os.homedir(), '.codex', 'sessions');
+    const normalizedSessionId = normalizeCodexSessionId(sessionId);
+    if (!normalizedSessionId || isTemporaryCodexSessionId(normalizedSessionId)) {
+      return { messages: [], total: 0, hasMore: false };
+    }
 
-    const findSessionFileByMetadata = async () => {
-      const jsonlFiles = await findCodexJsonlFiles(codexSessionsDir);
-
-      let filenameMatch = null;
-      for (const filePath of jsonlFiles) {
-        if (path.basename(filePath).includes(sessionId)) {
-          filenameMatch = filePath;
-          break;
-        }
-      }
-
-      if (filenameMatch) {
-        return filenameMatch;
-      }
-
-      for (const filePath of jsonlFiles) {
-        const sessionData = await parseCodexSessionFile(filePath);
-        if (sessionData?.id === sessionId) {
-          return filePath;
-        }
-      }
-
-      return null;
-    };
-
-    const sessionFilePath = await findSessionFileByMetadata();
+    const sessionFilePath = await resolveCodexSessionFilePath(normalizedSessionId);
 
     if (!sessionFilePath) {
-      console.warn(`Codex session file not found for session ${sessionId}`);
+      console.warn(`Codex session file not found for session ${normalizedSessionId}`);
       return { messages: [], total: 0, hasMore: false };
     }
 
@@ -4110,6 +4381,9 @@ async function getCodexSessionMessages(sessionId, limit = null, offset = 0) {
     return { messages, tokenUsage };
 
   } catch (error) {
+    if (error?.code === 'ENOENT') {
+      clearCachedCodexSessionFilePath(sessionId);
+    }
     console.error(`Error reading Codex session messages for ${sessionId}:`, error);
     return { messages: [], total: 0, hasMore: false };
   }
@@ -4120,6 +4394,7 @@ async function deleteCodexSession(sessionId) {
     const { sessionDb } = await import('./database/db.js');
     const codexSessionsDir = path.join(os.homedir(), '.codex', 'sessions');
     const indexedSession = sessionDb.getSessionById(sessionId);
+    const normalizedSessionId = normalizeCodexSessionId(sessionId);
 
     const findJsonlFiles = async (dir) => {
       const files = [];
@@ -4144,6 +4419,8 @@ async function deleteCodexSession(sessionId) {
       const sessionData = await parseCodexSessionFile(filePath);
       if (sessionData && sessionData.id === sessionId) {
         await fs.unlink(filePath);
+        clearCachedCodexSessionFilePath(normalizedSessionId, filePath);
+        invalidateCodexSessionsIndexCache();
         deletedFile = true;
         break;
       }
@@ -4154,6 +4431,8 @@ async function deleteCodexSession(sessionId) {
 
     if (deletedIndex) {
       sessionDb.deleteSession(sessionId);
+      clearCachedCodexSessionFilePath(normalizedSessionId);
+      invalidateCodexSessionsIndexCache();
     }
 
     if (deletedFile || deletedIndex) {
@@ -4351,6 +4630,7 @@ export {
   getSessions,
   getSessionMessages,
   collectCodexProjectCandidates,
+  resolveValidProjectOwnerUserId,
   parseJsonlSessions,
   renameProject,
   renameSession,
@@ -4367,6 +4647,7 @@ export {
   getCodexSessions,
   getGeminiSessions,
   getCodexSessionMessages,
+  resolveCodexSessionFilePath,
   deleteCodexSession,
   reconcileClaudeSessionIndex,
   reconcileCodexSessionIndex,
