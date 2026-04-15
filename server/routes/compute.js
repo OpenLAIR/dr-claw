@@ -93,6 +93,9 @@ router.put('/nodes/:id', async (req, res) => {
         updated.password = password;
       }
       // If no new password provided, keep existing
+    } else if (authType === 'agent') {
+      delete updated.keyPath;
+      delete updated.password;
     }
 
     // Slurm config
@@ -340,11 +343,11 @@ router.get('/config', async (req, res) => {
       return res.json({ configured: false, host: '', user: '', workDir: '~', authType: 'key', keyPath: '', hasPassword: false });
     }
     res.json({
-      configured: !!(node.host && node.user && (node.keyPath || node.password)),
+      configured: !!(node.host && node.user),
       host: node.host || '',
       user: node.user || '',
       workDir: node.workDir || '~',
-      authType: node.keyPath ? 'key' : (node.password ? 'password' : 'key'),
+      authType: node.keyPath ? 'key' : (node.password ? 'password' : 'agent'),
       keyPath: node.keyPath || '',
       hasPassword: !!node.password,
       type: node.type || 'direct',
@@ -498,7 +501,7 @@ router.get('/local/monitor', async (_req, res) => {
 router.get('/status', async (req, res) => {
   try {
     const node = await getActiveNode();
-    const configured = !!(node && node.host && node.user && (node.keyPath || node.password));
+    const configured = !!(node && node.host && node.user);
     res.json({
       configured,
       host: node?.host || '',

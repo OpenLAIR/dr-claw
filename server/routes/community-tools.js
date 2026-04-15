@@ -77,11 +77,11 @@ router.post('/configure', async (req, res) => {
 
     const results = { steps: [], errors: [] };
 
-    // ── Step 1: Write API keys to ~/.openclaw/community-tools.json ──
+    // ── Step 1: Write API keys to ~/.dr-claw/community-tools.json ──
     // (NOT project .env — writing .env triggers Vite restart and kills the fetch)
     if (apiKeys && Object.keys(apiKeys).length > 0) {
       try {
-        const configDir = path.join(os.homedir(), '.openclaw');
+        const configDir = path.join(os.homedir(), '.dr-claw');
         const configPath = path.join(configDir, 'community-tools.json');
         await fs.mkdir(configDir, { recursive: true });
 
@@ -112,7 +112,7 @@ router.post('/configure', async (req, res) => {
           .join('\n') + '\n';
         await fs.writeFile(rcPath, rcContent, { mode: 0o600 });
 
-        results.steps.push({ step: 'env', status: 'ok', message: `Saved ${Object.keys(apiKeys).length} key(s) to ~/.openclaw/community-tools.json` });
+        results.steps.push({ step: 'env', status: 'ok', message: `Saved ${Object.keys(apiKeys).length} key(s) to ~/.dr-claw/community-tools.json` });
       } catch (err) {
         results.errors.push({ step: 'env', error: err.message });
       }

@@ -5,7 +5,7 @@ import os from 'os';
 import pty from 'node-pty';
 import crypto from 'crypto';
 
-const CONFIG_DIR = path.join(os.homedir(), '.openclaw');
+const CONFIG_DIR = path.join(os.homedir(), '.dr-claw');
 const CONFIG_FILE = path.join(CONFIG_DIR, 'compute-node.json');
 
 // ─── ID generation ───
@@ -213,7 +213,9 @@ async function execSsh(nodeConfig, remoteCmd) {
     const cmd = `${sshBase} ${nodeConfig.user}@${nodeConfig.host} ${JSON.stringify(remoteCmd)}`;
     return await execWithPassword(cmd, nodeConfig.password);
   } else {
-    throw new Error('No authentication method configured (need SSH key or password)');
+    // Fall back to SSH agent (e.g. 1Password, ssh-agent) — no explicit key or password
+    const cmd = `${sshBase} ${nodeConfig.user}@${nodeConfig.host} ${JSON.stringify(remoteCmd)}`;
+    return await execLocal(cmd);
   }
 }
 
@@ -226,12 +228,11 @@ async function execRsync(nodeConfig, src, dst, excludes = '') {
 
   const cmd = `rsync -avz ${excludes} -e "${sshCmd}" ${src} ${dst}`;
 
-  if (nodeConfig.keyPath) {
-    return await execLocal(cmd);
-  } else if (nodeConfig.password) {
+  if (nodeConfig.password && !nodeConfig.keyPath) {
     return await execWithPassword(cmd, nodeConfig.password, 120000);
   } else {
-    throw new Error('No authentication method configured');
+    // keyPath or SSH agent — both work via execLocal
+    return await execLocal(cmd);
   }
 }
 
