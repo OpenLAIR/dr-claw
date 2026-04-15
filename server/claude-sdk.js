@@ -172,13 +172,14 @@ function mapCliOptionsToSDK(options = {}) {
  * @param {Array<string>} tempImagePaths - Temp image file paths for cleanup
  * @param {string} tempDir - Temp directory for cleanup
  */
-function addSession(sessionId, queryInstance, tempImagePaths = [], tempDir = null) {
+function addSession(sessionId, queryInstance, tempImagePaths = [], tempDir = null, writer = null) {
   activeSessions.set(sessionId, {
     instance: queryInstance,
     startTime: Date.now(),
     status: 'active',
     tempImagePaths,
-    tempDir
+    tempDir,
+    writer,
   });
 }
 
@@ -645,7 +646,7 @@ async function queryClaudeSDK(command, options = {}, ws) {
 
     // Track the query instance for abort capability
     if (capturedSessionId) {
-      addSession(capturedSessionId, queryInstance, tempImagePaths, tempDir);
+      addSession(capturedSessionId, queryInstance, tempImagePaths, tempDir, ws);
     }
 
     // Process streaming messages
@@ -657,7 +658,7 @@ async function queryClaudeSDK(command, options = {}, ws) {
       if (message.session_id && !capturedSessionId) {
 
         capturedSessionId = message.session_id;
-        addSession(capturedSessionId, queryInstance, tempImagePaths, tempDir);
+        addSession(capturedSessionId, queryInstance, tempImagePaths, tempDir, ws);
 
         // Set session ID on writer
         if (ws.setSessionId && typeof ws.setSessionId === 'function') {
@@ -681,7 +682,8 @@ async function queryClaudeSDK(command, options = {}, ws) {
             type: 'session-created',
             sessionId: capturedSessionId,
             provider: 'claude',
-            mode: sessionMode || 'research'
+            mode: sessionMode || 'research',
+            projectName: sessionProjectPath ? encodeProjectPath(sessionProjectPath) : undefined,
           });
         } else {
           console.log('Not sending session-created. sessionId:', sessionId, 'sessionCreatedSent:', sessionCreatedSent);
@@ -779,6 +781,7 @@ async function queryClaudeSDK(command, options = {}, ws) {
         sessionId: capturedSessionId,
         provider: 'claude',
         mode: sessionMode || 'research',
+        projectName: sessionProjectPath ? encodeProjectPath(sessionProjectPath) : undefined,
       });
     }
 
@@ -938,12 +941,23 @@ async function runClaudeBtw({ question, transcript, cwd, model, signal }) {
 }
 
 // Export public API
+function rebindClaudeSDKSessionWriter(sessionId, newWriter) {
+  const session = getSession(sessionId);
+  if (!session || !session.writer) return false;
+  if (typeof session.writer.replaceSocket === 'function') {
+    session.writer.replaceSocket(newWriter.ws || newWriter);
+    return true;
+  }
+  return false;
+}
+
 export {
   queryClaudeSDK,
   abortClaudeSDKSession,
   isClaudeSDKSessionActive,
   getClaudeSDKSessionStartTime,
   getActiveClaudeSDKSessions,
+  rebindClaudeSDKSessionWriter,
   resolveToolApproval,
   getContextWindowForModel,
   runClaudeBtw,

@@ -737,6 +737,7 @@ export async function queryLocalGPU(command, options = {}, ws) {
       status: 'running',
       abortController,
       startTime: Date.now(),
+      writer: ws,
     });
 
     const userText = (command || '').replace(/\s*\[Context:[^\]]*\]\s*/gi, '').trim();
@@ -990,6 +991,16 @@ export function getActiveLocalGPUSessions() {
   return Array.from(activeLocalGPUSessions.entries())
     .filter(([, s]) => s.status === 'running')
     .map(([id, s]) => ({ sessionId: id, startTime: s.startTime }));
+}
+
+export function rebindLocalGPUSessionWriter(sessionId, newWriter) {
+  const session = activeLocalGPUSessions.get(sessionId);
+  if (!session || !session.writer) return false;
+  if (typeof session.writer.replaceSocket === 'function') {
+    session.writer.replaceSocket(newWriter.ws || newWriter);
+    return true;
+  }
+  return false;
 }
 
 setInterval(() => {
