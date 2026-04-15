@@ -711,7 +711,8 @@ export async function spawnGemini(command, options = {}, ws) {
       startTime: startTimeValue,
       options,
       sessionAllowedTools,
-      sessionDisallowedTools
+      sessionDisallowedTools,
+      writer: ws,
     };
 
     const statusHeartbeat = setInterval(() => {
@@ -1366,4 +1367,14 @@ export function getGeminiSessionStartTime(sessionId) {
 
 export function getActiveGeminiSessions() {
   return Array.from(activeGeminiSessions.keys());
+}
+
+export function rebindGeminiSessionWriter(sessionId, newWriter) {
+  const session = activeGeminiSessions.get(sessionId);
+  if (!session || !session.writer) return false;
+  if (typeof session.writer.replaceSocket === 'function') {
+    session.writer.replaceSocket(newWriter.ws || newWriter);
+    return true;
+  }
+  return false;
 }

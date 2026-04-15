@@ -638,26 +638,28 @@ export function useChatRealtimeHandlers({
       activeViewSessionId?.startsWith("new-session-")
         ? activeViewSessionId
         : null;
-    const shouldRebindCodexTemporarySession =
+    const shouldRebindTemporarySession =
       Boolean(
         temporaryActiveSessionId &&
-          inferredMessageProvider === "codex" &&
+          (inferredMessageProvider === "codex" || inferredMessageProvider === "gemini") &&
           routedMessageSessionId &&
           routedMessageSessionId !== temporaryActiveSessionId,
       ) && !selectedSession?.id;
 
     if (
-      shouldRebindCodexTemporarySession &&
+      shouldRebindTemporarySession &&
       temporaryActiveSessionId &&
       routedMessageSessionId
     ) {
-      onCodexSessionIdResolved?.(
-        temporaryActiveSessionId,
-        routedMessageSessionId,
-      );
+      if (inferredMessageProvider === "codex") {
+        onCodexSessionIdResolved?.(
+          temporaryActiveSessionId,
+          routedMessageSessionId,
+        );
+      }
       onReplaceTemporarySession?.(
         routedMessageSessionId,
-        "codex",
+        inferredMessageProvider as "codex" | "gemini",
         latestMessageProjectName,
         temporaryActiveSessionId,
       );
@@ -708,7 +710,7 @@ export function useChatRealtimeHandlers({
       isGlobalMessage ||
       Boolean(isSystemInitForView) ||
       Boolean(isPendingViewSession && inferredMessageProvider === provider) ||
-      shouldRebindCodexTemporarySession;
+      shouldRebindTemporarySession;
     const isUnscopedError =
       !latestMessage.sessionId &&
       pendingViewSessionRef.current &&
@@ -734,7 +736,7 @@ export function useChatRealtimeHandlers({
           activeViewProjectName,
           isGlobalMessage,
           isPendingViewSession: Boolean(pendingViewSessionRef.current),
-          shouldRebindCodexTemporarySession,
+          shouldRebindTemporarySession,
           isUnscopedError: Boolean(isUnscopedError),
           shouldBypassSessionFilter: Boolean(shouldBypassSessionFilter),
           extra,

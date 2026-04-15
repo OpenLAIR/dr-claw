@@ -50,13 +50,13 @@ import {
     buildLifecycleMessageFromPayload as _buildLifecycleMessageFromPayload,
 } from './utils/sessionLifecycle.js';
 import { getProjectTokenUsageSummary } from './project-token-usage.js';
-import { queryClaudeSDK, abortClaudeSDKSession, isClaudeSDKSessionActive, getClaudeSDKSessionStartTime, getActiveClaudeSDKSessions, resolveToolApproval } from './claude-sdk.js';
+import { queryClaudeSDK, abortClaudeSDKSession, isClaudeSDKSessionActive, getClaudeSDKSessionStartTime, getActiveClaudeSDKSessions, rebindClaudeSDKSessionWriter, resolveToolApproval } from './claude-sdk.js';
 import { spawnCursor, abortCursorSession, isCursorSessionActive, getCursorSessionStartTime, getActiveCursorSessions } from './cursor-cli.js';
-import { queryCodex, abortCodexSession, isCodexSessionActive, getCodexSessionStartTime, getActiveCodexSessions } from './openai-codex.js';
-import { spawnGemini, abortGeminiSession, isGeminiSessionActive, getGeminiSessionStartTime, getActiveGeminiSessions } from './gemini-cli.js';
-import { queryOpenRouter, abortOpenRouterSession, isOpenRouterSessionActive, getOpenRouterSessionStartTime, getActiveOpenRouterSessions } from './openrouter.js';
-import { queryLocalGPU, abortLocalGPUSession, isLocalGPUSessionActive, getLocalGPUSessionStartTime, getActiveLocalGPUSessions } from './local-gpu.js';
-import { spawnNanoClaudeCode, abortNanoClaudeCodeSession, isNanoClaudeCodeSessionActive, getNanoClaudeCodeSessionStartTime, getActiveNanoClaudeCodeSessions } from './nano-claude-code.js';
+import { queryCodex, abortCodexSession, isCodexSessionActive, getCodexSessionStartTime, getActiveCodexSessions, rebindCodexSessionWriter } from './openai-codex.js';
+import { spawnGemini, abortGeminiSession, isGeminiSessionActive, getGeminiSessionStartTime, getActiveGeminiSessions, rebindGeminiSessionWriter } from './gemini-cli.js';
+import { queryOpenRouter, abortOpenRouterSession, isOpenRouterSessionActive, getOpenRouterSessionStartTime, getActiveOpenRouterSessions, rebindOpenRouterSessionWriter } from './openrouter.js';
+import { queryLocalGPU, abortLocalGPUSession, isLocalGPUSessionActive, getLocalGPUSessionStartTime, getActiveLocalGPUSessions, rebindLocalGPUSessionWriter } from './local-gpu.js';
+import { spawnNanoClaudeCode, abortNanoClaudeCodeSession, isNanoClaudeCodeSessionActive, getNanoClaudeCodeSessionStartTime, getActiveNanoClaudeCodeSessions, rebindNanoClaudeCodeSessionWriter } from './nano-claude-code.js';
 import gitRoutes from './routes/git.js';
 import authRoutes from './routes/auth.js';
 import mcpRoutes from './routes/mcp.js';
@@ -1463,6 +1463,10 @@ class WebSocketWriter {
     }
   }
 
+  replaceSocket(newWs) {
+    this.ws = newWs;
+  }
+
   setSessionId(sessionId) {
     this.sessionId = sessionId;
   }
@@ -2104,6 +2108,29 @@ function handleChatConnection(ws, request) {
                     // Use Claude Agents SDK
                     isActive = isClaudeSDKSessionActive(sessionId);
                     startTime = getClaudeSDKSessionStartTime(sessionId);
+                }
+
+                // If the session is still running, rebind its writer to the
+                // current WebSocket so that subsequent messages reach the
+                // reconnected client instead of the stale (closed) socket.
+                if (isActive && sessionId) {
+                    let rebound = false;
+                    if (provider === 'codex') {
+                        rebound = rebindCodexSessionWriter(sessionId, writer);
+                    } else if (provider === 'gemini') {
+                        rebound = rebindGeminiSessionWriter(sessionId, writer);
+                    } else if (provider === 'openrouter') {
+                        rebound = rebindOpenRouterSessionWriter(sessionId, writer);
+                    } else if (provider === 'local') {
+                        rebound = rebindLocalGPUSessionWriter(sessionId, writer);
+                    } else if (provider === 'nano') {
+                        rebound = rebindNanoClaudeCodeSessionWriter(sessionId, writer);
+                    } else if (provider !== 'cursor') {
+                        rebound = rebindClaudeSDKSessionWriter(sessionId, writer);
+                    }
+                    if (rebound) {
+                        console.log(`[INFO] Rebound ${provider} session ${sessionId} writer to new WebSocket`);
+                    }
                 }
 
                 writer.send({

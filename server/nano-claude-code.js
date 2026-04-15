@@ -174,7 +174,7 @@ export async function spawnNanoClaudeCode(command, options = {}, ws) {
       env: { ...(env || process.env) },
     });
 
-    activeNanoSessions.set(capturedSessionId, { process: child, startTime: Date.now() });
+    activeNanoSessions.set(capturedSessionId, { process: child, startTime: Date.now(), writer: ws });
 
     const getSessionStartTime = () => activeNanoSessions.get(capturedSessionId)?.startTime;
 
@@ -323,6 +323,16 @@ export function getNanoClaudeCodeSessionStartTime(sessionId) {
 
 export function getActiveNanoClaudeCodeSessions() {
   return Array.from(activeNanoSessions.keys());
+}
+
+export function rebindNanoClaudeCodeSessionWriter(sessionId, newWriter) {
+  const sessionData = activeNanoSessions.get(sessionId);
+  if (!sessionData || !sessionData.writer) return false;
+  if (typeof sessionData.writer.replaceSocket === 'function') {
+    sessionData.writer.replaceSocket(newWriter.ws || newWriter);
+    return true;
+  }
+  return false;
 }
 
 /** Kill all in-flight Nano CLI children (e.g. before process exit). */

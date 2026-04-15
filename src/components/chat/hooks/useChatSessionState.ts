@@ -42,7 +42,7 @@ import {
 const MESSAGES_PER_PAGE = 20;
 const INITIAL_VISIBLE_MESSAGES = 100;
 /** Grace period for WebSocket status-check response before clearing stale resume state */
-const STATUS_VALIDATION_TIMEOUT_MS = 5000;
+const STATUS_VALIDATION_TIMEOUT_MS = 10_000;
 const MAX_SESSION_SNAPSHOT_CACHE_ENTRIES = 40;
 /**
  * Infer provider from project session lists when session metadata is incomplete.
@@ -1289,6 +1289,13 @@ export function useChatSessionState({
       return;
     }
 
+    // Don't start the timeout until the WebSocket is connected — the
+    // check-session-status message can't be delivered until then, so
+    // timing out before the server even receives the query is premature.
+    if (!ws) {
+      return;
+    }
+
     const persistedStartTime = readSessionTimerStart(activeViewSessionId);
     if (
       !persistedStartTime ||
@@ -1336,6 +1343,7 @@ export function useChatSessionState({
     selectedProject?.name,
     selectedSession?.id,
     selectedSession?.__provider,
+    ws,
   ]);
 
   // Show "Load all" overlay after a batch finishes loading, persist for 2s then hide

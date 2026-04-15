@@ -15,7 +15,7 @@ export interface SessionFilterDebugPayload {
   activeViewProjectName?: string | null;
   isGlobalMessage?: boolean;
   isPendingViewSession?: boolean;
-  shouldRebindCodexTemporarySession?: boolean;
+  shouldRebindTemporarySession?: boolean;
   canUseActiveTemporarySessionForCodex?: boolean;
   isUnscopedError?: boolean;
   shouldBypassSessionFilter?: boolean;

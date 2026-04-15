@@ -627,6 +627,7 @@ export async function queryOpenRouter(command, options = {}, ws) {
       status: 'running',
       abortController,
       startTime: Date.now(),
+      writer: ws,
     });
 
     // Strip [Context: ...] prefixes to extract the user's actual text for the display name
@@ -892,6 +893,16 @@ export function getActiveOpenRouterSessions() {
   return Array.from(activeOpenRouterSessions.entries())
     .filter(([, s]) => s.status === 'running')
     .map(([id, s]) => ({ sessionId: id, startTime: s.startTime }));
+}
+
+export function rebindOpenRouterSessionWriter(sessionId, newWriter) {
+  const session = activeOpenRouterSessions.get(sessionId);
+  if (!session || !session.writer) return false;
+  if (typeof session.writer.replaceSocket === 'function') {
+    session.writer.replaceSocket(newWriter.ws || newWriter);
+    return true;
+  }
+  return false;
 }
 
 // Periodic cleanup (mirrors Codex pattern)

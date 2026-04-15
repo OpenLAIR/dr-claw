@@ -415,7 +415,8 @@ export async function queryCodex(command, options = {}, ws) {
       codex,
       status: 'running',
       abortController,
-      startTime: Date.now()
+      startTime: Date.now(),
+      writer: ws,
     });
 
     const publishSessionId = (resolvedSessionId) => {
@@ -694,6 +695,16 @@ export function getActiveCodexSessions() {
   }
 
   return sessions;
+}
+
+export function rebindCodexSessionWriter(sessionId, newWriter) {
+  const session = activeCodexSessions.get(sessionId);
+  if (!session || !session.writer) return false;
+  if (typeof session.writer.replaceSocket === 'function') {
+    session.writer.replaceSocket(newWriter.ws || newWriter);
+    return true;
+  }
+  return false;
 }
 
 /**
