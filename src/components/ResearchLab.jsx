@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
+import { normalizeLatexDelimiters } from '../utils/latexNormalizer';
 import {
   FlaskConical, RefreshCw, FileText, BookOpen, Settings2, Lightbulb,
   GitBranch, FolderOpen, ChevronDown, ChevronRight, ExternalLink,
@@ -755,7 +756,7 @@ function OverviewCard({ instance, config, researchBrief, compact = false }) {
                           rehypePlugins={[rehypeKatex]}
                           components={OVERVIEW_MARKDOWN_COMPONENTS}
                         >
-                          {section.content}
+                          {normalizeLatexDelimiters(section.content)}
                         </ReactMarkdown>
                       </div>
                     </div>
@@ -1915,7 +1916,7 @@ function IdeaCard({ projectName, config, projectFileSet, compact = false }) {
             rehypePlugins={rehypePlugins}
             components={ideaMarkdownComponents}
           >
-            {ideaText}
+            {normalizeLatexDelimiters(ideaText ?? '')}
           </ReactMarkdown>
         </div>
       )}
@@ -2244,7 +2245,7 @@ function FileViewer({ projectName, file, onClose }) {
               rehypePlugins={[rehypeKatex]}
               components={markdownComponents}
             >
-              {content}
+              {normalizeLatexDelimiters(content ?? '')}
             </ReactMarkdown>
           </div>
         </div>
