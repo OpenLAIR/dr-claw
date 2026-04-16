@@ -1916,7 +1916,7 @@ function IdeaCard({ projectName, config, projectFileSet, compact = false }) {
             rehypePlugins={rehypePlugins}
             components={ideaMarkdownComponents}
           >
-            {normalizeLatexDelimiters(ideaText ?? '')}
+            {normalizeLatexDelimiters(ideaText)}
           </ReactMarkdown>
         </div>
       )}
