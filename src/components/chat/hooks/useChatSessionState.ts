@@ -102,12 +102,21 @@ export function useChatSessionState({
 
   const [chatMessages, _setChatMessages] = useState<ChatMessage[]>(() => {
     if (typeof window !== 'undefined' && selectedProject) {
-      const saved = safeLocalStorage.getItem(`chat_messages_${selectedProject.name}`);
+      // Prefer session-scoped key to avoid collisions when multiple sessions
+      // from the same project are open simultaneously (split pane / multi-tab).
+      const sessionScopedKey =
+        selectedSession?.id && !selectedSession.id.startsWith('new-session-')
+          ? `chat_messages_${selectedProject.name}_${selectedSession.id}`
+          : null;
+      const saved =
+        (sessionScopedKey ? safeLocalStorage.getItem(sessionScopedKey) : null) ??
+        safeLocalStorage.getItem(`chat_messages_${selectedProject.name}`);
       if (saved) {
         try {
           return hydrateStoredChatMessages(JSON.parse(saved) as ChatMessage[]);
         } catch {
           console.error('Failed to parse saved chat messages, resetting');
+          if (sessionScopedKey) safeLocalStorage.removeItem(sessionScopedKey);
           safeLocalStorage.removeItem(`chat_messages_${selectedProject.name}`);
           return [];
         }
@@ -235,7 +244,6 @@ export function useChatSessionState({
         }
 
         const data = await response.json();
-        console.log('[DEBUG] Received session messages data:', data);
         if (isInitialLoad && data.tokenUsage) {
           setTokenBudget(data.tokenUsage);
         }
@@ -703,10 +711,14 @@ export function useChatSessionState({
   }, [convertedMessages, setChatMessages]);
 
   useEffect(() => {
-    if (selectedProject && chatMessages.length > 0) {
-      safeLocalStorage.setItem(`chat_messages_${selectedProject.name}`, JSON.stringify(chatMessages));
-    }
-  }, [chatMessages, selectedProject]);
+    if (!selectedProject || chatMessages.length === 0) return;
+    // Use session-scoped key when possible to avoid cross-session collisions.
+    const key =
+      selectedSession?.id && !selectedSession.id.startsWith('new-session-')
+        ? `chat_messages_${selectedProject.name}_${selectedSession.id}`
+        : `chat_messages_${selectedProject.name}`;
+    safeLocalStorage.setItem(key, JSON.stringify(chatMessages));
+  }, [chatMessages, selectedProject, selectedSession?.id]);
 
   useEffect(() => {
     if (!selectedProject || !selectedSession?.id || selectedSession.id.startsWith('new-session-')) {

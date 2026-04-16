@@ -870,6 +870,10 @@ export function useChatRealtimeHandlers({
           sessionStorage.removeItem('pendingSessionId');
         }
         if (selectedProject && latestMessage.exitCode === 0) {
+          // Clear both the session-scoped and legacy project-scoped recovery keys.
+          if (completedSessionId) {
+            safeLocalStorage.removeItem(`chat_messages_${selectedProject.name}_${completedSessionId}`);
+          }
           safeLocalStorage.removeItem(`chat_messages_${selectedProject.name}`);
         }
         setPendingPermissionRequests([]);
@@ -1367,7 +1371,12 @@ export function useChatRealtimeHandlers({
           }
           sessionStorage.removeItem('pendingSessionId');
         }
-        if (selectedProject) safeLocalStorage.removeItem(`chat_messages_${selectedProject.name}`);
+        if (selectedProject) {
+          if (codexActualSessionId) {
+            safeLocalStorage.removeItem(`chat_messages_${selectedProject.name}_${codexActualSessionId}`);
+          }
+          safeLocalStorage.removeItem(`chat_messages_${selectedProject.name}`);
+        }
         break;
       }
 
@@ -1383,6 +1392,13 @@ export function useChatRealtimeHandlers({
       case 'session-aborted': {
         const pendingSessionId = typeof window !== 'undefined' ? sessionStorage.getItem('pendingSessionId') : null;
         const abortedSessionId = latestMessage.sessionId || currentSessionId;
+        // Guard: with multiple ChatInterface instances mounted (one per tab),
+        // session-aborted is a global message that reaches all of them. Only the
+        // instance that owns the aborted session should update chat state.
+        const thisInstanceId = selectedSession?.id || currentSessionId;
+        if (abortedSessionId && thisInstanceId && abortedSessionId !== thisInstanceId) {
+          break;
+        }
         if (latestMessage.success !== false) {
           clearLoadingIndicators();
           markSessionsAsCompleted(abortedSessionId, currentSessionId, selectedSession?.id, pendingSessionId);

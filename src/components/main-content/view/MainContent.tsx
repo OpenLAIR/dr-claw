@@ -60,9 +60,9 @@ function MainContent({
   onChatFromReference,
   newSessionMode,
   onNewSessionModeChange,
-  sessionNavigationSource,
-  onResetNavigationSource,
-  onNewSession,
+  sessionNavigationSource: _sessionNavigationSource,
+  onResetNavigationSource: _onResetNavigationSource,
+  onNewSession: _onNewSession,
 }: MainContentProps) {
   const { preferences } = useUiPreferences();
   const { autoExpandTools, showRawParameters, showThinking, autoScrollToBottom, sendByCtrlEnter } = preferences;

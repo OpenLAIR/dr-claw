@@ -63,6 +63,9 @@ export const useSessionTabsStore = create<SessionTabsState>((set, get) => ({
       return;
     }
     const newTab: SessionTab = {
+      tabKey: (typeof crypto !== 'undefined' && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : `tab-${Date.now()}-${Math.random().toString(36).slice(2)}`,
       id: session.id,
       session,
       projectName,
@@ -106,14 +109,11 @@ export const useSessionTabsStore = create<SessionTabsState>((set, get) => ({
   },
 
   setActiveTab: (sessionId) => {
-    const { backgroundStatus } = get();
-    const bg = backgroundStatus[sessionId];
-    if (bg && (bg.hasUnread || bg.isLoading === false)) {
-      const { [sessionId]: _, ...rest } = backgroundStatus;
-      set({ activeTabId: sessionId, backgroundStatus: rest });
-    } else {
-      set({ activeTabId: sessionId });
-    }
+    // Always clear background tracking when the tab becomes active.
+    // If the session was loading in the background, the foreground loading
+    // spinner will take over; there's no need to keep a background entry.
+    const { [sessionId]: _, ...rest } = get().backgroundStatus;
+    set({ activeTabId: sessionId, backgroundStatus: rest });
   },
 
   reorderTab: (fromIndex, toIndex) => {
