@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { isTemporarySessionId } from '../constants/session';
 
 export function useSessionProtection() {
   const [activeSessions, setActiveSessions] = useState<Set<string>>(new Set());
@@ -52,7 +53,7 @@ export function useSessionProtection() {
     setActiveSessions((prev) => {
       const next = new Set<string>();
       for (const sessionId of prev) {
-        if (!sessionId.startsWith('new-session-')) {
+        if (!isTemporarySessionId(sessionId)) {
           next.add(sessionId);
         }
       }

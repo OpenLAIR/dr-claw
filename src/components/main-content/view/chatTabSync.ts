@@ -1,4 +1,5 @@
 import type { AppTab, SessionNavigationSource } from '../../../types/app';
+import { isTemporarySessionId } from '../../../constants/session';
 
 export type ChatTabSyncAction =
   | 'noop'
@@ -14,9 +15,6 @@ type ResolveChatTabSyncActionArgs = {
   tabCount: number;
   navigationSource: SessionNavigationSource;
 };
-
-const isTemporarySessionId = (sessionId?: string | null) =>
-  typeof sessionId === 'string' && sessionId.startsWith('new-session-');
 
 export function resolveChatTabSyncAction({
   activeAppTab,

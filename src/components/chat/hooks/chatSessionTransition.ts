@@ -1,3 +1,5 @@
+import { isTemporarySessionId } from '../../../constants/session';
+
 type ShouldPreserveOptimisticMessagesArgs = {
   currentSessionId: string | null;
   nextSelectedSessionId: string | null;
@@ -6,9 +8,6 @@ type ShouldPreserveOptimisticMessagesArgs = {
   chatMessageCount: number;
   isSystemSessionChange: boolean;
 };
-
-const isTemporarySessionId = (sessionId: string | null) =>
-  typeof sessionId === 'string' && sessionId.startsWith('new-session-');
 
 export function shouldPreserveOptimisticMessagesOnSessionSelect({
   currentSessionId,

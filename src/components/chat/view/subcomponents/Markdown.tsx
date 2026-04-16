@@ -147,6 +147,77 @@ const CodeBlock = ({ node, inline, className, children, ...props }: CodeBlockPro
   );
 };
 
+// ── Insight callout ──────────────────────────────────────────────────────────
+// Matches blocks like:
+//   ★ Insight ─────────────────────────────────────
+//   - point 1
+//   - point 2
+//   ─────────────────────────────────────────────────
+const INSIGHT_BLOCK_RE = /`?★\s*Insight\s*─+`?\n([\s\S]*?)\n`?─{10,}`?/g;
+
+type InsightSegment = { kind: 'text'; value: string } | { kind: 'insight'; value: string };
+
+function splitInsightBlocks(content: string): InsightSegment[] {
+  const segments: InsightSegment[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  INSIGHT_BLOCK_RE.lastIndex = 0;
+  while ((match = INSIGHT_BLOCK_RE.exec(content)) !== null) {
+    if (match.index > lastIndex) {
+      segments.push({ kind: 'text', value: content.slice(lastIndex, match.index) });
+    }
+    segments.push({ kind: 'insight', value: match[1].trim() });
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < content.length) {
+    segments.push({ kind: 'text', value: content.slice(lastIndex) });
+  }
+  return segments;
+}
+
+function InsightCallout({ children }: { children: string }) {
+  return (
+    <div className="my-3 rounded-lg border border-amber-200 dark:border-amber-800/60 bg-amber-50/60 dark:bg-amber-950/30">
+      <div className="flex items-center gap-1.5 px-3 pt-2 pb-1">
+        <svg className="w-4 h-4 text-amber-500 dark:text-amber-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM4 11a1 1 0 100-2H3a1 1 0 000 2h1zM10 18a1 1 0 001-1v-1a1 1 0 10-2 0v1a1 1 0 001 1zM15.657 14.243a1 1 0 00-1.414 0l-.707.707a1 1 0 101.414 1.414l.707-.707a1 1 0 000-1.414zM6.464 14.95a1 1 0 10-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM10 5a5 5 0 00-3 9v1a1 1 0 001 1h4a1 1 0 001-1v-1a5 5 0 00-3-9z" />
+        </svg>
+        <span className="text-xs font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wide">Insight</span>
+      </div>
+      <div className="px-3 pb-2.5 text-sm text-amber-900 dark:text-amber-100/90 [&_ul]:list-disc [&_ul]:pl-4 [&_ul]:space-y-0.5 [&_li]:leading-relaxed [&_strong]:font-semibold [&_code]:bg-amber-100 [&_code]:dark:bg-amber-900/40 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-[0.85em]">
+        <InsightContent>{children}</InsightContent>
+      </div>
+    </div>
+  );
+}
+
+function InsightContent({ children }: { children: string }) {
+  const lines = children.split('\n');
+  return (
+    <>
+      {lines.map((line, i) => {
+        const trimmed = line.replace(/^[-*]\s+/, '');
+        const isList = /^[-*]\s+/.test(line);
+        const rendered = trimmed
+          .split(/(\*\*.*?\*\*|`[^`]+`)/)
+          .map((part, j) => {
+            if (part.startsWith('**') && part.endsWith('**')) {
+              return <strong key={j}>{part.slice(2, -2)}</strong>;
+            }
+            if (part.startsWith('`') && part.endsWith('`')) {
+              return <code key={j}>{part.slice(1, -1)}</code>;
+            }
+            return <React.Fragment key={j}>{part}</React.Fragment>;
+          });
+        if (isList) {
+          return <div key={i} className="flex gap-1.5"><span className="text-amber-400 dark:text-amber-500 select-none">•</span><span>{rendered}</span></div>;
+        }
+        return <div key={i}>{rendered}</div>;
+      })}
+    </>
+  );
+}
+
 // Detect file path patterns like "src/lib.rs:36", "README.md", "package.json"
 // Also matches known extensionless files like Dockerfile, Makefile, etc.
 const EXTENSIONLESS_FILES = /(?:Dockerfile|Makefile|Procfile|Gemfile|Rakefile|Vagrantfile|Brewfile|Guardfile|Justfile|Taskfile)$/;
@@ -274,11 +345,30 @@ export function Markdown({ children, className, onFileOpen }: MarkdownProps) {
     };
   }, [onFileOpen]);
 
+  const segments = useMemo(() => splitInsightBlocks(content), [content]);
+  const hasInsights = segments.some(s => s.kind === 'insight');
+
+  if (!hasInsights) {
+    return (
+      <div className={className}>
+        <ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins} components={components as any}>
+          {content}
+        </ReactMarkdown>
+      </div>
+    );
+  }
+
   return (
     <div className={className}>
-      <ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins} components={components as any}>
-        {content}
-      </ReactMarkdown>
+      {segments.map((seg, i) =>
+        seg.kind === 'insight' ? (
+          <InsightCallout key={i}>{seg.value}</InsightCallout>
+        ) : (
+          <ReactMarkdown key={i} remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins} components={components as any}>
+            {seg.value}
+          </ReactMarkdown>
+        ),
+      )}
     </div>
   );
 }

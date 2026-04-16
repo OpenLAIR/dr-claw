@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
+import { isTemporarySessionId } from '../../../constants/session';
 import {
   buildAssistantMessages,
   decodeHtmlEntities,
@@ -563,11 +564,11 @@ export function useChatRealtimeHandlers({
 
     switch (latestMessage.type) {
       case 'session-created':
-        if (latestMessage.sessionId && (!currentSessionId || currentSessionId.startsWith('new-session-'))) {
+        if (latestMessage.sessionId && (!currentSessionId || isTemporarySessionId(currentSessionId))) {
           const createdSessionProvider =
             (latestMessage.provider as SessionProvider | undefined) || provider;
           const pendingStartTime = pendingViewSessionRef.current?.startedAt;
-          const temporarySessionId = currentSessionId?.startsWith('new-session-') ? currentSessionId : null;
+          const temporarySessionId = isTemporarySessionId(currentSessionId) ? currentSessionId : null;
           if (temporarySessionId) {
             moveSessionTimerStart(temporarySessionId, latestMessage.sessionId);
           }

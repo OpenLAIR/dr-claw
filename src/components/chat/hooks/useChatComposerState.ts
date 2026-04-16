@@ -14,6 +14,7 @@ import type { FileRejection } from 'react-dropzone';
 import { useTranslation } from 'react-i18next';
 import { authenticatedFetch } from '../../../utils/api';
 import { isTelemetryEnabled } from '../../../utils/telemetry';
+import { TEMP_SESSION_PREFIX, isTemporarySessionId } from '../../../constants/session';
 
 import { thinkingModes } from '../constants/thinkingModes';
 import type { CodexReasoningEffortId } from '../constants/codexReasoningEfforts';
@@ -191,9 +192,6 @@ function formatRejectedFileMessage(rejection: FileRejection) {
     message: `${name}: ${messages.join(', ') || 'File rejected'}`,
   };
 }
-
-const isTemporarySessionId = (sessionId: string | null | undefined) =>
-  Boolean(sessionId && sessionId.startsWith('new-session-'));
 
 const BTW_TRANSCRIPT_MAX_CHARS = 120_000;
 
@@ -1307,7 +1305,7 @@ export function useChatComposerState({
         pendingViewSessionId ||
         providerSessionId;
       const isNewSession = !effectiveSessionId;
-      const sessionToActivate = effectiveSessionId || `new-session-${Date.now()}`;
+      const sessionToActivate = effectiveSessionId || `${TEMP_SESSION_PREFIX}${Date.now()}`;
 
       if (!effectiveSessionId && !selectedSession?.id) {
         if (typeof window !== 'undefined') {

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { api } from '../utils/api';
+import { isTemporarySessionId } from '../constants/session';
 import { queueWorkspaceQaDraft } from '../utils/workspaceQa';
 import { queueReferenceChatDraft } from '../utils/referenceChatDraft';
 import type { Reference } from '../components/references/types';
@@ -562,7 +563,7 @@ export function useProjectsState({
 
       const hasActiveSession =
         (selectedSession && activeSessions.has(selectedSession.id)) ||
-        (activeSessions.size > 0 && Array.from(activeSessions).some((id) => id.startsWith('new-session-')));
+        (activeSessions.size > 0 && Array.from(activeSessions).some((id) => isTemporarySessionId(id)));
 
       const updatedProjects = projectsMessage.projects;
 

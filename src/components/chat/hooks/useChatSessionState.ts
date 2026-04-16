@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import type { MutableRefObject } from 'react';
 
 import { api, authenticatedFetch } from '../../../utils/api';
+import { isTemporarySessionId } from '../../../constants/session';
 import { RESUMING_STATUS_TEXT } from '../types/types';
 import type { ChatMessage, Provider, TokenBudget } from '../types/types';
 import type { Project, ProjectSession } from '../../../types/app';
@@ -19,8 +20,9 @@ const INITIAL_VISIBLE_MESSAGES = 100;
 
 // LRU message cache for instant tab switching. Max 10 sessions cached.
 const SESSION_MESSAGE_CACHE_MAX = 10;
-const sessionMessageCache = new Map<string, { messages: any[]; tokenUsage?: any; total: number; hasMore: boolean }>();
-function cacheSessionMessages(key: string, data: { messages: any[]; tokenUsage?: any; total: number; hasMore: boolean }) {
+type CachedSessionData = { messages: ChatMessage[]; tokenUsage?: TokenBudget | null; total: number; hasMore: boolean };
+const sessionMessageCache = new Map<string, CachedSessionData>();
+function cacheSessionMessages(key: string, data: CachedSessionData) {
   if (sessionMessageCache.size >= SESSION_MESSAGE_CACHE_MAX) {
     const oldest = sessionMessageCache.keys().next().value;
     if (oldest) sessionMessageCache.delete(oldest);
@@ -133,7 +135,7 @@ export function useChatSessionState({
     return false;
   });
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(selectedSession?.id || null);
-  const [sessionMessages, setSessionMessages] = useState<any[]>([]);
+  const [sessionMessages, setSessionMessages] = useState<ChatMessage[]>([]);
   const [isLoadingSessionMessages, setIsLoadingSessionMessages] = useState(false);
   const [isLoadingMoreMessages, setIsLoadingMoreMessages] = useState(false);
   const [hasMoreMessages, setHasMoreMessages] = useState(false);
@@ -200,7 +202,7 @@ export function useChatSessionState({
   const loadSessionMessages = useCallback(
     async (projectName: string, sessionId: string, loadMore = false, provider: Provider | string = 'claude') => {
       if (!projectName || !sessionId) {
-        return [] as any[];
+        return [] as ChatMessage[];
       }
 
       const isInitialLoad = !loadMore;
@@ -620,7 +622,7 @@ export function useChatSessionState({
   }, [chatMessages, selectedProject]);
 
   useEffect(() => {
-    if (!selectedProject || !selectedSession?.id || selectedSession.id.startsWith('new-session-')) {
+    if (!selectedProject || !selectedSession?.id || isTemporarySessionId(selectedSession.id)) {
       setTokenBudget(null);
       return;
     }
