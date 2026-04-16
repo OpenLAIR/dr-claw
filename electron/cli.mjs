@@ -1,4 +1,4 @@
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import crossSpawn from 'cross-spawn';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -102,6 +102,34 @@ function parseBuilderArgs(args) {
   return builderArgs;
 }
 
+/**
+ * Patch the local Electron.app's Info.plist so the macOS dock shows
+ * "Dr. Claw" instead of "Electron" during development.  Only runs on macOS;
+ * no-ops silently on other platforms.
+ */
+function patchElectronPlistForDev() {
+  if (process.platform !== 'darwin') return;
+
+  const plistPath = path.join(
+    projectRoot, 'node_modules/electron/dist/Electron.app/Contents/Info.plist',
+  );
+  if (!fs.existsSync(plistPath)) return;
+
+  const productName = 'Dr. Claw';
+  try {
+    for (const key of ['CFBundleName', 'CFBundleDisplayName']) {
+      execFileSync('/usr/libexec/PlistBuddy', ['-c', `Set :${key} ${productName}`, plistPath]);
+    }
+  } catch {
+    // PlistBuddy "Set" fails if the key doesn't exist — try "Add" instead.
+    try {
+      execFileSync('/usr/libexec/PlistBuddy', [
+        '-c', `Add :CFBundleDisplayName string ${productName}`, plistPath,
+      ]);
+    } catch { /* best-effort */ }
+  }
+}
+
 async function main() {
   if (command === 'prepare') {
     await prepareElectronRuntime();
@@ -110,6 +138,7 @@ async function main() {
 
   if (command === 'dev') {
     await prepareNodeDevRuntime();
+    patchElectronPlistForDev();
     await run(npmBin(), ['run', 'build']);
     await run(npxBin(), ['electron', 'electron/main.mjs']);
     return;
