@@ -738,7 +738,7 @@ function createWindow(baseUrl) {
     backgroundColor: '#0b1220',
     autoHideMenuBar: !isMac,
     icon: iconPath,
-    titleBarStyle: 'default',
+    titleBarStyle: isMac ? 'hiddenInset' : 'default',
     webPreferences: {
       contextIsolation: true,
       sandbox: true,
