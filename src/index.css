@@ -699,7 +699,7 @@
     padding-bottom: env(safe-area-inset-bottom);
   }
   
-  /* PWA specific header adjustments - uses CSS variables for consistency */
+/* PWA specific header adjustments - uses CSS variables for consistency */
   .pwa-header-safe {
     padding-top: var(--header-base-padding);
   }
@@ -905,3 +905,19 @@
     transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
+
+/* -----------------------------------------------------------------------
+ * Electron: custom title bar drag regions — placed OUTSIDE @layer so these
+ * rules are not subject to Tailwind cascade-layer priority.
+ * -webkit-app-region: drag  → window drag handle
+ * -webkit-app-region: no-drag → interactive elements inside a drag region
+ * ----------------------------------------------------------------------- */
+.electron-drag {
+  -webkit-app-region: drag;
+  app-region: drag;
+}
+.electron-no-drag {
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+}
+
