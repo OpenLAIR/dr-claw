@@ -56,27 +56,39 @@ export function escapeRegExp(value: string) {
 export function formatFileTreeInContent(text: string): string {
   if (!text || typeof text !== 'string') return text;
 
-  // Pattern to detect file tree structures
-  // Matches lines starting with ├──, └──, │, or multiple spaces followed by these symbols
-  // Also matches the root directory line which often precedes the tree
+  // Auto-wrap ASCII file trees in a `text` fence so monospace alignment is preserved.
+  // Two guardrails prevent mis-wrapping non-tree content (Mermaid-ish diagrams, ASCII
+  // pipelines, content already inside a fence):
+  //   1. `insideFence` — skip detection while walking through a fenced block
+  //   2. `hasStrongTreeSignal` — require at least one `├──` or `└──` line before
+  //      committing the wrap; a lone `│` run is not enough evidence of a file tree.
   const lines = text.split('\n');
   const result: string[] = [];
   let isInTree = false;
   let treeLines: string[] = [];
+  let hasStrongSignal = false;
+  let insideFence = false;
 
-  const isTreeLine = (line: string) => {
+  const isFenceToggleLine = (line: string) => /^\s*```/.test(line);
+
+  const isStrongTreeLine = (line: string) => {
     const trimmed = line.trim();
     return (
       trimmed.startsWith('├──') ||
       trimmed.startsWith('└──') ||
-      trimmed.startsWith('│') ||
       (trimmed.includes('──') && (trimmed.includes('├') || trimmed.includes('└')))
     );
   };
 
+  const isWeakTreeLine = (line: string) => {
+    const trimmed = line.trim();
+    return trimmed.startsWith('│');
+  };
+
+  const isTreeLine = (line: string) => isStrongTreeLine(line) || isWeakTreeLine(line);
+
   const isPossibleRootLine = (line: string) => {
     const trimmed = line.trim();
-    // Common root patterns: "dir/", "./dir", "/path/to/dir"
     return (
       trimmed.endsWith('/') ||
       trimmed.startsWith('./') ||
@@ -85,43 +97,63 @@ export function formatFileTreeInContent(text: string): string {
     );
   };
 
+  const flushTreeLines = () => {
+    if (!treeLines.length) return;
+    if (hasStrongSignal) {
+      result.push('```text\n' + treeLines.join('\n') + '\n```');
+    } else {
+      // Weak-only collection (e.g. lone `│` pipeline art) — emit unchanged so we
+      // don't fence real diagrams into a text code block.
+      result.push(...treeLines);
+    }
+    treeLines = [];
+    hasStrongSignal = false;
+    isInTree = false;
+  };
+
+  const pushTreeLine = (line: string) => {
+    treeLines.push(line);
+    if (!hasStrongSignal && isStrongTreeLine(line)) hasStrongSignal = true;
+  };
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const nextLine = lines[i + 1];
+
+    if (isFenceToggleLine(line)) {
+      if (isInTree) flushTreeLines();
+      insideFence = !insideFence;
+      result.push(line);
+      continue;
+    }
+
+    if (insideFence) {
+      result.push(line);
+      continue;
+    }
 
     if (isTreeLine(line)) {
       if (!isInTree) {
-        // Look back one line to see if it's the root directory
+        isInTree = true;
         if (result.length > 0 && isPossibleRootLine(result[result.length - 1])) {
           const rootLine = result.pop()!;
-          isInTree = true;
-          treeLines = [rootLine, line];
-        } else {
-          isInTree = true;
-          treeLines = [line];
+          pushTreeLine(rootLine);
         }
-      } else {
-        treeLines.push(line);
       }
+      pushTreeLine(line);
     } else if (isInTree) {
-      // Sometimes there are empty lines or lines with just vertical bars in a tree
       if (line.trim() === '' || line.trim() === '│') {
-        treeLines.push(line);
+        pushTreeLine(line);
       } else {
-        // End of tree
-        result.push('```text\n' + treeLines.join('\n') + '\n```');
+        flushTreeLines();
         result.push(line);
-        isInTree = false;
-        treeLines = [];
       }
     } else {
       result.push(line);
     }
   }
 
-  // Handle case where tree ends at the last line
   if (isInTree) {
-    result.push('```text\n' + treeLines.join('\n') + '\n```');
+    flushTreeLines();
   }
 
   return result.join('\n');

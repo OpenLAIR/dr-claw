@@ -6,7 +6,9 @@
   "codeBlock": {
     "copy": "복사",
     "copied": "복사됨",
-    "copyCode": "코드 복사"
+    "copyCode": "코드 복사",
+    "rendering": "다이어그램 렌더링 중…",
+    "renderError": "다이어그램 렌더링 실패 — 소스 표시"
   },
   "messageTypes": {
     "user": "U",
