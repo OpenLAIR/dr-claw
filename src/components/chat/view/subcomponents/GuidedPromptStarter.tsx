@@ -7,6 +7,7 @@ import {
 } from '../../constants/guidedPromptScenarios';
 import { AUTO_RESEARCH_PACKS, type LocaleKey } from '../../../../constants/autoResearchPacks';
 import { api } from '../../../../utils/api';
+import { emitAutoresearchEvent } from '../../../../utils/autoresearchTelemetry';
 import type { AttachedPrompt } from '../../types/types';
 
 function resolveLocaleKey(lang: string): LocaleKey {
@@ -138,6 +139,14 @@ export default function GuidedPromptStarter({
     setSelectedScenarioId(scenario.id);
     setAutoResearchOpen(false);
 
+    if (scenario.slashCommand) {
+      emitAutoresearchEvent('autoresearch_scenario_clicked', {
+        scenario_id: scenario.id,
+        slash_command: scenario.slashCommand,
+        source: 'guided-starter',
+      });
+    }
+
     // Auto Research scenarios inject slash command as AttachedPrompt
     if (scenario.slashCommand) {
       if (setAttachedPrompt) {
@@ -201,7 +210,15 @@ export default function GuidedPromptStarter({
                   <div key={pack.name} className={isExp ? c.bg : ''}>
                     <button
                       type="button"
-                      onClick={() => setExpandedGuidedPack(isExp ? null : pack.name)}
+                      onClick={() => {
+                        emitAutoresearchEvent('autoresearch_pack_expanded', {
+                          pack: pack.name,
+                          expanded: !isExp,
+                          source: 'guided-starter',
+                        });
+                        setExpandedGuidedPack(isExp ? null : pack.name);
+                      }}
+                      data-telemetry-id={`autoresearch-guided-pack-${pack.name}`}
                       className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-colors ${c.hover}`}
                     >
                       <span className={`h-2 w-2 rounded-full shrink-0 ${c.dot}`} />
@@ -218,6 +235,12 @@ export default function GuidedPromptStarter({
                             key={wf.command}
                             type="button"
                             onClick={() => {
+                              emitAutoresearchEvent('autoresearch_workflow_selected', {
+                                pack: pack.name,
+                                workflow_name: wf.name,
+                                command: wf.command,
+                                source: 'guided-starter',
+                              });
                               setAutoResearchOpen(false);
                               setExpandedGuidedPack(null);
                               setSelectedScenarioId(wf.command);
@@ -234,6 +257,7 @@ export default function GuidedPromptStarter({
                                 setTimeout(() => textareaRef.current?.focus(), 100);
                               }
                             }}
+                            data-telemetry-id={`autoresearch-guided-workflow-${pack.name}-${wf.command}`}
                             className={`w-full flex items-center gap-2 px-4 py-2 text-left transition-colors ${c.hover}`}
                           >
                             <span className={`h-1 w-1 rounded-full shrink-0 ${c.dot} opacity-50`} />

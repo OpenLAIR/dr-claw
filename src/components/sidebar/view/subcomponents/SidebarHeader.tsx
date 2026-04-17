@@ -4,6 +4,7 @@ import type { AppTab } from '../../../../types/app';
 import { Button } from '../../../ui/button';
 import { Input } from '../../../ui/input';
 import { IS_PLATFORM } from '../../../../constants/config';
+import { emitAutoresearchEvent } from '../../../../utils/autoresearchTelemetry';
 
 type SidebarHeaderProps = {
   isPWA: boolean;
@@ -48,6 +49,11 @@ export default function SidebarHeader({
   onCollapseSidebar,
   t,
 }: SidebarHeaderProps) {
+  const handleOpenAutoResearch = (source: 'sidebar-desktop' | 'sidebar-mobile') => {
+    emitAutoresearchEvent('autoresearch_hub_opened', { source });
+    onOpenAutoResearch();
+  };
+
   const LogoBlock = () => (
     <div className="flex items-center gap-2.5 min-w-0">
       <img src="/icons/file.svg" alt="Dr. Claw" className="w-7 h-7 rounded-lg shadow-sm flex-shrink-0" />
@@ -163,7 +169,8 @@ export default function SidebarHeader({
               variant={activeTab === 'autoresearch' ? 'secondary' : 'outline'}
               size="sm"
               className="h-9 w-full justify-start rounded-xl"
-              onClick={onOpenAutoResearch}
+              onClick={() => handleOpenAutoResearch('sidebar-desktop')}
+              data-telemetry-id="autoresearch-sidebar-open-desktop"
             >
               <FlaskConical className="h-4 w-4" />
               {t('common:tabs.autoResearch', { defaultValue: 'Auto Research' })}
@@ -294,7 +301,8 @@ export default function SidebarHeader({
               type="button"
               variant={activeTab === 'autoresearch' ? 'secondary' : 'outline'}
               className="h-10 w-full justify-start rounded-xl"
-              onClick={onOpenAutoResearch}
+              onClick={() => handleOpenAutoResearch('sidebar-mobile')}
+              data-telemetry-id="autoresearch-sidebar-open-mobile"
             >
               <FlaskConical className="h-4 w-4" />
               {t('common:tabs.autoResearch', { defaultValue: 'Auto Research' })}

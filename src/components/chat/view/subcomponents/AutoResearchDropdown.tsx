@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { ChevronDown, ChevronRight, FlaskConical, Settings } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { AUTO_RESEARCH_PACKS, type LocaleKey } from '../../../../constants/autoResearchPacks';
+import { emitAutoresearchEvent } from '../../../../utils/autoresearchTelemetry';
 import type { AttachedPrompt } from '../../types/types';
 
 function resolveLocaleKey(lang: string): LocaleKey {
@@ -49,6 +50,12 @@ export default function AutoResearchDropdown({
   }, [open]);
 
   const select = (command: string, packName: string, wfName: string) => {
+    emitAutoresearchEvent('autoresearch_workflow_selected', {
+      pack: packName,
+      workflow_name: wfName,
+      command,
+      source: 'chat-dropdown',
+    });
     if (setAttachedPrompt) {
       setAttachedPrompt({
         scenarioId: `autoresearch-${command}`,
@@ -64,11 +71,31 @@ export default function AutoResearchDropdown({
     setExpandedPack(null);
   };
 
+  const togglePackExpanded = (packName: string, isExpanded: boolean) => {
+    emitAutoresearchEvent('autoresearch_pack_expanded', {
+      pack: packName,
+      expanded: !isExpanded,
+      source: 'chat-dropdown',
+    });
+    setExpandedPack(isExpanded ? null : packName);
+  };
+
+  const toggleDropdown = () => {
+    const willOpen = !open;
+    emitAutoresearchEvent('autoresearch_dropdown_toggled', {
+      open: willOpen,
+      source: 'chat-dropdown',
+    });
+    setOpen(willOpen);
+    if (!willOpen) setExpandedPack(null);
+  };
+
   return (
     <div ref={containerRef} className="relative">
       <button
         type="button"
-        onClick={() => { setOpen(!open); if (open) setExpandedPack(null); }}
+        onClick={toggleDropdown}
+        data-telemetry-id="autoresearch-dropdown-toggle"
         className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-purple-300/50 text-[11px] font-medium text-purple-600 hover:text-purple-700 hover:bg-purple-50/60 dark:border-purple-700/40 dark:text-purple-400 dark:hover:text-purple-300 dark:hover:bg-purple-950/30 transition-all duration-150"
       >
         <FlaskConical className="w-3 h-3" />
@@ -98,7 +125,8 @@ export default function AutoResearchDropdown({
                 {/* Pack header — click to expand/collapse */}
                 <button
                   type="button"
-                  onClick={() => setExpandedPack(isExpanded ? null : pack.name)}
+                  onClick={() => togglePackExpanded(pack.name, isExpanded)}
+                  data-telemetry-id={`autoresearch-dropdown-pack-${pack.name}`}
                   className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-colors ${color.hoverBg}`}
                 >
                   <span className={`h-2 w-2 rounded-full shrink-0 ${color.dot}`} />
@@ -131,6 +159,7 @@ export default function AutoResearchDropdown({
                         key={wf.command}
                         type="button"
                         onClick={() => select(wf.command, pack.name, wf.name)}
+                        data-telemetry-id={`autoresearch-dropdown-workflow-${pack.name}-${wf.command}`}
                         className={`w-full flex items-center gap-2 px-4 py-2 text-left transition-colors ${color.hoverBg}`}
                       >
                         <span className={`h-1 w-1 rounded-full shrink-0 ${color.dot} opacity-50`} />
@@ -150,7 +179,13 @@ export default function AutoResearchDropdown({
           {onNavigateToHub && (
             <button
               type="button"
-              onClick={() => { setOpen(false); setExpandedPack(null); onNavigateToHub(); }}
+              onClick={() => {
+                emitAutoresearchEvent('autoresearch_hub_opened', { source: 'chat-dropdown-configure' });
+                setOpen(false);
+                setExpandedPack(null);
+                onNavigateToHub();
+              }}
+              data-telemetry-id="autoresearch-dropdown-goto-hub"
               className="w-full flex items-center gap-2 px-3 py-2.5 border-t border-border/50 text-[11px] font-medium text-purple-600 hover:bg-purple-50/40 dark:text-purple-400 dark:hover:bg-purple-950/20 transition-colors"
             >
               <Settings className="w-3 h-3" />
