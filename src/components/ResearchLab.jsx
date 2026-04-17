@@ -5,6 +5,7 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { normalizeLatexDelimiters } from '../utils/latexNormalizer';
+import MarkdownRenderer from './shared/MarkdownRenderer';
 import {
   FlaskConical, RefreshCw, FileText, BookOpen, Settings2, Lightbulb,
   GitBranch, FolderOpen, ChevronDown, ChevronRight, ExternalLink,
@@ -1670,10 +1671,7 @@ function ArtifactsCard({ artifacts, onSelect, selectedPath, compact = false }) {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  Markdown components for IdeaCard                                   */
-/* ------------------------------------------------------------------ */
-const ideaMarkdownComponents = {
+const ideaMarkdownOverrides = {
   h1: ({ children }) => <h1 className="text-xl font-bold text-foreground mt-5 mb-2 first:mt-0">{children}</h1>,
   h2: ({ children }) => <h2 className="text-lg font-semibold text-foreground mt-4 mb-2 border-b border-border pb-1">{children}</h2>,
   h3: ({ children }) => <h3 className="text-base font-semibold text-foreground mt-3 mb-1">{children}</h3>,
@@ -1688,46 +1686,17 @@ const ideaMarkdownComponents = {
   a: ({ href, children }) => (
     <a href={href} className="text-blue-600 dark:text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">{children}</a>
   ),
-  code: ({ inline, className, children, ...props }) => {
-    if (inline) {
-      return <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono text-foreground">{children}</code>;
-    }
-    const lang = (className || '').replace('language-', '');
-    return (
-      <div className="my-2 rounded-lg overflow-hidden border border-border">
-        {lang && <div className="bg-muted/60 px-3 py-1 text-xs text-muted-foreground font-mono border-b border-border">{lang}</div>}
-        <pre className="bg-muted/30 p-3 overflow-x-auto text-xs">
-          <code className="font-mono text-foreground/90">{children}</code>
-        </pre>
-      </div>
-    );
-  },
   strong: ({ children }) => <strong className="font-semibold text-foreground">{children}</strong>,
   em: ({ children }) => <em className="italic">{children}</em>,
 };
 
-/** Markdown component overrides */
-const markdownComponents = {
+const previewMarkdownOverrides = {
   blockquote: ({ children }) => (
     <blockquote className="border-l-4 border-blue-300 dark:border-blue-600 pl-3 italic text-foreground/70 my-2 text-sm">{children}</blockquote>
   ),
   a: ({ href, children }) => (
     <a href={href} className="text-blue-600 dark:text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">{children}</a>
   ),
-  code: ({ inline, className, children, ...props }) => {
-    if (inline) {
-      return <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono text-foreground">{children}</code>;
-    }
-    const lang = (className || '').replace('language-', '');
-    return (
-      <div className="my-2 rounded-lg overflow-hidden border border-border">
-        {lang && <div className="bg-muted/60 px-3 py-1 text-xs text-muted-foreground font-mono border-b border-border">{lang}</div>}
-        <pre className="bg-muted/30 p-3 overflow-x-auto text-xs">
-          <code className="font-mono text-foreground/90">{children}</code>
-        </pre>
-      </div>
-    );
-  },
   table: ({ children }) => (
     <div className="overflow-x-auto my-2">
       <table className="min-w-full border-collapse border border-border text-sm">{children}</table>
@@ -1766,9 +1735,6 @@ function IdeaCard({ projectName, config, projectFileSet, compact = false }) {
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(!compact);
   const [copied, setCopied] = useState(false);
-
-  const remarkPlugins = useMemo(() => [remarkGfm, remarkMath], []);
-  const rehypePlugins = useMemo(() => [rehypeKatex], []);
 
   useEffect(() => {
     if (!projectName) { setLoading(false); return; }
@@ -1911,13 +1877,9 @@ function IdeaCard({ projectName, config, projectFileSet, compact = false }) {
       {/* Body — markdown rendered */}
       {expanded && (
         <div className={`overflow-y-auto ${compact ? 'max-h-[300px] px-3 py-3' : 'max-h-[600px] px-5 py-4'}`}>
-          <ReactMarkdown
-            remarkPlugins={remarkPlugins}
-            rehypePlugins={rehypePlugins}
-            components={ideaMarkdownComponents}
-          >
-            {normalizeLatexDelimiters(ideaText)}
-          </ReactMarkdown>
+          <MarkdownRenderer codeBlockStyle="plain" components={ideaMarkdownOverrides}>
+            {ideaText ?? ''}
+          </MarkdownRenderer>
         </div>
       )}
     </div>
@@ -2240,13 +2202,9 @@ function FileViewer({ projectName, file, onClose }) {
       return (
         <div className="flex-1 min-h-0 overflow-auto bg-muted/10 p-4">
           <div className={`prose max-w-none rounded-2xl border border-border/60 bg-background/80 shadow-sm dark:prose-invert ${expanded ? 'prose-base p-8' : 'prose-sm p-6'}`}>
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm, remarkMath]}
-              rehypePlugins={[rehypeKatex]}
-              components={markdownComponents}
-            >
-              {normalizeLatexDelimiters(content ?? '')}
-            </ReactMarkdown>
+            <MarkdownRenderer codeBlockStyle="plain" components={previewMarkdownOverrides}>
+              {content ?? ''}
+            </MarkdownRenderer>
           </div>
         </div>
       );
