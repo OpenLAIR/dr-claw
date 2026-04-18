@@ -89,7 +89,16 @@ router.post('/configure', async (req, res) => {
         try {
           existing = JSON.parse(await fs.readFile(configPath, 'utf8'));
         } catch {
-          // file doesn't exist yet
+          // Migrate from legacy ~/.openclaw/ if it exists
+          const legacyPath = path.join(os.homedir(), '.openclaw', 'community-tools.json');
+          try {
+            const legacyData = await fs.readFile(legacyPath, 'utf8');
+            existing = JSON.parse(legacyData);
+            await fs.writeFile(configPath, legacyData, { mode: 0o600 });
+            console.log('[community-tools] Migrated config from ~/.openclaw/ to ~/.dr-claw/');
+          } catch {
+            // Neither file exists — start fresh
+          }
         }
 
         // Merge keys into config

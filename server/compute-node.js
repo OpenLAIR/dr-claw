@@ -7,6 +7,7 @@ import crypto from 'crypto';
 
 const CONFIG_DIR = path.join(os.homedir(), '.dr-claw');
 const CONFIG_FILE = path.join(CONFIG_DIR, 'compute-node.json');
+const LEGACY_CONFIG_DIR = path.join(os.homedir(), '.openclaw');
 
 // ─── ID generation ───
 
@@ -23,7 +24,19 @@ async function loadRawConfig() {
     const data = await fs.readFile(CONFIG_FILE, 'utf8');
     return JSON.parse(data);
   } catch (e) {
-    return { nodes: [], activeNodeId: null };
+    // Migrate from legacy ~/.openclaw/ if it exists
+    const legacyFile = path.join(LEGACY_CONFIG_DIR, 'compute-node.json');
+    try {
+      const legacyData = await fs.readFile(legacyFile, 'utf8');
+      const parsed = JSON.parse(legacyData);
+      // Copy to new location
+      await fs.mkdir(CONFIG_DIR, { recursive: true });
+      await fs.writeFile(CONFIG_FILE, legacyData, { mode: 0o600 });
+      console.log('[compute-node] Migrated config from ~/.openclaw/ to ~/.dr-claw/');
+      return parsed;
+    } catch {
+      return { nodes: [], activeNodeId: null };
+    }
   }
 }
 
