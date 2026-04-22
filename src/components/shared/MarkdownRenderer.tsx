@@ -160,9 +160,11 @@ const buildCodeRenderer = (
 ) => {
   const CodeRenderer: React.FC<CodeBlockProps> = ({ node, inline, className, children, ...rest }) => {
     const raw = childrenToString(children);
+    // react-markdown@10 drops `inline` and passes HAST nodes; inline code has no newlines.
     const inlineDetected = inline || (node && node.type === 'inlineCode');
+    const shouldInline = inlineDetected || !/[\r\n]/.test(raw);
 
-    if (inlineDetected) {
+    if (shouldInline) {
       return (
         <InlineCode className={className} {...rest}>
           {children}
