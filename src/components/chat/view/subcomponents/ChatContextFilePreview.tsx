@@ -1,12 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import ReactMarkdown from 'react-markdown';
-import { normalizeLatexDelimiters } from '../../../../utils/latexNormalizer';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
 import { ExternalLink, FileText, X } from 'lucide-react';
 
+import MarkdownRenderer from '../../../shared/MarkdownRenderer';
 import { Button } from '../../../ui/button';
 import { api } from '../../../../utils/api';
 import { IMAGE_EXTENSIONS, AUDIO_EXTENSIONS, VIDEO_EXTENSIONS, MARKDOWN_EXTENSIONS, HTML_EXTENSIONS } from '../../utils/fileExtensions';
@@ -307,9 +303,7 @@ export default function ChatContextFilePreview({
       {!loading && !loadError && previewKind === 'markdown' && (
         <div className={`${previewHeightClass} flex-1 overflow-auto bg-muted/10 ${compact ? 'p-3' : 'p-4'}`}>
           <div className={`prose prose-sm max-w-none rounded-2xl border border-border/60 bg-background/90 shadow-sm dark:prose-invert ${compact ? 'p-4' : 'p-5'}`}>
-            <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
-              {normalizeLatexDelimiters(content)}
-            </ReactMarkdown>
+            <MarkdownRenderer codeBlockStyle="syntax">{content}</MarkdownRenderer>
           </div>
         </div>
       )}

@@ -6,7 +6,9 @@
   "codeBlock": {
     "copy": "Copy",
     "copied": "Copied",
-    "copyCode": "Copy code"
+    "copyCode": "Copy code",
+    "rendering": "Rendering diagram…",
+    "renderError": "Diagram render failed — showing source"
   },
   "messageTypes": {
     "user": "U",

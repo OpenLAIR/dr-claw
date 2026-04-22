@@ -7,6 +7,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useTranslation } from 'react-i18next';
 import { normalizeInlineCodeFences } from '../../utils/chatFormatting';
+import MermaidBlock from './MermaidBlock';
 
 type MarkdownProps = {
   children: React.ReactNode;
@@ -44,6 +45,11 @@ const CodeBlock = ({ node, inline, className, children, ...props }: CodeBlockPro
 
   const match = /language-(\w+)/.exec(className || '');
   const language = match ? match[1] : 'text';
+
+  if (language === 'mermaid') {
+    return <MermaidBlock source={raw} />;
+  }
+
   const textToCopy = raw;
 
   const handleCopy = () => {
