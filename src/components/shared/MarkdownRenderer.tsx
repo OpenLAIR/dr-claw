@@ -186,6 +186,7 @@ const buildCodeRenderer = (
 };
 
 const defaultMarkdownComponents: Components = {
+  pre: ({ children }) => <>{children}</>,
   blockquote: ({ children }) => (
     <blockquote className="border-l-4 border-border/70 pl-4 italic text-foreground/80 my-2">
       {children}
