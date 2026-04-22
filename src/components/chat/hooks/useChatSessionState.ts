@@ -14,6 +14,7 @@ import {
   createCachedDiffCalculator,
   type DiffCalculator,
 } from '../utils/messageTransforms';
+import { useSessionTabsStore } from '../../../stores/useSessionTabsStore';
 
 const MESSAGES_PER_PAGE = 20;
 const INITIAL_VISIBLE_MESSAGES = 100;
@@ -103,12 +104,21 @@ export function useChatSessionState({
 
   const [chatMessages, _setChatMessages] = useState<ChatMessage[]>(() => {
     if (typeof window !== 'undefined' && selectedProject) {
-      const saved = safeLocalStorage.getItem(`chat_messages_${selectedProject.name}`);
+      // Prefer session-scoped key to avoid collisions when multiple sessions
+      // from the same project are open simultaneously (split pane / multi-tab).
+      const sessionScopedKey =
+        selectedSession?.id && !selectedSession.id.startsWith('new-session-')
+          ? `chat_messages_${selectedProject.name}_${selectedSession.id}`
+          : null;
+      const saved =
+        (sessionScopedKey ? safeLocalStorage.getItem(sessionScopedKey) : null) ??
+        safeLocalStorage.getItem(`chat_messages_${selectedProject.name}`);
       if (saved) {
         try {
           return hydrateStoredChatMessages(JSON.parse(saved) as ChatMessage[]);
         } catch {
           console.error('Failed to parse saved chat messages, resetting');
+          if (sessionScopedKey) safeLocalStorage.removeItem(sessionScopedKey);
           safeLocalStorage.removeItem(`chat_messages_${selectedProject.name}`);
           return [];
         }
@@ -236,7 +246,6 @@ export function useChatSessionState({
         }
 
         const data = await response.json();
-        console.log('[DEBUG] Received session messages data:', data);
         if (isInitialLoad && data.tokenUsage) {
           setTokenBudget(data.tokenUsage);
         }
@@ -441,6 +450,41 @@ export function useChatSessionState({
     }, 200);
   }, [chatMessages.length, isLoadingSessionMessages, scrollToBottom]);
 
+  // Keep refs to latest values so snapshot save never captures stale closures
+  const chatMessagesRef = useRef(chatMessages);
+  chatMessagesRef.current = chatMessages;
+  const isLoadingRef = useRef(isLoading);
+  isLoadingRef.current = isLoading;
+  const claudeStatusRef = useRef(claudeStatus);
+  claudeStatusRef.current = claudeStatus;
+  const tokenBudgetRef = useRef(tokenBudget);
+  tokenBudgetRef.current = tokenBudget;
+  const canAbortSessionRef = useRef(canAbortSession);
+  canAbortSessionRef.current = canAbortSession;
+
+  const prevSessionIdRef = useRef<string | null>(selectedSession?.id || null);
+
+  // Save snapshot of outgoing session when selectedSession changes
+  useEffect(() => {
+    const outgoingId = prevSessionIdRef.current;
+    const incomingId = selectedSession?.id || null;
+
+    if (outgoingId && outgoingId !== incomingId && chatMessagesRef.current.length > 0) {
+      const container = scrollContainerRef.current;
+      useSessionTabsStore.getState().saveSnapshot(outgoingId, {
+        messages: chatMessagesRef.current,
+        isLoading: isLoadingRef.current,
+        statusText: claudeStatusRef.current?.text ?? null,
+        tokenCount: claudeStatusRef.current?.tokens ?? 0,
+        tokenBudget: tokenBudgetRef.current,
+        scrollTop: container?.scrollTop ?? 0,
+        canAbort: canAbortSessionRef.current,
+      });
+    }
+
+    prevSessionIdRef.current = incomingId;
+  }, [selectedSession?.id]);
+
   useEffect(() => {
     const loadMessages = async () => {
       if (selectedSession && selectedProject) {
@@ -448,6 +492,62 @@ export function useChatSessionState({
         isLoadingSessionRef.current = true;
 
         const sessionChanged = currentSessionId !== null && currentSessionId !== selectedSession.id;
+
+        // Try restoring from snapshot cache for instant tab switching
+        if (sessionChanged && !isSystemSessionChange) {
+          const snapshot = useSessionTabsStore.getState().getSnapshot(selectedSession.id);
+          if (snapshot && snapshot.messages.length > 0) {
+            useSessionTabsStore.getState().clearSnapshot(selectedSession.id);
+            resetStreamingState();
+            pendingViewSessionRef.current = null;
+            setChatMessages(snapshot.messages);
+            setSessionMessages([]);
+            setIsLoading(snapshot.isLoading);
+            setCanAbortSession(snapshot.canAbort);
+            setTokenBudget(snapshot.tokenBudget);
+            setStatusTextOverride(null);
+            setCurrentSessionId(selectedSession.id);
+            messagesOffsetRef.current = 0;
+            setHasMoreMessages(false);
+            setTotalMessages(snapshot.messages.length);
+            setVisibleMessageCount(INITIAL_VISIBLE_MESSAGES);
+            setAllMessagesLoaded(false);
+            allMessagesLoadedRef.current = false;
+
+            if (snapshot.isLoading && snapshot.statusText) {
+              setClaudeStatus({ text: snapshot.statusText, tokens: snapshot.tokenCount, can_interrupt: true });
+            } else {
+              setClaudeStatus(null);
+              // Clear persisted timer so the "Resuming..." effect doesn't kick in
+              clearSessionTimerStart(selectedSession.id);
+            }
+
+            // Clear any pending status validation to prevent spurious "Resuming..."
+            setPendingStatusValidationSessionId(null);
+
+            // Only check session status if the snapshot indicated the session was active
+            if (snapshot.isLoading && ws && selectedSession?.id) {
+              markSessionStatusCheckPending(selectedSession.id);
+              sendMessage({
+                type: 'check-session-status',
+                sessionId: selectedSession.id,
+                provider: currentProvider,
+              });
+            }
+
+            // Restore scroll position after next paint
+            const savedScrollTop = snapshot.scrollTop;
+            requestAnimationFrame(() => {
+              if (scrollContainerRef.current && savedScrollTop > 0) {
+                scrollContainerRef.current.scrollTop = savedScrollTop;
+              }
+            });
+
+            isLoadingSessionRef.current = false;
+            return;
+          }
+        }
+
         if (sessionChanged) {
           if (!isSystemSessionChange) {
             resetStreamingState();
@@ -471,7 +571,6 @@ export function useChatSessionState({
           if (loadAllFinishedTimerRef.current) clearTimeout(loadAllFinishedTimerRef.current);
           setTokenBudget(null);
           
-          // Only set isLoading to false if it's NOT in the processingSessions set
           const isProcessing =
             processingSessions?.has(selectedSession.id) ||
             pendingStatusValidationSessionIdRef.current === selectedSession.id;
@@ -480,8 +579,6 @@ export function useChatSessionState({
           }
         }
 
-        // Always check status if we have a websocket and a session, 
-        // especially on initial load or reconnect.
         if (ws && selectedSession?.id) {
           markSessionStatusCheckPending(selectedSession.id);
           sendMessage({
@@ -616,10 +713,14 @@ export function useChatSessionState({
   }, [convertedMessages, setChatMessages]);
 
   useEffect(() => {
-    if (selectedProject && chatMessages.length > 0) {
-      safeLocalStorage.setItem(`chat_messages_${selectedProject.name}`, JSON.stringify(chatMessages));
-    }
-  }, [chatMessages, selectedProject]);
+    if (!selectedProject || chatMessages.length === 0) return;
+    // Use session-scoped key when possible to avoid cross-session collisions.
+    const key =
+      selectedSession?.id && !selectedSession.id.startsWith('new-session-')
+        ? `chat_messages_${selectedProject.name}_${selectedSession.id}`
+        : `chat_messages_${selectedProject.name}`;
+    safeLocalStorage.setItem(key, JSON.stringify(chatMessages));
+  }, [chatMessages, selectedProject, selectedSession?.id]);
 
   useEffect(() => {
     if (!selectedProject || !selectedSession?.id || isTemporarySessionId(selectedSession.id)) {
