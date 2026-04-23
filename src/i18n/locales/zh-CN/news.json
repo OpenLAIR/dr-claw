@@ -2,7 +2,7 @@
   "hero": {
     "badge": "研究资讯",
     "title": "研究动态",
-    "description": "发现来自 arXiv、HuggingFace、X 和小红书的最新内容 — 自动按相关性、时效性、热度和质量评分。"
+    "description": "发现来自 arXiv、HuggingFace、X、小红书和 Exa 的最新内容 — 自动按相关性、时效性、热度和质量评分。"
   },
   "sources": {
     "arxiv": "arXiv",
@@ -10,7 +10,8 @@
     "huggingfaceFeed": "HF 每日论文",
     "x": "X",
     "xiaohongshu": "小红书",
-    "xiaohongshuShort": "小红书"
+    "xiaohongshuShort": "小红书",
+    "exa": "Exa"
   },
   "actions": {
     "settings": "设置",
@@ -80,6 +81,15 @@
         "点击「开始搜索」获取最新帖子"
       ],
       "note": "如尚未安装 xiaohongshu-cli，请运行：uv tool install xiaohongshu-cli"
+    },
+    "exa": {
+      "steps": [
+        "设置 EXA_API_KEY 环境变量",
+        "点击「设置」配置搜索查询、分类和日期范围",
+        "可选：添加研究领域以按兴趣筛选结果",
+        "点击「开始搜索」获取 Exa 最新结果"
+      ],
+      "note": "在 exa.ai 获取 API 密钥"
     }
   },
   "footer": {
@@ -90,6 +100,11 @@
     "huggingfaceTitle": "HuggingFace 设置",
     "xTitle": "X (Twitter) 设置",
     "xiaohongshuTitle": "小红书设置",
+    "exaTitle": "Exa 设置",
+    "exaSearchQueries": "搜索查询（逗号分隔）",
+    "exaSearchQueriesPlaceholder": "最新 AI 研究, 大语言模型...",
+    "exaCategory": "分类",
+    "exaDays": "最近 N 天的结果",
     "authentication": "认证",
     "xAuthDescription": "twitter-cli 自动从浏览器提取 Cookie（Chrome、Arc、Edge、Firefox）。请确保已在浏览器中登录 X/Twitter。无需 API 密钥。",
     "browserCookieAuth": "浏览器 Cookie 认证",

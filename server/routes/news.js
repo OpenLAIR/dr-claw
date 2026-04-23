@@ -219,6 +219,31 @@ const SOURCE_REGISTRY = {
     },
     requiresCredentials: false,
   },
+  exa: {
+    label: 'Exa',
+    script: 'research-news/search_exa.py',
+    configFile: 'news-config-exa.json',
+    resultsFile: 'news-results-exa.json',
+    defaultConfig: {
+      research_domains: {
+        'Large Language Models': {
+          keywords: ['large language model', 'LLM', 'transformer', 'foundation model'],
+          arxiv_categories: [],
+          priority: 5,
+        },
+        'AI Agents': {
+          keywords: ['AI agent', 'multi-agent', 'autonomous agent', 'tool use'],
+          arxiv_categories: [],
+          priority: 4,
+        },
+      },
+      top_n: 10,
+      queries: 'latest AI research,large language models,AI agents',
+      category: 'research paper',
+      days: 30,
+    },
+    requiresCredentials: false,
+  },
 };
 
 async function ensureDataDir() {
@@ -371,6 +396,11 @@ async function handleSearch(sourceName, req, res) {
     }
     if (sourceName === 'xiaohongshu' && config.keywords) {
       args.push('--keywords', config.keywords);
+    }
+    if (sourceName === 'exa') {
+      if (config.queries) args.push('--queries', config.queries);
+      if (config.category) args.push('--category', config.category);
+      if (config.days) args.push('--days', String(config.days));
     }
 
     // Build env — pass credentials if required.

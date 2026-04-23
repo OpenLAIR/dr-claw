@@ -2,7 +2,7 @@
   "hero": {
     "badge": "Research News",
     "title": "Research Feed",
-    "description": "Discover the latest from arXiv, HuggingFace, X, and Xiaohongshu — automatically scored by relevance, recency, popularity, and quality."
+    "description": "Discover the latest from arXiv, HuggingFace, X, Xiaohongshu, and Exa — automatically scored by relevance, recency, popularity, and quality."
   },
   "sources": {
     "arxiv": "arXiv",
@@ -10,7 +10,8 @@
     "huggingfaceFeed": "HF Daily Papers",
     "x": "X",
     "xiaohongshu": "Xiaohongshu",
-    "xiaohongshuShort": "XHS"
+    "xiaohongshuShort": "XHS",
+    "exa": "Exa"
   },
   "actions": {
     "settings": "Settings",
@@ -80,6 +81,15 @@
         "\"검색 시작\"을 눌러 최신 게시물을 가져오세요"
       ],
       "note": "If you haven't installed xiaohongshu-cli yet, run: uv tool install xiaohongshu-cli"
+    },
+    "exa": {
+      "steps": [
+        "EXA_API_KEY 환경 변수를 설정하세요",
+        "\"설정\"을 클릭하여 검색 쿼리, 카테고리, 날짜 범위를 구성하세요",
+        "관심 분야에 따라 결과를 필터링하려면 연구 분야를 추가하세요",
+        "\"검색 시작\"을 클릭하여 Exa에서 최신 결과를 가져오세요"
+      ],
+      "note": "exa.ai에서 API 키를 받으세요"
     }
   },
   "footer": {
@@ -90,6 +100,11 @@
     "huggingfaceTitle": "HuggingFace 설정",
     "xTitle": "X (Twitter) 설정",
     "xiaohongshuTitle": "Xiaohongshu 설정",
+    "exaTitle": "Exa 설정",
+    "exaSearchQueries": "검색어 (쉼표로 구분)",
+    "exaSearchQueriesPlaceholder": "최신 AI 연구, 대규모 언어 모델...",
+    "exaCategory": "카테고리",
+    "exaDays": "최근 N일 결과",
     "authentication": "인증",
     "xAuthDescription": "twitter-cli는 브라우저(Chrome, Arc, Edge, Firefox)에서 쿠키를 자동으로 추출합니다. 브라우저에서 X/Twitter에 로그인되어 있어야 합니다. API 키는 필요하지 않습니다.",
     "browserCookieAuth": "브라우저 쿠키 인증",

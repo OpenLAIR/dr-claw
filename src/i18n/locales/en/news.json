@@ -2,7 +2,7 @@
   "hero": {
     "badge": "Research News",
     "title": "Research Feed",
-    "description": "Discover the latest from arXiv, HuggingFace, X, and Xiaohongshu — automatically scored by relevance, recency, popularity, and quality."
+    "description": "Discover the latest from arXiv, HuggingFace, X, Xiaohongshu, and Exa — automatically scored by relevance, recency, popularity, and quality."
   },
   "sources": {
     "arxiv": "arXiv",
@@ -10,7 +10,8 @@
     "huggingfaceFeed": "HF Daily Papers",
     "x": "X",
     "xiaohongshu": "Xiaohongshu",
-    "xiaohongshuShort": "XHS"
+    "xiaohongshuShort": "XHS",
+    "exa": "Exa"
   },
   "actions": {
     "settings": "Settings",
@@ -80,6 +81,15 @@
         "Click \"Start Search\" to fetch the latest posts"
       ],
       "note": "If you haven't installed xiaohongshu-cli yet, run: uv tool install xiaohongshu-cli"
+    },
+    "exa": {
+      "steps": [
+        "Set the EXA_API_KEY environment variable with your Exa API key",
+        "Click \"Settings\" to configure search queries, category, and date range",
+        "Optionally add research domains to filter results by your interests",
+        "Click \"Start Search\" to fetch the latest results from Exa"
+      ],
+      "note": "Get your API key at exa.ai"
     }
   },
   "footer": {
@@ -90,6 +100,11 @@
     "huggingfaceTitle": "HuggingFace Settings",
     "xTitle": "X (Twitter) Settings",
     "xiaohongshuTitle": "Xiaohongshu Settings",
+    "exaTitle": "Exa Settings",
+    "exaSearchQueries": "Search Queries (comma-separated)",
+    "exaSearchQueriesPlaceholder": "latest AI research, large language models...",
+    "exaCategory": "Category",
+    "exaDays": "Results from last N days",
     "authentication": "Authentication",
     "xAuthDescription": "twitter-cli automatically extracts cookies from your browser (Chrome, Arc, Edge, Firefox). Make sure you are logged into X/Twitter in your browser. No API key needed.",
     "browserCookieAuth": "Browser Cookie Authentication",
