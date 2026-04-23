@@ -89,11 +89,17 @@ async function persistGeminiSessionMetadata(sessionId, projectPath, sessionMode)
       sessionId,
       encodeProjectPath(projectPath),
       'gemini',
-      'Untitled Session',
+      null,
       new Date().toISOString(),
       0,
       { sessionMode: sessionMode || 'research' },
     );
+    // upsertSession preserves existing display_name when incoming is null, so
+    // stale "Untitled Session" rows from older builds need an explicit clear.
+    const existing = sessionDb.getSessionById(sessionId);
+    if (existing && existing.display_name === 'Untitled Session') {
+      sessionDb.updateSessionName(sessionId, null);
+    }
   } catch (error) {
     console.warn('[Gemini] Failed to persist session metadata:', error.message);
   }

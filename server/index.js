@@ -37,12 +37,14 @@ import os from 'os';
 import http from 'http';
 import cors from 'cors';
 import { promises as fsPromises } from 'fs';
-import { spawn } from 'child_process';
+import { spawn, execFile } from 'child_process';
+import { promisify } from 'util';
+const execFileAsync = promisify(execFile);
 import pty from 'node-pty';
 import fetch from 'node-fetch';
 import mime from 'mime-types';
 
-import { getProjects, getTrashedProjects, getSessions, getSessionMessages, renameProject, renameSession, deleteSession, deleteProject, restoreProject, deleteTrashedProject, addProjectManually, extractProjectDirectory, clearProjectDirectoryCache } from './projects.js';
+import { getProjects, getTrashedProjects, getSessions, getSessionMessages, renameProject, renameSession, deleteSession, deleteProject, restoreProject, deleteTrashedProject, addProjectManually, extractProjectDirectory, clearProjectDirectoryCache, readGeminiTmpChatSessionId } from './projects.js';
 import { getProjectTokenUsageSummary } from './project-token-usage.js';
 import { queryClaudeSDK, abortClaudeSDKSession, isClaudeSDKSessionActive, getClaudeSDKSessionStartTime, getActiveClaudeSDKSessions, resolveToolApproval } from './claude-sdk.js';
 import { spawnCursor, abortCursorSession, isCursorSessionActive, getCursorSessionStartTime, getActiveCursorSessions } from './cursor-cli.js';
@@ -90,12 +92,45 @@ import {
 import { buildCodexTokenUsageFromJsonl } from './utils/sessionTokenUsage.js';
 import { getNanoDrClawSessionsRoot } from './nanoSessionPaths.js';
 
+// Gemini CLI's --resume flag only accepts "latest" or a numeric index from
+// --list-sessions, not the session UUID. This helper maps UUID → index so the
+// shell can actually resume the session the chat page is pointing at.
+const GEMINI_UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+async function resolveGeminiSessionIndex(sessionUuid, cwd) {
+    if (!GEMINI_UUID_PATTERN.test(sessionUuid || '')) {
+        return null;
+    }
+    try {
+        const { stdout } = await execFileAsync('gemini', ['--list-sessions'], {
+            cwd,
+            timeout: 10_000,
+            env: process.env,
+        });
+        const targetSuffix = `[${sessionUuid}]`;
+        for (const line of stdout.split('\n')) {
+            const trimmed = line.trim();
+            if (trimmed.endsWith(targetSuffix)) {
+                const match = trimmed.match(/^(\d+)\./);
+                if (match) return match[1];
+            }
+        }
+        return null;
+    } catch (err) {
+        console.warn('[Gemini] Failed to resolve session index:', err.message);
+        return null;
+    }
+}
+
 // File system watchers for provider project/session folders
 const PROVIDER_WATCH_PATHS = [
     { provider: 'claude', rootPath: path.join(os.homedir(), '.claude', 'projects') },
     { provider: 'cursor', rootPath: path.join(os.homedir(), '.cursor', 'chats') },
     { provider: 'codex', rootPath: path.join(os.homedir(), '.codex', 'sessions') },
     { provider: 'gemini', rootPath: path.join(os.homedir(), '.gemini', 'sessions') },
+    // Gemini TUI rewrites live conversation state under ~/.gemini/tmp/{hash}/chats/
+    // on every turn. Watching it lets the chat page mirror in-shell activity
+    // before the committed .jsonl flush happens.
+    { provider: 'gemini-tmp', rootPath: path.join(os.homedir(), '.gemini', 'tmp') },
     { provider: 'nano', rootPath: getNanoDrClawSessionsRoot() },
 ];
 const WATCHER_IGNORED_PATTERNS = [
@@ -124,6 +159,11 @@ function shouldProcessProjectsWatcherEvent(eventType, filePath, provider) {
     const normalized = String(filePath || '').toLowerCase();
     if (provider === 'claude' || provider === 'codex' || provider === 'gemini') {
         return normalized.endsWith('.jsonl');
+    }
+
+    if (provider === 'gemini-tmp') {
+        const base = path.basename(normalized);
+        return base.startsWith('session-') && base.endsWith('.json');
     }
 
     if (provider === 'cursor') {
@@ -206,8 +246,28 @@ async function setupProjectsWatcher() {
                 const updatedProjects = await getProjects();
                 const updateSignature = JSON.stringify(updatedProjects);
 
-                // Skip broadcasting identical snapshots
-                if (updateSignature === lastProjectsUpdateSignature) {
+                // For gemini-tmp we need to resolve the filePath to a sessionId so
+                // the frontend's existing "{uuid}.jsonl" gate can fire. We also skip
+                // the identical-snapshot shortcut below because tmp/chats churn
+                // does not change the project index, yet still needs to reach chat.
+                let broadcastChangedFile = path.relative(rootPath, filePath);
+                let broadcastProvider = provider;
+                let forceBroadcast = false;
+                if (provider === 'gemini-tmp') {
+                    const resolvedSessionId = await readGeminiTmpChatSessionId(filePath);
+                    if (resolvedSessionId) {
+                        broadcastChangedFile = `${resolvedSessionId}.jsonl`;
+                        broadcastProvider = 'gemini';
+                        forceBroadcast = true;
+                    } else {
+                        // Can't resolve — nothing actionable for the client.
+                        return;
+                    }
+                }
+
+                // Skip broadcasting identical snapshots unless we explicitly need
+                // to push a tmp/chats notification through.
+                if (!forceBroadcast && updateSignature === lastProjectsUpdateSignature) {
                     return;
                 }
                 lastProjectsUpdateSignature = updateSignature;
@@ -218,8 +278,8 @@ async function setupProjectsWatcher() {
                     projects: updatedProjects,
                     timestamp: new Date().toISOString(),
                     changeType: eventType,
-                    changedFile: path.relative(rootPath, filePath),
-                    watchProvider: provider
+                    changedFile: broadcastChangedFile,
+                    watchProvider: broadcastProvider
                 });
 
                 connectedClients.forEach(client => {
@@ -2048,15 +2108,21 @@ function handleShellConnection(ws) {
                     } else if (provider === 'gemini') {
                         // Use gemini command
                         const command = initialCommand || 'gemini';
+                        const resumeIndex = hasSession && sessionId
+                            ? await resolveGeminiSessionIndex(sessionId, projectPath)
+                            : null;
+                        if (hasSession && sessionId && !resumeIndex) {
+                            console.warn(`[Gemini] Could not resolve session ${sessionId} to a --list-sessions index; falling back to a fresh session.`);
+                        }
                         if (os.platform() === 'win32') {
-                            if (hasSession && sessionId) {
-                                shellCommand = `Set-Location -Path "${projectPath}"; gemini --resume ${sessionId}; if ($LASTEXITCODE -ne 0) { gemini }`;
+                            if (resumeIndex) {
+                                shellCommand = `Set-Location -Path "${projectPath}"; gemini --resume ${resumeIndex}; if ($LASTEXITCODE -ne 0) { gemini }`;
                             } else {
                                 shellCommand = `Set-Location -Path "${projectPath}"; ${command}`;
                             }
                         } else {
-                            if (hasSession && sessionId) {
-                                shellCommand = `cd "${projectPath}" && gemini --resume ${sessionId} || gemini`;
+                            if (resumeIndex) {
+                                shellCommand = `cd "${projectPath}" && gemini --resume ${resumeIndex} || gemini`;
                             } else {
                                 shellCommand = `cd "${projectPath}" && ${command}`;
                             }

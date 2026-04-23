@@ -545,18 +545,14 @@ export function useProjectsState({
 
       if (projectsMessage.changedFile && selectedSession && selectedProject) {
         const normalized = projectsMessage.changedFile.replace(/\\/g, '/');
-        const changedFileParts = normalized.split('/');
+        const filename = normalized.split('/').pop() || '';
+        const changedSessionId = filename.replace('.jsonl', '');
 
-        if (changedFileParts.length >= 2) {
-          const filename = changedFileParts[changedFileParts.length - 1];
-          const changedSessionId = filename.replace('.jsonl', '');
+        if (changedSessionId && changedSessionId === selectedSession.id) {
+          const isSessionActive = activeSessions.has(selectedSession.id);
 
-          if (changedSessionId === selectedSession.id) {
-            const isSessionActive = activeSessions.has(selectedSession.id);
-
-            if (!isSessionActive) {
-              setExternalMessageUpdate((prev) => prev + 1);
-            }
+          if (!isSessionActive) {
+            setExternalMessageUpdate((prev) => prev + 1);
           }
         }
       }
