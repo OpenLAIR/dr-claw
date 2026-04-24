@@ -7501,6 +7501,45 @@
         "ds-write",
         "ds-review"
       ]
+    },
+    {
+      "name": "managing-obsidian-notes",
+      "primaryIntent": "research",
+      "intents": [
+        "research",
+        "writing"
+      ],
+      "capabilities": [
+        "infrastructure-ops"
+      ],
+      "domains": [
+        "general"
+      ],
+      "keywords": [
+        "obsidian",
+        "notes",
+        "vault",
+        "knowledge-management",
+        "markdown",
+        "wikilinks",
+        "create-note",
+        "read-note",
+        "search-notes",
+        "obsidian-cli",
+        "backlinks",
+        "tags",
+        "frontmatter",
+        "project-notes"
+      ],
+      "source": "imported",
+      "status": "verified",
+      "summary": "CRUD operations for Obsidian vault notes using the Obsidian CLI. Handles vault bootstrap for new users, per-project folder scaffolding, folder-with-index pattern, wikilinks, tags, frontmatter, and pops open notes in Obsidian after create/update. Requires Obsidian v1.8+ with CLI enabled.",
+      "legacy": {
+        "dirPath": "managing-obsidian-notes",
+        "skillFile": "skills/managing-obsidian-notes/SKILL.md",
+        "topLevelGroup": "Standalone",
+        "subGroup": null
+      }
     }
   ]
 }

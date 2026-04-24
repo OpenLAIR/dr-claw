@@ -824,7 +824,8 @@ The plugin is installed and will be available in future sessions. Run `/drclaw:s
 
 ### What's Included
 
-- **60+ bundled skills** — a curated subset of Dr. Claw's skill library covering literature survey, idea generation, experiment development, paper writing, and more
+- **60+ bundled skills** — a curated subset of Dr. Claw's skill library covering literature survey, idea generation, experiment development, paper writing, knowledge management, and more
+- **2 MCP servers** — `drclaw-papers` for multi-source paper search (arXiv, Semantic Scholar, OpenAlex, OpenReview, HF Daily) and `drclaw-notes` for Obsidian vault operations via CLI
 - **3 project templates** — Method/Model, Dataset/Benchmark, and Position Paper, each with a pre-configured task pipeline
 - **Auto-detection** — the plugin detects existing pipeline projects on session start and shows your current progress
 - **Same data format** — projects created with the plugin use the same `research_brief.json` and `tasks.json` schemas as the full Dr. Claw workspace, so you can switch between them
