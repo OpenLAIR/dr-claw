@@ -4,6 +4,7 @@ const DEFAULT_ONLY: CodexReasoningEffortId[] = ['default'];
 const LOW_TO_XHIGH: CodexReasoningEffortId[] = ['default', 'low', 'medium', 'high', 'xhigh'];
 
 const MODEL_REASONING_SUPPORT: Record<string, CodexReasoningEffortId[]> = {
+  'gpt-5.5': LOW_TO_XHIGH,
   'gpt-5.4': LOW_TO_XHIGH,
   'gpt-5.3-codex': LOW_TO_XHIGH,
   'gpt-5.2-codex': LOW_TO_XHIGH,

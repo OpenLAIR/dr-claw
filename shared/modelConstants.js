@@ -18,6 +18,7 @@ export const CLAUDE_MODELS = {
     { value: 'haiku', label: 'Haiku' },
     { value: 'opusplan', label: 'Opus (Plan Mode Only)' },
     { value: 'sonnet[1m]', label: 'Sonnet [1M]' },
+    { value: 'claude-opus-4-7', label: 'Opus 4.7' },
     { value: 'claude-opus-4-6', label: 'Opus 4.6' }
   ],
 
@@ -56,6 +57,7 @@ export const CURSOR_MODELS = {
  */
 export const CODEX_MODELS = {
   OPTIONS: [
+    { value: 'gpt-5.5', label: 'GPT-5.5' },
     { value: 'gpt-5.4', label: 'GPT-5.4' },
     { value: 'gpt-5.3-codex', label: 'GPT-5.3 Codex' },
     { value: 'gpt-5.2-codex', label: 'GPT-5.2 Codex' },
