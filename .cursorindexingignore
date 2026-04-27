@@ -1,0 +1,72 @@
+# Cursor codebase indexing exclusions for dr-claw
+# ------------------------------------------------
+# Files matched here are skipped by Cursor's semantic codebase index, but the
+# agent (and you) can still open and read them on demand. This is the right
+# choice for low-signal or binary-heavy files.
+#
+# Note: Cursor's indexer already honors .gitignore, so node_modules/, dist/,
+# release/, .runtime/, coverage/ etc. are excluded automatically — no need to
+# repeat them here.
+
+# --- Lockfiles (large, no semantic value) ---
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# --- Auto-generated docs ---
+CHANGELOG.md
+
+# --- Source maps & minified bundles ---
+**/*.map
+**/*.min.js
+**/*.min.css
+
+# --- Binary assets (images, icons, fonts) ---
+**/*.png
+**/*.jpg
+**/*.jpeg
+**/*.gif
+**/*.ico
+**/*.icns
+**/*.webp
+**/*.bmp
+**/*.tiff
+**/*.svg
+**/*.woff
+**/*.woff2
+**/*.ttf
+**/*.otf
+**/*.eot
+**/*.mp4
+**/*.mov
+**/*.webm
+**/*.mp3
+**/*.wav
+**/*.pdf
+
+# --- Native modules / compiled artifacts ---
+**/*.node
+**/*.dylib
+**/*.so
+**/*.dll
+**/build/Release/
+
+# --- Generated PWA artifacts ---
+public/sw.js
+public/manifest.json
+
+# --- Static HTML in public/ (not application source) ---
+public/api-docs.html
+public/clear-cache.html
+
+# --- Database snapshots / dumps (also covered by .gitignore but explicit) ---
+**/*.db
+**/*.sqlite
+**/*.sqlite3
+
+# --- Archive files ---
+**/*.zip
+**/*.tar
+**/*.tar.gz
+**/*.tgz
+**/*.7z
