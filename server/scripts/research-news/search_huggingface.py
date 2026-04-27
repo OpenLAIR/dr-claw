@@ -148,7 +148,10 @@ def fetch_daily_papers(max_retries: int = 3) -> List[Dict]:
     Returns:
         Raw list of paper entries from the API.
     """
-    headers = {"User-Agent": "ResearchNews-HFPaperFetcher/1.0"}
+    # Route through hf_auth_headers so an `HF_TOKEN` / `HUGGINGFACE_TOKEN`
+    # set by the Node route (from the per-user credential store) is applied
+    # to Daily Papers too — not just to models / datasets / spaces.
+    headers = hf_auth_headers({"User-Agent": "ResearchNews-HFPaperFetcher/1.0"})
 
     for attempt in range(max_retries):
         try:
