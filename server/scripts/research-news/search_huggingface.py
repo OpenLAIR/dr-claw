@@ -48,9 +48,29 @@ from scoring_utils import (
 # HuggingFace API configuration
 # ---------------------------------------------------------------------------
 HF_DAILY_PAPERS_URL = "https://huggingface.co/api/daily_papers"
+HF_MODELS_URL = "https://huggingface.co/api/models"
+HF_DATASETS_URL = "https://huggingface.co/api/datasets"
+HF_SPACES_URL = "https://huggingface.co/api/spaces"
 
-# Popularity: 50+ upvotes = max score (SCORE_MAX)
+# Popularity: 50+ upvotes = max score (SCORE_MAX) for papers
 HF_UPVOTES_FULL_SCORE = 50
+# Popularity: 200+ likes = max score for repos (models/datasets/spaces)
+HF_REPO_LIKES_FULL_SCORE = 200
+# Popularity: 100k+ downloads contributes a small bonus
+HF_DOWNLOADS_FULL_SCORE = 100_000
+
+VALID_MODES = ("papers", "models", "datasets", "spaces")
+
+
+def hf_auth_headers(extra: Optional[Dict[str, str]] = None) -> Dict[str, str]:
+    """Build request headers, attaching `HF_TOKEN` / `HUGGINGFACE_TOKEN` if set."""
+    headers = {"User-Agent": "ResearchNews-HFFetcher/1.0"}
+    if extra:
+        headers.update(extra)
+    token = os.environ.get("HF_TOKEN") or os.environ.get("HUGGINGFACE_TOKEN")
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    return headers
 
 
 def build_ssl_context() -> ssl.SSLContext:
@@ -318,6 +338,208 @@ def score_papers(
     return scored, total_filtered
 
 
+# ---------------------------------------------------------------------------
+# HuggingFace Hub repos (models / datasets / spaces)
+# ---------------------------------------------------------------------------
+def fetch_hub_repos(kind: str, limit: int = 50, sort: str = "likes7d") -> List[Dict]:
+    """
+    Fetch entries from the HuggingFace Hub API for a given repo kind.
+
+    Args:
+        kind: One of "models", "datasets", "spaces".
+        limit: Number of entries to request.
+        sort: "likes7d" (trending), "likes", "downloads", "lastModified".
+
+    Returns:
+        List of raw JSON entries (empty on failure).
+    """
+    if kind not in {"models", "datasets", "spaces"}:
+        return []
+    url = {
+        "models": HF_MODELS_URL,
+        "datasets": HF_DATASETS_URL,
+        "spaces": HF_SPACES_URL,
+    }[kind]
+    params = urllib.parse.urlencode({
+        "sort": sort,
+        "direction": "-1",
+        "limit": limit,
+        "full": "true",
+    })
+    try:
+        data = http_get_json(f"{url}?{params}", headers=hf_auth_headers(), timeout=30)
+        if isinstance(data, list):
+            logger.info("[HF/%s] fetched %d entries", kind, len(data))
+            return data
+        return []
+    except Exception as exc:
+        logger.warning("[HF/%s] fetch failed: %s", kind, exc)
+        return []
+
+
+def normalize_hub_repo(entry: Dict, kind: str) -> Optional[Dict]:
+    """Normalize a HF Hub repo (model/dataset/space) into the internal shape."""
+    repo_id = entry.get("id") or entry.get("modelId")
+    if not repo_id:
+        return None
+
+    author = entry.get("author") or (repo_id.split("/")[0] if "/" in repo_id else "")
+    summary = entry.get("description") or ""
+    likes = entry.get("likes", 0) or 0
+    downloads = entry.get("downloads", 0) or 0
+    pipeline_tag = entry.get("pipeline_tag", "") or ""
+    tags = entry.get("tags", []) or []
+
+    last_modified = entry.get("lastModified") or entry.get("createdAt") or ""
+    last_dt = None
+    if last_modified:
+        try:
+            last_dt = datetime.fromisoformat(last_modified.replace("Z", "+00:00"))
+        except (ValueError, TypeError):
+            pass
+
+    if kind == "models":
+        link = f"https://huggingface.co/{repo_id}"
+    else:
+        link = f"https://huggingface.co/{kind}/{repo_id}"
+
+    # Build a friendly category list: pipeline tag first, then a few tags
+    # (skip noisy license: prefixes).
+    categories: List[str] = []
+    if pipeline_tag:
+        categories.append(pipeline_tag)
+    for t in tags:
+        if not t or ":" in t:
+            continue
+        if t in categories:
+            continue
+        categories.append(t)
+        if len(categories) >= 6:
+            break
+
+    return {
+        "id": f"{kind}:{repo_id}",
+        "title": repo_id,
+        "summary": summary,
+        "authors_str": author,
+        "published": last_modified,
+        "published_date": last_dt,
+        # We reuse "upvotes" so it flows through the existing scoring path.
+        "upvotes": likes,
+        "downloads": downloads,
+        "thumbnail": "",
+        "num_comments": 0,
+        "submitted_by_name": author,
+        "submitted_by_avatar": "",
+        "organization": author,
+        "categories": categories,
+        "tags": tags,
+        "pipeline_tag": pipeline_tag,
+        "kind": kind,
+        "link": link,
+        "source": "huggingface",
+    }
+
+
+def calculate_repo_popularity_score(likes: int, downloads: int = 0) -> float:
+    """Combine HF Hub likes (primary) + downloads (bonus) into a 0..SCORE_MAX score."""
+    if likes <= 0 and downloads <= 0:
+        return 0.0
+    likes_part = min(likes / HF_REPO_LIKES_FULL_SCORE * SCORE_MAX, SCORE_MAX)
+    download_part = 0.0
+    if downloads > 0:
+        import math as _math
+        download_part = min(
+            _math.log10(downloads + 1) / _math.log10(HF_DOWNLOADS_FULL_SCORE) * 1.5,
+            1.5,
+        )
+    # 70% likes, plus a small download bonus, capped at SCORE_MAX
+    return min(likes_part * 0.7 + download_part, SCORE_MAX)
+
+
+def score_hub_repos(
+    repos: List[Dict],
+    config: Optional[Dict],
+    kind: str,
+) -> Tuple[List[Dict], int]:
+    """
+    Score HF Hub repos. If config has research_domains, repos with relevance 0
+    are kept with a soft floor (these are trending entries; we don't want to
+    drop everything just because the user's keywords are narrow).
+    """
+    domains = (config or {}).get("research_domains", {})
+    excluded_keywords = (config or {}).get("excluded_keywords", [])
+    has_domains = bool(domains)
+
+    scored: List[Dict] = []
+
+    for repo in repos:
+        if has_domains:
+            relevance, matched_domain, matched_keywords = calculate_relevance_score(
+                {
+                    "title": repo["title"],
+                    "summary": repo["summary"],
+                    "categories": repo["categories"],
+                },
+                domains,
+                excluded_keywords,
+            )
+            if relevance == 0:
+                relevance = 0.5
+                matched_domain = f"hf_{kind}"
+                matched_keywords = []
+        else:
+            relevance = 1.0
+            matched_domain = f"hf_{kind}"
+            matched_keywords = []
+
+        recency = calculate_recency_score(repo.get("published_date"))
+        popularity = calculate_repo_popularity_score(
+            repo.get("upvotes", 0), repo.get("downloads", 0),
+        )
+        quality = calculate_quality_score(repo.get("summary", ""))
+        if repo.get("pipeline_tag"):
+            quality = min(quality + 0.3, SCORE_MAX)
+
+        final_score = calculate_recommendation_score(
+            relevance, recency, popularity, quality,
+        )
+
+        repo_id_clean = repo["id"].split(":", 1)[-1]
+        scored.append({
+            "id": repo["id"],
+            "title": repo["title"],
+            "authors": repo.get("authors_str", ""),
+            "abstract": repo.get("summary") or f"{kind.capitalize()} on Hugging Face Hub.",
+            "published": repo.get("published", ""),
+            "categories": repo.get("categories", []),
+            "relevance_score": round(relevance, 2),
+            "recency_score": round(recency, 2),
+            "popularity_score": round(popularity, 2),
+            "quality_score": round(quality, 2),
+            "final_score": final_score,
+            "matched_domain": matched_domain,
+            "matched_keywords": matched_keywords,
+            "link": repo["link"],
+            "source": "huggingface",
+            "media_urls": [],
+            "engagement": {
+                "likes": repo.get("upvotes", 0),
+                "comments": 0,
+                "downloads": repo.get("downloads", 0),
+            },
+            "submitted_by": repo.get("submitted_by_name", ""),
+            "organization": repo.get("organization", ""),
+            # HF Hub-specific extras (consumed by the HF card branch)
+            "kind": kind,
+            "pipeline_tag": repo.get("pipeline_tag", ""),
+            "downloads": repo.get("downloads", 0),
+            "hub_id": repo_id_clean,
+        })
+
+    return scored, 0
+
+
 def main():
     """Main entry point."""
     import argparse
@@ -349,6 +571,21 @@ def main():
         default=10,
         help="Number of top papers to return",
     )
+    parser.add_argument(
+        "--modes",
+        type=str,
+        default="papers",
+        help=(
+            "Comma-separated list of HF Hub modes to fetch. "
+            "Valid: papers, models, datasets, spaces. Default: papers."
+        ),
+    )
+    parser.add_argument(
+        "--per-mode-limit",
+        type=int,
+        default=40,
+        help="Number of raw entries to fetch per non-paper mode before scoring.",
+    )
 
     args = parser.parse_args()
 
@@ -359,78 +596,118 @@ def main():
         stream=sys.stderr,
     )
 
-    # Config is optional — without it we show all daily papers
+    # Config is optional — without it we show all daily papers / trending repos
     config = None
     if args.config:
         logger.info("Loading config from: %s", args.config)
         config = load_research_config(args.config)
     else:
-        logger.info("No config provided — showing all HuggingFace Daily Papers")
+        logger.info("No config provided — using trending defaults")
 
-    # Fetch daily papers from HuggingFace
-    logger.info("Fetching HuggingFace Daily Papers...")
-    raw_entries = fetch_daily_papers()
+    # Parse and validate modes
+    requested_modes = [
+        m.strip().lower() for m in (args.modes or "papers").split(",") if m.strip()
+    ]
+    modes = [m for m in requested_modes if m in VALID_MODES]
+    if not modes:
+        modes = ["papers"]
+    logger.info("[HF] active modes: %s", ", ".join(modes))
 
-    if not raw_entries:
-        logger.warning("No papers returned from HuggingFace API")
+    if os.environ.get("HF_TOKEN") or os.environ.get("HUGGINGFACE_TOKEN"):
+        logger.info("[HF] using HF token for higher rate limits")
+
+    aggregated: List[Dict] = []
+    total_found = 0
+    total_filtered = 0
+    seen_ids: set = set()
+
+    # ---- Papers (Daily Papers API) ----
+    if "papers" in modes:
+        logger.info("[HF/papers] fetching Daily Papers...")
+        raw_entries = fetch_daily_papers()
+        papers = []
+        for entry in raw_entries:
+            normalized = normalize_paper(entry)
+            if normalized:
+                papers.append(normalized)
+        logger.info(
+            "[HF/papers] normalized %d papers from %d raw entries",
+            len(papers), len(raw_entries),
+        )
+        scored_papers, paper_filtered = score_papers(papers, config)
+        total_found += len(papers)
+        total_filtered += paper_filtered
+        for p in scored_papers:
+            if p["id"] in seen_ids:
+                continue
+            seen_ids.add(p["id"])
+            # Tag papers with kind so the UI can render uniformly.
+            p.setdefault("kind", "papers")
+            aggregated.append(p)
+        logger.info(
+            "[HF/papers] kept %d (filtered %d)",
+            len(scored_papers), paper_filtered,
+        )
+
+    # ---- Hub repos (models / datasets / spaces) ----
+    for kind in ("models", "datasets", "spaces"):
+        if kind not in modes:
+            continue
+        raw_repos = fetch_hub_repos(kind, limit=args.per_mode_limit, sort="likes7d")
+        normalized_repos: List[Dict] = []
+        for entry in raw_repos:
+            r = normalize_hub_repo(entry, kind)
+            if r:
+                normalized_repos.append(r)
+        scored_repos, _ = score_hub_repos(normalized_repos, config, kind)
+        total_found += len(normalized_repos)
+        for r in scored_repos:
+            if r["id"] in seen_ids:
+                continue
+            seen_ids.add(r["id"])
+            aggregated.append(r)
+        logger.info(
+            "[HF/%s] kept %d repos", kind, len(scored_repos),
+        )
+
+    if not aggregated:
+        logger.warning("[HF] no entries collected across modes: %s", modes)
         output = {
             "top_papers": [],
             "total_found": 0,
             "total_filtered": 0,
             "search_date": datetime.now().strftime("%Y-%m-%d"),
+            "modes": modes,
         }
         with open(args.output, "w", encoding="utf-8") as f:
             json.dump(output, f, ensure_ascii=False, indent=2)
         print(json.dumps(output, ensure_ascii=True, indent=2))
         return 0
 
-    # Normalize entries
-    papers = []
-    for entry in raw_entries:
-        normalized = normalize_paper(entry)
-        if normalized:
-            papers.append(normalized)
+    aggregated.sort(key=lambda x: x.get("final_score", 0), reverse=True)
+    top = aggregated[: args.top_n]
 
-    logger.info("Normalized %d papers from %d raw entries", len(papers), len(raw_entries))
-
-    # Score (and optionally filter if config has domains)
-    scored_papers, total_filtered = score_papers(papers, config)
-
-    logger.info(
-        "Scored %d papers (%d filtered out by relevance/exclusion)",
-        len(scored_papers),
-        total_filtered,
-    )
-
-    # Take top N
-    top_papers = scored_papers[: args.top_n]
-
-    # Build output
     output = {
-        "top_papers": top_papers,
-        "total_found": len(papers),
+        "top_papers": top,
+        "total_found": total_found,
         "total_filtered": total_filtered,
         "search_date": datetime.now().strftime("%Y-%m-%d"),
+        "modes": modes,
     }
 
-    # Save to file
     with open(args.output, "w", encoding="utf-8") as f:
         json.dump(output, f, ensure_ascii=False, indent=2, default=str)
 
     logger.info("Results saved to: %s", args.output)
-    logger.info("Top %d papers:", len(top_papers))
-    for i, p in enumerate(top_papers, 1):
+    logger.info("Top %d entries (modes=%s):", len(top), modes)
+    for i, p in enumerate(top, 1):
+        kind_tag = p.get("kind", "papers")
         logger.info(
-            "  %d. %s... (Score: %s, Upvotes-based popularity: %s)",
-            i,
-            p["title"][:60],
-            p["final_score"],
-            p["popularity_score"],
+            "  %d. [%s] %s... (Score: %s, Pop: %s)",
+            i, kind_tag, p["title"][:54], p["final_score"], p["popularity_score"],
         )
 
-    # Also output to stdout
     print(json.dumps(output, ensure_ascii=True, indent=2, default=str))
-
     return 0
 
 
