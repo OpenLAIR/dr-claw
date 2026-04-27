@@ -119,6 +119,14 @@ def http_get_text(
 # ---------------------------------------------------------------------------
 # Route normalization
 # ---------------------------------------------------------------------------
+def _parse_instance(instance: str) -> urllib.parse.ParseResult:
+    """Parse the configured RSSHub instance, defaulting scheme to https."""
+    raw = (instance or DEFAULT_INSTANCE).rstrip("/")
+    if "://" not in raw:
+        raw = f"https://{raw}"
+    return urllib.parse.urlparse(raw)
+
+
 def normalize_account_to_url(account: str, instance: str, access_key: str = "") -> Optional[str]:
     """
     Resolve a user-provided account spec to a fully-qualified URL.
@@ -126,18 +134,40 @@ def normalize_account_to_url(account: str, instance: str, access_key: str = "") 
     Examples:
         ("wechat/ce/huxiu_com", "https://rsshub.app", "")
             → "https://rsshub.app/wechat/ce/huxiu_com"
-        ("https://rsshub.app/wechat/ce/huxiu_com", ...)
+        ("https://rsshub.app/wechat/ce/huxiu_com", "https://rsshub.app", ...)
             → unchanged
         ("huxiu_com", ...)
             → "https://rsshub.app/wechat/ce/huxiu_com"  (bare-ID heuristic)
+
+    Security: when the user supplies a fully-qualified URL, its scheme + host
+    + port MUST match the configured RSSHub instance. This prevents the
+    accounts list from being weaponized as a server-side fetch primitive
+    (e.g. pointing at localhost, link-local metadata services, or arbitrary
+    third-party hosts). Bare IDs and relative paths are inherently scoped to
+    the configured instance.
     """
     if not account:
         return None
 
     account = account.strip()
-    instance = (instance or DEFAULT_INSTANCE).rstrip("/")
+    parsed_instance = _parse_instance(instance)
+    instance_base = f"{parsed_instance.scheme}://{parsed_instance.netloc}" + (
+        parsed_instance.path.rstrip("/") if parsed_instance.path else ""
+    )
 
     if account.startswith(("http://", "https://")):
+        parsed_account = urllib.parse.urlparse(account)
+        if (
+            parsed_account.scheme.lower() != parsed_instance.scheme.lower()
+            or parsed_account.netloc.lower() != parsed_instance.netloc.lower()
+        ):
+            logger.warning(
+                "[WeChat] rejecting account %r: host %r does not match "
+                "configured RSSHub instance %r. Use a relative route "
+                "(e.g. 'wechat/ce/<id>') or change the instance URL.",
+                account, parsed_account.netloc, parsed_instance.netloc,
+            )
+            return None
         url = account
     else:
         path = account.lstrip("/")
@@ -145,7 +175,7 @@ def normalize_account_to_url(account: str, instance: str, access_key: str = "") 
         # the most stable RSSHub WeChat route as of 2026).
         if "/" not in path:
             path = f"wechat/ce/{path}"
-        url = f"{instance}/{path}"
+        url = f"{instance_base}/{path}"
 
     if access_key:
         sep = "&" if "?" in url else "?"
