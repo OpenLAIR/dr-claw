@@ -172,13 +172,19 @@ const SOURCE_REGISTRY = {
     requiresCredentials: false,
   },
   huggingface: {
-    label: 'HuggingFace Daily Papers',
+    label: 'HuggingFace',
     script: 'research-news/search_huggingface.py',
     configFile: 'news-config-huggingface.json',
     resultsFile: 'news-results-huggingface.json',
     defaultConfig: {
       research_domains: {},
       top_n: 30,
+      // Comma-separated list of HF Hub modes to fetch.
+      // Valid: papers, models, datasets, spaces.
+      modes: 'papers,models,datasets,spaces',
+      per_mode_limit: 40,
+      // Optional HuggingFace token (hf_xxx). Overrides HF_TOKEN env var when set.
+      api_token: '',
     },
     requiresCredentials: false,
   },
@@ -216,6 +222,56 @@ const SOURCE_REGISTRY = {
       },
       top_n: 10,
       keywords: '大模型,AI论文,人工智能',
+    },
+    requiresCredentials: false,
+  },
+  github: {
+    label: 'GitHub',
+    script: 'research-news/search_github.py',
+    configFile: 'news-config-github.json',
+    resultsFile: 'news-results-github.json',
+    defaultConfig: {
+      research_domains: {
+        'Large Language Models': {
+          keywords: ['llm', 'large language model', 'transformer', 'foundation model'],
+          arxiv_categories: [],
+          priority: 5,
+        },
+        'AI Agents': {
+          keywords: ['agent', 'autonomous', 'multi-agent', 'orchestration'],
+          arxiv_categories: [],
+          priority: 4,
+        },
+      },
+      top_n: 12,
+      // GitHub-specific
+      language: '',                 // optional: python, typescript, ...
+      time_window: 'weekly',        // daily | weekly | monthly
+      include_trending: true,
+      max_search_pages: 1,
+      // Optional GitHub token (ghp_xxx). Overrides GITHUB_TOKEN env var when set.
+      api_token: '',
+    },
+    requiresCredentials: false,
+  },
+  wechat: {
+    label: 'WeChat 公众号',
+    script: 'research-news/search_wechat.py',
+    configFile: 'news-config-wechat.json',
+    resultsFile: 'news-results-wechat.json',
+    defaultConfig: {
+      research_domains: {},
+      top_n: 12,
+      // RSSHub instance — public default, configurable in Settings.
+      instance_url: 'https://rsshub.app',
+      // Comma-separated WeChat 公众号 routes/IDs. Examples:
+      //   wechat/ce/huxiu_com
+      //   https://rsshub.app/wechat/ce/ifanr
+      //   huxiu_com  (bare ID → wechat/ce/<id>)
+      accounts: '',
+      // Optional ?key=... for private RSSHub instances.
+      access_key: '',
+      per_account_limit: 20,
     },
     requiresCredentials: false,
   },
@@ -373,12 +429,74 @@ async function handleSearch(sourceName, req, res) {
       args.push('--keywords', config.keywords);
     }
 
+    if (sourceName === 'huggingface') {
+      const modes = (typeof config.modes === 'string' && config.modes.trim())
+        ? config.modes.trim()
+        : 'papers';
+      args.push('--modes', modes);
+      if (Number.isFinite(config.per_mode_limit) && config.per_mode_limit > 0) {
+        args.push('--per-mode-limit', String(config.per_mode_limit));
+      }
+    }
+
+    if (sourceName === 'github') {
+      if (typeof config.language === 'string' && config.language.trim()) {
+        args.push('--language', config.language.trim());
+      }
+      const timeWindow = ['daily', 'weekly', 'monthly'].includes(config.time_window)
+        ? config.time_window
+        : 'weekly';
+      args.push('--time-window', timeWindow);
+      args.push('--include-trending', config.include_trending === false ? 'false' : 'true');
+      if (Number.isFinite(config.max_search_pages) && config.max_search_pages > 0) {
+        args.push('--max-search-pages', String(Math.min(3, config.max_search_pages)));
+      }
+    }
+
+    if (sourceName === 'wechat') {
+      const instance = (typeof config.instance_url === 'string' && config.instance_url.trim())
+        ? config.instance_url.trim()
+        : 'https://rsshub.app';
+      args.push('--instance', instance);
+
+      // Accounts may be stored as a string (comma/newline-separated) or array.
+      let accountsList = [];
+      if (Array.isArray(config.accounts)) {
+        accountsList = config.accounts.map((a) => String(a).trim()).filter(Boolean);
+      } else if (typeof config.accounts === 'string') {
+        accountsList = config.accounts
+          .split(/[\n,]/)
+          .map((a) => a.trim())
+          .filter(Boolean);
+      }
+      if (accountsList.length > 0) {
+        args.push('--accounts', accountsList.join(','));
+      }
+
+      if (typeof config.access_key === 'string' && config.access_key.trim()) {
+        args.push('--access-key', config.access_key.trim());
+      }
+      if (Number.isFinite(config.per_account_limit) && config.per_account_limit > 0) {
+        args.push('--per-account-limit', String(config.per_account_limit));
+      }
+    }
+
     // Build env — pass credentials if required.
     // Strip __PYVENV_LAUNCHER__ so uv-installed Python CLIs invoked by the
     // search scripts find the correct stdlib (macOS Python framework sets this
     // variable and it confuses child interpreters with a different version).
     const env = { ...process.env };
     delete env.__PYVENV_LAUNCHER__;
+
+    // UI-supplied API tokens override env vars. Stored in plain JSON config
+    // (same trust model as the rest of news settings), and only applied to the
+    // child process — never echoed back over the API.
+    if (sourceName === 'github' && typeof config.api_token === 'string' && config.api_token.trim()) {
+      env.GITHUB_TOKEN = config.api_token.trim();
+    }
+    if (sourceName === 'huggingface' && typeof config.api_token === 'string' && config.api_token.trim()) {
+      env.HF_TOKEN = config.api_token.trim();
+    }
     if (entry.requiresCredentials) {
       try {
         const credValue = credentialsDb.getActiveCredential(req.user.id, entry.credentialType);

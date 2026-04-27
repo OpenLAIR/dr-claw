@@ -10,6 +10,10 @@ import {
   Bookmark,
   ArrowUp,
   FileText,
+  GitFork,
+  Download,
+  Scale,
+  TrendingUp,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -34,13 +38,66 @@ export type NewsItem = {
   pdf_link?: string;
   source?: string;
   // Social-specific fields
-  engagement?: { likes?: number; retweets?: number; reposts?: number; replies?: number; comments?: number; collects?: number; impressions?: number };
+  engagement?: {
+    likes?: number;
+    retweets?: number;
+    reposts?: number;
+    replies?: number;
+    comments?: number;
+    collects?: number;
+    impressions?: number;
+    downloads?: number;
+  };
   avatar_url?: string;
   media_urls?: string[];
   // HuggingFace-specific fields
   submitted_by?: string;
   organization?: string;
+  // HF Hub repo extras (kind: papers | models | datasets | spaces)
+  kind?: 'papers' | 'models' | 'datasets' | 'spaces' | string;
+  pipeline_tag?: string;
+  downloads?: number;
+  hub_id?: string;
+  // GitHub-specific extras
+  stars?: number;
+  forks?: number;
+  language?: string;
+  license?: string | null;
+  owner_avatar?: string;
+  mode?: string;
+  // WeChat-specific extras
+  account_name?: string;
+  account_route?: string;
 };
+
+const LANGUAGE_COLORS: Record<string, string> = {
+  python: 'bg-blue-500',
+  typescript: 'bg-sky-500',
+  javascript: 'bg-yellow-400',
+  rust: 'bg-orange-600',
+  go: 'bg-cyan-500',
+  java: 'bg-red-500',
+  'c++': 'bg-pink-500',
+  cpp: 'bg-pink-500',
+  c: 'bg-gray-500',
+  ruby: 'bg-red-600',
+  swift: 'bg-orange-500',
+  kotlin: 'bg-purple-500',
+  shell: 'bg-emerald-500',
+  cuda: 'bg-green-600',
+};
+
+function langColor(lang?: string): string {
+  if (!lang) return 'bg-muted';
+  return LANGUAGE_COLORS[lang.toLowerCase()] || 'bg-muted-foreground/40';
+}
+
+function formatCompact(n?: number): string {
+  if (n == null) return '0';
+  if (n < 1000) return String(n);
+  if (n < 1_000_000) return (n / 1000).toFixed(n < 10_000 ? 1 : 0).replace(/\.0$/, '') + 'k';
+  return (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+}
 
 const VIDEO_EXTENSIONS = /\.(mp4|webm|mov|m3u8)(\?|$)/i;
 
@@ -116,6 +173,8 @@ export default function NewsItemCard({ item, index, sourceKey }: { item: NewsIte
 
   const sourceBadgeLabel = sourceKey === 'arxiv' ? 'arXiv'
     : sourceKey === 'huggingface' ? 'HF'
+    : sourceKey === 'github' ? 'GitHub'
+    : sourceKey === 'wechat' ? '公众号'
     : sourceKey === 'x' ? 'X'
     : 'XHS';
 
@@ -154,11 +213,244 @@ export default function NewsItemCard({ item, index, sourceKey }: { item: NewsIte
     );
   }
 
-  // HuggingFace: paper card styled like HF Daily Papers
+  // WeChat 公众号: article card with account name, excerpt, link
+  if (sourceKey === 'wechat') {
+    const accountName = item.account_name || item.authors || '';
+    return (
+      <article className={`group relative overflow-hidden rounded-2xl border ${borderAccent} bg-card/85 shadow-sm backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg`}>
+        <div className="p-4 flex flex-col gap-3 h-full">
+          {/* Header: account chip + title + score */}
+          <div className="flex items-start gap-2.5">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-950/40 flex-shrink-0">
+              <FileText className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
+            </span>
+            <div className="flex-1 min-w-0">
+              <a
+                href={primaryUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-sm font-semibold leading-snug text-foreground hover:text-primary transition-colors line-clamp-2"
+              >
+                {item.title || t('card.untitled')}
+              </a>
+              {accountName && (
+                <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{accountName}</p>
+              )}
+            </div>
+            <div className="flex items-center gap-1 rounded-lg bg-amber-50 px-2 py-1 dark:bg-amber-950/30 flex-shrink-0">
+              <Star className="h-3 w-3 text-amber-500" fill="currentColor" />
+              <span className="text-xs font-bold tabular-nums text-amber-700 dark:text-amber-300">{item.final_score?.toFixed(1) ?? '—'}</span>
+            </div>
+          </div>
+
+          {/* Excerpt */}
+          {item.abstract && item.abstract !== '(no excerpt)' && (
+            <p className="text-xs leading-relaxed text-muted-foreground/85 line-clamp-4">{item.abstract}</p>
+          )}
+
+          {/* Footer: published + open link */}
+          <div className="mt-auto flex flex-wrap items-center gap-3 pt-2 border-t border-border/40 text-[11px] text-muted-foreground">
+            {item.published && (
+              <span className="tabular-nums">{item.published.slice(0, 10)}</span>
+            )}
+            <a
+              href={primaryUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ml-auto inline-flex items-center gap-1 rounded-md border border-border/50 bg-background/80 px-2 py-0.5 text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t('card.openInWechat')} <ExternalLink className="h-2.5 w-2.5" />
+            </a>
+          </div>
+        </div>
+      </article>
+    );
+  }
+
+  // GitHub: repo card with stars, forks, language, topics
+  if (sourceKey === 'github') {
+    const stars = item.stars ?? item.engagement?.likes ?? 0;
+    const forks = item.forks ?? item.engagement?.comments ?? 0;
+    const isTrending = item.mode === 'trending';
+    return (
+      <article className={`group relative overflow-hidden rounded-2xl border ${borderAccent} bg-card/85 shadow-sm backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg`}>
+        <div className="p-4 flex flex-col gap-3 h-full">
+          {/* Header: avatar + repo name + score */}
+          <div className="flex items-start gap-2.5">
+            {item.owner_avatar ? (
+              <img src={item.owner_avatar} alt="" className="h-8 w-8 rounded-lg object-cover border border-border/30 flex-shrink-0" />
+            ) : (
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-950/40 flex-shrink-0">
+                <FileText className="h-4 w-4 text-violet-600 dark:text-violet-300" />
+              </span>
+            )}
+            <div className="flex-1 min-w-0">
+              <a
+                href={primaryUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-sm font-semibold leading-snug text-foreground hover:text-primary transition-colors line-clamp-2 break-all"
+              >
+                {item.title}
+              </a>
+              {item.authors && (
+                <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{item.authors}</p>
+              )}
+            </div>
+            <div className="flex items-center gap-1 rounded-lg bg-amber-50 px-2 py-1 dark:bg-amber-950/30 flex-shrink-0">
+              <Star className="h-3 w-3 text-amber-500" fill="currentColor" />
+              <span className="text-xs font-bold tabular-nums text-amber-700 dark:text-amber-300">{item.final_score?.toFixed(1) ?? '—'}</span>
+            </div>
+          </div>
+
+          {/* Trending pill */}
+          {isTrending && (
+            <span className="inline-flex w-fit items-center gap-1 rounded-full bg-gradient-to-r from-violet-500/15 to-fuchsia-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-violet-700 dark:text-violet-300">
+              <TrendingUp className="h-2.5 w-2.5" /> {t('card.trending')}
+            </span>
+          )}
+
+          {/* Description */}
+          {item.abstract && item.abstract !== '(no description)' && (
+            <p className="text-xs leading-relaxed text-muted-foreground/85 line-clamp-3">{item.abstract}</p>
+          )}
+
+          {/* Topics */}
+          {item.categories && item.categories.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {item.categories.slice(0, 4).map((topic) => (
+                <span key={topic} className="rounded-md border border-violet-200/60 bg-violet-50/70 px-1.5 py-0.5 text-[10px] font-medium text-violet-700 dark:border-violet-800/40 dark:bg-violet-950/30 dark:text-violet-300">
+                  {topic}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Footer: language + stars + forks + license */}
+          <div className="mt-auto flex flex-wrap items-center gap-3 pt-2 border-t border-border/40 text-[11px] text-muted-foreground">
+            {item.language && (
+              <span className="flex items-center gap-1.5">
+                <span className={`h-2.5 w-2.5 rounded-full ${langColor(item.language)}`} />
+                <span>{item.language}</span>
+              </span>
+            )}
+            <span className="flex items-center gap-1 tabular-nums">
+              <Star className="h-3 w-3" /> {formatCompact(stars)}
+            </span>
+            <span className="flex items-center gap-1 tabular-nums">
+              <GitFork className="h-3 w-3" /> {formatCompact(forks)}
+            </span>
+            {item.license && (
+              <span className="flex items-center gap-1">
+                <Scale className="h-3 w-3" /> {item.license}
+              </span>
+            )}
+            <a
+              href={primaryUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ml-auto inline-flex items-center gap-1 rounded-md border border-border/50 bg-background/80 px-2 py-0.5 text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              GitHub <ExternalLink className="h-2.5 w-2.5" />
+            </a>
+          </div>
+        </div>
+      </article>
+    );
+  }
+
+  // HuggingFace: paper card OR Hub repo card depending on `kind`
   if (sourceKey === 'huggingface') {
+    const isHubRepo = item.kind === 'models' || item.kind === 'datasets' || item.kind === 'spaces';
     const thumbnailUrl = item.media_urls?.[0];
     const upvotes = item.engagement?.likes ?? 0;
     const comments = item.engagement?.comments ?? 0;
+    const downloads = item.downloads ?? item.engagement?.downloads ?? 0;
+
+    // Hub repo card: compact layout with kind badge, pipeline tag, downloads
+    if (isHubRepo) {
+      const kindBadge: Record<string, { label: string; className: string }> = {
+        models: { label: t('card.kindModel'), className: 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300' },
+        datasets: { label: t('card.kindDataset'), className: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' },
+        spaces: { label: t('card.kindSpace'), className: 'bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-950/40 dark:text-fuchsia-300' },
+      };
+      const badge = kindBadge[item.kind as string];
+
+      return (
+        <article className={`group relative overflow-hidden rounded-2xl border ${borderAccent} bg-card/85 shadow-sm backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg`}>
+          <div className="p-4 flex flex-col gap-3 h-full">
+            <div className="flex items-start gap-2.5">
+              <div className="flex flex-col items-center pt-0.5 flex-shrink-0">
+                <ArrowUp className="h-4 w-4 text-muted-foreground" />
+                <span className="text-xs font-semibold tabular-nums text-foreground">{formatCompact(upvotes)}</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                {badge && (
+                  <span className={`inline-block mb-1 rounded-full px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.14em] ${badge.className}`}>
+                    {badge.label}
+                  </span>
+                )}
+                <a
+                  href={primaryUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block text-sm font-semibold leading-snug text-foreground hover:text-primary transition-colors line-clamp-2 break-all"
+                >
+                  {item.title}
+                </a>
+                {item.organization && (
+                  <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{item.organization}</p>
+                )}
+              </div>
+              <div className="flex items-center gap-1 rounded-lg bg-amber-50 px-2 py-1 dark:bg-amber-950/30 flex-shrink-0">
+                <Star className="h-3 w-3 text-amber-500" fill="currentColor" />
+                <span className="text-xs font-bold tabular-nums text-amber-700 dark:text-amber-300">{item.final_score?.toFixed(1) ?? '—'}</span>
+              </div>
+            </div>
+
+            {item.abstract && item.abstract !== `${(item.kind ?? '').toString().replace(/^\w/, (c) => c.toUpperCase())} on Hugging Face Hub.` && (
+              <p className="text-xs leading-relaxed text-muted-foreground/85 line-clamp-3">{item.abstract}</p>
+            )}
+
+            {item.categories && item.categories.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {item.pipeline_tag && (
+                  <span className="rounded-md border border-yellow-200/70 bg-yellow-50 px-1.5 py-0.5 text-[10px] font-semibold text-yellow-700 dark:border-yellow-800/40 dark:bg-yellow-950/30 dark:text-yellow-300">
+                    {item.pipeline_tag}
+                  </span>
+                )}
+                {item.categories.filter((c) => c !== item.pipeline_tag).slice(0, 4).map((tag) => (
+                  <span key={tag} className="rounded-md border border-border/40 bg-muted/40 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            <div className="mt-auto flex items-center gap-3 pt-2 border-t border-border/40 text-[11px] text-muted-foreground">
+              {downloads > 0 && (
+                <span className="flex items-center gap-1 tabular-nums">
+                  <Download className="h-3 w-3" /> {formatCompact(downloads)}
+                </span>
+              )}
+              <span className="flex items-center gap-1 tabular-nums">
+                <Heart className="h-3 w-3" /> {formatCompact(upvotes)}
+              </span>
+              <a
+                href={primaryUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ml-auto inline-flex items-center gap-1 rounded-md border border-border/50 bg-background/80 px-2 py-0.5 text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                HF <ExternalLink className="h-2.5 w-2.5" />
+              </a>
+            </div>
+          </div>
+        </article>
+      );
+    }
+
+    // Daily Paper card (original layout)
     return (
       <article className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg">
         {/* Thumbnail */}

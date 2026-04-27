@@ -2,12 +2,17 @@
   "hero": {
     "badge": "Research News",
     "title": "Research Feed",
-    "description": "Discover the latest from arXiv, HuggingFace, X, and Xiaohongshu — automatically scored by relevance, recency, popularity, and quality."
+    "description": "Discover the latest from arXiv, HuggingFace, GitHub, WeChat 公众号, X, and Xiaohongshu — automatically scored by relevance, recency, popularity, and quality."
   },
   "sources": {
     "arxiv": "arXiv",
     "huggingface": "HuggingFace",
-    "huggingfaceFeed": "HF Daily Papers",
+    "huggingfaceFeed": "HF Hub & Daily Papers",
+    "github": "GitHub",
+    "githubFeed": "GitHub Trending & Recent",
+    "wechat": "WeChat 公众号",
+    "wechatShort": "公众号",
+    "wechatFeed": "WeChat 公众号 Articles",
     "x": "X",
     "xiaohongshu": "Xiaohongshu",
     "xiaohongshuShort": "XHS"
@@ -44,7 +49,13 @@
     "submittedBy": "Submitted by {{name}}",
     "comments": "comments",
     "scoreBreakdown": "Score Breakdown",
-    "matchedKeywords": "Matched keywords:"
+    "matchedKeywords": "Matched keywords:",
+    "trending": "Trending",
+    "kindModel": "Model",
+    "kindDataset": "Dataset",
+    "kindSpace": "Space",
+    "untitled": "(untitled)",
+    "openInWechat": "Read"
   },
   "setup": {
     "title": "Setup Guide",
@@ -58,10 +69,30 @@
     },
     "huggingface": {
       "steps": [
-        "HuggingFace Daily Papers are fetched automatically — no configuration needed",
-        "Click \"Start Search\" to fetch today's trending papers",
-        "Optionally add research domains in \"Settings\" to filter by your interests"
+        "Open Settings to choose which HF Hub modes to fetch (Daily Papers, Models, Datasets, Spaces)",
+        "Optionally set HF_TOKEN in your environment for higher rate limits",
+        "Add research domains in Settings to filter by your interests (optional — without domains, you see trending entries)",
+        "Click \"Start Search\" to fetch the latest items"
       ]
+    },
+    "github": {
+      "steps": [
+        "Open Settings to configure your research domains and (optionally) a language filter",
+        "Optionally set GITHUB_TOKEN in your environment for higher rate limits (10/min unauth → 30/min auth)",
+        "Choose a trending time window (daily / weekly / monthly)",
+        "Click \"Start Search\" to fetch trending and recently created repositories"
+      ],
+      "note": "Without GITHUB_TOKEN, the GitHub Search API is rate-limited to 10 requests/minute."
+    },
+    "wechat": {
+      "steps": [
+        "WeChat 公众号 articles are fetched via RSSHub — the public instance works out of the box",
+        "Open Settings → paste a list of 公众号 routes (one per line, e.g. wechat/ce/huxiu_com)",
+        "If the public RSSHub is rate-limited, point the instance URL at your own self-hosted RSSHub",
+        "Optionally add research domains in Settings to filter articles by your interests",
+        "Click \"Start Search\" to fetch the latest articles"
+      ],
+      "note": "Public rsshub.app instances may be rate-limited. For reliable use, run RSSHub yourself: docker run -d -p 1200:1200 diygod/rsshub"
     },
     "x": {
       "steps": [
@@ -88,10 +119,39 @@
   "settings": {
     "arxivTitle": "arXiv Settings",
     "huggingfaceTitle": "HuggingFace Settings",
+    "githubTitle": "GitHub Settings",
+    "wechatTitle": "WeChat 公众号 Settings",
     "xTitle": "X (Twitter) Settings",
     "xiaohongshuTitle": "Xiaohongshu Settings",
     "authentication": "Authentication",
     "xAuthDescription": "twitter-cli automatically extracts cookies from your browser (Chrome, Arc, Edge, Firefox). Make sure you are logged into X/Twitter in your browser. No API key needed.",
+    "githubAuthDescription": "GitHub API works without a token, but is rate-limited to 10 search requests/minute. Paste a token below to raise it to 30/minute. The token only needs the public_repo (read) scope. Stored in your local config; takes precedence over the GITHUB_TOKEN env var.",
+    "hfAuthDescription": "HuggingFace endpoints used here are public. Setting an HF token is optional and only raises rate limits / unlocks gated repos. Token is stored in your local config and overrides the HF_TOKEN env var.",
+    "apiToken": "API Token",
+    "tokenHelp": "Stored locally with this source's config. Leave blank to fall back to the environment variable.",
+    "revealToken": "Show token",
+    "hideToken": "Hide token",
+    "hfModes": "Hub Modes",
+    "hfModesHelp": "Choose which HuggingFace Hub surfaces to include in this feed.",
+    "hfModePapers": "Daily Papers",
+    "hfModeModels": "Models",
+    "hfModeDatasets": "Datasets",
+    "hfModeSpaces": "Spaces",
+    "githubLanguage": "Language Filter",
+    "githubTimeWindow": "Trending Window",
+    "githubWindowDaily": "Past 24 hours",
+    "githubWindowWeekly": "Past week",
+    "githubWindowMonthly": "Past month",
+    "githubIncludeTrending": "Include Trending Repos",
+    "githubIncludeTrendingHelp": "When on, GitHub Trending repos are included alongside repos that match your research domains.",
+    "wechatRsshubTitle": "RSSHub Instance",
+    "wechatRsshubDescription": "WeChat 公众号 articles are fetched via RSSHub. The public instance works for casual use; self-host for reliability.",
+    "wechatInstanceUrl": "Instance URL",
+    "wechatInstanceHelp": "Default: https://rsshub.app. Point this at your own RSSHub if the public instance is rate-limited.",
+    "wechatAccessKeyPlaceholder": "Optional access key for private RSSHub instances",
+    "wechatAccounts": "公众号 Routes",
+    "wechatAccountsHelp": "One route per line. Each entry can be a relative RSSHub path (wechat/ce/<id>), a full URL, or just the bare ID (auto-prefixed with wechat/ce/).",
+    "wechatAccountsFormat": "Tip: most stable route is wechat/ce/<id> (chuansongme proxy). See docs.rsshub.app for more.",
     "browserCookieAuth": "Browser Cookie Authentication",
     "browserCookieDescription": "Extract cookies from a browser on the machine running the dr-claw service. Make sure Chrome, Arc, Edge, or Firefox on that machine is logged into xiaohongshu.com.",
     "serviceMachineHint": "This reads browser cookies from the machine hosting the dr-claw service, not from the device where this page is open. If you are using a remote server, prefer QR login.",

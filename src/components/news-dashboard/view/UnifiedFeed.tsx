@@ -16,6 +16,8 @@ import type { NewsSourceKey, SearchResults } from './useNewsDashboardData';
 const SOURCE_LABEL_KEYS: Record<NewsSourceKey, string> = {
   arxiv: 'sources.arxiv',
   huggingface: 'sources.huggingfaceFeed',
+  github: 'sources.githubFeed',
+  wechat: 'sources.wechatFeed',
   x: 'sources.x',
   xiaohongshu: 'sources.xiaohongshu',
 };
@@ -23,6 +25,8 @@ const SOURCE_LABEL_KEYS: Record<NewsSourceKey, string> = {
 const SOURCE_BORDER_COLORS: Record<NewsSourceKey, string> = {
   arxiv: 'border-rose-200/60 dark:border-rose-800/40',
   huggingface: 'border-yellow-200/60 dark:border-yellow-800/40',
+  github: 'border-violet-200/60 dark:border-violet-800/40',
+  wechat: 'border-emerald-200/60 dark:border-emerald-800/40',
   x: 'border-gray-300/60 dark:border-gray-700/40',
   xiaohongshu: 'border-red-200/60 dark:border-red-800/40',
 };
@@ -30,6 +34,8 @@ const SOURCE_BORDER_COLORS: Record<NewsSourceKey, string> = {
 const SOURCE_HEADER_COLORS: Record<NewsSourceKey, string> = {
   arxiv: 'text-rose-700 dark:text-rose-300',
   huggingface: 'text-yellow-700 dark:text-yellow-300',
+  github: 'text-violet-700 dark:text-violet-300',
+  wechat: 'text-emerald-700 dark:text-emerald-300',
   x: 'text-gray-700 dark:text-gray-300',
   xiaohongshu: 'text-red-600 dark:text-red-300',
 };
@@ -37,6 +43,8 @@ const SOURCE_HEADER_COLORS: Record<NewsSourceKey, string> = {
 const SOURCE_BADGE_COLORS: Record<NewsSourceKey, string> = {
   arxiv: 'bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300',
   huggingface: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950/40 dark:text-yellow-300',
+  github: 'bg-violet-100 text-violet-700 dark:bg-violet-950/40 dark:text-violet-300',
+  wechat: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300',
   x: 'bg-gray-200 text-gray-700 dark:bg-gray-800/50 dark:text-gray-300',
   xiaohongshu: 'bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-300',
 };

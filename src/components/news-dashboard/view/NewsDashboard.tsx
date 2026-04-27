@@ -8,11 +8,13 @@ import UnifiedFeed from './UnifiedFeed';
 import { useNewsDashboardData } from './useNewsDashboardData';
 import type { NewsSourceKey } from './useNewsDashboardData';
 
-const ALL_SOURCES: NewsSourceKey[] = ['arxiv', 'huggingface', 'x', 'xiaohongshu'];
+const ALL_SOURCES: NewsSourceKey[] = ['arxiv', 'huggingface', 'github', 'wechat', 'x', 'xiaohongshu'];
 
 const SOURCE_LABEL_KEYS: Record<NewsSourceKey, string> = {
   arxiv: 'sources.arxiv',
   huggingface: 'sources.huggingface',
+  github: 'sources.github',
+  wechat: 'sources.wechatShort',
   x: 'sources.x',
   xiaohongshu: 'sources.xiaohongshuShort',
 };
@@ -20,6 +22,8 @@ const SOURCE_LABEL_KEYS: Record<NewsSourceKey, string> = {
 const SOURCE_STAT_ACCENTS: Record<NewsSourceKey, string> = {
   arxiv: 'bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300',
   huggingface: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950/50 dark:text-yellow-300',
+  github: 'bg-violet-100 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300',
+  wechat: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300',
   x: 'bg-gray-200 text-gray-700 dark:bg-gray-800/50 dark:text-gray-300',
   xiaohongshu: 'bg-red-100 text-red-600 dark:bg-red-950/50 dark:text-red-300',
 };
@@ -142,6 +146,10 @@ export default function NewsDashboard() {
             <a href="https://arxiv.org" target="_blank" rel="noopener noreferrer" className="font-medium text-muted-foreground/80 hover:text-foreground transition-colors">arXiv</a>
             <span>&middot;</span>
             <a href="https://huggingface.co" target="_blank" rel="noopener noreferrer" className="font-medium text-muted-foreground/80 hover:text-foreground transition-colors">HuggingFace</a>
+            <span>&middot;</span>
+            <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="font-medium text-muted-foreground/80 hover:text-foreground transition-colors">GitHub</a>
+            <span>&middot;</span>
+            <a href="https://docs.rsshub.app/" target="_blank" rel="noopener noreferrer" className="font-medium text-muted-foreground/80 hover:text-foreground transition-colors">{t('sources.wechat')}</a>
             <span>&middot;</span>
             <a href="https://x.com" target="_blank" rel="noopener noreferrer" className="font-medium text-muted-foreground/80 hover:text-foreground transition-colors">X</a>
             <span>&middot;</span>

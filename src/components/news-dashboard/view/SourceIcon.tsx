@@ -3,6 +3,8 @@ import type { NewsSourceKey } from './useNewsDashboardData';
 const SOURCE_ICONS: Record<NewsSourceKey, { light: string; dark?: string }> = {
   arxiv: { light: '/icons/news/arxiv.svg' },
   huggingface: { light: '/icons/news/huggingface.svg' },
+  github: { light: '/icons/news/github.svg', dark: '/icons/news/github-white.svg' },
+  wechat: { light: '/icons/news/wechat.svg' },
   x: { light: '/icons/news/x-black.png', dark: '/icons/news/x-white.png' },
   xiaohongshu: { light: '/icons/news/xiaohongshu.png' },
 };

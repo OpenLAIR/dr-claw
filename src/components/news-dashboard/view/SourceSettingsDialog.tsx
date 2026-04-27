@@ -1,5 +1,8 @@
 import {
   Cookie,
+  Eye,
+  EyeOff,
+  KeyRound,
   Loader2,
   Plus,
   QrCode,
@@ -24,9 +27,46 @@ const ARXIV_CATEGORIES = [
 const SOURCE_TITLE_KEYS: Record<NewsSourceKey, string> = {
   arxiv: 'settings.arxivTitle',
   huggingface: 'settings.huggingfaceTitle',
+  github: 'settings.githubTitle',
+  wechat: 'settings.wechatTitle',
   x: 'settings.xTitle',
   xiaohongshu: 'settings.xiaohongshuTitle',
 };
+
+const HF_MODE_OPTIONS: Array<{ value: 'papers' | 'models' | 'datasets' | 'spaces'; labelKey: string }> = [
+  { value: 'papers', labelKey: 'settings.hfModePapers' },
+  { value: 'models', labelKey: 'settings.hfModeModels' },
+  { value: 'datasets', labelKey: 'settings.hfModeDatasets' },
+  { value: 'spaces', labelKey: 'settings.hfModeSpaces' },
+];
+
+const GITHUB_LANGUAGES = [
+  { value: '', label: 'Any' },
+  { value: 'python', label: 'Python' },
+  { value: 'typescript', label: 'TypeScript' },
+  { value: 'javascript', label: 'JavaScript' },
+  { value: 'rust', label: 'Rust' },
+  { value: 'go', label: 'Go' },
+  { value: 'cuda', label: 'CUDA' },
+  { value: 'c++', label: 'C++' },
+  { value: 'java', label: 'Java' },
+];
+
+const GITHUB_TIME_WINDOWS: Array<{ value: 'daily' | 'weekly' | 'monthly'; labelKey: string }> = [
+  { value: 'daily', labelKey: 'settings.githubWindowDaily' },
+  { value: 'weekly', labelKey: 'settings.githubWindowWeekly' },
+  { value: 'monthly', labelKey: 'settings.githubWindowMonthly' },
+];
+
+function parseModes(value: unknown): Array<'papers' | 'models' | 'datasets' | 'spaces'> {
+  if (typeof value !== 'string') return ['papers'];
+  return value
+    .split(',')
+    .map((s) => s.trim().toLowerCase())
+    .filter((s): s is 'papers' | 'models' | 'datasets' | 'spaces' =>
+      s === 'papers' || s === 'models' || s === 'datasets' || s === 'spaces'
+    );
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyConfig = Record<string, any>;
@@ -108,6 +148,52 @@ function EditableNumberInput({
       }}
       className={className}
     />
+  );
+}
+
+function TokenInput({
+  value,
+  onChange,
+  placeholder,
+  envVarLabel,
+}: {
+  value: string;
+  onChange: (next: string) => void;
+  placeholder: string;
+  envVarLabel: string;
+}) {
+  const { t } = useTranslation('news');
+  const [reveal, setReveal] = useState(false);
+  return (
+    <div className="space-y-1.5">
+      <label className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">
+        <KeyRound className="h-3 w-3" />
+        {t('settings.apiToken')}
+        <span className="ml-1 rounded bg-muted/60 px-1 py-px font-mono text-[9px] tracking-normal text-muted-foreground">
+          {envVarLabel}
+        </span>
+      </label>
+      <div className="relative">
+        <input
+          type={reveal ? 'text' : 'password'}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          autoComplete="off"
+          spellCheck={false}
+          className="w-full rounded-lg border border-border/50 bg-background px-3 py-2 pr-10 text-sm font-mono focus:border-primary/40 focus:outline-none focus:ring-1 focus:ring-primary/20"
+        />
+        <button
+          type="button"
+          onClick={() => setReveal((r) => !r)}
+          className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:bg-muted/40 hover:text-foreground transition-colors"
+          aria-label={reveal ? t('settings.hideToken') : t('settings.revealToken')}
+        >
+          {reveal ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+        </button>
+      </div>
+      <p className="text-[10px] text-muted-foreground/70">{t('settings.tokenHelp')}</p>
+    </div>
   );
 }
 
@@ -466,6 +552,177 @@ export default function SourceSettingsDialog({
           </div>
         )}
         {sourceKey === 'xiaohongshu' && <XhsLoginSection />}
+        {sourceKey === 'github' && (
+          <div className="rounded-2xl border border-border/50 bg-background/60 p-4 space-y-3">
+            <h4 className="text-sm font-semibold text-foreground">{t('settings.authentication')}</h4>
+            <p className="text-[11px] text-muted-foreground">{t('settings.githubAuthDescription')}</p>
+            <TokenInput
+              value={typeof config.api_token === 'string' ? config.api_token : ''}
+              onChange={(next) => updateField('api_token', next)}
+              placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+              envVarLabel="GITHUB_TOKEN"
+            />
+          </div>
+        )}
+        {sourceKey === 'huggingface' && (
+          <div className="rounded-2xl border border-border/50 bg-background/60 p-4 space-y-3">
+            <h4 className="text-sm font-semibold text-foreground">{t('settings.authentication')}</h4>
+            <p className="text-[11px] text-muted-foreground">{t('settings.hfAuthDescription')}</p>
+            <TokenInput
+              value={typeof config.api_token === 'string' ? config.api_token : ''}
+              onChange={(next) => updateField('api_token', next)}
+              placeholder="hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+              envVarLabel="HF_TOKEN"
+            />
+          </div>
+        )}
+
+        {/* HuggingFace: mode toggles */}
+        {sourceKey === 'huggingface' && (
+          <div className="rounded-xl border border-border/40 bg-background/50 p-3.5">
+            <label className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">{t('settings.hfModes')}</label>
+            <p className="mt-1 text-[11px] text-muted-foreground/80">{t('settings.hfModesHelp')}</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {HF_MODE_OPTIONS.map((opt) => {
+                const active = parseModes(config.modes).includes(opt.value);
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => {
+                      const current = new Set(parseModes(config.modes));
+                      if (active) {
+                        current.delete(opt.value);
+                      } else {
+                        current.add(opt.value);
+                      }
+                      // Always keep at least one mode active.
+                      if (current.size === 0) current.add('papers');
+                      const orderedModes = HF_MODE_OPTIONS
+                        .map((o) => o.value)
+                        .filter((v) => current.has(v));
+                      updateField('modes', orderedModes.join(','));
+                    }}
+                    className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                      active
+                        ? 'bg-yellow-500 text-white shadow-sm'
+                        : 'bg-muted/40 text-muted-foreground hover:bg-muted/60'
+                    }`}
+                  >
+                    {t(opt.labelKey)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* GitHub: language + time window + trending toggle */}
+        {sourceKey === 'github' && (
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-xl border border-border/40 bg-background/50 p-3.5">
+              <label className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">{t('settings.githubLanguage')}</label>
+              <select
+                value={config.language || ''}
+                onChange={(e) => updateField('language', e.target.value)}
+                className="mt-1.5 w-full rounded-lg border border-border/50 bg-background px-3 py-2 text-sm focus:border-primary/40 focus:outline-none focus:ring-1 focus:ring-primary/20"
+              >
+                {GITHUB_LANGUAGES.map((lang) => (
+                  <option key={lang.value} value={lang.value}>{lang.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="rounded-xl border border-border/40 bg-background/50 p-3.5">
+              <label className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">{t('settings.githubTimeWindow')}</label>
+              <select
+                value={config.time_window || 'weekly'}
+                onChange={(e) => updateField('time_window', e.target.value)}
+                className="mt-1.5 w-full rounded-lg border border-border/50 bg-background px-3 py-2 text-sm focus:border-primary/40 focus:outline-none focus:ring-1 focus:ring-primary/20"
+              >
+                {GITHUB_TIME_WINDOWS.map((tw) => (
+                  <option key={tw.value} value={tw.value}>{t(tw.labelKey)}</option>
+                ))}
+              </select>
+            </div>
+            <div className="rounded-xl border border-border/40 bg-background/50 p-3.5 sm:col-span-2 flex items-center justify-between">
+              <div>
+                <label className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">{t('settings.githubIncludeTrending')}</label>
+                <p className="mt-1 text-[11px] text-muted-foreground/80">{t('settings.githubIncludeTrendingHelp')}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => updateField('include_trending', !(config.include_trending ?? true))}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  config.include_trending !== false ? 'bg-violet-500' : 'bg-muted'
+                }`}
+                aria-pressed={config.include_trending !== false}
+              >
+                <span
+                  className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+                    config.include_trending !== false ? 'translate-x-5' : 'translate-x-0.5'
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* WeChat 公众号: RSSHub instance + accounts list + access key */}
+        {sourceKey === 'wechat' && (
+          <>
+            <div className="rounded-2xl border border-border/50 bg-background/60 p-4 space-y-3">
+              <h4 className="text-sm font-semibold text-foreground">{t('settings.wechatRsshubTitle')}</h4>
+              <p className="text-[11px] text-muted-foreground">{t('settings.wechatRsshubDescription')}</p>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">
+                  {t('settings.wechatInstanceUrl')}
+                </label>
+                <input
+                  type="url"
+                  value={typeof config.instance_url === 'string' ? config.instance_url : ''}
+                  onChange={(e) => updateField('instance_url', e.target.value)}
+                  placeholder="https://rsshub.app"
+                  spellCheck={false}
+                  className="w-full rounded-lg border border-border/50 bg-background px-3 py-2 text-sm font-mono focus:border-primary/40 focus:outline-none focus:ring-1 focus:ring-primary/20"
+                />
+                <p className="text-[10px] text-muted-foreground/70">{t('settings.wechatInstanceHelp')}</p>
+              </div>
+              <TokenInput
+                value={typeof config.access_key === 'string' ? config.access_key : ''}
+                onChange={(next) => updateField('access_key', next)}
+                placeholder={t('settings.wechatAccessKeyPlaceholder')}
+                envVarLabel="?key=…"
+              />
+            </div>
+            <div className="rounded-xl border border-border/40 bg-background/50 p-3.5 space-y-2">
+              <label className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">
+                {t('settings.wechatAccounts')}
+              </label>
+              <p className="text-[11px] text-muted-foreground/80">{t('settings.wechatAccountsHelp')}</p>
+              <textarea
+                value={
+                  Array.isArray(config.accounts)
+                    ? config.accounts.join('\n')
+                    : (typeof config.accounts === 'string' ? config.accounts.replace(/,\s*/g, '\n') : '')
+                }
+                onChange={(e) => {
+                  const lines = e.target.value
+                    .split(/\n/)
+                    .map((s) => s.trim())
+                    .filter(Boolean);
+                  updateField('accounts', lines.join(','));
+                }}
+                placeholder={'wechat/ce/huxiu_com\nwechat/ce/ifanr\nhttps://rsshub.app/wechat/ce/PingWest'}
+                rows={5}
+                spellCheck={false}
+                className="w-full rounded-lg border border-border/50 bg-background px-3 py-2 text-xs font-mono focus:border-primary/40 focus:outline-none focus:ring-1 focus:ring-primary/20"
+              />
+              <p className="text-[10px] text-muted-foreground/70">
+                {t('settings.wechatAccountsFormat')}
+              </p>
+            </div>
+          </>
+        )}
 
         {/* Source-specific fields */}
         {sourceKey === 'x' && (

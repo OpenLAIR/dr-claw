@@ -11,6 +11,8 @@ import type { NewsSourceKey, SourceInfo } from './useNewsDashboardData';
 const SOURCE_LABEL_KEYS: Record<NewsSourceKey, string> = {
   arxiv: 'sources.arxiv',
   huggingface: 'sources.huggingface',
+  github: 'sources.github',
+  wechat: 'sources.wechat',
   x: 'sources.x',
   xiaohongshu: 'sources.xiaohongshu',
 };
@@ -18,6 +20,8 @@ const SOURCE_LABEL_KEYS: Record<NewsSourceKey, string> = {
 const SOURCE_INACTIVE_COLORS: Record<NewsSourceKey, string> = {
   arxiv: 'bg-transparent text-rose-800/60 hover:bg-rose-100/50 dark:text-rose-400/60 dark:hover:bg-rose-950/30',
   huggingface: 'bg-transparent text-yellow-800/60 hover:bg-yellow-100/50 dark:text-yellow-400/60 dark:hover:bg-yellow-950/30',
+  github: 'bg-transparent text-violet-800/60 hover:bg-violet-100/50 dark:text-violet-300/60 dark:hover:bg-violet-950/30',
+  wechat: 'bg-transparent text-emerald-800/60 hover:bg-emerald-100/50 dark:text-emerald-300/60 dark:hover:bg-emerald-950/30',
   x: 'bg-transparent text-gray-600/60 hover:bg-gray-200/50 dark:text-gray-400/60 dark:hover:bg-gray-800/30',
   xiaohongshu: 'bg-transparent text-red-600/60 hover:bg-red-100/50 dark:text-red-400/60 dark:hover:bg-red-950/30',
 };
@@ -25,11 +29,13 @@ const SOURCE_INACTIVE_COLORS: Record<NewsSourceKey, string> = {
 const SOURCE_ACTIVE_COLORS: Record<NewsSourceKey, string> = {
   arxiv: 'bg-rose-600 text-white shadow-md ring-2 ring-rose-600/30 hover:bg-rose-700 dark:bg-rose-700 dark:ring-rose-500/30 dark:hover:bg-rose-600',
   huggingface: 'bg-yellow-500 text-white shadow-md ring-2 ring-yellow-500/30 hover:bg-yellow-600 dark:bg-yellow-600 dark:ring-yellow-400/30 dark:hover:bg-yellow-500',
+  github: 'bg-violet-600 text-white shadow-md ring-2 ring-violet-600/30 hover:bg-violet-700 dark:bg-violet-700 dark:ring-violet-500/30 dark:hover:bg-violet-600',
+  wechat: 'bg-emerald-600 text-white shadow-md ring-2 ring-emerald-600/30 hover:bg-emerald-700 dark:bg-emerald-700 dark:ring-emerald-500/30 dark:hover:bg-emerald-600',
   x: 'bg-gray-800 text-white shadow-md ring-2 ring-gray-800/30 hover:bg-gray-900 dark:bg-gray-600 dark:ring-gray-500/30 dark:hover:bg-gray-500',
   xiaohongshu: 'bg-red-500 text-white shadow-md ring-2 ring-red-500/30 hover:bg-red-600 dark:bg-red-600 dark:ring-red-400/30 dark:hover:bg-red-500',
 };
 
-const ALL_SOURCES: NewsSourceKey[] = ['arxiv', 'huggingface', 'x', 'xiaohongshu'];
+const ALL_SOURCES: NewsSourceKey[] = ['arxiv', 'huggingface', 'github', 'wechat', 'x', 'xiaohongshu'];
 
 export default function SourceFilterBar({
   activeSource,
