@@ -11,6 +11,7 @@ function isCommandNotFoundExitCode(code) {
  * @param {string} options.envVarName Environment variable name containing an override command.
  * @param {string[]} [options.legacyEnvVarNames=[]] Older env var names checked after envVarName (migration).
  * @param {string[]} options.defaultCommands Fallback command names in preference order.
+ * @param {object} [options.env=process.env] Environment used for env var overrides.
  * @param {string} [options.platform=process.platform] Runtime platform, used for Windows suffix handling.
  * @param {boolean} [options.appendWindowsSuffixes=false] Whether to append .cmd/.exe candidates on Windows.
  * @returns {string[]} Unique command candidates in probe order.
@@ -19,12 +20,13 @@ function getCliCommandCandidates({
     envVarName,
     legacyEnvVarNames = [],
     defaultCommands,
+    env = process.env,
     platform = process.platform,
     appendWindowsSuffixes = false
 }) {
     let envCommand = '';
     for (const key of [envVarName, ...legacyEnvVarNames].filter(Boolean)) {
-        const s = String(process.env[key] || '').trim();
+        const s = String(env[key] || '').trim();
         if (s) {
             envCommand = s;
             break;
@@ -67,6 +69,7 @@ function isCommandAvailable(command, args = ['--help'], platform = process.platf
 
     const result = spawnSync(command, args, {
         stdio: 'ignore',
+        env: process.env,
         shell: platform === 'win32'
     });
 
@@ -81,9 +84,10 @@ function isCommandAvailable(command, args = ['--help'], platform = process.platf
  * @param {Object} [options]
  * @param {string} [options.platform=process.platform] Runtime platform.
  * @param {number} [options.timeoutMs=3000] Max probe duration.
+ * @param {object} [options.env=process.env] Environment used for command probes.
  * @returns {Promise<boolean>} True when command can be spawned.
  */
-function checkCommandAvailable(command, args = ['--help'], { platform = process.platform, timeoutMs = 3000 } = {}) {
+function checkCommandAvailable(command, args = ['--help'], { platform = process.platform, timeoutMs = 3000, env = process.env } = {}) {
     return new Promise((resolve) => {
         let completed = false;
 
@@ -91,7 +95,7 @@ function checkCommandAvailable(command, args = ['--help'], { platform = process.
         try {
             childProcess = spawn(command, args, {
                 stdio: 'ignore',
-                env: process.env,
+                env,
                 shell: platform === 'win32'
             });
         } catch {
@@ -144,8 +148,9 @@ function checkCommandAvailable(command, args = ['--help'], { platform = process.
  * @param {string[]} options.defaultCommands Fallback command names in preference order.
  * @param {string[]} [options.args=['--help']] Probe arguments.
  * @param {string} [options.platform=process.platform] Runtime platform.
+ * @param {object} [options.env=process.env] Environment used for command probes.
  * @param {boolean} [options.appendWindowsSuffixes=false] Whether to append .cmd/.exe candidates on Windows.
- * @param {(command: string, args: string[], options: {platform: string}) => Promise<boolean>} [options.probe=checkCommandAvailable] Async probe function.
+ * @param {(command: string, args: string[], options: {platform: string, env: object}) => Promise<boolean>} [options.probe=checkCommandAvailable] Async probe function.
  * @returns {Promise<string|null>} First available command, or null.
  */
 async function resolveAvailableCliCommand({
@@ -154,6 +159,7 @@ async function resolveAvailableCliCommand({
     defaultCommands,
     args = ['--help'],
     platform = process.platform,
+    env = process.env,
     appendWindowsSuffixes = false,
     probe = (command, probeArgs, probeOptions) => checkCommandAvailable(command, probeArgs, probeOptions)
 }) {
@@ -161,12 +167,13 @@ async function resolveAvailableCliCommand({
         envVarName,
         legacyEnvVarNames,
         defaultCommands,
+        env,
         platform,
         appendWindowsSuffixes
     });
 
     for (const candidate of candidates) {
-        if (await probe(candidate, args, { platform })) {
+        if (await probe(candidate, args, { platform, env })) {
             return candidate;
         }
     }

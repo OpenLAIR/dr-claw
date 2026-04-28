@@ -78,6 +78,7 @@ import { validateApiKey, authenticateToken, authenticateWebSocket } from './midd
 import { IS_PLATFORM } from './constants/config.js';
 import { enqueueTelemetryEvent } from './telemetry.js';
 import { resolveCursorCliCommand, isCursorLoginCommand, isGeminiLoginCommand, normalizeCursorLoginCommand } from './utils/cursorCommand.js';
+import { buildCodexCliEnv, codexCommandForShell } from './utils/codexCli.js';
 import { getGeminiApiKeyForUser, withGeminiApiKeyEnv } from './utils/geminiApiKey.js';
 import {
     DEFAULT_BACKEND_PORT,
@@ -2031,18 +2032,18 @@ function handleShellConnection(ws) {
                             }
                         }
                     } else if (provider === 'codex') {
-                        // Use codex command
+                        const codexCommand = codexCommandForShell(process.env, os.platform());
                         if (os.platform() === 'win32') {
                             if (hasSession && sessionId) {
-                                shellCommand = `Set-Location -Path "${projectPath}"; codex resume ${sessionId}; if ($LASTEXITCODE -ne 0) { codex }`;
+                                shellCommand = `Set-Location -Path "${projectPath}"; ${codexCommand} resume ${sessionId}; if ($LASTEXITCODE -ne 0) { ${codexCommand} }`;
                             } else {
-                                shellCommand = `Set-Location -Path "${projectPath}"; codex`;
+                                shellCommand = `Set-Location -Path "${projectPath}"; ${codexCommand}`;
                             }
                         } else {
                             if (hasSession && sessionId) {
-                                shellCommand = `cd "${projectPath}" && codex resume ${sessionId} || codex`;
+                                shellCommand = `cd "${projectPath}" && ${codexCommand} resume ${sessionId} || ${codexCommand}`;
                             } else {
-                                shellCommand = `cd "${projectPath}" && codex`;
+                                shellCommand = `cd "${projectPath}" && ${codexCommand}`;
                             }
                         }
                     } else if (provider === 'gemini') {
@@ -2112,7 +2113,9 @@ function handleShellConnection(ws) {
                         cols: termCols,
                         rows: termRows,
                         cwd: spawnCwd,
-                        env: buildEmbeddedShellEnv(process.env)
+                        env: provider === 'codex'
+                            ? buildEmbeddedShellEnv(buildCodexCliEnv(process.env))
+                            : buildEmbeddedShellEnv(process.env)
                     });
 
                     console.log('🟢 Shell process started with PTY, PID:', shellProcess.pid);

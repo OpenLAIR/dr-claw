@@ -6,6 +6,7 @@ import os from 'os';
 import fetch from 'node-fetch';
 import { resolveCursorCliCommand } from '../utils/cursorCommand.js';
 import { resolveAvailableCliCommand } from '../utils/cliResolution.js';
+import { buildCodexCliEnv, getCodexCliCommand } from '../utils/codexCli.js';
 import {
   DEFAULT_OLLAMA_URL,
   detectGPUs,
@@ -840,7 +841,8 @@ function checkCursorStatus() {
 // 2. OPENAI_API_KEY from server environment variable
 // 3. OPENAI_API_KEY from ~/.codex/auth.json
 async function checkCodexCredentials() {
-  let cliCommand = process.env.CODEX_CLI_PATH || 'codex';
+  const codexCliEnv = buildCodexCliEnv(process.env);
+  let cliCommand = getCodexCliCommand(process.env);
   try {
     if (isCliMockedMissing('codex')) {
       return {
@@ -856,7 +858,8 @@ async function checkCodexCredentials() {
     const resolvedCliCommand = await resolveAvailableCliCommand({
       envVarName: 'CODEX_CLI_PATH',
       defaultCommands: ['codex'],
-      appendWindowsSuffixes: true
+      appendWindowsSuffixes: true,
+      env: codexCliEnv
     });
     cliCommand = resolvedCliCommand || cliCommand;
 
