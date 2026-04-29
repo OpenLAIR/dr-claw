@@ -1,15 +1,20 @@
 ---
 name: inno-figure-gen
 description: >
-  Generate/edit images with Gemini image models (default:
-  gemini-3.1-flash-image-preview). Use for image create/modify requests incl.
-  edits. Supports text-to-image + image-to-image; 1K/2K/4K; use --input-image.
-  Use --model to select a different model.
+  Generate/edit images with OpenAI gpt-image-2 by default, falling back to
+  Gemini (gemini-3.1-flash-image-preview) when OPENAI_API_KEY is unset.
+  Supports text-to-image + image-to-image; 1K/2K/4K; use --input-image for
+  editing, --provider to force a provider, --model to override the model.
 ---
 
-# Gemini Image Generation & Editing
+# Image Generation & Editing (GPT Image default, Gemini fallback)
 
-Generate new images or edit existing ones using Google's Gemini image generation API (default model: `gemini-3.1-flash-image-preview`).
+Generate new images or edit existing ones. The script picks a provider based on which API keys are available:
+
+1. **OpenAI** `gpt-image-2` — used when `OPENAI_API_KEY` is set (default).
+2. **Gemini** `gemini-3.1-flash-image-preview` — used when only `GEMINI_API_KEY` is set.
+
+When both keys are set, OpenAI is picked by default; force Gemini with `--provider gemini`. If an auto-selected OpenAI call fails at runtime (quota, moderation, network), the script transparently falls back to Gemini when a Gemini key is available.
 
 ## Usage
 
@@ -22,12 +27,12 @@ Keep the distinction clear:
 
 **Generate new image:**
 ```bash
-uv run <this-skill-directory>/scripts/generate_image.py --prompt "your image description" --filename "output-name.png" [--resolution 1K|2K|4K] [--model MODEL] [--api-key KEY]
+uv run <this-skill-directory>/scripts/generate_image.py --prompt "your image description" --filename "output-name.png" [--resolution 1K|2K|4K] [--provider auto|openai|gemini] [--model MODEL] [--openai-api-key KEY | --gemini-api-key KEY]
 ```
 
 **Edit existing image:**
 ```bash
-uv run <this-skill-directory>/scripts/generate_image.py --prompt "editing instructions" --filename "output-name.png" --input-image "path/to/input.png" [--resolution 1K|2K|4K] [--model MODEL] [--api-key KEY]
+uv run <this-skill-directory>/scripts/generate_image.py --prompt "editing instructions" --filename "output-name.png" --input-image "path/to/input.png" [--resolution 1K|2K|4K] [--provider auto|openai|gemini] [--model MODEL] [--openai-api-key KEY | --gemini-api-key KEY]
 ```
 
 **Important:** Always run from the user's current working directory so images are saved where the user is working, not in the skill directory.
@@ -45,11 +50,11 @@ Goal: fast iteration without burning time on 4K until the prompt is correct.
 
 ## Resolution Options
 
-The Gemini 3 Pro Image API supports three resolutions (uppercase K required):
+The script accepts three resolution tiers (uppercase K required):
 
-- **1K** (default) - ~1024px resolution
-- **2K** - ~2048px resolution
-- **4K** - ~4096px resolution
+- **1K** (default) - ~1024px
+- **2K** - ~2048px
+- **4K** - ~4096px (Gemini) / **3840×2160 landscape** under OpenAI
 
 Map user requests to API parameters:
 - No mention of resolution → `1K`
@@ -57,37 +62,47 @@ Map user requests to API parameters:
 - "2K", "2048", "normal", "medium resolution" → `2K`
 - "high resolution", "high-res", "hi-res", "4K", "ultra" → `4K`
 
-## Model Selection
+**OpenAI 4K note:** `gpt-image-2` supports non-square 4K outputs within its size limits. `--resolution 4K` with OpenAI maps to `3840×2160`.
 
-The default model is `gemini-3.1-flash-image-preview`. You can override it with the `--model` flag:
+## Provider & Model Selection
 
-```bash
-uv run <this-skill-directory>/scripts/generate_image.py --prompt "..." --filename "..." --model gemini-3.1-flash-image-preview
-```
+Two providers are available:
 
-Available models depend on your Gemini API access. Common options:
-- `gemini-3.1-flash-image-preview` (default) - Fast image generation
-- `gemini-3-pro-image-preview` - Higher quality, slower
+| Provider | Default model                        | When chosen                                                  |
+| -------- | ------------------------------------ | ------------------------------------------------------------ |
+| OpenAI   | `gpt-image-2`                        | `--provider auto` (default) when `OPENAI_API_KEY` is set, or `--provider openai` |
+| Gemini   | `gemini-3.1-flash-image-preview`     | `--provider auto` when only `GEMINI_API_KEY` is set, or `--provider gemini`, or as runtime fallback from a failed auto-OpenAI call |
 
-## API Key
+Override either default with `--model`. Note: the model name is provider-specific; passing a Gemini model name while the script falls back to Gemini automatically will not preserve a user-specified OpenAI model (each provider uses its own default during fallback).
 
-The script checks for API key in this order:
-1. `--api-key` argument (use if user provided key in chat)
-2. `GEMINI_API_KEY` environment variable
+Common model options:
+- **OpenAI:** `gpt-image-2` (default)
+- **Gemini:** `gemini-3.1-flash-image-preview` (default, fast), `gemini-3-pro-image-preview` (higher quality, slower)
 
-If neither is available, the script exits with an error message.
+## API Keys
+
+The script resolves provider-specific keys first, while preserving the original Gemini-only `--api-key` behavior:
+
+1. Explicit, provider-specific flags: `--openai-api-key KEY`, `--gemini-api-key KEY`
+2. Generic `--api-key KEY` — kept for backward compatibility with the original Gemini-only script. Under `auto`, it is treated as a Gemini key unless an OpenAI key is provided by `--openai-api-key` or `OPENAI_API_KEY`. Under explicit `--provider openai`, it is treated as an OpenAI key; under explicit `--provider gemini`, it is treated as a Gemini key.
+3. Environment variables: `OPENAI_API_KEY`, `GEMINI_API_KEY`
+
+When `--provider auto` is selected and OpenAI fails at runtime, fallback to Gemini requires `--gemini-api-key`, `--api-key`, or the `GEMINI_API_KEY` env var.
+
+If no key is resolvable for the chosen provider, the script exits with a clear error message listing both ways to fix it.
 
 ## Preflight + Common Failures (fast fixes)
 
 - Preflight:
   - `command -v uv` (must exist)
-  - `test -n \"$GEMINI_API_KEY\"` (or pass `--api-key`)
-  - If editing: `test -f \"path/to/input.png\"`
+  - At least one of: `test -n "$OPENAI_API_KEY" -o -n "$GEMINI_API_KEY"` (or pass `--openai-api-key`, `--gemini-api-key`, or backward-compatible `--api-key`)
+  - If editing: `test -f "path/to/input.png"`
 
 - Common failures:
-  - `Error: No API key provided.` → set `GEMINI_API_KEY` or pass `--api-key`
+  - `Error: No API key found...` → set `OPENAI_API_KEY` or `GEMINI_API_KEY`, or pass an explicit `--*-api-key` flag
   - `Error loading input image:` → wrong path / unreadable file; verify `--input-image` points to a real image
-  - “quota/permission/403” style API errors → wrong key, no access, or quota exceeded; try a different key/account
+  - `[warn] OpenAI call failed (...); falling back to Gemini.` → informational; a Gemini key was available and produced the image. Investigate the OpenAI error separately (quota, moderation, network)
+  - "quota/permission/403" style errors with no fallback → no Gemini key available, or user used `--provider openai` (explicit provider disables fallback). Try a different key, or drop the explicit provider to enable fallback
 
 ## Filename Generation
 
@@ -140,12 +155,17 @@ Use templates when the user is vague or when edits must be precise.
 
 ## Examples
 
-**Generate new image:**
+**Generate new image (auto provider):**
 ```bash
-uv run <this-skill-directory>/scripts/generate_image.py --prompt "A serene Japanese garden with cherry blossoms" --filename "2025-11-23-14-23-05-japanese-garden.png" --resolution 4K
+uv run <this-skill-directory>/scripts/generate_image.py --prompt "A serene Japanese garden with cherry blossoms" --filename "2025-11-23-14-23-05-japanese-garden.png" --resolution 2K
 ```
 
-**Edit existing image:**
+**Force Gemini:**
+```bash
+uv run <this-skill-directory>/scripts/generate_image.py --prompt "A serene Japanese garden with cherry blossoms" --filename "2025-11-23-14-23-05-japanese-garden-4k.png" --resolution 4K --provider gemini
+```
+
+**Edit existing image (auto provider):**
 ```bash
 uv run <this-skill-directory>/scripts/generate_image.py --prompt "make the sky more dramatic with storm clouds" --filename "2025-11-23-14-25-30-dramatic-sky.png" --input-image "original-photo.jpg" --resolution 2K
 ```
