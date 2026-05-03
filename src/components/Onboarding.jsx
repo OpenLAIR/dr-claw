@@ -4,6 +4,7 @@ import ClaudeLogo from './ClaudeLogo';
 import CursorLogo from './CursorLogo';
 import CodexLogo from './CodexLogo';
 import GeminiLogo from './GeminiLogo';
+import SessionProviderLogo from './SessionProviderLogo';
 import LoginModal from './LoginModal';
 import { authenticatedFetch } from '../utils/api';
 import { IS_PLATFORM } from '../constants/config';
@@ -105,6 +106,21 @@ const Onboarding = ({ onComplete }) => {
     downloadUrl: null
   });
 
+  const [copilotAuthStatus, setCopilotAuthStatus] = useState({
+    authenticated: false,
+    email: null,
+    cliAvailable: true,
+    cliCommand: 'copilot',
+    installHint: null,
+    loading: true,
+    error: null,
+    installable: false,
+    installerAvailable: true,
+    installerHint: null,
+    docsUrl: null,
+    downloadUrl: null
+  });
+
   const buildDefaultAuthState = (overrides = {}) => ({
     authenticated: false,
     email: null,
@@ -150,6 +166,7 @@ const Onboarding = ({ onComplete }) => {
       checkCursorAuthStatus();
       checkCodexAuthStatus();
       checkGeminiAuthStatus();
+      checkCopilotAuthStatus();
     }
   }, [activeLoginProvider]);
 
@@ -257,6 +274,32 @@ const Onboarding = ({ onComplete }) => {
     }
   };
 
+  const checkCopilotAuthStatus = async () => {
+    try {
+      const response = await authenticatedFetch('/api/cli/copilot/status');
+      if (response.ok) {
+        const data = await response.json();
+        setCopilotAuthStatus(normalizeAuthStatus(data, 'copilot'));
+        writeCliAvailability('copilot', {
+          cliAvailable: data.cliAvailable !== false,
+          cliCommand: data.cliCommand || 'copilot',
+          installHint: data.installHint || null,
+        });
+      } else {
+        setCopilotAuthStatus(buildDefaultAuthState({
+          cliCommand: 'copilot',
+          error: 'Failed to check authentication status'
+        }));
+      }
+    } catch (error) {
+      console.error('Error checking GitHub Copilot auth status:', error);
+      setCopilotAuthStatus(buildDefaultAuthState({
+        cliCommand: 'copilot',
+        error: error.message
+      }));
+    }
+  };
+
   const refreshProviderStatus = async (provider) => {
     if (provider === 'claude') {
       await checkClaudeAuthStatus();
@@ -275,6 +318,11 @@ const Onboarding = ({ onComplete }) => {
 
     if (provider === 'gemini') {
       await checkGeminiAuthStatus();
+      return;
+    }
+
+    if (provider === 'copilot') {
+      await checkCopilotAuthStatus();
     }
   };
 
@@ -282,6 +330,7 @@ const Onboarding = ({ onComplete }) => {
   const handleCursorLogin = () => setActiveLoginProvider('cursor');
   const handleCodexLogin = () => setActiveLoginProvider('codex');
   const handleGeminiLogin = () => setActiveLoginProvider('gemini');
+  const handleCopilotLogin = () => setActiveLoginProvider('copilot');
 
   const openExternal = (url) => {
     if (!url) {
@@ -301,6 +350,8 @@ const Onboarding = ({ onComplete }) => {
         checkCodexAuthStatus();
       } else if (activeLoginProvider === 'gemini') {
         checkGeminiAuthStatus();
+      } else if (activeLoginProvider === 'copilot') {
+        checkCopilotAuthStatus();
       }
     }
   };
@@ -418,6 +469,19 @@ const Onboarding = ({ onComplete }) => {
         connected: 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800',
         icon: 'bg-emerald-100 dark:bg-emerald-900/30',
         button: 'bg-emerald-600 hover:bg-emerald-700'
+      }
+    },
+    {
+      id: 'copilot',
+      name: 'GitHub Copilot CLI',
+      description: 'GitHub Copilot command line assistant',
+      logo: <SessionProviderLogo provider="copilot" className="w-6 h-6" />,
+      status: copilotAuthStatus,
+      onAction: handleCopilotLogin,
+      accent: {
+        connected: 'bg-slate-50 dark:bg-slate-900/20 border-slate-200 dark:border-slate-800',
+        icon: 'bg-slate-100 dark:bg-slate-900/30',
+        button: 'bg-slate-700 hover:bg-slate-800'
       }
     }
   ];
@@ -819,6 +883,7 @@ const Onboarding = ({ onComplete }) => {
           cliAvailable={
             activeLoginProvider === 'claude' ? claudeAuthStatus.cliAvailable !== false :
             activeLoginProvider === 'gemini' ? geminiAuthStatus.cliAvailable !== false :
+            activeLoginProvider === 'copilot' ? copilotAuthStatus.cliAvailable !== false :
             activeLoginProvider === 'cursor' ? cursorAuthStatus.cliAvailable !== false :
             activeLoginProvider === 'codex' ? codexAuthStatus.cliAvailable !== false :
             true
@@ -826,6 +891,7 @@ const Onboarding = ({ onComplete }) => {
           installHint={
             activeLoginProvider === 'claude' ? claudeAuthStatus.installHint :
             activeLoginProvider === 'gemini' ? geminiAuthStatus.installHint :
+            activeLoginProvider === 'copilot' ? copilotAuthStatus.installHint :
             activeLoginProvider === 'cursor' ? cursorAuthStatus.installHint :
             activeLoginProvider === 'codex' ? codexAuthStatus.installHint :
             null
@@ -833,6 +899,7 @@ const Onboarding = ({ onComplete }) => {
           installable={
             activeLoginProvider === 'claude' ? claudeAuthStatus.installable === true :
             activeLoginProvider === 'gemini' ? geminiAuthStatus.installable === true :
+            activeLoginProvider === 'copilot' ? copilotAuthStatus.installable === true :
             activeLoginProvider === 'cursor' ? cursorAuthStatus.installable === true :
             activeLoginProvider === 'codex' ? codexAuthStatus.installable === true :
             false
@@ -840,6 +907,7 @@ const Onboarding = ({ onComplete }) => {
           installerAvailable={
             activeLoginProvider === 'claude' ? claudeAuthStatus.installerAvailable !== false :
             activeLoginProvider === 'gemini' ? geminiAuthStatus.installerAvailable !== false :
+            activeLoginProvider === 'copilot' ? copilotAuthStatus.installerAvailable !== false :
             activeLoginProvider === 'cursor' ? cursorAuthStatus.installerAvailable !== false :
             activeLoginProvider === 'codex' ? codexAuthStatus.installerAvailable !== false :
             true
@@ -847,6 +915,7 @@ const Onboarding = ({ onComplete }) => {
           installerHint={
             activeLoginProvider === 'claude' ? claudeAuthStatus.installerHint :
             activeLoginProvider === 'gemini' ? geminiAuthStatus.installerHint :
+            activeLoginProvider === 'copilot' ? copilotAuthStatus.installerHint :
             activeLoginProvider === 'cursor' ? cursorAuthStatus.installerHint :
             activeLoginProvider === 'codex' ? codexAuthStatus.installerHint :
             null
@@ -854,6 +923,7 @@ const Onboarding = ({ onComplete }) => {
           docsUrl={
             activeLoginProvider === 'claude' ? claudeAuthStatus.docsUrl :
             activeLoginProvider === 'gemini' ? geminiAuthStatus.docsUrl :
+            activeLoginProvider === 'copilot' ? copilotAuthStatus.docsUrl :
             activeLoginProvider === 'cursor' ? cursorAuthStatus.docsUrl :
             activeLoginProvider === 'codex' ? codexAuthStatus.docsUrl :
             null
@@ -861,6 +931,7 @@ const Onboarding = ({ onComplete }) => {
           downloadUrl={
             activeLoginProvider === 'claude' ? claudeAuthStatus.downloadUrl :
             activeLoginProvider === 'gemini' ? geminiAuthStatus.downloadUrl :
+            activeLoginProvider === 'copilot' ? copilotAuthStatus.downloadUrl :
             activeLoginProvider === 'cursor' ? cursorAuthStatus.downloadUrl :
             activeLoginProvider === 'codex' ? codexAuthStatus.downloadUrl :
             null

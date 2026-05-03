@@ -423,6 +423,7 @@ export function useChatRealtimeHandlers({
     const isGlobalMessage = globalMessageTypes.includes(String(latestMessage.type));
     const lifecycleMessageTypes = new Set([
       'claude-complete',
+      'copilot-complete',
       'codex-complete',
       'gemini-complete',
       'openrouter-complete',
@@ -430,6 +431,7 @@ export function useChatRealtimeHandlers({
       'cursor-result',
       'session-aborted',
       'claude-error',
+      'copilot-error',
       'cursor-error',
       'codex-error',
       'gemini-error',
@@ -472,6 +474,7 @@ export function useChatRealtimeHandlers({
       pendingViewSessionRef.current &&
       !pendingViewSessionRef.current.sessionId &&
       (latestMessage.type === 'claude-error' ||
+        latestMessage.type === 'copilot-error' ||
         latestMessage.type === 'cursor-error' ||
         latestMessage.type === 'codex-error' ||
         latestMessage.type === 'gemini-error');
@@ -605,7 +608,8 @@ export function useChatRealtimeHandlers({
         }
         break;
 
-      case 'claude-response': {
+      case 'claude-response':
+      case 'copilot-response': {
         if (messageData && typeof messageData === 'object' && messageData.type) {
           if (Number.isFinite(messageData.startTime)) {
             persistStartTime(messageData.startTime, latestMessage.sessionId, currentSessionId, selectedSession?.id);
@@ -815,6 +819,7 @@ export function useChatRealtimeHandlers({
       }
 
       case 'claude-complete':
+      case 'copilot-complete':
       case 'gemini-complete':
       case 'openrouter-complete':
       case 'localgpu-complete': {
@@ -835,6 +840,7 @@ export function useChatRealtimeHandlers({
       }
 
       case 'claude-error':
+      case 'copilot-error':
       case 'gemini-error':
       case 'openrouter-error':
       case 'localgpu-error': {
@@ -1419,6 +1425,7 @@ export function useChatRealtimeHandlers({
       }
 
       case 'claude-status':
+      case 'copilot-status':
       case 'gemini-status': {
         const statusData = latestMessage.data;
         if (!statusData) break;

@@ -6,7 +6,7 @@ import { WebLinksAddon } from '@xterm/addon-web-links';
 import '@xterm/xterm/css/xterm.css';
 import { useTranslation } from 'react-i18next';
 import { IS_PLATFORM } from '../constants/config';
-import { stripInternalContextPrefix } from '../utils/sessionFormatting';
+import { getSessionDisplayTitle } from '../utils/sessionFormatting';
 
 const xtermStyles = `
   .xterm .xterm-screen {
@@ -64,7 +64,7 @@ function getPreferredProvider(selectedSession) {
   }
 
   const storedProvider = localStorage.getItem('selected-provider');
-  if (storedProvider === 'cursor' || storedProvider === 'codex' || storedProvider === 'claude' || storedProvider === 'gemini' || storedProvider === 'openrouter' || storedProvider === 'local' || storedProvider === 'nano') {
+  if (storedProvider === 'cursor' || storedProvider === 'codex' || storedProvider === 'claude' || storedProvider === 'gemini' || storedProvider === 'copilot' || storedProvider === 'openrouter' || storedProvider === 'local' || storedProvider === 'nano') {
     return storedProvider;
   }
 
@@ -311,10 +311,7 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
 
   const sessionDisplayName = useMemo(() => {
     if (!selectedSession) return null;
-    const rawName = selectedSession.__provider === 'cursor'
-      ? (selectedSession.name || 'Untitled Session')
-      : (selectedSession.summary || 'New Session');
-    return stripInternalContextPrefix(rawName) || 'New Session';
+    return getSessionDisplayTitle(selectedSession);
   }, [selectedSession]);
 
   const sessionDisplayNameShort = useMemo(() => {

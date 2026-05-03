@@ -70,6 +70,7 @@ interface UseChatComposerStateArgs {
   claudeModel: string;
   codexModel: string;
   geminiModel: string;
+  copilotModel: string;
   openrouterModel: string;
   localModel: string;
   nanoModel: string;
@@ -249,6 +250,7 @@ export function useChatComposerState({
   claudeModel,
   codexModel,
   geminiModel,
+  copilotModel,
   openrouterModel,
   localModel,
   nanoModel,
@@ -1391,6 +1393,26 @@ export function useChatComposerState({
             stageTagSource: 'task_context',
           },
         });
+      } else if (provider === 'copilot') {
+        console.log('[DEBUG] Sending copilot-command');
+        sendMessage({
+          type: 'copilot-command',
+          command: messageContent,
+          sessionId: effectiveSessionId,
+          options: {
+            cwd: resolvedProjectPath,
+            projectPath: resolvedProjectPath,
+            sessionId: effectiveSessionId,
+            resume: Boolean(effectiveSessionId),
+            permissionMode: effectivePermissionMode,
+            model: copilotModel,
+            toolsSettings,
+            telemetryEnabled,
+            sessionMode: isNewSession ? newSessionMode : selectedSession?.mode,
+            stageTagKeys: currentStageTagKeys,
+            stageTagSource: 'task_context',
+          },
+        });
       } else if (provider === 'codex') {
         console.log('[DEBUG] Sending codex-command');
         sendMessage({
@@ -1528,6 +1550,7 @@ export function useChatComposerState({
       executeCommand,
       geminiThinkingMode,
       geminiModel,
+      copilotModel,
       openrouterModel,
       localModel,
       nanoModel,

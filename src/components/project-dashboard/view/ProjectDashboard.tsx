@@ -193,6 +193,7 @@ function getProjectSessions(project: Project): ProjectSession[] {
     ...(project.cursorSessions ?? []),
     ...(project.codexSessions ?? []),
     ...(project.geminiSessions ?? []),
+    ...(project.copilotSessions ?? []),
     ...(project.openrouterSessions ?? []),
     ...(project.localSessions ?? []),
     ...(project.nanoSessions ?? []),

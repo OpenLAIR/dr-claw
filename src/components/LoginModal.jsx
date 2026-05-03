@@ -38,6 +38,8 @@ function LoginModal({
         return 'Codex CLI';
       case 'gemini':
         return 'Gemini CLI';
+      case 'copilot':
+        return 'GitHub Copilot CLI';
       default:
         return 'CLI';
     }
@@ -55,6 +57,8 @@ function LoginModal({
         return 'Codex CLI Login';
       case 'gemini':
         return 'Gemini CLI Login';
+      case 'copilot':
+        return 'GitHub Copilot CLI Login';
       default:
         return 'CLI Login';
     }
@@ -76,6 +80,8 @@ function LoginModal({
         return IS_PLATFORM ? 'codex login --device-auth' : 'codex login';
       case 'gemini':
         return 'gemini /quit';
+      case 'copilot':
+        return 'copilot';
       default:
         return isAuthenticated
           ? 'claude --dangerously-skip-permissions setup-token'

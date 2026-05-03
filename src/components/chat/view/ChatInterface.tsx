@@ -24,7 +24,7 @@ import { readCliAvailability, writeCliAvailability } from '../../../utils/cliAva
 import { Button } from '../../ui/button';
 import type { PendingAutoIntake } from '../../../types/app';
 import type { EditingFile, DiffInfo } from '../../main-content/types/types';
-import { CLAUDE_MODELS, CURSOR_MODELS, CODEX_MODELS, GEMINI_MODELS, LOCAL_MODELS, NANO_CLAUDE_CODE_MODELS, OPENROUTER_MODELS } from '../../../../shared/modelConstants';
+import { CLAUDE_MODELS, CURSOR_MODELS, CODEX_MODELS, GEMINI_MODELS, GITHUB_COPILOT_MODELS, LOCAL_MODELS, NANO_CLAUDE_CODE_MODELS, OPENROUTER_MODELS } from '../../../../shared/modelConstants';
 import { getProviderDisplayName } from '../utils/chatFormatting';
 import { buildEditableMessageDraft, buildReplayMessageDraft, getChatMessageId, getMessageReplayContent } from '../utils/chatMessages';
 import { normalizePath, toRelativePath, isSafePath, fileNameFromPath } from '../../../utils/pathUtils';
@@ -35,6 +35,7 @@ const DEFAULT_PROVIDER_AVAILABILITY: Record<Provider, ProviderAvailability> = {
   cursor: { cliAvailable: true, cliCommand: 'agent', installHint: null },
   codex: { cliAvailable: true, cliCommand: 'codex', installHint: null },
   gemini: { cliAvailable: true, cliCommand: 'gemini', installHint: null },
+  copilot: { cliAvailable: true, cliCommand: 'copilot', installHint: null },
   openrouter: { cliAvailable: true, cliCommand: 'openrouter', installHint: null },
   local: { cliAvailable: true, cliCommand: null, installHint: null },
   nano: { cliAvailable: true, cliCommand: 'nano-claude-code', installHint: null },
@@ -68,6 +69,7 @@ const getProviderModelConfig = (provider: Provider) => {
   if (provider === 'claude') return CLAUDE_MODELS;
   if (provider === 'codex') return CODEX_MODELS;
   if (provider === 'gemini') return GEMINI_MODELS;
+  if (provider === 'copilot') return GITHUB_COPILOT_MODELS;
   if (provider === 'openrouter') return OPENROUTER_MODELS;
   if (provider === 'local') return LOCAL_MODELS;
   if (provider === 'nano') return NANO_CLAUDE_CODE_MODELS;
@@ -174,6 +176,8 @@ function ChatInterface({
     setCodexModel,
     geminiModel,
     setGeminiModel,
+    copilotModel,
+    setCopilotModel,
     openrouterModel,
     setOpenrouterModel,
     localModel,
@@ -312,6 +316,7 @@ function ChatInterface({
     claudeModel,
     codexModel,
     geminiModel,
+    copilotModel,
     openrouterModel,
     localModel,
     nanoModel,
@@ -446,6 +451,7 @@ function ChatInterface({
       cursor: cached.cursor ?? DEFAULT_PROVIDER_AVAILABILITY.cursor,
       codex: cached.codex ?? DEFAULT_PROVIDER_AVAILABILITY.codex,
       gemini: cached.gemini ?? DEFAULT_PROVIDER_AVAILABILITY.gemini,
+      copilot: cached.copilot ?? DEFAULT_PROVIDER_AVAILABILITY.copilot,
       openrouter: cached.openrouter ?? DEFAULT_PROVIDER_AVAILABILITY.openrouter,
       local: cached.local ?? DEFAULT_PROVIDER_AVAILABILITY.local,
       nano: cached.nano ?? DEFAULT_PROVIDER_AVAILABILITY.nano,
@@ -456,11 +462,12 @@ function ChatInterface({
     if (importedProjectAnalysisProvider === 'claude') return claudeModel;
     if (importedProjectAnalysisProvider === 'codex') return codexModel;
     if (importedProjectAnalysisProvider === 'gemini') return geminiModel;
+    if (importedProjectAnalysisProvider === 'copilot') return copilotModel;
     if (importedProjectAnalysisProvider === 'openrouter') return openrouterModel;
     if (importedProjectAnalysisProvider === 'local') return localModel;
     if (importedProjectAnalysisProvider === 'nano') return nanoModel;
     return cursorModel;
-  }, [claudeModel, codexModel, cursorModel, geminiModel, openrouterModel, localModel, nanoModel, importedProjectAnalysisProvider]);
+  }, [claudeModel, codexModel, cursorModel, geminiModel, copilotModel, openrouterModel, localModel, nanoModel, importedProjectAnalysisProvider]);
 
   const handleStartTaskInChat = useCallback((prompt?: string, task?: { stage?: string } | null) => {
     const nextPrompt = prompt && prompt.trim()
@@ -480,6 +487,7 @@ function ChatInterface({
         { provider: 'cursor', endpoint: '/api/cli/cursor/status', fallbackCommand: 'agent' },
         { provider: 'codex', endpoint: '/api/cli/codex/status', fallbackCommand: 'codex' },
         { provider: 'gemini', endpoint: '/api/cli/gemini/status', fallbackCommand: 'gemini' },
+        { provider: 'copilot', endpoint: '/api/cli/copilot/status', fallbackCommand: 'copilot' },
         { provider: 'openrouter', endpoint: '/api/cli/openrouter/status', fallbackCommand: 'openrouter' },
         { provider: 'nano', endpoint: '/api/cli/nano/status', fallbackCommand: 'nano-claude-code' },
       ];
@@ -527,7 +535,7 @@ function ChatInterface({
 
   useEffect(() => {
     if (providerAvailability[provider]?.cliAvailable === false) {
-      const fallbackProvider = (['claude', 'cursor', 'codex', 'gemini', 'openrouter', 'local', 'nano'] as const).find(
+      const fallbackProvider = (['claude', 'cursor', 'codex', 'gemini', 'copilot', 'openrouter', 'local', 'nano'] as const).find(
         (candidate) => providerAvailability[candidate]?.cliAvailable !== false,
       );
 
@@ -680,6 +688,7 @@ function ChatInterface({
 
     if (
       latestMessage.type === 'claude-complete' ||
+      latestMessage.type === 'copilot-complete' ||
       latestMessage.type === 'cursor-result' ||
       latestMessage.type === 'codex-complete'
     ) {
@@ -981,6 +990,8 @@ function ChatInterface({
           setCursorModel={setCursorModel}
           setCodexModel={setCodexModel}
           setGeminiModel={setGeminiModel}
+          copilotModel={copilotModel}
+          setCopilotModel={setCopilotModel}
           openrouterModel={openrouterModel}
           setOpenrouterModel={setOpenrouterModel}
           localModel={localModel}

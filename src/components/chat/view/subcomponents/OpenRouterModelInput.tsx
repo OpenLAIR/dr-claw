@@ -9,50 +9,71 @@ type ModelOption = {
   isCustom?: boolean;
 };
 
-let _modelsCache: ModelOption[] | null = null;
+const modelsCacheByUrl = new Map<string, ModelOption[]>();
 
 interface OpenRouterModelInputProps {
   value: string;
   options: Array<{ value: string; label: string }>;
   onChange: (v: string) => void;
+  storageKey?: string;
+  fetchUrl?: string | null;
+  searchPlaceholder?: string;
+  customModelPlaceholder?: string;
+  addCustomLabel?: string;
 }
 
 export default function OpenRouterModelInput({
   value,
   options: fallbackOptions,
   onChange,
+  storageKey = 'openrouter-custom-models',
+  fetchUrl = '/api/settings/openrouter-models',
+  searchPlaceholder = 'Search models...',
+  customModelPlaceholder = 'e.g. provider/model-name',
+  addCustomLabel = 'Add custom model',
 }: OpenRouterModelInputProps) {
+  const initialModels = fetchUrl ? modelsCacheByUrl.get(fetchUrl) || (fallbackOptions as ModelOption[]) : (fallbackOptions as ModelOption[]);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const [models, setModels] = useState<ModelOption[]>(_modelsCache || (fallbackOptions as ModelOption[]));
+  const [models, setModels] = useState<ModelOption[]>(initialModels);
   const [loading, setLoading] = useState(false);
   const [customDraft, setCustomDraft] = useState('');
   const [showCustomInput, setShowCustomInput] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const customModels: ModelOption[] = JSON.parse(localStorage.getItem('openrouter-custom-models') || '[]');
+  const customModels: ModelOption[] = JSON.parse(localStorage.getItem(storageKey) || '[]');
 
   const fetchModels = useCallback(async () => {
-    if (_modelsCache) {
-      setModels(_modelsCache);
+    if (!fetchUrl) {
+      setModels(fallbackOptions as ModelOption[]);
+      return;
+    }
+    const cachedModels = modelsCacheByUrl.get(fetchUrl);
+    if (cachedModels?.length) {
+      setModels(cachedModels);
       return;
     }
     setLoading(true);
     try {
-      const res = await authenticatedFetch('/api/settings/openrouter-models');
+      const res = await authenticatedFetch(fetchUrl);
       if (res.ok) {
         const data = await res.json();
         if (data.models?.length) {
-          _modelsCache = data.models;
+          modelsCacheByUrl.set(fetchUrl, data.models);
           setModels(data.models);
+        } else {
+          setModels(fallbackOptions as ModelOption[]);
         }
       }
     } catch {
       /* use fallback */
     }
+    if (!modelsCacheByUrl.get(fetchUrl)?.length) {
+      setModels(fallbackOptions as ModelOption[]);
+    }
     setLoading(false);
-  }, []);
+  }, [fallbackOptions, fetchUrl]);
 
   useEffect(() => {
     if (open) {
@@ -88,10 +109,10 @@ export default function OpenRouterModelInput({
   const addCustomModel = () => {
     const slug = customDraft.trim();
     if (!slug) return;
-    const existing: ModelOption[] = JSON.parse(localStorage.getItem('openrouter-custom-models') || '[]');
+    const existing: ModelOption[] = JSON.parse(localStorage.getItem(storageKey) || '[]');
     if (!existing.some((m) => m.value === slug)) {
       const updated = [...existing, { value: slug, label: slug, isCustom: true }];
-      localStorage.setItem('openrouter-custom-models', JSON.stringify(updated));
+      localStorage.setItem(storageKey, JSON.stringify(updated));
     }
     onChange(slug);
     setCustomDraft('');
@@ -100,9 +121,9 @@ export default function OpenRouterModelInput({
   };
 
   const removeCustomModel = (slug: string) => {
-    const existing: ModelOption[] = JSON.parse(localStorage.getItem('openrouter-custom-models') || '[]');
+    const existing: ModelOption[] = JSON.parse(localStorage.getItem(storageKey) || '[]');
     localStorage.setItem(
-      'openrouter-custom-models',
+      storageKey,
       JSON.stringify(existing.filter((m) => m.value !== slug)),
     );
     if (value === slug) onChange(fallbackOptions[0]?.value || 'anthropic/claude-sonnet-4');
@@ -126,7 +147,7 @@ export default function OpenRouterModelInput({
               ref={inputRef}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search models..."
+              placeholder={searchPlaceholder}
               className="flex-1 bg-transparent text-[11px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none"
             />
             {loading && <span className="text-[10px] text-muted-foreground animate-pulse">Loading...</span>}
@@ -192,7 +213,7 @@ export default function OpenRouterModelInput({
                     if (e.key === 'Enter') addCustomModel();
                     if (e.key === 'Escape') setShowCustomInput(false);
                   }}
-                  placeholder="e.g. provider/model-name"
+                  placeholder={customModelPlaceholder}
                   className="flex-1 bg-transparent text-[11px] text-foreground border border-border/60 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary/30"
                 />
                 <button
@@ -210,7 +231,7 @@ export default function OpenRouterModelInput({
                 className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
               >
                 <Plus className="w-3 h-3" />
-                Add custom model
+                {addCustomLabel}
               </button>
             )}
           </div>

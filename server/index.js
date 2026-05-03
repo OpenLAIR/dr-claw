@@ -51,6 +51,7 @@ import { spawnGemini, abortGeminiSession, isGeminiSessionActive, getGeminiSessio
 import { queryOpenRouter, abortOpenRouterSession, isOpenRouterSessionActive, getOpenRouterSessionStartTime, getActiveOpenRouterSessions } from './openrouter.js';
 import { queryLocalGPU, abortLocalGPUSession, isLocalGPUSessionActive, getLocalGPUSessionStartTime, getActiveLocalGPUSessions } from './local-gpu.js';
 import { spawnNanoClaudeCode, abortNanoClaudeCodeSession, isNanoClaudeCodeSessionActive, getNanoClaudeCodeSessionStartTime, getActiveNanoClaudeCodeSessions } from './nano-claude-code.js';
+import { spawnGitHubCopilot, abortGitHubCopilotSession, isGitHubCopilotSessionActive, getGitHubCopilotSessionStartTime, getActiveGitHubCopilotSessions, getGitHubCopilotSessionsDir } from './github-copilot-cli.js';
 import gitRoutes from './routes/git.js';
 import authRoutes from './routes/auth.js';
 import mcpRoutes from './routes/mcp.js';
@@ -66,6 +67,7 @@ import projectsRoutes, { WORKSPACES_ROOT, getWorkspacesRoot, validateWorkspacePa
 import cliAuthRoutes from './routes/cli-auth.js';
 import userRoutes from './routes/user.js';
 import codexRoutes from './routes/codex.js';
+import copilotRoutes from './routes/copilot.js';
 import skillsRoutes from './routes/skills.js';
 import telemetryRoutes from './routes/telemetry.js';
 import computeRoutes from './routes/compute.js';
@@ -89,6 +91,19 @@ import {
     setRuntimePortSync,
 } from './utils/runtimePorts.js';
 import { buildCodexTokenUsageFromJsonl } from './utils/sessionTokenUsage.js';
+
+function ensureCopilotTrustedDir(command, projectPath) {
+    const normalizedCommand = String(command || 'copilot').trim() || 'copilot';
+    if (!projectPath || !/^copilot(\s|$)/.test(normalizedCommand) || normalizedCommand.includes('--add-dir')) {
+        return normalizedCommand;
+    }
+
+    if (os.platform() === 'win32') {
+        return `${normalizedCommand} --add-dir "${projectPath.replace(/"/g, '\\"')}"`;
+    }
+
+    return `${normalizedCommand} --add-dir "${projectPath.replace(/"/g, '\\"')}"`;
+}
 import { getNanoDrClawSessionsRoot } from './nanoSessionPaths.js';
 
 // File system watchers for provider project/session folders
@@ -98,6 +113,7 @@ const PROVIDER_WATCH_PATHS = [
     { provider: 'codex', rootPath: path.join(os.homedir(), '.codex', 'sessions') },
     { provider: 'gemini', rootPath: path.join(os.homedir(), '.gemini', 'sessions') },
     { provider: 'nano', rootPath: getNanoDrClawSessionsRoot() },
+    { provider: 'copilot', rootPath: getGitHubCopilotSessionsDir() },
 ];
 const WATCHER_IGNORED_PATTERNS = [
     '**/node_modules/**',
@@ -123,7 +139,7 @@ function shouldProcessProjectsWatcherEvent(eventType, filePath, provider) {
     }
 
     const normalized = String(filePath || '').toLowerCase();
-    if (provider === 'claude' || provider === 'codex' || provider === 'gemini') {
+    if (provider === 'claude' || provider === 'codex' || provider === 'gemini' || provider === 'copilot') {
         return normalized.endsWith('.jsonl');
     }
 
@@ -514,6 +530,9 @@ app.use('/api/user', authenticateToken, userRoutes);
 
 // Codex API Routes (protected)
 app.use('/api/codex', authenticateToken, codexRoutes);
+
+// GitHub Copilot API Routes (protected)
+app.use('/api/copilot', authenticateToken, copilotRoutes);
 
 // Skills API Routes (protected)
 app.use('/api/skills', authenticateToken, skillsRoutes);
@@ -1741,6 +1760,34 @@ function handleChatConnection(ws, request) {
                 spawnNanoClaudeCode(data.command, { ...data.options, env: sessionEnv }, writer).catch(error => {
                     console.error('[ERROR] Nano Claude Code error:', error);
                 });
+            } else if (data.type === 'copilot-command') {
+                console.log('[DEBUG] GitHub Copilot message:', data.command || '[Continue/Resume]');
+                console.log('📁 Project:', data.options?.projectPath || data.options?.cwd || 'Unknown');
+                console.log('🔄 Session:', data.options?.sessionId ? 'Resume' : 'New');
+                const commandTelemetryEnabled = data.options?.telemetryEnabled !== false;
+                const sessionId = data.options?.sessionId || data.sessionId;
+
+                if (sessionId && isGitHubCopilotSessionActive(sessionId)) {
+                    console.log(`[WARN] GitHub Copilot session ${sessionId} is already active. Ignoring concurrent request.`);
+                    return;
+                }
+
+                enqueueConversationTelemetry(
+                    {
+                        name: 'agent_dialogue_meta',
+                        direction: 'user_to_agent',
+                        provider: 'copilot',
+                        sessionId: sessionId || null,
+                        projectPath: data.options?.projectPath || data.options?.cwd || null,
+                        transportType: data.type,
+                    },
+                    { ...telemetryContext, telemetryEnabled: commandTelemetryEnabled },
+                );
+                writer.telemetryContext = { ...telemetryContext, provider: 'copilot', telemetryEnabled: commandTelemetryEnabled };
+                writer.setProjectPath(data.options?.projectPath || data.options?.cwd || null);
+                spawnGitHubCopilot(data.command, { ...data.options, userId, env: sessionEnv }, writer).catch(error => {
+                    console.error('[ERROR] GitHub Copilot error:', error);
+                });
             } else if (data.type === 'cursor-resume') {
                 // Backward compatibility: treat as cursor-command with resume and no prompt
                 console.log('[DEBUG] Cursor resume session (compat):', data.sessionId);
@@ -1776,6 +1823,8 @@ function handleChatConnection(ws, request) {
                     success = abortLocalGPUSession(data.sessionId);
                 } else if (provider === 'nano') {
                     success = abortNanoClaudeCodeSession(data.sessionId);
+                } else if (provider === 'copilot') {
+                    success = abortGitHubCopilotSession(data.sessionId);
                 } else {
                     // Use Claude Agents SDK
                     success = await abortClaudeSDKSession(data.sessionId);
@@ -1833,6 +1882,9 @@ function handleChatConnection(ws, request) {
                 } else if (provider === 'nano') {
                     isActive = isNanoClaudeCodeSessionActive(sessionId);
                     startTime = getNanoClaudeCodeSessionStartTime(sessionId);
+                } else if (provider === 'copilot') {
+                    isActive = isGitHubCopilotSessionActive(sessionId);
+                    startTime = getGitHubCopilotSessionStartTime(sessionId);
                 } else {
                     // Use Claude Agents SDK
                     isActive = isClaudeSDKSessionActive(sessionId);
@@ -1854,7 +1906,8 @@ function handleChatConnection(ws, request) {
                     codex: getActiveCodexSessions(),
                     gemini: getActiveGeminiSessions(),
                     local: getActiveLocalGPUSessions(),
-                    nano: getActiveNanoClaudeCodeSessions()
+                    nano: getActiveNanoClaudeCodeSessions(),
+                    copilot: getActiveGitHubCopilotSessions()
                 };
 
                 writer.send({
@@ -1895,7 +1948,7 @@ function handleShellConnection(ws) {
                 const projectPath = data.projectPath || process.cwd();
                 const sessionId = data.sessionId;
                 const hasSession = data.hasSession;
-                const provider = ['claude', 'cursor', 'codex', 'gemini', 'plain-shell'].includes(data.provider)
+                const provider = ['claude', 'cursor', 'codex', 'gemini', 'copilot', 'plain-shell'].includes(data.provider)
                     ? data.provider
                     : 'claude';
                 const initialCommand = data.initialCommand;
@@ -1976,6 +2029,7 @@ function handleShellConnection(ws) {
                     const providerName = provider === 'cursor' ? 'Cursor' : 
                                       provider === 'codex' ? 'Codex' : 
                                       provider === 'gemini' ? 'Gemini' : 
+                                      provider === 'copilot' ? 'GitHub Copilot' : 
                                       'Claude';
                     welcomeMsg = hasSession ?
                         `\x1b[36mResuming ${providerName} session ${sessionId} in: ${projectPath}\x1b[0m\r\n` :
@@ -2061,6 +2115,13 @@ function handleShellConnection(ws) {
                             } else {
                                 shellCommand = `cd "${projectPath}" && ${command}`;
                             }
+                        }
+                    } else if (provider === 'copilot') {
+                        const command = ensureCopilotTrustedDir(initialCommand || 'copilot', projectPath);
+                        if (os.platform() === 'win32') {
+                            shellCommand = `Set-Location -Path "${projectPath}"; ${command}`;
+                        } else {
+                            shellCommand = `cd "${projectPath}" && ${command}`;
                         }
                     } else {
                             // Use claude command (default) or initialCommand if provided
@@ -2824,6 +2885,16 @@ app.get('/api/projects/:projectName/sessions/:sessionId/token-usage', authentica
         }
       });
     }
+
+        if (provider === 'copilot') {
+            return res.json({
+                used: 0,
+                total: 0,
+                breakdown: { input: 0, output: 0 },
+                unsupported: true,
+                message: 'Token usage tracking not available for GitHub Copilot CLI sessions'
+            });
+        }
 
     // Handle Claude sessions (default)
     // Extract actual project path

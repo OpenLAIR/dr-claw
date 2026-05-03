@@ -185,6 +185,7 @@ export function getProviderDisplayName(provider: string): string {
   if (provider === 'cursor') return 'Cursor';
   if (provider === 'codex') return 'Codex';
   if (provider === 'gemini') return 'Gemini';
+  if (provider === 'copilot') return 'GitHub Copilot';
   if (provider === 'openrouter') {
     const slug = localStorage.getItem('openrouter-model') || '';
     if (slug) {

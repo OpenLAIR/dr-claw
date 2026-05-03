@@ -342,6 +342,9 @@
       "gemini": {
         "description": "Google Gemini AI CLI assistant"
       },
+      "copilot": {
+        "description": "GitHub Copilot CLI assistant"
+      },
       "openrouter": {
         "description": "Route to any model via OpenRouter API"
       },
@@ -373,7 +376,8 @@
     "skipPermissions": {
       "label": "Skip permission prompts (use with caution)",
       "claudeDescription": "Equivalent to --dangerously-skip-permissions flag",
-      "cursorDescription": "Equivalent to -f flag in Cursor CLI"
+      "cursorDescription": "Equivalent to -f flag in Cursor CLI",
+      "copilotDescription": "Equivalent to GitHub Copilot CLI --allow-all flag"
     },
     "allowedTools": {
       "title": "Allowed Tools",
@@ -474,7 +478,8 @@
       "claude": "Model Context Protocol servers provide additional tools and data sources to Claude",
       "cursor": "Model Context Protocol servers provide additional tools and data sources to Cursor",
       "codex": "Model Context Protocol servers provide additional tools and data sources to Codex",
-      "gemini": "Model Context Protocol servers provide additional tools and data sources to Gemini"
+      "gemini": "Model Context Protocol servers provide additional tools and data sources to Gemini",
+      "copilot": "Model Context Protocol servers provide additional tools and data sources to GitHub Copilot"
     },
     "addButton": "Add MCP Server",
     "empty": "No MCP servers configured",

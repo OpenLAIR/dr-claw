@@ -36,7 +36,12 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
   const [geminiDisallowedTools, setGeminiDisallowedTools] = useState([]);
   const [newGeminiAllowedTool, setNewGeminiAllowedTool] = useState('');
   const [newGeminiDisallowedTool, setNewGeminiDisallowedTool] = useState('');
+  const [copilotAllowedTools, setCopilotAllowedTools] = useState([]);
+  const [copilotDisallowedTools, setCopilotDisallowedTools] = useState([]);
+  const [newCopilotAllowedTool, setNewCopilotAllowedTool] = useState('');
+  const [newCopilotDisallowedTool, setNewCopilotDisallowedTool] = useState('');
   const [skipPermissions, setSkipPermissions] = useState(false);
+  const [copilotSkipPermissions, setCopilotSkipPermissions] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState(null);
   const [projectSortOrder, setProjectSortOrder] = useState('date');
@@ -68,7 +73,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
     VALID_SETTINGS_TABS.has(initialTab) ? initialTab : 'agents',
   );
   const [jsonValidationError, setJsonValidationError] = useState('');
-  const [selectedAgent, setSelectedAgent] = useState('claude'); // 'claude', 'cursor', or 'codex'
+  const [selectedAgent, setSelectedAgent] = useState('claude');
   const [selectedCategory, setSelectedCategory] = useState('account'); // 'account', 'email', 'permissions', 'mcp', or 'memory'
 
   // Code Editor settings
@@ -105,8 +110,10 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
 
   // Codex-specific states
   const [codexMcpServers, setCodexMcpServers] = useState([]);
+  const [copilotMcpServers, setCopilotMcpServers] = useState([]);
   const [codexPermissionMode, setCodexPermissionMode] = useState('default');
   const [showCodexMcpForm, setShowCodexMcpForm] = useState(false);
+  const [showCopilotMcpForm, setShowCopilotMcpForm] = useState(false);
 
   // Gemini-specific states
   const [geminiPermissionMode, setGeminiPermissionMode] = useState('default');
@@ -120,7 +127,22 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
     }
   });
   const [editingCodexMcpServer, setEditingCodexMcpServer] = useState(null);
+  const [editingCopilotMcpServer, setEditingCopilotMcpServer] = useState(null);
   const [codexMcpLoading, setCodexMcpLoading] = useState(false);
+  const [copilotMcpLoading, setCopilotMcpLoading] = useState(false);
+  const [copilotMcpFormData, setCopilotMcpFormData] = useState({
+    name: '',
+    type: 'stdio',
+    config: {
+      command: '',
+      args: [],
+      env: {},
+      url: '',
+      headers: {},
+      timeout: 30000,
+      tools: []
+    }
+  });
 
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [loginProvider, setLoginProvider] = useState('');
@@ -167,6 +189,18 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
     email: null,
     cliAvailable: true,
     cliCommand: 'gemini',
+    installHint: null,
+    loading: true,
+    error: null,
+    installable: false,
+    docsUrl: null,
+    downloadUrl: null
+  });
+  const [copilotAuthStatus, setCopilotAuthStatus] = useState({
+    authenticated: false,
+    email: null,
+    cliAvailable: true,
+    cliCommand: 'copilot',
     installHint: null,
     loading: true,
     error: null,
@@ -290,6 +324,31 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
       }
     } catch (error) {
       console.error('Error fetching Codex MCP servers:', error);
+    }
+  };
+
+  const fetchCopilotMcpServers = async () => {
+    try {
+      const configResponse = await authenticatedFetch('/api/copilot/mcp/config/read');
+
+      if (configResponse.ok) {
+        const configData = await configResponse.json();
+        if (configData.success && configData.servers) {
+          setCopilotMcpServers(configData.servers);
+          return;
+        }
+      }
+
+      const cliResponse = await authenticatedFetch('/api/copilot/mcp/cli/list');
+
+      if (cliResponse.ok) {
+        const cliData = await cliResponse.json();
+        if (cliData.success && cliData.servers) {
+          setCopilotMcpServers(cliData.servers);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching GitHub Copilot MCP servers:', error);
     }
   };
 
@@ -488,6 +547,40 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
     }
   };
 
+  const saveCopilotMcpServer = async (serverData) => {
+    try {
+      const response = await authenticatedFetch('/api/copilot/mcp/cli/add', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: serverData.name,
+          type: serverData.type,
+          command: serverData.config?.command,
+          args: serverData.config?.args || [],
+          url: serverData.config?.url,
+          env: serverData.config?.env || {},
+          headers: serverData.config?.headers || {},
+          timeout: serverData.config?.timeout,
+          tools: serverData.config?.tools || []
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          await fetchCopilotMcpServers();
+          return true;
+        }
+        throw new Error(result.error || 'Failed to save GitHub Copilot MCP server');
+      }
+
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to save server');
+    } catch (error) {
+      console.error('Error saving GitHub Copilot MCP server:', error);
+      throw error;
+    }
+  };
+
   const deleteCodexMcpServer = async (serverId) => {
     try {
       const response = await authenticatedFetch(`/api/codex/mcp/cli/remove/${serverId}`, {
@@ -512,6 +605,29 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
     }
   };
 
+  const deleteCopilotMcpServer = async (serverId) => {
+    try {
+      const response = await authenticatedFetch(`/api/copilot/mcp/cli/remove/${encodeURIComponent(serverId)}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          await fetchCopilotMcpServers();
+          return true;
+        }
+        throw new Error(result.error || 'Failed to delete GitHub Copilot MCP server');
+      }
+
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to delete server');
+    } catch (error) {
+      console.error('Error deleting GitHub Copilot MCP server:', error);
+      throw error;
+    }
+  };
+
   const resetCodexMcpForm = () => {
     setCodexMcpFormData({
       name: '',
@@ -524,6 +640,24 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
     });
     setEditingCodexMcpServer(null);
     setShowCodexMcpForm(false);
+  };
+
+  const resetCopilotMcpForm = () => {
+    setCopilotMcpFormData({
+      name: '',
+      type: 'stdio',
+      config: {
+        command: '',
+        args: [],
+        env: {},
+        url: '',
+        headers: {},
+        timeout: 30000,
+        tools: []
+      }
+    });
+    setEditingCopilotMcpServer(null);
+    setShowCopilotMcpForm(false);
   };
 
   const openCodexMcpForm = (server = null) => {
@@ -542,6 +676,28 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
       resetCodexMcpForm();
     }
     setShowCodexMcpForm(true);
+  };
+
+  const openCopilotMcpForm = (server = null) => {
+    if (server) {
+      setEditingCopilotMcpServer(server);
+      setCopilotMcpFormData({
+        name: server.name,
+        type: server.type || 'stdio',
+        config: {
+          command: server.config?.command || '',
+          args: server.config?.args || [],
+          env: server.config?.env || {},
+          url: server.config?.url || '',
+          headers: server.config?.headers || {},
+          timeout: server.config?.timeout || 30000,
+          tools: server.config?.tools || []
+        }
+      });
+    } else {
+      resetCopilotMcpForm();
+    }
+    setShowCopilotMcpForm(true);
   };
 
   const handleCodexMcpSubmit = async (e) => {
@@ -564,10 +720,42 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
     }
   };
 
+  const handleCopilotMcpSubmit = async (e) => {
+    e.preventDefault();
+    setCopilotMcpLoading(true);
+
+    try {
+      if (editingCopilotMcpServer) {
+        await deleteCopilotMcpServer(editingCopilotMcpServer.name);
+      }
+
+      await saveCopilotMcpServer(copilotMcpFormData);
+      resetCopilotMcpForm();
+      setSaveStatus('success');
+    } catch (error) {
+      alert(`Error: ${error.message}`);
+      setSaveStatus('error');
+    } finally {
+      setCopilotMcpLoading(false);
+    }
+  };
+
   const handleCodexMcpDelete = async (serverName) => {
     if (confirm('Are you sure you want to delete this MCP server?')) {
       try {
         await deleteCodexMcpServer(serverName);
+        setSaveStatus('success');
+      } catch (error) {
+        alert(`Error: ${error.message}`);
+        setSaveStatus('error');
+      }
+    }
+  };
+
+  const handleCopilotMcpDelete = async (serverName) => {
+    if (confirm('Are you sure you want to delete this MCP server?')) {
+      try {
+        await deleteCopilotMcpServer(serverName);
         setSaveStatus('success');
       } catch (error) {
         alert(`Error: ${error.message}`);
@@ -583,6 +771,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
       checkCursorAuthStatus();
       checkCodexAuthStatus();
       checkGeminiAuthStatus();
+      checkCopilotAuthStatus();
       checkOpenRouterAuthStatus();
       checkLocalAuthStatus();
       setActiveTab(VALID_SETTINGS_TABS.has(initialTab) ? initialTab : 'agents');
@@ -678,6 +867,19 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
         setGeminiDisallowedTools([]);
       }
 
+      const savedCopilotSettings = localStorage.getItem('copilot-settings');
+
+      if (savedCopilotSettings) {
+        const copilotSettings = JSON.parse(savedCopilotSettings);
+        setCopilotAllowedTools(copilotSettings.allowedTools || []);
+        setCopilotDisallowedTools(copilotSettings.disallowedTools || []);
+        setCopilotSkipPermissions(copilotSettings.skipPermissions || false);
+      } else {
+        setCopilotAllowedTools([]);
+        setCopilotDisallowedTools([]);
+        setCopilotSkipPermissions(false);
+      }
+
       // Load workspace root setting
       try {
         const wsResponse = await api.getWorkspaceRoot();
@@ -698,6 +900,9 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
 
       // Load Codex MCP servers
       await fetchCodexMcpServers();
+
+      // Load GitHub Copilot MCP servers
+      await fetchCopilotMcpServers();
     } catch (error) {
       console.error('Error loading tool settings:', error);
       setAllowedTools([]);
@@ -859,6 +1064,44 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
     }
   };
 
+  const checkCopilotAuthStatus = async () => {
+    try {
+      const response = await authenticatedFetch('/api/cli/copilot/status');
+
+      if (response.ok) {
+        const data = await response.json();
+        setCopilotAuthStatus({
+          authenticated: data.authenticated,
+          email: data.email,
+          cliAvailable: data.cliAvailable !== false,
+          cliCommand: data.cliCommand || 'copilot',
+          installHint: data.installHint || null,
+          loading: false,
+          error: data.error || null,
+          installable: data.installable === true,
+          docsUrl: data.docsUrl || null,
+          downloadUrl: data.downloadUrl || null
+        });
+        writeCliAvailability('copilot', {
+          cliAvailable: data.cliAvailable !== false,
+          cliCommand: data.cliCommand || 'copilot',
+          installHint: data.installHint || null,
+        });
+      } else {
+        setCopilotAuthStatus(buildDefaultAuthState({
+          cliCommand: 'copilot',
+          error: 'Failed to check authentication status'
+        }));
+      }
+    } catch (error) {
+      console.error('Error checking GitHub Copilot auth status:', error);
+      setCopilotAuthStatus(buildDefaultAuthState({
+        cliCommand: 'copilot',
+        error: error.message
+      }));
+    }
+  };
+
   const checkOpenRouterAuthStatus = async () => {
     try {
       const response = await authenticatedFetch('/api/cli/openrouter/status');
@@ -912,6 +1155,11 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
 
     if (provider === 'gemini') {
       await checkGeminiAuthStatus();
+      return;
+    }
+
+    if (provider === 'copilot') {
+      await checkCopilotAuthStatus();
     }
   };
 
@@ -986,6 +1234,12 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
     setShowLoginModal(true);
   };
 
+  const handleCopilotLogin = () => {
+    setLoginProvider('copilot');
+    setSelectedProject(getDefaultProject());
+    setShowLoginModal(true);
+  };
+
   const handleLoginComplete = (exitCode) => {
     if (exitCode === 0) {
       setSaveStatus('success');
@@ -998,6 +1252,8 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
         checkCodexAuthStatus();
       } else if (loginProvider === 'gemini') {
         checkGeminiAuthStatus();
+      } else if (loginProvider === 'copilot') {
+        checkCopilotAuthStatus();
       }
     }
   };
@@ -1038,11 +1294,19 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
         lastUpdated: new Date().toISOString()
       };
 
+      const copilotSettings = {
+        allowedTools: copilotAllowedTools,
+        disallowedTools: copilotDisallowedTools,
+        skipPermissions: copilotSkipPermissions,
+        lastUpdated: new Date().toISOString()
+      };
+
       // Save to localStorage
       localStorage.setItem('claude-settings', JSON.stringify(claudeSettings));
       localStorage.setItem('cursor-tools-settings', JSON.stringify(cursorSettings));
       localStorage.setItem('codex-settings', JSON.stringify(codexSettings));
       localStorage.setItem('gemini-settings', JSON.stringify(geminiSettings));
+      localStorage.setItem('copilot-settings', JSON.stringify(copilotSettings));
 
       setSaveStatus('success');
       
@@ -1719,6 +1983,13 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
                       isMobile={true}
                     />
                     <AgentListItem
+                      agentId="copilot"
+                      authStatus={copilotAuthStatus}
+                      isSelected={selectedAgent === 'copilot'}
+                      onClick={() => setSelectedAgent('copilot')}
+                      isMobile={true}
+                    />
+                    <AgentListItem
                       agentId="openrouter"
                       authStatus={openrouterAuthStatus}
                       isSelected={selectedAgent === 'openrouter'}
@@ -1755,6 +2026,12 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
                       authStatus={geminiAuthStatus}
                       isSelected={selectedAgent === 'gemini'}
                       onClick={() => setSelectedAgent('gemini')}
+                    />
+                    <AgentListItem
+                      agentId="copilot"
+                      authStatus={copilotAuthStatus}
+                      isSelected={selectedAgent === 'copilot'}
+                      onClick={() => setSelectedAgent('copilot')}
                     />
                     <AgentListItem
                       agentId="openrouter"
@@ -1830,6 +2107,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
                           selectedAgent === 'claude' ? claudeAuthStatus :
                           selectedAgent === 'cursor' ? cursorAuthStatus :
                           selectedAgent === 'gemini' ? geminiAuthStatus :
+                          selectedAgent === 'copilot' ? copilotAuthStatus :
                           selectedAgent === 'openrouter' ? openrouterAuthStatus :
                           selectedAgent === 'local' ? localAuthStatus :
                           codexAuthStatus
@@ -1838,6 +2116,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
                           selectedAgent === 'claude' ? handleClaudeLogin :
                           selectedAgent === 'cursor' ? handleCursorLogin :
                           selectedAgent === 'gemini' ? handleGeminiLogin :
+                          selectedAgent === 'copilot' ? handleCopilotLogin :
                           selectedAgent === 'openrouter' ? (() => {}) :
                           selectedAgent === 'local' ? checkLocalAuthStatus :
                           handleCodexLogin
@@ -1902,6 +2181,22 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
                       />
                     )}
 
+                    {selectedCategory === 'permissions' && selectedAgent === 'copilot' && (
+                      <PermissionsContent
+                        agent="copilot"
+                        skipPermissions={copilotSkipPermissions}
+                        setSkipPermissions={setCopilotSkipPermissions}
+                        allowedTools={copilotAllowedTools}
+                        setAllowedTools={setCopilotAllowedTools}
+                        disallowedTools={copilotDisallowedTools}
+                        setDisallowedTools={setCopilotDisallowedTools}
+                        newAllowedTool={newCopilotAllowedTool}
+                        setNewAllowedTool={setNewCopilotAllowedTool}
+                        newDisallowedTool={newCopilotDisallowedTool}
+                        setNewDisallowedTool={setNewCopilotDisallowedTool}
+                      />
+                    )}
+
                     {/* MCP Servers Category */}
                     {selectedCategory === 'mcp' && selectedAgent === 'claude' && (
                       <McpServersContent
@@ -1935,6 +2230,16 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
                         onAdd={() => openCodexMcpForm()}
                         onEdit={(server) => openCodexMcpForm(server)}
                         onDelete={(serverId) => handleCodexMcpDelete(serverId)}
+                      />
+                    )}
+
+                    {selectedCategory === 'mcp' && selectedAgent === 'copilot' && (
+                      <McpServersContent
+                        agent="copilot"
+                        servers={copilotMcpServers}
+                        onAdd={() => openCopilotMcpForm()}
+                        onEdit={(server) => openCopilotMcpForm(server)}
+                        onDelete={(serverId) => handleCopilotMcpDelete(serverId)}
                       />
                     )}
 
@@ -2397,6 +2702,214 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
               </div>
             )}
 
+            {showCopilotMcpForm && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[110] p-4">
+                <div className="bg-background border border-border rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                  <div className="flex items-center justify-between p-4 border-b border-border">
+                    <h3 className="text-lg font-medium text-foreground">
+                      {editingCopilotMcpServer ? t('mcpForm.title.edit') : t('mcpForm.title.add')}
+                    </h3>
+                    <Button variant="ghost" size="sm" onClick={resetCopilotMcpForm}>
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+
+                  <form onSubmit={handleCopilotMcpSubmit} className="p-4 space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-foreground mb-2">
+                          {t('mcpForm.fields.serverName')} *
+                        </label>
+                        <Input
+                          value={copilotMcpFormData.name}
+                          onChange={(e) => setCopilotMcpFormData(prev => ({ ...prev, name: e.target.value }))}
+                          placeholder={t('mcpForm.placeholders.serverName')}
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-foreground mb-2">
+                          {t('mcpForm.fields.transportType')} *
+                        </label>
+                        <select
+                          value={copilotMcpFormData.type}
+                          onChange={(e) => setCopilotMcpFormData(prev => ({
+                            ...prev,
+                            type: e.target.value,
+                            config: {
+                              ...prev.config,
+                              command: e.target.value === 'stdio' ? prev.config.command : '',
+                              url: e.target.value === 'stdio' ? '' : prev.config.url
+                            }
+                          }))}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                        >
+                          <option value="stdio">stdio</option>
+                          <option value="sse">SSE</option>
+                          <option value="http">HTTP</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {copilotMcpFormData.type === 'stdio' ? (
+                      <>
+                        <div>
+                          <label className="block text-sm font-medium text-foreground mb-2">
+                            {t('mcpForm.fields.command')} *
+                          </label>
+                          <Input
+                            value={copilotMcpFormData.config.command}
+                            onChange={(e) => setCopilotMcpFormData(prev => ({
+                              ...prev,
+                              config: { ...prev.config, command: e.target.value }
+                            }))}
+                            placeholder="npx @my-org/mcp-server"
+                            required
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-foreground mb-2">
+                            {t('mcpForm.fields.arguments')}
+                          </label>
+                          <textarea
+                            value={(copilotMcpFormData.config.args || []).join('\n')}
+                            onChange={(e) => setCopilotMcpFormData(prev => ({
+                              ...prev,
+                              config: { ...prev.config, args: e.target.value.split('\n').filter(a => a.trim()) }
+                            }))}
+                            placeholder="--port&#10;3000"
+                            rows={3}
+                            className="w-full px-3 py-2 text-sm bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <div>
+                        <label className="block text-sm font-medium text-foreground mb-2">
+                          {t('mcpForm.fields.url')} *
+                        </label>
+                        <Input
+                          value={copilotMcpFormData.config.url}
+                          onChange={(e) => setCopilotMcpFormData(prev => ({
+                            ...prev,
+                            config: { ...prev.config, url: e.target.value }
+                          }))}
+                          placeholder="https://api.example.com/mcp"
+                          type="url"
+                          required
+                        />
+                      </div>
+                    )}
+
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-2">
+                        {t('mcpForm.fields.envVars')}
+                      </label>
+                      <textarea
+                        value={Object.entries(copilotMcpFormData.config.env || {}).map(([k, v]) => `${k}=${v}`).join('\n')}
+                        onChange={(e) => {
+                          const env = {};
+                          e.target.value.split('\n').forEach(line => {
+                            const [key, ...valueParts] = line.split('=');
+                            if (key && key.trim()) {
+                              env[key.trim()] = valueParts.join('=').trim();
+                            }
+                          });
+                          setCopilotMcpFormData(prev => ({
+                            ...prev,
+                            config: { ...prev.config, env }
+                          }));
+                        }}
+                        placeholder="API_KEY=xxx&#10;DEBUG=true"
+                        rows={3}
+                        className="w-full px-3 py-2 text-sm bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+                      />
+                    </div>
+
+                    {copilotMcpFormData.type !== 'stdio' && (
+                      <div>
+                        <label className="block text-sm font-medium text-foreground mb-2">
+                          {t('mcpForm.fields.headers')}
+                        </label>
+                        <textarea
+                          value={Object.entries(copilotMcpFormData.config.headers || {}).map(([k, v]) => `${k}=${v}`).join('\n')}
+                          onChange={(e) => {
+                            const headers = {};
+                            e.target.value.split('\n').forEach(line => {
+                              const [key, ...valueParts] = line.split('=');
+                              if (key && key.trim()) {
+                                headers[key.trim()] = valueParts.join('=').trim();
+                              }
+                            });
+                            setCopilotMcpFormData(prev => ({
+                              ...prev,
+                              config: { ...prev.config, headers }
+                            }));
+                          }}
+                          placeholder="Authorization=Bearer token"
+                          rows={3}
+                          className="w-full px-3 py-2 text-sm bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+                        />
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-foreground mb-2">
+                          Timeout (ms)
+                        </label>
+                        <Input
+                          type="number"
+                          min="1"
+                          value={copilotMcpFormData.config.timeout || ''}
+                          onChange={(e) => setCopilotMcpFormData(prev => ({
+                            ...prev,
+                            config: {
+                              ...prev.config,
+                              timeout: e.target.value ? Number(e.target.value) : undefined
+                            }
+                          }))}
+                          placeholder="30000"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-foreground mb-2">
+                          MCP Tools
+                        </label>
+                        <Input
+                          value={(copilotMcpFormData.config.tools || []).join(', ')}
+                          onChange={(e) => setCopilotMcpFormData(prev => ({
+                            ...prev,
+                            config: {
+                              ...prev.config,
+                              tools: e.target.value.split(',').map(tool => tool.trim()).filter(Boolean)
+                            }
+                          }))}
+                          placeholder="tool-a, tool-b"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end gap-2 pt-4 border-t border-border">
+                      <Button type="button" variant="outline" onClick={resetCopilotMcpForm}>
+                        {t('mcpForm.actions.cancel')}
+                      </Button>
+                      <Button
+                        type="submit"
+                        disabled={copilotMcpLoading || !copilotMcpFormData.name || (copilotMcpFormData.type === 'stdio' ? !copilotMcpFormData.config.command : !copilotMcpFormData.config.url)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        {copilotMcpLoading ? t('mcpForm.actions.saving') : (editingCopilotMcpServer ? t('mcpForm.actions.updateServer') : t('mcpForm.actions.addServer'))}
+                      </Button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
             {/* API & Tokens Tab */}
             {activeTab === 'api' && (
               <div className="space-y-6 md:space-y-8">
@@ -2464,6 +2977,8 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
           loginProvider === 'claude' ? claudeAuthStatus.authenticated :
           loginProvider === 'cursor' ? cursorAuthStatus.authenticated :
           loginProvider === 'codex' ? codexAuthStatus.authenticated :
+          loginProvider === 'gemini' ? geminiAuthStatus.authenticated :
+          loginProvider === 'copilot' ? copilotAuthStatus.authenticated :
           false
         }
         cliAvailable={
@@ -2471,6 +2986,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
           loginProvider === 'cursor' ? cursorAuthStatus.cliAvailable !== false :
           loginProvider === 'codex' ? codexAuthStatus.cliAvailable !== false :
           loginProvider === 'gemini' ? geminiAuthStatus.cliAvailable !== false :
+          loginProvider === 'copilot' ? copilotAuthStatus.cliAvailable !== false :
           true
         }
         installHint={
@@ -2478,6 +2994,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
           loginProvider === 'cursor' ? cursorAuthStatus.installHint :
           loginProvider === 'codex' ? codexAuthStatus.installHint :
           loginProvider === 'gemini' ? geminiAuthStatus.installHint :
+          loginProvider === 'copilot' ? copilotAuthStatus.installHint :
           null
         }
         installable={
@@ -2485,6 +3002,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
           loginProvider === 'cursor' ? cursorAuthStatus.installable === true :
           loginProvider === 'codex' ? codexAuthStatus.installable === true :
           loginProvider === 'gemini' ? geminiAuthStatus.installable === true :
+          loginProvider === 'copilot' ? copilotAuthStatus.installable === true :
           false
         }
         installerAvailable={
@@ -2492,6 +3010,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
           loginProvider === 'cursor' ? cursorAuthStatus.installerAvailable !== false :
           loginProvider === 'codex' ? codexAuthStatus.installerAvailable !== false :
           loginProvider === 'gemini' ? geminiAuthStatus.installerAvailable !== false :
+          loginProvider === 'copilot' ? copilotAuthStatus.installerAvailable !== false :
           true
         }
         installerHint={
@@ -2499,6 +3018,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
           loginProvider === 'cursor' ? cursorAuthStatus.installerHint :
           loginProvider === 'codex' ? codexAuthStatus.installerHint :
           loginProvider === 'gemini' ? geminiAuthStatus.installerHint :
+          loginProvider === 'copilot' ? copilotAuthStatus.installerHint :
           null
         }
         docsUrl={
@@ -2506,6 +3026,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
           loginProvider === 'cursor' ? cursorAuthStatus.docsUrl :
           loginProvider === 'codex' ? codexAuthStatus.docsUrl :
           loginProvider === 'gemini' ? geminiAuthStatus.docsUrl :
+          loginProvider === 'copilot' ? copilotAuthStatus.docsUrl :
           null
         }
         downloadUrl={
@@ -2513,6 +3034,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
           loginProvider === 'cursor' ? cursorAuthStatus.downloadUrl :
           loginProvider === 'codex' ? codexAuthStatus.downloadUrl :
           loginProvider === 'gemini' ? geminiAuthStatus.downloadUrl :
+          loginProvider === 'copilot' ? copilotAuthStatus.downloadUrl :
           null
         }
         onStatusRefresh={() => refreshProviderStatus(loginProvider)}

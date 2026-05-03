@@ -18,6 +18,7 @@ import { api } from '../utils/api';
 import useLocalStorage from '../hooks/useLocalStorage';
 import { useTaskMaster } from '../contexts/TaskMasterContext';
 import JsonTreeViewer from './JsonTreeViewer';
+import { getSessionDisplayTitle } from '../utils/sessionFormatting';
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
@@ -1369,16 +1370,7 @@ function getSessionTagSourceMeta(source) {
 
 function getResearchLabSessionName(session) {
   if (!session) return 'Session';
-  if (session.__provider === 'cursor') {
-    return normalizeString(session.name) || 'Untitled Session';
-  }
-  if (session.__provider === 'codex') {
-    return normalizeString(session.summary || session.name) || 'Codex Session';
-  }
-  if (session.__provider === 'gemini') {
-    return normalizeString(session.summary || session.name) || 'Gemini Session';
-  }
-  return normalizeString(session.summary || session.name) || 'New Session';
+  return normalizeString(getSessionDisplayTitle(session)) || 'New Session';
 }
 
 function getResearchLabSessionTime(session) {

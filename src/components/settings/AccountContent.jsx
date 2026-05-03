@@ -48,6 +48,16 @@ const agentConfig = {
     subtextClass: 'text-blue-700 dark:text-blue-300',
     buttonClass: 'bg-blue-600 hover:bg-blue-700',
   },
+  copilot: {
+    name: 'GitHub Copilot',
+    description: 'GitHub Copilot CLI assistant',
+    cliCommand: 'copilot',
+    bgClass: 'bg-slate-100 dark:bg-slate-800/50',
+    borderClass: 'border-slate-300 dark:border-slate-600',
+    textClass: 'text-slate-900 dark:text-slate-100',
+    subtextClass: 'text-slate-700 dark:text-slate-300',
+    buttonClass: 'bg-slate-800 hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600',
+  },
   openrouter: {
     name: 'OpenRouter',
     description: 'Route to any model via OpenRouter API',

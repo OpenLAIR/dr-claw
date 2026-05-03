@@ -104,6 +104,7 @@ const projectsHaveChanges = (
       serialize(nextProject.cursorSessions) !== serialize(prevProject.cursorSessions) ||
       serialize(nextProject.codexSessions) !== serialize(prevProject.codexSessions) ||
       serialize(nextProject.geminiSessions) !== serialize(prevProject.geminiSessions) ||
+      serialize(nextProject.copilotSessions) !== serialize(prevProject.copilotSessions) ||
       serialize(nextProject.openrouterSessions) !== serialize(prevProject.openrouterSessions) ||
       serialize(nextProject.localSessions) !== serialize(prevProject.localSessions) ||
       serialize(nextProject.nanoSessions) !== serialize(prevProject.nanoSessions)
@@ -117,6 +118,7 @@ const getProjectSessions = (project: Project): ProjectSession[] => {
     ...(project.codexSessions ?? []),
     ...(project.cursorSessions ?? []),
     ...(project.geminiSessions ?? []),
+    ...(project.copilotSessions ?? []),
     ...(project.openrouterSessions ?? []),
     ...(project.localSessions ?? []),
     ...(project.nanoSessions ?? []),
@@ -180,6 +182,7 @@ const applySessionTagsToProject = (
   const nextCursorSessions = applySessionTagsToList(project.cursorSessions, detail, 'cursor');
   const nextCodexSessions = applySessionTagsToList(project.codexSessions, detail, 'codex');
   const nextGeminiSessions = applySessionTagsToList(project.geminiSessions, detail, 'gemini');
+  const nextCopilotSessions = applySessionTagsToList(project.copilotSessions, detail, 'copilot');
   const nextOpenrouterSessions = applySessionTagsToList(project.openrouterSessions, detail, 'openrouter');
   const nextLocalSessions = applySessionTagsToList(project.localSessions, detail, 'local');
   const nextNanoSessions = applySessionTagsToList(project.nanoSessions, detail, 'nano');
@@ -189,6 +192,7 @@ const applySessionTagsToProject = (
     nextCursorSessions === project.cursorSessions &&
     nextCodexSessions === project.codexSessions &&
     nextGeminiSessions === project.geminiSessions &&
+    nextCopilotSessions === project.copilotSessions &&
     nextOpenrouterSessions === project.openrouterSessions &&
     nextLocalSessions === project.localSessions &&
     nextNanoSessions === project.nanoSessions
@@ -202,6 +206,7 @@ const applySessionTagsToProject = (
     cursorSessions: nextCursorSessions,
     codexSessions: nextCodexSessions,
     geminiSessions: nextGeminiSessions,
+    copilotSessions: nextCopilotSessions,
     openrouterSessions: nextOpenrouterSessions,
     localSessions: nextLocalSessions,
     nanoSessions: nextNanoSessions,
@@ -452,6 +457,7 @@ export function useProjectsState({
           cursorSessions: updateSessionList(project.cursorSessions, 'cursor'),
           codexSessions: updateSessionList(project.codexSessions, 'codex'),
           geminiSessions: updateSessionList(project.geminiSessions, 'gemini'),
+          copilotSessions: updateSessionList(project.copilotSessions, 'copilot'),
           openrouterSessions: updateSessionList(project.openrouterSessions, 'openrouter'),
           localSessions: updateSessionList(project.localSessions, 'local'),
           nanoSessions: updateSessionList(project.nanoSessions, 'nano'),
@@ -462,6 +468,7 @@ export function useProjectsState({
             : createdProvider === 'cursor' ? 'cursorSessions'
             : createdProvider === 'codex' ? 'codexSessions'
             : createdProvider === 'gemini' ? 'geminiSessions'
+            : createdProvider === 'copilot' ? 'copilotSessions'
             : createdProvider === 'openrouter' ? 'openrouterSessions'
             : createdProvider === 'local' ? 'localSessions'
             : createdProvider === 'nano' ? 'nanoSessions'
@@ -473,6 +480,8 @@ export function useProjectsState({
             if (!alreadyExists) {
               const fallbackName = createdProvider === 'local'
                 ? 'Local GPU Session'
+                : createdProvider === 'copilot'
+                  ? 'GitHub Copilot Session'
                 : createdProvider === 'nano'
                   ? 'Nano Claude Code Session'
                   : 'New Session';
@@ -669,6 +678,13 @@ export function useProjectsState({
       if (geminiSession) {
         matchedProject = project;
         matchedSession = { ...geminiSession, __provider: 'gemini' };
+        break;
+      }
+
+      const copilotSession = project.copilotSessions?.find((session) => session.id === targetSessionId);
+      if (copilotSession) {
+        matchedProject = project;
+        matchedSession = { ...copilotSession, __provider: 'copilot' };
         break;
       }
 
@@ -930,6 +946,7 @@ export function useProjectsState({
           cursorSessions: filterOut(project.cursorSessions),
           codexSessions: filterOut(project.codexSessions),
           geminiSessions: filterOut(project.geminiSessions),
+          copilotSessions: filterOut(project.copilotSessions),
           openrouterSessions: filterOut(project.openrouterSessions),
           localSessions: filterOut(project.localSessions),
           nanoSessions: filterOut(project.nanoSessions),
