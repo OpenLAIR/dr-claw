@@ -15,7 +15,8 @@
     "claude": "Claude",
     "cursor": "Cursor",
     "codex": "Codex",
-    "gemini": "Gemini"
+    "gemini": "Gemini",
+    "copilot": "GitHub Copilot"
   },
   "error": {
     "retry": "Retry",
@@ -283,6 +284,7 @@
       "anthropic": "by Anthropic",
       "openai": "by OpenAI",
       "google": "by Google",
+      "copilot": "by GitHub",
       "cursorEditor": "AI Code Editor",
       "openrouter": "Any Model via API",
       "local": "Run on Your GPU",
@@ -292,6 +294,7 @@
       "claude": "Ready to use Claude with {{model}}. Start typing your message below.",
       "cursor": "Ready to use Cursor with {{model}}. Start typing your message below.",
       "gemini": "Ready to use Gemini with {{model}}. Start typing your message below.",
+      "copilot": "Ready to use GitHub Copilot with {{model}}. Start typing your message below.",
       "codex": "Ready to use Codex with {{model}}. Start typing your message below.",
       "openrouter": "Ready to use OpenRouter with {{model}}. Start typing your message below.",
       "local": "Ready to use Local GPU with {{model}}. Start typing your message below.",

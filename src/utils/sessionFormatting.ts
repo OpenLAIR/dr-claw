@@ -59,3 +59,33 @@ export const stripInternalContextPrefix = (value: string, returnDefaultOnEmpty =
 
   return result || (returnDefaultOnEmpty ? 'New Session' : null);
 };
+
+type SessionTitleLike = {
+  __provider?: string;
+  title?: string;
+  summary?: string;
+  name?: string;
+};
+
+export const getSessionDisplayTitle = (session: SessionTitleLike | null | undefined): string => {
+  if (!session) {
+    return 'New Session';
+  }
+
+  let rawTitle = '';
+  if (session.__provider === 'cursor') {
+    rawTitle = session.name || session.summary || session.title || 'Untitled Session';
+  } else if (session.__provider === 'codex') {
+    rawTitle = session.summary || session.title || session.name || 'Codex Session';
+  } else if (session.__provider === 'gemini') {
+    rawTitle = session.summary || session.title || session.name || 'Gemini Session';
+  } else if (session.__provider === 'copilot') {
+    rawTitle = session.summary || session.title || session.name || 'GitHub Copilot Session';
+  } else if (session.__provider === 'nano') {
+    rawTitle = session.summary || session.title || session.name || 'Nano Claude Code Session';
+  } else {
+    rawTitle = session.summary || session.title || session.name || 'New Session';
+  }
+
+  return stripInternalContextPrefix(rawTitle) || 'New Session';
+};

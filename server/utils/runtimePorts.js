@@ -122,6 +122,16 @@ export function setRuntimePortSync(kind, port, pid = process.pid) {
     writeRawRuntimePortsSync(rawState);
 }
 
+export function clearRuntimePortSync(kind) {
+    const rawState = readRawRuntimePortsSync();
+    if (!(kind in rawState)) {
+        return;
+    }
+
+    delete rawState[kind];
+    writeRawRuntimePortsSync(rawState);
+}
+
 async function isPortAvailable(port, host) {
     return new Promise((resolve, reject) => {
         const probe = net.createServer();

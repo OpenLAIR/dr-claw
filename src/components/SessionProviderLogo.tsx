@@ -28,6 +28,10 @@ export default function SessionProviderLogo({
     return <GeminiLogo className={className} />;
   }
 
+  if (provider === 'copilot') {
+    return <ClaudeLogo className={className} />;
+  }
+
   if (provider === 'openrouter') {
     return <OpenRouterLogo className={className} />;
   }

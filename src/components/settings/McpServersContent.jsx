@@ -304,6 +304,96 @@ function CodexMcpServers({ servers, onAdd, onEdit, onDelete }) {
   );
 }
 
+function CopilotMcpServers({ servers, onAdd, onEdit, onDelete }) {
+  const { t } = useTranslation('settings');
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <Server className="w-5 h-5 text-blue-500" />
+        <h3 className="text-lg font-medium text-foreground">
+          {t('mcpServers.title')}
+        </h3>
+      </div>
+      <p className="text-sm text-muted-foreground">
+        {t('mcpServers.description.copilot')}
+      </p>
+
+      <div className="flex justify-between items-center">
+        <Button
+          onClick={onAdd}
+          className="bg-blue-600 hover:bg-blue-700 text-white"
+          size="sm"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          {t('mcpServers.addButton')}
+        </Button>
+      </div>
+
+      <div className="space-y-2">
+        {servers.map(server => (
+          <div key={server.id || server.name} className="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  {getTransportIcon(server.type)}
+                  <span className="font-medium text-foreground">{server.name}</span>
+                  <Badge variant="outline" className="text-xs">
+                    {server.type}
+                  </Badge>
+                  <Badge variant="outline" className="text-xs">
+                    {t('mcpServers.scope.user')}
+                  </Badge>
+                </div>
+
+                <div className="text-sm text-muted-foreground space-y-1">
+                  {server.type === 'stdio' && server.config?.command && (
+                    <div>{t('mcpServers.config.command')}: <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded text-xs">{server.config.command}</code></div>
+                  )}
+                  {(server.type === 'sse' || server.type === 'http') && server.config?.url && (
+                    <div>{t('mcpServers.config.url')}: <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded text-xs">{server.config.url}</code></div>
+                  )}
+                  {server.config?.args && server.config.args.length > 0 && (
+                    <div>{t('mcpServers.config.args')}: <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded text-xs">{server.config.args.join(' ')}</code></div>
+                  )}
+                  {server.config?.env && Object.keys(server.config.env).length > 0 && (
+                    <div>{t('mcpServers.config.environment')}: <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded text-xs">{Object.entries(server.config.env).map(([k, v]) => `${k}=${v}`).join(', ')}</code></div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 ml-4">
+                <Button
+                  onClick={() => onEdit(server)}
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-600 hover:text-gray-700"
+                  title={t('mcpServers.actions.edit')}
+                >
+                  <Edit3 className="w-4 h-4" />
+                </Button>
+                <Button
+                  onClick={() => onDelete(server.name)}
+                  variant="ghost"
+                  size="sm"
+                  className="text-red-600 hover:text-red-700"
+                  title={t('mcpServers.actions.delete')}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        ))}
+        {servers.length === 0 && (
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+            {t('mcpServers.empty')}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // Main component
 export default function McpServersContent({ agent, ...props }) {
   if (agent === 'claude') {
@@ -314,6 +404,9 @@ export default function McpServersContent({ agent, ...props }) {
   }
   if (agent === 'codex') {
     return <CodexMcpServers {...props} />;
+  }
+  if (agent === 'copilot') {
+    return <CopilotMcpServers {...props} />;
   }
   return null;
 }

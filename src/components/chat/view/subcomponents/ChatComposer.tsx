@@ -27,7 +27,7 @@ import type { GeminiThinkingModeId } from '../../../../../shared/geminiThinkingS
 import type { AttachedPrompt, PendingPermissionRequest, PermissionMode, Provider, TokenBudget } from '../../types/types';
 import type { ProviderAvailability } from '../../types/types';
 import type { SessionMode, SessionProvider } from '../../../../types/app';
-import { CLAUDE_MODELS, CURSOR_MODELS, CODEX_MODELS, GEMINI_MODELS, LOCAL_MODELS, NANO_CLAUDE_CODE_MODELS, OPENROUTER_MODELS } from '../../../../../shared/modelConstants';
+import { CLAUDE_MODELS, CURSOR_MODELS, CODEX_MODELS, GEMINI_MODELS, GITHUB_COPILOT_MODELS, LOCAL_MODELS, NANO_CLAUDE_CODE_MODELS, OPENROUTER_MODELS } from '../../../../../shared/modelConstants';
 import { authenticatedFetch } from '../../../../utils/api';
 import { isAutoResearchScenario } from '../../utils/autoResearch';
 
@@ -61,6 +61,7 @@ interface SlashCommand {
 const PROVIDERS: ProviderDef[] = [
   { id: 'claude', name: 'Claude Code', accent: 'border-primary', ring: 'ring-primary/15', check: 'bg-primary text-primary-foreground' },
   { id: 'gemini', name: 'Gemini CLI', accent: 'border-blue-500 dark:border-blue-400', ring: 'ring-blue-500/15', check: 'bg-blue-500 text-white' },
+  { id: 'copilot', name: 'GitHub Copilot CLI', accent: 'border-slate-500 dark:border-slate-400', ring: 'ring-slate-500/15', check: 'bg-slate-700 text-white' },
   { id: 'codex', name: 'Codex', accent: 'border-emerald-600 dark:border-emerald-400', ring: 'ring-emerald-600/15', check: 'bg-emerald-600 dark:bg-emerald-500 text-white' },
   { id: 'openrouter', name: 'OpenRouter', accent: 'border-violet-500 dark:border-violet-400', ring: 'ring-violet-500/15', check: 'bg-violet-500 text-white' },
   { id: 'local', name: 'Local GPU', accent: 'border-emerald-500 dark:border-emerald-400', ring: 'ring-emerald-500/15', check: 'bg-emerald-500 text-white' },
@@ -71,16 +72,18 @@ function getModelConfig(p: SessionProvider) {
   if (p === 'claude') return CLAUDE_MODELS;
   if (p === 'codex') return CODEX_MODELS;
   if (p === 'gemini') return GEMINI_MODELS;
+  if (p === 'copilot') return GITHUB_COPILOT_MODELS;
   if (p === 'openrouter') return OPENROUTER_MODELS;
   if (p === 'local') return LOCAL_MODELS;
   if (p === 'nano') return NANO_CLAUDE_CODE_MODELS;
   return CURSOR_MODELS;
 }
 
-function getModelValue(p: SessionProvider, c: string, cu: string, co: string, g: string, or: string, lo: string, na: string) {
+function getModelValue(p: SessionProvider, c: string, cu: string, co: string, g: string, cp: string, or: string, lo: string, na: string) {
   if (p === 'claude') return c;
   if (p === 'codex') return co;
   if (p === 'gemini') return g;
+  if (p === 'copilot') return cp;
   if (p === 'openrouter') return or;
   if (p === 'local') return lo;
   if (p === 'nano') return na;
@@ -102,6 +105,7 @@ interface ChatComposerProps {
   onModeSwitch: () => void;
   codexModel: string;
   geminiModel: string;
+  copilotModel?: string;
   thinkingMode: string;
   setThinkingMode: Dispatch<SetStateAction<string>>;
   codexReasoningEffort: CodexReasoningEffortId;
@@ -166,6 +170,7 @@ interface ChatComposerProps {
   setCursorModel?: (model: string) => void;
   setCodexModel?: (model: string) => void;
   setGeminiModel?: (model: string) => void;
+  setCopilotModel?: (model: string) => void;
   openrouterModel?: string;
   setOpenrouterModel?: (model: string) => void;
   localModel?: string;
@@ -189,6 +194,7 @@ export default function ChatComposer({
   onModeSwitch,
   codexModel,
   geminiModel,
+  copilotModel,
   thinkingMode,
   setThinkingMode,
   codexReasoningEffort,
@@ -253,6 +259,7 @@ export default function ChatComposer({
   setCursorModel,
   setCodexModel,
   setGeminiModel,
+  setCopilotModel,
   openrouterModel: openrouterModelProp,
   setOpenrouterModel,
   localModel: localModelProp,
@@ -285,7 +292,7 @@ export default function ChatComposer({
 
   // Provider/model handling for centered mode
   const sessionProvider = provider as SessionProvider;
-  const currentModel = getModelValue(sessionProvider, claudeModelProp || '', cursorModelProp || '', codexModel, geminiModel, openrouterModelProp || '', localModelProp || '', nanoModelProp || '');
+  const currentModel = getModelValue(sessionProvider, claudeModelProp || '', cursorModelProp || '', codexModel, geminiModel, copilotModel || '', openrouterModelProp || '', localModelProp || '', nanoModelProp || '');
 
   const [ollamaModels, setOllamaModels] = useState<Array<{ value: string; label: string }>>([]);
   const [isLoadingOllamaModels, setIsLoadingOllamaModels] = useState(false);
@@ -352,6 +359,7 @@ export default function ChatComposer({
     if (sessionProvider === 'claude') { setClaudeModel?.(value); localStorage.setItem('claude-model', value); }
     else if (sessionProvider === 'codex') { setCodexModel?.(value); localStorage.setItem('codex-model', value); }
     else if (sessionProvider === 'gemini') { setGeminiModel?.(value); localStorage.setItem('gemini-model', value); }
+    else if (sessionProvider === 'copilot') { setCopilotModel?.(value); localStorage.setItem('copilot-model', value); }
     else if (sessionProvider === 'openrouter') { setOpenrouterModel?.(value); localStorage.setItem('openrouter-model', value); }
     else if (sessionProvider === 'local') { setLocalModel?.(value); localStorage.setItem('local-model', value); }
     else if (sessionProvider === 'nano') { setNanoModel?.(value); localStorage.setItem('nano-claude-code-model', value); }
@@ -619,7 +627,16 @@ export default function ChatComposer({
                   {modelConfig && (
                     <>
                       {(modelConfig as any).ALLOWS_CUSTOM ? (
-                        <OpenRouterModelInput value={currentModel} options={modelConfig.OPTIONS} onChange={handleModelChange} />
+                        <OpenRouterModelInput
+                          value={currentModel}
+                          options={modelConfig.OPTIONS}
+                          onChange={handleModelChange}
+                          storageKey={sessionProvider === 'copilot' ? 'copilot-custom-models' : 'openrouter-custom-models'}
+                          fetchUrl={sessionProvider === 'copilot' ? '/api/copilot/models' : '/api/settings/openrouter-models'}
+                          searchPlaceholder={sessionProvider === 'copilot' ? 'Search or enter Copilot model...' : 'Search models...'}
+                          customModelPlaceholder={sessionProvider === 'copilot' ? 'e.g. gpt-5.2' : 'e.g. provider/model-name'}
+                          addCustomLabel={sessionProvider === 'copilot' ? 'Add Copilot model' : 'Add custom model'}
+                        />
                       ) : (modelConfig as any).IS_LOCAL && modelConfig.OPTIONS.length === 0 ? (
                         <span
                           className="text-[10px] text-muted-foreground/70 px-2 py-0.5 border border-border/50 rounded-lg"

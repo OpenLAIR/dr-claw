@@ -107,6 +107,22 @@ const PROVIDER_INSTALLERS = {
       ],
     },
   },
+  copilot: {
+    displayName: 'GitHub Copilot CLI',
+    docsUrl: 'https://docs.github.com/en/copilot/how-tos/copilot-cli/cli-getting-started',
+    fallbackDownloadUrl: 'https://docs.github.com/en/copilot/how-tos/copilot-cli/cli-getting-started',
+    commands: {
+      darwin: [
+        { bin: 'brew', args: ['install', 'copilot-cli'], label: 'brew install copilot-cli' },
+      ],
+      linux: [
+        { bin: 'npm', args: ['install', '-g', '@github/copilot'], label: 'npm install -g @github/copilot' },
+      ],
+      win32: [
+        { bin: 'winget', args: ['install', 'GitHub.Copilot'], label: 'winget install GitHub.Copilot' },
+      ],
+    },
+  },
 };
 
 function buildCliInstallHint(agent) {
@@ -128,6 +144,8 @@ function buildCliInstallHint(agent) {
       return 'Set OPENROUTER_API_KEY in your .env file. Get a key at https://openrouter.ai/keys';
     case 'nano':
       return 'nano-claude-code is not on PATH. Install from https://github.com/OpenLAIR/nano-claude-code or set NANO_CLAUDE_CODE_COMMAND to the executable.';
+    case 'copilot':
+      return 'GitHub Copilot CLI is not installed. Install @github/copilot or open the official getting-started guide.';
     default:
       return 'Required CLI is not installed. Install it first, then retry login.';
   }
@@ -242,6 +260,76 @@ function buildStatusPayload(result, agent) {
   };
 }
 
+function parseJsonc(content) {
+  let result = '';
+  let inString = false;
+  let stringQuote = '';
+  let escaped = false;
+  let inLineComment = false;
+  let inBlockComment = false;
+
+  for (let index = 0; index < content.length; index += 1) {
+    const char = content[index];
+    const nextChar = content[index + 1];
+
+    if (inLineComment) {
+      if (char === '\n') {
+        inLineComment = false;
+        result += char;
+      }
+      continue;
+    }
+
+    if (inBlockComment) {
+      if (char === '*' && nextChar === '/') {
+        inBlockComment = false;
+        index += 1;
+      }
+      continue;
+    }
+
+    if (inString) {
+      result += char;
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+      if (char === '\\') {
+        escaped = true;
+        continue;
+      }
+      if (char === stringQuote) {
+        inString = false;
+        stringQuote = '';
+      }
+      continue;
+    }
+
+    if ((char === '"' || char === "'")) {
+      inString = true;
+      stringQuote = char;
+      result += char;
+      continue;
+    }
+
+    if (char === '/' && nextChar === '/') {
+      inLineComment = true;
+      index += 1;
+      continue;
+    }
+
+    if (char === '/' && nextChar === '*') {
+      inBlockComment = true;
+      index += 1;
+      continue;
+    }
+
+    result += char;
+  }
+
+  return JSON.parse(result);
+}
+
 router.get('/providers', async (_req, res) => {
   try {
     const statuses = await Promise.all([
@@ -249,6 +337,7 @@ router.get('/providers', async (_req, res) => {
       checkCursorStatus().then((result) => ['cursor', buildStatusPayload(result, 'cursor')]),
       checkCodexCredentials().then((result) => ['codex', buildStatusPayload(result, 'codex')]),
       checkGeminiCredentials().then((result) => ['gemini', buildStatusPayload(result, 'gemini')]),
+      checkGitHubCopilotCredentials().then((result) => ['copilot', buildStatusPayload(result, 'copilot')]),
     ]);
 
     res.json({ providers: Object.fromEntries(statuses) });
@@ -309,6 +398,8 @@ router.post('/install/:provider', async (req, res) => {
       ? checkCursorStatus
       : provider === 'codex'
         ? checkCodexCredentials
+        : provider === 'copilot'
+          ? checkGitHubCopilotCredentials
         : provider === 'nano'
           ? checkNanoCliForInstall
           : checkGeminiCredentials;
@@ -465,6 +556,20 @@ router.get('/nano/status', async (req, res) => {
     }, 'nano'));
   } catch (error) {
     console.error('Error checking Nano Claude Code status:', error);
+    res.status(500).json({
+      authenticated: false,
+      email: null,
+      error: error.message,
+    });
+  }
+});
+
+router.get('/copilot/status', async (req, res) => {
+  try {
+    const result = await checkGitHubCopilotCredentials();
+    res.json(buildStatusPayload(result, 'copilot'));
+  } catch (error) {
+    console.error('Error checking GitHub Copilot auth status:', error);
     res.status(500).json({
       authenticated: false,
       email: null,
@@ -688,6 +793,114 @@ async function checkClaudeCredentials() {
       checkClaudeCredentialsFile({ cliAvailable: true, cliCommand: resolvedCliCommand }).then(resolve);
     });
   });
+}
+
+async function checkGitHubCopilotCredentials() {
+  let cliCommand = process.env.GITHUB_COPILOT_CLI_PATH || process.env.COPILOT_CLI_PATH || 'copilot';
+  try {
+    if (isCliMockedMissing('copilot')) {
+      return {
+        authenticated: false,
+        email: null,
+        error: 'GitHub Copilot CLI not installed (mocked)',
+        cliAvailable: false,
+        cliCommand,
+        installHint: buildCliInstallHint('copilot')
+      };
+    }
+
+    const resolvedCliCommand = await resolveAvailableCliCommand({
+      envVarName: 'GITHUB_COPILOT_CLI_PATH',
+      legacyEnvVarNames: ['COPILOT_CLI_PATH'],
+      defaultCommands: ['copilot'],
+      appendWindowsSuffixes: true
+    });
+    cliCommand = resolvedCliCommand || cliCommand;
+
+    if (!resolvedCliCommand) {
+      return {
+        authenticated: false,
+        email: null,
+        error: 'GitHub Copilot CLI not installed',
+        cliAvailable: false,
+        cliCommand,
+        installHint: buildCliInstallHint('copilot')
+      };
+    }
+
+    const homeDir = os.homedir();
+    const copilotConfigDir = process.env.COPILOT_CONFIG_DIR || path.join(homeDir, '.copilot');
+    const candidateConfigs = [
+      {
+        label: 'config.json',
+        path: path.join(copilotConfigDir, 'config.json'),
+        parse: (config) => {
+          const lastLoggedInUser = config?.lastLoggedInUser;
+          const firstLoggedInUser = Array.isArray(config?.loggedInUsers) ? config.loggedInUsers[0] : null;
+          const user = lastLoggedInUser || firstLoggedInUser;
+
+          if (user?.login || user?.host) {
+            return {
+              authenticated: true,
+              email: user.login || user.host || 'Authenticated',
+            };
+          }
+
+          return null;
+        },
+      },
+      {
+        label: 'legacy hosts.json',
+        path: path.join(homeDir, '.config', 'github-copilot', 'hosts.json'),
+        parse: (config) => {
+          const githubCom = config?.['github.com'];
+          if (githubCom?.oauth_token || githubCom?.user) {
+            return {
+              authenticated: true,
+              email: githubCom.user || 'Authenticated',
+            };
+          }
+
+          return null;
+        },
+      },
+    ];
+
+    for (const candidate of candidateConfigs) {
+      try {
+        const content = await fs.readFile(candidate.path, 'utf8');
+        const config = parseJsonc(content);
+        const result = candidate.parse(config);
+        if (result?.authenticated) {
+          return {
+            ...result,
+            cliAvailable: true,
+            cliCommand,
+          };
+        }
+      } catch (error) {
+        if (error.code !== 'ENOENT') {
+          console.warn(`[DEBUG] Copilot: Failed to read ${candidate.label}:`, error.message);
+        }
+      }
+    }
+
+    return {
+      authenticated: false,
+      email: null,
+      error: 'GitHub Copilot CLI not authenticated',
+      cliAvailable: true,
+      cliCommand,
+    };
+  } catch (error) {
+    return {
+      authenticated: false,
+      email: null,
+      error: error.message,
+      cliAvailable: true,
+      cliCommand,
+    };
+  }
 }
 
 async function checkClaudeCredentialsFile({ cliAvailable = true, cliCommand = 'claude' } = {}) {

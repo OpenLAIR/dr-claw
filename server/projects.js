@@ -1055,6 +1055,20 @@ function mapIndexedSessionToProjectSession(session, provider) {
     };
   }
 
+  if (provider === 'copilot') {
+    return {
+      id: session.id,
+      summary: baseName || 'GitHub Copilot Session',
+      name: baseName || 'GitHub Copilot Session',
+      createdAt,
+      lastActivity,
+      messageCount,
+      mode,
+      tags,
+      __provider: 'copilot',
+    };
+  }
+
   return {
     id: session.id,
     summary: baseName || 'New Session',
@@ -1079,6 +1093,8 @@ function getSessionPlaceholderName(provider) {
       return 'OpenRouter Session';
     case 'nano':
       return 'Nano Claude Code Session';
+    case 'copilot':
+      return 'GitHub Copilot Session';
     default:
       return 'New Session';
   }
@@ -1280,6 +1296,45 @@ async function reconcileLocalGPUSessionIndex(projectPath, options = {}) {
   }
 }
 
+async function reconcileGitHubCopilotSessionIndex(projectPath, options = {}) {
+  const { sessionId = null, projectName = null } = options;
+  if (!sessionId) return;
+  const resolvedProjectName = projectName || encodeProjectPath(projectPath);
+  const sessionFile = path.join(os.homedir(), '.dr-claw', 'github-copilot-sessions', `${sessionId}.jsonl`);
+  try {
+    const raw = await fs.readFile(sessionFile, 'utf-8');
+    const lines = raw.trim().split('\n').filter(Boolean);
+    let displayName = null;
+    let messageCount = 0;
+    let lastActivity = null;
+    for (const line of lines) {
+      try {
+        const entry = JSON.parse(line);
+        if (entry.role === 'user' && !displayName) {
+          const text = String(entry.content || '').replace(/\s*\[Context:[^\]]*\]\s*/gi, '').trim();
+          displayName = text.slice(0, 100) || null;
+        }
+        if (entry.role === 'user' || entry.role === 'assistant') {
+          messageCount++;
+        }
+        if (entry.ts) lastActivity = entry.ts;
+      } catch {}
+    }
+    const { sessionDb } = await import('./database/db.js');
+    sessionDb.upsertSession(
+      sessionId,
+      resolvedProjectName,
+      'copilot',
+      displayName || 'GitHub Copilot Session',
+      lastActivity || new Date().toISOString(),
+      messageCount,
+      null,
+    );
+  } catch (err) {
+    console.warn(`[GitHub Copilot] Failed to reconcile session ${sessionId}:`, err.message);
+  }
+}
+
 async function reconcileCodexSessionIndex(projectPath, options = {}) {
   const { limit = 0, sessionId = null, previousSessionId = null, projectName = null } = options;
   const sessions = await getCodexSessions(projectPath, {
@@ -1402,6 +1457,7 @@ async function getProjects(userId, progressCallback = null) {
       const openrouterSessions = projectSessions.filter((session) => session.provider === 'openrouter');
       const localSessions = projectSessions.filter((session) => session.provider === 'local');
       const nanoSessions = projectSessions.filter((session) => session.provider === 'nano');
+      const copilotSessions = projectSessions.filter((session) => session.provider === 'copilot');
 
       project.sessions = claudeSessions.slice(0, 5).map((session) => mapIndexedSessionToProjectSession(session, 'claude'));
       project.sessionMeta = {
@@ -1414,6 +1470,7 @@ async function getProjects(userId, progressCallback = null) {
       project.openrouterSessions = openrouterSessions.slice(0, 5).map((session) => mapIndexedSessionToProjectSession(session, 'openrouter'));
       project.localSessions = localSessions.slice(0, 5).map((session) => mapIndexedSessionToProjectSession(session, 'local'));
       project.nanoSessions = nanoSessions.slice(0, 5).map((session) => mapIndexedSessionToProjectSession(session, 'nano'));
+      project.copilotSessions = copilotSessions.slice(0, 5).map((session) => mapIndexedSessionToProjectSession(session, 'copilot'));
 
       const taskmasterResult = await detectTaskMasterFolder(actualProjectDir).catch(() => null);
 
@@ -2014,6 +2071,46 @@ function nanoSessionJsonToMessages(data) {
 // Get messages for a specific session with pagination support
 async function getSessionMessages(projectName, sessionId, limit = null, offset = 0, provider = 'claude', userId = null) {
   console.log(`[DEBUG] getSessionMessages - project: ${projectName}, session: ${sessionId}, provider: ${provider}`);
+  if (provider === 'copilot') {
+    const copilotSessionFile = path.join(os.homedir(), '.dr-claw', 'github-copilot-sessions', `${sessionId}.jsonl`);
+    console.log(`[DEBUG] Reading GitHub Copilot session file: ${copilotSessionFile}`);
+    try {
+      await fs.access(copilotSessionFile);
+      const messages = [];
+      const raw = await fs.readFile(copilotSessionFile, 'utf-8');
+      for (const line of raw.trim().split('\n').filter(Boolean)) {
+        try {
+          const entry = JSON.parse(line);
+          if (entry.role === 'system') continue;
+          if (entry.role === 'user' || entry.role === 'assistant') {
+            messages.push({
+              type: 'message',
+              role: entry.role,
+              content: entry.content || '',
+              timestamp: entry.ts,
+            });
+          }
+        } catch {}
+      }
+
+      const total = messages.length;
+      if (limit === null) return messages;
+
+      const startIndex = Math.max(0, total - offset - limit);
+      const endIndex = total - offset;
+      return {
+        messages: messages.slice(startIndex, endIndex),
+        total,
+        hasMore: startIndex > 0,
+        offset,
+        limit,
+      };
+    } catch (e) {
+      console.warn(`Could not read GitHub Copilot session ${sessionId}:`, e.message);
+      return limit === null ? [] : { messages: [], total: 0, hasMore: false };
+    }
+  }
+
   if (provider === 'gemini') {
     const geminiSessionFile = path.join(os.homedir(), '.gemini', 'sessions', `${sessionId}.jsonl`);
     console.log(`[DEBUG] Reading Gemini session file: ${geminiSessionFile}`);
@@ -2419,6 +2516,32 @@ async function renameProject(projectName, newDisplayName, userId = null) {
 async function deleteSession(projectName, sessionId, provider = 'claude') {
   const { sessionDb } = await import('./database/db.js');
   const indexedSession = sessionDb.getSessionById(sessionId);
+
+  if (provider === 'copilot') {
+    const copilotSessionFile = path.join(os.homedir(), '.dr-claw', 'github-copilot-sessions', `${sessionId}.jsonl`);
+    let deletedFile = false;
+    try {
+      await fs.unlink(copilotSessionFile);
+      deletedFile = true;
+    } catch (e) {
+      if (e?.code !== 'ENOENT') {
+        console.error(`[GitHub Copilot] Failed to delete session ${sessionId}:`, e.message);
+        throw new Error(`Failed to delete GitHub Copilot session: ${e.message}`);
+      }
+    }
+
+    const deletedIndex = indexedSession?.provider === 'copilot' || deletedFile;
+    if (deletedIndex) {
+      sessionDb.deleteSession(sessionId);
+    }
+
+    if (deletedFile || deletedIndex) {
+      console.log(`[GitHub Copilot] Deleted session ${sessionId}${deletedFile ? ` file: ${copilotSessionFile}` : ' from index only'}`);
+      return true;
+    }
+
+    throw new Error(`GitHub Copilot session ${sessionId} not found in file system or index`);
+  }
 
   if (provider === 'gemini') {
     const geminiSessionFile = path.join(os.homedir(), '.gemini', 'sessions', `${sessionId}.jsonl`);
@@ -4371,6 +4494,7 @@ export {
   reconcileClaudeSessionIndex,
   reconcileCodexSessionIndex,
   reconcileGeminiSessionIndex,
+  reconcileGitHubCopilotSessionIndex,
   reconcileOpenRouterSessionIndex,
   reconcileLocalGPUSessionIndex,
   ensureProjectSkillLinks,

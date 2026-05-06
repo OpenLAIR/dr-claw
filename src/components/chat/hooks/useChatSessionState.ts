@@ -59,6 +59,7 @@ function resolveSessionProviderForLoad(session: ProjectSession | null, project: 
   if (project.nanoSessions?.some((s) => s.id === id)) return 'nano';
   if (project.localSessions?.some((s) => s.id === id)) return 'local';
   if (project.openrouterSessions?.some((s) => s.id === id)) return 'openrouter';
+  if (project.copilotSessions?.some((s) => s.id === id)) return 'copilot';
   if (project.geminiSessions?.some((s) => s.id === id)) return 'gemini';
   if (project.codexSessions?.some((s) => s.id === id)) return 'codex';
   if (project.cursorSessions?.some((s) => s.id === id)) return 'cursor';
@@ -472,9 +473,12 @@ export function useChatSessionState({
           setTokenBudget(null);
           
           // Only set isLoading to false if it's NOT in the processingSessions set
+          // and there is no persisted in-flight timer carried over from a temporary session.
+          const hasPersistedInFlightTimer = Boolean(readSessionTimerStart(selectedSession.id));
           const isProcessing =
             processingSessions?.has(selectedSession.id) ||
-            pendingStatusValidationSessionIdRef.current === selectedSession.id;
+            pendingStatusValidationSessionIdRef.current === selectedSession.id ||
+            hasPersistedInFlightTimer;
           if (!isProcessing) {
             setIsLoading(false);
           }

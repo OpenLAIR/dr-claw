@@ -45,7 +45,7 @@ export const getSessionDate = (session: SessionWithProvider): Date => {
     return new Date(session.createdAt || 0);
   }
 
-  if (session.__provider === 'codex' || session.__provider === 'gemini' || session.__provider === 'openrouter' || session.__provider === 'nano') {
+  if (session.__provider === 'codex' || session.__provider === 'gemini' || session.__provider === 'copilot' || session.__provider === 'openrouter' || session.__provider === 'nano') {
     return new Date(session.lastActivity || session.createdAt || 0);
   }
 
@@ -60,6 +60,8 @@ export const getSessionName = (session: SessionWithProvider, t: TFunction): stri
     name = session.summary || session.name || t('projects.codexSession');
   } else if (session.__provider === 'gemini') {
     name = session.summary || session.name || 'Gemini Session';
+  } else if (session.__provider === 'copilot') {
+    name = session.summary || session.name || 'GitHub Copilot Session';
   } else if (session.__provider === 'nano') {
     name = session.summary || session.name || 'Nano Claude Code Session';
   } else {
@@ -89,7 +91,7 @@ export const getSessionTime = (session: SessionWithProvider): string => {
     return String(session.createdAt || '');
   }
 
-  if (session.__provider === 'codex' || session.__provider === 'gemini' || session.__provider === 'openrouter' || session.__provider === 'nano') {
+  if (session.__provider === 'codex' || session.__provider === 'gemini' || session.__provider === 'copilot' || session.__provider === 'openrouter' || session.__provider === 'nano') {
     return String(session.lastActivity || session.createdAt || '');
   }
 
@@ -143,6 +145,12 @@ export const getAllSessions = (
     __projectName: project.name,
   }));
 
+  const copilotSessions = (project.copilotSessions || []).map((session) => ({
+    ...session,
+    __provider: 'copilot' as const,
+    __projectName: project.name,
+  }));
+
   const openrouterSessions = (project.openrouterSessions || []).map((session) => ({
     ...session,
     __provider: 'openrouter' as const,
@@ -161,7 +169,7 @@ export const getAllSessions = (
     __projectName: project.name,
   }));
 
-  return [...claudeSessions, ...cursorSessions, ...codexSessions, ...geminiSessions, ...openrouterSessions, ...localSessions, ...nanoSessions].sort(
+  return [...claudeSessions, ...cursorSessions, ...codexSessions, ...geminiSessions, ...copilotSessions, ...openrouterSessions, ...localSessions, ...nanoSessions].sort(
     (a, b) => getSessionDate(b).getTime() - getSessionDate(a).getTime(),
   );
 };

@@ -18,6 +18,10 @@ const agentConfig = {
     name: 'Gemini',
     color: 'blue',
   },
+  copilot: {
+    name: 'GitHub Copilot',
+    color: 'gray',
+  },
   openrouter: {
     name: 'OpenRouter',
     color: 'purple',

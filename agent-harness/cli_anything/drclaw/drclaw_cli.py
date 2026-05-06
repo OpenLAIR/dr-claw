@@ -103,8 +103,9 @@ _SESSION_COLLECTIONS = {
     "cursor": "cursorSessions",
     "codex": "codexSessions",
     "gemini": "geminiSessions",
+    "copilot": "copilotSessions",
 }
-_PROVIDER_CHOICES = ["claude", "cursor", "codex", "gemini"]
+_PROVIDER_CHOICES = ["claude", "cursor", "codex", "gemini", "copilot"]
 _OPENCLAW_SKILL_DIR_NAME = "drclaw"
 _SKILL_MD_FILENAME = "SKILL.md"
 _HARNESS_ROOT = Path(__file__).parent.parent.parent

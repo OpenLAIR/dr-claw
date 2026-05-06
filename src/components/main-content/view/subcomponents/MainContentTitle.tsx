@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import SessionProviderLogo from '../../../SessionProviderLogo';
 import type { AppTab, Project, ProjectSession } from '../../../../types/app';
-import { stripInternalContextPrefix } from '../../../../utils/sessionFormatting';
+import { getSessionDisplayTitle } from '../../../../utils/sessionFormatting';
 
 type MainContentTitleProps = {
   activeTab: AppTab;
@@ -51,11 +51,7 @@ function getTabTitle(activeTab: AppTab, shouldShowTasksTab: boolean, t: (key: st
 }
 
 function getSessionTitle(session: ProjectSession): string {
-  const name = session.__provider === 'cursor' 
-    ? (session.name as string) || 'Untitled Session'
-    : (session.summary as string) || 'New Session';
-    
-  return stripInternalContextPrefix(name) || 'New Session';
+  return getSessionDisplayTitle(session);
 }
 
 export default function MainContentTitle({

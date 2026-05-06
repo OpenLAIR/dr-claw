@@ -132,6 +132,22 @@ export const NANO_CLAUDE_CODE_MODELS = {
 };
 
 /**
+ * GitHub Copilot CLI Models
+ *
+ * Copilot CLI supports --model, but available model catalogs can vary across
+ * accounts and providers. Keep a safe default and allow custom model entry.
+ */
+export const GITHUB_COPILOT_MODELS = {
+  OPTIONS: [
+    { value: 'auto', label: 'Auto' },
+  ],
+
+  ALLOWS_CUSTOM: true,
+
+  DEFAULT: 'auto'
+};
+
+/**
  * Local GPU Models (open-source models for self-hosted deployment)
  */
 export const LOCAL_MODELS = {

@@ -13,10 +13,12 @@ _PROVIDER_COMMAND_TYPES = {
     "cursor": "cursor-command",
     "codex": "codex-command",
     "gemini": "gemini-command",
+    "copilot": "copilot-command",
     "nano": "nano-command",
 }
 _COMPLETE_EVENT_TYPES = {
     "claude-complete",
+    "copilot-complete",
     "codex-complete",
     "gemini-complete",
     "complete",
@@ -27,15 +29,18 @@ _ERROR_EVENT_TYPES = {
     "cursor-error",
     "codex-error",
     "gemini-error",
+    "copilot-error",
     "error",
 }
 _WATCH_EVENT_TYPES = {
     "session-created",
     "claude-complete",
+    "copilot-complete",
     "codex-complete",
     "gemini-complete",
     "session-complete",
     "session-status",
+    "copilot-status",
     "active-sessions",
     "projects_updated",
     "taskmaster-project-updated",
