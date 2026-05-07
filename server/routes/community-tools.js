@@ -77,11 +77,11 @@ router.post('/configure', async (req, res) => {
 
     const results = { steps: [], errors: [] };
 
-    // ── Step 1: Write API keys to ~/.openclaw/community-tools.json ──
+    // ── Step 1: Write API keys to ~/.dr-claw/community-tools.json ──
     // (NOT project .env — writing .env triggers Vite restart and kills the fetch)
     if (apiKeys && Object.keys(apiKeys).length > 0) {
       try {
-        const configDir = path.join(os.homedir(), '.openclaw');
+        const configDir = path.join(os.homedir(), '.dr-claw');
         const configPath = path.join(configDir, 'community-tools.json');
         await fs.mkdir(configDir, { recursive: true });
 
@@ -89,7 +89,16 @@ router.post('/configure', async (req, res) => {
         try {
           existing = JSON.parse(await fs.readFile(configPath, 'utf8'));
         } catch {
-          // file doesn't exist yet
+          // Migrate from legacy ~/.openclaw/ if it exists
+          const legacyPath = path.join(os.homedir(), '.openclaw', 'community-tools.json');
+          try {
+            const legacyData = await fs.readFile(legacyPath, 'utf8');
+            existing = JSON.parse(legacyData);
+            await fs.writeFile(configPath, legacyData, { mode: 0o600 });
+            console.log('[community-tools] Migrated config from ~/.openclaw/ to ~/.dr-claw/');
+          } catch {
+            // Neither file exists — start fresh
+          }
         }
 
         // Merge keys into config
@@ -112,7 +121,7 @@ router.post('/configure', async (req, res) => {
           .join('\n') + '\n';
         await fs.writeFile(rcPath, rcContent, { mode: 0o600 });
 
-        results.steps.push({ step: 'env', status: 'ok', message: `Saved ${Object.keys(apiKeys).length} key(s) to ~/.openclaw/community-tools.json` });
+        results.steps.push({ step: 'env', status: 'ok', message: `Saved ${Object.keys(apiKeys).length} key(s) to ~/.dr-claw/community-tools.json` });
       } catch (err) {
         results.errors.push({ step: 'env', error: err.message });
       }
