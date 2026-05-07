@@ -8,7 +8,8 @@
       "biorxiv-database",
       "aris-idea-discovery",
       "aris-research-lit",
-      "ds-scout"
+      "ds-scout",
+      "managing-obsidian-notes"
     ],
     "byTaskType": {
       "analysis": [
@@ -43,7 +44,8 @@
       "academic-researcher",
       "aris-idea-discovery",
       "aris-idea-creator",
-      "ds-idea"
+      "ds-idea",
+      "managing-obsidian-notes"
     ],
     "byTaskType": {
       "analysis": [
@@ -82,7 +84,8 @@
       "aris-run-experiment",
       "autoresearch",
       "ds-experiment",
-      "ds-baseline"
+      "ds-baseline",
+      "managing-obsidian-notes"
     ],
     "byTaskType": {
       "implementation": [
@@ -127,7 +130,8 @@
       "aris-rebuttal",
       "ds-write",
       "ds-review",
-      "ds-rebuttal"
+      "ds-rebuttal",
+      "managing-obsidian-notes"
     ],
     "byTaskType": {
       "writing": [
@@ -165,7 +169,8 @@
     "base": [
       "making-academic-presentations",
       "aris-paper-poster",
-      "aris-paper-slides"
+      "aris-paper-slides",
+      "managing-obsidian-notes"
     ],
     "byTaskType": {
       "scripting": [

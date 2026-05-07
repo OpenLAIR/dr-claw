@@ -55,6 +55,9 @@ skills/
 ├─ Promotion
 │  └─ making-academic-presentations         Slides, narration, TTS audio, and demo-video generation
 │
+├─ Knowledge Management
+│  └─ managing-obsidian-notes               Obsidian vault CRUD via CLI, vault bootstrap, project scaffolding
+│
 └─ Domain-Specific
    └─ bioinformatics-init-analysis          CyTOF / scRNA-seq / flow cytometry pipeline
 ```
