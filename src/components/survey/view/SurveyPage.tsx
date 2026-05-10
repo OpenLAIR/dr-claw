@@ -2,6 +2,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import { normalizeLatexDelimiters } from '../../../utils/latexNormalizer';
 import {
   BookOpen,
   FileText,
@@ -250,7 +253,12 @@ function PreviewContent({
       {file.previewKind === 'markdown' && preview.content ? (
         <div className="min-h-[42rem] overflow-auto rounded-xl border border-border/50 bg-background/60 p-6 shadow-sm">
           <div className="prose prose-sm max-w-none dark:prose-invert">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{preview.content}</ReactMarkdown>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm, remarkMath]}
+              rehypePlugins={[rehypeKatex]}
+            >
+              {normalizeLatexDelimiters(preview.content)}
+            </ReactMarkdown>
           </div>
         </div>
       ) : null}
