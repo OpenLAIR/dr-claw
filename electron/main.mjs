@@ -738,7 +738,7 @@ function createWindow(baseUrl) {
     backgroundColor: '#0b1220',
     autoHideMenuBar: !isMac,
     icon: iconPath,
-    titleBarStyle: 'default',
+    titleBarStyle: isMac ? 'hiddenInset' : 'default',
     webPreferences: {
       contextIsolation: true,
       sandbox: true,
@@ -847,11 +847,18 @@ function createWindow(baseUrl) {
 
 async function boot() {
   try {
-    const iconPath = path.join(resolveAppRoot(), 'build', 'icon.png');
-    if (isMac && fs.existsSync(iconPath)) {
-      const dockIcon = nativeImage.createFromPath(iconPath);
-      if (!dockIcon.isEmpty()) {
-        app.dock.setIcon(dockIcon);
+    if (isMac) {
+      // In packaged builds the bundled .icns gets the macOS squircle mask
+      // automatically, so skip the runtime override.  In dev mode there's no
+      // .app bundle, so set the dock icon from the pre-masked PNG.
+      if (!app.isPackaged) {
+        const dockIconPath = path.join(resolveAppRoot(), 'build', 'icon-dock.png');
+        if (fs.existsSync(dockIconPath)) {
+          const dockIcon = nativeImage.createFromPath(dockIconPath);
+          if (!dockIcon.isEmpty()) {
+            app.dock.setIcon(dockIcon);
+          }
+        }
       }
     }
 
