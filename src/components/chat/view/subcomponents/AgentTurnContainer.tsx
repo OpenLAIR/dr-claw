@@ -1,5 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import MessageComponent from './MessageComponent';
+import RevertAgentChangesButton from './RevertAgentChangesButton';
+import { getAgentModifiedFiles } from '../../utils/agentModifiedFiles';
 import type { AgentTurnItem } from '../../utils/groupAgentTurns';
 import type { ChatMessage } from '../../types/types';
 import type { Project } from '../../../../types/app';
@@ -108,6 +110,10 @@ export default function AgentTurnContainer({
 
   const hasIntermediate = turn.intermediateMessages.length > 0;
 
+  // Files the agent modified in this turn — used to offer one-click revert.
+  // Only shown when the turn has finished streaming to avoid racing the agent.
+  const modifiedFiles = getAgentModifiedFiles(turn);
+
   // Build summary text
   const summaryParts: string[] = [];
   
@@ -170,6 +176,11 @@ export default function AgentTurnContainer({
       {fallbackPreview && renderMessage(fallbackPreview, 0, null, false)}
       {turn.textMessages.map((msg, i) =>
         renderMessage(msg, i, i > 0 ? turn.textMessages[i - 1] : null, false)
+      )}
+      {modifiedFiles.length > 0 && (
+        <div className="flex justify-end px-3 pt-1">
+          <RevertAgentChangesButton files={modifiedFiles} project={selectedProject} />
+        </div>
       )}
     </div>
   );
