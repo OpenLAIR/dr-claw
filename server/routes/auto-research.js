@@ -12,6 +12,7 @@ import { spawnGemini, abortGeminiSession, isGeminiSessionActive } from '../gemin
 import { queryOpenRouter, abortOpenRouterSession, isOpenRouterSessionActive } from '../openrouter.js';
 import { sendAutoResearchCompletionEmail } from '../utils/auto-research-mailer.js';
 import { getGeminiApiKeyForUser, withGeminiApiKeyEnv } from '../utils/geminiApiKey.js';
+import { enqueueTelemetryEvent } from '../telemetry.js';
 
 const router = express.Router();
 
@@ -47,6 +48,34 @@ function normalizePermissionMode(permissionMode) {
     return permissionMode;
   }
   return AUTO_RESEARCH_DEFAULT_PERMISSION_MODE;
+}
+
+function hashProjectPath(projectPath) {
+  if (!projectPath) return null;
+  return crypto.createHash('sha256').update(String(projectPath)).digest('hex').slice(0, 16);
+}
+
+function emitRunTelemetry(name, run, extra = {}) {
+  if (!run) return;
+  try {
+    enqueueTelemetryEvent({
+      name,
+      source: 'auto-research-backend',
+      data: {
+        run_id: run.id,
+        user_id: run.user_id ?? null,
+        project_name: run.project_name ?? null,
+        project_path_hash: hashProjectPath(run.project_path),
+        provider: run.provider ?? null,
+        status: run.status ?? null,
+        total_tasks: run.total_tasks ?? null,
+        completed_tasks: run.completed_tasks ?? null,
+        ...extra,
+      },
+    });
+  } catch (error) {
+    console.error('[AutoResearch] telemetry emit failed:', error?.message || error);
+  }
 }
 
 function abortActiveSession(provider, sessionId) {
@@ -380,27 +409,43 @@ async function runAutoResearch(runId, userId, projectName, projectPath) {
         throw new Error(`Task ${task.id} did not transition to done after execution`);
       }
 
-      autoResearchDb.updateRun(runId, {
+      const afterTaskRun = autoResearchDb.updateRun(runId, {
         completedTasks: pipelineState.completedTaskCount,
         totalTasks: pipelineState.tasks.length,
         currentTaskId: null,
       });
+
+      emitRunTelemetry('autoresearch_run_task_completed', afterTaskRun, {
+        task_id_hash: task.id ? hashProjectPath(String(task.id)) : null,
+        task_stage: task.stage ?? null,
+      });
     }
 
-    autoResearchDb.updateRun(runId, {
+    const completedRun = autoResearchDb.updateRun(runId, {
       status: 'completed',
       currentTaskId: null,
       completedTasks: pipelineState.completedTaskCount,
       totalTasks: pipelineState.tasks.length,
       finishedAt: new Date().toISOString(),
     });
+
+    emitRunTelemetry('autoresearch_run_finished', completedRun, {
+      outcome: 'completed',
+      duration_ms: runState.startedAt ? Date.now() - runState.startedAt : null,
+    });
   } catch (error) {
     const isCancelled = runState.cancelRequested || /cancelled by user/i.test(String(error?.message || ''));
-    autoResearchDb.updateRun(runId, {
+    const finishedRun = autoResearchDb.updateRun(runId, {
       status: isCancelled ? 'cancelled' : 'failed',
       error: error.message,
       currentTaskId: null,
       finishedAt: new Date().toISOString(),
+    });
+
+    emitRunTelemetry('autoresearch_run_finished', finishedRun, {
+      outcome: isCancelled ? 'cancelled' : 'failed',
+      duration_ms: runState.startedAt ? Date.now() - runState.startedAt : null,
+      error_type: error?.name || 'Error',
     });
   } finally {
     activeRuns.delete(runId);
@@ -498,6 +543,13 @@ router.post('/:projectName/start', async (req, res) => {
       provider,
       model,
       permissionMode,
+      startedAt: Date.now(),
+    });
+
+    emitRunTelemetry('autoresearch_run_started', run, {
+      model,
+      permission_mode: permissionMode,
+      actionable_task_count: pipelineState.actionableTaskCount,
     });
 
     void runAutoResearch(runId, userId, projectName, projectPath);
@@ -524,6 +576,12 @@ router.post('/:projectName/cancel', async (req, res) => {
 
     const runtime = activeRuns.get(activeRun.id);
     const sessionStillActive = isRunSessionStillActive(activeRun);
+
+    emitRunTelemetry('autoresearch_run_cancel_requested', activeRun, {
+      had_active_runtime: Boolean(runtime),
+      session_still_active: sessionStillActive,
+    });
+
     if (runtime) {
       runtime.cancelRequested = true;
       if (runtime.sessionId || activeRun.session_id) {

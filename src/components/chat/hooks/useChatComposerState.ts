@@ -43,6 +43,7 @@ import { type SlashCommand, useSlashCommands } from './useSlashCommands';
 import type { Project, ProjectSession, SessionProvider } from '../../../types/app';
 import { escapeRegExp } from '../utils/chatFormatting';
 import { isAutoResearchScenario } from '../utils/autoResearch';
+import { emitAutoresearchEvent } from '../../../utils/autoresearchTelemetry';
 import type { SessionMode } from '../../../types/app';
 import type { BtwOverlayState } from '../view/subcomponents/BtwOverlay';
 
@@ -1132,9 +1133,25 @@ export function useChatComposerState({
       }
 
       // Auto-bypass permissions for autoresearch workflows
-      const effectivePermissionMode = isAutoResearchScenario(attachedPrompt?.scenarioId)
+      const isAutoresearchMessage = isAutoResearchScenario(attachedPrompt?.scenarioId);
+      const effectivePermissionMode = isAutoresearchMessage
         ? 'bypassPermissions'
         : permissionMode;
+
+      if (isAutoresearchMessage) {
+        const scenarioId = attachedPrompt?.scenarioId ?? null;
+        const commandFromScenario = scenarioId?.startsWith('autoresearch-')
+          ? scenarioId.slice('autoresearch-'.length)
+          : null;
+        emitAutoresearchEvent('autoresearch_message_sent', {
+          scenario_id: scenarioId,
+          command: commandFromScenario,
+          input_length: currentInput.trim().length,
+          has_attachments: currentAttachedFiles.length > 0,
+          attachment_count: currentAttachedFiles.length,
+          provider,
+        });
+      }
 
       const selectedThinkingMode = thinkingModes.find((mode: { id: string; prefix?: string }) => mode.id === thinkingMode);
       if (selectedThinkingMode && selectedThinkingMode.prefix) {
