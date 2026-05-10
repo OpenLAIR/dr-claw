@@ -64,11 +64,17 @@ async function persistNanoSessionMetadata(sessionId, projectPath, sessionMode) {
       sessionId,
       encodeProjectPath(projectPath),
       'nano',
-      'Nano Claude Code Session',
+      null,
       new Date().toISOString(),
       0,
       { sessionMode: sessionMode || 'research', projectPath },
     );
+    // upsertSession preserves existing display_name when incoming is null, so
+    // stale placeholder rows from older builds need an explicit clear.
+    const existing = sessionDb.getSessionById(sessionId);
+    if (existing && existing.display_name === 'Nano Claude Code Session') {
+      sessionDb.updateSessionName(sessionId, null);
+    }
   } catch (error) {
     console.warn('[Nano] Failed to persist session metadata:', error.message);
   }

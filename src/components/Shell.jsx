@@ -191,6 +191,19 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
           if (fitAddon.current && terminal.current && ws.current && ws.current.readyState === WebSocket.OPEN) {
             fitAddon.current.fit();
 
+            // Gemini TUI keeps conversation state in memory and never re-reads its
+            // session file, so messages sent from the chat page won't appear in
+            // this running TUI. Surface that asymmetry up-front.
+            if (
+              !isPlainShellRef.current &&
+              selectedSessionRef.current &&
+              getPreferredProvider(selectedSessionRef.current) === 'gemini'
+            ) {
+              terminal.current.write(
+                '\x1b[33m[\u26A0 Gemini TUI won\'t see messages sent from the chat page until you exit and re-resume this session]\x1b[0m\r\n'
+              );
+            }
+
             ws.current.send(JSON.stringify({
               type: 'init',
               projectPath: selectedProjectRef.current.fullPath || selectedProjectRef.current.path,
