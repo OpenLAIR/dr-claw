@@ -90,7 +90,7 @@
     "@xterm/xterm": "^5.5.0",
     "adm-zip": "^0.5.16",
     "bcryptjs": "^3.0.2",
-    "better-sqlite3": "^12.2.0",
+    "better-sqlite3": "^12.9.0",
     "chokidar": "^4.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -124,7 +124,8 @@
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7",
     "tailwind-merge": "^3.3.1",
-    "ws": "^8.14.2"
+    "ws": "^8.14.2",
+    "zustand": "^5.0.12"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",

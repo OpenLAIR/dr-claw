@@ -1,6 +1,6 @@
 import { Badge } from '../../../ui/badge';
 import { Button } from '../../../ui/button';
-import { Check, Clock, Edit2, Trash2, X } from 'lucide-react';
+import { Check, Clock, Edit2, Loader2, Trash2, X } from 'lucide-react';
 import type { TFunction } from 'i18next';
 import { cn } from '../../../../lib/utils';
 import { formatTimeAgo } from '../../../../utils/dateUtils';
@@ -8,6 +8,7 @@ import type { Project, ProjectSession, SessionProvider } from '../../../../types
 import type { SessionWithProvider, TouchHandlerFactory } from '../../types/types';
 import { createSessionViewModel } from '../../utils/utils';
 import SessionProviderLogo from '../../../SessionProviderLogo';
+import { useSessionTabsStore } from '../../../../stores/useSessionTabsStore';
 
 const STAGE_TAG_TONE_BY_KEY: Record<string, string> = {
   survey: 'border-sky-200/80 bg-sky-50 text-sky-700 dark:border-sky-900/70 dark:bg-sky-950/30 dark:text-sky-300',
@@ -59,6 +60,10 @@ export default function SidebarSessionItem({
 }: SidebarSessionItemProps) {
   const sessionView = createSessionViewModel(session, currentTime, t);
   const isSelected = selectedSession?.id === session.id;
+  const bgStatus = useSessionTabsStore((s) => s.backgroundStatus[session.id]);
+  const isBackgroundLoading = bgStatus?.isLoading ?? false;
+  const hasUnread = bgStatus?.hasUnread ?? false;
+  const bgTokenCount = bgStatus?.tokenCount ?? 0;
 
   const selectMobileSession = () => {
     onProjectSelect(project);
@@ -190,21 +195,44 @@ export default function SidebarSessionItem({
                   {formatTimeAgo(sessionView.sessionTime, currentTime, t)}
                 </span>
                 <div className={`${rightMetaClassName} group-hover:opacity-0 transition-opacity`}>
-                  <Badge
-                    variant="secondary"
-                    className="text-xs px-1 py-0 min-w-[1.5rem] justify-center"
-                  >
-                    {sessionView.messageCount}
-                  </Badge>
-                  <Badge
-                    variant="outline"
-                    className="text-[10px] px-1.5 py-0"
-                  >
-                    {modeBadgeLabel}
-                  </Badge>
-                  <span className="opacity-70">
-                    <SessionProviderLogo provider={session.__provider} className="w-3 h-3" />
-                  </span>
+                  {isBackgroundLoading ? (
+                    <>
+                      <Loader2 className="w-3 h-3 animate-spin text-amber-500" />
+                      {bgTokenCount > 0 && (
+                        <span className="text-[10px] tabular-nums text-amber-600 dark:text-amber-400">
+                          {bgTokenCount > 999 ? `${Math.round(bgTokenCount / 1000)}k` : bgTokenCount}
+                        </span>
+                      )}
+                    </>
+                  ) : hasUnread ? (
+                    <>
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
+                      <Badge
+                        variant="secondary"
+                        className="text-xs px-1 py-0 min-w-[1.5rem] justify-center"
+                      >
+                        {sessionView.messageCount}
+                      </Badge>
+                    </>
+                  ) : (
+                    <>
+                      <Badge
+                        variant="secondary"
+                        className="text-xs px-1 py-0 min-w-[1.5rem] justify-center"
+                      >
+                        {sessionView.messageCount}
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] px-1.5 py-0"
+                      >
+                        {modeBadgeLabel}
+                      </Badge>
+                      <span className="opacity-70">
+                        <SessionProviderLogo provider={session.__provider} className="w-3 h-3" />
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
               {stageTagBadges}

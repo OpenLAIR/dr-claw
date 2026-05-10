@@ -13,6 +13,7 @@ import { useSessionProtection } from '../../hooks/useSessionProtection';
 import { useProjectsState } from '../../hooks/useProjectsState';
 import { useInteractionTelemetry } from '../../hooks/useInteractionTelemetry';
 import { useUiPreferences } from '../../hooks/useUiPreferences';
+import { useSessionTabsStore } from '../../stores/useSessionTabsStore';
 import {
   ensureTelemetryDefaultEnabled,
   isTelemetryEnabled,
@@ -150,6 +151,17 @@ export default function AppContent() {
       window.removeEventListener(TELEMETRY_SETTINGS_EVENT, syncTelemetrySetting);
     };
   }, [isConnected, sendMessage]);
+
+  // Sync session tab store -> selectedSession when user clicks a tab in the tab bar
+  const tabStoreActiveId = useSessionTabsStore((s) => s.activeTabId);
+  const tabStoreTabs = useSessionTabsStore((s) => s.tabs);
+  useEffect(() => {
+    if (!tabStoreActiveId) return;
+    if (selectedSession?.id === tabStoreActiveId) return;
+    const tab = tabStoreTabs.find((t) => t.id === tabStoreActiveId);
+    if (!tab) return;
+    handleNavigateToSession(tab.id, tab.provider, tab.projectName);
+  }, [tabStoreActiveId, tabStoreTabs, selectedSession?.id, handleNavigateToSession]);
 
   useEffect(() => {
     if (!isDesktop || !onDesktopEvent) {
