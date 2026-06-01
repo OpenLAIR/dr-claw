@@ -1990,6 +1990,117 @@ async function unlinkNanoSessionFilesEverywhere(projectName, sessionId) {
   return deleted;
 }
 
+// Gemini TUI writes live conversation state to
+//   ~/.gemini/tmp/{projectHash}/chats/session-*.json
+// on every turn, but only flushes ~/.gemini/sessions/{uuid}.jsonl periodically.
+// These helpers ingest the tmp/chats blob so chat views can mirror what the TUI
+// is actually showing the user.
+const GEMINI_TMP_CHATS_ROOT = path.join(os.homedir(), '.gemini', 'tmp');
+
+/** Extract sessionId from a tmp/chats JSON file without loading the full parse into callers. */
+async function readGeminiTmpChatSessionId(filePath) {
+  try {
+    const raw = await fs.readFile(filePath, 'utf-8');
+    const parsed = JSON.parse(raw);
+    const sid = parsed?.sessionId;
+    return typeof sid === 'string' && sid.length > 0 ? sid : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Locate the tmp/chats JSON blob that matches the given sessionId (scans all project subdirs). */
+async function findGeminiTmpChatFile(sessionId) {
+  if (!sessionId || typeof sessionId !== 'string') return null;
+  let projectDirs;
+  try {
+    projectDirs = await fs.readdir(GEMINI_TMP_CHATS_ROOT, { withFileTypes: true });
+  } catch {
+    return null;
+  }
+  // Filename suffix "session-YYYY-MM-DD...-{first8}.json" narrows the scan.
+  const shortId = sessionId.slice(0, 8);
+  for (const entry of projectDirs) {
+    if (!entry.isDirectory()) continue;
+    const chatsDir = path.join(GEMINI_TMP_CHATS_ROOT, entry.name, 'chats');
+    let chatFiles;
+    try {
+      chatFiles = await fs.readdir(chatsDir);
+    } catch {
+      continue;
+    }
+    for (const fname of chatFiles) {
+      if (!fname.startsWith('session-') || !fname.endsWith('.json')) continue;
+      if (shortId && !fname.includes(shortId)) continue;
+      const full = path.join(chatsDir, fname);
+      const sid = await readGeminiTmpChatSessionId(full);
+      if (sid === sessionId) {
+        let mtime = 0;
+        try {
+          const stat = await fs.stat(full);
+          mtime = stat.mtimeMs;
+        } catch {}
+        return { filePath: full, mtime };
+      }
+    }
+  }
+  return null;
+}
+
+/** Convert tmp/chats message list into the same shape produced by the jsonl branch. */
+function convertGeminiTmpChatsToMessages(data) {
+  const rawMessages = Array.isArray(data?.messages) ? data.messages : [];
+  const out = [];
+  for (const m of rawMessages) {
+    const timestamp = m.timestamp || '';
+    const kind = m.type;
+    if (kind === 'user') {
+      const parts = Array.isArray(m.content) ? m.content : [];
+      const text = parts.map((p) => (typeof p?.text === 'string' ? p.text : '')).join('');
+      out.push({ type: 'message', role: 'user', content: text, timestamp });
+      continue;
+    }
+    if (kind === 'gemini') {
+      const content = typeof m.content === 'string' ? m.content : '';
+      if (content) {
+        out.push({ type: 'message', role: 'assistant', content, timestamp });
+      }
+      if (Array.isArray(m.toolCalls)) {
+        for (const tc of m.toolCalls) {
+          let toolInput = '{}';
+          try {
+            toolInput = typeof tc.args === 'string' ? tc.args : JSON.stringify(tc.args ?? {});
+          } catch {
+            toolInput = '{}';
+          }
+          out.push({
+            type: 'tool_use',
+            timestamp: tc.timestamp || timestamp,
+            toolName: tc.name || tc.displayName || 'unknown',
+            toolInput,
+            toolCallId: tc.id,
+          });
+          // Tool results are nested inside toolCalls[].result[].functionResponse.response
+          const resultEntries = Array.isArray(tc.result) ? tc.result : [];
+          for (const r of resultEntries) {
+            const output = r?.functionResponse?.response?.output;
+            if (typeof output === 'string' && output.length) {
+              out.push({
+                type: 'tool_result',
+                output,
+                tool_call_id: tc.id,
+                toolCallId: tc.id,
+                timestamp: tc.timestamp || timestamp,
+              });
+            }
+          }
+        }
+      }
+    }
+  }
+  return out;
+}
+
 /** Maps nano-claude-code session.json (title, messages[]) to Dr. Claw chat message shape. */
 function nanoSessionJsonToMessages(data) {
   const rawMessages = Array.isArray(data.messages) ? data.messages : [];
@@ -2017,6 +2128,38 @@ async function getSessionMessages(projectName, sessionId, limit = null, offset =
   if (provider === 'gemini') {
     const geminiSessionFile = path.join(os.homedir(), '.gemini', 'sessions', `${sessionId}.jsonl`);
     console.log(`[DEBUG] Reading Gemini session file: ${geminiSessionFile}`);
+
+    // Check if the TUI's live tmp/chats blob is more recent than the committed jsonl.
+    // When it is, prefer the tmp/chats content so chat reflects what the user sees
+    // in the shell. Otherwise fall through to the jsonl reader below.
+    const tmpChat = await findGeminiTmpChatFile(sessionId);
+    let jsonlMtime = 0;
+    try {
+      const stat = await fs.stat(geminiSessionFile);
+      jsonlMtime = stat.mtimeMs;
+    } catch {}
+    if (tmpChat && tmpChat.mtime >= jsonlMtime) {
+      try {
+        const raw = await fs.readFile(tmpChat.filePath, 'utf-8');
+        const data = JSON.parse(raw);
+        const messages = convertGeminiTmpChatsToMessages(data);
+        console.log(`[DEBUG] Loaded ${messages.length} messages from Gemini tmp/chats: ${tmpChat.filePath}`);
+        const total = messages.length;
+        if (limit === null) return messages;
+        const startIndex = Math.max(0, total - offset - limit);
+        const endIndex = total - offset;
+        return {
+          messages: messages.slice(startIndex, endIndex),
+          total,
+          hasMore: startIndex > 0,
+          offset,
+          limit,
+        };
+      } catch (err) {
+        console.warn(`[Gemini] Failed to read tmp/chats ${tmpChat.filePath}:`, err.message);
+      }
+    }
+
     try {
       await fs.access(geminiSessionFile);
       const messages = [];
@@ -3451,7 +3594,10 @@ async function buildGeminiSessionsIndex() {
       const indexedMessageCount = Number(indexedSession?.message_count ?? indexedSession?.messageCount ?? 0);
       const matchedProjectPaths = new Set();
 
-      let explicitTitle = indexedSession?.display_name || null;
+      const storedDisplayName = indexedSession?.display_name || null;
+      // Treat the legacy "Untitled Session" placeholder as empty so firstMessageText
+      // fallback can run for rows seeded by older builds.
+      let explicitTitle = storedDisplayName === 'Untitled Session' ? null : storedDisplayName;
       let firstMessageText = null;
       let messageCount = 0;
       // Recovery order: DB metadata -> JSONL metadata -> context marker -> high-confidence heuristic -> default.
@@ -4371,6 +4517,8 @@ export {
   reconcileClaudeSessionIndex,
   reconcileCodexSessionIndex,
   reconcileGeminiSessionIndex,
+  readGeminiTmpChatSessionId,
+  GEMINI_TMP_CHATS_ROOT,
   reconcileOpenRouterSessionIndex,
   reconcileLocalGPUSessionIndex,
   ensureProjectSkillLinks,
