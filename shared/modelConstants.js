@@ -13,6 +13,8 @@
 export const CLAUDE_MODELS = {
   // Models in SDK format (what the actual SDK accepts)
   OPTIONS: [
+    { value: 'claude-fable-5', label: 'Fable 5' },
+    { value: 'claude-fable-5[1m]', label: 'Fable 5 [1M]' },
     { value: 'sonnet', label: 'Sonnet' },
     { value: 'opus', label: 'Opus' },
     { value: 'haiku', label: 'Haiku' },
@@ -67,7 +69,7 @@ export const CODEX_MODELS = {
     { value: 'o4-mini', label: 'O4-mini' }
   ],
 
-  DEFAULT: 'gpt-5.4'
+  DEFAULT: 'gpt-5.5'
 };
 
 /**

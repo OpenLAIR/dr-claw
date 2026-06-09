@@ -241,6 +241,8 @@ function getContextWindowForModel(modelName) {
     'opusplan':            200000,
     'sonnet[1m]':          1000000,
     // API format names
+    'claude-fable-5[1m]':          1000000,
+    'claude-fable-5':              200000,
     'claude-opus-4-7':             200000,
     'claude-opus-4-6':             200000,
     'claude-opus-4-20250918':      200000,
