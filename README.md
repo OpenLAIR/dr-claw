@@ -278,8 +278,8 @@ Install at least one agent CLI (if you haven't already):
 
 | Agent | Install | Auth |
 |-------|---------|------|
-| Claude Code | `npm install -g @anthropic-ai/claude-code` | `claude` → follow OAuth prompt |
-| Gemini CLI | `npm install -g @google/gemini-cli` | `gemini` → Google sign-in, or `export GOOGLE_API_KEY=...` |
+| Claude Code | `npm install -g @anthropic-ai/claude-code@2.1.170` | `claude` → follow OAuth prompt |
+| Gemini CLI | `npm install -g @google/gemini-cli@0.46.0` | `gemini` → Google sign-in, or `export GOOGLE_API_KEY=...` |
 | Codex CLI | `npm install -g @openai/codex` | `codex login`, or `export OPENAI_API_KEY=...` |
 | **OpenRouter** | No CLI needed | `export OPENROUTER_API_KEY=sk-or-...` (get a key at [openrouter.ai/keys](https://openrouter.ai/keys)) |
 
