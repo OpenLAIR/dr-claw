@@ -24,6 +24,7 @@ import { classifyError, classifySDKError } from '../shared/errorClassifier.js';
 import { buildTempAttachmentFilename } from './utils/imageAttachmentFiles.js';
 import { buildCodexRealtimeTokenBudget } from './utils/sessionTokenUsage.js';
 import { expandSkillCommand } from './utils/skillExpander.js';
+import { resolveCodexWorkingDirectory } from './utils/codexWorkingDir.js';
 import { CODEX_MODELS } from '../shared/modelConstants.js';
 import { BTW_SYSTEM_PROMPT, buildBtwUserMessage } from './utils/btw.js';
 
@@ -367,6 +368,10 @@ export async function queryCodex(command, options = {}, ws) {
   } = options;
 
   const workingDirectory = cwd || projectPath || process.cwd();
+  // Codex embeds this path verbatim into an HTTP header; non-ASCII paths crash
+  // the request. Hand the SDK an ASCII symlink while keeping the real path for
+  // dr-claw's own indexing/tags. ASCII paths are returned unchanged.
+  const codexWorkingDirectory = await resolveCodexWorkingDirectory(workingDirectory);
   const { sandboxMode, approvalPolicy } = mapPermissionModeToCodexOptions(permissionMode);
 
   let codex;
@@ -393,7 +398,7 @@ export async function queryCodex(command, options = {}, ws) {
 
     // Thread options with sandbox and approval settings
     const threadOptions = {
-      workingDirectory,
+      workingDirectory: codexWorkingDirectory,
       skipGitRepoCheck: true,
       sandboxMode,
       approvalPolicy,

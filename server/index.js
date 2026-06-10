@@ -42,7 +42,7 @@ import pty from 'node-pty';
 import fetch from 'node-fetch';
 import mime from 'mime-types';
 
-import { getProjects, getTrashedProjects, getSessions, getSessionMessages, renameProject, renameSession, deleteSession, deleteProject, restoreProject, deleteTrashedProject, addProjectManually, extractProjectDirectory, clearProjectDirectoryCache } from './projects.js';
+import { getProjects, getTrashedProjects, getSessions, getSessionMessages, renameProject, renameSession, deleteSession, deleteProject, restoreProject, deleteTrashedProject, addProjectManually, extractProjectDirectory, resolveClaudeProjectDirs, clearProjectDirectoryCache } from './projects.js';
 import { getProjectTokenUsageSummary } from './project-token-usage.js';
 import { queryClaudeSDK, abortClaudeSDKSession, isClaudeSDKSessionActive, getClaudeSDKSessionStartTime, getActiveClaudeSDKSessions, resolveToolApproval } from './claude-sdk.js';
 import { spawnCursor, abortCursorSession, isCursorSessionActive, getCursorSessionStartTime, getActiveCursorSessions } from './cursor-cli.js';
@@ -2835,29 +2835,31 @@ app.get('/api/projects/:projectName/sessions/:sessionId/token-usage', authentica
       return res.status(500).json({ error: 'Failed to determine project path' });
     }
 
-    // Construct the JSONL file path
-    // Claude stores session files in ~/.claude/projects/[encoded-project-path]/[session-id].jsonl
-    // The encoding replaces /, spaces, ~, and _ with -
-    const encodedPath = projectPath.replace(/[\\/:\s~_]/g, '-');
-    const projectDir = path.join(homeDir, '.claude', 'projects', encodedPath);
+    // Locate the session JSONL among the CLI session directories for this project
+    const projectDirs = await resolveClaudeProjectDirs(projectName, projectPath);
 
-    const jsonlPath = path.join(projectDir, `${safeSessionId}.jsonl`);
+    let fileContent = null;
+    for (const projectDir of projectDirs) {
+      const jsonlPath = path.join(projectDir, `${safeSessionId}.jsonl`);
 
-    // Constrain to projectDir
-    const rel = path.relative(path.resolve(projectDir), path.resolve(jsonlPath));
-    if (rel.startsWith('..') || path.isAbsolute(rel)) {
-      return res.status(400).json({ error: 'Invalid path' });
+      // Constrain to projectDir
+      const rel = path.relative(path.resolve(projectDir), path.resolve(jsonlPath));
+      if (rel.startsWith('..') || path.isAbsolute(rel)) {
+        return res.status(400).json({ error: 'Invalid path' });
+      }
+
+      try {
+        fileContent = await fsPromises.readFile(jsonlPath, 'utf8');
+        break;
+      } catch (error) {
+        if (error.code !== 'ENOENT') {
+          throw error; // Re-throw other errors to be caught by outer try-catch
+        }
+      }
     }
 
-    // Read and parse the JSONL file
-    let fileContent;
-    try {
-      fileContent = await fsPromises.readFile(jsonlPath, 'utf8');
-    } catch (error) {
-      if (error.code === 'ENOENT') {
-        return res.status(404).json({ error: 'Session file not found', path: jsonlPath });
-      }
-      throw error; // Re-throw other errors to be caught by outer try-catch
+    if (fileContent === null) {
+      return res.status(404).json({ error: 'Session file not found' });
     }
     const lines = fileContent.trim().split('\n');
 
