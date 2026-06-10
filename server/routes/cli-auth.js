@@ -27,7 +27,7 @@ const PROVIDER_INSTALLERS = {
         { bin: 'brew', args: ['install', 'claude-code'], label: 'brew install claude-code' },
       ],
       linux: [
-        { bin: 'npm', args: ['install', '-g', '@anthropic-ai/claude-code'], label: 'npm install -g @anthropic-ai/claude-code' },
+        { bin: 'npm', args: ['install', '-g', '@anthropic-ai/claude-code@2.1.170'], label: 'npm install -g @anthropic-ai/claude-code@2.1.170' },
       ],
       win32: [
         { bin: 'winget', args: ['install', '--id', 'Anthropic.ClaudeCode', '-e'], label: 'winget install Anthropic.ClaudeCode' },
@@ -69,13 +69,13 @@ const PROVIDER_INSTALLERS = {
     fallbackDownloadUrl: 'https://github.com/google-gemini/gemini-cli',
     commands: {
       darwin: [
-        { bin: 'npm', args: ['install', '-g', '@google/gemini-cli'], label: 'npm install -g @google/gemini-cli' },
+        { bin: 'npm', args: ['install', '-g', '@google/gemini-cli@0.46.0'], label: 'npm install -g @google/gemini-cli@0.46.0' },
       ],
       linux: [
-        { bin: 'npm', args: ['install', '-g', '@google/gemini-cli'], label: 'npm install -g @google/gemini-cli' },
+        { bin: 'npm', args: ['install', '-g', '@google/gemini-cli@0.46.0'], label: 'npm install -g @google/gemini-cli@0.46.0' },
       ],
       win32: [
-        { bin: 'npm.cmd', args: ['install', '-g', '@google/gemini-cli'], label: 'npm install -g @google/gemini-cli' },
+        { bin: 'npm.cmd', args: ['install', '-g', '@google/gemini-cli@0.46.0'], label: 'npm install -g @google/gemini-cli@0.46.0' },
       ],
     },
   },
