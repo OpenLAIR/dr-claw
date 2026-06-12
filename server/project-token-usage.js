@@ -4,7 +4,7 @@ import os from 'os';
 import path from 'path';
 import readline from 'readline';
 
-import { encodeProjectPath, getCodexSessions, getGeminiSessions } from './projects.js';
+import { getCodexSessions, getGeminiSessions, resolveClaudeProjectDirs } from './projects.js';
 
 const CACHE_TTL_MS = 5_000;
 
@@ -80,15 +80,17 @@ function remapCurrentProjectPathToLegacy(projectPath) {
   );
 }
 
-function getClaudeProjectDirs(projectRef) {
-  const projectDirs = new Set();
+async function getClaudeProjectDirs(projectRef) {
+  const projectDirs = new Set(
+    await resolveClaudeProjectDirs(projectRef?.name || null, projectRef?.fullPath || null),
+  );
 
   if (projectRef?.fullPath) {
-    projectDirs.add(path.join(os.homedir(), '.claude', 'projects', encodeProjectPath(projectRef.fullPath)));
-
     const legacyProjectPath = remapCurrentProjectPathToLegacy(projectRef.fullPath);
     if (legacyProjectPath) {
-      projectDirs.add(path.join(os.homedir(), '.claude', 'projects', encodeProjectPath(legacyProjectPath)));
+      for (const projectDir of await resolveClaudeProjectDirs(null, legacyProjectPath)) {
+        projectDirs.add(projectDir);
+      }
     }
   }
 
@@ -144,7 +146,7 @@ function getClaudeUsageSnapshot(entry) {
 
 async function summarizeClaudeProject(projectRef, bounds) {
   const totals = createEmptyUsageTotals();
-  const projectDirs = getClaudeProjectDirs(projectRef);
+  const projectDirs = await getClaudeProjectDirs(projectRef);
   const jsonlFiles = (
     await Promise.all(projectDirs.map((projectDir) => collectJsonlFiles(projectDir)))
   ).flat();

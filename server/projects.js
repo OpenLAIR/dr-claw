@@ -545,9 +545,18 @@ async function detectTaskMasterFolder(projectPath) {
 // Cache for extracted project directories
 const projectDirectoryCache = new Map();
 
+// Reverse index of Claude CLI session directories: real project path -> dir names
+// under ~/.claude/projects. Built lazily, invalidated together with the directory cache.
+let claudeDirIndexPromise = null;
+
+function invalidateClaudeDirIndex() {
+  claudeDirIndexPromise = null;
+}
+
 // Clear cache when needed (called when project files change)
 function clearProjectDirectoryCache() {
   projectDirectoryCache.clear();
+  invalidateClaudeDirIndex();
 }
 
 // Load project configuration file
@@ -955,6 +964,65 @@ async function extractProjectDirectory(projectName) {
   }
 }
 
+async function buildClaudeDirIndex() {
+  const claudeProjectsRoot = path.join(os.homedir(), '.claude', 'projects');
+  const index = new Map();
+
+  let entries;
+  try {
+    entries = await fs.readdir(claudeProjectsRoot, { withFileTypes: true });
+  } catch (_) {
+    return index;
+  }
+
+  for (const entry of entries) {
+    if (!entry.isDirectory()) {
+      continue;
+    }
+    const resolvedPath = await extractProjectDirectory(entry.name).catch(() => null);
+    if (!resolvedPath) {
+      continue;
+    }
+    const key = path.resolve(resolvedPath);
+    const dirNames = index.get(key) || [];
+    dirNames.push(entry.name);
+    index.set(key, dirNames);
+  }
+
+  return index;
+}
+
+// Resolve the Claude CLI session directories for a project. The CLI encodes the
+// cwd into a directory name under ~/.claude/projects with its own lossy scheme
+// that can change between CLI versions, so instead of recomputing that encoding
+// we discover directories by the cwd recorded inside their jsonl files. Returns
+// absolute paths; may be empty (no sessions yet) or contain several directories
+// (historic encodings of the same path).
+async function resolveClaudeProjectDirs(projectName, projectPath = null) {
+  const claudeProjectsRoot = path.join(os.homedir(), '.claude', 'projects');
+  const dirNames = new Set();
+
+  // Projects discovered by scanning ~/.claude/projects are named after the
+  // directory itself, so a same-name directory always belongs to the project.
+  if (projectName && await pathExists(path.join(claudeProjectsRoot, projectName))) {
+    dirNames.add(projectName);
+  }
+
+  const resolvedPath = projectPath
+    || (projectName ? await extractProjectDirectory(projectName).catch(() => null) : null);
+  if (resolvedPath) {
+    if (!claudeDirIndexPromise) {
+      claudeDirIndexPromise = buildClaudeDirIndex();
+    }
+    const index = await claudeDirIndexPromise;
+    for (const dirName of index.get(path.resolve(resolvedPath)) || []) {
+      dirNames.add(dirName);
+    }
+  }
+
+  return [...dirNames].map((dirName) => path.join(claudeProjectsRoot, dirName));
+}
+
 async function mapWithConcurrency(items, concurrency, mapper) {
   const results = new Array(items.length);
   let nextIndex = 0;
@@ -1153,24 +1221,38 @@ async function reconcileIndexedSessionFromSource(projectName, provider, parsedSe
   });
 }
 
+async function findClaudeSessionFile(projectDirs, sessionId) {
+  for (const projectDir of projectDirs) {
+    const candidate = path.join(projectDir, `${sessionId}.jsonl`);
+    if (await pathExists(candidate)) {
+      return candidate;
+    }
+  }
+  return null;
+}
+
 async function reconcileClaudeSessionIndex(projectName, targetSessionId = null) {
   if (targetSessionId) {
-    const projectDir = path.join(os.homedir(), '.claude', 'projects', projectName);
-    const sessionFile = path.join(projectDir, `${targetSessionId}.jsonl`);
     const { sessionDb } = await import('./database/db.js');
+    const projectPath = await extractProjectDirectory(projectName).catch(() => null);
 
-    try {
-      await fs.access(sessionFile);
-    } catch (error) {
-      if (error?.code === 'ENOENT') {
-        return { sessions: [], hasMore: false, total: 0, session: null };
-      }
-      throw error;
+    let projectDirs = await resolveClaudeProjectDirs(projectName, projectPath);
+    let sessionFile = await findClaudeSessionFile(projectDirs, targetSessionId);
+
+    if (!sessionFile) {
+      // The CLI may have just created a brand-new directory for this project
+      // that isn't in the reverse index yet — rebuild once before giving up.
+      invalidateClaudeDirIndex();
+      projectDirs = await resolveClaudeProjectDirs(projectName, projectPath);
+      sessionFile = await findClaudeSessionFile(projectDirs, targetSessionId);
+    }
+
+    if (!sessionFile) {
+      return { sessions: [], hasMore: false, total: 0, session: null };
     }
 
     const dbSessions = sessionDb.getSessionsByProject(projectName);
     const dbSessionMap = new Map(dbSessions.filter((session) => session.provider === 'claude').map((session) => [session.id, session]));
-    const projectPath = await extractProjectDirectory(projectName).catch(() => null);
     const result = await parseJsonlSessions(sessionFile, projectName, dbSessionMap);
     const session = (result.sessions || []).find((item) => item.id === targetSessionId) || null;
 
@@ -1476,43 +1558,55 @@ async function getTrashedProjects(userId = null) {
 }
 
 async function getSessions(projectName, limit = 5, offset = 0, userId = null) {
-  const projectDir = path.join(os.homedir(), '.claude', 'projects', projectName);
   const { sessionDb } = await import('./database/db.js');
 
   try {
-    // Check if the project directory exists before trying to read it
-    try {
-      await fs.access(projectDir);
-    } catch (err) {
-      if (err.code === 'ENOENT') {
-        // No Claude sessions for this project yet, which is fine for manual projects
-        return { sessions: [], hasMore: false, total: 0 };
+    const projectPath = await extractProjectDirectory(projectName).catch(() => null);
+    const projectDirs = await resolveClaudeProjectDirs(projectName, projectPath);
+
+    // Collect session files from every directory the CLI may have used for this project
+    const jsonlFilePaths = [];
+    for (const projectDir of projectDirs) {
+      let files;
+      try {
+        files = await fs.readdir(projectDir);
+      } catch (err) {
+        if (err.code === 'ENOENT') {
+          continue;
+        }
+        throw err;
       }
-      throw err;
+      for (const file of files) {
+        if (file.endsWith('.jsonl') && !file.startsWith('agent-')) {
+          jsonlFilePaths.push(path.join(projectDir, file));
+        }
+      }
     }
 
-    const files = await fs.readdir(projectDir);
-    const jsonlFiles = files.filter(file => file.endsWith('.jsonl') && !file.startsWith('agent-'));
-
-    if (jsonlFiles.length === 0) {
+    if (jsonlFilePaths.length === 0) {
+      // No Claude sessions for this project yet, which is fine for manual projects
       return { sessions: [], hasMore: false, total: 0 };
     }
 
     // Fetch indexed sessions from database - filter by userId?
     // Usually sessions inherit project ownership, but we store it anyway.
-    const dbSessions = sessionDb.getSessionsByProject(projectName);
+    // Placeholder rows written at spawn time are keyed by dr-claw's own encoding
+    // of the project path, which can differ from the name of a directory-derived
+    // project — query both keys.
+    const dbSessions = [...sessionDb.getSessionsByProject(projectName)];
+    if (projectPath) {
+      const altProjectName = encodeProjectPath(projectPath);
+      if (altProjectName !== projectName) {
+        dbSessions.push(...sessionDb.getSessionsByProject(altProjectName));
+      }
+    }
     const dbSessionMap = new Map(dbSessions.filter(s => s.provider === 'claude').map(s => [s.id, s]));
-    const projectPath = await extractProjectDirectory(projectName).catch(() => null);
-
-    // ... (rest of getSessions remains mostly same, but ensures it uses the DB map correctly)
-
 
     // Sort files by modification time (newest first)
     const filesWithStats = await Promise.all(
-      jsonlFiles.map(async (file) => {
-        const filePath = path.join(projectDir, file);
+      jsonlFilePaths.map(async (filePath) => {
         const stats = await fs.stat(filePath);
-        return { file, mtime: stats.mtime };
+        return { filePath, mtime: stats.mtime };
       })
     );
     filesWithStats.sort((a, b) => b.mtime - a.mtime);
@@ -1522,9 +1616,8 @@ async function getSessions(projectName, limit = 5, offset = 0, userId = null) {
     const uuidToSessionMap = new Map();
 
     // Collect all sessions and entries from all files
-    for (const { file } of filesWithStats) {
-      const jsonlFile = path.join(projectDir, file);
-      const result = await parseJsonlSessions(jsonlFile, projectName, dbSessionMap);
+    for (const { filePath } of filesWithStats) {
+      const result = await parseJsonlSessions(filePath, projectName, dbSessionMap);
 
       result.sessions.forEach(session => {
         if (!allSessions.has(session.id)) {
@@ -2279,15 +2372,38 @@ async function getSessionMessages(projectName, sessionId, limit = null, offset =
     }
   }
 
-  const projectDir = path.join(os.homedir(), '.claude', 'projects', projectName);
+  const projectDirs = await resolveClaudeProjectDirs(projectName);
 
   try {
-    const files = await fs.readdir(projectDir);
+    const jsonlFilePaths = [];
     // agent-*.jsonl files contain subagent tool history, handled separately below
-    const jsonlFiles = files.filter(file => file.endsWith('.jsonl') && !file.startsWith('agent-'));
-    const agentFiles = files.filter(file => file.endsWith('.jsonl') && file.startsWith('agent-'));
+    const agentFileMap = new Map();
 
-    if (jsonlFiles.length === 0) {
+    for (const projectDir of projectDirs) {
+      let files;
+      try {
+        files = await fs.readdir(projectDir);
+      } catch (err) {
+        if (err.code === 'ENOENT') {
+          continue;
+        }
+        throw err;
+      }
+      for (const file of files) {
+        if (!file.endsWith('.jsonl')) {
+          continue;
+        }
+        if (file.startsWith('agent-')) {
+          if (!agentFileMap.has(file)) {
+            agentFileMap.set(file, path.join(projectDir, file));
+          }
+        } else {
+          jsonlFilePaths.push(path.join(projectDir, file));
+        }
+      }
+    }
+
+    if (jsonlFilePaths.length === 0) {
       return { messages: [], total: 0, hasMore: false };
     }
 
@@ -2295,8 +2411,7 @@ async function getSessionMessages(projectName, sessionId, limit = null, offset =
     const agentToolsCache = new Map();
 
     // Process all JSONL files to find messages for this session
-    for (const file of jsonlFiles) {
-      const jsonlFile = path.join(projectDir, file);
+    for (const jsonlFile of jsonlFilePaths) {
       const fileStream = fsSync.createReadStream(jsonlFile);
       const rl = readline.createInterface({
         input: fileStream,
@@ -2326,9 +2441,8 @@ async function getSessionMessages(projectName, sessionId, limit = null, offset =
     }
 
     for (const agentId of agentIds) {
-      const agentFileName = `agent-${agentId}.jsonl`;
-      if (agentFiles.includes(agentFileName)) {
-        const agentFilePath = path.join(projectDir, agentFileName);
+      const agentFilePath = agentFileMap.get(`agent-${agentId}.jsonl`);
+      if (agentFilePath) {
         const tools = await parseAgentTools(agentFilePath);
         agentToolsCache.set(agentId, tools);
       }
@@ -2523,17 +2637,31 @@ async function deleteSession(projectName, sessionId, provider = 'claude') {
     throw new Error(`Nano session ${sessionId} not found in file system or index`);
   }
 
-  const projectDir = path.join(os.homedir(), '.claude', 'projects', projectName);
+  const projectDirs = await resolveClaudeProjectDirs(projectName);
 
   try {
-    const files = await fs.readdir(projectDir);
-    const jsonlFiles = files.filter(file => file.endsWith('.jsonl'));
+    const jsonlFiles = [];
+    for (const projectDir of projectDirs) {
+      let files;
+      try {
+        files = await fs.readdir(projectDir);
+      } catch (err) {
+        if (err.code === 'ENOENT') {
+          continue;
+        }
+        throw err;
+      }
+      for (const file of files) {
+        if (file.endsWith('.jsonl')) {
+          jsonlFiles.push(path.join(projectDir, file));
+        }
+      }
+    }
 
     let matchedFiles = 0;
     let removedEntries = 0;
 
-    for (const file of jsonlFiles) {
-      const jsonlFile = path.join(projectDir, file);
+    for (const jsonlFile of jsonlFiles) {
       const content = await fs.readFile(jsonlFile, 'utf8');
       const lines = content.split('\n').filter(line => line.trim());
       let fileRemovedEntries = 0;
@@ -2579,7 +2707,7 @@ async function deleteSession(projectName, sessionId, provider = 'claude') {
   } catch (error) {
     if (error?.code === 'ENOENT' && indexedSession?.provider === 'claude') {
       sessionDb.deleteSession(sessionId);
-      console.log(`[Claude] Deleted session ${sessionId} from index only; project directory missing: ${projectDir}`);
+      console.log(`[Claude] Deleted session ${sessionId} from index only; session file missing for project ${projectName}`);
       return true;
     }
     console.error(`Error deleting session ${sessionId} from project ${projectName}:`, error);
@@ -2812,8 +2940,11 @@ async function deleteTrashedProject(projectName, mode = 'logical', userId = null
     }
 
     try {
-      const projectDir = path.join(os.homedir(), '.claude', 'projects', projectName);
-      await fs.rm(projectDir, { recursive: true, force: true });
+      const projectDirs = await resolveClaudeProjectDirs(projectName, trashMeta.originalPath || null);
+      for (const projectDir of projectDirs) {
+        await fs.rm(projectDir, { recursive: true, force: true });
+      }
+      invalidateClaudeDirIndex();
     } catch (err) {
       console.warn(`Failed to delete Claude project dir for ${projectName}:`, err.message);
     }
@@ -3595,7 +3726,20 @@ async function normalizeComparablePath(inputPath) {
   }
 
   const resolved = path.resolve(normalized);
-  return process.platform === 'win32' ? resolved.toLowerCase() : resolved;
+
+  // Resolve symlinks so paths compare by canonical identity. Codex sessions for
+  // non-ASCII projects are recorded under an ASCII shadow symlink (see
+  // utils/codexWorkingDir.js); realpath maps that back to the real project dir
+  // so the session still associates correctly. Best-effort: paths that don't
+  // exist (e.g. deleted projects) fall back to the lexically resolved path.
+  let canonical = resolved;
+  try {
+    canonical = await fs.realpath(resolved);
+  } catch (_) {
+    // keep `resolved`
+  }
+
+  return process.platform === 'win32' ? canonical.toLowerCase() : canonical;
 }
 
 async function findCodexJsonlFiles(dir) {
@@ -4286,27 +4430,30 @@ async function renameSession(projectName, sessionId, newSummary, provider = 'cla
   }
   // 3. Handle Claude sessions (JSONL)
   else {
-    const projectDir = path.join(os.homedir(), '.claude', 'projects', projectName);
+    const projectDirs = await resolveClaudeProjectDirs(projectName);
 
     try {
-      // Check if project directory exists first
-      try {
-        await fs.access(projectDir);
-      } catch (e) {
-        console.error(`[Claude] Project directory not found: ${projectDir}`);
-        throw new Error(`Claude project directory not found: ${projectName}`);
+      const jsonlFiles = [];
+      for (const projectDir of projectDirs) {
+        let files;
+        try {
+          files = await fs.readdir(projectDir);
+        } catch (e) {
+          continue;
+        }
+        for (const file of files) {
+          if (file.endsWith('.jsonl') && !file.startsWith('agent-')) {
+            jsonlFiles.push(path.join(projectDir, file));
+          }
+        }
       }
-
-      const files = await fs.readdir(projectDir);
-      const jsonlFiles = files.filter(file => file.endsWith('.jsonl') && !file.startsWith('agent-'));
 
       if (jsonlFiles.length === 0) {
         throw new Error('No session files found for this project');
       }
 
       // Check all JSONL files to find which one contains the session
-      for (const file of jsonlFiles) {
-        const jsonlFile = path.join(projectDir, file);
+      for (const jsonlFile of jsonlFiles) {
         const content = await fs.readFile(jsonlFile, 'utf8');
         const lines = content.split('\n').filter(line => line.trim());
 
@@ -4363,6 +4510,7 @@ export {
   loadProjectConfig,
   saveProjectConfig,
   extractProjectDirectory,
+  resolveClaudeProjectDirs,
   clearProjectDirectoryCache,
   getCodexSessions,
   getGeminiSessions,
