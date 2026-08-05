@@ -7,6 +7,8 @@ import fetch from 'node-fetch';
 import { resolveCursorCliCommand } from '../utils/cursorCommand.js';
 import { resolveAvailableCliCommand } from '../utils/cliResolution.js';
 import { buildCodexCliEnv, getCodexCliCommand } from '../utils/codexCli.js';
+import { getPiCliCommand } from '../utils/piCli.js';
+import spawnAsync from '../utils/spawnAsync.js';
 import {
   DEFAULT_OLLAMA_URL,
   detectGPUs,
@@ -60,6 +62,23 @@ const PROVIDER_INSTALLERS = {
       ],
       win32: [
         { bin: 'npm.cmd', args: ['install', '-g', '@openai/codex'], label: 'npm install -g @openai/codex' },
+      ],
+    },
+  },
+  pi: {
+    displayName: 'Pi Coding Agent',
+    docsUrl: 'https://pi.dev/docs/latest',
+    fallbackDownloadUrl: 'https://pi.dev',
+    commands: {
+      // --ignore-scripts is what pi.dev's own install instructions use.
+      darwin: [
+        { bin: 'npm', args: ['install', '-g', '--ignore-scripts', '@earendil-works/pi-coding-agent'], label: 'npm install -g --ignore-scripts @earendil-works/pi-coding-agent' },
+      ],
+      linux: [
+        { bin: 'npm', args: ['install', '-g', '--ignore-scripts', '@earendil-works/pi-coding-agent'], label: 'npm install -g --ignore-scripts @earendil-works/pi-coding-agent' },
+      ],
+      win32: [
+        { bin: 'npm.cmd', args: ['install', '-g', '--ignore-scripts', '@earendil-works/pi-coding-agent'], label: 'npm install -g --ignore-scripts @earendil-works/pi-coding-agent' },
       ],
     },
   },
@@ -249,6 +268,7 @@ router.get('/providers', async (_req, res) => {
       checkCursorStatus().then((result) => ['cursor', buildStatusPayload(result, 'cursor')]),
       checkCodexCredentials().then((result) => ['codex', buildStatusPayload(result, 'codex')]),
       checkGeminiCredentials().then((result) => ['gemini', buildStatusPayload(result, 'gemini')]),
+      checkPiCredentials().then((result) => ['pi', buildStatusPayload(result, 'pi')]),
     ]);
 
     res.json({ providers: Object.fromEntries(statuses) });
@@ -470,6 +490,91 @@ router.get('/nano/status', async (req, res) => {
       email: null,
       error: error.message,
     });
+  }
+});
+
+/**
+ * Report whether the Pi CLI is installed and has a usable provider.
+ *
+ * `pi --list-models` is the authoritative check: Pi fronts many providers, and
+ * with none authenticated it prints a "No models available. Use /login ..."
+ * notice instead of a table. Being installed but logged out is therefore a
+ * distinct state from being absent, and the UI should say so.
+ */
+async function checkPiCredentials() {
+  const configuredCommand = getPiCliCommand();
+
+  try {
+    if (isCliMockedMissing('pi')) {
+      return {
+        authenticated: false,
+        email: null,
+        error: 'Pi CLI not found',
+        cliAvailable: false,
+        cliCommand: configuredCommand,
+        installHint: buildCliInstallHint('pi'),
+      };
+    }
+
+    const resolvedCliCommand = await resolveAvailableCliCommand({
+      envVarName: 'PI_CLI_PATH',
+      defaultCommands: ['pi'],
+      args: ['--version'],
+      appendWindowsSuffixes: true,
+    });
+
+    if (!resolvedCliCommand) {
+      return {
+        authenticated: false,
+        email: null,
+        error: 'Pi CLI not found',
+        cliAvailable: false,
+        cliCommand: configuredCommand,
+        installHint: buildCliInstallHint('pi'),
+      };
+    }
+
+    const { stdout } = await spawnAsync(resolvedCliCommand, ['--list-models'], {
+      env: process.env,
+      maxBuffer: 512 * 1024,
+    }).catch((error) => ({ stdout: error.stdout || '' }));
+
+    const hasModels = /^\s*provider\s+model\b/mi.test(stdout);
+
+    if (!hasModels) {
+      return {
+        authenticated: false,
+        email: null,
+        error: 'Pi is installed but no provider is logged in. Run "pi" and use /login.',
+        cliAvailable: true,
+        cliCommand: resolvedCliCommand,
+      };
+    }
+
+    return {
+      authenticated: true,
+      email: 'Pi Coding Agent',
+      cliAvailable: true,
+      cliCommand: resolvedCliCommand,
+    };
+  } catch (error) {
+    return {
+      authenticated: false,
+      email: null,
+      error: error.message,
+      cliAvailable: false,
+      cliCommand: configuredCommand,
+    };
+  }
+}
+
+router.get('/pi/status', async (req, res) => {
+  try {
+    const result = await checkPiCredentials();
+    return res.json(buildStatusPayload(result, 'pi'));
+  } catch (error) {
+    console.error('Error checking Pi status:', error);
+    res.status(500).json({ authenticated: false, email: null, error: error.message });
   }
 });
 

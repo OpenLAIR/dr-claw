@@ -155,13 +155,18 @@ export const getAllSessions = (
     __projectName: project.name,
   }));
 
+  const piSessions = (project.piSessions || []).map((session) => ({
+    ...session,
+    __provider: 'pi' as const,
+  }));
+
   const nanoSessions = (project.nanoSessions || []).map((session) => ({
     ...session,
     __provider: 'nano' as const,
     __projectName: project.name,
   }));
 
-  return [...claudeSessions, ...cursorSessions, ...codexSessions, ...geminiSessions, ...openrouterSessions, ...localSessions, ...nanoSessions].sort(
+  return [...claudeSessions, ...cursorSessions, ...codexSessions, ...geminiSessions, ...openrouterSessions, ...localSessions, ...nanoSessions, ...piSessions].sort(
     (a, b) => getSessionDate(b).getTime() - getSessionDate(a).getTime(),
   );
 };

@@ -424,6 +424,7 @@ export function useChatRealtimeHandlers({
     const lifecycleMessageTypes = new Set([
       'claude-complete',
       'codex-complete',
+      'pi-complete',
       'gemini-complete',
       'openrouter-complete',
       'localgpu-complete',
@@ -432,6 +433,7 @@ export function useChatRealtimeHandlers({
       'claude-error',
       'cursor-error',
       'codex-error',
+      'pi-error',
       'gemini-error',
       'openrouter-error',
       'localgpu-error',
@@ -474,6 +476,7 @@ export function useChatRealtimeHandlers({
       (latestMessage.type === 'claude-error' ||
         latestMessage.type === 'cursor-error' ||
         latestMessage.type === 'codex-error' ||
+      latestMessage.type === 'pi-error' ||
         latestMessage.type === 'gemini-error');
 
     const handleBackgroundLifecycle = (sessionId?: string) => {
@@ -991,6 +994,99 @@ export function useChatRealtimeHandlers({
         } catch (error) {
           console.warn('Error handling cursor-output message:', error);
         }
+        break;
+
+      case 'pi-response': {
+        const piData = latestMessage.data;
+        if (!piData) break;
+
+        setIsLoading(true);
+        switch (piData.type) {
+          case 'text_delta': {
+            // Mirrors the Claude content_block_delta path: buffer deltas and
+            // flush on a short timer so React is not re-rendered per token.
+            setStatusTextOverride(null);
+            streamBufferRef.current += decodeHtmlEntities(piData.delta);
+            if (!streamTimerRef.current) {
+              streamTimerRef.current = window.setTimeout(() => {
+                const chunk = streamBufferRef.current;
+                streamBufferRef.current = '';
+                streamTimerRef.current = null;
+                appendStreamingChunk(setChatMessages, chunk, false);
+              }, 30);
+            }
+            break;
+          }
+
+          case 'thinking_delta':
+            setStatusTextOverride(i18n.t('chat:status.thinking'));
+            break;
+
+          case 'assistant_message':
+            // message_end repeats the text the deltas already rendered, so the
+            // stream is finalized rather than appended again.
+            flushAndFinalizePendingStream();
+            break;
+
+          case 'tool_use':
+            setChatMessages((previous) => [
+              ...previous,
+              {
+                type: 'tool_use',
+                content: '',
+                timestamp: new Date(),
+                toolName: piData.toolName,
+                toolInput: piData.toolInput,
+                toolCallId: piData.toolCallId,
+              },
+            ]);
+            break;
+
+          case 'tool_result':
+            setChatMessages((previous) => [
+              ...previous,
+              {
+                type: 'tool_result',
+                content: piData.output || '',
+                timestamp: new Date(),
+                toolName: piData.toolName,
+                toolCallId: piData.toolCallId,
+                isError: piData.isError === true,
+              },
+            ]);
+            break;
+
+          default:
+            break;
+        }
+        break;
+      }
+
+      case 'pi-complete': {
+        const piPendingSessionId = sessionStorage.getItem('pendingSessionId');
+        const piActualSessionId = latestMessage.actualSessionId || piPendingSessionId;
+        const piCompletedSessionId = latestMessage.sessionId || currentSessionId || piPendingSessionId;
+        flushAndFinalizePendingStream();
+        clearLoadingIndicators();
+        markSessionsAsCompleted(piCompletedSessionId, piActualSessionId, currentSessionId, selectedSession?.id, piPendingSessionId);
+        if (piPendingSessionId && !currentSessionId) {
+          setCurrentSessionId(piActualSessionId);
+          setIsSystemSessionChange(true);
+          if (piActualSessionId) {
+            onNavigateToSession?.(piActualSessionId, 'pi', selectedProject?.name, { source: 'system' });
+          }
+          sessionStorage.removeItem('pendingSessionId');
+        }
+        if (selectedProject) safeLocalStorage.removeItem(`chat_messages_${selectedProject.name}`);
+        break;
+      }
+
+      case 'pi-error':
+        flushAndFinalizePendingStream();
+        clearLoadingIndicators();
+        markSessionsAsCompleted(latestMessage.sessionId, currentSessionId, selectedSession?.id);
+        setPendingPermissionRequests([]);
+        setChatMessages((previous) => [...previous, { type: 'error', content: latestMessage.error || 'An error occurred with Pi', timestamp: new Date(), errorType: latestMessage.errorType, isRetryable: latestMessage.isRetryable === true }]);
         break;
 
       case 'codex-response': {
