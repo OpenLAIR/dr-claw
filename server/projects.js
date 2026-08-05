@@ -86,6 +86,7 @@ import {
 } from './utils/sessionMode.js';
 import { resolveNanoSessionAbsPath, safeNanoSessionFilename } from './nanoSessionPaths.js';
 import { readJsonlLinesFrom } from './utils/jsonlTailReader.js';
+import { getPiSessionsRoot } from './utils/piCli.js';
 import { EventEmitter } from 'events';
 
 /**
@@ -1551,6 +1552,7 @@ async function getProjects(userId, progressCallback = null) {
       const openrouterSessions = projectSessions.filter((session) => session.provider === 'openrouter');
       const localSessions = projectSessions.filter((session) => session.provider === 'local');
       const nanoSessions = projectSessions.filter((session) => session.provider === 'nano');
+      const piSessions = projectSessions.filter((session) => session.provider === 'pi');
 
       project.sessions = claudeSessions.slice(0, 5).map((session) => mapIndexedSessionToProjectSession(session, 'claude'));
       project.sessionMeta = {
@@ -1563,6 +1565,7 @@ async function getProjects(userId, progressCallback = null) {
       project.openrouterSessions = openrouterSessions.slice(0, 5).map((session) => mapIndexedSessionToProjectSession(session, 'openrouter'));
       project.localSessions = localSessions.slice(0, 5).map((session) => mapIndexedSessionToProjectSession(session, 'local'));
       project.nanoSessions = nanoSessions.slice(0, 5).map((session) => mapIndexedSessionToProjectSession(session, 'nano'));
+      project.piSessions = piSessions.slice(0, 5).map((session) => mapIndexedSessionToProjectSession(session, 'pi'));
 
       const taskmasterResult = await detectTaskMasterFolder(actualProjectDir).catch(() => null);
 
@@ -2174,6 +2177,9 @@ function nanoSessionJsonToMessages(data) {
 // Get messages for a specific session with pagination support
 async function getSessionMessages(projectName, sessionId, limit = null, offset = 0, provider = 'claude', userId = null) {
   console.log(`[DEBUG] getSessionMessages - project: ${projectName}, session: ${sessionId}, provider: ${provider}`);
+  if (provider === 'pi') {
+    return getPiSessionMessages(sessionId, limit, offset);
+  }
   if (provider === 'gemini') {
     const geminiSessionFile = path.join(os.homedir(), '.gemini', 'sessions', `${sessionId}.jsonl`);
     console.log(`[DEBUG] Reading Gemini session file: ${geminiSessionFile}`);
@@ -2600,6 +2606,14 @@ async function renameProject(projectName, newDisplayName, userId = null) {
 async function deleteSession(projectName, sessionId, provider = 'claude') {
   const { sessionDb } = await import('./database/db.js');
   const indexedSession = sessionDb.getSessionById(sessionId);
+
+  if (provider === 'pi') {
+    const deleted = await deletePiSession(projectName, sessionId);
+    if (!deleted) {
+      throw new Error(`Pi session ${sessionId} not found in file system or index`);
+    }
+    return true;
+  }
 
   if (provider === 'gemini') {
     const geminiSessionFile = path.join(os.homedir(), '.gemini', 'sessions', `${sessionId}.jsonl`);
@@ -4737,6 +4751,382 @@ async function renameSession(projectName, sessionId, newSummary, provider = 'cla
   }
 }
 
+// ---------------------------------------------------------------------------
+// Pi coding agent (https://pi.dev) sessions
+//
+// Pi writes one JSONL file per session under
+//   ~/.pi/agent/sessions/--<encoded-cwd>--/<timestamp>_<uuid>.jsonl
+// The first line is a header carrying the session id and the real `cwd`. The
+// directory name is a lossy encoding of that path (a path segment containing
+// '-' is indistinguishable from a separator), so the header is the authority
+// for which project a session belongs to.
+// ---------------------------------------------------------------------------
+
+/**
+ * Memo keyed on (size, mtimeMs) so repeated index builds do not re-read every
+ * transcript. Session directories only grow, and re-parsing all of them on
+ * every projects refresh is what made Codex discovery pathological.
+ */
+const piSessionFileCache = new Map();
+
+function resetPiSessionFileCache() {
+  piSessionFileCache.clear();
+}
+
+async function findPiSessionFiles(sessionsRoot) {
+  const files = [];
+  let dirEntries;
+  try {
+    dirEntries = await fs.readdir(sessionsRoot, { withFileTypes: true });
+  } catch (error) {
+    return files;
+  }
+
+  for (const dirEntry of dirEntries) {
+    if (!dirEntry.isDirectory()) continue;
+    const projectDir = path.join(sessionsRoot, dirEntry.name);
+    try {
+      const sessionFiles = await fs.readdir(projectDir);
+      for (const fileName of sessionFiles) {
+        if (fileName.endsWith('.jsonl')) {
+          files.push(path.join(projectDir, fileName));
+        }
+      }
+    } catch (_) {
+      // Unreadable directory; skip.
+    }
+  }
+
+  return files;
+}
+
+function summarizePiText(text) {
+  const trimmed = String(text || '').trim();
+  if (!trimmed) return '';
+  const firstLine = trimmed.split('\n')[0];
+  return firstLine.length > 50 ? `${firstLine.slice(0, 50)}...` : firstLine;
+}
+
+function extractPiMessageText(message) {
+  if (!message) return '';
+  const content = message.content;
+  if (typeof content === 'string') return content;
+  if (!Array.isArray(content)) return '';
+  return content
+    .filter((block) => block?.type === 'text' && typeof block.text === 'string')
+    .map((block) => block.text)
+    .join('');
+}
+
+async function parsePiSessionFile(filePath) {
+  const fileStream = fsSync.createReadStream(filePath);
+  const rl = readline.createInterface({ input: fileStream, crlfDelay: Infinity });
+
+  let header = null;
+  let firstUserMessage = null;
+  let lastTimestamp = null;
+  let messageCount = 0;
+  let model = null;
+  let sessionName = null;
+
+  try {
+    for await (const line of rl) {
+      if (!line.trim()) continue;
+      let entry;
+      try {
+        entry = JSON.parse(line);
+      } catch (_) {
+        continue; // Skip malformed lines
+      }
+
+      if (entry.type === 'session') {
+        header = entry;
+        lastTimestamp = entry.timestamp || lastTimestamp;
+        sessionName = entry.name || sessionName;
+        continue;
+      }
+
+      if (entry.timestamp) lastTimestamp = entry.timestamp;
+      if (entry.type === 'model_change' && entry.modelId) {
+        model = entry.provider ? `${entry.provider}/${entry.modelId}` : entry.modelId;
+      }
+
+      if (entry.type === 'message' && entry.message) {
+        const role = entry.message.role;
+        if (role === 'user' || role === 'assistant') {
+          messageCount += 1;
+        }
+        if (role === 'user' && !firstUserMessage) {
+          const text = extractPiMessageText(entry.message);
+          if (text.trim()) firstUserMessage = text;
+        }
+      }
+    }
+  } finally {
+    rl.close();
+    fileStream.destroy();
+  }
+
+  if (!header?.id) return null;
+
+  return {
+    id: header.id,
+    cwd: header.cwd,
+    summary: sessionName || summarizePiText(firstUserMessage) || 'Pi Session',
+    messageCount,
+    model,
+    timestamp: lastTimestamp || header.timestamp,
+    createdAt: header.timestamp,
+    filePath,
+    provider: 'pi',
+  };
+}
+
+async function readPiSessionFileCached(filePath) {
+  const stats = await fs.stat(filePath);
+  const cached = piSessionFileCache.get(filePath);
+  if (cached && cached.size === stats.size && cached.mtimeMs === stats.mtimeMs) {
+    return cached.result;
+  }
+
+  const result = await parsePiSessionFile(filePath);
+  piSessionFileCache.set(filePath, { size: stats.size, mtimeMs: stats.mtimeMs, result });
+  return result;
+}
+
+async function buildPiSessionsIndex() {
+  const sessionsRoot = getPiSessionsRoot();
+  const sessionsByProject = new Map();
+
+  const files = await findPiSessionFiles(sessionsRoot);
+  const liveFiles = new Set(files);
+  for (const cachedPath of piSessionFileCache.keys()) {
+    if (!liveFiles.has(cachedPath)) piSessionFileCache.delete(cachedPath);
+  }
+
+  const normalizedCache = new Map();
+  const normalizeCwd = async (cwd) => {
+    if (!cwd) return '';
+    if (normalizedCache.has(cwd)) return normalizedCache.get(cwd);
+    const normalized = await normalizeComparablePath(cwd);
+    normalizedCache.set(cwd, normalized);
+    return normalized;
+  };
+
+  for (const filePath of files) {
+    try {
+      const session = await readPiSessionFileCached(filePath);
+      if (!session?.id) continue;
+
+      const normalizedProjectPath = await normalizeCwd(session.cwd);
+      if (!normalizedProjectPath) continue;
+
+      if (!sessionsByProject.has(normalizedProjectPath)) {
+        sessionsByProject.set(normalizedProjectPath, []);
+      }
+      sessionsByProject.get(normalizedProjectPath).push({
+        ...session,
+        lastActivity: session.timestamp ? new Date(session.timestamp) : new Date(),
+      });
+    } catch (error) {
+      console.warn(`Could not parse Pi session file ${filePath}:`, error.message);
+    }
+  }
+
+  for (const sessions of sessionsByProject.values()) {
+    sessions.sort((a, b) => new Date(b.lastActivity) - new Date(a.lastActivity));
+  }
+
+  return sessionsByProject;
+}
+
+async function getPiSessions(projectPath, options = {}) {
+  const { limit = 5, sessionId: targetSessionId = null, projectName: providedProjectName = null } = options;
+  const projectName = providedProjectName || encodeProjectPath(projectPath);
+
+  try {
+    const { sessionDb } = await import('./database/db.js');
+    const normalizedProjectPath = await normalizeComparablePath(projectPath);
+    if (!normalizedProjectPath) return [];
+
+    const sessionsByProject = await buildPiSessionsIndex();
+    const sessions = [...(sessionsByProject.get(normalizedProjectPath) || [])];
+
+    const dbSessionMap = new Map(
+      sessionDb.getSessionsByProject(projectName)
+        .filter((session) => session.provider === 'pi')
+        .map((session) => [session.id, session]),
+    );
+
+    const hydrated = sessions.map((session) => {
+      const indexed = dbSessionMap.get(session.id);
+      return {
+        ...session,
+        projectPath,
+        mode: indexed
+          ? (readExplicitSessionModeFromMetadata(indexed.metadata) || normalizeSessionMode(session.mode))
+          : normalizeSessionMode(session.mode),
+        tags: Array.isArray(indexed?.tags) ? indexed.tags : [],
+      };
+    });
+
+    const filtered = targetSessionId ? hydrated.filter((s) => s.id === targetSessionId) : hydrated;
+    return limit > 0 ? filtered.slice(0, limit) : filtered;
+  } catch (error) {
+    console.error('Error fetching Pi sessions:', error);
+    return [];
+  }
+}
+
+/** Bring the session index in the database up to date with Pi's files on disk. */
+async function reconcilePiSessionIndex(projectPath, options = {}) {
+  const { sessionId = null, projectName: providedProjectName = null } = options;
+  const projectName = providedProjectName || encodeProjectPath(projectPath);
+
+  try {
+    const { sessionDb } = await import('./database/db.js');
+    const sessions = await getPiSessions(projectPath, { limit: 0, sessionId, projectName });
+
+    for (const session of sessions) {
+      sessionDb.upsertSessionFromSource(session.id, projectName, 'pi', {
+        displayName: session.summary || 'Pi Session',
+        lastActivity: session.lastActivity || new Date(),
+        messageCount: session.messageCount || 0,
+        createdAt: session.createdAt || session.lastActivity || new Date(),
+        metadata: {
+          projectPath,
+          sessionMode: normalizeSessionMode(session.mode),
+          indexState: 'synced',
+        },
+      });
+    }
+
+    return sessions.length;
+  } catch (error) {
+    console.warn('[projects] Failed to reconcile Pi session index:', error.message);
+    return 0;
+  }
+}
+
+/** Locate a Pi transcript by session id. Filenames embed the uuid. */
+async function findPiSessionFilePath(sessionId) {
+  if (!sessionId) return null;
+
+  const files = await findPiSessionFiles(getPiSessionsRoot());
+  for (const filePath of files) {
+    if (path.basename(filePath).includes(sessionId)) return filePath;
+  }
+
+  // Fall back to headers for a file whose name does not carry the id.
+  for (const filePath of files) {
+    try {
+      const session = await readPiSessionFileCached(filePath);
+      if (session?.id === sessionId) return filePath;
+    } catch (_) {
+      // Skip unreadable files
+    }
+  }
+
+  return null;
+}
+
+async function getPiSessionMessages(sessionId, limit = null, offset = 0) {
+  const filePath = await findPiSessionFilePath(sessionId);
+  if (!filePath) {
+    console.warn(`Pi session file not found for session ${sessionId}`);
+    return { messages: [], total: 0, hasMore: false };
+  }
+
+  const messages = [];
+  const fileStream = fsSync.createReadStream(filePath);
+  const rl = readline.createInterface({ input: fileStream, crlfDelay: Infinity });
+
+  try {
+    for await (const line of rl) {
+      if (!line.trim()) continue;
+      let entry;
+      try {
+        entry = JSON.parse(line);
+      } catch (_) {
+        continue;
+      }
+
+      if (entry.type !== 'message' || !entry.message) continue;
+      const message = entry.message;
+
+      if (message.role === 'user' || message.role === 'assistant') {
+        const text = extractPiMessageText(message);
+        const toolCalls = Array.isArray(message.content)
+          ? message.content.filter((block) => block?.type === 'toolCall')
+          : [];
+
+        if (text.trim()) {
+          messages.push({
+            type: message.role,
+            timestamp: entry.timestamp,
+            message: { role: message.role, content: text },
+          });
+        }
+
+        for (const toolCall of toolCalls) {
+          messages.push({
+            type: 'tool_use',
+            timestamp: entry.timestamp,
+            toolCallId: toolCall.id,
+            toolName: toolCall.name,
+            toolInput: toolCall.arguments ?? {},
+          });
+        }
+        continue;
+      }
+
+      if (message.role === 'toolResult') {
+        messages.push({
+          type: 'tool_result',
+          timestamp: entry.timestamp,
+          toolCallId: message.toolCallId,
+          toolName: message.toolName,
+          isError: Boolean(message.isError),
+          output: extractPiMessageText(message) || (typeof message.output === 'string' ? message.output : ''),
+        });
+      }
+    }
+  } finally {
+    rl.close();
+    fileStream.destroy();
+  }
+
+  const total = messages.length;
+  const start = Number(offset) || 0;
+  const sliced = limit && limit > 0 ? messages.slice(start, start + limit) : messages.slice(start);
+
+  return { messages: sliced, total, hasMore: limit && limit > 0 ? start + limit < total : false };
+}
+
+async function deletePiSession(projectName, sessionId) {
+  const { sessionDb } = await import('./database/db.js');
+  const filePath = await findPiSessionFilePath(sessionId);
+
+  let deletedFile = false;
+  if (filePath) {
+    try {
+      await fs.unlink(filePath);
+      piSessionFileCache.delete(filePath);
+      deletedFile = true;
+    } catch (error) {
+      console.warn(`[projects] Failed to delete Pi session file ${filePath}:`, error.message);
+    }
+  }
+
+  const indexed = sessionDb.getSessionById?.(sessionId) || null;
+  if (deletedFile || indexed?.provider === 'pi') {
+    sessionDb.deleteSession(sessionId);
+    return true;
+  }
+
+  return false;
+}
+
 export {
   getProjects,
   getTrashedProjects,
@@ -4764,6 +5154,12 @@ export {
   getGeminiSessions,
   getCodexSessionMessages,
   deleteCodexSession,
+  buildPiSessionsIndex,
+  resetPiSessionFileCache,
+  getPiSessions,
+  getPiSessionMessages,
+  deletePiSession,
+  reconcilePiSessionIndex,
   reconcileClaudeSessionIndex,
   reconcileCodexSessionIndex,
   reconcileGeminiSessionIndex,
