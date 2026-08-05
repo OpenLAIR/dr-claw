@@ -28,6 +28,7 @@ import { createRequestId, waitForToolApproval, resolveToolApproval as resolvePer
 import { buildMemoryBlock } from './utils/memoryPrompt.js';
 import { BTW_SYSTEM_PROMPT, buildBtwUserMessage } from './utils/btw.js';
 import { COMPUTE_GUARD_BLOCK } from './utils/computeGuardPrompt.js';
+import { debugLog } from './utils/logger.js';
 
 const activeSessions = new Map();
 const pendingClaudeSessionIndexReconciles = new Map();
@@ -690,10 +691,13 @@ async function queryClaudeSDK(command, options = {}, ws) {
             mode: sessionMode || 'research'
           });
         } else {
-          console.log('Not sending session-created. sessionId:', sessionId, 'sessionCreatedSent:', sessionCreatedSent);
+          debugLog('claude', 'Not sending session-created. sessionId:', sessionId, 'sessionCreatedSent:', sessionCreatedSent);
         }
       } else {
-        console.log('No session_id in message or already captured. message.session_id:', message.session_id, 'capturedSessionId:', capturedSessionId);
+        // Fires for every message in the stream once the session id is known.
+        // Left unguarded this was thousands of console writes per turn, which
+        // stalls the event loop on a Windows console TTY.
+        debugLog('claude', 'No session_id in message or already captured. message.session_id:', message.session_id, 'capturedSessionId:', capturedSessionId);
       }
 
       // Track usage from assistant messages (per-API-call, not cumulative)

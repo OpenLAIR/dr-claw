@@ -85,6 +85,15 @@ import {
   readExplicitSessionModeFromMetadata,
 } from './utils/sessionMode.js';
 import { resolveNanoSessionAbsPath, safeNanoSessionFilename } from './nanoSessionPaths.js';
+import { readJsonlLinesFrom } from './utils/jsonlTailReader.js';
+import { EventEmitter } from 'events';
+
+/**
+ * Emitted when a background discovery pass changes the project set, so the
+ * server can push a fresh list to connected clients. Background work must never
+ * make an HTTP handler wait — see scheduleCodexProjectSync().
+ */
+const projectsEvents = new EventEmitter();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DRCLAW_SKILLS_DIR = path.join(__dirname, '..', 'skills');
@@ -292,6 +301,53 @@ function collectCodexProjectCandidates(sessionsByProject = new Map()) {
 
 const CODEX_SYNC_COOLDOWN_MS = 30_000;
 let lastCodexSyncTimestamp = 0;
+let codexSyncInFlight = null;
+let lastCodexSyncSignature = '';
+let lastBroadcastCodexSyncSignature = null;
+
+/**
+ * Run the Codex discovery sync without blocking the caller.
+ *
+ * getProjects() answers from the project database, so it does not need the sync
+ * to finish first — and it must not wait for it. The first sync after start-up
+ * walks the whole ~/.codex/sessions tree, which can take many seconds on a heavy
+ * user; awaiting it made the initial /api/projects request (and therefore the
+ * whole UI) hang. Instead the sync runs in the background and emits
+ * 'projects-changed' when it actually adds something, which the server
+ * re-broadcasts so newly discovered projects appear without a manual refresh.
+ */
+function scheduleCodexProjectSync(config, projectDb, userId = null, visibleWorkspaceRoots = []) {
+  if (codexSyncInFlight) {
+    return codexSyncInFlight;
+  }
+
+  if (Date.now() - lastCodexSyncTimestamp < CODEX_SYNC_COOLDOWN_MS) {
+    return Promise.resolve(0);
+  }
+
+  codexSyncInFlight = syncDiscoveredProjectsFromCodexSessions(config, projectDb, userId, visibleWorkspaceRoots)
+    .then((syncedProjects) => {
+      // Only wake the UI when the sync actually changed something; otherwise a
+      // steady 30s cadence of no-op syncs would keep re-broadcasting an
+      // identical project list to every connected client. The signature covers
+      // session counts and newest activity per project, not just project names —
+      // a new Codex session inside an existing project changes the sidebar too.
+      if (lastCodexSyncSignature !== lastBroadcastCodexSyncSignature) {
+        lastBroadcastCodexSyncSignature = lastCodexSyncSignature;
+        projectsEvents.emit('projects-changed', { reason: 'codex-sync', syncedProjects });
+      }
+      return syncedProjects;
+    })
+    .catch((error) => {
+      console.warn('[projects] Codex discovery sync failed:', error.message);
+      return 0;
+    })
+    .finally(() => {
+      codexSyncInFlight = null;
+    });
+
+  return codexSyncInFlight;
+}
 
 async function syncDiscoveredProjectsFromCodexSessions(config, projectDb, userId = null, visibleWorkspaceRoots = []) {
   const now = Date.now();
@@ -303,6 +359,7 @@ async function syncDiscoveredProjectsFromCodexSessions(config, projectDb, userId
   const discoveredSessions = await buildCodexSessionsIndex();
   const candidates = collectCodexProjectCandidates(discoveredSessions);
   let syncedProjects = 0;
+  const syncedProjectFingerprints = [];
 
   for (const candidate of candidates) {
     const { projectName, projectPath, sessions } = candidate;
@@ -356,8 +413,16 @@ async function syncDiscoveredProjectsFromCodexSessions(config, projectDb, userId
     }
 
     syncedProjects += 1;
+    // Track enough per-project detail that a new session inside an already
+    // known project still registers as a change worth broadcasting.
+    const newestActivity = sessions.reduce((newest, session) => {
+      const activity = new Date(session.lastActivity || 0).getTime();
+      return activity > newest ? activity : newest;
+    }, 0);
+    syncedProjectFingerprints.push(`${projectName}:${sessions.length}:${newestActivity}`);
   }
 
+  lastCodexSyncSignature = syncedProjectFingerprints.sort().join('\n');
   lastCodexSyncTimestamp = Date.now();
   return syncedProjects;
 }
@@ -1404,7 +1469,9 @@ async function getProjects(userId, progressCallback = null) {
     );
     _lastBootstrapByUser.set(userKey, now);
   }
-  await syncDiscoveredProjectsFromCodexSessions(config, projectDb, userId || null, visibleWorkspaceRoots);
+  // Fire-and-forget: the response is built from the project database, so it must
+  // not wait on a filesystem walk of ~/.codex/sessions.
+  scheduleCodexProjectSync(config, projectDb, userId || null, visibleWorkspaceRoots);
   const dbProjects = projectDb.getAllProjects(userId || null);
 
   try {
@@ -3762,7 +3829,90 @@ async function findCodexJsonlFiles(dir) {
   return files;
 }
 
-async function buildCodexSessionsIndex() {
+/**
+ * Per-file memo for the Codex session index.
+ *
+ * Without this, every scan re-read and JSON.parse'd every line of every session
+ * transcript under ~/.codex/sessions. That directory only grows: on a
+ * regular user it reached 577 files / 10 GB, where one scan measured ~30s and
+ * re-ran at least every CODEX_SYNC_COOLDOWN_MS. Because getProjects() awaited
+ * the scan, /api/projects inherited that latency and the app spent most of its
+ * time inside a scan — which is what users saw as lag, "loading" that never
+ * finished, and new sessions that could not be created.
+ *
+ * With the memo the same directory re-scans in ~11ms.
+ *
+ * Entries key on (ino, size, mtimeMs). Session transcripts are append-only, so
+ * when only the size grows we resume the fold from `consumedBytes` and parse
+ * just the new tail. Anything else (shrink, inode change, clock going
+ * backwards) falls back to a full re-parse.
+ */
+const codexSessionFileCache = new Map();
+const CODEX_SESSION_CACHE_MAX_ENTRIES = 20_000;
+let codexSessionsIndexInFlight = null;
+
+function resetCodexSessionFileCache() {
+  codexSessionFileCache.clear();
+}
+
+async function readCodexSessionFileCached(filePath, stats) {
+  const cached = codexSessionFileCache.get(filePath);
+  const sameInode = Boolean(cached) && (cached.ino === undefined || cached.ino === stats.ino);
+
+  if (sameInode && stats.size === cached.size && stats.mtimeMs === cached.mtimeMs) {
+    return cached.result;
+  }
+
+  // Resume only on strict growth. A rewrite that happens to land on the same
+  // byte count is not an append: treating it as one would keep the stale prefix
+  // folded into the accumulator and skip the new content entirely.
+  const appendOnlyGrowth = sameInode
+    && stats.size > cached.size
+    && cached.consumedBytes <= stats.size;
+
+  // Fold into a copy, not the cached accumulator. If the read throws part-way
+  // the cache entry must stay consistent with its recorded `consumedBytes`;
+  // otherwise the next scan would resume from the old offset over state that had
+  // already advanced, double-counting messages.
+  const state = appendOnlyGrowth ? { ...cached.state } : createCodexSessionParseState();
+  const startOffset = appendOnlyGrowth ? cached.consumedBytes : 0;
+
+  const { consumedBytes, trailingLine } = await readJsonlLinesFrom(filePath, startOffset, (line) => {
+    applyCodexSessionLine(state, line);
+  });
+
+  // A final record with no terminating newline still belongs in the answer, but
+  // must not enter the persisted accumulator — the next resume re-reads those
+  // bytes and would otherwise count them twice.
+  let resultState = state;
+  if (trailingLine) {
+    resultState = { ...state };
+    applyCodexSessionLine(resultState, trailingLine);
+  }
+
+  const result = finalizeCodexSessionParseState(resultState, filePath);
+
+  if (codexSessionFileCache.size >= CODEX_SESSION_CACHE_MAX_ENTRIES && !codexSessionFileCache.has(filePath)) {
+    // Bounded LRU-ish eviction: drop the oldest insertion.
+    const oldestKey = codexSessionFileCache.keys().next().value;
+    if (oldestKey !== undefined) {
+      codexSessionFileCache.delete(oldestKey);
+    }
+  }
+
+  codexSessionFileCache.set(filePath, {
+    ino: stats.ino,
+    size: stats.size,
+    mtimeMs: stats.mtimeMs,
+    consumedBytes,
+    state,
+    result
+  });
+
+  return result;
+}
+
+async function buildCodexSessionsIndexUncached() {
   const codexSessionsDir = path.join(os.homedir(), '.codex', 'sessions');
   const sessionsByProject = new Map();
 
@@ -3773,15 +3923,37 @@ async function buildCodexSessionsIndex() {
   }
 
   const jsonlFiles = await findCodexJsonlFiles(codexSessionsDir);
+  const liveFiles = new Set(jsonlFiles);
+
+  // Drop memo entries for transcripts that were deleted or moved.
+  for (const cachedPath of codexSessionFileCache.keys()) {
+    if (!liveFiles.has(cachedPath)) {
+      codexSessionFileCache.delete(cachedPath);
+    }
+  }
+
+  // realpath() is a syscall per session and most sessions in a directory share
+  // the same cwd, so memoize it for the duration of one scan.
+  const normalizedPathCache = new Map();
+  const normalizeCwd = async (cwd) => {
+    if (!cwd) return '';
+    if (normalizedPathCache.has(cwd)) {
+      return normalizedPathCache.get(cwd);
+    }
+    const normalized = await normalizeComparablePath(cwd);
+    normalizedPathCache.set(cwd, normalized);
+    return normalized;
+  };
 
   for (const filePath of jsonlFiles) {
     try {
-      const sessionData = await parseCodexSessionFile(filePath);
+      const stats = await fs.stat(filePath);
+      const sessionData = await readCodexSessionFileCached(filePath, stats);
       if (!sessionData || !sessionData.id) {
         continue;
       }
 
-      const normalizedProjectPath = await normalizeComparablePath(sessionData.cwd);
+      const normalizedProjectPath = await normalizeCwd(sessionData.cwd);
       if (!normalizedProjectPath) {
         continue;
       }
@@ -3813,6 +3985,25 @@ async function buildCodexSessionsIndex() {
   }
 
   return sessionsByProject;
+}
+
+/**
+ * Build the Codex session index, collapsing concurrent callers onto one scan.
+ *
+ * getProjects(), getCodexSessions() and the filesystem watcher can all ask for
+ * the index at once; without this guard a cold start would run the same
+ * multi-GB walk several times in parallel.
+ */
+async function buildCodexSessionsIndex() {
+  if (codexSessionsIndexInFlight) {
+    return codexSessionsIndexInFlight;
+  }
+
+  codexSessionsIndexInFlight = buildCodexSessionsIndexUncached().finally(() => {
+    codexSessionsIndexInFlight = null;
+  });
+
+  return codexSessionsIndexInFlight;
 }
 
 // Fetch Codex sessions for a given project path
@@ -3882,90 +4073,87 @@ async function getCodexSessions(projectPath, options = {}) {
   }
 }
 
-// Parse a Codex session JSONL file to extract metadata
-async function parseCodexSessionFile(filePath) {
+// Metadata extraction from a Codex session JSONL is a pure fold over its lines,
+// which is what lets buildCodexSessionsIndex() resume a partially-read file
+// instead of re-parsing it. Keep applyCodexSessionLine() free of any state that
+// is not carried in the accumulator, or incremental reads will drift from full
+// reads.
+function createCodexSessionParseState() {
+  return {
+    sessionMeta: null,
+    lastTimestamp: null,
+    lastUserMessage: null,
+    messageCount: 0,
+    detectedSessionMode: null
+  };
+}
+
+function applyCodexSessionLine(state, line) {
+  let entry;
   try {
-    const fileStream = fsSync.createReadStream(filePath);
-    const rl = readline.createInterface({
-      input: fileStream,
-      crlfDelay: Infinity
-    });
+    entry = JSON.parse(line);
+  } catch (parseError) {
+    // Skip malformed lines
+    return;
+  }
 
-    let sessionMeta = null;
-    let lastTimestamp = null;
-    let lastUserMessage = null;
-    let messageCount = 0;
-    let detectedSessionMode = null;
+  // Track timestamp
+  if (entry.timestamp) {
+    state.lastTimestamp = entry.timestamp;
+  }
 
-    for await (const line of rl) {
-      if (line.trim()) {
-        try {
-          const entry = JSON.parse(line);
+  // Extract session metadata
+  if (entry.type === 'session_meta' && entry.payload) {
+    state.sessionMeta = {
+      id: entry.payload.id,
+      cwd: entry.payload.cwd,
+      model: entry.payload.model || entry.payload.model_provider,
+      timestamp: entry.timestamp,
+      git: entry.payload.git
+    };
+  }
 
-          // Track timestamp
-          if (entry.timestamp) {
-            lastTimestamp = entry.timestamp;
-          }
+  // Count messages and extract user messages for summary
+  if (entry.type === 'event_msg' && entry.payload?.type === 'user_message') {
+    state.messageCount++;
+    if (entry.payload.message) {
+      const modeFromMessage = extractSessionModeFromText(entry.payload.message);
+      if (modeFromMessage) {
+        state.detectedSessionMode = modeFromMessage;
+      }
 
-          // Extract session metadata
-          if (entry.type === 'session_meta' && entry.payload) {
-            sessionMeta = {
-              id: entry.payload.id,
-              cwd: entry.payload.cwd,
-              model: entry.payload.model || entry.payload.model_provider,
-              timestamp: entry.timestamp,
-              git: entry.payload.git
-            };
-          }
-
-          // Count messages and extract user messages for summary
-          if (entry.type === 'event_msg' && entry.payload?.type === 'user_message') {
-            messageCount++;
-            if (entry.payload.message) {
-              const modeFromMessage = extractSessionModeFromText(entry.payload.message);
-              if (modeFromMessage) {
-                detectedSessionMode = modeFromMessage;
-              }
-
-              const cleanedUserMessage = stripInternalContextPrefix(entry.payload.message, false);
-              if (cleanedUserMessage && !isCodexSystemPromptContent(cleanedUserMessage)) {
-                if (!detectedSessionMode) {
-                  detectedSessionMode = inferSessionModeFromUserMessage(cleanedUserMessage);
-                }
-                lastUserMessage = cleanedUserMessage;
-              }
-            }
-          }
-
-          if (entry.type === 'response_item' && entry.payload?.type === 'message' && entry.payload.role === 'assistant') {
-            messageCount++;
-          }
-
-        } catch (parseError) {
-          // Skip malformed lines
+      const cleanedUserMessage = stripInternalContextPrefix(entry.payload.message, false);
+      if (cleanedUserMessage && !isCodexSystemPromptContent(cleanedUserMessage)) {
+        if (!state.detectedSessionMode) {
+          state.detectedSessionMode = inferSessionModeFromUserMessage(cleanedUserMessage);
         }
+        state.lastUserMessage = cleanedUserMessage;
       }
     }
+  }
 
-    if (sessionMeta) {
-      return {
-        ...sessionMeta,
-        timestamp: lastTimestamp || sessionMeta.timestamp,
-        mode: detectedSessionMode || 'research',
-        summary: lastUserMessage ?
-          (lastUserMessage.length > 50 ? lastUserMessage.substring(0, 50) + '...' : lastUserMessage) :
-          'Codex Session',
-        messageCount
-      };
-    }
-
-    return null;
-
-  } catch (error) {
-    console.error('Error parsing Codex session file:', error);
-    return null;
+  if (entry.type === 'response_item' && entry.payload?.type === 'message' && entry.payload.role === 'assistant') {
+    state.messageCount++;
   }
 }
+
+function finalizeCodexSessionParseState(state, filePath) {
+  if (!state?.sessionMeta) {
+    return null;
+  }
+
+  return {
+    ...state.sessionMeta,
+    timestamp: state.lastTimestamp || state.sessionMeta.timestamp,
+    mode: state.detectedSessionMode || 'research',
+    summary: state.lastUserMessage
+      ? (state.lastUserMessage.length > 50 ? state.lastUserMessage.substring(0, 50) + '...' : state.lastUserMessage)
+      : 'Codex Session',
+    messageCount: state.messageCount,
+    filePath
+  };
+}
+
 
 /**
  * Detect system prompt / instruction content in Codex messages
@@ -3985,37 +4173,97 @@ function isCodexSystemPromptContent(text) {
   return false;
 }
 
+// A Codex transcript opens with its session_meta record, so the id is available
+// without reading the body. Scan a few lines rather than exactly one so a stray
+// leading record cannot hide it.
+const CODEX_HEADER_SCAN_LINES = 5;
+
+async function readCodexSessionIdFromHeader(filePath) {
+  let sessionId = null;
+  let seen = 0;
+
+  try {
+    await readJsonlLinesFrom(filePath, 0, (line) => {
+      if (sessionId || seen >= CODEX_HEADER_SCAN_LINES) {
+        return;
+      }
+      seen += 1;
+      try {
+        const entry = JSON.parse(line);
+        if (entry?.type === 'session_meta' && entry.payload?.id) {
+          sessionId = entry.payload.id;
+        }
+      } catch (_) {
+        // Skip malformed lines
+      }
+    });
+  } catch (_) {
+    return null;
+  }
+
+  return sessionId;
+}
+
+/**
+ * Locate the transcript file backing a Codex session id.
+ *
+ * Codex normally encodes the session id in the filename, so the basename check
+ * resolves almost every lookup. Both fallbacks used to re-parse every transcript
+ * in the tree end to end, which on a large history stalled every session open
+ * and delete for many seconds.
+ *
+ * The first fallback reads the memoized session index. The second exists
+ * because that index is keyed by project and therefore drops sessions whose
+ * `cwd` is missing or no longer resolvable — those sessions must still be
+ * openable and deletable, so match them on the session_meta header instead of
+ * folding the whole file.
+ */
+async function findCodexSessionFilePath(sessionId) {
+  if (!sessionId) {
+    return null;
+  }
+
+  const codexSessionsDir = path.join(os.homedir(), '.codex', 'sessions');
+  const jsonlFiles = await findCodexJsonlFiles(codexSessionsDir);
+
+  for (const filePath of jsonlFiles) {
+    if (!path.basename(filePath).includes(sessionId)) {
+      continue;
+    }
+    // A filename can merely *contain* the id, and callers act destructively on
+    // what we return (deleteCodexSession unlinks it). Confirm against the
+    // session_meta header, which costs a handful of lines. A transcript whose
+    // header cannot be read is still accepted, matching the long-standing
+    // filename-only behaviour; only a definite mismatch is rejected.
+    const headerId = await readCodexSessionIdFromHeader(filePath);
+    if (headerId === null || headerId === sessionId) {
+      return filePath;
+    }
+  }
+
+  const sessionsByProject = await buildCodexSessionsIndex();
+  for (const sessions of sessionsByProject.values()) {
+    const match = sessions.find((session) => session.id === sessionId);
+    if (match?.filePath) {
+      return match.filePath;
+    }
+  }
+
+  for (const filePath of jsonlFiles) {
+    if (await readCodexSessionIdFromHeader(filePath) === sessionId) {
+      return filePath;
+    }
+  }
+
+  return null;
+}
+
 // Get messages for a specific Codex session
 async function getCodexSessionMessages(sessionId, limit = null, offset = 0) {
   try {
     const codexSessionsDir = path.join(os.homedir(), '.codex', 'sessions');
 
-    const findSessionFileByMetadata = async () => {
-      const jsonlFiles = await findCodexJsonlFiles(codexSessionsDir);
-
-      let filenameMatch = null;
-      for (const filePath of jsonlFiles) {
-        if (path.basename(filePath).includes(sessionId)) {
-          filenameMatch = filePath;
-          break;
-        }
-      }
-
-      if (filenameMatch) {
-        return filenameMatch;
-      }
-
-      for (const filePath of jsonlFiles) {
-        const sessionData = await parseCodexSessionFile(filePath);
-        if (sessionData?.id === sessionId) {
-          return filePath;
-        }
-      }
-
-      return null;
-    };
-
-    const sessionFilePath = await findSessionFileByMetadata();
+    const sessionFilePath = await findCodexSessionFilePath(sessionId);
 
     if (!sessionFilePath) {
       console.warn(`Codex session file not found for session ${sessionId}`);
@@ -4284,13 +4532,10 @@ async function deleteCodexSession(sessionId) {
     const jsonlFiles = await findJsonlFiles(codexSessionsDir);
     let deletedFile = false;
 
-    for (const filePath of jsonlFiles) {
-      const sessionData = await parseCodexSessionFile(filePath);
-      if (sessionData && sessionData.id === sessionId) {
-        await fs.unlink(filePath);
-        deletedFile = true;
-        break;
-      }
+    const matchedFilePath = await findCodexSessionFilePath(sessionId);
+    if (matchedFilePath && jsonlFiles.includes(matchedFilePath)) {
+      await fs.unlink(matchedFilePath);
+      deletedFile = true;
     }
 
     const deletedIndex =
@@ -4512,6 +4757,9 @@ export {
   extractProjectDirectory,
   resolveClaudeProjectDirs,
   clearProjectDirectoryCache,
+  projectsEvents,
+  buildCodexSessionsIndex,
+  resetCodexSessionFileCache,
   getCodexSessions,
   getGeminiSessions,
   getCodexSessionMessages,
