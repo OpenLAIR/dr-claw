@@ -28,16 +28,29 @@
 
 ## Phase 1 — Research Domain Core
 
-> 计划项（未开始，全部 `[ ]`）
+> 2026-08-07 完成（与计划偏差见文档底部）
 
-- [ ] DB migrations：`init.sql` + `runMigrations` 双通道新增 `rf_projects / rf_stages / rf_stage_gates / rf_tasks / rf_task_dependencies / rf_activity_log`（幂等、外键、索引、timestamps）
-- [ ] 10 个默认 Stage template（种子数据，权重对齐 SPEC §14.1）
-- [ ] Project extension：创建 ResearchFlow project 时自动初始化 stages + gates
-- [ ] Tasks relation model（stage / experiment / claim / manuscript / submission 绑定 + dependency）
-- [ ] REST API：`server/routes/rf.js` 独立 router，`/api/rf/*` 资源化端点，`authenticateToken` 保护
-- [ ] Activity Log 写入（Stage/Gate/Experiment/Claim 等关键操作）
-- [ ] API validation + API tests（临时目录/内存 DB，规避 U-01/U-02 教训）
-- [ ] 进度算法 domain/service 模块 + unit tests（StageProgress / Stage Completed 判定）
+- [x] DB migrations：ResearchFlow 自有版本化迁移 `server/rf/migrations.js`（`rf_schema_migrations` + 8 表：`rf_projects / rf_stages / rf_stage_gates / rf_tasks / rf_task_dependencies / rf_task_links / rf_activity_log`；事务化、幂等、restart-safe；**未动** legacy init.sql/runMigrations）
+- [x] 10 个默认 Stage template（`server/rf/lifecycle.js`，63 个 gates，权重 7/10/10/10/20/15/5/15/5/3=100 对齐 SPEC §14.1）
+- [x] Project extension：创建 RF project 时事务内自动初始化 10 stages + gates，首个 stage 设为 current；`rf_projects.id` 用稳定 UUID + `source_project_id` 可选关联 `projects.id` + 预留 workspace_type/windows_path/wsl_distro/wsl_path
+- [x] Tasks relation model：`rf_tasks`（stage 软绑定）+ `rf_task_dependencies`（防自引用/重复/环）+ `rf_task_links`（polymorphic，relation_type 受控枚举，不提前建 Phase 3/4 表）
+- [x] REST API：`server/routes/rf.js` 独立 router，`/api/rf/*` 资源化端点（projects/stages/gates/tasks/dependencies/links/activity），`authenticateToken` 保护，`{success, data}` 风格
+- [x] Activity Log：`server/rf/activity.js` + service 事务内写入（project_created/stage_changed/gate_passed/gate_unpassed/task_created/task_completed/task_blocked 等）
+- [x] API validation + API tests：`server/rf/validation.js`；3 个测试文件 24 用例全过（临时目录/隔离 DB，零新依赖，覆盖普通 JWT + IS_PLATFORM 双模式）
+- [x] 进度算法 domain/service 模块 + unit tests：`server/rf/progress.js` 纯函数（StageProgress=0.7×Gates+0.3×Tasks、Stage Completed ⟺ 全部 required gates passed、OverallProgress 加权）
+
+### Phase 1 deviations
+
+- `rf_task_links` 按用户 §6 字段实现（无 project_id/updated_at）；`rf_task_dependencies` 附加 project_id 便于项目级查询
+- 端点 `POST /api/rf/projects/:id/advance-stage`（推进 current→completed 并激活下一 stage）与 `POST /api/rf/stages/:id/complete`（gate 不变量校验）作为显式状态机端点新增
+- service 层直接调用时也强制 relation_type 受控枚举（不依赖 routes 层 validation）
+- CI 只新增 rf 专项 vitest step（不跑全量，规避 U-01/U-02）
+
+### Phase 1 code review fixes（built-in review 发现并修复）
+
+1. `setStageCurrent` 曾全表 demote `status='current'` → 改为按 `project_id` 限定（防跨项目污染），新增跨项目隔离测试
+2. `completeStage` 完成后不激活下一 stage → `advanceStage` 死路；修复为 complete 自动激活下一 pending stage；且仅允许 complete `current` stage（已完成幂等、乱序 409），新增自动推进断言
+3. gate un-pass 不破坏不变量：completed stage 的 required gate 被取消通过时，stage 回退为 `current`（项目退回该阶段）+ activity，新增回退测试
 
 ## Phase 2 — Dashboard / Roadmap
 
@@ -92,12 +105,12 @@
 
 （来源：ARCHITECTURE_BASELINE.md §7 + UPSTREAM_ISSUES.md）
 
-1. **无版本化迁移**：`init.sql` + `runMigrations` 双通道须幂等；评估 `rf_schema_version`。
+1. **rf 迁移演进纪律**（原"无版本化迁移"风险已由 `rf_schema_migrations` 解决）：rf 与 legacy 两套迁移机制并行维护——新增 ResearchFlow migration 必须**追加到 `server/rf/migrations.js` 的 `MIGRATIONS` 数组末尾且版本号递增，禁止修改已应用版本**；rf 表与 legacy 表命名空间分离（`rf_*` 前缀），防止命名冲突。
 2. **巨型文件蔓延**：`server/index.js`（135KB）已有约 20 个内联 project 端点——rf 代码必须独立模块（`server/routes/rf.js`），禁止并入 index.js。
-3. **项目模型耦合**：rf 外键引用 `projects.id`（TEXT slug）；Attach Existing Repository 需 Phase 1 即设计 Windows/WSL 双路径字段。
-4. **测试环境敏感（U-01/U-02）**：gemini-api 测试写真实 `~/.gemini`（只读 HOME 下 EROFS 失败）；codex-discovery 测试进程挂起。rf 测试一律走临时目录/内存 DB。
-5. **CI 无测试（U-03）**：当前 CI 只跑 typecheck+build，rf 回归无自动保障 → Phase 1 起在 CI 增加 vitest 任务。
-6. **DATABASE_PATH 三处重复（U-04）**：load-env.js / electron/main.mjs / db.js；rf 数据路径扩展前先收敛。
+3. **工作区路径可移植性**（原"项目模型耦合"风险已解决：`rf_projects.id` 现为稳定 UUID，`source_project_id` 可选关联 `projects.id`，目录 rename/move 不影响 ResearchFlow 身份）：`workspace_type/windows_path/wsl_distro/wsl_path` 字段已预留但尚未消费；Windows/WSL 路径可移植性与 `Open in WSL Terminal` 属 **Phase 5** WSL adapter 关注点，不阻塞 Phase 2。
+4. **测试环境敏感（U-01/U-02）**：gemini-api 测试写真实 `~/.gemini`（只读 HOME 下 EROFS 失败）；codex-discovery 测试进程挂起。rf 测试一律走临时目录/隔离 DB（已规避），upstream 两处缺陷按 UPSTREAM_ISSUES.md 记录，不属 ResearchFlow 回归。
+5. **upstream 全量测试未入 CI（U-03，非阻塞）**：rf 专项 vitest step 已加入 CI（`.github/workflows/ci.yml`，rf-domain/rf-api/rf-api-platform 26 用例）；upstream 全量测试（含 U-01/U-02 影响）仍未纳入 CI，属已知上游问题，不阻塞 ResearchFlow。
+6. **DATABASE_PATH 三处重复（U-04，deferred / non-blocking）**：load-env.js / electron/main.mjs / db.js 各自维护默认路径；**明确推迟**——不属 Phase 2 任务，待 Phase 5 数据路径整合时一并收敛。
 7. **Electron 重命名**：分层处理，避免破坏旧数据兼容（Prompt §16）。
 8. **License**：GPL-3.0 + AGPL-3.0 双授权；分发 `.exe` 前核对源码提供义务（SPEC §31）。
 
@@ -110,7 +123,7 @@
 | install | PASS* | 已由开发者手动完成依赖安装（WSL）；非本仓库 agent 自动执行 |
 | typecheck | PASS | `npm run typecheck` 通过 |
 | build | PASS | `npm run build` 通过（27.6s，仅 chunk 体积警告） |
-| unit | PARTIAL | vitest 100/107 通过；7 失败 = gemini-api 写只读 `~/.gemini`（环境性，非产品缺陷，U-01） |
+| unit | PARTIAL | vitest 126/133 通过；7 失败 = gemini-api 写只读 `~/.gemini`（环境性，非产品缺陷，U-01）；新增 ResearchFlow 3 文件 26 用例全过 |
 | integration | NOT RUN | 无独立 integration 命令；vitest 中 `server/__tests__`（gemini/session-delete 等）部分可视为集成级，但未单独执行验证 |
 | e2e | NOT RUN | `npx playwright test` 未执行（需浏览器 + dev server） |
 | web dev | PASS* | 开发者手动验证：WSL 中 `npm run dev` 成功，Windows 浏览器可访问 `http://localhost:5173` |
@@ -123,4 +136,4 @@
 
 ## Next
 
-**Phase 1 — Research Domain Core**（先 DB + API，不堆 UI；完成后按 Prompt §12 汇报并更新本文件）
+**Phase 2 — Dashboard / Roadmap**（Portfolio / Project Dashboard / Roadmap / Stage Gate UI / Next Critical Action / Project Health；前端挂载策略定夺：顶层 tab vs Chat 右侧栏 tab）

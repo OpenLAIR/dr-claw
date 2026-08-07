@@ -73,6 +73,9 @@ import newsRoutes from './routes/news.js';
 import autoResearchRoutes from './routes/auto-research.js';
 import referencesRoutes from './routes/references.js';
 import quickQaRoutes from './routes/quick-qa.js';
+import rfRoutes from './routes/rf.js';
+import { db } from './database/db.js';
+import { runResearchFlowMigrations } from './rf/migrations.js';
 import { initializeDatabase, sessionDb, tagDb } from './database/db.js';
 import { validateApiKey, authenticateToken, authenticateWebSocket } from './middleware/auth.js';
 import { IS_PLATFORM } from './constants/config.js';
@@ -534,6 +537,9 @@ app.use('/api/auto-research', authenticateToken, autoResearchRoutes);
 app.use('/api/references', authenticateToken, referencesRoutes);
 
 app.use('/api/quick-qa', authenticateToken, quickQaRoutes);
+
+// ResearchFlow API Routes (protected) — research domain core (Phase 1)
+app.use('/api/rf', authenticateToken, rfRoutes);
 
 // Agent API Routes (uses API key authentication)
 app.use('/api/agent', agentRoutes);
@@ -3202,6 +3208,8 @@ async function startServer() {
     try {
         // Initialize authentication database
         await initializeDatabase();
+        // ResearchFlow schema migrations (own versioned runner, see server/rf/migrations.js)
+        await runResearchFlowMigrations(db);
 
         // Check if running in production mode (dist folder exists)
         const distIndexPath = path.join(__dirname, '../dist/index.html');

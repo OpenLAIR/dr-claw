@@ -1,0 +1,2 @@
+[permissions]
+allow = ["Bash=cd /home/mars/projects/researchflow && timeout 120 npx vitest run runtimePorts 2>&1 | tail -20"]
