@@ -45,6 +45,7 @@ function Sidebar({
   onOpenAutoResearch,
   onOpenNews,
   onOpenCompute,
+  onOpenResearchflow,
   onImportedProjectCreated,
   newSessionMode,
 }: SidebarProps) {
@@ -298,6 +299,7 @@ function Sidebar({
             onOpenAutoResearch={onOpenAutoResearch}
             onOpenNews={onOpenNews}
             onOpenCompute={onOpenCompute}
+            onOpenResearchflow={onOpenResearchflow}
             onCreateProject={() => setShowWizard(true)}
             onCollapseSidebar={handleCollapseSidebar}
             currentVersion={currentVersion}

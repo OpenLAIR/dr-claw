@@ -9,6 +9,7 @@ import SurveyPage from '../../survey/view/SurveyPage';
 import ProjectDashboard from '../../project-dashboard/view/ProjectDashboard';
 import TrashDashboard from '../../project-dashboard/view/TrashDashboard';
 import NewsDashboard from '../../news-dashboard/view/NewsDashboard';
+import ResearchFlowApp from '../../researchflow/ResearchFlowApp';
 
 import ChatTabBar from '../../chat/view/ChatTabBar';
 import { useChatTabs } from '../../../hooks/useChatTabs';
@@ -299,6 +300,25 @@ function MainContent({
 
         <div className="flex-1 min-h-0 overflow-hidden">
           <ComputeResourcesDashboard />
+        </div>
+      </div>
+    );
+  }
+
+  if (activeTab === 'researchflow') {
+    return (
+      <div className="h-full flex flex-col">
+        <MainContentHeader
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          selectedProject={null}
+          selectedSession={null}
+          shouldShowTasksTab={false}
+          isMobile={isMobile}
+          onMenuClick={onMenuClick}
+        />
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <ResearchFlowApp />
         </div>
       </div>
     );

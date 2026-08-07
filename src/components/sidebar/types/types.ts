@@ -50,6 +50,7 @@ export type SidebarProps = {
   onOpenAutoResearch: () => void;
   onOpenNews: () => void;
   onOpenCompute: () => void;
+  onOpenResearchflow: () => void;
   onImportedProjectCreated?: (project: Project, options?: ProjectCreationOptions) => void;
   newSessionMode?: SessionMode;
 };

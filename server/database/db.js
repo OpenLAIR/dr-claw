@@ -5,6 +5,7 @@ import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { stripInternalContextPrefix } from '../utils/sessionFormatting.js';
+import { applyPendingRestore } from '../rf/backup.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -51,8 +52,21 @@ if (process.env.DATABASE_PATH) {
 }
 
 // Migrate legacy local DB (repo install path) into the configured DB path.
+// Only copy a legacy DB that is actually usable (non-empty, valid SQLite
+// header) — a 0-byte placeholder or corrupt file must NOT be copied into the
+// production path (e.g. a packaged app carrying a dev artifact).
 const LEGACY_DB_PATH = path.join(__dirname, 'auth.db');
-if (DB_PATH !== LEGACY_DB_PATH && !fs.existsSync(DB_PATH) && fs.existsSync(LEGACY_DB_PATH)) {
+const isUsableSqliteFile = (p) => {
+  try {
+    const stat = fs.statSync(p);
+    if (!stat.isFile() || stat.size === 0) return false;
+    const header = fs.readFileSync(p).subarray(0, 16).toString('latin1');
+    return header.startsWith('SQLite format 3');
+  } catch {
+    return false;
+  }
+};
+if (DB_PATH !== LEGACY_DB_PATH && !fs.existsSync(DB_PATH) && isUsableSqliteFile(LEGACY_DB_PATH)) {
   try {
     fs.copyFileSync(LEGACY_DB_PATH, DB_PATH);
     console.log(`[MIGRATION] Copied database from ${LEGACY_DB_PATH} to ${DB_PATH}`);
@@ -64,6 +78,19 @@ if (DB_PATH !== LEGACY_DB_PATH && !fs.existsSync(DB_PATH) && fs.existsSync(LEGAC
   } catch (err) {
     console.warn(`[MIGRATION] Could not copy legacy database: ${err.message}`);
   }
+}
+
+// Phase 5: apply a staged restore (from Settings → Restore Backup) BEFORE the
+// DB is opened. No-op unless a restore-pending marker exists; validates the
+// staged file is a real SQLite database before swapping. Never deletes data.
+// Runs even when the target DB file is missing (a failed prior attempt may
+// have left it absent — the marker must be retried then).
+if (DB_PATH && DB_PATH !== ':memory:') {
+  applyPendingRestore({
+    dataDir: path.dirname(DB_PATH),
+    dbPath: DB_PATH,
+    log: (msg, details) => console.log('[RESTORE]', msg, details ? JSON.stringify(details) : ''),
+  });
 }
 
 // Create database connection

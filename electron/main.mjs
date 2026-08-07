@@ -22,8 +22,11 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const productName = 'Dr. Claw';
-const appId = 'io.openlair.drclaw';
+// User-facing product brand (Phase 5). Internal identifiers that must stay
+// stable for compatibility (npm package name, env var names, DB table names,
+// workspace roots) are intentionally NOT renamed — see DATA_AND_BACKUP.md.
+const productName = 'ResearchFlow';
+const appId = 'io.openlair.researchflow';
 const isMac = process.platform === 'darwin';
 const isDev = !app.isPackaged;
 
@@ -207,39 +210,27 @@ async function waitForServer(url, timeoutMs = 30000) {
 // Database and workspace paths (with legacy migration)
 // ---------------------------------------------------------------------------
 
-function resolveSharedDatabasePath() {
-  const homeDir = app.getPath('home');
-  const legacyDir = path.join(homeDir, '.vibelab');
-  const legacyDbPath = path.join(legacyDir, 'auth.db');
-  const legacySidecars = [`${legacyDbPath}-shm`, `${legacyDbPath}-wal`];
+// Phase 5: production DB lives under the ResearchFlow userData directory
+// (%APPDATA%\ResearchFlow\researchflow.db). Legacy Dr. Claw / vibelab data
+// under ~/.dr-claw is detected read-only and NEVER auto-copied or migrated —
+// see DATA_AND_BACKUP.md for the explicit import guidance.
+function resolveProductionDatabasePath() {
+  const userDataDir = app.getPath('userData');
+  const dbPath = path.join(userDataDir, 'researchflow.db');
 
-  const currentDir = path.join(homeDir, '.dr-claw');
-  const currentDbPath = path.join(currentDir, 'auth.db');
-  const currentSidecars = [`${currentDbPath}-shm`, `${currentDbPath}-wal`];
-
-  if (fs.existsSync(currentDbPath)) {
-    return currentDbPath;
+  if (!fs.existsSync(dbPath)) {
+    const homeDir = app.getPath('home');
+    const legacyCandidates = [
+      path.join(homeDir, '.dr-claw', 'auth.db'),
+      path.join(homeDir, '.vibelab', 'auth.db'),
+    ];
+    const found = legacyCandidates.find((candidate) => fs.existsSync(candidate));
+    if (found) {
+      logDesktop('Legacy Dr. Claw database detected — not auto-migrating (see DATA_AND_BACKUP.md)', { legacy: found, production: dbPath });
+    }
   }
 
-  if (!fs.existsSync(legacyDbPath)) {
-    return currentDbPath;
-  }
-
-  try {
-    fs.mkdirSync(currentDir, { recursive: true });
-    fs.copyFileSync(legacyDbPath, currentDbPath);
-
-    legacySidecars.forEach((legacySidecar, index) => {
-      if (fs.existsSync(legacySidecar) && !fs.existsSync(currentSidecars[index])) {
-        fs.copyFileSync(legacySidecar, currentSidecars[index]);
-      }
-    });
-
-    return currentDbPath;
-  } catch (error) {
-    logDesktop('Failed to migrate legacy auth DB, using legacy path', error instanceof Error ? { message: error.message } : String(error));
-    return legacyDbPath;
-  }
+  return dbPath;
 }
 
 function resolveSharedWorkspacesRoot() {
@@ -265,10 +256,14 @@ function resolveSharedWorkspacesRoot() {
 function buildServerEnv(appRoot) {
   const userDataDir = app.getPath('userData');
   const runtimeDir = path.join(userDataDir, 'runtime');
-  const databasePath = resolveSharedDatabasePath();
+  const logsDir = path.join(userDataDir, 'logs');
+  const backupsDir = path.join(userDataDir, 'backups');
+  const databasePath = resolveProductionDatabasePath();
   const workspacesRoot = resolveSharedWorkspacesRoot();
 
   fs.mkdirSync(runtimeDir, { recursive: true });
+  fs.mkdirSync(logsDir, { recursive: true });
+  fs.mkdirSync(backupsDir, { recursive: true });
   fs.mkdirSync(path.dirname(databasePath), { recursive: true });
   fs.mkdirSync(workspacesRoot, { recursive: true });
 
@@ -285,6 +280,29 @@ function buildServerEnv(appRoot) {
     VITE_PORT: process.env.VITE_PORT || '5173',
     APP_ROOT: appRoot,
   };
+}
+
+// Append backend output to <userData>/logs/backend.log (rotated at ~2 MB).
+// The backend itself never prints secrets; this file mirrors its stdout/stderr
+// for diagnostics. Cap length so a runaway log cannot fill the disk.
+let backendLogStream = null;
+function appendBackendLog(text) {
+  try {
+    const logsDir = path.join(app.getPath('userData'), 'logs');
+    fs.mkdirSync(logsDir, { recursive: true });
+    const logPath = path.join(logsDir, 'backend.log');
+    try {
+      const stat = fs.statSync(logPath);
+      if (stat.size > 2 * 1024 * 1024) {
+        fs.renameSync(logPath, `${logPath}.1`);
+      }
+    } catch {
+      // No existing log — fine.
+    }
+    fs.appendFileSync(logPath, text);
+  } catch {
+    // Logging must never crash the app.
+  }
 }
 
 async function startServer() {
@@ -320,6 +338,7 @@ async function startServer() {
   serverProcess.stdout?.on('data', (chunk) => {
     const text = chunk.toString();
     process.stdout.write(text);
+    appendBackendLog(text);
     const trimmed = text.trim();
     if (trimmed) {
       logDesktop('server:stdout', trimmed);
@@ -329,6 +348,7 @@ async function startServer() {
   serverProcess.stderr?.on('data', (chunk) => {
     const text = chunk.toString();
     process.stderr.write(text);
+    appendBackendLog(text);
     const trimmed = text.trim();
     if (trimmed) {
       logDesktop('server:stderr', trimmed);
@@ -345,7 +365,7 @@ async function startServer() {
 
     if (!quitting) {
       dialog.showErrorBox(
-        'Dr. Claw server exited',
+        'ResearchFlow server exited',
         `The local server stopped unexpectedly${signal ? ` (${signal})` : ''}${typeof code === 'number' ? ` (exit code ${code})` : ''}.\n\nSee desktop.log in the app data directory for details.`,
       );
       app.quit();
@@ -517,7 +537,7 @@ function buildAppMenu() {
     label: 'Help',
     submenu: [
       {
-        label: 'Dr. Claw Documentation',
+        label: 'Open Source Repository',
         click: () => {
           shell.openExternal('https://github.com/OpenLAIR/dr-claw');
         },
@@ -573,7 +593,16 @@ function registerIpcHandlers() {
       userData: app.getPath('userData'),
       appRoot: resolveAppRoot(),
       logsPath: getDesktopLogPath(),
+      databasePath: resolveProductionDatabasePath(),
+      logDir: path.join(app.getPath('userData'), 'logs'),
     };
+  });
+
+  ipcMain.handle('app:relaunch', () => {
+    // Purpose-specific: used by the startup-error screen's Retry button.
+    app.relaunch();
+    app.quit();
+    return true;
   });
 
   ipcMain.handle('dialog:selectDirectory', async (_event, options = {}) => {
@@ -844,6 +873,89 @@ function createWindow(baseUrl) {
 }
 
 // ---------------------------------------------------------------------------
+// Startup error UI (Phase 5)
+// ---------------------------------------------------------------------------
+
+function friendlyStartupMessage(rawMessage) {
+  if (typeof rawMessage !== 'string') {
+    return 'An unexpected error occurred during startup.';
+  }
+  if (/timed out waiting for local server/i.test(rawMessage)) {
+    return 'The embedded backend did not become ready in time. The port may be unavailable, or the backend exited during startup.';
+  }
+  if (/entrypoint not found/i.test(rawMessage)) {
+    return 'Application files are incomplete. Please reinstall ResearchFlow.';
+  }
+  if (/migration|database/i.test(rawMessage)) {
+    return 'Database initialization or migration failed. See logs for details.';
+  }
+  return 'An unexpected error occurred during startup.';
+}
+
+function showStartupError(title, rawMessage, detail) {
+  logDesktop('Showing startup error UI', { title, rawMessage, detail });
+  const preloadPath = path.join(__dirname, 'preload.mjs');
+  const userDataDir = app.getPath('userData');
+  const logPath = getDesktopLogPath();
+  const message = friendlyStartupMessage(rawMessage);
+  const detailHtml = detail ? String(detail).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>') : '';
+  // JSON.stringify produces a safe JS string literal for inline handlers
+  // (handles quotes, backslashes, control chars) — never hand-escaped paths.
+  const userDataLiteral = JSON.stringify(String(userDataDir));
+  const logPathLiteral = JSON.stringify(String(logPath));
+  const userDataHtml = String(userDataDir).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  const html = `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; background: #0b1220; color: #e2e8f0; }
+  .wrap { padding: 32px; max-width: 560px; }
+  h1 { font-size: 18px; margin: 0 0 8px; color: #f87171; }
+  p.msg { font-size: 14px; line-height: 1.5; margin: 0 0 16px; }
+  details { margin: 0 0 20px; }
+  summary { font-size: 12px; color: #94a3b8; cursor: pointer; }
+  pre { font-size: 11px; background: #0f172a; padding: 12px; border-radius: 6px; overflow: auto; color: #cbd5e1; white-space: pre-wrap; }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  button { font-size: 13px; padding: 8px 14px; border-radius: 6px; border: 1px solid #334155; background: #1e293b; color: #e2e8f0; cursor: pointer; }
+  button.primary { background: #2563eb; border-color: #2563eb; }
+  button:hover { filter: brightness(1.15); }
+  .path { font-size: 11px; color: #64748b; margin-top: 20px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>${title}</h1>
+  <p class="msg">${message}</p>
+  ${detailHtml ? `<details><summary>Technical details</summary><pre>${detailHtml}</pre></details>` : ''}
+  <div class="actions">
+    <button class="primary" onclick="window.electronAPI.relaunchApp()">Retry</button>
+    <button onclick="window.electronAPI.openPath(${userDataLiteral})">Open Data Folder</button>
+    <button onclick="window.electronAPI.showItemInFolder(${logPathLiteral})">Open Logs</button>
+    <button onclick="window.close()">Exit</button>
+  </div>
+  <div class="path">Data directory: ${userDataHtml}</div>
+</div>
+</body>
+</html>`;
+
+  const win = new BrowserWindow({
+    width: 640,
+    height: 480,
+    resizable: false,
+    title: productName,
+    backgroundColor: '#0b1220',
+    webPreferences: {
+      contextIsolation: true,
+      sandbox: true,
+      preload: preloadPath,
+    },
+  });
+  win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
+}
+
+// ---------------------------------------------------------------------------
 // Boot
 // ---------------------------------------------------------------------------
 
@@ -864,8 +976,7 @@ async function boot() {
     createWindow(baseUrl);
   } catch (error) {
     logDesktop('boot failed', error instanceof Error ? { message: error.message, stack: error.stack } : String(error));
-    dialog.showErrorBox('Failed to start Dr. Claw', error instanceof Error ? error.message : String(error));
-    app.quit();
+    showStartupError('ResearchFlow could not start', error instanceof Error ? error.message : String(error), error instanceof Error ? error.stack : String(error));
   }
 }
 
@@ -960,6 +1071,5 @@ app.whenReady()
       message: error.message,
       stack: error.stack,
     } : String(error));
-    dialog.showErrorBox('Failed to start Dr. Claw', error instanceof Error ? error.message : String(error));
-    app.quit();
+    showStartupError('ResearchFlow could not start', error instanceof Error ? error.message : String(error), error instanceof Error ? error.stack : String(error));
   });

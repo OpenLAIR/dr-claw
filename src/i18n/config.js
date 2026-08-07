@@ -22,6 +22,7 @@ import enChat from './locales/en/chat.json';
 import enCodeEditor from './locales/en/codeEditor.json';
 import enNews from './locales/en/news.json';
 import enReferences from './locales/en/references.json';
+import enResearchflow from './locales/en/researchflow.json';
 
 import koCommon from './locales/ko/common.json';
 import koSettings from './locales/ko/settings.json';
@@ -40,6 +41,7 @@ import zhChat from './locales/zh-CN/chat.json';
 import zhCodeEditor from './locales/zh-CN/codeEditor.json';
 import zhNews from './locales/zh-CN/news.json';
 import zhReferences from './locales/zh-CN/references.json';
+import zhResearchflow from './locales/zh-CN/researchflow.json';
 
 // Import supported languages configuration
 import { languages } from './languages.js';
@@ -74,6 +76,7 @@ i18n
         codeEditor: enCodeEditor,
         news: enNews,
         references: enReferences,
+        researchflow: enResearchflow,
       },
       ko: {
         common: koCommon,
@@ -94,6 +97,7 @@ i18n
         codeEditor: zhCodeEditor,
         news: zhNews,
         references: zhReferences,
+        researchflow: zhResearchflow,
       },
     },
 
@@ -107,7 +111,7 @@ i18n
     debug: import.meta.env.DEV,
 
     // Namespaces - load only what's needed
-    ns: ['common', 'settings', 'auth', 'sidebar', 'chat', 'codeEditor', 'news', 'references'],
+    ns: ['common', 'settings', 'auth', 'sidebar', 'chat', 'codeEditor', 'news', 'references', 'researchflow'],
     defaultNS: 'common',
 
     // Key separator for nested keys (default: '.')

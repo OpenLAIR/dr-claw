@@ -31,8 +31,8 @@ jobs:
       - name: build
         run: npm run build
 
-      # ResearchFlow domain tests (Phase 1+) — scoped to the rf suite so known
-      # upstream test-isolation defects (docs/researchflow/UPSTREAM_ISSUES.md
+      # ResearchFlow domain + UI tests (Phase 1-5) — scoped to the rf suite so
+      # known upstream test-isolation defects (docs/researchflow/UPSTREAM_ISSUES.md
       # U-01/U-02) do not block CI.
       - name: researchflow tests
-        run: npx vitest run server/__tests__/rf-domain.test.mjs server/__tests__/rf-api.test.mjs server/__tests__/rf-api-platform.test.mjs
+        run: npx vitest run server/__tests__/rf-domain.test.mjs server/__tests__/rf-api.test.mjs server/__tests__/rf-api-platform.test.mjs server/__tests__/rf-insights.test.mjs server/__tests__/rf-phase3-domain.test.mjs server/__tests__/rf-phase4-domain.test.mjs server/__tests__/rf-phase5-data.test.mjs server/__tests__/rf-phase5-wsl.test.mjs server/__tests__/rf-phase5-api.test.mjs server/__tests__/rf-phase5-desktop.test.mjs src/components/researchflow/__tests__/ResearchFlow.test.jsx src/components/researchflow/__tests__/Phase3.test.jsx src/components/researchflow/__tests__/Phase4.test.jsx src/components/researchflow/__tests__/Phase5.test.jsx

@@ -408,6 +408,115 @@ export const api = {
   // Generic GET method for any endpoint
   get: (endpoint) => authenticatedFetch(`/api${endpoint}`),
 
+  // ResearchFlow domain (Phase 1 backend + Phase 2 dashboard/roadmap/tasks)
+  rf: {
+    listProjects: (includeArchived = false) =>
+      authenticatedFetch(`/api/rf/projects${includeArchived ? '?includeArchived=true' : ''}`),
+    createProject: (body) => authenticatedFetch('/api/rf/projects', { method: 'POST', body: JSON.stringify(body) }),
+    getProject: (id) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(id)}`),
+    getDashboard: (id) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(id)}/dashboard`),
+    updateProject: (id, body) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(body) }),
+    archiveProject: (id) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+    advanceStage: (id) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(id)}/advance-stage`, { method: 'POST' }),
+    listStages: (projectId) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/stages`),
+    updateStage: (stageId, body) => authenticatedFetch(`/api/rf/stages/${encodeURIComponent(stageId)}`, { method: 'PATCH', body: JSON.stringify(body) }),
+    completeStage: (stageId) => authenticatedFetch(`/api/rf/stages/${encodeURIComponent(stageId)}/complete`, { method: 'POST' }),
+    listGates: (projectId) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/gates`),
+    patchGate: (gateId, body) => authenticatedFetch(`/api/rf/gates/${encodeURIComponent(gateId)}`, { method: 'PATCH', body: JSON.stringify(body) }),
+    listTasks: (projectId) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/tasks`),
+    createTask: (projectId, body) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/tasks`, { method: 'POST', body: JSON.stringify(body) }),
+    getTask: (taskId) => authenticatedFetch(`/api/rf/tasks/${encodeURIComponent(taskId)}`),
+    updateTask: (taskId, body) => authenticatedFetch(`/api/rf/tasks/${encodeURIComponent(taskId)}`, { method: 'PATCH', body: JSON.stringify(body) }),
+    deleteTask: (taskId) => authenticatedFetch(`/api/rf/tasks/${encodeURIComponent(taskId)}`, { method: 'DELETE' }),
+    listDependencies: (projectId) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/task-dependencies`),
+    addDependency: (taskId, body) => authenticatedFetch(`/api/rf/tasks/${encodeURIComponent(taskId)}/dependencies`, { method: 'POST', body: JSON.stringify(body) }),
+    removeDependency: (depId) => authenticatedFetch(`/api/rf/task-dependencies/${encodeURIComponent(depId)}`, { method: 'DELETE' }),
+    listTaskLinks: (projectId) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/task-links`),
+    addTaskLink: (taskId, body) => authenticatedFetch(`/api/rf/tasks/${encodeURIComponent(taskId)}/links`, { method: 'POST', body: JSON.stringify(body) }),
+    removeTaskLink: (linkId) => authenticatedFetch(`/api/rf/task-links/${encodeURIComponent(linkId)}`, { method: 'DELETE' }),
+    listActivity: (projectId, limit = 50, offset = 0) =>
+      authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/activity?limit=${limit}&offset=${offset}`),
+    // Phase 3: Experiments
+    listExperiments: (projectId) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/experiments`),
+    createExperiment: (projectId, body) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/experiments`, { method: 'POST', body: JSON.stringify(body) }),
+    getExperiment: (id) => authenticatedFetch(`/api/rf/experiments/${encodeURIComponent(id)}`),
+    updateExperiment: (id, body) => authenticatedFetch(`/api/rf/experiments/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(body) }),
+    deleteExperiment: (id) => authenticatedFetch(`/api/rf/experiments/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+    createRun: (experimentId, body) => authenticatedFetch(`/api/rf/experiments/${encodeURIComponent(experimentId)}/runs`, { method: 'POST', body: JSON.stringify(body) }),
+    updateRun: (runId, body) => authenticatedFetch(`/api/rf/experiment-runs/${encodeURIComponent(runId)}`, { method: 'PATCH', body: JSON.stringify(body) }),
+    deleteRun: (runId) => authenticatedFetch(`/api/rf/experiment-runs/${encodeURIComponent(runId)}`, { method: 'DELETE' }),
+    // Phase 3: Claims / Evidence
+    listClaims: (projectId) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/claims`),
+    createClaim: (projectId, body) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/claims`, { method: 'POST', body: JSON.stringify(body) }),
+    getClaim: (id) => authenticatedFetch(`/api/rf/claims/${encodeURIComponent(id)}`),
+    updateClaim: (id, body) => authenticatedFetch(`/api/rf/claims/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(body) }),
+    deleteClaim: (id) => authenticatedFetch(`/api/rf/claims/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+    listEvidence: (projectId) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/evidence`),
+    createEvidence: (projectId, body) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/evidence`, { method: 'POST', body: JSON.stringify(body) }),
+    getEvidence: (id) => authenticatedFetch(`/api/rf/evidence/${encodeURIComponent(id)}`),
+    updateEvidence: (id, body) => authenticatedFetch(`/api/rf/evidence/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(body) }),
+    deleteEvidence: (id) => authenticatedFetch(`/api/rf/evidence/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+    linkClaimEvidence: (body) => authenticatedFetch('/api/rf/claim-evidence', { method: 'POST', body: JSON.stringify(body) }),
+    unlinkClaimEvidence: (linkId) => authenticatedFetch(`/api/rf/claim-evidence/${encodeURIComponent(linkId)}`, { method: 'DELETE' }),
+    getEvidenceHealth: (projectId) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/evidence-health`),
+    // Phase 3: Decisions
+    listDecisions: (projectId) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/decisions`),
+    createDecision: (projectId, body) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/decisions`, { method: 'POST', body: JSON.stringify(body) }),
+    getDecision: (id) => authenticatedFetch(`/api/rf/decisions/${encodeURIComponent(id)}`),
+    updateDecision: (id, body) => authenticatedFetch(`/api/rf/decisions/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(body) }),
+    deleteDecision: (id) => authenticatedFetch(`/api/rf/decisions/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+    // Phase 3: Literature
+    listLiterature: (projectId) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/literature`),
+    createLiterature: (projectId, body) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/literature`, { method: 'POST', body: JSON.stringify(body) }),
+    getLiterature: (id) => authenticatedFetch(`/api/rf/literature/${encodeURIComponent(id)}`),
+    updateLiterature: (id, body) => authenticatedFetch(`/api/rf/literature/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(body) }),
+    deleteLiterature: (id) => authenticatedFetch(`/api/rf/literature/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+    // Phase 3: Figures / Tables
+    listFiguresTables: (projectId) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/figures-tables`),
+    createFigureTable: (projectId, body) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/figures-tables`, { method: 'POST', body: JSON.stringify(body) }),
+    getFigureTable: (id) => authenticatedFetch(`/api/rf/figures-tables/${encodeURIComponent(id)}`),
+    updateFigureTable: (id, body) => authenticatedFetch(`/api/rf/figures-tables/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(body) }),
+    deleteFigureTable: (id) => authenticatedFetch(`/api/rf/figures-tables/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+    // Phase 3: Entity links (provenance)
+    createEntityLink: (body) => authenticatedFetch('/api/rf/entity-links', { method: 'POST', body: JSON.stringify(body) }),
+    deleteEntityLink: (linkId) => authenticatedFetch(`/api/rf/entity-links/${encodeURIComponent(linkId)}`, { method: 'DELETE' }),
+    listEntityLinks: (projectId) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/entity-links`),
+    // Phase 4: Manuscript
+    getManuscript: (projectId) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/manuscript`),
+    initializeManuscript: (projectId) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/manuscript/initialize`, { method: 'POST' }),
+    updateManuscriptSection: (sectionId, body) => authenticatedFetch(`/api/rf/manuscript-sections/${encodeURIComponent(sectionId)}`, { method: 'PATCH', body: JSON.stringify(body) }),
+    deleteManuscriptSection: (sectionId) => authenticatedFetch(`/api/rf/manuscript-sections/${encodeURIComponent(sectionId)}`, { method: 'DELETE' }),
+    // Phase 4: Results Freeze
+    getFreezeReadiness: (projectId) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/results-freeze/readiness`),
+    listResultFreezes: (projectId) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/results-freezes`),
+    createResultsFreeze: (projectId, body) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/results-freezes`, { method: 'POST', body: JSON.stringify(body) }),
+    // Phase 4: Review Comments
+    listReviewComments: (projectId) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/review-comments`),
+    createReviewComment: (projectId, body) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/review-comments`, { method: 'POST', body: JSON.stringify(body) }),
+    updateReviewComment: (commentId, body) => authenticatedFetch(`/api/rf/review-comments/${encodeURIComponent(commentId)}`, { method: 'PATCH', body: JSON.stringify(body) }),
+    deleteReviewComment: (commentId) => authenticatedFetch(`/api/rf/review-comments/${encodeURIComponent(commentId)}`, { method: 'DELETE' }),
+    // Phase 4: Submission
+    listSubmissions: (projectId) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/submissions`),
+    createSubmissionProfile: (projectId, body) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/submissions`, { method: 'POST', body: JSON.stringify(body) }),
+    getSubmissionProfile: (profileId) => authenticatedFetch(`/api/rf/submissions/${encodeURIComponent(profileId)}`),
+    updateSubmissionProfile: (profileId, body) => authenticatedFetch(`/api/rf/submissions/${encodeURIComponent(profileId)}`, { method: 'PATCH', body: JSON.stringify(body) }),
+    getSubmissionReadiness: (profileId) => authenticatedFetch(`/api/rf/submissions/${encodeURIComponent(profileId)}/readiness`),
+    updateSubmissionItem: (itemId, body) => authenticatedFetch(`/api/rf/submission-items/${encodeURIComponent(itemId)}`, { method: 'PATCH', body: JSON.stringify(body) }),
+    markSubmitted: (profileId, body) => authenticatedFetch(`/api/rf/submissions/${encodeURIComponent(profileId)}/mark-submitted`, { method: 'POST', body: JSON.stringify(body) }),
+    // Phase 5: Data safety & diagnostics
+    getAppInfo: () => authenticatedFetch('/api/rf/info'),
+    createBackup: () => authenticatedFetch('/api/rf/backup', { method: 'POST' }),
+    getBackups: () => authenticatedFetch('/api/rf/backups'),
+    restoreBackup: (backupFile) => authenticatedFetch('/api/rf/backup/restore', { method: 'POST', body: JSON.stringify({ backupFile }) }),
+    // Returns a fetch Response (zip blob) — callers use res.blob() and download.
+    exportProject: (projectId) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/export`),
+    // Phase 5: Workspace (Windows/WSL)
+    getWorkspace: (projectId) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/workspace`),
+    updateWorkspace: (projectId, body) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/workspace`, { method: 'PUT', body: JSON.stringify(body) }),
+    validateWorkspace: (projectId) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/workspace/validate`, { method: 'POST' }),
+    openWorkspaceTerminal: (projectId) => authenticatedFetch(`/api/rf/projects/${encodeURIComponent(projectId)}/workspace/open-terminal`, { method: 'POST' }),
+  },
+
   // Compute node management
   compute: {
     getNodes: () => authenticatedFetch('/api/compute/nodes'),

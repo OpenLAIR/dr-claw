@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron';
 
 const ALLOWED_CHANNELS_INVOKE = new Set([
   'app:getInfo',
+  'app:relaunch',
   'dialog:selectDirectory',
   'dialog:selectFile',
   'shell:showItemInFolder',
@@ -52,6 +53,7 @@ function safeOn(channel, callback) {
 
 contextBridge.exposeInMainWorld('electronAPI', {
   getAppInfo: () => safeInvoke('app:getInfo'),
+  relaunchApp: () => safeInvoke('app:relaunch'),
 
   selectDirectory: (options) => safeInvoke('dialog:selectDirectory', options),
   selectFile: (options) => safeInvoke('dialog:selectFile', options),

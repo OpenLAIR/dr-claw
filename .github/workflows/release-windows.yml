@@ -1,0 +1,54 @@
+# ResearchFlow — Windows release build (official path)
+
+# Builds the Windows NSIS installer on a native Windows runner.
+# Triggered manually (workflow_dispatch) or on a v* tag.
+# Native modules (better-sqlite3/node-pty) are compiled for the Electron ABI
+# by electron-builder during packaging (npmRebuild). WSL cross-compilation is
+# NOT a supported release path — see docs/researchflow/DESKTOP_BUILD.md.
+
+name: Release Windows
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        node-version: ['20']
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: npm ci
+        run: npm ci
+
+      - name: typecheck
+        run: npm run typecheck
+
+      - name: build
+        run: npm run build
+
+      # ResearchFlow domain + UI tests (Phase 1-5).
+      - name: researchflow tests
+        run: npx vitest run server/__tests__/rf-domain.test.mjs server/__tests__/rf-api.test.mjs server/__tests__/rf-api-platform.test.mjs server/__tests__/rf-insights.test.mjs server/__tests__/rf-phase3-domain.test.mjs server/__tests__/rf-phase4-domain.test.mjs server/__tests__/rf-phase5-data.test.mjs server/__tests__/rf-phase5-wsl.test.mjs server/__tests__/rf-phase5-api.test.mjs server/__tests__/rf-phase5-desktop.test.mjs src/components/researchflow/__tests__/ResearchFlow.test.jsx src/components/researchflow/__tests__/Phase3.test.jsx src/components/researchflow/__tests__/Phase4.test.jsx src/components/researchflow/__tests__/Phase5.test.jsx
+
+      - name: Build Windows installer (NSIS)
+        run: npm run desktop:dist:win
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ResearchFlow-windows-installer
+          path: |
+            release/ResearchFlow-*.exe
+          if-no-files-found: error

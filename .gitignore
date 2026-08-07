@@ -160,3 +160,12 @@ __pycache__/
 
 .pytest_cache
 *.egg-info/
+
+# ResearchFlow Phase 5 data-safety artifacts (dev runs create these under the
+# active data dir; production writes under %APPDATA%\ResearchFlow)
+server/database/backups/
+server/database/exports/
+server/database/restore-pending/
+server/backups/
+server/exports/
+server/restore-pending/

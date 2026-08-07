@@ -913,6 +913,17 @@ export function useProjectsState({
     }
   }, [isMobile, navigate]);
 
+  const handleOpenResearchflow = useCallback(() => {
+    setSelectedProject(null);
+    setSelectedSession(null);
+    setActiveTab('researchflow');
+    navigate('/');
+
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  }, [isMobile, navigate]);
+
   const handleSessionDelete = useCallback(
     (sessionIdToDelete: string) => {
       if (selectedSession?.id === sessionIdToDelete) {
@@ -1033,6 +1044,7 @@ export function useProjectsState({
       onOpenNews: handleOpenNews,
       onOpenAutoResearch: handleOpenAutoResearch,
       onOpenCompute: handleOpenCompute,
+      onOpenResearchflow: handleOpenResearchflow,
       onImportedProjectCreated: handleProjectCreatedWithIntake,
       importedProjectAnalysisPrompt,
       onDismissImportedProjectAnalysisPrompt: clearImportedProjectAnalysisPrompt,
@@ -1104,6 +1116,7 @@ export function useProjectsState({
     handleOpenNews,
     handleOpenAutoResearch,
     handleOpenCompute,
+    handleOpenResearchflow,
     handleNewSession,
     handleStartWorkspaceQa,
     handleChatFromReference,

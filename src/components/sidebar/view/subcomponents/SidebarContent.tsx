@@ -23,6 +23,7 @@ type SidebarContentProps = {
   onOpenAutoResearch: () => void;
   onOpenNews: () => void;
   onOpenCompute: () => void;
+  onOpenResearchflow: () => void;
   onCreateProject: () => void;
   onCollapseSidebar: () => void;
   currentVersion: string;
@@ -53,6 +54,7 @@ export default function SidebarContent({
   onOpenAutoResearch,
   onOpenNews,
   onOpenCompute,
+  onOpenResearchflow,
   onCreateProject,
   onCollapseSidebar,
   currentVersion,
@@ -87,6 +89,7 @@ export default function SidebarContent({
         onOpenAutoResearch={onOpenAutoResearch}
         onOpenNews={onOpenNews}
         onOpenCompute={onOpenCompute}
+        onOpenResearchflow={onOpenResearchflow}
         onCreateProject={onCreateProject}
         onCollapseSidebar={onCollapseSidebar}
         t={t}

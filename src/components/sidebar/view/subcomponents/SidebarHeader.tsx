@@ -1,4 +1,4 @@
-import { Blocks, FlaskConical, FolderPlus, LayoutDashboard, Monitor, Newspaper, PanelLeftClose, Plus, RefreshCw, Search, Trash2, X } from 'lucide-react';
+import { Blocks, FlaskConical, FolderPlus, LayoutDashboard, Monitor, Newspaper, PanelLeftClose, Plus, RefreshCw, Search, Trash2, X, Workflow } from 'lucide-react';
 import type { TFunction } from 'i18next';
 import type { AppTab } from '../../../../types/app';
 import { Button } from '../../../ui/button';
@@ -22,6 +22,7 @@ type SidebarHeaderProps = {
   onOpenAutoResearch: () => void;
   onOpenNews: () => void;
   onOpenCompute: () => void;
+  onOpenResearchflow: () => void;
   onCreateProject: () => void;
   onCollapseSidebar: () => void;
   t: TFunction;
@@ -44,6 +45,7 @@ export default function SidebarHeader({
   onOpenAutoResearch,
   onOpenNews,
   onOpenCompute,
+  onOpenResearchflow,
   onCreateProject,
   onCollapseSidebar,
   t,
@@ -193,6 +195,17 @@ export default function SidebarHeader({
 
             <Button
               type="button"
+              variant={activeTab === 'researchflow' ? 'secondary' : 'outline'}
+              size="sm"
+              className="h-9 w-full justify-start rounded-xl"
+              onClick={onOpenResearchflow}
+            >
+              <Workflow className="h-4 w-4" />
+              {t('researchflow:nav.title')}
+            </Button>
+
+            <Button
+              type="button"
               variant={activeTab === 'trash' ? 'secondary' : 'outline'}
               size="sm"
               className="h-9 w-full justify-start rounded-xl"
@@ -318,6 +331,16 @@ export default function SidebarHeader({
             >
               <Monitor className="h-4 w-4" />
               {t('common:tabs.compute')}
+            </Button>
+
+            <Button
+              type="button"
+              variant={activeTab === 'researchflow' ? 'secondary' : 'outline'}
+              className="h-10 w-full justify-start rounded-xl"
+              onClick={onOpenResearchflow}
+            >
+              <Workflow className="h-4 w-4" />
+              {t('researchflow:nav.title')}
             </Button>
           </div>
         )}

@@ -118,6 +118,15 @@ export default function MainContentTitle({
               {t('newsDashboard.subtitle', 'Discover the latest research from arXiv, automatically scored by relevance, recency, popularity, and quality.')}
             </div>
           </div>
+        ) : activeTab === 'researchflow' ? (
+          <div className="min-w-0">
+            <h2 className="text-[15px] font-bold text-foreground leading-tight">
+              {t('researchflow:portfolio.title')}
+            </h2>
+            <div className="text-[12px] text-muted-foreground truncate leading-tight mt-0.5">
+              {t('researchflow:nav.title')}
+            </div>
+          </div>
         ) : activeTab === 'chat' && selectedSession && selectedProject ? (
           <div className="min-w-0">
             <h2 className="text-[15px] font-bold text-foreground whitespace-nowrap overflow-x-auto scrollbar-hide leading-tight">

@@ -148,8 +148,8 @@
     "vitest": "^4.1.0"
   },
   "build": {
-    "appId": "io.openlair.drclaw",
-    "productName": "Dr. Claw",
+    "appId": "io.openlair.researchflow",
+    "productName": "ResearchFlow",
     "directories": {
       "output": "release"
     },
