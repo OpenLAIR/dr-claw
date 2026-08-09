@@ -27,6 +27,7 @@ import { expandSkillCommand } from './utils/skillExpander.js';
 import { resolveCodexWorkingDirectory } from './utils/codexWorkingDir.js';
 import { CODEX_MODELS } from '../shared/modelConstants.js';
 import { BTW_SYSTEM_PROMPT, buildBtwUserMessage } from './utils/btw.js';
+import { debugLog, isVerboseLogging } from './utils/logger.js';
 
 // Track active sessions
 const activeCodexSessions = new Map();
@@ -489,18 +490,23 @@ export async function queryCodex(command, options = {}, ws) {
       const itemType = event.item?.type || 'unknown';
       const itemId = event.item?.id || null;
 
-      // Detailed debug logging
-      if (event.item) {
-        const preview = event.item.text ? event.item.text.substring(0, 80) : (event.item.command || '');
-        console.log(`[Codex] ${event.type} | ${itemType} | id=${itemId} | preview="${preview}"`);
-        // Extra logging for command_execution output
-        if (itemType === 'command_execution' && event.type === 'item.completed') {
-          const outLen = event.item.aggregated_output?.length || 0;
-          const outPreview = event.item.aggregated_output?.substring(0, 120) || '(empty)';
-          console.log(`[Codex]   cmd output (${outLen} chars): "${outPreview}"`);
+      // Per-event logging is opt-in (DRCLAW_DEBUG=codex). Unconditionally
+      // logging every SDK event — including the item.updated stream noise that
+      // is discarded a few lines below — produced thousands of console writes
+      // per turn, which blocks the event loop on a Windows console TTY.
+      if (isVerboseLogging('codex')) {
+        if (event.item) {
+          const preview = event.item.text ? event.item.text.substring(0, 80) : (event.item.command || '');
+          console.log(`[Codex] ${event.type} | ${itemType} | id=${itemId} | preview="${preview}"`);
+          // Extra logging for command_execution output
+          if (itemType === 'command_execution' && event.type === 'item.completed') {
+            const outLen = event.item.aggregated_output?.length || 0;
+            const outPreview = event.item.aggregated_output?.substring(0, 120) || '(empty)';
+            console.log(`[Codex]   cmd output (${outLen} chars): "${outPreview}"`);
+          }
+        } else {
+          console.log(`[Codex] ${event.type}`);
         }
-      } else {
-        console.log(`[Codex] ${event.type}`);
       }
 
       // Event filtering:
@@ -527,7 +533,7 @@ export async function queryCodex(command, options = {}, ws) {
 
       // Skip null transforms (empty reasoning, etc.)
       if (!transformed) {
-        console.log(`[Codex] Skipped null transform for ${event.type} | ${itemType}`);
+        debugLog('codex', `[Codex] Skipped null transform for ${event.type} | ${itemType}`);
         continue;
       }
 

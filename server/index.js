@@ -42,7 +42,7 @@ import pty from 'node-pty';
 import fetch from 'node-fetch';
 import mime from 'mime-types';
 
-import { getProjects, getTrashedProjects, getSessions, getSessionMessages, renameProject, renameSession, deleteSession, deleteProject, restoreProject, deleteTrashedProject, addProjectManually, extractProjectDirectory, resolveClaudeProjectDirs, clearProjectDirectoryCache } from './projects.js';
+import { getProjects, getTrashedProjects, getSessions, getSessionMessages, renameProject, renameSession, deleteSession, deleteProject, restoreProject, deleteTrashedProject, addProjectManually, extractProjectDirectory, resolveClaudeProjectDirs, clearProjectDirectoryCache, projectsEvents } from './projects.js';
 import { getProjectTokenUsageSummary } from './project-token-usage.js';
 import { queryClaudeSDK, abortClaudeSDKSession, isClaudeSDKSessionActive, getClaudeSDKSessionStartTime, getActiveClaudeSDKSessions, resolveToolApproval } from './claude-sdk.js';
 import { spawnCursor, abortCursorSession, isCursorSessionActive, getCursorSessionStartTime, getActiveCursorSessions } from './cursor-cli.js';
@@ -116,9 +116,14 @@ let isGetProjectsRunning = false; // Flag to prevent reentrant calls
 let hasPendingProjectsUpdate = false;
 let lastWatcherEvent = null;
 let lastProjectsUpdateSignature = '';
+// Assigned by setupProjectsWatcher(); lets background discovery passes reuse the
+// same debounced broadcast instead of pushing their own project snapshots.
+let scheduleProjectsBroadcast = null;
 
 function shouldProcessProjectsWatcherEvent(eventType, filePath, provider) {
-    if (eventType === 'addDir' || eventType === 'unlinkDir') {
+    // 'discovery' is synthetic: emitted by background project discovery rather
+    // than by chokidar, so there is no file path to filter on.
+    if (eventType === 'addDir' || eventType === 'unlinkDir' || eventType === 'discovery') {
         return true;
     }
 
@@ -205,23 +210,25 @@ async function setupProjectsWatcher() {
 
                 // Get updated projects list
                 const updatedProjects = await getProjects();
-                const updateSignature = JSON.stringify(updatedProjects);
+
+                // Serialize once and reuse it as the change signature. The
+                // project list can be megabytes, so stringifying it twice per
+                // watcher event was pure GC pressure on the main thread.
+                const projectsJson = JSON.stringify(updatedProjects);
 
                 // Skip broadcasting identical snapshots
-                if (updateSignature === lastProjectsUpdateSignature) {
+                if (projectsJson === lastProjectsUpdateSignature) {
                     return;
                 }
-                lastProjectsUpdateSignature = updateSignature;
+                lastProjectsUpdateSignature = projectsJson;
 
                 // Notify all connected clients about the project changes
-                const updateMessage = JSON.stringify({
-                    type: 'projects_updated',
-                    projects: updatedProjects,
-                    timestamp: new Date().toISOString(),
-                    changeType: eventType,
-                    changedFile: path.relative(rootPath, filePath),
-                    watchProvider: provider
-                });
+                const updateMessage = '{"type":"projects_updated","projects":' + projectsJson
+                    + ',"timestamp":' + JSON.stringify(new Date().toISOString())
+                    + ',"changeType":' + JSON.stringify(eventType ?? null)
+                    + ',"changedFile":' + JSON.stringify(rootPath && filePath ? path.relative(rootPath, filePath) : null)
+                    + ',"watchProvider":' + JSON.stringify(provider ?? null)
+                    + '}';
 
                 connectedClients.forEach(client => {
                     if (client.readyState === WebSocket.OPEN) {
@@ -241,6 +248,8 @@ async function setupProjectsWatcher() {
             }
         }, WATCHER_DEBOUNCE_MS);
     };
+
+    scheduleProjectsBroadcast = debouncedUpdate;
 
     for (const { provider, rootPath } of PROVIDER_WATCH_PATHS) {
         try {
@@ -3254,6 +3263,12 @@ async function startServer() {
 
         // Start watching the projects folder for changes
         await setupProjectsWatcher();
+
+        // Background discovery (e.g. the Codex session scan) runs off the request
+        // path, so it publishes its results through this event instead.
+        projectsEvents.on('projects-changed', (detail) => {
+            scheduleProjectsBroadcast?.('discovery', null, detail?.reason || 'discovery', null);
+        });
     } catch (error) {
         console.error('[ERROR] Failed to start server:', error);
         process.exit(1);
