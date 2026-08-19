@@ -132,7 +132,7 @@ bash -c 'set -Eeuo pipefail; curl -fsSL "https://raw.githubusercontent.com/OpenL
 - 只把 checkout 写入 `$HOME/.local/share/drclaw/releases/<FULL_COMMIT_SHA>`，不搜索或修改任何现有 research project；
 - 验证 ref、commit、clean worktree、manifest 发布 ref 和必需文件后，才调用该 checkout 自带的 `bootstrap.sh`；两个 optional community gitlink 必须与 manifest 的路径及对象 SHA 完全一致并保持未初始化，安装器不会拉取或执行其中的第三方代码；
 - 默认使用 `safe` profile；Codex 缺失或低于 minimum 时安装/升级，达到 minimum 的已有 CLI 则保留；所有内部 installer 成功后再统一运行 credential-free 的 `--strict-release --require-clean-native-skills` pre-activation gate，并由隔离合同验收实际 CLI；
-- `--full` 还安装 Python 控制 CLI、SHA256 固定的 Node、locked npm 依赖、Web build、loopback-only 私有配置与 launcher；user-systemd 可用时只 enable，除非另加 `--start-app` 才立即启动；
+- `--full` 还安装 Python 控制 CLI、SHA256 固定的 Node、locked npm 依赖、Web build、loopback-only 私有配置与 launcher；发布 gate 会对 production dependency graph 执行 `npm audit --omit=dev --audit-level=moderate`，不允许已知 moderate/high/critical advisory 随 release 通过；user-systemd 可用时只 enable，除非另加 `--start-app` 才立即启动；
 - 重跑同一 release 时复用并重新验证同一 checkout；升级到新 release 时使用同一命令的新 tag/SHA。旧 receipt 能完整证明来源、内容和安装模式时，两个受管 skill 会以可恢复事务自动切换到新 release，无需宽泛的 `--replace`；只有 drift、损坏或 unmanaged 冲突才需人工审计后显式加 `--replace`；
 - 不复制 auth、sessions、connector/plugin cache、SSH 材料、`.env`、API/JWT token 或旧项目路径。
 
@@ -429,7 +429,7 @@ bash bootstrap/codex/bootstrap.sh install \
 python3 -I -S bootstrap/codex/install_app.py install
 ```
 
-应用 manifest 固定 Node 版本及官方 SHA256，也独立固定 Web 内嵌 Codex CLI/SDK；它执行 locked `npm ci`、build/native/prune，生成仅监听 `127.0.0.1` 的私有配置、随机 JWT、独立数据库/workspace 根和 launcher。内嵌 Codex 必须通过与 host CLI 相同的五项无凭据合同及 path/version/digest receipt。user-systemd 可用时默认只 enable、不启动原本 inactive 的服务；若升级前受管服务已经 active，则成功安装后自动 restart，避免旧进程假绿灯。显式 `--start` 用于首次启动并要求 `/health` 通过。任何 public bind 都被拒绝，公网访问必须另行评审 TLS/反向代理。完整边界和 doctor 见 `APP_INSTALL.zh-CN.md`。旧机器 `.env`、数据库和 `instance.json` 绝不搬运。
+应用 manifest 固定 Node 版本及官方 SHA256，也独立固定 Web 内嵌 Codex CLI/SDK；它执行 locked `npm ci`、build/native/prune，生成仅监听 `127.0.0.1` 的私有配置、随机 JWT、独立数据库/workspace 根和 launcher。为兼顾 Delta 的 glibc 2.34 与供应链安全，`sqlite3` 保留已验证的 5.1.7 平台构建，同时用精确 npm overrides 升级它和内嵌 `node-gyp` 在安装期使用的 `tar`、cache、fetch 与 proxy 依赖；React Router、syntax highlighter、ZIP 处理器及允许范围内的 transitive lock 也已更新。最终 production audit 为 0，release workflow 会重新门禁。内嵌 Codex 必须通过与 host CLI 相同的五项无凭据合同及 path/version/digest receipt。user-systemd 可用时默认只 enable、不启动原本 inactive 的服务；若升级前受管服务已经 active，则成功安装后自动 restart，避免旧进程假绿灯。显式 `--start` 用于首次启动并要求 `/health` 通过。任何 public bind 都被拒绝，公网访问必须另行评审 TLS/反向代理。完整边界和 doctor 见 `APP_INSTALL.zh-CN.md`。旧机器 `.env`、数据库和 `instance.json` 绝不搬运。
 
 ## 十、维护者验收
 
@@ -455,6 +455,14 @@ python3 -m unittest discover -s bootstrap/codex/tests -v
 - 没有 auth、token、`.env`、SSH secret、session/cache 或运行时状态进入 Git。
 
 维护者还应使用 app manifest 固定的 Node 运行 server focused tests、完整 `npm test` 与一次隔离 Web install/doctor；Python bootstrap 测试不能替代这些 JavaScript 和 native dependency 回归。
+
+发布前还必须在 clean、由 lock 重建的依赖树上运行：
+
+```bash
+npm audit --omit=dev --audit-level=moderate
+```
+
+该检查依赖当前 registry advisory 数据，因此不能替代固定 `package-lock.json` 和 release provenance；新 advisory 出现时应阻止下一次 release，完成升级与跨 glibc/架构回归后再发布，不能用 `--audit=false` 把已知风险当作通过。
 
 ## 十一、规范依据
 

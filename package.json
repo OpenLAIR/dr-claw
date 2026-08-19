@@ -94,7 +94,7 @@
     "@xterm/addon-web-links": "^0.11.0",
     "@xterm/addon-webgl": "^0.18.0",
     "@xterm/xterm": "^5.5.0",
-    "adm-zip": "^0.5.16",
+    "adm-zip": "0.6.0",
     "bcryptjs": "^3.0.2",
     "better-sqlite3": "^12.2.0",
     "chokidar": "^4.0.3",
@@ -121,14 +121,14 @@
     "react-dropzone": "^14.2.3",
     "react-i18next": "^16.5.3",
     "react-markdown": "^10.1.0",
-    "react-router-dom": "^6.8.1",
-    "react-syntax-highlighter": "^15.6.1",
+    "react-router-dom": "7.18.2",
+    "react-syntax-highlighter": "16.1.1",
     "rehype-katex": "^7.0.1",
     "rehype-raw": "^7.0.0",
     "remark-gfm": "^4.0.0",
     "remark-math": "^6.0.0",
     "sqlite": "^5.1.1",
-    "sqlite3": "^5.1.7",
+    "sqlite3": "5.1.7",
     "tailwind-merge": "^3.3.1",
     "ws": "^8.14.2"
   },
@@ -143,7 +143,7 @@
     "concurrently": "^8.2.2",
     "electron": "^37.3.1",
     "electron-builder": "^26.0.12",
-    "node-gyp": "^10.0.0",
+    "node-gyp": "11.5.0",
     "png-to-ico": "^3.0.1",
     "postcss": "^8.4.32",
     "release-it": "^19.0.5",
@@ -192,5 +192,11 @@
       "perMachine": false,
       "allowToChangeInstallationDirectory": true
     }
+  },
+  "overrides": {
+    "tar": "7.5.22",
+    "make-fetch-happen": "14.0.3",
+    "cacache": "19.0.1",
+    "http-proxy-agent": "7.0.2"
   }
 }

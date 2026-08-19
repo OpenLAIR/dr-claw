@@ -18,13 +18,15 @@ python3 -I -S bootstrap/codex/install_app.py install
 
 1. 在任何目标写入前确认 Linux `x86_64`/`aarch64`、glibc `>= 2.28`，并确认实际承载 `$HOME/.local/bin` 与 `$HOME/.local/share/drclaw` 的最近父文件系统不是 `noexec`；
 2. 下载 manifest 固定的 Node.js `22.23.2` Linux 归档，并核对 Node 官方 SHA256；Node 在 staging 中通过版本与关键文件布局验证后，私有 standalone runtime receipt 会随整个 runtime 一次原子发布；
-3. 用仓库 `package-lock.json` 执行 `npm ci`、生产构建和 native-module 准备，再删除仅构建期需要的开发依赖；各步骤和最终 dependency verify 都使用 manifest 固定的有限 timeout；
+3. 用仓库 `package-lock.json` 执行 `npm ci`、生产构建和 native-module 准备，再删除仅构建期需要的开发依赖；各步骤和最终 dependency verify 都使用 manifest 固定的有限 timeout。release workflow 还在 clean lock 树上执行 `npm audit --omit=dev --audit-level=moderate`；目标安装器关闭重复网络 audit，避免 advisory 数据变化破坏同一 release 的可复现安装；
 4. 在用户私有目录生成 loopback-only 配置、64 位十六进制随机 JWT secret、独立 SQLite 路径和新 workspace 根；
 5. 写入 `$HOME/.local/bin/drclaw-web`；
 6. 若真实 login home 的 user-systemd 可用，则安装并 enable 用户 unit，但默认不立即启动；没有 user-systemd 时明确降级为 launcher-only；
 7. 写入不含 secret 的 app receipt，并自动运行 read-only doctor。
 
 npm lifecycle 子进程只收到最小允许列表、受管 Node `PATH`、独立 cache/tmp 和不含 registry credential 的私有 npmrc；当前 shell 中的 API key、npm token、SSH agent、password/secret 变量不会继承进去。只有经过校验且不含用户名/密码的 proxy 与显式批准的 `DRCLAW_CA_BUNDLE` 会按网络合同传入。运行 Web 服务时需要的 provider key 仍须由目标机的人或批准的 secret 系统单独配置。
+
+当前 lock 将 `adm-zip`、React Router、syntax highlighter 与 `node-gyp` 固定到已验证版本，并通过精确 npm overrides 把 `sqlite3@5.1.7` 的安装期 `tar`、cache/fetch/proxy 链升级到无已知 production advisory 的版本。这样保留 Delta glibc 2.34 可加载的 sqlite3 prebuild；直接改用 sqlite3 6.0.1 会拉取要求 glibc 2.38 的 x64 binary，已经在 Delta 被回归测试拒绝。任何 overrides 变化都必须重新运行 native import、typecheck、build、完整测试与 production audit。
 
 所有 user-systemd 探测、配置和 doctor 查询只使用固定系统目录中解析出的绝对 `systemctl`。该可执行文件及其路径链必须由 root 拥有且不可被 group/other 写入；相对路径或 `$PATH` 中用户可写的同名程序不会执行。systemctl 子进程只收到目标 `HOME`、固定可信 `PATH`、由 passwd 推导的 `USER`/`LOGNAME`、C locale，以及验证为当前用户私有目录后才加入的 `XDG_RUNTIME_DIR` 和对应 D-Bus 地址，不继承 operator shell secret；每次调用都有 manifest timeout。
 

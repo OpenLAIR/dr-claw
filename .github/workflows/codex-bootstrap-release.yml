@@ -59,6 +59,7 @@ jobs:
         run: |
           set -Eeuo pipefail
           npm ci
+          npm audit --omit=dev --audit-level=moderate
           npm run skills:catalog
           git diff --exit-code -- skills/skills-catalog-v2.json
           npm run typecheck
