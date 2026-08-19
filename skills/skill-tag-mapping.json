@@ -86,7 +86,7 @@
       "en": "Stage: Paper Writing",
       "ko": "단계: 논문 작성"
     },
-    "bioinformatics-init-analysis": {
+    "init-analysis": {
       "zh": "阶段: 实验分析",
       "en": "Stage: Analysis",
       "ko": "단계: 분석"
@@ -1605,7 +1605,7 @@
     }
   },
   "platformNativeSkills": [
-    "bioinformatics-init-analysis",
+    "init-analysis",
     "dataset-discovery",
     "inno-code-survey",
     "inno-deep-research",
@@ -1624,7 +1624,7 @@
     "inno-reference-audit"
   ],
   "domainCsAiExceptions": [
-    "bioinformatics-init-analysis",
+    "init-analysis",
     "biorxiv-database"
   ]
 }

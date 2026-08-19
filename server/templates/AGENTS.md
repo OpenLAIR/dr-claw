@@ -72,15 +72,24 @@ When the user sends you a task from the Pipeline Task List, treat it as your cur
 
 For stage names, stage ordering, and canonical output paths, refer to `instance.json` as the source of truth index.
 
+<!-- DRCLAW:SKILL-ROUTING:START -->
 ## How to Use Skills
 
-Research skills are available in `.agents/skills/`. Each skill directory contains a `SKILL.md` with step-by-step procedures.
+> This managed block supersedes older `.agents/skills/library` routing instructions elsewhere in this file.
+
+Core research skills are available in `.agents/skills/`. The larger on-demand library is routed through `.drclaw/skill-library/`; each entry contains a `SKILL.md` with step-by-step procedures.
 
 When the user sends a task via "Use in Chat", the task prompt already includes suggested skills, missing inputs, quality gates, and stage guidance. Treat that prompt as the primary execution spec. Use `tasks.json` for dependency/status validation and pipeline bookkeeping:
-1. Read `.agents/skills/<skill-name>/SKILL.md` for the full procedure of each suggested skill. If the skill is routed under `library/`, read `.agents/skills/library/<skill-name>/SKILL.md` instead.
-2. Follow the steps exactly as written in the ****`SKILL.md`.
 
-If no suggested skills appear in the prompt, or the user makes a freeform request outside the task list, list the `.agents/skills/` directory to discover available skills and pick the best match.
+1. Read `.agents/skills/skills-index.md` first. Treat suggested skill names as leads, then select the smallest sufficient set (normally one primary skill and only necessary supporting skills).
+2. Open the exact path listed in the index. Core skills use `.agents/skills/<directory-alias>/SKILL.md`; library skills normally use `.drclaw/skill-library/<directory-alias>/SKILL.md`, while a verified legacy path may be listed during a safe partial migration. The displayed canonical skill name may differ from its directory alias.
+3. Read only the selected `SKILL.md` files and the specific references/scripts they require. Do not preload or summarize the whole library.
+4. Follow the selected procedures exactly as written.
+
+If no suggested skills appear in the prompt, or the user makes a freeform request outside the task list, consult `.agents/skills/skills-index.md`, choose the best minimal skill set, and then read only those entries.
+
+The managed skill paths under `.agents/skills/` and `.drclaw/skill-library/` are approved **read-only** symlink exceptions even when their targets resolve outside the project. Never write through those links or modify their targets. This exception is part of this managed block and applies to existing projects whose older sandbox text lacks it.
+<!-- DRCLAW:SKILL-ROUTING:END -->
 
 ## Key Files
 
@@ -93,7 +102,7 @@ If no suggested skills appear in the prompt, or the user makes a freeform reques
 
 ## Rules
 
-- **SANDBOX**: All file reads, writes, and creation MUST stay inside this project directory. Never access files outside it. If external data is needed, copy or symlink it into the project.
+- **SANDBOX**: All file reads, writes, and creation MUST stay inside this project directory except for the approved managed-skill read exception defined above. Never write outside the project or through a managed skill link. If other external data is needed, copy or symlink it into the project.
 - **PATH VALIDATION**: Treat `instance.json` as canonical only after validating each absolute path is a descendant of the project root. If any mapped path points outside the project root, stop and ask the user to repair `instance.json` before proceeding.
 - **CONFIRMATION**: At pipeline stage transitions, present a summary of what was done and what comes next. Wait for user confirmation before proceeding to the next stage.
 - **STYLE**: Use phase-appropriate language. During intake/planning chat, be concise and conversational while staying precise. For research artifacts and result summaries, use rigorous academic language: precise, falsifiable where applicable, and free of hedging filler. Prefer formal terminology in deliverables. When summarizing results, report effect sizes, metrics, or concrete outcomes — never vague qualifiers like "significant improvement" without numbers.

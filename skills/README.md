@@ -2,9 +2,9 @@
 
 Skills are structured instruction files (SKILL.md) that tell an AI coding agent (Claude Code, Gemini CLI, etc.) what to do and how to do it. They are NOT standalone scripts — they are prompts/playbooks that an agent reads and follows:
 
-`
+```
 Your instruction → Agent → reads SKILL.md → follows the instructions and use Skills
-`
+```
 # InnoFlow Research Pipeline Skills
 
 Project-scoped skills for the Research flow (idea generation, code survey, implementation plan, ML dev, experiments). Canonical behavior is in the Medical_ai_scientist_idea repo: `run_infer_idea_ours.py` (idea mode) and `run_infer.py` (plan mode).
@@ -23,7 +23,7 @@ Skills read paths from `instance.json` and write logs under each area’s `logs/
 
 ## Skill taxonomy
 
-17 skills organized by pipeline stage. Depth follows natural structure — sub-groups only where real internal phases exist.
+The repository currently contains 172 complete skill entry points. The tree below documents the small Dr. Claw pipeline-native subset; the remaining imported/library skills cover ML frameworks, infrastructure, evaluation, data, writing, and other domains. Runtime routing keeps 18 core entries native (the platform list plus the planner) and loads the larger library on demand.
 
 ```
 skills/
@@ -56,7 +56,7 @@ skills/
 │  └─ making-academic-presentations         Slides, narration, TTS audio, and demo-video generation
 │
 └─ Domain-Specific
-   └─ bioinformatics-init-analysis          CyTOF / scRNA-seq / flow cytometry pipeline
+   └─ init-analysis                         CyTOF / scRNA-seq / flow cytometry pipeline
 ```
 
 ### Pipeline flow
@@ -79,7 +79,7 @@ Orchestration ──► Research & Discovery ──► Ideation ──► Experi
 | Promotion | 2 | Presentation and dissemination assets are a separate downstream stage |
 | Domain-Specific | 2 | Extensible bucket; currently one entry |
 
-> **Note:** Folder structure on disk is still flat (`skills/<skill-name>/`). This taxonomy is a logical grouping for documentation and navigation; `stage-skill-map.json` encodes the runtime mapping used by the Pipeline Board.
+> **Note:** The disk layout is recursive: both `skills/<skill>/SKILL.md` and `skills/<category>/<skill>/SKILL.md` are common, and one imported package is nested more deeply. Always discover recursively and move complete packages, not only their `SKILL.md`. `stage-skill-map.json` encodes the runtime mapping used by the Pipeline Board.
 
 ## Stage skill map (for Pipeline Board)
 
@@ -106,8 +106,9 @@ Orchestration ──► Research & Discovery ──► Ideation ──► Experi
 
 ### Maintenance notes
 
-- Keep keys exactly the same as skill directory names under `skills/`.
+- Prefer the canonical frontmatter `name` as the skill ID. Some imported directory aliases differ; resolvers and the catalog exporter accept both canonical name and directory alias.
 - Prefer updating this JSON instead of editing frontend code when tags change.
+- After skill changes, run `python3 bootstrap/codex/skills/drclaw-skill-library/scripts/query_library.py --validate`; with Node dependencies available, regenerate the UI catalog with `npm run skills:catalog`.
 
 ### Tag annotation conventions
 

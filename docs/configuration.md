@@ -2,7 +2,7 @@
 
 # Configuration Reference
 
-Dr. Claw is configured through environment variables in a `.env` file at the project root. This guide documents every variable the application reads.
+Dr. Claw is configured through environment variables in a `.env` file at the project root. This guide documents the common deployment variables; provider-specific and experimental variables may also exist in the corresponding server modules and must be inventoried before production deployment.
 
 ## How `.env` Loading Works
 
@@ -10,7 +10,7 @@ Dr. Claw is configured through environment variables in a `.env` file at the pro
 2. **Frontend** — Vite loads `.env` automatically. Only variables prefixed with `VITE_` are exposed to browser code.
 3. **Precedence** — System env > `.env` file values.
 
-> **Quick start:** `cp .env.example .env` gives you sensible defaults. See the [Quickstart guide](./quickstart.md) for a step-by-step walkthrough.
+> **Quick start:** `cp .env.example .env` gives you loopback-only development defaults. Review every security-sensitive value before network deployment.
 
 ---
 
@@ -22,6 +22,7 @@ Dr. Claw is configured through environment variables in a `.env` file at the pro
 |----------|----------|---------|-------------|
 | `PORT` | No | `3001` | Express API + WebSocket server port. |
 | `VITE_PORT` | No | `5173` | Vite dev server port (development only). |
+| `HOST` | No | `127.0.0.1` | Bind address. A non-loopback value requires an explicit `JWT_SECRET`; use TLS through a reviewed reverse proxy. |
 | `CLAUDE_CLI_PATH` | No | `claude` | Absolute or relative path to the Claude Code binary. Override if `claude` is not on your `PATH`. |
 | `CURSOR_CLI_PATH` | No | Auto-detect (`cursor-agent` then `agent`) | Override Cursor CLI command/binary. Useful when your environment only provides one alias. |
 | `GEMINI_CLI_PATH` | No | `gemini` | Override Gemini CLI command/binary. Useful when your shell resolves Gemini through a custom alias or path. |
@@ -39,7 +40,7 @@ Dr. Claw is configured through environment variables in a `.env` file at the pro
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `JWT_SECRET` | **Yes** (production) | `claude-ui-dev-secret-change-in-production` | Secret used to sign and verify JWT tokens. **Must** be changed before exposing Dr. Claw outside localhost. Generate one with: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
+| `JWT_SECRET` | **Yes** (production/public bind) | Development-only fallback on loopback | Secret used to sign and verify JWT tokens. Startup fails without it in production or when `HOST` is not loopback. Generate one with: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
 | `API_KEY` | No | *(none — validation skipped)* | When set, every HTTP request must include an `X-Api-Key` header with this value. Useful for restricting access in hosted setups. |
 
 ### Context Window
@@ -68,7 +69,7 @@ Platform mode is an advanced deployment option. Most users should leave these co
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `CLAUDE_TOOL_APPROVAL_TIMEOUT_MS` | No | `55000` | Timeout in milliseconds for Claude tool-approval prompts before auto-declining. |
+| `TOOL_APPROVAL_TIMEOUT_MS` | No | `55000` | Timeout in milliseconds for Claude tool-approval prompts before auto-declining. |
 
 ---
 
@@ -91,7 +92,7 @@ Dr. Claw supports two authentication paths:
 
 Before deploying Dr. Claw on a network (not just `localhost`), review the following:
 
-1. **`JWT_SECRET`** — Replace the default with a strong random string. The default value is public and provides zero security.
+1. **`JWT_SECRET`** — Inject a strong random value for production or any non-loopback bind; startup fails closed when it is missing in those modes.
 2. **`API_KEY`** — Consider setting an API key to add an extra authentication layer.
 3. **`WORKSPACES_ROOT`** — In Platform mode, ensure this is scoped to a directory you trust. Dr. Claw serves file contents from this tree.
 4. **`.gitignore`** — Verify that `.env` is listed in `.gitignore` (it is by default) so secrets are never committed.

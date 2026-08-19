@@ -873,19 +873,30 @@ router.delete('/global-skill', async (req, res) => {
 router.delete('/:projectName/:skillDirName', async (req, res) => {
   try {
     const { projectName, skillDirName } = req.params;
+    if (!/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(skillDirName)) {
+      return res.status(400).json({ error: 'Invalid skill directory name.' });
+    }
     const projectRoot = await extractProjectDirectory(projectName);
     if (!projectRoot) {
       return res.status(404).json({ error: 'Project not found.' });
     }
 
     // Search candidate locations for the skill directory
-    const candidateBases = ['skills', '.claude/skills', '.agents/skills', '.cursor/skills'];
+    const candidateBases = [
+      'skills',
+      '.claude/skills',
+      '.agents/skills',
+      '.agents/skills/library',
+      '.cursor/skills',
+      '.gemini/skills',
+      '.drclaw/skill-library',
+    ];
     let foundDir = null;
     for (const base of candidateBases) {
       const candidate = path.join(projectRoot, base, skillDirName);
       try {
-        const stat = await fs.stat(candidate);
-        if (stat.isDirectory()) {
+        const stat = await fs.lstat(candidate);
+        if (stat.isDirectory() || stat.isSymbolicLink()) {
           foundDir = candidate;
           break;
         }
@@ -912,6 +923,7 @@ router.delete('/:projectName/:skillDirName', async (req, res) => {
     ];
     for (const tagMappingPath of [...new Set(tagMappingCandidates)]) {
       try {
+        if ((await fs.lstat(tagMappingPath)).isSymbolicLink()) continue;
         const raw = await fs.readFile(tagMappingPath, 'utf8');
         const tagMapping = JSON.parse(raw);
         if (tagMapping.stageOverrides) delete tagMapping.stageOverrides[skillDirName];
@@ -929,6 +941,7 @@ router.delete('/:projectName/:skillDirName', async (req, res) => {
     ];
     for (const stageSkillMapPath of [...new Set(stageMapCandidates)]) {
       try {
+        if ((await fs.lstat(stageSkillMapPath)).isSymbolicLink()) continue;
         const raw = await fs.readFile(stageSkillMapPath, 'utf8');
         const stageSkillMap = JSON.parse(raw);
         if (stageSkillMap.skillOrigins) delete stageSkillMap.skillOrigins[skillDirName];

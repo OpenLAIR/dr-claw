@@ -8,16 +8,39 @@ on:
     branches: [main, master]
 
 jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.12']
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+
+      - name: Use Python ${{ matrix.python-version }}
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Validate skill router
+        run: python3 bootstrap/codex/skills/drclaw-skill-library/scripts/query_library.py --validate
+
+      - name: Test Codex bootstrap
+        run: python3 -m unittest discover -s bootstrap/codex/tests -v
+
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: ['20']
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
@@ -25,8 +48,16 @@ jobs:
       - name: npm ci
         run: npm ci
 
+      - name: Verify generated skill catalog
+        run: |
+          npm run skills:catalog
+          git diff --exit-code -- skills/skills-catalog-v2.json
+
       - name: typecheck
         run: npm run typecheck
 
       - name: build
         run: npm run build
+
+      - name: test
+        run: npm test

@@ -1,0 +1,159 @@
+{
+  "schema_version": 1,
+  "bundle_version": "0.1.0",
+  "audited_at": "2026-08-19",
+  "baseline": {
+    "repository": "https://github.com/OpenLAIR/dr-claw.git",
+    "audited_base_commit": "4b3575641b63f8e09a9539b23c2be4f45f5d0317",
+    "bundle_release_ref": "codex-bootstrap-v0.1.0",
+    "production_revision_policy": "Deploy the exact codex-bootstrap-v0.1.0 tag together with its full commit SHA from the signed-off release provenance. The audited_base_commit records the starting tree inspected while this bundle was authored; it is not the deployable bundle revision. Never deploy a moving branch as a reproducible baseline."
+  },
+  "requirements": {
+    "python": ">=3.9",
+    "codex_cli_minimum": "0.147.0",
+    "codex_cli_audited_versions": [
+      "0.147.0"
+    ],
+    "drclaw_node_optional": "20.x || 22.x || 24.x",
+    "platform": "Linux; NCSA Delta x86_64 is the primary audited host"
+  },
+  "codex_compatibility_contract": {
+    "policy": "The Dr. Claw bundle is pinned independently from Codex. A newer Codex version remains acceptable when it is at or above codex_cli_minimum and every required contract probe passes. Versions not listed in codex_cli_audited_versions produce a warning unless --require-audited-codex-version is requested.",
+    "required_probes": [
+      "config-load",
+      "prompt-input-json",
+      "global-agents-discovery",
+      "managed-skill-discovery",
+      "plugin-list-json"
+    ],
+    "isolation": "Contract probes use a generated secret-free HOME, CODEX_HOME, and empty working directory. They do not read target authentication, sessions, connector credentials, or research projects."
+  },
+  "required_repository_paths": [
+    "AGENTS.md",
+    "skills/skills-catalog-v2.json",
+    "skills/skill-tag-mapping.json",
+    "skills/stage-skill-map.json",
+    "server/templates/AGENTS.md",
+    "bootstrap/codex/README.zh-CN.md",
+    "bootstrap/codex/bootstrap.py",
+    "bootstrap/codex/bootstrap.sh",
+    "bootstrap/codex/doctor.sh",
+    "bootstrap/codex/remote-install.sh",
+    "bootstrap/codex/install_app.py",
+    "bootstrap/codex/app-manifest.json",
+    "bootstrap/codex/APP_INSTALL.zh-CN.md",
+    "bootstrap/codex/templates/global-agents.md",
+    "bootstrap/codex/templates/config.safe.toml",
+    "bootstrap/codex/templates/config.current-delta.toml",
+    "bootstrap/codex/skills/drclaw-skill-library/SKILL.md",
+    "bootstrap/codex/skills/drclaw-skill-library/scripts/query_library.py",
+    "bootstrap/codex/vendor/ncsa-delta/SKILL.md"
+  ],
+  "source_policy": {
+    "allowed_uninitialized_gitlinks": {
+      "community-tools/autoresearch": "e8a20cbc9eda825cffab62b064df942a85eb11be",
+      "community-tools/autoresearchclaw": "37e30d8bfb1cbe59512d7948f73cc8c46ab57b6d"
+    },
+    "policy": "These optional community gitlinks are pinned by path and object ID but are never initialized or executed by the bootstrap. Every additional, moved, changed, or initialized gitlink is rejected."
+  },
+  "components": {
+    "library": {
+      "root": "skills",
+      "expected_minimum_skill_files": 172,
+      "catalog": "skills/skills-catalog-v2.json",
+      "catalog_policy": "The router supplements stale catalog entries from live SKILL.md discovery; doctor warns on drift.",
+      "install_policy": "Keep the full tree in the versioned checkout. Install only the router into the native user skill location."
+    },
+    "user_skills": [
+      {
+        "name": "drclaw-skill-library",
+        "source": "bootstrap/codex/skills/drclaw-skill-library",
+        "required": true
+      },
+      {
+        "name": "ncsa-delta",
+        "source": "bootstrap/codex/vendor/ncsa-delta",
+        "version": "0.4.5",
+        "required_on": [
+          "NCSA Delta"
+        ]
+      }
+    ],
+    "optional_tooling": [
+      {
+        "name": "drclaw-cli",
+        "source": "agent-harness",
+        "install_flag": "--with-drclaw-cli"
+      },
+      {
+        "name": "Dr. Claw web application",
+        "source": "package.json",
+        "install_flag": "--with-app (or --full with the control CLI)",
+        "note": "Uses the pinned, checksum-verified Node runtime and a loopback-only user service; it remains independent from the Codex skill router."
+      }
+    ],
+    "observed_plugins": [
+      {
+        "id": "sites@openai-bundled",
+        "audited_version": "0.1.37",
+        "enabled_in_audited_config": true,
+        "authentication": "product-managed"
+      },
+      {
+        "id": "visualize@openai-bundled",
+        "audited_version": "1.0.21",
+        "enabled_in_audited_config": true,
+        "authentication": "product-managed"
+      },
+      {
+        "id": "gmail",
+        "audited_version": "0.1.8",
+        "enabled_in_audited_config": false,
+        "authentication": "interactive OAuth; never copy connector state"
+      }
+    ],
+    "plugin_policy": "Plugin IDs and audited versions are portable inventory only. Product marketplaces and OAuth are target-host state; --install-plugins works only after the approved marketplace is available and never copies cache or connector credentials."
+  },
+  "config_profiles": {
+    "safe": {
+      "template": "bootstrap/codex/templates/config.safe.toml",
+      "default_for_new_hosts": true
+    },
+    "current-delta": {
+      "template": "bootstrap/codex/templates/config.current-delta.toml",
+      "default_for_new_hosts": false,
+      "warning": "Reproduces the audited high-trust model/permission settings and must be explicitly selected."
+    }
+  },
+  "managed_files": [
+    "$CODEX_HOME/AGENTS.md (managed marker block only)",
+    "$CODEX_HOME/config.toml (portable root keys only)",
+    "$CODEX_HOME/drclaw-bootstrap-state.json",
+    "$HOME/.agents/skills/drclaw-skill-library",
+    "$HOME/.agents/skills/ncsa-delta"
+  ],
+  "never_copy": [
+    "~/.codex/auth.json",
+    "~/.codex/*sqlite*",
+    "~/.codex/sessions",
+    "~/.codex/archived_sessions",
+    "~/.codex/log",
+    "~/.codex/attachments",
+    "~/.codex/memories*",
+    "~/.codex/goals*",
+    "~/.codex/plugins/cache",
+    "~/.codex/packages",
+    "~/.codex/.tmp",
+    "~/.ssh private keys or control sockets",
+    ".env or any API/JWT/connector token",
+    "absolute project trust entries from another host",
+    "Delta account, quota, queue, or job runtime state"
+  ],
+  "manual_steps": [
+    "Complete codex login --device-auth on the target host.",
+    "For NCSA Delta, complete Kerberos password and Duo interactively through a concrete Mac SSH alias.",
+    "Initialize an approved Codex plugin marketplace, optionally run install --install-plugins, and authorize each connector through its own OAuth flow.",
+    "Inject API keys, JWT secrets, and private Git credentials through the target secret store.",
+    "Run doctor and a read-only Codex smoke test after authentication."
+  ]
+}

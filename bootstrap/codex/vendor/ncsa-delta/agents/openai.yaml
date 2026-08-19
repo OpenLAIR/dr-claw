@@ -1,0 +1,12 @@
+interface:
+  display_name: NCSA Delta HPC
+  short_description: Delta 远程连接、Slurm、GPU、SU 与存储全流程
+  default_prompt: 使用 NCSA Delta skill，先分层验证 Remote Control、SSH 和远端 Codex，再做只读集群核实并规划资源、walltime、SU、存储和 Slurm 作业；保护 pending 队列位置，GPU 脚本不绑定型号或设备。
+  icon_small: assets/icon.svg
+  icon_large: assets/icon.svg
+policy:
+  allow_implicit_invocation: true
+  products:
+  - chatgpt
+  - codex
+  - atlas

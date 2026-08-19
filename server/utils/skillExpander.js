@@ -1,6 +1,17 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
+import { fileURLToPath } from 'url';
+
+const SAFE_SKILL_NAME = /^[a-zA-Z][a-zA-Z0-9_-]*$/;
+const MAX_SKILL_SCAN_DEPTH = 8;
+const MAX_SKILL_SCAN_DIRS = 4000;
+const PACKAGED_SKILLS_ROOT = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '..',
+  '..',
+  'skills',
+);
 
 /**
  * Strip leading [Context: ...] prefixes the frontend injects for new sessions.
@@ -13,16 +24,208 @@ function splitContextPrefix(text) {
 }
 
 /**
- * Build the ordered list of directories to search for a skill SKILL.md.
+ * Build the ordered list of skill roots to search. Project-local sources take
+ * precedence over repository and user-level fallbacks.
  */
-function buildSkillSearchPaths(skillName, workingDir) {
-  return [
-    path.join(workingDir, '.agents', 'skills', skillName),
-    path.join(workingDir, '.claude', 'skills', skillName),
-    path.join(workingDir, '.gemini', 'skills', skillName),
-    path.join(process.cwd(), 'skills', skillName),
-    path.join(os.homedir(), '.claude', 'skills', skillName),
+function buildSkillSearchRoots(workingDir) {
+  const roots = [
+    // Search canonical names among native skills, but do not let the nested
+    // legacy library bypass the preferred .drclaw location below.
+    {
+      root: path.join(workingDir, '.agents', 'skills'),
+      ignoredTopLevel: new Set(['library']),
+      projectAnchor: workingDir,
+    },
+    { root: path.join(workingDir, '.drclaw', 'skill-library'), projectAnchor: workingDir },
+    // Backward-compatible read path for projects created before the library
+    // moved out of Codex's recursively discovered .agents/skills tree.
+    { root: path.join(workingDir, '.agents', 'skills', 'library'), projectAnchor: workingDir },
+    { root: path.join(workingDir, '.claude', 'skills'), projectAnchor: workingDir },
+    { root: path.join(workingDir, '.cursor', 'skills'), projectAnchor: workingDir },
+    { root: path.join(workingDir, '.gemini', 'skills'), projectAnchor: workingDir },
+    { root: path.join(process.cwd(), 'skills') },
+    { root: PACKAGED_SKILLS_ROOT },
+    { root: path.join(os.homedir(), '.agents', 'skills') },
+    { root: path.join(os.homedir(), '.claude', 'skills') },
   ];
+
+  const seen = new Set();
+  return roots
+    .map(({ root, ignoredTopLevel, projectAnchor }) => ({
+      root: path.resolve(root),
+      ignoredTopLevel,
+      projectAnchor: projectAnchor ? path.resolve(projectAnchor) : null,
+    }))
+    .filter(({ root }) => {
+      if (seen.has(root)) return false;
+      seen.add(root);
+      return true;
+    });
+}
+
+function parseFrontmatterName(content) {
+  const frontmatter = content.match(/^---\s*\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
+  if (!frontmatter) return null;
+
+  const match = frontmatter[1].match(/^name\s*:\s*(.*?)\s*$/m);
+  if (!match) return null;
+
+  let name = match[1].trim();
+  if ((name.startsWith('"') && name.endsWith('"')) || (name.startsWith("'") && name.endsWith("'"))) {
+    name = name.slice(1, -1).trim();
+  }
+  return SAFE_SKILL_NAME.test(name) ? name : null;
+}
+
+function isRealPathWithin(candidatePath, allowedRoot) {
+  return candidatePath === allowedRoot || candidatePath.startsWith(`${allowedRoot}${path.sep}`);
+}
+
+async function projectPathChainIsLocal(projectAnchor, root) {
+  if (!isRealPathWithin(root, projectAnchor)) return false;
+  const relative = path.relative(projectAnchor, root);
+  let current = projectAnchor;
+  for (const segment of relative.split(path.sep).filter(Boolean)) {
+    current = path.join(current, segment);
+    try {
+      const stat = await fs.lstat(current);
+      if (stat.isSymbolicLink()) return false;
+    } catch {
+      return false;
+    }
+  }
+  return true;
+}
+
+async function isTrustedSkillFile(skillMdPath, trustedRealRoots) {
+  try {
+    const stat = await fs.stat(skillMdPath);
+    if (!stat.isFile()) return false;
+    const realSkillMdPath = await fs.realpath(skillMdPath);
+    return trustedRealRoots.some((root) => isRealPathWithin(realSkillMdPath, root));
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Resolve a directory alias or canonical frontmatter name under one approved
+ * root. Logical traversal stays inside the root; directory symlinks are
+ * followed because generated skill entries intentionally point to the source
+ * library outside the project.
+ */
+async function findSkillInRoot(
+  skillName,
+  root,
+  ignoredTopLevel = new Set(),
+  projectAnchor = null,
+) {
+  if (projectAnchor && !await projectPathChainIsLocal(projectAnchor, root)) return null;
+
+  let realRoot;
+  try {
+    realRoot = await fs.realpath(root);
+  } catch {
+    return null;
+  }
+
+  const trustedRealRoots = [realRoot];
+  const allowExternalTopLevelSymlinks = !projectAnchor;
+  try {
+    const realPackagedRoot = await fs.realpath(PACKAGED_SKILLS_ROOT);
+    if (!trustedRealRoots.includes(realPackagedRoot)) trustedRealRoots.push(realPackagedRoot);
+  } catch {
+    // A distribution without bundled skills can still use physical local or
+    // user-level skills, but cannot trust external project symlinks.
+  }
+
+  const directDir = path.resolve(root, skillName);
+  if (directDir.startsWith(`${root}${path.sep}`)) {
+    if (allowExternalTopLevelSymlinks) {
+      try {
+        const directStat = await fs.lstat(directDir);
+        if (directStat.isSymbolicLink()) {
+          const directRealPath = await fs.realpath(directDir);
+          if (!trustedRealRoots.includes(directRealPath)) trustedRealRoots.push(directRealPath);
+        }
+      } catch {
+        // The normal file check below handles absent or unreadable entries.
+      }
+    }
+    const directSkillMd = path.join(directDir, 'SKILL.md');
+    if (await isTrustedSkillFile(directSkillMd, trustedRealRoots)) return directSkillMd;
+  }
+
+  const visited = new Set();
+  const scanState = { directories: 0 };
+
+  async function walk(currentDir, depth) {
+    if (depth > MAX_SKILL_SCAN_DEPTH || scanState.directories >= MAX_SKILL_SCAN_DIRS) return null;
+
+    let realDir;
+    let entries;
+    try {
+      realDir = await fs.realpath(currentDir);
+      if (!trustedRealRoots.some((rootPath) => isRealPathWithin(realDir, rootPath))) return null;
+      if (visited.has(realDir)) return null;
+      visited.add(realDir);
+      scanState.directories += 1;
+      entries = await fs.readdir(currentDir, { withFileTypes: true });
+    } catch {
+      return null;
+    }
+
+    const skillMdPath = path.join(currentDir, 'SKILL.md');
+    if (
+      entries.some((entry) => entry.name === 'SKILL.md')
+      && await isTrustedSkillFile(skillMdPath, trustedRealRoots)
+    ) {
+      if (path.basename(currentDir) === skillName) return skillMdPath;
+      try {
+        const content = await fs.readFile(skillMdPath, 'utf8');
+        if (parseFrontmatterName(content) === skillName) return skillMdPath;
+      } catch {
+        // An unreadable candidate is not a resolvable skill.
+      }
+      return null;
+    }
+
+    const children = entries
+      .filter((entry) => (
+        !entry.name.startsWith('.')
+        && entry.name !== 'node_modules'
+        && (depth !== 0 || !ignoredTopLevel.has(entry.name))
+      ))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    for (const entry of children) {
+      const childPath = path.join(currentDir, entry.name);
+      let isDirectory = entry.isDirectory();
+      if (!isDirectory && entry.isSymbolicLink()) {
+        try {
+          isDirectory = (await fs.stat(childPath)).isDirectory();
+        } catch {
+          isDirectory = false;
+        }
+      }
+      if (!isDirectory) continue;
+
+      if (allowExternalTopLevelSymlinks && depth === 0 && entry.isSymbolicLink()) {
+        try {
+          const realChildPath = await fs.realpath(childPath);
+          if (!trustedRealRoots.includes(realChildPath)) trustedRealRoots.push(realChildPath);
+        } catch {
+          continue;
+        }
+      }
+
+      const match = await walk(childPath, depth + 1);
+      if (match) return match;
+    }
+    return null;
+  }
+
+  return walk(root, 0);
 }
 
 /**
@@ -30,15 +233,13 @@ function buildSkillSearchPaths(skillName, workingDir) {
  * Returns the absolute path or null if not found.
  */
 async function findSkillMdPath(skillName, workingDir) {
-  const searchPaths = buildSkillSearchPaths(skillName, workingDir);
-  for (const skillDir of searchPaths) {
-    try {
-      const skillMdPath = path.join(skillDir, 'SKILL.md');
-      const stat = await fs.stat(skillMdPath);
-      if (stat.isFile()) return skillMdPath;
-    } catch {
-      // not found, try next
-    }
+  if (typeof skillName !== 'string' || !SAFE_SKILL_NAME.test(skillName)) return null;
+  if (typeof workingDir !== 'string' || !workingDir.trim()) return null;
+
+  const searchRoots = buildSkillSearchRoots(path.resolve(workingDir));
+  for (const { root, ignoredTopLevel, projectAnchor } of searchRoots) {
+    const skillMdPath = await findSkillInRoot(skillName, root, ignoredTopLevel, projectAnchor);
+    if (skillMdPath) return skillMdPath;
   }
   return null;
 }

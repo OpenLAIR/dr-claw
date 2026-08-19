@@ -79,6 +79,7 @@ import { IS_PLATFORM } from './constants/config.js';
 import { enqueueTelemetryEvent } from './telemetry.js';
 import { resolveCursorCliCommand, isCursorLoginCommand, isGeminiLoginCommand, normalizeCursorLoginCommand } from './utils/cursorCommand.js';
 import { buildCodexCliEnv, codexCommandForShell } from './utils/codexCli.js';
+import { resolveCodexHome } from './utils/codexHome.js';
 import { getGeminiApiKeyForUser, withGeminiApiKeyEnv } from './utils/geminiApiKey.js';
 import {
     DEFAULT_BACKEND_PORT,
@@ -95,7 +96,7 @@ import { getNanoDrClawSessionsRoot } from './nanoSessionPaths.js';
 const PROVIDER_WATCH_PATHS = [
     { provider: 'claude', rootPath: path.join(os.homedir(), '.claude', 'projects') },
     { provider: 'cursor', rootPath: path.join(os.homedir(), '.cursor', 'chats') },
-    { provider: 'codex', rootPath: path.join(os.homedir(), '.codex', 'sessions') },
+    { provider: 'codex', rootPath: path.join(resolveCodexHome(), 'sessions') },
     { provider: 'gemini', rootPath: path.join(os.homedir(), '.gemini', 'sessions') },
     { provider: 'nano', rootPath: getNanoDrClawSessionsRoot() },
 ];
@@ -2746,7 +2747,7 @@ app.get('/api/projects/:projectName/sessions/:sessionId/token-usage', authentica
 
     // Handle Codex sessions
     if (provider === 'codex') {
-      const codexSessionsDir = path.join(homeDir, '.codex', 'sessions');
+      const codexSessionsDir = path.join(resolveCodexHome(), 'sessions');
 
       // Find the session file by searching for the session ID
       const findSessionFile = async (dir) => {
@@ -3201,7 +3202,8 @@ async function getFileTree(dirPath, maxDepth = 3, currentDepth = 0, showHidden =
 
 const REQUESTED_PORT = parsePortNumber(process.env.PORT, DEFAULT_BACKEND_PORT);
 const REQUESTED_VITE_PORT = parsePortNumber(process.env.VITE_PORT, DEFAULT_FRONTEND_PORT);
-const HOST = process.env.HOST || '0.0.0.0';
+const HOST = process.env.HOST || '127.0.0.1';
+const STRICT_PORT = process.env.DR_CLAW_STRICT_PORT === '1';
 const IS_DESKTOP = process.env.DR_CLAW_DESKTOP === '1';
 // Show localhost when binding to all interfaces; 0.0.0.0 is not directly connectable.
 const DISPLAY_HOST = HOST === '0.0.0.0' ? 'localhost' : HOST;
@@ -3230,6 +3232,7 @@ async function startServer() {
         const activePort = await listenOnAvailablePort(server, {
             startPort: REQUESTED_PORT,
             host: HOST,
+            maxAttempts: STRICT_PORT ? 1 : undefined,
         });
         setRuntimePortSync('backend', activePort);
 

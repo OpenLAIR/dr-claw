@@ -86,6 +86,7 @@ import {
 } from './utils/sessionMode.js';
 import { resolveNanoSessionAbsPath, safeNanoSessionFilename } from './nanoSessionPaths.js';
 import { readJsonlLinesFrom } from './utils/jsonlTailReader.js';
+import { resolveCodexHome } from './utils/codexHome.js';
 import { EventEmitter } from 'events';
 
 /**
@@ -3094,12 +3095,15 @@ function getCoreSkillNames() {
 /**
  * Generate a compact skills-index.md for the .agents/skills/ directory.
  * Reads YAML frontmatter (name, description) from each SKILL.md and produces
- * a markdown table grouped by Core Pipeline Skills vs Library Skills.
+ * a markdown table grouped by Core Pipeline Skills vs Library Skills. Library
+ * skills live outside .agents/skills so Codex does not eagerly discover every
+ * skill while building its initial native skill list.
  *
  * @param {Array<{name: string, absolutePath: string}>} skillDirs
+ * @param {{core?: Set<string>, library?: Set<string>, libraryPaths?: Map<string, string>}} [available]
  * @returns {string} Markdown content for skills-index.md
  */
-async function generateSkillsIndex(skillDirs) {
+async function generateSkillsIndex(skillDirs, available = {}) {
   const matter = (await import('gray-matter')).default;
   const coreNames = getCoreSkillNames();
 
@@ -3128,9 +3132,15 @@ async function generateSkillsIndex(skillDirs) {
 
     const entry = { dirName: name, skillName, description };
     if (coreNames.has(name)) {
+      if (available.core && !available.core.has(name)) continue;
       coreSkills.push(entry);
     } else {
-      librarySkills.push(entry);
+      if (available.library && !available.library.has(name)) continue;
+      librarySkills.push({
+        ...entry,
+        routedPath: available.libraryPaths?.get(name)
+          || `.drclaw/skill-library/${name}/SKILL.md`,
+      });
     }
   }
 
@@ -3155,11 +3165,220 @@ async function generateSkillsIndex(skillDirs) {
   lines.push('| Skill | Path | Description |');
   lines.push('|-------|------|-------------|');
   for (const s of librarySkills) {
-    lines.push(`| ${s.skillName} | \`.agents/skills/library/${s.dirName}/SKILL.md\` | ${s.description} |`);
+    lines.push(`| ${s.skillName} | \`${s.routedPath}\` | ${s.description} |`);
   }
 
   lines.push('');
   return lines.join('\n');
+}
+
+function isResolvedPathWithin(candidatePath, rootPath) {
+  const candidate = path.resolve(candidatePath);
+  const root = path.resolve(rootPath);
+  return candidate === root || candidate.startsWith(`${root}${path.sep}`);
+}
+
+async function resolvedSymlinkTarget(linkPath) {
+  const stat = await fs.lstat(linkPath);
+  if (!stat.isSymbolicLink()) return null;
+  const target = await fs.readlink(linkPath);
+  return path.resolve(path.dirname(linkPath), target);
+}
+
+async function symlinkTargetsPath(linkPath, expectedTarget) {
+  try {
+    const target = await resolvedSymlinkTarget(linkPath);
+    return target === path.resolve(expectedTarget);
+  } catch (err) {
+    if (err.code === 'ENOENT') return false;
+    throw err;
+  }
+}
+
+/**
+ * Create a project-local directory one path segment at a time and reject
+ * existing symlink ancestors. This prevents setup from writing through a
+ * project-controlled link into an external directory.
+ */
+async function ensureProjectLocalDirectory(projectPath, relativeSegments) {
+  const projectRoot = path.resolve(projectPath);
+  let current = projectRoot;
+
+  for (const segment of relativeSegments) {
+    current = path.join(current, segment);
+    if (!isResolvedPathWithin(current, projectRoot)) {
+      throw new Error(`Managed directory escapes project root: ${current}`);
+    }
+
+    let stat;
+    try {
+      stat = await fs.lstat(current);
+    } catch (err) {
+      if (err.code !== 'ENOENT') throw err;
+      try {
+        await fs.mkdir(current);
+      } catch (mkdirErr) {
+        if (mkdirErr.code !== 'EEXIST') throw mkdirErr;
+      }
+      stat = await fs.lstat(current);
+    }
+
+    if (stat.isSymbolicLink() || !stat.isDirectory()) {
+      throw new Error(`Managed directory must be a project-local directory: ${current}`);
+    }
+  }
+
+  return current;
+}
+
+const SKILL_ROUTING_BLOCK_START = '<!-- DRCLAW:SKILL-ROUTING:START -->';
+const SKILL_ROUTING_BLOCK_END = '<!-- DRCLAW:SKILL-ROUTING:END -->';
+
+async function writeProjectFileAtomically(filePath, content, defaultMode = 0o644) {
+  let fileMode = defaultMode;
+  try {
+    const existingStat = await fs.lstat(filePath);
+    if (existingStat.isSymbolicLink() || !existingStat.isFile()) {
+      throw new Error(`Refusing to replace non-file project path: ${filePath}`);
+    }
+    fileMode = existingStat.mode & 0o777;
+  } catch (err) {
+    if (err.code !== 'ENOENT') throw err;
+  }
+
+  const temporaryPath = `${filePath}.drclaw-${process.pid}-${crypto.randomUUID()}.tmp`;
+  try {
+    await fs.writeFile(temporaryPath, content, { encoding: 'utf8', mode: fileMode });
+    await fs.chmod(temporaryPath, fileMode);
+    await fs.rename(temporaryPath, filePath);
+  } finally {
+    await fs.unlink(temporaryPath).catch(() => {});
+  }
+}
+
+/**
+ * Add or refresh the versioned skill-routing block in an existing project
+ * AGENTS.md without replacing user-authored content around it.
+ */
+async function updateProjectSkillRoutingGuidance(projectPath) {
+  const templatePath = path.join(__dirname, 'templates', 'AGENTS.md');
+  const projectAgentsPath = path.join(projectPath, 'AGENTS.md');
+  const template = await fs.readFile(templatePath, 'utf8');
+  const templateStart = template.indexOf(SKILL_ROUTING_BLOCK_START);
+  const templateEnd = template.indexOf(SKILL_ROUTING_BLOCK_END);
+  if (templateStart === -1 || templateEnd < templateStart) {
+    throw new Error('Skill-routing markers are missing from the AGENTS.md template');
+  }
+
+  const canonicalBlock = template.slice(
+    templateStart,
+    templateEnd + SKILL_ROUTING_BLOCK_END.length,
+  );
+  const projectAgentsStat = await fs.lstat(projectAgentsPath);
+  if (projectAgentsStat.isSymbolicLink() || !projectAgentsStat.isFile()) {
+    console.warn(`[projects] Preserving non-file AGENTS.md path: ${projectAgentsPath}`);
+    return false;
+  }
+  const current = await fs.readFile(projectAgentsPath, 'utf8');
+  const currentStart = current.indexOf(SKILL_ROUTING_BLOCK_START);
+  const currentEnd = current.indexOf(SKILL_ROUTING_BLOCK_END);
+
+  let updated;
+  if (currentStart === -1 && currentEnd === -1) {
+    let separator = '';
+    if (current.length > 0 && !current.endsWith('\n\n')) {
+      separator = current.endsWith('\n') ? '\n' : '\n\n';
+    }
+    updated = `${current}${separator}${canonicalBlock}\n`;
+  } else if (currentStart !== -1 && currentEnd >= currentStart) {
+    updated = `${current.slice(0, currentStart)}${canonicalBlock}${current.slice(currentEnd + SKILL_ROUTING_BLOCK_END.length)}`;
+  } else {
+    console.warn(`[projects] Preserving malformed managed skill-routing block: ${projectAgentsPath}`);
+    return false;
+  }
+
+  if (updated === current) return true;
+
+  await writeProjectFileAtomically(projectAgentsPath, updated, projectAgentsStat.mode & 0o777);
+  return true;
+}
+
+/**
+ * Remove a generated skill link without deleting a user-owned file, directory,
+ * or symlink. Old generated links are recognized by a target inside the
+ * versioned Dr. Claw skill root.
+ */
+async function unlinkManagedSkillSymlink(linkPath, managedRoot = DRCLAW_SKILLS_DIR) {
+  try {
+    const target = await resolvedSymlinkTarget(linkPath);
+    if (!target || !isResolvedPathWithin(target, managedRoot)) return false;
+    await fs.unlink(linkPath);
+    return true;
+  } catch (err) {
+    if (err.code === 'ENOENT') return false;
+    throw err;
+  }
+}
+
+/**
+ * Create or refresh a managed directory symlink. Non-symlink conflicts are
+ * preserved, as are symlinks that do not point into the managed skill root.
+ */
+async function ensureSkillSymlink(targetPath, linkPath, managedRoot = DRCLAW_SKILLS_DIR, linkType = 'dir') {
+  try {
+    const stat = await fs.lstat(linkPath);
+    if (!stat.isSymbolicLink()) {
+      console.warn(`[projects] Preserving non-symlink skill path: ${linkPath}`);
+      return false;
+    }
+
+    const currentTarget = await fs.readlink(linkPath);
+    const resolvedCurrent = path.resolve(path.dirname(linkPath), currentTarget);
+    if (resolvedCurrent === path.resolve(targetPath)) return true;
+    if (!isResolvedPathWithin(resolvedCurrent, managedRoot)) {
+      console.warn(`[projects] Preserving user-owned skill symlink: ${linkPath}`);
+      return false;
+    }
+    await fs.unlink(linkPath);
+  } catch (err) {
+    if (err.code !== 'ENOENT') throw err;
+  }
+
+  await fs.symlink(targetPath, linkPath, linkType);
+  return true;
+}
+
+/**
+ * Remove links created by the old .agents/skills/library layout. Only direct
+ * symlink children are removed; ordinary files/directories are left intact.
+ * The legacy directory itself is removed only when empty.
+ */
+async function cleanupLegacyAgentsLibrary(skillsSubdir) {
+  const legacyLibraryDir = path.join(skillsSubdir, 'library');
+  let rootStat;
+  try {
+    rootStat = await fs.lstat(legacyLibraryDir);
+  } catch (err) {
+    if (err.code === 'ENOENT') return;
+    throw err;
+  }
+
+  if (rootStat.isSymbolicLink() || !rootStat.isDirectory()) {
+    console.warn(`[projects] Preserving unexpected legacy skill-library path: ${legacyLibraryDir}`);
+    return;
+  }
+
+  const entries = await fs.readdir(legacyLibraryDir);
+  for (const entry of entries) {
+    await unlinkManagedSkillSymlink(path.join(legacyLibraryDir, entry));
+  }
+
+  try {
+    await fs.rmdir(legacyLibraryDir);
+  } catch (err) {
+    if (err.code !== 'ENOTEMPTY' && err.code !== 'EEXIST') throw err;
+    console.warn(`[projects] Preserving non-empty legacy skill-library directory: ${legacyLibraryDir}`);
+  }
 }
 
 async function ensureProjectSkillLinks(projectPath) {
@@ -3238,6 +3457,7 @@ async function ensureProjectSkillLinks(projectPath) {
   try {
     const { writeProjectTemplates } = await import('./templates/index.js');
     await writeProjectTemplates(projectPath);
+    await updateProjectSkillRoutingGuidance(projectPath);
   } catch (err) {
     console.error('[projects] Failed to write agent templates:', err.message);
   }
@@ -3272,44 +3492,118 @@ async function ensureProjectSkillLinks(projectPath) {
     for (const dir of PROJECT_SKILL_FOLDERS) {
       const skillsSubdir = path.join(projectPath, dir, 'skills');
       const isAgents = dir === '.agents';
+      const agentsLibrarySubdir = path.join(projectPath, '.drclaw', 'skill-library');
+      let agentsLibraryReady = !isAgents;
       try {
-        await fs.mkdir(skillsSubdir, { recursive: true });
+        await ensureProjectLocalDirectory(projectPath, [dir, 'skills']);
         if (isAgents) {
-          await fs.mkdir(path.join(skillsSubdir, 'library'), { recursive: true });
+          try {
+            await ensureProjectLocalDirectory(projectPath, ['.drclaw', 'skill-library']);
+            agentsLibraryReady = true;
+          } catch (err) {
+            console.error('[projects] Failed to create .drclaw/skill-library:', err.message);
+          }
         }
       } catch (err) {
         console.error(`[projects] Failed to create ${dir}/skills:`, err.message);
         continue;
       }
 
+      const availableCoreSkills = new Set();
+      const availableLibrarySkills = new Set();
+      const availableLibraryPaths = new Map();
+      let completeAgentsLibrary = agentsLibraryReady;
+
       for (const { name, absolutePath } of skillDirs) {
-        // For .agents/: core skills at top level, library skills under library/
+        // For .agents/: expose only core skills as native Codex skills. Keep
+        // the complete library in a separate project-local routing directory.
+        const isLibrarySkill = isAgents && !coreNames.has(name);
         const linkPath = isAgents && !coreNames.has(name)
-          ? path.join(skillsSubdir, 'library', name)
+          ? path.join(agentsLibrarySubdir, name)
           : path.join(skillsSubdir, name);
+        if (isLibrarySkill && !agentsLibraryReady) {
+          completeAgentsLibrary = false;
+          continue;
+        }
         try {
-          try {
-            await fs.unlink(linkPath);
-          } catch (_) {
-            // ignore if not exists or not a symlink
+          const linked = await ensureSkillSymlink(absolutePath, linkPath);
+          if (isAgents && coreNames.has(name) && linked) {
+            availableCoreSkills.add(name);
+          } else if (isLibrarySkill) {
+            if (linked) {
+              availableLibrarySkills.add(name);
+              availableLibraryPaths.set(name, `.drclaw/skill-library/${name}/SKILL.md`);
+            } else {
+              completeAgentsLibrary = false;
+            }
           }
-          // Clean up stale top-level symlink when migrating library skills into library/
-          if (isAgents && !coreNames.has(name)) {
-            try { await fs.unlink(path.join(skillsSubdir, name)); } catch (_) {}
-          }
-          await fs.symlink(absolutePath, linkPath, 'dir');
         } catch (err) {
+          if (isLibrarySkill) completeAgentsLibrary = false;
           console.error(`[projects] Failed to symlink ${name} in ${dir}/skills:`, err.message);
         }
       }
 
-      // Write the skills index for .agents/ so Codex can discover skills lazily
+      // When migration is incomplete, retain discoverability through only
+      // those legacy links that still resolve to the expected versioned skill.
+      if (isAgents && !completeAgentsLibrary) {
+        for (const { name, absolutePath } of skillDirs) {
+          if (coreNames.has(name) || availableLibrarySkills.has(name)) continue;
+          const legacyCandidates = [
+            {
+              linkPath: path.join(skillsSubdir, 'library', name),
+              routedPath: `.agents/skills/library/${name}/SKILL.md`,
+            },
+            {
+              linkPath: path.join(skillsSubdir, name),
+              routedPath: `.agents/skills/${name}/SKILL.md`,
+            },
+          ];
+          for (const candidate of legacyCandidates) {
+            if (await symlinkTargetsPath(candidate.linkPath, absolutePath)) {
+              availableLibrarySkills.add(name);
+              availableLibraryPaths.set(name, candidate.routedPath);
+              break;
+            }
+          }
+        }
+      }
+
+      // Write only entries whose managed destinations were verified, so the
+      // index never advertises a missing or user-conflicted path.
+      let agentsIndexWritten = !isAgents;
       if (isAgents) {
         try {
-          const indexContent = await generateSkillsIndex(skillDirs);
-          await fs.writeFile(path.join(skillsSubdir, 'skills-index.md'), indexContent, 'utf8');
+          const indexContent = await generateSkillsIndex(skillDirs, {
+            core: availableCoreSkills,
+            library: availableLibrarySkills,
+            libraryPaths: availableLibraryPaths,
+          });
+          await writeProjectFileAtomically(
+            path.join(skillsSubdir, 'skills-index.md'),
+            indexContent,
+          );
+          agentsIndexWritten = true;
         } catch (err) {
           console.error('[projects] Failed to write skills-index.md:', err.message);
+        }
+      }
+
+      // Migrate only after every new library link and its new index are
+      // verified. Otherwise preserve the complete legacy layout as rollback.
+      if (isAgents) {
+        if (completeAgentsLibrary && agentsIndexWritten) {
+          try {
+            for (const { name } of skillDirs) {
+              if (!coreNames.has(name)) {
+                await unlinkManagedSkillSymlink(path.join(skillsSubdir, name));
+              }
+            }
+            await cleanupLegacyAgentsLibrary(skillsSubdir);
+          } catch (err) {
+            console.error('[projects] Failed to clean legacy .agents skill library:', err.message);
+          }
+        } else {
+          console.warn('[projects] Skill-library migration incomplete; preserving legacy links');
         }
       }
 
@@ -3319,8 +3613,7 @@ async function ensureProjectSkillLinks(projectPath) {
         const destJson = path.join(skillsSubdir, jsonFile);
         try {
           await fs.access(srcJson);
-          try { await fs.unlink(destJson); } catch (_) {}
-          await fs.symlink(srcJson, destJson, 'file');
+          await ensureSkillSymlink(srcJson, destJson, DRCLAW_SKILLS_DIR, 'file');
         } catch (err) {
           if (err.code !== 'ENOENT') {
             console.error(`[projects] Failed to symlink ${jsonFile} in ${dir}/skills:`, err.message);
@@ -3913,7 +4206,7 @@ async function readCodexSessionFileCached(filePath, stats) {
 }
 
 async function buildCodexSessionsIndexUncached() {
-  const codexSessionsDir = path.join(os.homedir(), '.codex', 'sessions');
+  const codexSessionsDir = path.join(resolveCodexHome(), 'sessions');
   const sessionsByProject = new Map();
 
   try {
@@ -4223,7 +4516,7 @@ async function findCodexSessionFilePath(sessionId) {
     return null;
   }
 
-  const codexSessionsDir = path.join(os.homedir(), '.codex', 'sessions');
+  const codexSessionsDir = path.join(resolveCodexHome(), 'sessions');
   const jsonlFiles = await findCodexJsonlFiles(codexSessionsDir);
 
   for (const filePath of jsonlFiles) {
@@ -4261,7 +4554,7 @@ async function findCodexSessionFilePath(sessionId) {
 // Get messages for a specific Codex session
 async function getCodexSessionMessages(sessionId, limit = null, offset = 0) {
   try {
-    const codexSessionsDir = path.join(os.homedir(), '.codex', 'sessions');
+    const codexSessionsDir = path.join(resolveCodexHome(), 'sessions');
 
     const sessionFilePath = await findCodexSessionFilePath(sessionId);
 
@@ -4510,7 +4803,7 @@ async function getCodexSessionMessages(sessionId, limit = null, offset = 0) {
 async function deleteCodexSession(sessionId) {
   try {
     const { sessionDb } = await import('./database/db.js');
-    const codexSessionsDir = path.join(os.homedir(), '.codex', 'sessions');
+    const codexSessionsDir = path.join(resolveCodexHome(), 'sessions');
     const indexedSession = sessionDb.getSessionById(sessionId);
 
     const findJsonlFiles = async (dir) => {

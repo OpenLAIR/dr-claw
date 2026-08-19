@@ -17,6 +17,7 @@ import path from 'path';
 const originalHome = process.env.HOME;
 const originalUserProfile = process.env.USERPROFILE;
 const originalDatabasePath = process.env.DATABASE_PATH;
+const originalCodexHome = process.env.CODEX_HOME;
 
 let tempRoot = null;
 let projectRoot = null;
@@ -51,6 +52,7 @@ describe('Codex session index caching', () => {
     process.env.HOME = tempRoot;
     process.env.USERPROFILE = tempRoot;
     process.env.DATABASE_PATH = path.join(tempRoot, 'db', 'auth.db');
+    process.env.CODEX_HOME = path.join(tempRoot, '.codex');
 
     projectRoot = path.join(tempRoot, 'workspace', 'demo');
     await mkdir(projectRoot, { recursive: true });
@@ -63,6 +65,8 @@ describe('Codex session index caching', () => {
     process.env.HOME = originalHome;
     process.env.USERPROFILE = originalUserProfile;
     process.env.DATABASE_PATH = originalDatabasePath;
+    if (originalCodexHome === undefined) delete process.env.CODEX_HOME;
+    else process.env.CODEX_HOME = originalCodexHome;
     vi.restoreAllMocks();
   });
 

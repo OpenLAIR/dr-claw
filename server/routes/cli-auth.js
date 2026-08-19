@@ -7,6 +7,7 @@ import fetch from 'node-fetch';
 import { resolveCursorCliCommand } from '../utils/cursorCommand.js';
 import { resolveAvailableCliCommand } from '../utils/cliResolution.js';
 import { buildCodexCliEnv, getCodexCliCommand } from '../utils/codexCli.js';
+import { resolveCodexHome } from '../utils/codexHome.js';
 import {
   DEFAULT_OLLAMA_URL,
   detectGPUs,
@@ -837,9 +838,9 @@ function checkCursorStatus() {
 }
 
 // Auth precedence:
-// 1. JWT tokens (id_token / access_token) from ~/.codex/auth.json
+// 1. JWT tokens (id_token / access_token) from $CODEX_HOME/auth.json
 // 2. OPENAI_API_KEY from server environment variable
-// 3. OPENAI_API_KEY from ~/.codex/auth.json
+// 3. OPENAI_API_KEY from $CODEX_HOME/auth.json
 async function checkCodexCredentials() {
   const codexCliEnv = buildCodexCliEnv(process.env);
   let cliCommand = getCodexCliCommand(process.env);
@@ -886,7 +887,7 @@ async function checkCodexCredentials() {
     }
 
     const envApiKey = String(process.env.OPENAI_API_KEY || '').trim();
-    const authPath = path.join(os.homedir(), '.codex', 'auth.json');
+    const authPath = path.join(resolveCodexHome(), 'auth.json');
     let auth = null;
 
     try {

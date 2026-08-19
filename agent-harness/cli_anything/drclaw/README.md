@@ -213,7 +213,7 @@ drclaw projects delete <project-ref>
 
 Advanced chat and workflow commands support:
 - `--provider [claude|gemini|codex|cursor]`: force a provider when needed
-- `--bypass-permissions`: auto-approve tool calls for automation
+- `--bypass-permissions`: auto-approve tool calls; high-risk and only for an explicitly approved trusted workflow/scope
 - `--timeout <seconds>`: hard wait limit
 - `--attach <path>`: attach a file or image, repeatable
 - `--model <model-id>`: override the provider model

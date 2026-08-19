@@ -6,6 +6,7 @@ import path from 'path';
 const originalHome = process.env.HOME;
 const originalUserProfile = process.env.USERPROFILE;
 const originalDatabasePath = process.env.DATABASE_PATH;
+const originalCodexHome = process.env.CODEX_HOME;
 
 let tempRoot = null;
 
@@ -43,6 +44,7 @@ describe('Codex non-ASCII project path handling', () => {
     process.env.HOME = tempRoot;
     process.env.USERPROFILE = tempRoot;
     process.env.DATABASE_PATH = path.join(tempRoot, 'db', 'auth.db');
+    process.env.CODEX_HOME = path.join(tempRoot, '.codex');
   });
 
   afterEach(async () => {
@@ -50,6 +52,7 @@ describe('Codex non-ASCII project path handling', () => {
     if (originalHome === undefined) delete process.env.HOME; else process.env.HOME = originalHome;
     if (originalUserProfile === undefined) delete process.env.USERPROFILE; else process.env.USERPROFILE = originalUserProfile;
     if (originalDatabasePath === undefined) delete process.env.DATABASE_PATH; else process.env.DATABASE_PATH = originalDatabasePath;
+    if (originalCodexHome === undefined) delete process.env.CODEX_HOME; else process.env.CODEX_HOME = originalCodexHome;
     if (tempRoot) {
       await rm(tempRoot, { recursive: true, force: true });
       tempRoot = null;

@@ -1,0 +1,180 @@
+name: Codex bootstrap release
+
+on:
+  push:
+    tags:
+      - 'codex-bootstrap-v*'
+
+concurrency:
+  group: codex-bootstrap-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Use Python 3.9
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.9'
+
+      - name: Use pinned application Node line
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22.23.2'
+          cache: npm
+
+      - name: Verify tag and manifest identity
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -Eeuo pipefail
+          test "$(git rev-parse HEAD^{commit})" = "$(git rev-parse "${RELEASE_TAG}^{commit}")"
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          manifest = json.loads(Path('bootstrap/codex/manifest.json').read_text())
+          actual = manifest.get('baseline', {}).get('bundle_release_ref')
+          expected = os.environ['RELEASE_TAG']
+          if actual != expected:
+              raise SystemExit(f'bundle_release_ref={actual!r}, expected {expected!r}')
+          PY
+
+      - name: Validate router and Python bootstrap
+        run: |
+          set -Eeuo pipefail
+          python3 bootstrap/codex/skills/drclaw-skill-library/scripts/query_library.py --validate
+          PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s bootstrap/codex/tests -v
+
+      - name: Validate generated files and application JavaScript
+        run: |
+          set -Eeuo pipefail
+          npm ci
+          npm run skills:catalog
+          git diff --exit-code -- skills/skills-catalog-v2.json
+          npm run typecheck
+          npm run build
+          npm test
+
+      - name: Exercise audited Codex contracts in an isolated profile
+        run: |
+          set -Eeuo pipefail
+          test_home="${RUNNER_TEMP}/drclaw-release-codex-home"
+          mkdir -m 700 "${test_home}"
+          codex_release=$(python3 - <<'PY'
+          import json
+          from pathlib import Path
+          manifest = json.loads(Path('bootstrap/codex/manifest.json').read_text())
+          versions = manifest['requirements']['codex_cli_audited_versions']
+          print(max(versions, key=lambda value: tuple(map(int, value.split('.')))))
+          PY
+          )
+          CODEX_RELEASE="${codex_release}" python3 bootstrap/codex/bootstrap.py install \
+            --home "${test_home}" \
+            --codex-home "${test_home}/.codex" \
+            --skip-delta-skill \
+            --install-codex \
+            --config-profile safe \
+            --no-doctor
+          python3 bootstrap/codex/bootstrap.py doctor \
+            --home "${test_home}" \
+            --codex-home "${test_home}/.codex" \
+            --skip-delta-skill \
+            --require-clean-native-skills \
+            --strict-release \
+            --require-audited-codex-version \
+            --json
+
+      - name: Exercise full Web install without starting a service
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -Eeuo pipefail
+          app_home="${RUNNER_TEMP}/drclaw-release-app-home"
+          mkdir -m 700 "${app_home}"
+          git clone --quiet --no-hardlinks "${GITHUB_WORKSPACE}" "${app_home}/release"
+          git -C "${app_home}/release" checkout --quiet --detach "${RELEASE_TAG}"
+          python3 "${app_home}/release/bootstrap/codex/install_app.py" \
+            --repo-root "${app_home}/release" \
+            install \
+            --home "${app_home}" \
+            --codex-home "${app_home}/.codex" \
+            --service none
+
+      - name: Build source and immutable provenance artifacts
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -Eeuo pipefail
+          mkdir -p release-artifacts
+          archive="release-artifacts/drclaw-${RELEASE_TAG}.tar.gz"
+          git archive --format=tar.gz --prefix=dr-claw/ --output="${archive}" "${RELEASE_TAG}"
+          sha256sum "${archive}" > "${archive}.sha256"
+          RELEASE_COMMIT=$(git rev-parse "${RELEASE_TAG}^{commit}") \
+          RELEASE_TAG_OBJECT=$(git rev-parse "refs/tags/${RELEASE_TAG}") \
+          ARCHIVE_SHA256=$(sha256sum "${archive}" | awk '{print $1}') \
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          tag = os.environ['RELEASE_TAG']
+          payload = {
+              'schema_version': 1,
+              'tag': tag,
+              'tag_object': os.environ['RELEASE_TAG_OBJECT'],
+              'commit': os.environ['RELEASE_COMMIT'],
+              'archive': f'drclaw-{tag}.tar.gz',
+              'archive_sha256': os.environ['ARCHIVE_SHA256'],
+          }
+          Path(f'release-artifacts/drclaw-{tag}.provenance.json').write_text(
+              json.dumps(payload, indent=2, sort_keys=True) + '\n'
+          )
+          PY
+
+      - name: Transfer validated release artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: validated-codex-bootstrap-release
+          path: release-artifacts/
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: codex-bootstrap-release
+    permissions:
+      contents: write
+    steps:
+      - name: Download only the validated artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: validated-codex-bootstrap-release
+          path: release-artifacts
+
+      - name: Publish a new GitHub release without executing repository code
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -Eeuo pipefail
+          if gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+            echo "release ${RELEASE_TAG} already exists; refusing to replace assets" >&2
+            exit 1
+          fi
+          gh release create "${RELEASE_TAG}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --verify-tag \
+            --title "Dr. Claw Codex bootstrap ${RELEASE_TAG}" \
+            --generate-notes \
+            release-artifacts/*

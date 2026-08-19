@@ -12,6 +12,32 @@ const outputPath = process.argv[2]
   ? path.resolve(process.cwd(), process.argv[2])
   : path.join(repoRoot, 'skills', 'skills-catalog-v2.json');
 
+async function resolveGeneratedAt() {
+  const override = process.env.SKILLS_CATALOG_GENERATED_AT;
+  if (override) {
+    if (Number.isNaN(Date.parse(override))) {
+      throw new Error('SKILLS_CATALOG_GENERATED_AT must be an ISO-8601 timestamp');
+    }
+    return new Date(override).toISOString();
+  }
+
+  // A generated file must be stable when its inputs are unchanged. Preserve the
+  // checked-in timestamp by default; release tooling can explicitly override it
+  // when a catalog refresh intentionally needs new generation metadata.
+  try {
+    const existing = JSON.parse(await fs.readFile(outputPath, 'utf8'));
+    if (typeof existing.generatedAt === 'string' && !Number.isNaN(Date.parse(existing.generatedAt))) {
+      return new Date(existing.generatedAt).toISOString();
+    }
+  } catch (error) {
+    if (error?.code !== 'ENOENT' && !(error instanceof SyntaxError)) {
+      throw error;
+    }
+  }
+
+  return new Date().toISOString();
+}
+
 const STOPWORDS = new Set([
   'a',
   'an',
@@ -308,16 +334,20 @@ async function collectSkillFiles(dirPath) {
   return files;
 }
 
-function buildLegacyTags(skillName, summary, frontmatter, mapping) {
+function buildLegacyTags(skillName, directoryAlias, summary, frontmatter, mapping) {
   const stageTags = normalizeList(frontmatter.stage).map((value) => `Stage: ${value}`);
   const domainTags = normalizeList(frontmatter.domain).map((value) => `Domain: ${value}`);
   const metaTags = normalizeList(frontmatter.tags);
   const normalizedSkillName = normalizeKey(skillName);
+  const normalizedDirectoryAlias = normalizeKey(directoryAlias);
+  const mappingKeys = uniq([normalizedSkillName, normalizedDirectoryAlias]);
   const signal = `${skillName} ${summary}`;
-  const isPlatformNative = mapping.platformNativeSkills.has(normalizedSkillName);
+  const isPlatformNative = mappingKeys.some((key) => mapping.platformNativeSkills.has(key));
 
   if (stageTags.length === 0) {
-    const stageOverride = mapping.stageOverrides[normalizedSkillName]?.en;
+    const stageOverride = mappingKeys
+      .map((key) => mapping.stageOverrides[key]?.en)
+      .find(Boolean);
     if (stageOverride) {
       stageTags.push(stageOverride);
     } else if (isPlatformNative) {
@@ -329,7 +359,9 @@ function buildLegacyTags(skillName, summary, frontmatter, mapping) {
   }
 
   if (domainTags.length === 0) {
-    const domainOverride = mapping.domainOverrides[normalizedSkillName]?.en;
+    const domainOverride = mappingKeys
+      .map((key) => mapping.domainOverrides[key]?.en)
+      .find(Boolean);
     if (domainOverride) {
       domainTags.push(domainOverride);
     } else {
@@ -658,7 +690,14 @@ async function main() {
     const name = data.name || path.basename(path.dirname(skillFile));
     const fullDescription = compactText(data.description || extractBodyDescription(content));
     const summary = clampText(fullDescription);
-    const { stageTags, domainTags, metaTags, isPlatformNative } = buildLegacyTags(name, summary, data, mapping);
+    const directoryAlias = path.basename(path.dirname(skillFile));
+    const { stageTags, domainTags, metaTags, isPlatformNative } = buildLegacyTags(
+      name,
+      directoryAlias,
+      summary,
+      data,
+      mapping,
+    );
     const topLevelGroup = getTopLevelGroup(dirPath);
     const collectionLabel = stripFacetPrefix(stageTags[0] || topLevelGroup.label);
     const domainLabel = stripFacetPrefix(domainTags[0] || 'Domain: General');
@@ -730,7 +769,7 @@ async function main() {
   }
 
   const payload = {
-    generatedAt: new Date().toISOString(),
+    generatedAt: await resolveGeneratedAt(),
     schema: 'skills-taxonomy-v2',
     totalSkills: mappedSkills.length,
     skills: mappedSkills,
