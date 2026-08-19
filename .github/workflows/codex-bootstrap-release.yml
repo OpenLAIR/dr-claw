@@ -110,47 +110,162 @@ jobs:
             --codex-home "${app_home}/.codex" \
             --service none
 
-      - name: Build source and immutable provenance artifacts
+      - name: Build the validated online and offline release kit
         env:
           RELEASE_TAG: ${{ github.ref_name }}
         run: |
           set -Eeuo pipefail
-          mkdir -p release-artifacts
-          archive="release-artifacts/drclaw-${RELEASE_TAG}.tar.gz"
-          git archive --format=tar.gz --prefix=dr-claw/ --output="${archive}" "${RELEASE_TAG}"
-          sha256sum "${archive}" > "${archive}.sha256"
-          RELEASE_COMMIT=$(git rev-parse "${RELEASE_TAG}^{commit}") \
-          RELEASE_TAG_OBJECT=$(git rev-parse "refs/tags/${RELEASE_TAG}") \
-          ARCHIVE_SHA256=$(sha256sum "${archive}" | awk '{print $1}') \
-          python3 - <<'PY'
-          import json
-          import os
-          from pathlib import Path
-
-          tag = os.environ['RELEASE_TAG']
-          payload = {
-              'schema_version': 1,
-              'tag': tag,
-              'tag_object': os.environ['RELEASE_TAG_OBJECT'],
-              'commit': os.environ['RELEASE_COMMIT'],
-              'archive': f'drclaw-{tag}.tar.gz',
-              'archive_sha256': os.environ['ARCHIVE_SHA256'],
-          }
-          Path(f'release-artifacts/drclaw-{tag}.provenance.json').write_text(
-              json.dumps(payload, indent=2, sort_keys=True) + '\n'
-          )
-          PY
+          release_commit=$(git rev-parse "${RELEASE_TAG}^{commit}")
+          python3 bootstrap/codex/build_release_kit.py \
+            --repo-root "${GITHUB_WORKSPACE}" \
+            --tag "${RELEASE_TAG}" \
+            --expected-commit "${release_commit}" \
+            --output "${RUNNER_TEMP}/release-artifacts"
 
       - name: Transfer validated release artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: validated-codex-bootstrap-release
-          path: release-artifacts/
+          path: ${{ runner.temp }}/release-artifacts/
           if-no-files-found: error
           retention-days: 7
 
+  validate-python:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Use Python ${{ matrix.python-version }}
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Validate router and complete bootstrap suite
+        run: |
+          set -Eeuo pipefail
+          python3 bootstrap/codex/skills/drclaw-skill-library/scripts/query_library.py --validate
+          PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s bootstrap/codex/tests -v
+
+  validate-arm64:
+    runs-on: ubuntu-24.04-arm
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Use Python 3.9
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.9'
+
+      - name: Verify native arm64 release identity
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -Eeuo pipefail
+          test "$(uname -s)" = Linux
+          test "$(uname -m)" = aarch64
+          test "$(git rev-parse HEAD^{commit})" = "$(git rev-parse "${RELEASE_TAG}^{commit}")"
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          manifest = json.loads(Path('bootstrap/codex/manifest.json').read_text())
+          if manifest.get('baseline', {}).get('bundle_release_ref') != os.environ['RELEASE_TAG']:
+              raise SystemExit('manifest release ref differs from native arm64 tag')
+          if 'aarch64' not in manifest.get('requirements', {}).get('server_architectures', []):
+              raise SystemExit('manifest does not declare the native arm64 contract')
+          PY
+
+      - name: Validate Python bootstrap and router natively
+        run: |
+          set -Eeuo pipefail
+          python3 bootstrap/codex/skills/drclaw-skill-library/scripts/query_library.py --validate
+          PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover \
+            -s bootstrap/codex/tests -p 'test_bootstrap.py' -v
+          PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover \
+            -s bootstrap/codex/tests -p 'test_router.py' -v
+
+      - name: Exercise pinned host Codex contracts natively
+        run: |
+          set -Eeuo pipefail
+          test_home="${RUNNER_TEMP}/drclaw-arm64-codex-home"
+          mkdir -m 700 "${test_home}"
+          codex_release=$(python3 - <<'PY'
+          import json
+          from pathlib import Path
+          manifest = json.loads(Path('bootstrap/codex/manifest.json').read_text())
+          versions = manifest['requirements']['codex_cli_audited_versions']
+          print(max(versions, key=lambda value: tuple(map(int, value.split('.')))))
+          PY
+          )
+          CODEX_RELEASE="${codex_release}" python3 bootstrap/codex/bootstrap.py install \
+            --home "${test_home}" \
+            --codex-home "${test_home}/.codex" \
+            --skip-delta-skill \
+            --install-codex \
+            --config-profile safe \
+            --no-doctor
+          python3 bootstrap/codex/bootstrap.py doctor \
+            --home "${test_home}" \
+            --codex-home "${test_home}/.codex" \
+            --skip-delta-skill \
+            --require-clean-native-skills \
+            --strict-release \
+            --require-audited-codex-version \
+            --json
+
+      - name: Exercise native arm64 Web install and doctor without a service
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -Eeuo pipefail
+          remote_home="${RUNNER_TEMP}/drclaw-arm64-remote-preview"
+          mkdir -m 700 "${remote_home}"
+          release_commit=$(git rev-parse "${RELEASE_TAG}^{commit}")
+          release_tag_object=$(git rev-parse "refs/tags/${RELEASE_TAG}")
+          bash bootstrap/codex/remote-install.sh \
+            --repo-url "${GITHUB_WORKSPACE}" \
+            --ref "${RELEASE_TAG}" \
+            --expected-commit "${release_commit}" \
+            --expected-tag-object "${release_tag_object}" \
+            --home "${remote_home}" \
+            --codex-home "${remote_home}/.codex" \
+            --allow-nonlogin-home \
+            --full \
+            --app-service none \
+            --skip-codex-install \
+            --dry-run
+          app_home="${RUNNER_TEMP}/drclaw-arm64-app-home"
+          mkdir -m 700 "${app_home}"
+          git clone --quiet --no-hardlinks "${GITHUB_WORKSPACE}" "${app_home}/release"
+          git -C "${app_home}/release" checkout --quiet --detach "${RELEASE_TAG}"
+          python3 "${app_home}/release/bootstrap/codex/install_app.py" \
+            --repo-root "${app_home}/release" \
+            install \
+            --home "${app_home}" \
+            --codex-home "${app_home}/.codex" \
+            --service none
+          python3 "${app_home}/release/bootstrap/codex/install_app.py" \
+            --repo-root "${app_home}/release" \
+            doctor \
+            --home "${app_home}" \
+            --codex-home "${app_home}/.codex"
+
   publish:
-    needs: validate
+    needs: [validate, validate-python, validate-arm64]
     runs-on: ubuntu-latest
     environment: codex-bootstrap-release
     permissions:
@@ -161,6 +276,92 @@ jobs:
         with:
           name: validated-codex-bootstrap-release
           path: release-artifacts
+
+      - name: Reverify exact artifact and live annotated-tag identity
+        id: identity
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -Eeuo pipefail
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          import re
+          import stat
+          from pathlib import Path
+
+          root = Path("release-artifacts")
+          tag = os.environ["RELEASE_TAG"]
+          if re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}", tag) is None:
+              raise SystemExit("invalid release tag")
+          provenance_name = f"drclaw-{tag}.provenance.json"
+          expected = {
+              "SHA256SUMS",
+              "install.sh",
+              "remote-install.sh",
+              f"drclaw-{tag}.bundle",
+              f"drclaw-{tag}.bundle.sha256",
+              f"drclaw-{tag}.tar.gz",
+              f"drclaw-{tag}.tar.gz.sha256",
+              provenance_name,
+              provenance_name + ".sha256",
+          }
+          actual = {path.name for path in root.iterdir()}
+          if actual != expected:
+              raise SystemExit("validated artifact directory inventory mismatch")
+          for path in root.iterdir():
+              if not stat.S_ISREG(path.lstat().st_mode) or path.is_symlink():
+                  raise SystemExit("validated artifact directory contains a non-regular entry")
+
+          checksum_lines = (root / "SHA256SUMS").read_text(encoding="ascii").splitlines()
+          checksums = {}
+          for line in checksum_lines:
+              match = re.fullmatch(r"([0-9a-f]{64})  ([A-Za-z0-9][A-Za-z0-9._-]*)", line)
+              if match is None or match.group(2) in checksums:
+                  raise SystemExit("validated artifact checksum index is malformed")
+              checksums[match.group(2)] = match.group(1)
+          if set(checksums) != expected - {"SHA256SUMS"}:
+              raise SystemExit("validated artifact checksum inventory mismatch")
+          for name, expected_digest in checksums.items():
+              actual_digest = hashlib.sha256((root / name).read_bytes()).hexdigest()
+              if actual_digest != expected_digest:
+                  raise SystemExit("validated artifact checksum verification failed")
+
+          provenance = json.loads((root / provenance_name).read_text(encoding="utf-8"))
+          tag_object = provenance.get("tag_object")
+          commit = provenance.get("commit")
+          if provenance.get("tag") != tag:
+              raise SystemExit("provenance tag differs from the workflow tag")
+          if not isinstance(tag_object, str) or re.fullmatch(r"[0-9a-f]{40}", tag_object) is None:
+              raise SystemExit("provenance annotated tag object is invalid")
+          if not isinstance(commit, str) or re.fullmatch(r"[0-9a-f]{40}", commit) is None:
+              raise SystemExit("provenance commit is invalid")
+          output = Path(os.environ["GITHUB_OUTPUT"])
+          with output.open("a", encoding="utf-8") as handle:
+              handle.write(f"tag_object={tag_object}\ncommit={commit}\n")
+          PY
+
+      - name: Reverify live public tag has not moved
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          EXPECTED_TAG_OBJECT: ${{ steps.identity.outputs.tag_object }}
+          EXPECTED_COMMIT: ${{ steps.identity.outputs.commit }}
+        run: |
+          set -Eeuo pipefail
+          remote_refs=$(git ls-remote --exit-code \
+            "https://github.com/${GITHUB_REPOSITORY}.git" \
+            "refs/tags/${RELEASE_TAG}" "refs/tags/${RELEASE_TAG}^{}")
+          direct_object=""
+          peeled_commit=""
+          while IFS=$'\t' read -r object_id ref_name; do
+            case "$ref_name" in
+              "refs/tags/${RELEASE_TAG}") direct_object=$object_id ;;
+              "refs/tags/${RELEASE_TAG}^{}") peeled_commit=$object_id ;;
+            esac
+          done <<<"$remote_refs"
+          test "$direct_object" = "$EXPECTED_TAG_OBJECT"
+          test "$peeled_commit" = "$EXPECTED_COMMIT"
 
       - name: Publish a new GitHub release without executing repository code
         env:

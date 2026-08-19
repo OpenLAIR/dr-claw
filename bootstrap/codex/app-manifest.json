@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "bundle_version": "0.1.0",
+  "bundle_version": "0.2.0",
   "application": {
     "name": "Dr. Claw Web",
     "package_name": "dr-claw",
@@ -30,12 +30,53 @@
     "source_of_checksums": "https://nodejs.org/download/release/v22.23.2/SHASUMS256.txt",
     "supported_package_engine": "20.x || 22.x || 24.x"
   },
+  "bundled_codex": {
+    "version": "0.147.0",
+    "cli_package": "@openai/codex",
+    "sdk_package": "@openai/codex-sdk",
+    "cli_package_relative_path": "node_modules/@openai/codex",
+    "sdk_package_relative_path": "node_modules/@openai/codex-sdk",
+    "launcher_relative_path": "node_modules/@openai/codex/bin/codex.js",
+    "platforms": {
+      "linux-x64": {
+        "package": "@openai/codex-linux-x64",
+        "package_relative_path": "node_modules/@openai/codex-linux-x64",
+        "package_version": "0.147.0-linux-x64",
+        "binary_relative_path": "vendor/x86_64-unknown-linux-musl/bin/codex"
+      },
+      "linux-arm64": {
+        "package": "@openai/codex-linux-arm64",
+        "package_relative_path": "node_modules/@openai/codex-linux-arm64",
+        "package_version": "0.147.0-linux-arm64",
+        "binary_relative_path": "vendor/aarch64-unknown-linux-musl/bin/codex"
+      }
+    },
+    "required_probes": [
+      "config-load",
+      "prompt-input-json",
+      "global-agents-discovery",
+      "managed-skill-discovery",
+      "plugin-list-json"
+    ]
+  },
   "npm": {
     "install": ["ci", "--no-audit", "--no-fund"],
     "build": ["run", "build"],
     "prepare_native": ["run", "native:node"],
     "prune": ["prune", "--omit=dev", "--no-audit", "--no-fund"],
     "verify": ["ls", "--omit=dev", "--depth=0", "--json"]
+  },
+  "runtime_receipt": {
+    "schema_version": 1,
+    "filename": ".drclaw-node-runtime.json"
+  },
+  "timeouts_seconds": {
+    "npm_install": 1800,
+    "npm_build": 900,
+    "npm_prepare_native": 900,
+    "npm_prune": 600,
+    "npm_verify": 120,
+    "systemctl": 30
   },
   "service": {
     "unit_name": "drclaw.service",
@@ -45,6 +86,7 @@
   },
   "automatic_scope": [
     "verified user-local Node.js runtime",
+    "exact 0.147.0 application-bundled Codex CLI/SDK runtime with isolated contract probes",
     "package-lock.json dependency installation with npm ci",
     "production frontend build and Node native-module preparation",
     "loopback-only environment with generated JWT secret and private SQLite location",

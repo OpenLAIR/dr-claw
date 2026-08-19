@@ -2,8 +2,9 @@
 """Reproducibly install and verify the optional Dr. Claw Web application.
 
 This installer deliberately owns only user-level application runtime and state. It
-does not copy credentials, inspect research projects, create users in the Web UI,
-or start a process unless ``--start`` is explicitly supplied.
+does not copy credentials, inspect research projects, or create users in the Web UI.
+It starts an inactive service only when ``--start`` is explicitly supplied; an
+already-active managed service is restarted after a successful upgrade.
 """
 
 from __future__ import annotations
@@ -32,8 +33,27 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 
+sys.dont_write_bytecode = True
+_MODULE_DIR = Path(__file__).resolve().parent
+if str(_MODULE_DIR) not in sys.path:
+    sys.path.insert(0, str(_MODULE_DIR))
+from codex_contracts import (  # noqa: E402 - supports direct script execution
+    KNOWN_CODEX_CONTRACT_PROBES,
+    NetworkContractError,
+    PathTrustError,
+    read_only_git_command,
+    read_only_git_environment,
+    run_codex_contracts,
+    sanitized_network_environment,
+    sanitized_network_opener,
+    secret_free_probe_env,
+    select_safe_temp_root,
+    validate_target_home_trust,
+)
+
+
 SCRIPT_PATH = Path(__file__).resolve()
-BOOTSTRAP_ROOT = SCRIPT_PATH.parent
+BOOTSTRAP_ROOT = _MODULE_DIR
 DEFAULT_REPO_ROOT = BOOTSTRAP_ROOT.parent.parent
 DEFAULT_MANIFEST_PATH = BOOTSTRAP_ROOT / "app-manifest.json"
 MANAGED_ENV_MARKER = "# Managed by Dr. Claw Web bootstrap; contains a secret."
@@ -42,6 +62,79 @@ MANAGED_UNIT_MARKER = "# Managed by Dr. Claw Web bootstrap."
 MANAGED_NPMRC_MARKER = "; Managed by Dr. Claw Web bootstrap; contains no registry credentials."
 MAX_NODE_ARCHIVE_BYTES = 200 * 1024 * 1024
 LOOPBACK_HOSTS = {"127.0.0.1", "localhost", "::1"}
+RUNTIME_RECEIPT_MANAGED_BY = "drclaw-node-runtime-bootstrap"
+RUNTIME_RECEIPT_BASE_KEYS = frozenset(
+    {
+        "schema_version",
+        "managed_by",
+        "node_version",
+        "artifact_key",
+        "artifact_filename",
+        "artifact_sha256",
+        "runtime_root",
+    }
+)
+RUNTIME_LAYOUT_RECEIPT_KEYS = frozenset(
+    {"version", "node_binary_sha256", "npm_target_relative", "npm_target_sha256"}
+)
+LEGACY_APP_RECEIPT_V01_KEYS = frozenset(
+    {
+        "schema_version",
+        "managed_by",
+        "bundle_version",
+        "installed_at",
+        "repo_root",
+        "git",
+        "application_source_sha256",
+        "package_lock_sha256",
+        "dist_sha256",
+        "node",
+        "environment_file",
+        "environment_sha256",
+        "codex_home",
+        "npm_userconfig",
+        "npm_userconfig_sha256",
+        "database_path",
+        "workspace_root",
+        "launcher",
+        "launcher_sha256",
+        "service",
+        "unit_file",
+        "unit_sha256",
+        "started_by_installer",
+    }
+)
+LEGACY_APP_NODE_V01_KEYS = frozenset(
+    {
+        "version",
+        "artifact_key",
+        "artifact_sha256",
+        "binary",
+        "node_binary_sha256",
+        "npm_target_relative",
+        "npm_target_sha256",
+        "observed_version",
+    }
+)
+GIT_RECEIPT_KEYS = frozenset(
+    {
+        "available",
+        "revision",
+        "dirty",
+        "tracked_status_sha256",
+        "tracked_diff_sha256",
+    }
+)
+TRUSTED_SYSTEM_PATH = "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+LINUX_ST_NOEXEC = getattr(os, "ST_NOEXEC", 0x8)
+REQUIRED_TIMEOUT_KEYS = (
+    "npm_install",
+    "npm_build",
+    "npm_prepare_native",
+    "npm_prune",
+    "npm_verify",
+    "systemctl",
+)
 MANAGED_ENV_KEYS = (
     "HOME",
     "CODEX_HOME",
@@ -79,6 +172,15 @@ PROTECTED_ROOTS = tuple(
 
 class AppBootstrapError(RuntimeError):
     """A safe, user-actionable application bootstrap failure."""
+
+
+def app_network_environment(source: Mapping[str, str]) -> Dict[str, str]:
+    """Translate the shared safe proxy/CA contract to an app error."""
+
+    try:
+        return sanitized_network_environment(source)
+    except NetworkContractError as error:
+        raise AppBootstrapError(str(error)) from error
 
 
 def utc_now() -> str:
@@ -133,10 +235,22 @@ def load_manifest(path: Path = DEFAULT_MANIFEST_PATH) -> Dict[str, object]:
     if manifest.get("schema_version") != 1:
         raise AppBootstrapError("Unsupported application manifest schema_version.")
     node = manifest.get("node")
+    bundled_codex = manifest.get("bundled_codex")
     npm = manifest.get("npm")
     application = manifest.get("application")
-    if not isinstance(node, dict) or not isinstance(npm, dict) or not isinstance(application, dict):
-        raise AppBootstrapError("Application manifest is missing node/npm/application objects.")
+    runtime_receipt = manifest.get("runtime_receipt")
+    timeouts = manifest.get("timeouts_seconds")
+    if (
+        not isinstance(node, dict)
+        or not isinstance(bundled_codex, dict)
+        or not isinstance(npm, dict)
+        or not isinstance(application, dict)
+        or not isinstance(runtime_receipt, dict)
+        or not isinstance(timeouts, dict)
+    ):
+        raise AppBootstrapError(
+            "Application manifest is missing node/bundled_codex/npm/application/runtime receipt/timeout objects."
+        )
 
     version = str(node.get("version", ""))
     if not re.fullmatch(r"\d+\.\d+\.\d+", version):
@@ -161,10 +275,66 @@ def load_manifest(path: Path = DEFAULT_MANIFEST_PATH) -> Dict[str, object]:
         if not re.fullmatch(r"[0-9a-f]{64}", checksum):
             raise AppBootstrapError(f"Invalid Node.js SHA256 for {key}.")
 
+    codex_version = str(bundled_codex.get("version", ""))
+    if not re.fullmatch(r"\d+\.\d+\.\d+", codex_version):
+        raise AppBootstrapError("Application manifest has an invalid bundled Codex version.")
+    if bundled_codex.get("cli_package") != "@openai/codex":
+        raise AppBootstrapError("Bundled Codex CLI package must be @openai/codex.")
+    if bundled_codex.get("sdk_package") != "@openai/codex-sdk":
+        raise AppBootstrapError("Bundled Codex SDK package must be @openai/codex-sdk.")
+    relative_fields = (
+        "cli_package_relative_path",
+        "sdk_package_relative_path",
+        "launcher_relative_path",
+    )
+    for field in relative_fields:
+        candidate = Path(str(bundled_codex.get(field, "")))
+        if not candidate.parts or candidate.is_absolute() or ".." in candidate.parts:
+            raise AppBootstrapError(f"Invalid bundled Codex relative path {field}.")
+    platforms = bundled_codex.get("platforms")
+    if not isinstance(platforms, dict) or set(platforms) != set(artifacts):
+        raise AppBootstrapError("Bundled Codex platforms must match the pinned Node.js platforms.")
+    for artifact_key, raw_platform in platforms.items():
+        if not isinstance(raw_platform, dict):
+            raise AppBootstrapError(f"Invalid bundled Codex platform metadata for {artifact_key}.")
+        if raw_platform.get("package") != f"@openai/codex-{artifact_key}":
+            raise AppBootstrapError(f"Bundled Codex platform package disagrees for {artifact_key}.")
+        if raw_platform.get("package_version") != f"{codex_version}-{artifact_key}":
+            raise AppBootstrapError(f"Bundled Codex platform version disagrees for {artifact_key}.")
+        for field in ("package_relative_path", "binary_relative_path"):
+            candidate = Path(str(raw_platform.get(field, "")))
+            if not candidate.parts or candidate.is_absolute() or ".." in candidate.parts:
+                raise AppBootstrapError(
+                    f"Invalid bundled Codex {field} for {artifact_key}."
+                )
+    required_probes = bundled_codex.get("required_probes")
+    if required_probes != list(KNOWN_CODEX_CONTRACT_PROBES):
+        raise AppBootstrapError("Bundled Codex must require the complete shared contract probe set.")
+
     for command_name in ("install", "build", "prepare_native", "prune", "verify"):
         command = npm.get(command_name)
         if not isinstance(command, list) or not command or not all(isinstance(item, str) for item in command):
             raise AppBootstrapError(f"Invalid npm command {command_name!r} in application manifest.")
+
+    if runtime_receipt.get("schema_version") != 1:
+        raise AppBootstrapError("Unsupported managed Node.js runtime receipt schema.")
+    runtime_receipt_filename = str(runtime_receipt.get("filename", ""))
+    if (
+        not runtime_receipt_filename
+        or Path(runtime_receipt_filename).name != runtime_receipt_filename
+        or runtime_receipt_filename in {".", ".."}
+        or not re.fullmatch(r"[A-Za-z0-9._-]+", runtime_receipt_filename)
+    ):
+        raise AppBootstrapError("Invalid managed Node.js runtime receipt filename.")
+
+    if set(timeouts) != set(REQUIRED_TIMEOUT_KEYS):
+        raise AppBootstrapError("Application manifest timeout set is incomplete or contains unknown keys.")
+    for timeout_name in REQUIRED_TIMEOUT_KEYS:
+        value = timeouts.get(timeout_name)
+        if isinstance(value, bool) or not isinstance(value, int) or not 1 <= value <= 3600:
+            raise AppBootstrapError(
+                f"Application manifest timeout {timeout_name!r} must be an integer from 1 to 3600 seconds."
+            )
     return manifest
 
 
@@ -203,8 +373,10 @@ def validate_user_home(raw_home: Optional[str]) -> Path:
         raise AppBootstrapError(f"Refusing a target home with a symlink component: {symlink}")
     if any(home == root or is_within(home, root) for root in PROTECTED_ROOTS):
         raise AppBootstrapError(f"Refusing protected system path as target home: {home}")
-    if hasattr(os, "geteuid") and home.stat().st_uid != os.geteuid():
-        raise AppBootstrapError(f"Target home is not owned by the current user: {home}")
+    try:
+        validate_target_home_trust(home)
+    except PathTrustError as error:
+        raise AppBootstrapError(str(error)) from error
     return home.resolve()
 
 
@@ -220,6 +392,30 @@ def validate_target_path(path: Path, home: Path) -> None:
         raise AppBootstrapError(f"Refusing to write through symlink component: {symlink}")
 
 
+def validate_user_managed_path_chain(path: Path, home: Path, label: str) -> None:
+    """Validate every existing path component below an ACL-approved HOME."""
+
+    try:
+        relative = path.absolute().relative_to(home.absolute())
+    except ValueError as error:
+        raise AppBootstrapError(f"Managed {label} path escapes the target HOME.") from error
+    current = home
+    for component in relative.parts:
+        current /= component
+        if not os.path.lexists(current):
+            break
+        try:
+            info = os.lstat(current)
+        except OSError as error:
+            raise AppBootstrapError(f"Cannot inspect managed {label} path chain.") from error
+        if stat.S_ISLNK(info.st_mode) or not stat.S_ISDIR(info.st_mode):
+            raise AppBootstrapError(f"Managed {label} path chain contains a symlink/non-directory.")
+        if hasattr(os, "geteuid") and info.st_uid != os.geteuid():
+            raise AppBootstrapError(f"Managed {label} path chain is not owned by the current user.")
+        if stat.S_IMODE(info.st_mode) & 0o022:
+            raise AppBootstrapError(f"Managed {label} path chain is writable by group/other.")
+
+
 def resolve_codex_home(raw_codex_home: Optional[str], home: Path) -> Path:
     codex_home = (
         Path(raw_codex_home).expanduser().absolute()
@@ -229,11 +425,7 @@ def resolve_codex_home(raw_codex_home: Optional[str], home: Path) -> Path:
     if codex_home == home or not is_within(codex_home, home):
         raise AppBootstrapError("Application CODEX_HOME must be a dedicated path inside target home.")
     validate_target_path(codex_home, home)
-    if codex_home.exists():
-        if not codex_home.is_dir() or codex_home.is_symlink():
-            raise AppBootstrapError(f"Application CODEX_HOME is not a real directory: {codex_home}")
-        if hasattr(os, "geteuid") and codex_home.stat().st_uid != os.geteuid():
-            raise AppBootstrapError(f"Application CODEX_HOME is not owned by current user: {codex_home}")
+    validate_user_managed_path_chain(codex_home, home, "CODEX_HOME")
     return codex_home.resolve()
 
 
@@ -296,6 +488,49 @@ def validate_repo(repo_root: Path, manifest: Mapping[str, object]) -> None:
     lock_root = lock.get("packages", {}).get("") if isinstance(lock.get("packages"), dict) else None
     if not isinstance(lock_root, dict) or lock_root.get("version") != package.get("version"):
         raise AppBootstrapError("package.json and package-lock.json root versions disagree.")
+    bundled_codex = manifest.get("bundled_codex")
+    if not isinstance(bundled_codex, dict):
+        raise AppBootstrapError("Application manifest has no bundled Codex contract.")
+    codex_version = str(bundled_codex["version"])
+    cli_package = str(bundled_codex["cli_package"])
+    sdk_package = str(bundled_codex["sdk_package"])
+    package_dependencies = package.get("dependencies")
+    locked_root_dependencies = lock_root.get("dependencies")
+    if not isinstance(package_dependencies, dict) or not isinstance(locked_root_dependencies, dict):
+        raise AppBootstrapError("Package metadata has no locked production dependency map.")
+    for dependency in (cli_package, sdk_package):
+        if package_dependencies.get(dependency) != codex_version:
+            raise AppBootstrapError(f"package.json must pin {dependency} exactly to {codex_version}.")
+        if locked_root_dependencies.get(dependency) != codex_version:
+            raise AppBootstrapError(
+                f"package-lock.json root must pin {dependency} exactly to {codex_version}."
+            )
+    locked_packages = lock.get("packages")
+    assert isinstance(locked_packages, dict)
+    cli_lock = locked_packages.get("node_modules/@openai/codex")
+    sdk_lock = locked_packages.get("node_modules/@openai/codex-sdk")
+    if not isinstance(cli_lock, dict) or cli_lock.get("version") != codex_version:
+        raise AppBootstrapError("package-lock.json has no exact bundled Codex CLI package.")
+    if not isinstance(sdk_lock, dict) or sdk_lock.get("version") != codex_version:
+        raise AppBootstrapError("package-lock.json has no exact bundled Codex SDK package.")
+    if not isinstance(sdk_lock.get("dependencies"), dict) or sdk_lock["dependencies"].get(
+        cli_package
+    ) != codex_version:
+        raise AppBootstrapError("Bundled Codex SDK lock entry does not pin the same CLI version.")
+    platform_contracts = bundled_codex.get("platforms")
+    assert isinstance(platform_contracts, dict)
+    platform_contract = platform_contracts[platform_artifact_key()]
+    assert isinstance(platform_contract, dict)
+    platform_path = str(platform_contract["package_relative_path"])
+    platform_lock = locked_packages.get(platform_path)
+    if (
+        not isinstance(platform_lock, dict)
+        or platform_lock.get("name") != "@openai/codex"
+        or platform_lock.get("version") != platform_contract.get("package_version")
+        or not isinstance(platform_lock.get("integrity"), str)
+        or not str(platform_lock["integrity"]).startswith("sha512-")
+    ):
+        raise AppBootstrapError("package-lock.json has no exact current-platform Codex binary package.")
 
 
 def platform_artifact_key() -> str:
@@ -310,6 +545,224 @@ def platform_artifact_key() -> str:
         return mapping[machine]
     except KeyError as error:
         raise AppBootstrapError(f"No pinned Node.js artifact for Linux architecture {machine!r}.") from error
+
+
+def command_timeout(manifest: Mapping[str, object], name: str) -> int:
+    timeouts = manifest.get("timeouts_seconds")
+    if not isinstance(timeouts, dict):
+        raise AppBootstrapError("Application manifest has no command timeout contract.")
+    value = timeouts.get(name)
+    if isinstance(value, bool) or not isinstance(value, int) or not 1 <= value <= 3600:
+        raise AppBootstrapError(f"Application manifest timeout {name!r} is invalid.")
+    return value
+
+
+def _glibc_version() -> Tuple[int, int]:
+    raw = ""
+    try:
+        raw = os.confstr("CS_GNU_LIBC_VERSION") or ""
+    except (AttributeError, OSError, ValueError):
+        raw = ""
+    match = re.fullmatch(r"glibc\s+(\d+)\.(\d+)(?:\.\d+)?", raw.strip(), re.IGNORECASE)
+    if match is None:
+        libc_name, libc_version = platform.libc_ver()
+        if libc_name.lower() not in {"glibc", "gnu libc"}:
+            raise AppBootstrapError(
+                "Pinned Node.js Linux binaries require glibc 2.28 or newer; this host libc was not recognized as glibc."
+            )
+        match = re.fullmatch(r"(\d+)\.(\d+)(?:\.\d+)?", libc_version.strip())
+    if match is None:
+        raise AppBootstrapError(
+            "Cannot verify the host glibc version required by pinned Node.js (minimum 2.28)."
+        )
+    return int(match.group(1)), int(match.group(2))
+
+
+def _nearest_existing_path(path: Path) -> Path:
+    current = path.absolute()
+    while not current.exists():
+        if current.is_symlink():
+            raise AppBootstrapError(f"Refusing a filesystem probe through a broken symlink: {current}")
+        parent = current.parent
+        if parent == current:
+            raise AppBootstrapError(f"Cannot locate an existing filesystem parent for {path}.")
+        current = parent
+    return current
+
+
+def validate_direct_app_host(paths: "AppPaths") -> None:
+    """Fail before writes when the pinned direct-app runtime cannot execute here."""
+
+    if platform.system() != "Linux":
+        raise AppBootstrapError("Dr. Claw Web direct installation currently supports Linux only.")
+    # This also rejects architectures for which the manifest has no pinned artifact.
+    if platform_artifact_key() != paths.artifact_key:
+        raise AppBootstrapError("Host architecture changed while preparing the application install.")
+    glibc_version = _glibc_version()
+    if glibc_version < (2, 28):
+        raise AppBootstrapError(
+            f"Pinned Node.js requires glibc 2.28 or newer; host has {glibc_version[0]}.{glibc_version[1]}."
+        )
+
+    for target in (paths.bin_root, paths.data_root, paths.repo_root):
+        symlink = first_symlink_component(target)
+        if symlink is not None:
+            raise AppBootstrapError(f"Refusing a managed executable path through a symlink: {symlink}")
+        anchor = _nearest_existing_path(target)
+        try:
+            flags = os.statvfs(anchor).f_flag
+        except OSError as error:
+            raise AppBootstrapError(f"Cannot inspect filesystem mount flags for {target}: {error}") from error
+        if flags & LINUX_ST_NOEXEC:
+            raise AppBootstrapError(
+                f"Managed application executables would be placed on a noexec filesystem: {target} (via {anchor})."
+            )
+
+
+def _validate_root_trusted_chain(path: Path) -> None:
+    current = Path(path.anchor)
+    for component in path.parts[1:]:
+        current = current / component
+        try:
+            info = os.lstat(current)
+        except OSError as error:
+            raise AppBootstrapError(f"Cannot inspect trusted executable path {current}: {error}") from error
+        if info.st_uid != 0:
+            raise AppBootstrapError(f"Trusted executable path is not root-owned: {current}")
+        # Symlink permission bits are not effective. Its root-owned, non-writable
+        # parent is what prevents an unprivileged replacement.
+        if not stat.S_ISLNK(info.st_mode) and stat.S_IMODE(info.st_mode) & 0o022:
+            raise AppBootstrapError(f"Trusted executable path is group/world-writable: {current}")
+
+
+def validate_trusted_systemctl_path(candidate: str) -> str:
+    candidate_path = Path(candidate)
+    if not candidate_path.is_absolute():
+        raise AppBootstrapError("Refusing a relative systemctl path.")
+    _validate_root_trusted_chain(candidate_path)
+    try:
+        resolved = candidate_path.resolve(strict=True)
+    except OSError as error:
+        raise AppBootstrapError(f"Cannot resolve trusted systemctl path {candidate_path}: {error}") from error
+    _validate_root_trusted_chain(resolved)
+    try:
+        info = resolved.stat()
+    except OSError as error:
+        raise AppBootstrapError(f"Cannot inspect trusted systemctl executable: {error}") from error
+    if not stat.S_ISREG(info.st_mode) or info.st_uid != 0 or stat.S_IMODE(info.st_mode) & 0o022:
+        raise AppBootstrapError("systemctl must be a root-owned regular executable not writable by group/other.")
+    if not os.access(resolved, os.X_OK):
+        raise AppBootstrapError(f"Trusted systemctl is not executable: {resolved}")
+    return str(resolved)
+
+
+def resolve_trusted_systemctl(candidate: Optional[str] = None) -> Optional[str]:
+    located = candidate if candidate is not None else shutil.which("systemctl", path=TRUSTED_SYSTEM_PATH)
+    if not located:
+        return None
+    return validate_trusted_systemctl_path(located)
+
+
+def _trusted_user_runtime_directory(runtime_dir: Path, effective_uid: int) -> bool:
+    if not runtime_dir.is_absolute():
+        return False
+    current = Path(runtime_dir.anchor)
+    components = runtime_dir.parts[1:]
+    for index, component in enumerate(components):
+        current /= component
+        try:
+            info = os.lstat(current)
+        except OSError:
+            return False
+        if stat.S_ISLNK(info.st_mode) or not stat.S_ISDIR(info.st_mode):
+            return False
+        final = index == len(components) - 1
+        if final:
+            if info.st_uid != effective_uid or stat.S_IMODE(info.st_mode) != 0o700:
+                return False
+            continue
+        if info.st_uid not in {0, effective_uid}:
+            return False
+        writable = bool(stat.S_IMODE(info.st_mode) & 0o022)
+        root_sticky = info.st_uid == 0 and bool(info.st_mode & stat.S_ISVTX)
+        if writable and not root_sticky:
+            return False
+    return bool(components)
+
+
+def minimal_systemd_environment(home: Path) -> Dict[str, str]:
+    account = pwd.getpwuid(os.geteuid())
+    environment = {
+        "HOME": str(home),
+        "PATH": TRUSTED_SYSTEM_PATH,
+        "USER": account.pw_name,
+        "LOGNAME": account.pw_name,
+        "LANG": "C",
+        "LC_ALL": "C",
+    }
+    runtime_candidates: List[Path] = []
+    inherited_runtime = os.environ.get("XDG_RUNTIME_DIR")
+    if inherited_runtime:
+        runtime_candidates.append(Path(inherited_runtime))
+    runtime_candidates.append(Path("/run/user") / str(os.geteuid()))
+    for runtime_dir in runtime_candidates:
+        if not _trusted_user_runtime_directory(runtime_dir, os.geteuid()):
+            continue
+        environment["XDG_RUNTIME_DIR"] = str(runtime_dir)
+        environment["DBUS_SESSION_BUS_ADDRESS"] = f"unix:path={runtime_dir / 'bus'}"
+        break
+    return environment
+
+
+def run_user_systemctl(
+    systemctl: str,
+    arguments: Sequence[str],
+    home: Path,
+    manifest: Mapping[str, object],
+    **kwargs: object,
+) -> subprocess.CompletedProcess:
+    if "env" in kwargs or "timeout" in kwargs:
+        raise AppBootstrapError("Internal systemctl invocation attempted to override its safety contract.")
+    trusted_systemctl = validate_trusted_systemctl_path(systemctl)
+    return subprocess.run(
+        [trusted_systemctl, "--user", *arguments],
+        env=minimal_systemd_environment(home),
+        timeout=command_timeout(manifest, "systemctl"),
+        **kwargs,
+    )
+
+
+def validate_app_python_runtime() -> None:
+    """Validate TLS and in-memory tar.xz support before any target write."""
+
+    try:
+        import ssl as ssl_module
+
+        ssl_module.create_default_context()
+    except Exception as error:
+        raise AppBootstrapError(
+            "This Python runtime lacks working TLS/SSL support required by the Web installer."
+        ) from error
+
+    try:
+        import io
+        import lzma  # noqa: F401 - importing verifies the optional stdlib extension
+
+        payload = b"drclaw-xz-runtime-probe"
+        archive_buffer = io.BytesIO()
+        with tarfile.open(fileobj=archive_buffer, mode="w:xz") as archive:
+            member = tarfile.TarInfo("probe")
+            member.size = len(payload)
+            archive.addfile(member, io.BytesIO(payload))
+        archive_buffer.seek(0)
+        with tarfile.open(fileobj=archive_buffer, mode="r:xz") as archive:
+            extracted = archive.extractfile("probe")
+            if extracted is None or extracted.read() != payload:
+                raise OSError("tar.xz roundtrip mismatch")
+    except Exception as error:
+        raise AppBootstrapError(
+            "This Python runtime lacks working lzma/tar.xz support required by the Web installer."
+        ) from error
 
 
 def verify_node_binary(node_binary: Path, expected_version: str) -> str:
@@ -349,6 +802,16 @@ def validate_runtime_layout(
         raise AppBootstrapError(f"Managed Node.js runtime is not a real directory: {node_runtime}")
     if node_binary.is_symlink() or not node_binary.is_file():
         raise AppBootstrapError(f"Managed Node.js executable is not a regular in-runtime file: {node_binary}")
+    runtime_info = node_runtime.stat()
+    node_info = node_binary.stat()
+    if hasattr(os, "geteuid") and (
+        runtime_info.st_uid != os.geteuid() or node_info.st_uid != os.geteuid()
+    ):
+        raise AppBootstrapError("Managed Node.js runtime or executable is not owned by the current user.")
+    if stat.S_IMODE(runtime_info.st_mode) & 0o022 or stat.S_IMODE(node_info.st_mode) & 0o022:
+        raise AppBootstrapError("Managed Node.js runtime or executable is writable by group/other.")
+    if not os.access(node_binary, os.X_OK):
+        raise AppBootstrapError(f"Managed Node.js executable is not executable: {node_binary}")
     try:
         npm_target = npm_binary.resolve(strict=True)
         npm_target.relative_to(node_runtime.resolve(strict=True))
@@ -356,6 +819,11 @@ def validate_runtime_layout(
         raise AppBootstrapError(f"Managed npm launcher escapes/is missing from Node.js runtime: {npm_binary}") from error
     if not npm_target.is_file() or npm_target.is_symlink():
         raise AppBootstrapError(f"Managed npm target is not a regular file: {npm_target}")
+    npm_info = npm_target.stat()
+    if hasattr(os, "geteuid") and npm_info.st_uid != os.geteuid():
+        raise AppBootstrapError("Managed npm target is not owned by the current user.")
+    if stat.S_IMODE(npm_info.st_mode) & 0o022:
+        raise AppBootstrapError("Managed npm target is writable by group/other.")
     layout = {
         "node_binary_sha256": sha256_file(node_binary),
         "npm_target_relative": npm_target.relative_to(node_runtime.resolve()).as_posix(),
@@ -397,7 +865,17 @@ def extract_verified_node_archive(
     runtime_parent: Path,
     final_runtime: Path,
     expected_top_level: str,
-) -> None:
+    expected_version: str,
+    runtime_receipt_filename: str,
+    runtime_receipt_contract: Mapping[str, object],
+) -> Dict[str, str]:
+    """Validate a pinned Node archive completely before publishing its runtime.
+
+    In particular, execute the staged Node binary before the atomic rename.  A
+    loader/libc incompatibility must not strand an unreceipted final runtime
+    that a later install cannot safely reuse or replace.
+    """
+
     staging = Path(tempfile.mkdtemp(prefix=".node-extract-", dir=str(runtime_parent)))
     try:
         with tarfile.open(archive_path, mode="r:xz") as archive:
@@ -405,11 +883,37 @@ def extract_verified_node_archive(
             _validate_tar_members(members, staging)
             archive.extractall(staging, members=members)
         extracted = staging / expected_top_level
-        if not (extracted / "bin" / "node").is_file():
-            raise AppBootstrapError("Verified Node.js archive did not contain the expected runtime tree.")
+        node_binary = extracted / "bin" / "node"
+        npm_binary = extracted / "bin" / "npm"
+        layout = validate_runtime_layout(
+            staging,
+            extracted,
+            node_binary,
+            npm_binary,
+            expected_version,
+        )
+        if set(runtime_receipt_contract) != RUNTIME_RECEIPT_BASE_KEYS:
+            raise AppBootstrapError("Managed Node.js staging receipt contract has invalid fields.")
+        if runtime_receipt_contract.get("node_version") != expected_version:
+            raise AppBootstrapError("Managed Node.js staging receipt version differs from archive contract.")
+        if runtime_receipt_contract.get("runtime_root") != str(final_runtime):
+            raise AppBootstrapError("Managed Node.js staging receipt target differs from publish target.")
+        receipt_layout = {
+            "version": expected_version,
+            **{key: layout[key] for key in RUNTIME_LAYOUT_RECEIPT_KEYS if key != "version"},
+        }
+        receipt = {**runtime_receipt_contract, "layout": receipt_layout}
+        atomic_write(
+            extracted / runtime_receipt_filename,
+            json.dumps(receipt, indent=2, sort_keys=True) + "\n",
+            0o600,
+        )
         if final_runtime.exists():
             raise AppBootstrapError(f"Node.js runtime target appeared concurrently: {final_runtime}")
         os.replace(extracted, final_runtime)
+        return layout
+    except AppBootstrapError:
+        raise
     except (OSError, tarfile.TarError) as error:
         raise AppBootstrapError(f"Cannot extract verified Node.js archive: {error}") from error
     finally:
@@ -431,7 +935,11 @@ def download_verified_node_archive(
             source_handle = local_archive.open("rb")
         else:
             request = urllib.request.Request(url, headers={"User-Agent": "drclaw-web-bootstrap/0.1"})
-            response = urllib.request.urlopen(request, timeout=90)
+            try:
+                opener = sanitized_network_opener(os.environ)
+            except NetworkContractError as error:
+                raise AppBootstrapError(str(error)) from error
+            response = opener.open(request, timeout=90)
             final_url = urllib.parse.urlsplit(response.geturl())
             if final_url.scheme != "https" or final_url.hostname != "nodejs.org":
                 raise AppBootstrapError("Node.js download redirected outside https://nodejs.org/.")
@@ -566,24 +1074,42 @@ def git_receipt(repo_root: Path) -> Dict[str, object]:
     }
     try:
         revision = subprocess.run(
-            ["git", "-C", str(repo_root), "rev-parse", "HEAD"],
+            read_only_git_command(["-C", str(repo_root), "rev-parse", "HEAD"]),
             check=True,
             capture_output=True,
             text=True,
             timeout=20,
+            stdin=subprocess.DEVNULL,
+            env=read_only_git_environment(),
         ).stdout.strip()
         dirty_result = subprocess.run(
-            ["git", "-C", str(repo_root), "status", "--porcelain", "--untracked-files=no"],
+            read_only_git_command(
+                ["-C", str(repo_root), "status", "--porcelain", "--untracked-files=no"]
+            ),
             check=True,
             capture_output=True,
             text=True,
             timeout=20,
+            stdin=subprocess.DEVNULL,
+            env=read_only_git_environment(),
         )
         diff_result = subprocess.run(
-            ["git", "-C", str(repo_root), "diff", "--binary", "--no-ext-diff", "HEAD"],
+            read_only_git_command(
+                [
+                    "-C",
+                    str(repo_root),
+                    "diff",
+                    "--binary",
+                    "--no-ext-diff",
+                    "--no-textconv",
+                    "HEAD",
+                ]
+            ),
             check=True,
             capture_output=True,
             timeout=120,
+            stdin=subprocess.DEVNULL,
+            env=read_only_git_environment(),
         )
         receipt = {
             "available": True,
@@ -629,8 +1155,8 @@ def application_source_digest(repo_root: Path, manifest: Mapping[str, object]) -
     relatives: List[Path] = []
     try:
         result = subprocess.run(
-            [
-                "git",
+            read_only_git_command(
+                [
                 "-C",
                 str(repo_root),
                 "ls-files",
@@ -639,11 +1165,14 @@ def application_source_digest(repo_root: Path, manifest: Mapping[str, object]) -
                 "-o",
                 "--exclude-standard",
                 "--",
-            ]
-            + list(source_roots),
+                ]
+                + list(source_roots)
+            ),
             check=True,
             capture_output=True,
             timeout=120,
+            stdin=subprocess.DEVNULL,
+            env=read_only_git_environment(),
         )
         relatives = [Path(os.fsdecode(item)) for item in result.stdout.split(b"\0") if item]
     except (OSError, subprocess.SubprocessError):
@@ -689,9 +1218,17 @@ class AppPaths:
         self.bin_root = home / ".local" / "bin"
         self.runtime_parent = self.data_root / "runtimes"
         node = manifest["node"]
+        bundled_codex = manifest["bundled_codex"]
+        runtime_receipt = manifest["runtime_receipt"]
         service = manifest["service"]
         application = manifest["application"]
-        assert isinstance(node, dict) and isinstance(service, dict) and isinstance(application, dict)
+        assert (
+            isinstance(node, dict)
+            and isinstance(bundled_codex, dict)
+            and isinstance(runtime_receipt, dict)
+            and isinstance(service, dict)
+            and isinstance(application, dict)
+        )
         artifact_key = platform_artifact_key()
         artifact = node["artifacts"][artifact_key]
         assert isinstance(artifact, dict)
@@ -701,9 +1238,27 @@ class AppPaths:
         self.node_runtime = self.runtime_parent / top_level
         self.node_binary = self.node_runtime / "bin" / "node"
         self.npm_binary = self.node_runtime / "bin" / "npm"
+        self.node_runtime_receipt = self.node_runtime / str(runtime_receipt["filename"])
         self.npm_cache = self.data_root / "cache" / "npm"
         self.npm_tmp = self.data_root / "tmp" / "npm"
         self.npm_userconfig = self.config_root / "npmrc"
+        platform_contracts = bundled_codex["platforms"]
+        assert isinstance(platform_contracts, dict)
+        self.codex_platform_contract = platform_contracts[artifact_key]
+        assert isinstance(self.codex_platform_contract, dict)
+        self.codex_package_root = repo_root / str(
+            bundled_codex["cli_package_relative_path"]
+        )
+        self.codex_sdk_package_root = repo_root / str(
+            bundled_codex["sdk_package_relative_path"]
+        )
+        self.codex_launcher = repo_root / str(bundled_codex["launcher_relative_path"])
+        self.codex_platform_root = repo_root / str(
+            self.codex_platform_contract["package_relative_path"]
+        )
+        self.codex_binary = self.codex_platform_root / str(
+            self.codex_platform_contract["binary_relative_path"]
+        )
         self.database_path = self.data_root / str(application["database_relative_path"])
         self.workspace_root = self.data_root / "workspaces"
         self.env_file = self.config_root / "drclaw.env"
@@ -724,6 +1279,576 @@ class AppPaths:
             self.database_path.parent,
             self.workspace_root,
         )
+
+
+def node_runtime_receipt_contract(
+    paths: AppPaths, manifest: Mapping[str, object]
+) -> Dict[str, object]:
+    runtime_receipt = manifest.get("runtime_receipt")
+    node = manifest.get("node")
+    if not isinstance(runtime_receipt, dict) or not isinstance(node, dict):
+        raise AppBootstrapError("Application manifest has no managed Node.js receipt contract.")
+    return {
+        "schema_version": runtime_receipt["schema_version"],
+        "managed_by": RUNTIME_RECEIPT_MANAGED_BY,
+        "node_version": node["version"],
+        "artifact_key": paths.artifact_key,
+        "artifact_filename": paths.artifact["filename"],
+        "artifact_sha256": paths.artifact["sha256"],
+        "runtime_root": str(paths.node_runtime),
+    }
+
+
+def write_node_runtime_receipt(
+    paths: AppPaths,
+    manifest: Mapping[str, object],
+    layout: Mapping[str, str],
+) -> None:
+    missing = (RUNTIME_LAYOUT_RECEIPT_KEYS - {"version"}) - set(layout)
+    if missing:
+        raise AppBootstrapError(
+            "Cannot write managed Node.js receipt without layout fields: " + ", ".join(sorted(missing))
+        )
+    node = manifest.get("node")
+    if not isinstance(node, dict):
+        raise AppBootstrapError("Application manifest has no Node.js contract.")
+    receipt_layout = {
+        "version": str(node["version"]),
+        **{key: layout[key] for key in RUNTIME_LAYOUT_RECEIPT_KEYS if key != "version"},
+    }
+    receipt = {**node_runtime_receipt_contract(paths, manifest), "layout": receipt_layout}
+    atomic_write(
+        paths.node_runtime_receipt,
+        json.dumps(receipt, indent=2, sort_keys=True) + "\n",
+        0o600,
+    )
+
+
+def validate_node_runtime_receipt(
+    paths: AppPaths,
+    manifest: Mapping[str, object],
+) -> Dict[str, str]:
+    receipt_path = paths.node_runtime_receipt
+    if receipt_path.is_symlink() or not receipt_path.is_file():
+        raise AppBootstrapError(f"Managed Node.js runtime receipt is missing or symlinked: {receipt_path}")
+    try:
+        info = receipt_path.stat()
+    except OSError as error:
+        raise AppBootstrapError(f"Cannot inspect managed Node.js runtime receipt: {error}") from error
+    if hasattr(os, "geteuid") and info.st_uid != os.geteuid():
+        raise AppBootstrapError("Managed Node.js runtime receipt is not owned by the current user.")
+    if stat.S_IMODE(info.st_mode) != 0o600:
+        raise AppBootstrapError("Managed Node.js runtime receipt permissions must be exactly 0600.")
+    try:
+        receipt_content = receipt_path.read_text(encoding="utf-8")
+        receipt = json.loads(receipt_content)
+    except (OSError, json.JSONDecodeError) as error:
+        raise AppBootstrapError(f"Cannot parse managed Node.js runtime receipt: {error}") from error
+    if not isinstance(receipt, dict) or set(receipt) != RUNTIME_RECEIPT_BASE_KEYS | {"layout"}:
+        raise AppBootstrapError("Managed Node.js runtime receipt has invalid fields.")
+    if receipt_content != json.dumps(receipt, indent=2, sort_keys=True) + "\n":
+        raise AppBootstrapError("Managed Node.js runtime receipt is not canonical.")
+    expected = node_runtime_receipt_contract(paths, manifest)
+    for key, expected_value in expected.items():
+        if receipt.get(key) != expected_value:
+            raise AppBootstrapError(f"Managed Node.js runtime receipt differs from manifest ({key}).")
+    layout = receipt.get("layout")
+    if not isinstance(layout, dict) or set(layout) != RUNTIME_LAYOUT_RECEIPT_KEYS:
+        raise AppBootstrapError("Managed Node.js runtime receipt has an invalid layout contract.")
+    node = manifest["node"]
+    assert isinstance(node, dict)
+    return validate_runtime_layout(
+        paths.runtime_parent,
+        paths.node_runtime,
+        paths.node_binary,
+        paths.npm_binary,
+        str(node["version"]),
+        layout,
+    )
+
+
+def validate_application_node_contract(
+    recorded: Mapping[str, object],
+    paths: AppPaths,
+    manifest: Mapping[str, object],
+    observed_layout: Optional[Mapping[str, str]] = None,
+) -> None:
+    node = manifest.get("node")
+    if not isinstance(node, dict):
+        raise AppBootstrapError("Application manifest has no Node.js contract.")
+    expected_metadata = {
+        "version": node["version"],
+        "artifact_key": paths.artifact_key,
+        "artifact_sha256": paths.artifact["sha256"],
+        "binary": str(paths.node_binary),
+    }
+    for key, expected_value in expected_metadata.items():
+        if recorded.get(key) != expected_value:
+            raise AppBootstrapError(f"Application Node.js receipt differs from manifest ({key}).")
+    if observed_layout is not None:
+        for key in RUNTIME_LAYOUT_RECEIPT_KEYS - {"version"}:
+            if recorded.get(key) != observed_layout.get(key):
+                raise AppBootstrapError(
+                    f"Application Node.js receipt differs from standalone runtime receipt ({key})."
+                )
+        if recorded.get("observed_version") != observed_layout.get("observed_version"):
+            raise AppBootstrapError(
+                "Application Node.js observed version differs from standalone runtime receipt validation."
+            )
+
+
+def _validate_legacy_release_checkout(paths: AppPaths, state: Mapping[str, object]) -> Path:
+    """Resolve the retained immutable v0.1 release without trusting a new checkout."""
+
+    raw_repo = state.get("repo_root")
+    if not isinstance(raw_repo, str) or not raw_repo or any(
+        control in raw_repo for control in ("\x00", "\n", "\r")
+    ):
+        raise AppBootstrapError("Legacy app receipt repository path is invalid.")
+    recorded_path = Path(raw_repo)
+    if not recorded_path.is_absolute():
+        raise AppBootstrapError("Legacy app receipt repository path is not absolute.")
+    symlink = first_symlink_component(recorded_path)
+    if symlink is not None:
+        raise AppBootstrapError("Legacy app receipt repository path traverses a symlink.")
+
+    release_root_path = paths.home / ".local" / "share" / "drclaw" / "releases"
+    try:
+        release_root = release_root_path.resolve(strict=True)
+        recorded_repo = recorded_path.resolve(strict=True)
+    except OSError as error:
+        raise AppBootstrapError(
+            "Legacy v0.1 migration requires its retained immutable release checkout; "
+            "the recorded checkout is unavailable."
+        ) from error
+    if recorded_path != recorded_repo or release_root_path != release_root:
+        raise AppBootstrapError("Legacy app receipt repository path is not canonical.")
+    if recorded_repo.parent != release_root or not re.fullmatch(r"[0-9a-f]{40}", recorded_repo.name):
+        raise AppBootstrapError(
+            "Legacy app receipt repository is outside the trusted HOME release/<commit> tree."
+        )
+
+    try:
+        relative = recorded_repo.relative_to(paths.home)
+    except ValueError as error:
+        raise AppBootstrapError("Legacy app receipt repository escapes the target HOME.") from error
+    current = paths.home
+    checked: List[Path] = []
+    for component in relative.parts:
+        current /= component
+        checked.append(current)
+    for component in checked:
+        try:
+            info = os.lstat(component)
+        except OSError as error:
+            raise AppBootstrapError("Cannot inspect the retained legacy release path.") from error
+        if not stat.S_ISDIR(info.st_mode) or stat.S_ISLNK(info.st_mode):
+            raise AppBootstrapError("Retained legacy release path contains a non-directory or symlink.")
+        if hasattr(os, "geteuid") and info.st_uid != os.geteuid():
+            raise AppBootstrapError("Retained legacy release path is not owned by the current user.")
+        if stat.S_IMODE(info.st_mode) & 0o022:
+            raise AppBootstrapError("Retained legacy release path is writable by group/other.")
+    for private_root in (release_root, recorded_repo):
+        if stat.S_IMODE(private_root.stat().st_mode) & 0o077:
+            raise AppBootstrapError("Retained legacy release root/checkout must remain private (mode 0700).")
+
+    git_root = recorded_repo / ".git"
+    if first_symlink_component(git_root) is not None or not git_root.is_dir() or git_root.is_symlink():
+        raise AppBootstrapError("Retained legacy release has no trusted in-tree Git metadata.")
+    git_info = git_root.stat()
+    if (
+        hasattr(os, "geteuid")
+        and git_info.st_uid != os.geteuid()
+        or stat.S_IMODE(git_info.st_mode) & 0o022
+    ):
+        raise AppBootstrapError("Retained legacy release Git metadata is not user-owned/read-only to peers.")
+    return recorded_repo
+
+
+def _validate_legacy_receipt_file(
+    state: Mapping[str, object],
+    *,
+    path_key: str,
+    digest_key: str,
+    expected_path: Path,
+    expected_mode: int,
+    label: str,
+) -> None:
+    if state.get(path_key) != str(expected_path):
+        raise AppBootstrapError(f"Legacy app receipt {label} path differs from the managed target.")
+    if first_symlink_component(expected_path) is not None or expected_path.is_symlink():
+        raise AppBootstrapError(f"Legacy app receipt {label} path traverses a symlink.")
+    try:
+        info = expected_path.stat()
+    except OSError as error:
+        raise AppBootstrapError(f"Legacy app receipt {label} file is unavailable.") from error
+    if not stat.S_ISREG(info.st_mode):
+        raise AppBootstrapError(f"Legacy app receipt {label} is not a regular file.")
+    if hasattr(os, "geteuid") and info.st_uid != os.geteuid():
+        raise AppBootstrapError(f"Legacy app receipt {label} is not owned by the current user.")
+    if stat.S_IMODE(info.st_mode) != expected_mode:
+        raise AppBootstrapError(
+            f"Legacy app receipt {label} permissions must be exactly {expected_mode:04o}."
+        )
+    recorded_digest = state.get(digest_key)
+    if not isinstance(recorded_digest, str) or not re.fullmatch(r"[0-9a-f]{64}", recorded_digest):
+        raise AppBootstrapError(f"Legacy app receipt {label} digest is invalid.")
+    if sha256_file(expected_path) != recorded_digest:
+        raise AppBootstrapError(f"Legacy app receipt {label} digest does not match retained state.")
+
+
+def validate_legacy_application_runtime_receipt(
+    paths: AppPaths,
+    manifest: Mapping[str, object],
+) -> Dict[str, str]:
+    receipt_path = paths.receipt
+    if receipt_path.is_symlink() or not receipt_path.is_file():
+        raise AppBootstrapError(
+            "Existing Node.js runtime has neither a standalone runtime receipt nor a regular legacy app receipt."
+        )
+    try:
+        info = receipt_path.stat()
+        receipt_content = receipt_path.read_text(encoding="utf-8")
+        state = json.loads(receipt_content)
+    except (OSError, json.JSONDecodeError) as error:
+        raise AppBootstrapError(f"Cannot validate legacy app receipt before runtime reuse: {error}") from error
+    if hasattr(os, "geteuid") and info.st_uid != os.geteuid():
+        raise AppBootstrapError("Legacy app receipt is not owned by the current user.")
+    if stat.S_IMODE(info.st_mode) != 0o600:
+        raise AppBootstrapError("Legacy app receipt permissions must be exactly 0600.")
+    if (
+        not isinstance(state, dict)
+        or set(state) != LEGACY_APP_RECEIPT_V01_KEYS
+        or state.get("schema_version") != 1
+    ):
+        raise AppBootstrapError("Legacy app receipt has an invalid schema.")
+    if receipt_content != json.dumps(state, indent=2, sort_keys=True) + "\n":
+        raise AppBootstrapError("Legacy app receipt is not canonical.")
+    if state.get("managed_by") != "drclaw-web-bootstrap":
+        raise AppBootstrapError("Legacy app receipt is not managed by this bootstrap.")
+    if state.get("bundle_version") != "0.1.0":
+        raise AppBootstrapError("Only a fully validated v0.1 app receipt may migrate a runtime receipt.")
+    try:
+        installed_at = dt.datetime.fromisoformat(str(state.get("installed_at", "")).replace("Z", "+00:00"))
+    except ValueError as error:
+        raise AppBootstrapError("Legacy app receipt installed_at timestamp is invalid.") from error
+    if installed_at.tzinfo is None:
+        raise AppBootstrapError("Legacy app receipt installed_at timestamp has no timezone.")
+    if "JWT_SECRET" in json.dumps(state):
+        raise AppBootstrapError("Legacy app receipt unexpectedly contains secret material.")
+
+    recorded_repo = _validate_legacy_release_checkout(paths, state)
+    recorded_git = state.get("git")
+    if (
+        not isinstance(recorded_git, dict)
+        or set(recorded_git) != GIT_RECEIPT_KEYS
+        or recorded_git.get("available") is not True
+        or recorded_git.get("dirty") is not False
+        or recorded_git.get("revision") != recorded_repo.name
+    ):
+        raise AppBootstrapError("Legacy app receipt has no clean immutable Git provenance.")
+    if git_receipt(recorded_repo) != recorded_git:
+        raise AppBootstrapError("Retained legacy release Git provenance drifted from its app receipt.")
+
+    package_lock = recorded_repo / "package-lock.json"
+    if first_symlink_component(package_lock) is not None or not package_lock.is_file():
+        raise AppBootstrapError("Retained legacy release package lock is missing or symlinked.")
+    package_info = package_lock.stat()
+    if (
+        hasattr(os, "geteuid")
+        and package_info.st_uid != os.geteuid()
+        or stat.S_IMODE(package_info.st_mode) & 0o022
+    ):
+        raise AppBootstrapError("Retained legacy release package lock is not user-owned/read-only to peers.")
+    recorded_lock_digest = state.get("package_lock_sha256")
+    if (
+        not isinstance(recorded_lock_digest, str)
+        or not re.fullmatch(r"[0-9a-f]{64}", recorded_lock_digest)
+        or sha256_file(package_lock) != recorded_lock_digest
+    ):
+        raise AppBootstrapError("Retained legacy release package-lock digest differs from its app receipt.")
+
+    recorded_source_digest = state.get("application_source_sha256")
+    if (
+        not isinstance(recorded_source_digest, str)
+        or not re.fullmatch(r"[0-9a-f]{64}", recorded_source_digest)
+        or application_source_digest(recorded_repo, manifest) != recorded_source_digest
+    ):
+        raise AppBootstrapError("Retained legacy release source digest differs from its app receipt.")
+    recorded_dist_digest = state.get("dist_sha256")
+    if (
+        not isinstance(recorded_dist_digest, str)
+        or not re.fullmatch(r"[0-9a-f]{64}", recorded_dist_digest)
+        or directory_digest(recorded_repo / "dist") != recorded_dist_digest
+    ):
+        raise AppBootstrapError("Retained legacy release build digest differs from its app receipt.")
+
+    if state.get("codex_home") != str(paths.codex_home):
+        raise AppBootstrapError("Legacy app receipt CODEX_HOME differs from the upgrade target.")
+    if state.get("database_path") != str(paths.database_path) or state.get("workspace_root") != str(
+        paths.workspace_root
+    ):
+        raise AppBootstrapError("Legacy app receipt managed data paths differ from the upgrade target.")
+    if not isinstance(state.get("service"), str) or not isinstance(state.get("started_by_installer"), bool):
+        raise AppBootstrapError("Legacy app receipt service state is invalid.")
+
+    _validate_legacy_receipt_file(
+        state,
+        path_key="environment_file",
+        digest_key="environment_sha256",
+        expected_path=paths.env_file,
+        expected_mode=0o600,
+        label="environment",
+    )
+    _validate_legacy_receipt_file(
+        state,
+        path_key="npm_userconfig",
+        digest_key="npm_userconfig_sha256",
+        expected_path=paths.npm_userconfig,
+        expected_mode=0o600,
+        label="npm config",
+    )
+    _validate_legacy_receipt_file(
+        state,
+        path_key="launcher",
+        digest_key="launcher_sha256",
+        expected_path=paths.launcher,
+        expected_mode=0o700,
+        label="launcher",
+    )
+    if state.get("unit_file") is None:
+        if state.get("unit_sha256") is not None:
+            raise AppBootstrapError("Legacy app receipt has a unit digest without a unit path.")
+    else:
+        _validate_legacy_receipt_file(
+            state,
+            path_key="unit_file",
+            digest_key="unit_sha256",
+            expected_path=paths.unit_file,
+            expected_mode=0o600,
+            label="systemd unit",
+        )
+
+    recorded = state.get("node")
+    if not isinstance(recorded, dict) or set(recorded) != LEGACY_APP_NODE_V01_KEYS:
+        raise AppBootstrapError("Legacy app receipt has no Node.js runtime contract.")
+    validate_application_node_contract(recorded, paths, manifest)
+    node = manifest["node"]
+    assert isinstance(node, dict)
+    return validate_runtime_layout(
+        paths.runtime_parent,
+        paths.node_runtime,
+        paths.node_binary,
+        paths.npm_binary,
+        str(node["version"]),
+        recorded,
+    )
+
+
+def _validate_repo_directory(path: Path, repo_root: Path, label: str) -> str:
+    symlink = first_symlink_component(path)
+    if symlink is not None:
+        raise AppBootstrapError(f"Bundled Codex {label} traverses a symlink: {symlink}")
+    if path.is_symlink() or not path.is_dir():
+        raise AppBootstrapError(f"Bundled Codex {label} is not a real directory: {path}")
+    try:
+        relative = path.resolve(strict=True).relative_to(repo_root.resolve(strict=True)).as_posix()
+    except (OSError, ValueError) as error:
+        raise AppBootstrapError(f"Bundled Codex {label} escapes the application checkout: {path}") from error
+    for member in (path, *path.rglob("*")):
+        if member.is_symlink():
+            raise AppBootstrapError(f"Bundled Codex {label} contains a symlink: {member}")
+        try:
+            info = member.stat()
+        except OSError as error:
+            raise AppBootstrapError(f"Cannot inspect bundled Codex {label}: {member}") from error
+        if hasattr(os, "geteuid") and info.st_uid != os.geteuid():
+            raise AppBootstrapError(f"Bundled Codex {label} has a foreign-owned path: {member}")
+    return relative
+
+
+def _validate_repo_file(
+    path: Path,
+    repo_root: Path,
+    label: str,
+    *,
+    executable: bool,
+) -> str:
+    symlink = first_symlink_component(path)
+    if symlink is not None:
+        raise AppBootstrapError(f"Bundled Codex {label} traverses a symlink: {symlink}")
+    if path.is_symlink() or not path.is_file():
+        raise AppBootstrapError(f"Bundled Codex {label} is not a regular file: {path}")
+    try:
+        relative = path.resolve(strict=True).relative_to(repo_root.resolve(strict=True)).as_posix()
+    except (OSError, ValueError) as error:
+        raise AppBootstrapError(f"Bundled Codex {label} escapes the application checkout: {path}") from error
+    if hasattr(os, "geteuid") and path.stat().st_uid != os.geteuid():
+        raise AppBootstrapError(f"Bundled Codex {label} is not owned by the current user: {path}")
+    if executable and not os.access(path, os.X_OK):
+        raise AppBootstrapError(f"Bundled Codex {label} is not executable: {path}")
+    return relative
+
+
+def _package_json(package_root: Path, label: str) -> Dict[str, object]:
+    package_path = package_root / "package.json"
+    if package_path.is_symlink() or not package_path.is_file():
+        raise AppBootstrapError(f"Bundled Codex {label} package.json is missing or symlinked.")
+    try:
+        payload = json.loads(package_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise AppBootstrapError(f"Cannot parse bundled Codex {label} package.json: {error}") from error
+    if not isinstance(payload, dict):
+        raise AppBootstrapError(f"Bundled Codex {label} package.json is not an object.")
+    return payload
+
+
+def validate_bundled_codex_layout(
+    paths: AppPaths,
+    repo_root: Path,
+    manifest: Mapping[str, object],
+    expected_contract: Optional[Mapping[str, object]] = None,
+) -> Dict[str, object]:
+    """Validate and digest every application-owned Codex execution component."""
+
+    bundled = manifest.get("bundled_codex")
+    if not isinstance(bundled, dict):
+        raise AppBootstrapError("Application manifest has no bundled Codex contract.")
+    expected_version = str(bundled["version"])
+
+    cli_relative = _validate_repo_directory(
+        paths.codex_package_root, repo_root, "CLI package root"
+    )
+    sdk_relative = _validate_repo_directory(
+        paths.codex_sdk_package_root, repo_root, "SDK package root"
+    )
+    platform_relative = _validate_repo_directory(
+        paths.codex_platform_root, repo_root, "platform package root"
+    )
+    launcher_relative = _validate_repo_file(
+        paths.codex_launcher,
+        repo_root,
+        "JavaScript launcher",
+        executable=True,
+    )
+    binary_relative = _validate_repo_file(
+        paths.codex_binary,
+        repo_root,
+        "platform binary",
+        executable=True,
+    )
+
+    cli_package = _package_json(paths.codex_package_root, "CLI")
+    sdk_package = _package_json(paths.codex_sdk_package_root, "SDK")
+    platform_package = _package_json(paths.codex_platform_root, "platform")
+    if cli_package.get("name") != bundled.get("cli_package") or cli_package.get(
+        "version"
+    ) != expected_version:
+        raise AppBootstrapError("Installed bundled Codex CLI package is not the exact pinned version.")
+    if not isinstance(cli_package.get("bin"), dict) or cli_package["bin"].get(
+        "codex"
+    ) != "bin/codex.js":
+        raise AppBootstrapError("Installed bundled Codex CLI launcher metadata is invalid.")
+    if sdk_package.get("name") != bundled.get("sdk_package") or sdk_package.get(
+        "version"
+    ) != expected_version:
+        raise AppBootstrapError("Installed bundled Codex SDK package is not the exact pinned version.")
+    sdk_dependencies = sdk_package.get("dependencies")
+    if not isinstance(sdk_dependencies, dict) or sdk_dependencies.get(
+        str(bundled["cli_package"])
+    ) != expected_version:
+        raise AppBootstrapError("Installed bundled Codex SDK does not pin the same CLI version.")
+    platform_contract = paths.codex_platform_contract
+    if platform_package.get("name") != "@openai/codex" or platform_package.get(
+        "version"
+    ) != platform_contract.get("package_version"):
+        raise AppBootstrapError("Installed bundled Codex platform package is not the exact pinned version.")
+
+    observed: Dict[str, object] = {
+        "version": expected_version,
+        "command": [str(paths.node_binary), str(paths.codex_launcher)],
+        "launcher": str(paths.codex_launcher),
+        "launcher_relative": launcher_relative,
+        "launcher_sha256": sha256_file(paths.codex_launcher),
+        "cli_package_root": str(paths.codex_package_root),
+        "cli_package_relative": cli_relative,
+        "cli_package_tree_sha256": directory_digest(paths.codex_package_root),
+        "sdk_package_root": str(paths.codex_sdk_package_root),
+        "sdk_package_relative": sdk_relative,
+        "sdk_package_tree_sha256": directory_digest(paths.codex_sdk_package_root),
+        "platform_package": str(platform_contract["package"]),
+        "platform_package_root": str(paths.codex_platform_root),
+        "platform_package_relative": platform_relative,
+        "platform_package_tree_sha256": directory_digest(paths.codex_platform_root),
+        "platform_binary": str(paths.codex_binary),
+        "platform_binary_relative": binary_relative,
+        "platform_binary_sha256": sha256_file(paths.codex_binary),
+    }
+    if expected_contract is not None:
+        for key, value in observed.items():
+            if expected_contract.get(key) != value:
+                raise AppBootstrapError(f"Bundled Codex runtime drifted from receipt ({key}).")
+    return observed
+
+
+def bundled_codex_probe_environment(paths: AppPaths) -> Dict[str, str]:
+    environment: Dict[str, str] = {
+        "PATH": os.pathsep.join(
+            (str(paths.node_runtime / "bin"), "/usr/local/bin", "/usr/bin", "/bin")
+        )
+    }
+    for key in ("LANG", "LC_ALL", "LC_CTYPE"):
+        value = os.environ.get(key)
+        if value:
+            environment[key] = value
+    return environment
+
+
+def verify_bundled_codex_version(paths: AppPaths, expected_version: str) -> str:
+    """Execute ``--version`` only in a fresh credential-free profile."""
+
+    try:
+        temp_root = select_safe_temp_root(
+            os.environ,
+            excluded_roots=(paths.repo_root, paths.home, paths.codex_home),
+        )
+    except PathTrustError as error:
+        raise AppBootstrapError(str(error)) from error
+    with tempfile.TemporaryDirectory(
+        prefix="drclaw-bundled-codex-version-",
+        dir=str(temp_root),
+    ) as temporary:
+        probe_root = Path(temporary)
+        probe_home = probe_root / "home"
+        probe_codex_home = probe_root / "codex-home"
+        probe_work = probe_root / "empty-workspace"
+        for directory in (probe_home, probe_codex_home, probe_work):
+            directory.mkdir(mode=0o700)
+        environment = secret_free_probe_env(
+            probe_home,
+            probe_codex_home,
+            base_environment=bundled_codex_probe_environment(paths),
+        )
+        try:
+            result = subprocess.run(
+                [str(paths.node_binary), str(paths.codex_launcher), "--version"],
+                cwd=str(probe_work),
+                env=environment,
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+        except (OSError, subprocess.SubprocessError) as error:
+            raise AppBootstrapError(
+                f"Cannot execute the verified bundled Codex CLI: {type(error).__name__}"
+            ) from error
+    observed = result.stdout.strip()
+    if result.returncode != 0 or observed != f"codex-cli {expected_version}":
+        raise AppBootstrapError(
+            f"Bundled Codex version mismatch: observed={observed!r}, expected='codex-cli {expected_version}'."
+        )
+    return observed
 
 
 def render_unit_content(paths: AppPaths, repo_root: Path, manifest: Mapping[str, object]) -> str:
@@ -782,9 +1907,12 @@ def build_npm_environment(paths: AppPaths, home: Path) -> Dict[str, str]:
             "npm_config_progress": "false",
             "ELECTRON_SKIP_BINARY_DOWNLOAD": "1",
             "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": "1",
+            "PYTHONDONTWRITEBYTECODE": "1",
+            "PYTHONNOUSERSITE": "1",
             "CI": "1",
         }
     )
+    environment.update(app_network_environment(os.environ))
     return environment
 
 
@@ -841,6 +1969,25 @@ class AppInstaller:
         self.nonlogin_home = self.home != login_home_path()
         self.systemd_ready = False
         self.service_result = "not-requested"
+        self.restarted_active_service = False
+        self.service_preflight_complete = False
+        self.service_was_active = False
+        self.systemctl_path: Optional[str] = None
+        self.preflight_managed_path_chains()
+
+    def preflight_managed_path_chains(self) -> None:
+        roots = [
+            ("CODEX_HOME", self.codex_home),
+            *(("application directory", path) for path in self.paths.managed_directories()),
+            ("npm configuration", self.paths.npm_userconfig.parent),
+            ("application environment", self.paths.env_file.parent),
+            ("application launcher", self.paths.launcher.parent),
+            ("application receipt", self.paths.receipt.parent),
+        ]
+        if not self.nonlogin_home and self.args.service != "none":
+            roots.append(("user systemd directory", self.paths.unit_file.parent))
+        for label, path in roots:
+            validate_user_managed_path_chain(path, self.home, label)
 
     def event(self, status: str, target: Path, detail: str) -> None:
         print(f"[{status}] {target}: {detail}")
@@ -871,27 +2018,21 @@ class AppInstaller:
         if runtime_symlink is not None:
             raise AppBootstrapError(f"Managed Node.js runtime must not traverse a symlink: {runtime_symlink}")
         if self.paths.node_binary.is_file():
-            if not self.paths.receipt.is_file() or self.paths.receipt.is_symlink():
-                raise AppBootstrapError(
-                    "Refusing to execute an existing managed Node.js runtime without a regular prior receipt."
+            if self.paths.node_runtime_receipt.exists() or self.paths.node_runtime_receipt.is_symlink():
+                validate_node_runtime_receipt(self.paths, self.manifest)
+            else:
+                legacy_layout = validate_legacy_application_runtime_receipt(
+                    self.paths,
+                    self.manifest,
                 )
-            try:
-                prior = json.loads(self.paths.receipt.read_text(encoding="utf-8"))
-            except json.JSONDecodeError as error:
-                raise AppBootstrapError(f"Cannot validate prior app receipt before runtime reuse: {error}") from error
-            prior_node = prior.get("node")
-            if prior.get("managed_by") != "drclaw-web-bootstrap" or not isinstance(prior_node, dict):
-                raise AppBootstrapError(
-                    "Refusing to execute an existing managed Node.js runtime without its managed digest contract."
-                )
-            validate_runtime_layout(
-                self.paths.runtime_parent,
-                self.paths.node_runtime,
-                self.paths.node_binary,
-                self.paths.npm_binary,
-                expected_version,
-                prior_node,
-            )
+                if not self.args.dry_run:
+                    write_node_runtime_receipt(self.paths, self.manifest, legacy_layout)
+                    validate_node_runtime_receipt(self.paths, self.manifest)
+                    self.event(
+                        "MIGRATE",
+                        self.paths.node_runtime_receipt,
+                        "atomically added standalone receipt after validating the v0.1 app receipt",
+                    )
             self.event("OK", self.paths.node_binary, "pinned Node.js runtime already installed")
             return
         if self.paths.node_runtime.exists():
@@ -922,19 +2063,16 @@ class AppInstaller:
                 self.paths.runtime_parent,
                 self.paths.node_runtime,
                 filename[: -len(".tar.xz")],
+                expected_version,
+                self.paths.node_runtime_receipt.name,
+                node_runtime_receipt_contract(self.paths, self.manifest),
             )
+            validate_node_runtime_receipt(self.paths, self.manifest)
         finally:
             try:
                 archive_path.unlink()
             except FileNotFoundError:
                 pass
-        validate_runtime_layout(
-            self.paths.runtime_parent,
-            self.paths.node_runtime,
-            self.paths.node_binary,
-            self.paths.npm_binary,
-            expected_version,
-        )
         self.event("INSTALL", self.paths.node_runtime, "installed SHA256-verified pinned Node.js runtime")
 
     def npm_environment(self) -> Dict[str, str]:
@@ -964,12 +2102,12 @@ class AppInstaller:
         npm = self.manifest["npm"]
         assert isinstance(npm, dict)
         commands = (
-            ("npm ci from package-lock.json", npm["install"]),
-            ("production frontend build", npm["build"]),
-            ("native module preparation", npm["prepare_native"]),
-            ("development dependency prune", npm["prune"]),
+            ("npm ci from package-lock.json", npm["install"], "npm_install"),
+            ("production frontend build", npm["build"], "npm_build"),
+            ("native module preparation", npm["prepare_native"], "npm_prepare_native"),
+            ("development dependency prune", npm["prune"], "npm_prune"),
         )
-        for detail, command in commands:
+        for detail, command, timeout_name in commands:
             assert isinstance(command, list)
             if self.args.dry_run:
                 self.event("DRY-RUN", self.repo_root, "would run " + detail)
@@ -980,6 +2118,7 @@ class AppInstaller:
                     cwd=str(self.repo_root),
                     env=self.npm_environment(),
                     check=True,
+                    timeout=command_timeout(self.manifest, timeout_name),
                 )
             except (OSError, subprocess.SubprocessError) as error:
                 raise AppBootstrapError(f"Failed during {detail}: {error}") from error
@@ -996,6 +2135,7 @@ class AppInstaller:
                     check=True,
                     capture_output=True,
                     text=True,
+                    timeout=command_timeout(self.manifest, "npm_verify"),
                 )
                 json.loads(result.stdout)
             except (OSError, subprocess.SubprocessError, json.JSONDecodeError) as error:
@@ -1062,6 +2202,8 @@ class AppInstaller:
         reject_managed_file_symlink(self.paths.launcher)
         launch_command = (
             str(Path(sys.executable).resolve()),
+            "-I",
+            "-S",
             str(self.repo_root / "bootstrap" / "codex" / "install_app.py"),
             "--repo-root",
             str(self.repo_root),
@@ -1074,6 +2216,8 @@ class AppInstaller:
         content = f"""#!/bin/sh
 {MANAGED_LAUNCHER_MARKER}
 set -eu
+unset PYTHONHOME PYTHONPATH
+export PYTHONDONTWRITEBYTECODE=1 PYTHONNOUSERSITE=1
 exec {' '.join(shlex.quote(item) for item in launch_command)}
 """
         if self.paths.launcher.exists():
@@ -1092,15 +2236,18 @@ exec {' '.join(shlex.quote(item) for item in launch_command)}
         self.event("INSTALL", self.paths.launcher, "wrote foreground application launcher")
 
     def detect_user_systemd(self) -> bool:
-        systemctl = shutil.which("systemctl")
+        systemctl = resolve_trusted_systemctl()
         if not systemctl:
             return False
+        self.systemctl_path = systemctl
         try:
-            result = subprocess.run(
-                [systemctl, "--user", "show-environment"],
+            result = run_user_systemctl(
+                systemctl,
+                ["show-environment"],
+                self.home,
+                self.manifest,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
-                timeout=20,
             )
             return result.returncode == 0
         except (OSError, subprocess.SubprocessError):
@@ -1108,24 +2255,61 @@ exec {' '.join(shlex.quote(item) for item in launch_command)}
 
     def user_service_is_active(self, systemctl: str) -> bool:
         try:
-            result = subprocess.run(
-                [systemctl, "--user", "is-active", str(self.manifest["service"]["unit_name"])],  # type: ignore[index]
+            result = run_user_systemctl(
+                systemctl,
+                ["is-active", str(self.manifest["service"]["unit_name"])],  # type: ignore[index]
+                self.home,
+                self.manifest,
                 check=False,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
-                timeout=20,
             )
-            return result.returncode == 0
+            if result.returncode == 0:
+                return True
+            if result.returncode in {3, 4}:
+                return False
+            raise AppBootstrapError(
+                f"Cannot determine whether the managed user service is active (exit {result.returncode})."
+            )
         except (OSError, subprocess.SubprocessError):
-            return False
+            raise AppBootstrapError("Cannot determine whether the managed user service is active.")
 
     def unit_content(self) -> str:
         return render_unit_content(self.paths, self.repo_root, self.manifest)
 
-    def configure_service(self) -> None:
+    def preflight_service_state(self) -> None:
+        """Capture service liveness before npm or managed application files change."""
+
+        if self.service_preflight_complete:
+            return
         if self.nonlogin_home:
             if self.args.start:
                 raise AppBootstrapError("--start is forbidden with an isolated/non-login --home.")
+            self.service_preflight_complete = True
+            return
+        if self.args.service == "none":
+            if self.args.start:
+                raise AppBootstrapError("--start requires --service auto or --service user-systemd.")
+            self.service_preflight_complete = True
+            return
+        self.systemd_ready = self.detect_user_systemd()
+        if not self.systemd_ready:
+            if self.args.service == "user-systemd":
+                raise AppBootstrapError("A user systemd manager was required but is not available.")
+            if self.args.start:
+                raise AppBootstrapError("Cannot --start because the user systemd manager is unavailable.")
+            self.service_preflight_complete = True
+            return
+        if not self.systemctl_path:
+            self.systemctl_path = resolve_trusted_systemctl()
+        if not self.systemctl_path:
+            raise AppBootstrapError("User systemd was detected but systemctl disappeared.")
+        self.service_was_active = self.user_service_is_active(self.systemctl_path)
+        self.service_preflight_complete = True
+
+    def configure_service(self) -> None:
+        self.preflight_service_state()
+        if self.nonlogin_home:
             self.service_result = "launcher-only-nonlogin-home"
             self.event(
                 "ISOLATED",
@@ -1138,22 +2322,15 @@ exec {' '.join(shlex.quote(item) for item in launch_command)}
         if mode == "none":
             self.service_result = "launcher-only"
             self.event("SKIP", self.paths.unit_file, "service manager disabled; launcher remains available")
-            if self.args.start:
-                raise AppBootstrapError("--start requires --service auto or --service user-systemd.")
             return
 
-        self.systemd_ready = self.detect_user_systemd()
         if not self.systemd_ready:
-            if mode == "user-systemd":
-                raise AppBootstrapError("A user systemd manager was required but is not available.")
             self.service_result = "launcher-only-systemd-unavailable"
             self.event(
                 "FALLBACK",
                 self.paths.launcher,
                 "user systemd is unavailable; no process was started; run launcher in an approved supervisor",
             )
-            if self.args.start:
-                raise AppBootstrapError("Cannot --start because the user systemd manager is unavailable.")
             return
 
         if self.args.dry_run:
@@ -1171,24 +2348,45 @@ exec {' '.join(shlex.quote(item) for item in launch_command)}
                 )
             if not existing.startswith(MANAGED_UNIT_MARKER + "\n"):
                 self.backup_unmanaged(self.paths.unit_file)
-        atomic_write(self.paths.unit_file, self.unit_content(), 0o600)
-        systemctl = shutil.which("systemctl")
+        systemctl = self.systemctl_path
         assert systemctl is not None
+        atomic_write(self.paths.unit_file, self.unit_content(), 0o600)
         try:
-            was_active = self.user_service_is_active(systemctl)
-            subprocess.run([systemctl, "--user", "daemon-reload"], check=True)
+            run_user_systemctl(
+                systemctl,
+                ["daemon-reload"],
+                self.home,
+                self.manifest,
+                check=True,
+            )
             unit_name = str(self.manifest["service"]["unit_name"])  # type: ignore[index]
-            subprocess.run([systemctl, "--user", "enable", unit_name], check=True)
-            if self.args.start:
+            run_user_systemctl(
+                systemctl,
+                ["enable", unit_name],
+                self.home,
+                self.manifest,
+                check=True,
+            )
+            active_after_install = self.user_service_is_active(systemctl)
+            should_restart = self.args.start or self.service_was_active or active_after_install
+            if should_restart:
                 # restart also starts an inactive unit and, unlike enable --now,
                 # guarantees an already-running older checkout is replaced.
-                subprocess.run([systemctl, "--user", "restart", unit_name], check=True)
+                run_user_systemctl(
+                    systemctl,
+                    ["restart", unit_name],
+                    self.home,
+                    self.manifest,
+                    check=True,
+                )
         except (OSError, subprocess.SubprocessError) as error:
             raise AppBootstrapError(f"Cannot configure user-systemd service: {error}") from error
+        was_active = self.service_was_active or active_after_install
+        self.restarted_active_service = bool(was_active)
         if self.args.start:
             self.service_result = "enabled-and-started"
         elif was_active:
-            self.service_result = "enabled-running-not-restarted"
+            self.service_result = "enabled-and-restarted"
         else:
             self.service_result = "enabled-not-started"
         self.event(
@@ -1197,9 +2395,7 @@ exec {' '.join(shlex.quote(item) for item in launch_command)}
             "enabled user-systemd unit"
             + (
                 " and restarted/started it"
-                if self.args.start
-                else "; an existing process still needs restart"
-                if was_active
+                if self.args.start or was_active
                 else "; did not start it"
             ),
         )
@@ -1223,13 +2419,19 @@ exec {' '.join(shlex.quote(item) for item in launch_command)}
                 if not self.args.dry_run:
                     self.backup_unmanaged(self.paths.receipt)
         runtime_layout: Dict[str, str] = {}
+        bundled_codex_layout: Dict[str, object] = {}
         if not self.args.dry_run:
-            runtime_layout = validate_runtime_layout(
-                self.paths.runtime_parent,
-                self.paths.node_runtime,
-                self.paths.node_binary,
-                self.paths.npm_binary,
-                str(node["version"]),
+            runtime_layout = validate_node_runtime_receipt(self.paths, self.manifest)
+            bundled_codex_layout = validate_bundled_codex_layout(
+                self.paths,
+                self.repo_root,
+                self.manifest,
+            )
+            bundled = self.manifest["bundled_codex"]
+            assert isinstance(bundled, dict)
+            bundled_codex_layout["observed_version"] = verify_bundled_codex_version(
+                self.paths,
+                str(bundled["version"]),
             )
         state = {
             "schema_version": 1,
@@ -1250,6 +2452,7 @@ exec {' '.join(shlex.quote(item) for item in launch_command)}
                 "binary": str(self.paths.node_binary),
                 **runtime_layout,
             },
+            "bundled_codex": bundled_codex_layout,
             "environment_file": str(self.paths.env_file),
             "environment_sha256": None
             if self.args.dry_run
@@ -1269,6 +2472,7 @@ exec {' '.join(shlex.quote(item) for item in launch_command)}
             if self.args.dry_run or not self.paths.unit_file.is_file()
             else sha256_file(self.paths.unit_file),
             "started_by_installer": bool(self.args.start and self.systemd_ready),
+            "restarted_active_service": self.restarted_active_service,
         }
         if self.args.dry_run:
             self.event("DRY-RUN", self.paths.receipt, "would write secret-free installation receipt")
@@ -1277,6 +2481,9 @@ exec {' '.join(shlex.quote(item) for item in launch_command)}
         self.event("INSTALL", self.paths.receipt, "wrote secret-free installation receipt")
 
     def run(self) -> None:
+        validate_app_python_runtime()
+        app_network_environment(os.environ)
+        validate_direct_app_host(self.paths)
         validate_repo(self.repo_root, self.manifest)
         if self.nonlogin_home and not self.args.dry_run and not is_within(self.repo_root, self.home):
             raise AppBootstrapError(
@@ -1289,6 +2496,7 @@ exec {' '.join(shlex.quote(item) for item in launch_command)}
         if not 1024 <= self.args.port <= 65535:
             raise AppBootstrapError("Application port must be an unprivileged integer from 1024 to 65535.")
         self.preflight_managed_files()
+        self.preflight_service_state()
         self.prepare_directories()
         self.ensure_node()
         self.write_npm_config()
@@ -1310,8 +2518,6 @@ exec {' '.join(shlex.quote(item) for item in launch_command)}
             print(f"  - {item}")
         if self.service_result == "enabled-not-started":
             print("Next service action: systemctl --user start drclaw.service")
-        elif self.service_result == "enabled-running-not-restarted":
-            print("Next service action: systemctl --user restart drclaw.service")
         elif self.service_result.startswith("launcher-only"):
             print(f"Next service action: run {self.paths.launcher} under an approved persistent supervisor.")
 
@@ -1376,13 +2582,26 @@ class AppLauncher:
         recorded_runtime = state.get("node")
         if not isinstance(recorded_runtime, dict):
             raise AppBootstrapError("Application receipt has no managed Node.js runtime contract.")
-        validate_runtime_layout(
-            self.paths.runtime_parent,
-            self.paths.node_runtime,
-            self.paths.node_binary,
-            self.paths.npm_binary,
-            str(node["version"]),
+        runtime_layout = validate_node_runtime_receipt(self.paths, self.manifest)
+        validate_application_node_contract(
             recorded_runtime,
+            self.paths,
+            self.manifest,
+            runtime_layout,
+        )
+        validate_repo(self.repo_root, self.manifest)
+        if sha256_file(self.repo_root / "package-lock.json") != state.get(
+            "package_lock_sha256"
+        ):
+            raise AppBootstrapError("Package lock digest differs from application receipt.")
+        recorded_codex = state.get("bundled_codex")
+        if not isinstance(recorded_codex, dict):
+            raise AppBootstrapError("Application receipt has no bundled Codex runtime contract.")
+        validate_bundled_codex_layout(
+            self.paths,
+            self.repo_root,
+            self.manifest,
+            recorded_codex,
         )
         return values, state
 
@@ -1420,6 +2639,7 @@ class AppDoctor:
         self.codex_home = resolve_codex_home(getattr(args, "codex_home", None), self.home)
         self.paths = AppPaths(self.home, self.codex_home, self.repo_root, manifest)
         self.checks: List[Dict[str, str]] = []
+        self.node_runtime_valid = False
 
     def add(self, level: str, name: str, detail: str) -> None:
         self.checks.append({"level": level, "name": name, "detail": detail})
@@ -1466,15 +2686,15 @@ class AppDoctor:
             recorded_node = state.get("node") if state else None
             if not isinstance(recorded_node, dict):
                 raise AppBootstrapError("receipt has no Node.js runtime contract")
-            runtime_layout = validate_runtime_layout(
-                self.paths.runtime_parent,
-                self.paths.node_runtime,
-                self.paths.node_binary,
-                self.paths.npm_binary,
-                str(node["version"]),
+            runtime_layout = validate_node_runtime_receipt(self.paths, self.manifest)
+            validate_application_node_contract(
                 recorded_node,
+                self.paths,
+                self.manifest,
+                runtime_layout,
             )
             runtime_valid = True
+            self.node_runtime_valid = True
             self.add("PASS", "node", f"managed runtime {runtime_layout['observed_version']} and npm target match receipt")
         except AppBootstrapError as error:
             self.add("FAIL", "node", str(error))
@@ -1488,7 +2708,7 @@ class AppDoctor:
                     check=True,
                     capture_output=True,
                     text=True,
-                    timeout=20,
+                    timeout=command_timeout(self.manifest, "npm_verify"),
                     env=build_npm_environment(self.paths, self.home),
                 ).stdout.strip()
                 self.add("PASS", "npm", f"managed npm {version}")
@@ -1544,7 +2764,7 @@ class AppDoctor:
                     check=True,
                     capture_output=True,
                     text=True,
-                    timeout=120,
+                    timeout=command_timeout(self.manifest, "npm_verify"),
                 )
                 json.loads(result.stdout)
                 self.add("PASS", "dependencies", "production npm dependency graph is valid")
@@ -1552,6 +2772,115 @@ class AppDoctor:
                 self.add("FAIL", "dependencies", str(error))
         else:
             self.add("FAIL", "dependencies", "node_modules is missing or managed runtime contract failed")
+
+    def approved_router_source(self) -> Path:
+        installed = self.home / ".agents" / "skills" / "drclaw-skill-library"
+        approved = (
+            self.repo_root
+            / "bootstrap"
+            / "codex"
+            / "skills"
+            / "drclaw-skill-library"
+        )
+        parent_symlink = first_symlink_component(installed.parent)
+        if parent_symlink is not None:
+            raise AppBootstrapError(
+                f"Installed router parent traverses a symlink: {parent_symlink}"
+            )
+        if not (approved / "SKILL.md").is_file() or approved.is_symlink():
+            raise AppBootstrapError("Approved bundled router skill is missing or symlinked.")
+        if installed.is_symlink():
+            try:
+                if installed.resolve(strict=True) != approved.resolve(strict=True):
+                    raise AppBootstrapError("Installed router symlink does not target the approved bundle.")
+            except OSError as error:
+                raise AppBootstrapError("Installed router symlink is broken.") from error
+        elif installed.is_dir():
+            if directory_digest(installed) != directory_digest(approved):
+                raise AppBootstrapError("Installed router copy differs from the approved bundle.")
+        else:
+            raise AppBootstrapError(f"Installed router skill is missing: {installed}")
+        return installed
+
+    def check_bundled_codex(self, state: Optional[Mapping[str, object]]) -> None:
+        bundled = self.manifest.get("bundled_codex")
+        assert isinstance(bundled, dict)
+        required_probes = bundled["required_probes"]
+        assert isinstance(required_probes, list)
+
+        def fail_without_execution(detail: str) -> None:
+            self.add("FAIL", "bundled-codex", detail)
+            for name in required_probes:
+                self.add(
+                    "FAIL",
+                    f"bundled-codex-contract:{name}",
+                    "bundled runtime pre-execution validation failed; probe was not run",
+                )
+
+        try:
+            if not self.node_runtime_valid:
+                raise AppBootstrapError(
+                    "Managed Node.js receipt/digest contract failed; bundled CLI was not executed."
+                )
+            validate_repo(self.repo_root, self.manifest)
+            if not state:
+                raise AppBootstrapError("Application receipt is unavailable.")
+            current_lock = sha256_file(self.repo_root / "package-lock.json")
+            if current_lock != state.get("package_lock_sha256"):
+                raise AppBootstrapError(
+                    "package-lock.json digest differs from the installed receipt; bundled CLI was not executed."
+                )
+            recorded = state.get("bundled_codex")
+            if not isinstance(recorded, dict):
+                raise AppBootstrapError("Receipt has no bundled Codex runtime contract.")
+            layout = validate_bundled_codex_layout(
+                self.paths,
+                self.repo_root,
+                self.manifest,
+                recorded,
+            )
+            expected_version = str(bundled["version"])
+            if recorded.get("observed_version") != f"codex-cli {expected_version}":
+                raise AppBootstrapError("Receipt has no exact bundled Codex observed-version proof.")
+            observed_version = verify_bundled_codex_version(
+                self.paths,
+                expected_version,
+            )
+            router = self.approved_router_source()
+        except (OSError, AppBootstrapError) as error:
+            fail_without_execution(str(error))
+            return
+
+        self.add(
+            "PASS",
+            "bundled-codex",
+            f"{observed_version} at {layout['launcher_relative']} matches package lock and receipt digests",
+        )
+        results = run_codex_contracts(
+            [str(self.paths.node_binary), str(self.paths.codex_launcher)],
+            required_probes,
+            config_template=BOOTSTRAP_ROOT / "templates" / "config.safe.toml",
+            guidance_template=BOOTSTRAP_ROOT / "templates" / "global-agents.md",
+            profile_name="safe",
+            skill_sources={"drclaw-skill-library": router},
+            base_environment=bundled_codex_probe_environment(self.paths),
+            excluded_temp_roots=(self.repo_root, self.home, self.codex_home),
+        )
+        for name in required_probes:
+            passed, detail = results.get(name, (False, "probe result unavailable"))
+            self.add(
+                "PASS" if passed else "FAIL",
+                f"bundled-codex-contract:{name}",
+                detail,
+            )
+        compatible = all(results.get(name, (False, ""))[0] for name in required_probes)
+        self.add(
+            "PASS" if compatible else "FAIL",
+            "bundled-codex-compatibility",
+            "all isolated extension contracts passed"
+            if compatible
+            else "one or more isolated extension contracts failed",
+        )
 
     def check_configuration(self, state: Optional[Mapping[str, object]]) -> None:
         values: Dict[str, str] = {}
@@ -1622,7 +2951,7 @@ class AppDoctor:
             "launcher-only-nonlogin-home",
             "launcher-only-systemd-unavailable",
             "enabled-not-started",
-            "enabled-running-not-restarted",
+            "enabled-and-restarted",
             "enabled-and-started",
         }
         if service_state and service_state not in known_states:
@@ -1646,19 +2975,25 @@ class AppDoctor:
             except (OSError, AppBootstrapError) as error:
                 self.add("FAIL", "service-unit", str(error))
                 return
-            systemctl = shutil.which("systemctl")
+            try:
+                systemctl = resolve_trusted_systemctl()
+            except AppBootstrapError as error:
+                self.add("FAIL", "service", str(error))
+                return
             if not systemctl:
                 self.add("FAIL", "service", "enabled-service receipt exists but systemctl is unavailable")
                 return
             try:
-                enabled = subprocess.run(
-                    [systemctl, "--user", "is-enabled", str(self.manifest["service"]["unit_name"])],  # type: ignore[index]
+                enabled = run_user_systemctl(
+                    systemctl,
+                    ["is-enabled", str(self.manifest["service"]["unit_name"])],  # type: ignore[index]
+                    self.home,
+                    self.manifest,
                     check=False,
                     capture_output=True,
                     text=True,
-                    timeout=20,
                 )
-            except (OSError, subprocess.SubprocessError) as error:
+            except (OSError, subprocess.SubprocessError, AppBootstrapError) as error:
                 self.add("FAIL", "service", f"cannot query user-systemd enablement: {error}")
                 return
             if enabled.returncode != 0 or enabled.stdout.strip() != "enabled":
@@ -1668,23 +3003,22 @@ class AppDoctor:
             if service_state == "enabled-not-started":
                 self.add("WARN", "service", "unit is enabled for a future login/boot but was not started by installer")
                 return
-            if service_state == "enabled-running-not-restarted":
-                self.add("WARN", "service", "older process may still be running; restart is required to activate this checkout")
-                return
-            if service_state == "enabled-and-started":
+            if service_state in {"enabled-and-started", "enabled-and-restarted"}:
                 try:
-                    active = subprocess.run(
-                        [systemctl, "--user", "is-active", str(self.manifest["service"]["unit_name"])],  # type: ignore[index]
+                    active = run_user_systemctl(
+                        systemctl,
+                        ["is-active", str(self.manifest["service"]["unit_name"])],  # type: ignore[index]
+                        self.home,
+                        self.manifest,
                         check=False,
                         capture_output=True,
                         text=True,
-                        timeout=20,
                     )
-                except (OSError, subprocess.SubprocessError) as error:
+                except (OSError, subprocess.SubprocessError, AppBootstrapError) as error:
                     self.add("FAIL", "service", f"cannot query user-systemd service: {error}")
                     return
                 if active.returncode != 0 or active.stdout.strip() != "active":
-                    self.add("FAIL", "service", "installer-started user service is not active")
+                    self.add("FAIL", "service", "installer-restarted user service is not active")
                     return
                 host = values.get("HOST", "")
                 port = values.get("PORT", "")
@@ -1702,6 +3036,7 @@ class AppDoctor:
         self.check_repository()
         state = self.load_state()
         self.check_runtime(state)
+        self.check_bundled_codex(state)
         self.check_configuration(state)
         failed = any(item["level"] == "FAIL" for item in self.checks)
         if self.args.json:

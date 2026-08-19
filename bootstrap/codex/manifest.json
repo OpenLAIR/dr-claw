@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "bundle_version": "0.1.0",
+  "bundle_version": "0.2.0",
   "audited_at": "2026-08-19",
   "baseline": {
     "repository": "https://github.com/OpenLAIR/dr-claw.git",
     "audited_base_commit": "4b3575641b63f8e09a9539b23c2be4f45f5d0317",
-    "bundle_release_ref": "codex-bootstrap-v0.1.0",
-    "production_revision_policy": "Deploy the exact codex-bootstrap-v0.1.0 tag together with its full commit SHA from the signed-off release provenance. The audited_base_commit records the starting tree inspected while this bundle was authored; it is not the deployable bundle revision. Never deploy a moving branch as a reproducible baseline."
+    "bundle_release_ref": "codex-bootstrap-v0.2.0",
+    "production_revision_policy": "Deploy the exact codex-bootstrap-v0.2.0 tag together with its full commit SHA from the signed-off release provenance. The audited_base_commit records the starting tree inspected while this bundle was authored; it is not the deployable bundle revision. Never deploy a moving branch as a reproducible baseline."
   },
   "requirements": {
     "python": ">=3.9",
@@ -14,6 +14,35 @@
     "codex_cli_audited_versions": [
       "0.147.0"
     ],
+    "git_minimum": "2.25.0",
+    "app_glibc_minimum": "2.28",
+    "server_os": "Linux",
+    "server_architectures": [
+      "x86_64",
+      "aarch64"
+    ],
+    "python_audited_minors": [
+      "3.9",
+      "3.10",
+      "3.11",
+      "3.12",
+      "3.13"
+    ],
+    "python_stdlib_capabilities": {
+      "ssl_default_context_required_for": [
+        "codex_install",
+        "drclaw_cli",
+        "app"
+      ],
+      "app_xz_roundtrip_modules": [
+        "lzma",
+        "tarfile"
+      ]
+    },
+    "minimum_free_bytes": {
+      "core": 1073741824,
+      "full": 8589934592
+    },
     "drclaw_node_optional": "20.x || 22.x || 24.x",
     "platform": "Linux; NCSA Delta x86_64 is the primary audited host"
   },
@@ -37,8 +66,11 @@
     "bootstrap/codex/README.zh-CN.md",
     "bootstrap/codex/bootstrap.py",
     "bootstrap/codex/bootstrap.sh",
+    "bootstrap/codex/build_release_kit.py",
+    "bootstrap/codex/codex_contracts.py",
     "bootstrap/codex/doctor.sh",
     "bootstrap/codex/remote-install.sh",
+    "bootstrap/codex/requirements-drclaw-cli.lock",
     "bootstrap/codex/install_app.py",
     "bootstrap/codex/app-manifest.json",
     "bootstrap/codex/APP_INSTALL.zh-CN.md",
@@ -83,7 +115,8 @@
       {
         "name": "drclaw-cli",
         "source": "agent-harness",
-        "install_flag": "--with-drclaw-cli"
+        "install_flag": "--with-drclaw-cli",
+        "note": "Installs a revision/Python/architecture-specific private virtual environment from the exact SHA256-locked universal-wheel closure; atomic launchers and doctor receipts detect drift."
       },
       {
         "name": "Dr. Claw web application",
@@ -130,7 +163,9 @@
     "$CODEX_HOME/config.toml (portable root keys only)",
     "$CODEX_HOME/drclaw-bootstrap-state.json",
     "$HOME/.agents/skills/drclaw-skill-library",
-    "$HOME/.agents/skills/ncsa-delta"
+    "$HOME/.agents/skills/ncsa-delta (only on verified Delta or explicit opt-in)",
+    "$HOME/.local/share/drclaw/cli/environments/<environment-id>",
+    "$HOME/.local/bin/{drclaw,dr-claw,vibelab}"
   ],
   "never_copy": [
     "~/.codex/auth.json",
