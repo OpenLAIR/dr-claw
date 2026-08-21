@@ -361,7 +361,7 @@ class AppBootstrapTestCase(unittest.TestCase):
 
     def test_manifest_pins_official_node_artifacts(self):
         node = self.manifest["node"]
-        self.assertEqual(self.manifest["bundle_version"], "0.2.0")
+        self.assertEqual(self.manifest["bundle_version"], "0.2.1")
         self.assertEqual(
             self.manifest["runtime_receipt"],
             {"schema_version": 1, "filename": ".drclaw-node-runtime.json"},
@@ -1035,6 +1035,44 @@ class AppBootstrapTestCase(unittest.TestCase):
             json.loads(installer.paths.receipt.read_text(encoding="utf-8")), legacy
         )
         self.assertTrue(old_repo.is_dir())
+
+    def test_v01_peer_metadata_lock_normalization_migrates_runtime_receipt(self):
+        old_repo = self._create_immutable_release("old-peer-normalization")
+        new_repo = self._create_immutable_release("new-peer-normalization")
+        (old_repo / ".gitignore").write_text("dist/\nnode_modules/\n", encoding="utf-8")
+        subprocess.run(["git", "-C", str(old_repo), "add", ".gitignore"], check=True, timeout=20)
+        subprocess.run(["git", "-C", str(old_repo), "commit", "-q", "-m", "ignore build output"], check=True, timeout=20)
+        moved_repo = old_repo.parent / subprocess.run(
+            ["git", "-C", str(old_repo), "rev-parse", "HEAD"],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=20,
+        ).stdout.strip()
+        old_repo.rename(moved_repo)
+        old_repo = moved_repo
+        lock_path = old_repo / "package-lock.json"
+        lock = json.loads(lock_path.read_text(encoding="utf-8"))
+        lock["packages"]["node_modules/@openai/codex"]["peer"] = True
+        lock_path.write_text(json.dumps(lock), encoding="utf-8")
+
+        installer = install_app.AppInstaller(self.args(), new_repo, self.manifest)
+        installer.prepare_directories()
+        self._create_fake_runtime(installer, with_receipt=False)
+        legacy = self._write_legacy_v01_receipt(installer, old_repo)
+        self.assertTrue(legacy["git"]["dirty"])
+        self.assertTrue(
+            install_app.legacy_v01_peer_metadata_only_lock_drift(old_repo, old_repo.name)
+        )
+
+        installer.ensure_node()
+        self.assertTrue(installer.paths.node_runtime_receipt.is_file())
+
+        lock["packages"]["node_modules/@openai/codex"]["version"] = "tampered"
+        lock_path.write_text(json.dumps(lock), encoding="utf-8")
+        self.assertFalse(
+            install_app.legacy_v01_peer_metadata_only_lock_drift(old_repo, old_repo.name)
+        )
 
     def test_v01_migration_rejects_old_release_path_and_digest_tamper(self):
         old_repo = self._create_immutable_release("old-tamper")

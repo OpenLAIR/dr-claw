@@ -1214,6 +1214,71 @@ class BootstrapIntegrationTests(unittest.TestCase):
             self.write_managed_skill_state(release_a, revision_a)
             rollback.finalize_managed_skill_transactions()
 
+    def test_v01_peer_metadata_lock_normalization_permits_only_managed_skill_migration(self) -> None:
+        module = load_bootstrap_module()
+        revision = "e" * 40
+        release_root = self.home / ".local" / "share" / "drclaw" / "releases"
+        old_release = release_root / revision
+        old_source = old_release / "bootstrap" / "codex" / "skills" / "drclaw-skill-library"
+        old_source.mkdir(parents=True, mode=0o700)
+        (old_source / "SKILL.md").write_text(
+            "---\nname: drclaw-skill-library\ndescription: legacy fixture\n---\n",
+            encoding="utf-8",
+        )
+        (old_release / "package-lock.json").write_text(
+            json.dumps({"lockfileVersion": 3, "packages": {"": {}, "node_modules/demo": {}}}),
+            encoding="utf-8",
+        )
+        subprocess.run(["git", "init", "-q", str(old_release)], check=True, timeout=20)
+        subprocess.run(
+            ["git", "-C", str(old_release), "config", "user.name", "Dr Claw Test"],
+            check=True,
+            timeout=20,
+        )
+        subprocess.run(
+            ["git", "-C", str(old_release), "config", "user.email", "test@invalid.example"],
+            check=True,
+            timeout=20,
+        )
+        subprocess.run(["git", "-C", str(old_release), "add", "-A"], check=True, timeout=20)
+        subprocess.run(["git", "-C", str(old_release), "commit", "-q", "-m", "legacy"], check=True, timeout=20)
+        actual_revision = subprocess.run(
+            ["git", "-C", str(old_release), "rev-parse", "HEAD"],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=20,
+        ).stdout.strip()
+        self.assertNotEqual(actual_revision, revision)
+        renamed_release = release_root / actual_revision
+        old_release.rename(renamed_release)
+        old_release = renamed_release
+        lock_path = old_release / "package-lock.json"
+        lock = json.loads(lock_path.read_text(encoding="utf-8"))
+        lock["packages"]["node_modules/demo"]["peer"] = True
+        lock_path.write_text(json.dumps(lock), encoding="utf-8")
+
+        state = {
+            "schema_version": 1,
+            "bundle_version": "0.1.0",
+            "repo_root": str(old_release),
+            "git": {
+                "revision": actual_revision,
+                "dirty": False,
+                "status_sha256": hashlib.sha256(b"").hexdigest(),
+            },
+        }
+        installer = module.Installer(
+            self.managed_installer_args(), REPO_ROOT, {"bundle_version": "fixture"}
+        )
+        self.assertEqual(installer.validated_prior_repo(state), old_release)
+        self.assertTrue(any(event["status"] == "MIGRATE" for event in installer.events))
+
+        lock["packages"]["node_modules/demo"]["version"] = "tampered"
+        lock_path.write_text(json.dumps(lock), encoding="utf-8")
+        with self.assertRaisesRegex(module.BootstrapError, "checkout drifted"):
+            installer.validated_prior_repo(state)
+
     def test_managed_skill_tamper_requires_replace_and_interrupted_exchange_recovers(self) -> None:
         module = load_bootstrap_module()
         revision_a = "c" * 40

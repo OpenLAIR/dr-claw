@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "bundle_version": "0.2.0",
+  "bundle_version": "0.2.1",
   "audited_at": "2026-08-19",
   "baseline": {
     "repository": "https://github.com/OpenLAIR/dr-claw.git",
     "audited_base_commit": "4b3575641b63f8e09a9539b23c2be4f45f5d0317",
-    "bundle_release_ref": "codex-bootstrap-v0.2.0",
-    "production_revision_policy": "Deploy the exact codex-bootstrap-v0.2.0 tag together with its full commit SHA from the signed-off release provenance. The audited_base_commit records the starting tree inspected while this bundle was authored; it is not the deployable bundle revision. Never deploy a moving branch as a reproducible baseline."
+    "bundle_release_ref": "codex-bootstrap-v0.2.1",
+    "production_revision_policy": "Deploy the exact codex-bootstrap-v0.2.1 tag together with its full commit SHA from the signed-off release provenance. The audited_base_commit records the starting tree inspected while this bundle was authored; it is not the deployable bundle revision. Never deploy a moving branch as a reproducible baseline."
   },
   "requirements": {
     "python": ">=3.9",

@@ -343,6 +343,81 @@ def read_only_git_command(arguments: Sequence[str]) -> list[str]:
     ]
 
 
+def _without_package_lock_peer_metadata(value: Any) -> Any:
+    """Return a structural lockfile view without npm's non-semantic peer flag."""
+
+    if isinstance(value, dict):
+        return {
+            key: _without_package_lock_peer_metadata(item)
+            for key, item in value.items()
+            if key != "peer"
+        }
+    if isinstance(value, list):
+        return [_without_package_lock_peer_metadata(item) for item in value]
+    return value
+
+
+def legacy_v01_peer_metadata_only_lock_drift(repo_root: Path, expected_revision: str) -> bool:
+    """Recognize the sole audited v0.1 checkout mutation without trusting it broadly.
+
+    npm 10 can rewrite only the ``peer`` booleans in a v0.1 lockfile during
+    ``npm ci``.  That historical installer wrote the bootstrap receipt before
+    the app build, so a retained otherwise-immutable v0.1 checkout can appear
+    dirty.  This function accepts only that exact metadata normalization:
+    same commit, exactly one tracked changed path (``package-lock.json``), no
+    nonignored untracked files or mode changes, and JSON equality after every
+    ``peer`` key is removed.  It is intentionally a predicate; callers still
+    validate their own receipt, source digests, paths, and ownership.
+    """
+
+    if not re.fullmatch(r"[0-9a-f]{40}", expected_revision):
+        return False
+    lock_path = repo_root / "package-lock.json"
+    try:
+        if lock_path.is_symlink() or not lock_path.is_file():
+            return False
+        commands = (
+            ["-C", str(repo_root), "rev-parse", "HEAD"],
+            [
+                "-C",
+                str(repo_root),
+                "diff",
+                "--name-only",
+                "--no-ext-diff",
+                "--no-textconv",
+                "HEAD",
+            ],
+            ["-C", str(repo_root), "diff", "--summary", "HEAD", "--", "package-lock.json"],
+            ["-C", str(repo_root), "ls-files", "--others", "--exclude-standard", "-z"],
+            ["-C", str(repo_root), "show", "HEAD:package-lock.json"],
+        )
+        results = []
+        for command in commands:
+            result = subprocess.run(
+                read_only_git_command(command),
+                cwd="/",
+                check=True,
+                capture_output=True,
+                timeout=30,
+                stdin=subprocess.DEVNULL,
+                env=read_only_git_environment(),
+            )
+            results.append(result.stdout)
+        revision, changed_paths, summary, untracked, baseline = results
+        if revision.decode("ascii", errors="strict").strip().lower() != expected_revision:
+            return False
+        names = [line for line in changed_paths.decode("utf-8", errors="strict").splitlines() if line]
+        if names != ["package-lock.json"] or summary or untracked:
+            return False
+        baseline_json = json.loads(baseline.decode("utf-8", errors="strict"))
+        current_json = json.loads(lock_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError, subprocess.SubprocessError):
+        return False
+    return _without_package_lock_peer_metadata(baseline_json) == _without_package_lock_peer_metadata(
+        current_json
+    )
+
+
 def _safe_temp_root_candidate(path: Path, effective_uid: int) -> Optional[Path]:
     if not path.is_absolute():
         return None

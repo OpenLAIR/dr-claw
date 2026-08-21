@@ -39,6 +39,7 @@ if str(_MODULE_DIR) not in sys.path:
     sys.path.insert(0, str(_MODULE_DIR))
 from codex_contracts import (  # noqa: E402 - supports direct script execution
     KNOWN_CODEX_CONTRACT_PROBES,
+    legacy_v01_peer_metadata_only_lock_drift,
     NetworkContractError,
     PathTrustError,
     read_only_git_command,
@@ -1607,11 +1608,18 @@ def validate_legacy_application_runtime_receipt(
         not isinstance(recorded_git, dict)
         or set(recorded_git) != GIT_RECEIPT_KEYS
         or recorded_git.get("available") is not True
-        or recorded_git.get("dirty") is not False
         or recorded_git.get("revision") != recorded_repo.name
     ):
+        raise AppBootstrapError("Legacy app receipt has an invalid immutable Git provenance contract.")
+    observed_git = git_receipt(recorded_repo)
+    legacy_peer_lock_drift = (
+        recorded_git.get("dirty") is True
+        and observed_git == recorded_git
+        and legacy_v01_peer_metadata_only_lock_drift(recorded_repo, recorded_repo.name)
+    )
+    if recorded_git.get("dirty") is not False and not legacy_peer_lock_drift:
         raise AppBootstrapError("Legacy app receipt has no clean immutable Git provenance.")
-    if git_receipt(recorded_repo) != recorded_git:
+    if observed_git != recorded_git:
         raise AppBootstrapError("Retained legacy release Git provenance drifted from its app receipt.")
 
     package_lock = recorded_repo / "package-lock.json"

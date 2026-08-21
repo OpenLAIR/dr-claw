@@ -30,6 +30,7 @@ if str(_MODULE_DIR) not in sys.path:
 from codex_contracts import (  # noqa: E402 - supports direct script execution
     BEGIN_MARKER,
     END_MARKER,
+    legacy_v01_peer_metadata_only_lock_drift,
     NetworkContractError,
     PathTrustError,
     parse_plugin_inventory,
@@ -1466,12 +1467,31 @@ class Installer:
                 self.user_home, old_repo, "prior immutable release checkout"
             )
         observed_git = git_state(old_repo)
-        if any(recorded_git.get(key) != observed_git.get(key) for key in ("revision", "dirty", "status_sha256")):
+        recorded_matches = all(
+            recorded_git.get(key) == observed_git.get(key)
+            for key in ("revision", "dirty", "status_sha256")
+        )
+        legacy_peer_lock_drift = (
+            state.get("bundle_version") == "0.1.0"
+            and recorded_git.get("revision") == old_repo.name
+            and recorded_git.get("dirty") is False
+            and observed_git.get("revision") == old_repo.name
+            and observed_git.get("dirty") is True
+            and legacy_v01_peer_metadata_only_lock_drift(old_repo, old_repo.name)
+        )
+        if not recorded_matches and not legacy_peer_lock_drift:
             raise BootstrapError("Prior managed checkout drifted from its bootstrap receipt.")
         if not same_checkout and (
-            observed_git.get("revision") != old_repo.name or observed_git.get("dirty") is not False
+            observed_git.get("revision") != old_repo.name
+            or observed_git.get("dirty") is not False and not legacy_peer_lock_drift
         ):
             raise BootstrapError("Prior managed release checkout is not clean at its recorded commit.")
+        if legacy_peer_lock_drift:
+            self.event(
+                "MIGRATE",
+                old_repo / "package-lock.json",
+                "accepted the audited v0.1 npm peer-metadata normalization while retaining source/digest checks",
+            )
         return old_repo
 
     def validate_prior_managed_skill(self, name: str, destination: Path) -> Tuple[str, Path]:
