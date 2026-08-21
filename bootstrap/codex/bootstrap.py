@@ -78,6 +78,11 @@ DRCLAW_CLI_LAUNCHERS = {
     "dr-claw": "drclaw",
     "vibelab": "vibelab",
 }
+LEGACY_V01_CLI_ENTRY_POINTS = {
+    "drclaw": "cli_anything.drclaw.drclaw_cli:cli",
+    "dr-claw": "cli_anything.drclaw.drclaw_cli:cli",
+    "vibelab": "cli_anything.drclaw.drclaw_cli:vibelab_cli",
+}
 
 
 class BootstrapError(RuntimeError):
@@ -2099,6 +2104,59 @@ class Installer:
             return None
         return validate_drclaw_cli_state_shape(cli_state)
 
+    def legacy_v01_cli_launchers_are_intact(self) -> bool:
+        """Recognize all three v0.1 setuptools launchers without trusting lookalikes.
+
+        v0.1 installed an editable ``cli-anything-drclaw`` distribution directly
+        into ``~/.local/bin`` and did not record launcher digests in its
+        bootstrap receipt.  A v0.2+ upgrade may replace those launchers only
+        when the old immutable checkout and all three generated setuptools
+        wrappers can be proven intact.  Any partial set, symlink, ownership
+        change, writable mode, or content deviation remains an operator
+        conflict and requires ``--replace``.
+        """
+
+        state = self.prior_bootstrap_state()
+        if state.get("bundle_version") != "0.1.0" or state.get("drclaw_cli") is not None:
+            return False
+        try:
+            old_repo = self.validated_prior_repo(state)
+            setup_path = old_repo / "agent-harness" / "setup.py"
+            if setup_path.is_symlink() or not setup_path.is_file():
+                return False
+            setup_content = setup_path.read_text(encoding="utf-8")
+        except (BootstrapError, OSError, UnicodeDecodeError):
+            return False
+
+        for name, target in LEGACY_V01_CLI_ENTRY_POINTS.items():
+            if f"'{name}={target}'" not in setup_content:
+                return False
+            launcher_path = self.user_home / ".local" / "bin" / name
+            try:
+                metadata = launcher_path.lstat()
+                if (
+                    launcher_path.is_symlink()
+                    or not stat.S_ISREG(metadata.st_mode)
+                    or metadata.st_uid != os.geteuid()
+                    or stat.S_IMODE(metadata.st_mode) & 0o022
+                    or not metadata.st_mode & 0o111
+                    or metadata.st_size > 65536
+                ):
+                    return False
+                content = launcher_path.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError):
+                return False
+            marker = (
+                f"# EASY-INSTALL-ENTRY-SCRIPT: 'cli-anything-drclaw',"
+                f"'console_scripts','{name}'"
+            )
+            invocation = (
+                f"load_entry_point('cli-anything-drclaw', 'console_scripts', '{name}')()"
+            )
+            if marker not in content or invocation not in content:
+                return False
+        return True
+
     def create_drclaw_cli_environment(
         self,
         contract: Dict[str, object],
@@ -2286,6 +2344,7 @@ class Installer:
         prior_launchers = prior_state.get("launchers", {}) if prior_state else {}
         if not isinstance(prior_launchers, dict):
             raise BootstrapError("Existing Dr. Claw CLI state has an invalid launcher contract.")
+        legacy_v01_launchers = prior_state is None and self.legacy_v01_cli_launchers_are_intact()
 
         plans: List[Tuple[Path, str, str]] = []
         for launcher_name, entry_point in DRCLAW_CLI_LAUNCHERS.items():
@@ -2319,6 +2378,8 @@ class Installer:
                         prior_digest = prior.get("sha256") if isinstance(prior, dict) else None
                         if prior_digest == actual_digest:
                             action = "managed-update"
+                        elif legacy_v01_launchers:
+                            action = "legacy-v01-managed-update"
                         elif self.args.replace:
                             action = "archive"
                         else:
@@ -2340,10 +2401,17 @@ class Installer:
                 continue
             if action == "archive":
                 self.archive_conflict(launcher_path)
-            elif action == "managed-update":
+            elif action in {"managed-update", "legacy-v01-managed-update"}:
                 self.backup_file(launcher_path)
             atomic_write(launcher_path, expected_content, mode=0o755)
-            self.event("INSTALL", launcher_path, "installed atomic managed launcher")
+            if action == "legacy-v01-managed-update":
+                self.event(
+                    "MIGRATE",
+                    launcher_path,
+                    "replaced a receipt-proven v0.1 setuptools launcher with the sealed managed launcher",
+                )
+            else:
+                self.event("INSTALL", launcher_path, "installed atomic managed launcher")
 
     def validate_write_roots(self) -> None:
         if not self.user_home.is_dir():

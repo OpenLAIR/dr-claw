@@ -1229,6 +1229,17 @@ class BootstrapIntegrationTests(unittest.TestCase):
             json.dumps({"lockfileVersion": 3, "packages": {"": {}, "node_modules/demo": {}}}),
             encoding="utf-8",
         )
+        legacy_setup = old_release / "agent-harness" / "setup.py"
+        legacy_setup.parent.mkdir(parents=True, exist_ok=True)
+        legacy_setup.write_text(
+            "entry_points={\n"
+            "'console_scripts': [\n"
+            "'drclaw=cli_anything.drclaw.drclaw_cli:cli',\n"
+            "'dr-claw=cli_anything.drclaw.drclaw_cli:cli',\n"
+            "'vibelab=cli_anything.drclaw.drclaw_cli:vibelab_cli',\n"
+            "]\n}\n",
+            encoding="utf-8",
+        )
         subprocess.run(["git", "init", "-q", str(old_release)], check=True, timeout=20)
         subprocess.run(
             ["git", "-C", str(old_release), "config", "user.name", "Dr Claw Test"],
@@ -1268,11 +1279,25 @@ class BootstrapIntegrationTests(unittest.TestCase):
                 "status_sha256": hashlib.sha256(b"").hexdigest(),
             },
         }
+        (self.codex_home / "drclaw-bootstrap-state.json").write_text(
+            json.dumps(state), encoding="utf-8"
+        )
+        legacy_bin = self.home / ".local" / "bin"
+        legacy_bin.mkdir(parents=True, exist_ok=True)
+        for name in module.DRCLAW_CLI_LAUNCHERS:
+            (legacy_bin / name).write_text(
+                "#!/usr/bin/python3\n"
+                f"# EASY-INSTALL-ENTRY-SCRIPT: 'cli-anything-drclaw','console_scripts','{name}'\n"
+                f"sys.exit(load_entry_point('cli-anything-drclaw', 'console_scripts', '{name}')())\n",
+                encoding="utf-8",
+            )
+            (legacy_bin / name).chmod(0o700)
         installer = module.Installer(
             self.managed_installer_args(), REPO_ROOT, {"bundle_version": "fixture"}
         )
         self.assertEqual(installer.validated_prior_repo(state), old_release)
         self.assertTrue(any(event["status"] == "MIGRATE" for event in installer.events))
+        self.assertTrue(installer.legacy_v01_cli_launchers_are_intact())
 
         lock["packages"]["node_modules/demo"]["version"] = "tampered"
         lock_path.write_text(json.dumps(lock), encoding="utf-8")

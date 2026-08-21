@@ -69,7 +69,7 @@
 
 必须以最终实际运行 Codex 的非 root Unix 用户执行本方案；管理员应先 `sudo -iu <USER>`，再 clone 和安装。`--home` 只用于同一用户的隔离测试，不是跨用户 provision 开关；安装器会拒绝 root、owner 不匹配、受保护系统目录后代和隐式符号链接写穿。`$CODEX_HOME` 必须是 `$HOME` 内的专用目录；新建权限为 `0700`，已有目录及其自 HOME 起的现存祖先不得由其他主体替换或写入。唯一例外是上一表所述、经过 POSIX ACL 完整验证的 root-owned Delta HOME；例外不会向 HOME 以下受管目录传播。
 
-生产部署必须由维护者批准一个 immutable Git tag 或完整 commit SHA。当前 manifest 固定到 `codex-bootstrap-v0.2.1`；`audited_base_commit` 只是编写本方案时检查的起始树，不是可部署 revision。实际安装还必须把该 annotated tag 与 release provenance 中的完整 commit SHA 绑定；不要部署 moving branch，也不要移动既有 tag。
+生产部署必须由维护者批准一个 immutable Git tag 或完整 commit SHA。当前 manifest 固定到 `codex-bootstrap-v0.2.2`；`audited_base_commit` 只是编写本方案时检查的起始树，不是可部署 revision。实际安装还必须把该 annotated tag 与 release provenance 中的完整 commit SHA 绑定；不要部署 moving branch，也不要移动既有 tag。
 
 ## 四、NCSA Delta：先建立交互连接
 
@@ -134,6 +134,7 @@ bash -c 'set -Eeuo pipefail; curl -fsSL "https://raw.githubusercontent.com/OpenL
 - 默认使用 `safe` profile；Codex 缺失或低于 minimum 时安装/升级，达到 minimum 的已有 CLI 则保留；所有内部 installer 成功后再统一运行 credential-free 的 `--strict-release --require-clean-native-skills` pre-activation gate，并由隔离合同验收实际 CLI；
 - `--full` 还安装 Python 控制 CLI、SHA256 固定的 Node、locked npm 依赖、Web build、loopback-only 私有配置与 launcher；发布 gate 会对完整 locked npm dependency graph 执行 `npm audit --audit-level=moderate`，不允许已知 moderate/high/critical advisory 随 release 通过；应用 bundle 明确要求 Node `22.x || 24.x`，而受管 runtime 固定为 22.23.2；user-systemd 可用时只 enable，除非另加 `--start-app` 才立即启动；
 - 重跑同一 release 时复用并重新验证同一 checkout；升级到新 release 时使用同一命令的新 tag/SHA。旧 receipt 能完整证明来源、内容和安装模式时，两个受管 skill 会以可恢复事务自动切换到新 release，无需宽泛的 `--replace`；只有 drift、损坏或 unmanaged 冲突才需人工审计后显式加 `--replace`；
+- 对 v0.1 的受管环境，installer 还只接受一个经过审计的历史例外：旧 `npm ci` 仅改写 `package-lock.json` 的 `peer` metadata，且旧 editable CLI 的三个 setuptools launcher、owner/mode、旧 release、source digest 和 app receipt 均完整匹配。它会备份并原子替换这些 launcher；任何额外 path/content/owner/mode 漂移仍按 unmanaged conflict 拒绝，绝不自动吞掉；
 - 不复制 auth、sessions、connector/plugin cache、SSH 材料、`.env`、API/JWT token 或旧项目路径。
 
 若明确要让 fresh host 直接安装官方当前 Codex，可加 `--codex-release latest`；Dr. Claw bundle 仍固定在自己的 Git release，随后由 doctor 的隔离兼容性合同判断新 Codex 是否可用。`--home` 默认只能等于当前 Unix 用户的 login home；`--allow-nonlogin-home` 是 Delta 隔离测试的显式 interlock，不是跨用户 provision 开关。完整参数见：
@@ -149,7 +150,7 @@ bash bootstrap/codex/remote-install.sh --help
 在 release tag 所在的 clean checkout 上生成一个新的、不可覆盖的目录：
 
 ```bash
-release_tag=codex-bootstrap-v0.2.1
+release_tag=codex-bootstrap-v0.2.2
 release_commit=$(git rev-parse "${release_tag}^{commit}")
 kit_parent="$PWD/../drclaw-release-output-private"
 (umask 077; mkdir "$kit_parent")
@@ -171,7 +172,7 @@ builder 只接受与 manifest、HEAD 和完整 SHA 一致的 annotated tag；拒
 完整搬运该目录到新服务器后，只需一条离线命令，不必先从 bundle 手动提取脚本：
 
 ```bash
-bash /path/to/drclaw-codex-bootstrap-v0.2.1-offline/install.sh --full
+bash /path/to/drclaw-codex-bootstrap-v0.2.2-offline/install.sh --full
 ```
 
 wrapper 会先拒绝目录中的任何额外 entry、symlink、缺失文件、owner/mode 异常或 checksum inventory 漂移，并验证每个 payload，再把同目录 bundle 交给现有远程安装器；tag object 与 peeled commit 两个身份也同时固定。Git bundle 为了保留发布身份与 commit 原始 SHA 必须携带其可达 Git 历史，因此 builder 会扫描**全部可达历史路径，以及所有可达 blob、commit 和 tag payload**，而不只检查当前 tree；允许的 community gitlink 只记录路径与 object ID，bundle/archive 都不携带其仓库内容。内部 checksum 可证明搬运完整性；抵抗“payload 与 checksum 同时被替换”仍需通过独立可信渠道保存并核对 provenance sidecar 的 SHA256。
