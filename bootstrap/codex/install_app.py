@@ -29,7 +29,7 @@ import tempfile
 import time
 import urllib.parse
 import urllib.request
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 
@@ -483,6 +483,20 @@ def validate_repo(repo_root: Path, manifest: Mapping[str, object]) -> None:
         raise AppBootstrapError(f"Cannot parse package metadata: {error}") from error
     if package.get("name") != application.get("package_name"):
         raise AppBootstrapError("package.json name does not match the application manifest.")
+    node = manifest.get("node")
+    if not isinstance(node, dict):
+        raise AppBootstrapError("Application manifest has no Node.js contract.")
+    expected_package_engine = node.get("supported_package_engine")
+    package_engines = package.get("engines")
+    if (
+        not isinstance(expected_package_engine, str)
+        or not expected_package_engine
+        or not isinstance(package_engines, dict)
+        or package_engines.get("node") != expected_package_engine
+    ):
+        raise AppBootstrapError(
+            "package.json Node.js engine must exactly match the application manifest."
+        )
     if lock.get("lockfileVersion") != 3 or lock.get("name") != package.get("name"):
         raise AppBootstrapError("package-lock.json is missing, stale, or not lockfileVersion 3.")
     lock_root = lock.get("packages", {}).get("") if isinstance(lock.get("packages"), dict) else None
@@ -531,6 +545,56 @@ def validate_repo(repo_root: Path, manifest: Mapping[str, object]) -> None:
         or not str(platform_lock["integrity"]).startswith("sha512-")
     ):
         raise AppBootstrapError("package-lock.json has no exact current-platform Codex binary package.")
+
+
+def verify_pruned_development_dependencies(repo_root: Path) -> int:
+    """Reject a runtime tree that retains exclusively development-only packages.
+
+    ``npm ls --omit=dev`` only checks the selected dependency graph.  It does
+    not prove that a prior ``npm prune --omit=dev`` removed stale development
+    packages from disk.  The lockfile's ``dev: true`` entries are exclusively
+    development-only package paths, so every one must be absent after the
+    managed production prune.
+    """
+
+    lock_path = repo_root / "package-lock.json"
+    try:
+        lock = json.loads(lock_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise AppBootstrapError(
+            f"Cannot inspect development dependency prune state: {type(error).__name__}"
+        ) from error
+    packages = lock.get("packages")
+    if not isinstance(packages, dict):
+        raise AppBootstrapError("package-lock.json has no package inventory for development-prune verification.")
+
+    retained: List[str] = []
+    expected = 0
+    for raw_path, metadata in packages.items():
+        if raw_path == "" or not isinstance(metadata, dict) or metadata.get("dev") is not True:
+            continue
+        if not isinstance(raw_path, str):
+            raise AppBootstrapError("package-lock.json contains a non-string development package path.")
+        pure_path = PurePosixPath(raw_path)
+        if (
+            pure_path.is_absolute()
+            or not pure_path.parts
+            or pure_path.parts[0] != "node_modules"
+            or any(part in {"", ".", ".."} for part in pure_path.parts)
+        ):
+            raise AppBootstrapError("package-lock.json contains an unsafe development package path.")
+        expected += 1
+        candidate = repo_root.joinpath(*pure_path.parts)
+        if os.path.lexists(candidate):
+            retained.append(raw_path)
+
+    if retained:
+        preview = ", ".join(retained[:4])
+        suffix = "" if len(retained) <= 4 else ", ..."
+        raise AppBootstrapError(
+            "npm prune --omit=dev left development-only packages on disk: " + preview + suffix
+        )
+    return expected
 
 
 def platform_artifact_key() -> str:
@@ -2140,9 +2204,14 @@ class AppInstaller:
                 json.loads(result.stdout)
             except (OSError, subprocess.SubprocessError, json.JSONDecodeError) as error:
                 raise AppBootstrapError(f"Installed npm dependency verification failed: {error}") from error
+            pruned_count = verify_pruned_development_dependencies(self.repo_root)
             if not (self.repo_root / "dist" / "index.html").is_file():
                 raise AppBootstrapError("Production frontend build did not create dist/index.html.")
-            self.event("OK", self.repo_root / "node_modules", "locked production dependencies verified")
+            self.event(
+                "OK",
+                self.repo_root / "node_modules",
+                f"locked production dependencies verified; {pruned_count} development-only lock entries are absent",
+            )
 
     def backup_unmanaged(self, path: Path) -> None:
         reject_managed_file_symlink(path)
@@ -2770,8 +2839,19 @@ class AppDoctor:
                 self.add("PASS", "dependencies", "production npm dependency graph is valid")
             except (OSError, subprocess.SubprocessError, json.JSONDecodeError) as error:
                 self.add("FAIL", "dependencies", str(error))
+            else:
+                try:
+                    pruned_count = verify_pruned_development_dependencies(self.repo_root)
+                    self.add(
+                        "PASS",
+                        "development-prune",
+                        f"{pruned_count} development-only lock entries are absent from node_modules",
+                    )
+                except AppBootstrapError as error:
+                    self.add("FAIL", "development-prune", str(error))
         else:
             self.add("FAIL", "dependencies", "node_modules is missing or managed runtime contract failed")
+            self.add("FAIL", "development-prune", "node_modules is missing or managed runtime contract failed")
 
     def approved_router_source(self) -> Path:
         installed = self.home / ".agents" / "skills" / "drclaw-skill-library"

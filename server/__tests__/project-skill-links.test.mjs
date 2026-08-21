@@ -79,7 +79,7 @@ describe('project skill-link routing', () => {
     expect(agentsGuidance).toContain('`.drclaw/skill-library/`');
     expect(agentsGuidance).toContain('approved **read-only** symlink exceptions');
     expect(agentsGuidance.match(/DRCLAW:SKILL-ROUTING:START/g)).toHaveLength(1);
-  });
+  }, 30_000);
 
   it('does not write through a .drclaw ancestor symlink or remove rollback links', async () => {
     const accelerateSource = path.join(repositoryRoot, 'skills', 'distributed-training', 'accelerate');

@@ -56,14 +56,21 @@ jobs:
           PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s bootstrap/codex/tests -v
 
       - name: Validate generated files and application JavaScript
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
         run: |
           set -Eeuo pipefail
           npm ci
-          npm audit --omit=dev --audit-level=moderate
+          npm audit --audit-level=moderate
           npm run skills:catalog
           git diff --exit-code -- skills/skills-catalog-v2.json
           npm run typecheck
           npm run build
+          npm run native:node
+          npm test
+          npm run desktop:prepare
+          npm run native:node
           npm test
 
       - name: Exercise audited Codex contracts in an isolated profile

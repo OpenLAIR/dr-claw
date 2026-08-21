@@ -28,7 +28,7 @@
       }
     },
     "source_of_checksums": "https://nodejs.org/download/release/v22.23.2/SHASUMS256.txt",
-    "supported_package_engine": "20.x || 22.x || 24.x"
+    "supported_package_engine": "22.x || 24.x"
   },
   "bundled_codex": {
     "version": "0.147.0",

@@ -73,6 +73,7 @@ class AppBootstrapTestCase(unittest.TestCase):
         package = {
             "name": "dr-claw",
             "version": "1.1.4",
+            "engines": {"node": self.manifest["node"]["supported_package_engine"]},
             "dependencies": dependencies,
         }
         package_lock = {
@@ -369,6 +370,7 @@ class AppBootstrapTestCase(unittest.TestCase):
             set(self.manifest["timeouts_seconds"]), set(install_app.REQUIRED_TIMEOUT_KEYS)
         )
         self.assertEqual(node["version"], "22.23.2")
+        self.assertEqual(node["supported_package_engine"], "22.x || 24.x")
         self.assertEqual(
             node["artifacts"]["linux-x64"]["sha256"],
             "d60acfe00a2932254bb0ad20e01b0d74397a0875595de719654b214f4b03f307",
@@ -377,6 +379,28 @@ class AppBootstrapTestCase(unittest.TestCase):
             node["artifacts"]["linux-arm64"]["sha256"],
             "fff4078c5def658577f92c88db7db3bc0072924bfb93fe52c1e744a54e94abb8",
         )
+
+    def test_development_prune_rejects_retained_dev_only_package(self):
+        lock_path = self.repo / "package-lock.json"
+        lock = json.loads(lock_path.read_text(encoding="utf-8"))
+        lock["packages"]["node_modules/dev-only-fixture"] = {"version": "1.0.0", "dev": True}
+        lock_path.write_text(json.dumps(lock), encoding="utf-8")
+        retained = self.repo / "node_modules" / "dev-only-fixture"
+        retained.mkdir(parents=True)
+
+        with self.assertRaisesRegex(install_app.AppBootstrapError, "development-only packages"):
+            install_app.verify_pruned_development_dependencies(self.repo)
+
+        shutil.rmtree(retained.parent)
+        self.assertEqual(install_app.verify_pruned_development_dependencies(self.repo), 1)
+
+    def test_validate_repo_requires_manifest_node_engine_match(self):
+        package_path = self.repo / "package.json"
+        package = json.loads(package_path.read_text(encoding="utf-8"))
+        package["engines"]["node"] = "20.x"
+        package_path.write_text(json.dumps(package), encoding="utf-8")
+        with self.assertRaisesRegex(install_app.AppBootstrapError, "Node.js engine"):
+            install_app.validate_repo(self.repo, self.manifest)
 
     def test_cli_accepts_codex_home_for_install_doctor_and_internal_launch(self):
         parser = install_app.build_parser()

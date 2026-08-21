@@ -43,7 +43,7 @@
       "core": 1073741824,
       "full": 8589934592
     },
-    "drclaw_node_optional": "20.x || 22.x || 24.x",
+    "drclaw_node_optional": "22.x || 24.x",
     "platform": "Linux; NCSA Delta x86_64 is the primary audited host"
   },
   "codex_compatibility_contract": {
