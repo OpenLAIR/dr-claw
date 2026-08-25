@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "bundle_version": "0.2.3",
+  "bundle_version": "0.2.4",
   "audited_at": "2026-08-19",
   "baseline": {
     "repository": "https://github.com/OpenLAIR/dr-claw.git",
     "audited_base_commit": "4b3575641b63f8e09a9539b23c2be4f45f5d0317",
-    "bundle_release_ref": "codex-bootstrap-v0.2.3",
-    "production_revision_policy": "Deploy the exact codex-bootstrap-v0.2.3 tag together with its full commit SHA from the signed-off release provenance. The audited_base_commit records the starting tree inspected while this bundle was authored; it is not the deployable bundle revision. Never deploy a moving branch as a reproducible baseline."
+    "bundle_release_ref": "codex-bootstrap-v0.2.4",
+    "production_revision_policy": "Deploy the exact codex-bootstrap-v0.2.4 tag together with its full commit SHA from the signed-off release provenance. The audited_base_commit records the starting tree inspected while this bundle was authored; it is not the deployable bundle revision. Never deploy a moving branch as a reproducible baseline."
   },
   "requirements": {
     "python": ">=3.9",
@@ -59,6 +59,7 @@
   },
   "required_repository_paths": [
     "AGENTS.md",
+    ".gitmodules",
     "skills/skills-catalog-v2.json",
     "skills/skill-tag-mapping.json",
     "skills/stage-skill-map.json",
@@ -86,7 +87,7 @@
       "community-tools/autoresearch": "e8a20cbc9eda825cffab62b064df942a85eb11be",
       "community-tools/autoresearchclaw": "37e30d8bfb1cbe59512d7948f73cc8c46ab57b6d"
     },
-    "policy": "These optional community gitlinks are pinned by path and object ID but are never initialized or executed by the bootstrap. Every additional, moved, changed, or initialized gitlink is rejected."
+    "policy": "These optional community gitlinks and their .gitmodules path mappings are pinned and validated, but are never initialized or executed by the bootstrap. Every additional, moved, changed, mismatched, or initialized gitlink is rejected."
   },
   "components": {
     "library": {

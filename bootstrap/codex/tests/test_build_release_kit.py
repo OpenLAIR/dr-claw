@@ -60,6 +60,8 @@ class ReleaseKitTests(unittest.TestCase):
         historical_secret: bool = False,
         tag_secret: bool = False,
         gitlink_object: Optional[str] = None,
+        include_gitmodules: bool = True,
+        gitmodules_path: Optional[str] = None,
         real_remote_installer: bool = False,
     ) -> Path:
         repo = self.root / name
@@ -167,6 +169,14 @@ class ReleaseKitTests(unittest.TestCase):
             json.dumps(manifest, indent=2) + "\n",
             encoding="utf-8",
         )
+        if include_gitmodules:
+            metadata_path = gitmodules_path or self.gitlink_path
+            (repo / ".gitmodules").write_text(
+                f'[submodule "{metadata_path}"]\n'
+                f"\tpath = {metadata_path}\n"
+                f"\turl = https://example.invalid/{metadata_path}.git\n",
+                encoding="utf-8",
+            )
         if tracked_symlink:
             (repo / "unsafe-link").symlink_to("AGENTS.md")
 
@@ -557,6 +567,20 @@ class ReleaseKitTests(unittest.TestCase):
             "source worktree is dirty" in initialized_result.stderr
             or "must remain uninitialized" in initialized_result.stderr
         )
+
+    def test_rejects_missing_or_mismatched_gitlink_metadata(self) -> None:
+        missing = self.make_repository("missing-gitmodules", include_gitmodules=False)
+        missing_result = self.run_builder(missing, self.root / "missing-gitmodules-kit")
+        self.assertNotEqual(missing_result.returncode, 0)
+        self.assertIn("gitlinks but no .gitmodules metadata", missing_result.stderr)
+
+        mismatched = self.make_repository(
+            "mismatched-gitmodules",
+            gitmodules_path="community-tools/not-the-gitlink",
+        )
+        mismatched_result = self.run_builder(mismatched, self.root / "mismatched-gitmodules-kit")
+        self.assertNotEqual(mismatched_result.returncode, 0)
+        self.assertIn(".gitmodules paths do not exactly match", mismatched_result.stderr)
 
     def test_rejects_removed_machine_state_and_secrets_in_bundle_history(self) -> None:
         state_repo = self.make_repository("historical-state", historical_machine_state=True)

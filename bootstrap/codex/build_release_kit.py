@@ -34,9 +34,12 @@ BUILDER_VERSION = "1"
 MANIFEST_PATH = "bootstrap/codex/manifest.json"
 REMOTE_INSTALL_PATH = "bootstrap/codex/remote-install.sh"
 BUILDER_PATH = "bootstrap/codex/build_release_kit.py"
+GITMODULES_PATH = ".gitmodules"
 TAG_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}")
 OBJECT_ID_PATTERN = re.compile(r"[0-9a-f]{40}")
 HEX_SHA256_PATTERN = re.compile(r"[0-9a-f]{64}")
+GITMODULES_SECTION_RE = re.compile(r'^\s*\[submodule\s+"([^"\r\n]+)"\]\s*$')
+GITMODULES_ASSIGNMENT_RE = re.compile(r"^\s*([A-Za-z][A-Za-z0-9-]*)\s*=\s*(.*?)\s*$")
 
 # These are high-confidence credential signatures, not generic words such as
 # "token" or "session" that legitimately occur in application source.  Keep
@@ -560,6 +563,78 @@ def ensure_uninitialized_gitlinks(
                 fail("allowed gitlinks must remain uninitialized")
 
 
+def parse_gitmodules(data: bytes) -> Dict[str, str]:
+    """Parse the simple, release-safe subset of Git's .gitmodules format."""
+
+    try:
+        lines = data.decode("utf-8").splitlines()
+    except UnicodeDecodeError:
+        fail("tag .gitmodules must be UTF-8")
+    sections: List[Dict[str, str]] = []
+    current: Optional[Dict[str, str]] = None
+    names = set()
+    for line in lines:
+        stripped = line.strip()
+        if not stripped or stripped.startswith(("#", ";")):
+            continue
+        section = GITMODULES_SECTION_RE.fullmatch(line)
+        if section is not None:
+            name = section.group(1)
+            if name in names:
+                fail("tag .gitmodules has duplicate submodule sections")
+            names.add(name)
+            current = {"name": name}
+            sections.append(current)
+            continue
+        assignment = GITMODULES_ASSIGNMENT_RE.fullmatch(line)
+        if assignment is None or current is None:
+            fail("tag .gitmodules is malformed")
+        key = assignment.group(1).lower()
+        value = assignment.group(2)
+        if key in {"path", "url"}:
+            if key in current:
+                fail("tag .gitmodules repeats a required submodule field")
+            current[key] = value
+
+    result: Dict[str, str] = {}
+    for section in sections:
+        path = section.get("path")
+        url = section.get("url")
+        if not path or not url:
+            fail("tag .gitmodules entries require non-empty path and url fields")
+        validate_repository_path(path)
+        if any(character in url for character in ("\x00", "\n", "\r")) or url.startswith("-"):
+            fail("tag .gitmodules contains an unsafe submodule URL")
+        if path in result:
+            fail("tag .gitmodules maps more than one section to the same path")
+        result[path] = url
+    return result
+
+
+def ensure_gitlink_metadata(
+    repo: Path,
+    tree: Mapping[str, Tuple[str, str, str]],
+    allowed: Mapping[str, str],
+) -> None:
+    """Require checkout-safe .gitmodules metadata for every allowed gitlink."""
+
+    metadata = tree.get(GITMODULES_PATH)
+    if not allowed:
+        if metadata is not None:
+            fail("tag .gitmodules exists without an allowed gitlink")
+        return
+    if metadata is None:
+        fail("tag has gitlinks but no .gitmodules metadata")
+    mode, object_type, object_id = metadata
+    if mode != "100644" or object_type != "blob":
+        fail("tag .gitmodules must be a regular file")
+    paths = parse_gitmodules(
+        git(repo, "cat-file", "blob", object_id, label="tag .gitmodules read")
+    )
+    if set(paths) != set(allowed):
+        fail("tag .gitmodules paths do not exactly match the gitlink allowlist")
+
+
 def sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -966,6 +1041,7 @@ def build_release_kit(
     manifest_data = git(repo, "cat-file", "blob", manifest_blob, label="tagged manifest read")
     manifest = parse_manifest(manifest_data, tag)
     allowed_gitlinks = parse_gitlinks(manifest)
+    ensure_gitlink_metadata(repo, tree, allowed_gitlinks)
     ensure_uninitialized_gitlinks(repo, tree, allowed_gitlinks)
     historical_path_count = validate_historical_paths(repo, commit)
     objects = reachable_objects(repo, tag_object)
