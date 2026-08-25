@@ -117,14 +117,27 @@ jobs:
           set -Eeuo pipefail
           app_home="${RUNNER_TEMP}/drclaw-release-app-home"
           mkdir -m 700 "${app_home}"
+          release_commit=$(git rev-parse "${RELEASE_TAG}^{commit}")
           git clone --quiet --no-hardlinks "${GITHUB_WORKSPACE}" "${app_home}/release"
-          git -C "${app_home}/release" checkout --quiet --detach "${RELEASE_TAG}"
+          git -C "${app_home}/release" checkout --quiet --detach "${release_commit}"
+          python3 "${app_home}/release/bootstrap/codex/bootstrap.py" \
+            install \
+            --home "${app_home}" \
+            --codex-home "${app_home}/.codex" \
+            --skip-delta-skill \
+            --config-profile safe \
+            --no-doctor
           python3 "${app_home}/release/bootstrap/codex/install_app.py" \
             --repo-root "${app_home}/release" \
             install \
             --home "${app_home}" \
             --codex-home "${app_home}/.codex" \
             --service none
+          python3 "${app_home}/release/bootstrap/codex/install_app.py" \
+            --repo-root "${app_home}/release" \
+            doctor \
+            --home "${app_home}" \
+            --codex-home "${app_home}/.codex"
 
       - name: Build the validated online and offline release kit
         env:
@@ -267,12 +280,9 @@ jobs:
           remote_home="${RUNNER_TEMP}/drclaw-arm64-remote-preview"
           mkdir -m 700 "${remote_home}"
           release_commit=$(git rev-parse "${RELEASE_TAG}^{commit}")
-          release_tag_object=$(git rev-parse "refs/tags/${RELEASE_TAG}")
           bash bootstrap/codex/remote-install.sh \
             --repo-url "${GITHUB_WORKSPACE}" \
-            --ref "${RELEASE_TAG}" \
-            --expected-commit "${release_commit}" \
-            --expected-tag-object "${release_tag_object}" \
+            --ref "${release_commit}" \
             --home "${remote_home}" \
             --codex-home "${remote_home}/.codex" \
             --allow-nonlogin-home \
@@ -283,7 +293,14 @@ jobs:
           app_home="${RUNNER_TEMP}/drclaw-arm64-app-home"
           mkdir -m 700 "${app_home}"
           git clone --quiet --no-hardlinks "${GITHUB_WORKSPACE}" "${app_home}/release"
-          git -C "${app_home}/release" checkout --quiet --detach "${RELEASE_TAG}"
+          git -C "${app_home}/release" checkout --quiet --detach "${release_commit}"
+          python3 "${app_home}/release/bootstrap/codex/bootstrap.py" \
+            install \
+            --home "${app_home}" \
+            --codex-home "${app_home}/.codex" \
+            --skip-delta-skill \
+            --config-profile safe \
+            --no-doctor
           python3 "${app_home}/release/bootstrap/codex/install_app.py" \
             --repo-root "${app_home}/release" \
             install \

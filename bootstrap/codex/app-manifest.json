@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "bundle_version": "0.2.4",
+  "bundle_version": "0.2.5",
   "application": {
     "name": "Dr. Claw Web",
     "package_name": "dr-claw",

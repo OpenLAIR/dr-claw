@@ -991,6 +991,24 @@ class RemoteInstallIntegrationTests(unittest.TestCase):
                     ),
                 )
 
+        workflow_text = workflow.read_text(encoding="utf-8")
+        self.assertNotIn(
+            'git -C "${app_home}/release" checkout --quiet --detach "${RELEASE_TAG}"',
+            workflow_text,
+        )
+        self.assertEqual(
+            workflow_text.count(
+                'git -C "${app_home}/release" checkout --quiet --detach "${release_commit}"'
+            ),
+            2,
+        )
+        web_blocks = [script for _, script in scripts if 'app_home="${RUNNER_TEMP}/drclaw-' in script]
+        self.assertEqual(len(web_blocks), 2)
+        for script in web_blocks:
+            self.assertIn('bootstrap/codex/bootstrap.py"', script)
+            self.assertLess(script.index('bootstrap/codex/bootstrap.py"'), script.index('install_app.py"'))
+            self.assertGreaterEqual(script.count('install_app.py"'), 2)
+
     def test_manifest_pinned_optional_gitlink_remains_uninitialized(self) -> None:
         tag = "drclaw-codex-gitlink-v1"
         repository, commit = self.build_release(
