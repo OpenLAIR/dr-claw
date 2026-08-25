@@ -2675,16 +2675,21 @@ class Installer:
             if not payload.startswith(b"#!"):
                 raise BootstrapError("Downloaded Codex installer did not look like a shell script.")
             installer_path.write_bytes(payload)
+            installer_environment = portable_codex_env(
+                self.user_home,
+                self.codex_home,
+                self.target_env,
+                include_release=True,
+            )
+            # The official installer prompts through /dev/tty.  Force its documented
+            # non-interactive mode only for this child process so a one-command
+            # bootstrap cannot hang or persist an operator's prompt preference.
+            installer_environment["CODEX_NON_INTERACTIVE"] = "1"
             try:
                 subprocess.run(
                     ["bash", str(installer_path)],
                     check=True,
-                    env=portable_codex_env(
-                        self.user_home,
-                        self.codex_home,
-                        self.target_env,
-                        include_release=True,
-                    ),
+                    env=installer_environment,
                     cwd=str(self.repo_root),
                     timeout=CODEX_INSTALL_TIMEOUT_SECONDS,
                 )

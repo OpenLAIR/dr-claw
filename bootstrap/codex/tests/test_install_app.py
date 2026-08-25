@@ -361,7 +361,7 @@ class AppBootstrapTestCase(unittest.TestCase):
 
     def test_manifest_pins_official_node_artifacts(self):
         node = self.manifest["node"]
-        self.assertEqual(self.manifest["bundle_version"], "0.2.2")
+        self.assertEqual(self.manifest["bundle_version"], "0.2.3")
         self.assertEqual(
             self.manifest["runtime_receipt"],
             {"schema_version": 1, "filename": ".drclaw-node-runtime.json"},

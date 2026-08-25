@@ -1279,9 +1279,11 @@ class BootstrapIntegrationTests(unittest.TestCase):
                 "status_sha256": hashlib.sha256(b"").hexdigest(),
             },
         }
-        (self.codex_home / "drclaw-bootstrap-state.json").write_text(
-            json.dumps(state), encoding="utf-8"
-        )
+        state_path = self.codex_home / "drclaw-bootstrap-state.json"
+        state_path.write_text(json.dumps(state), encoding="utf-8")
+        # The production receipt is deliberately private.  Do not rely on the
+        # caller's umask when constructing this security-sensitive fixture.
+        state_path.chmod(0o600)
         legacy_bin = self.home / ".local" / "bin"
         legacy_bin.mkdir(parents=True, exist_ok=True)
         for name in module.DRCLAW_CLI_LAUNCHERS:
@@ -1985,6 +1987,13 @@ class BootstrapIntegrationTests(unittest.TestCase):
 
     def test_live_delta_identity_gate_and_generic_host_support_matrix(self) -> None:
         module = load_bootstrap_module()
+        # The production check deliberately verifies that ``scontrol`` resolves
+        # to a trusted executable before it runs it.  CI does not ship Slurm,
+        # so model the command with a real root-owned executable instead of a
+        # nonexistent /usr/bin/scontrol path that the production guard must
+        # reject.
+        trusted_executable = shutil.which("true")
+        self.assertIsNotNone(trusted_executable)
         delta_result = subprocess.CompletedProcess(
             ["scontrol", "show", "config"],
             0,
@@ -1993,7 +2002,7 @@ class BootstrapIntegrationTests(unittest.TestCase):
         )
         with mock.patch.object(module, "bounded_fqdn", return_value="dt-login04.delta.ncsa.illinois.edu"), mock.patch.object(
             module.platform, "machine", return_value="amd64"
-        ), mock.patch.object(module.shutil, "which", return_value="/usr/bin/scontrol"), mock.patch.object(
+        ), mock.patch.object(module.shutil, "which", return_value=trusted_executable), mock.patch.object(
             module.subprocess, "run", return_value=delta_result
         ):
             identity = module.verify_live_delta_identity(cwd=REPO_ROOT)
@@ -2196,6 +2205,8 @@ class BootstrapIntegrationTests(unittest.TestCase):
             "GH_TOKEN": secret_marker,
             "SSH_AUTH_SOCK": "/tmp/private-agent.sock",
             "CODEX_RELEASE": "0.147.0",
+            "CODEX_NON_INTERACTIVE": "false",
+            "NON_INTERACTIVE": "true",
             "HTTPS_PROXY": "https://proxy.example.invalid:8443",
             "NO_PROXY": "127.0.0.1,localhost",
             "DRCLAW_CA_BUNDLE": str(ca_bundle),
@@ -2222,6 +2233,8 @@ class BootstrapIntegrationTests(unittest.TestCase):
         self.assertEqual(len(installer_environments), 1)
         installer_env = installer_environments[0]
         self.assertEqual(installer_env["CODEX_RELEASE"], "0.147.0")
+        self.assertEqual(installer_env["CODEX_NON_INTERACTIVE"], "1")
+        self.assertNotIn("NON_INTERACTIVE", installer_env)
         for key in ("REVIEW_FAKE_SECRET", "OPENAI_API_KEY", "GH_TOKEN", "SSH_AUTH_SOCK"):
             self.assertNotIn(key, installer_env)
         self.assertEqual(installer_env["HTTPS_PROXY"], operator_env["HTTPS_PROXY"])
