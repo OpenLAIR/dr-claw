@@ -992,6 +992,20 @@ class RemoteInstallIntegrationTests(unittest.TestCase):
                 )
 
         workflow_text = workflow.read_text(encoding="utf-8")
+        self.assertIn('id: release-output', workflow_text)
+        self.assertIn(
+            'release_parent=$(mktemp -d -- "${RUNNER_TEMP}/drclaw-release-artifacts.XXXXXXXX")',
+            workflow_text,
+        )
+        self.assertIn('chmod 700 -- "${release_parent}"', workflow_text)
+        self.assertIn(
+            '--output "${{ steps.release-output.outputs.parent }}/release-artifacts"',
+            workflow_text,
+        )
+        self.assertIn(
+            'path: ${{ steps.release-output.outputs.parent }}/release-artifacts/',
+            workflow_text,
+        )
         self.assertNotIn(
             'git -C "${app_home}/release" checkout --quiet --detach "${RELEASE_TAG}"',
             workflow_text,
@@ -1008,6 +1022,29 @@ class RemoteInstallIntegrationTests(unittest.TestCase):
             self.assertIn('bootstrap/codex/bootstrap.py"', script)
             self.assertLess(script.index('bootstrap/codex/bootstrap.py"'), script.index('install_app.py"'))
             self.assertGreaterEqual(script.count('install_app.py"'), 2)
+
+        arm_blocks = [
+            script
+            for _, script in scripts
+            if 'remote_home="${RUNNER_TEMP}/drclaw-arm64-remote-preview"' in script
+        ]
+        self.assertEqual(len(arm_blocks), 1)
+        arm_block = arm_blocks[0]
+        for variable in (
+            "DRCLAW_CA_BUNDLE",
+            "SSL_CERT_FILE",
+            "PIP_INDEX_URL",
+            "PIP_EXTRA_INDEX_URL",
+            "PIP_TRUSTED_HOST",
+            "NPM_CONFIG_REGISTRY",
+            "npm_config_registry",
+        ):
+            with self.subTest(environment_variable=variable):
+                self.assertIn(f"-u {variable}", arm_block)
+        self.assertLess(
+            arm_block.index("-u PIP_INDEX_URL"),
+            arm_block.index("bash bootstrap/codex/remote-install.sh"),
+        )
 
     def test_manifest_pinned_optional_gitlink_remains_uninitialized(self) -> None:
         tag = "drclaw-codex-gitlink-v1"

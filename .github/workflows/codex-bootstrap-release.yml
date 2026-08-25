@@ -139,6 +139,16 @@ jobs:
             --home "${app_home}" \
             --codex-home "${app_home}/.codex"
 
+      - name: Create a private release-artifact parent
+        id: release-output
+        run: |
+          set -Eeuo pipefail
+          release_parent=$(mktemp -d -- "${RUNNER_TEMP}/drclaw-release-artifacts.XXXXXXXX")
+          chmod 700 -- "${release_parent}"
+          test -d "${release_parent}"
+          test ! -L "${release_parent}"
+          printf 'parent=%s\n' "${release_parent}" >> "${GITHUB_OUTPUT}"
+
       - name: Build the validated online and offline release kit
         env:
           RELEASE_TAG: ${{ github.ref_name }}
@@ -149,13 +159,13 @@ jobs:
             --repo-root "${GITHUB_WORKSPACE}" \
             --tag "${RELEASE_TAG}" \
             --expected-commit "${release_commit}" \
-            --output "${RUNNER_TEMP}/release-artifacts"
+            --output "${{ steps.release-output.outputs.parent }}/release-artifacts"
 
       - name: Transfer validated release artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: validated-codex-bootstrap-release
-          path: ${{ runner.temp }}/release-artifacts/
+          path: ${{ steps.release-output.outputs.parent }}/release-artifacts/
           if-no-files-found: error
           retention-days: 7
 
@@ -280,7 +290,30 @@ jobs:
           remote_home="${RUNNER_TEMP}/drclaw-arm64-remote-preview"
           mkdir -m 700 "${remote_home}"
           release_commit=$(git rev-parse "${RELEASE_TAG}^{commit}")
-          bash bootstrap/codex/remote-install.sh \
+          env \
+            -u DRCLAW_CA_BUNDLE \
+            -u SSL_CERT_FILE \
+            -u SSL_CERT_DIR \
+            -u REQUESTS_CA_BUNDLE \
+            -u CURL_CA_BUNDLE \
+            -u AWS_CA_BUNDLE \
+            -u GIT_SSL_CAINFO \
+            -u PIP_CERT \
+            -u NODE_EXTRA_CA_CERTS \
+            -u npm_config_cafile \
+            -u NPM_CONFIG_CAFILE \
+            -u ALL_PROXY \
+            -u all_proxy \
+            -u PIP_INDEX_URL \
+            -u PIP_EXTRA_INDEX_URL \
+            -u PIP_TRUSTED_HOST \
+            -u NPM_CONFIG_REGISTRY \
+            -u npm_config_registry \
+            -u NPM_CONFIG_PROXY \
+            -u npm_config_proxy \
+            -u NPM_CONFIG_HTTPS_PROXY \
+            -u npm_config_https_proxy \
+            bash bootstrap/codex/remote-install.sh \
             --repo-url "${GITHUB_WORKSPACE}" \
             --ref "${release_commit}" \
             --home "${remote_home}" \
