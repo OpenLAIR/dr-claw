@@ -18,6 +18,7 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
+          fetch-tags: true
           persist-credentials: false
 
       - name: Use Python 3.9
@@ -44,6 +45,8 @@ jobs:
           RELEASE_TAG: ${{ github.ref_name }}
         run: |
           set -Eeuo pipefail
+          git fetch --force --no-tags origin "refs/tags/${RELEASE_TAG}:refs/tags/${RELEASE_TAG}"
+          test "$(git cat-file -t "refs/tags/${RELEASE_TAG}")" = tag
           test "$(git rev-parse HEAD^{commit})" = "$(git rev-parse "${RELEASE_TAG}^{commit}")"
           python3 - <<'PY'
           import json
@@ -191,6 +194,7 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
+          fetch-tags: true
           persist-credentials: false
 
       - name: Use Python ${{ matrix.python-version }}
@@ -220,6 +224,7 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
+          fetch-tags: true
           persist-credentials: false
 
       - name: Use Python 3.9
@@ -242,6 +247,8 @@ jobs:
           set -Eeuo pipefail
           test "$(uname -s)" = Linux
           test "$(uname -m)" = aarch64
+          git fetch --force --no-tags origin "refs/tags/${RELEASE_TAG}:refs/tags/${RELEASE_TAG}"
+          test "$(git cat-file -t "refs/tags/${RELEASE_TAG}")" = tag
           test "$(git rev-parse HEAD^{commit})" = "$(git rev-parse "${RELEASE_TAG}^{commit}")"
           python3 - <<'PY'
           import json
@@ -326,6 +333,8 @@ jobs:
             -u npm_config_proxy \
             -u NPM_CONFIG_HTTPS_PROXY \
             -u npm_config_https_proxy \
+            -u TMPDIR \
+            -u XDG_RUNTIME_DIR \
             bash bootstrap/codex/remote-install.sh \
             --repo-url "${GITHUB_WORKSPACE}" \
             --ref "${release_commit}" \

@@ -992,6 +992,19 @@ class RemoteInstallIntegrationTests(unittest.TestCase):
                 )
 
         workflow_text = workflow.read_text(encoding="utf-8")
+        self.assertEqual(workflow_text.count("fetch-tags: true"), 3)
+        self.assertEqual(
+            workflow_text.count(
+                'git fetch --force --no-tags origin "refs/tags/${RELEASE_TAG}:refs/tags/${RELEASE_TAG}"'
+            ),
+            2,
+        )
+        self.assertEqual(
+            workflow_text.count(
+                'test "$(git cat-file -t "refs/tags/${RELEASE_TAG}")" = tag'
+            ),
+            2,
+        )
         self.assertIn('id: release-output', workflow_text)
         self.assertIn(
             'release_parent=$(mktemp -d -- "/tmp/drclaw-release-artifacts.XXXXXXXX")',
@@ -1048,9 +1061,12 @@ class RemoteInstallIntegrationTests(unittest.TestCase):
             "PIP_TRUSTED_HOST",
             "NPM_CONFIG_REGISTRY",
             "npm_config_registry",
+            "TMPDIR",
+            "XDG_RUNTIME_DIR",
         ):
             with self.subTest(environment_variable=variable):
                 self.assertIn(f"-u {variable}", arm_block)
+        self.assertNotIn("${RUNNER_TEMP}", arm_block)
         self.assertLess(
             arm_block.index("-u PIP_INDEX_URL"),
             arm_block.index("bash bootstrap/codex/remote-install.sh"),
