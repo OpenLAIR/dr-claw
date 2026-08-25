@@ -143,7 +143,7 @@ jobs:
         id: release-output
         run: |
           set -Eeuo pipefail
-          release_parent=$(mktemp -d -- "${RUNNER_TEMP}/drclaw-release-artifacts.XXXXXXXX")
+          release_parent=$(mktemp -d -- "/tmp/drclaw-release-artifacts.XXXXXXXX")
           chmod 700 -- "${release_parent}"
           test -d "${release_parent}"
           test ! -L "${release_parent}"
@@ -155,11 +155,21 @@ jobs:
         run: |
           set -Eeuo pipefail
           release_commit=$(git rev-parse "${RELEASE_TAG}^{commit}")
-          python3 bootstrap/codex/build_release_kit.py \
+          build_log="${{ steps.release-output.outputs.parent }}/build-release-kit.log"
+          if python3 bootstrap/codex/build_release_kit.py \
             --repo-root "${GITHUB_WORKSPACE}" \
             --tag "${RELEASE_TAG}" \
             --expected-commit "${release_commit}" \
-            --output "${{ steps.release-output.outputs.parent }}/release-artifacts"
+            --output "${{ steps.release-output.outputs.parent }}/release-artifacts" \
+            >"${build_log}" 2>&1; then
+            cat "${build_log}"
+          else
+            build_status=$?
+            build_diagnostic=$(tail -n 1 "${build_log}" | tr '\r\n' ' ')
+            printf '::error title=Release kit builder failed::stage=builder; exit=%s; diagnostic=%s\n' \
+              "${build_status}" "${build_diagnostic}" >&2
+            exit "${build_status}"
+          fi
 
       - name: Transfer validated release artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -287,9 +297,12 @@ jobs:
           RELEASE_TAG: ${{ github.ref_name }}
         run: |
           set -Eeuo pipefail
-          remote_home="${RUNNER_TEMP}/drclaw-arm64-remote-preview"
-          mkdir -m 700 "${remote_home}"
+          arm_stage=prepare-remote-preview
+          trap 'arm_status=$?; echo "::error title=ARM64 Web smoke failed::stage=$arm_stage; exit=$arm_status" >&2; exit "$arm_status"' ERR
+          remote_home=$(mktemp -d -- "/tmp/drclaw-arm64-remote-preview.XXXXXXXX")
+          chmod 700 -- "${remote_home}"
           release_commit=$(git rev-parse "${RELEASE_TAG}^{commit}")
+          arm_stage=remote-install-dry-run
           env \
             -u DRCLAW_CA_BUNDLE \
             -u SSL_CERT_FILE \
@@ -323,10 +336,13 @@ jobs:
             --app-service none \
             --skip-codex-install \
             --dry-run
-          app_home="${RUNNER_TEMP}/drclaw-arm64-app-home"
-          mkdir -m 700 "${app_home}"
+          arm_stage=prepare-app-home
+          app_home=$(mktemp -d -- "/tmp/drclaw-arm64-app-home.XXXXXXXX")
+          chmod 700 -- "${app_home}"
+          arm_stage=clone-release
           git clone --quiet --no-hardlinks "${GITHUB_WORKSPACE}" "${app_home}/release"
           git -C "${app_home}/release" checkout --quiet --detach "${release_commit}"
+          arm_stage=bootstrap-core
           python3 "${app_home}/release/bootstrap/codex/bootstrap.py" \
             install \
             --home "${app_home}" \
@@ -334,12 +350,14 @@ jobs:
             --skip-delta-skill \
             --config-profile safe \
             --no-doctor
+          arm_stage=install-app
           python3 "${app_home}/release/bootstrap/codex/install_app.py" \
             --repo-root "${app_home}/release" \
             install \
             --home "${app_home}" \
             --codex-home "${app_home}/.codex" \
             --service none
+          arm_stage=doctor-app
           python3 "${app_home}/release/bootstrap/codex/install_app.py" \
             --repo-root "${app_home}/release" \
             doctor \

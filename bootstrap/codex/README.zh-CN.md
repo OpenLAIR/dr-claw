@@ -69,7 +69,7 @@
 
 必须以最终实际运行 Codex 的非 root Unix 用户执行本方案；管理员应先 `sudo -iu <USER>`，再 clone 和安装。`--home` 只用于同一用户的隔离测试，不是跨用户 provision 开关；安装器会拒绝 root、owner 不匹配、受保护系统目录后代和隐式符号链接写穿。`$CODEX_HOME` 必须是 `$HOME` 内的专用目录；新建权限为 `0700`，已有目录及其自 HOME 起的现存祖先不得由其他主体替换或写入。唯一例外是上一表所述、经过 POSIX ACL 完整验证的 root-owned Delta HOME；例外不会向 HOME 以下受管目录传播。
 
-生产部署必须由维护者批准一个 immutable Git tag 或完整 commit SHA。当前 manifest 固定到 `codex-bootstrap-v0.2.6`；`audited_base_commit` 只是编写本方案时检查的起始树，不是可部署 revision。实际安装还必须把该 annotated tag 与 release provenance 中的完整 commit SHA 绑定；不要部署 moving branch，也不要移动既有 tag。
+生产部署必须由维护者批准一个 immutable Git tag 或完整 commit SHA。当前 manifest 固定到 `codex-bootstrap-v0.2.7`；`audited_base_commit` 只是编写本方案时检查的起始树，不是可部署 revision。实际安装还必须把该 annotated tag 与 release provenance 中的完整 commit SHA 绑定；不要部署 moving branch，也不要移动既有 tag。
 
 ## 四、NCSA Delta：先建立交互连接
 
@@ -150,7 +150,7 @@ bash bootstrap/codex/remote-install.sh --help
 在 release tag 所在的 clean checkout 上生成一个新的、不可覆盖的目录：
 
 ```bash
-release_tag=codex-bootstrap-v0.2.6
+release_tag=codex-bootstrap-v0.2.7
 release_commit=$(git rev-parse "${release_tag}^{commit}")
 kit_parent="$PWD/../drclaw-release-output-private"
 (umask 077; mkdir "$kit_parent")
@@ -172,7 +172,7 @@ builder 只接受与 manifest、HEAD 和完整 SHA 一致的 annotated tag；拒
 完整搬运该目录到新服务器后，只需一条离线命令，不必先从 bundle 手动提取脚本：
 
 ```bash
-bash /path/to/drclaw-codex-bootstrap-v0.2.6-offline/install.sh --full
+bash /path/to/drclaw-codex-bootstrap-v0.2.7-offline/install.sh --full
 ```
 
 wrapper 会先拒绝目录中的任何额外 entry、symlink、缺失文件、owner/mode 异常或 checksum inventory 漂移，并验证每个 payload，再把同目录 bundle 交给现有远程安装器；tag object 与 peeled commit 两个身份也同时固定。Git bundle 为了保留发布身份与 commit 原始 SHA 必须携带其可达 Git 历史，因此 builder 会扫描**全部可达历史路径，以及所有可达 blob、commit 和 tag payload**，而不只检查当前 tree；允许的 community gitlink 只记录路径与 object ID，bundle/archive 都不携带其仓库内容。内部 checksum 可证明搬运完整性；抵抗“payload 与 checksum 同时被替换”仍需通过独立可信渠道保存并核对 provenance sidecar 的 SHA256。

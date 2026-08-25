@@ -994,10 +994,15 @@ class RemoteInstallIntegrationTests(unittest.TestCase):
         workflow_text = workflow.read_text(encoding="utf-8")
         self.assertIn('id: release-output', workflow_text)
         self.assertIn(
-            'release_parent=$(mktemp -d -- "${RUNNER_TEMP}/drclaw-release-artifacts.XXXXXXXX")',
+            'release_parent=$(mktemp -d -- "/tmp/drclaw-release-artifacts.XXXXXXXX")',
             workflow_text,
         )
         self.assertIn('chmod 700 -- "${release_parent}"', workflow_text)
+        self.assertIn('build_log="${{ steps.release-output.outputs.parent }}/build-release-kit.log"', workflow_text)
+        self.assertIn(
+            '::error title=Release kit builder failed::stage=builder;',
+            workflow_text,
+        )
         self.assertIn(
             '--output "${{ steps.release-output.outputs.parent }}/release-artifacts"',
             workflow_text,
@@ -1016,7 +1021,7 @@ class RemoteInstallIntegrationTests(unittest.TestCase):
             ),
             2,
         )
-        web_blocks = [script for _, script in scripts if 'app_home="${RUNNER_TEMP}/drclaw-' in script]
+        web_blocks = [script for _, script in scripts if 'app_home=' in script]
         self.assertEqual(len(web_blocks), 2)
         for script in web_blocks:
             self.assertIn('bootstrap/codex/bootstrap.py"', script)
@@ -1026,10 +1031,15 @@ class RemoteInstallIntegrationTests(unittest.TestCase):
         arm_blocks = [
             script
             for _, script in scripts
-            if 'remote_home="${RUNNER_TEMP}/drclaw-arm64-remote-preview"' in script
+            if 'remote_home=' in script and 'remote-install.sh' in script
         ]
         self.assertEqual(len(arm_blocks), 1)
         arm_block = arm_blocks[0]
+        self.assertIn(
+            'remote_home=$(mktemp -d -- "/tmp/drclaw-arm64-remote-preview.XXXXXXXX")',
+            arm_block,
+        )
+        self.assertIn('ARM64 Web smoke failed', arm_block)
         for variable in (
             "DRCLAW_CA_BUNDLE",
             "SSL_CERT_FILE",
