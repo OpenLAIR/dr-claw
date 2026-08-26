@@ -965,6 +965,25 @@ class RemoteInstallIntegrationTests(unittest.TestCase):
             self.assertIn("SHA256SUMS", guide)
             self.assertIn("codex login --device-auth", guide)
 
+    def test_main_ci_tracks_supported_node_runtime_lines(self) -> None:
+        package = json.loads((REPO_ROOT / "package.json").read_text(encoding="utf-8"))
+        app_manifest = json.loads(
+            (REPO_ROOT / "bootstrap" / "codex" / "app-manifest.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(package["engines"]["node"], "22.x || 24.x")
+        self.assertEqual(
+            app_manifest["node"]["supported_package_engine"],
+            package["engines"]["node"],
+        )
+        self.assertEqual((REPO_ROOT / ".nvmrc").read_text(encoding="utf-8").strip(), "v22")
+        ci = (REPO_ROOT / ".github" / "workflows" / "ci.yml").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("node-version: ['22', '24']", ci)
+        self.assertNotIn("node-version: ['20']", ci)
+
     def test_release_workflow_run_blocks_have_valid_shell_and_heredocs(self) -> None:
         workflow = REPO_ROOT / ".github" / "workflows" / "codex-bootstrap-release.yml"
         lines = workflow.read_text(encoding="utf-8").splitlines()
