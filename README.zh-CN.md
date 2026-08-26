@@ -44,6 +44,7 @@
 - [Overview](#overview)
 - [最新动态](#最新动态)
 - [亮点](#亮点)
+- [Codex 服务器一键部署](#codex-服务器一键部署)
 - [快速开始](#快速开始)
 - [配置说明](#配置说明)
 - [接入 OpenClaw](#接入-openclaw)
@@ -181,6 +182,14 @@ Dr. Claw 是一个面向不同研究方向的通用 AI 研究助手，帮助研�
 
 </details>
 
+
+## Codex 服务器一键部署
+
+若要在新的 Linux `x86_64` 或 `aarch64` 服务器上完整复现 Dr. Claw Codex 环境，请使用不可变的 [`codex-bootstrap-v0.2.9` Release](https://github.com/OpenLAIR/dr-claw/releases/tag/codex-bootstrap-v0.2.9)。Release 页面会直接给出同时固定完整 commit 与 annotated tag object 的一键命令，并提供离线 bundle 与 `SHA256SUMS`。
+
+`--full` 会安装 safe Codex profile、全局 `AGENTS.md`、按需路由完整 172 个 skill 的 router、Dr. Claw 控制 CLI 与 Web 应用，并执行严格的无凭据 doctor。Codex 登录态、connector OAuth、API key、SSH/Duo、缓存和已有项目永远不会被迁移。
+
+完整前置条件、在线/离线安装、Delta 行为、服务启动、升级与回滚见 [Codex 部署操作手册](bootstrap/codex/README.zh-CN.md)；英文版见 [One-command Codex server deployment](docs/codex-bootstrap.md)。
 
 ## 快速开始
 

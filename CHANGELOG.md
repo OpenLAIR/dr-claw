@@ -1,5 +1,19 @@
 # Changelog
 
+## Codex bootstrap v0.2.9 - 2026-08-25
+
+Release tag: `codex-bootstrap-v0.2.9`
+
+### Highlights
+- Added a checksum-covered bilingual `README.md` to every offline release kit and GitHub Release.
+- Replaced generic auto-generated GitHub notes with release-specific, fully pinned online installation, offline verification, activation, and security instructions.
+- Added visible English and Chinese root README entry points plus a complete English Codex server deployment guide.
+- Strengthened the documented online identity contract by pinning the annotated tag object as well as the raw-script commit and peeled commit.
+
+### Validation
+- The release workflow requires x64, native ARM64, Python 3.9–3.13, Codex contract, Web, release-kit, checksum, live tag, and publish gates before creating the Release.
+- The offline wrapper rejects any missing, extra, symlinked, untrusted-mode, or checksum-mismatched asset, including its release README.
+
 ## Dr. Claw v1.1.1 - 2026-03-30
 
 ### Highlights

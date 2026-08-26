@@ -406,6 +406,7 @@ jobs:
               raise SystemExit("invalid release tag")
           provenance_name = f"drclaw-{tag}.provenance.json"
           expected = {
+              "README.md",
               "SHA256SUMS",
               "install.sh",
               "remote-install.sh",
@@ -486,5 +487,5 @@ jobs:
             --repo "${GITHUB_REPOSITORY}" \
             --verify-tag \
             --title "Dr. Claw Codex bootstrap ${RELEASE_TAG}" \
-            --generate-notes \
+            --notes-file release-artifacts/README.md \
             release-artifacts/*

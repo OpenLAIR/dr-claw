@@ -261,6 +261,7 @@ class ReleaseKitTests(unittest.TestCase):
         self.assert_success(self.run_builder(repo, second, expected_commit=commit))
 
         expected_names = {
+            "README.md",
             "SHA256SUMS",
             "install.sh",
             "remote-install.sh",
@@ -295,6 +296,29 @@ class ReleaseKitTests(unittest.TestCase):
         self.assertEqual(provenance["commit"], commit)
         self.assertEqual(provenance["tag_object"], tag_object)
         self.assertEqual(provenance["entrypoint"]["command"], "bash ./install.sh --full")
+        release_readme = (first / "README.md").read_text(encoding="utf-8")
+        self.assertIn(commit, release_readme)
+        self.assertIn(tag_object, release_readme)
+        self.assertIn(f'--ref "{self.tag}"', release_readme)
+        self.assertIn("--expected-tag-object", release_readme)
+        self.assertIn("codex login --device-auth", release_readme)
+        online_command = next(
+            line for line in release_readme.splitlines() if line.startswith("bash -c ")
+        )
+        online_command_lint = subprocess.run(
+            ["bash", "-n"],
+            input=online_command + "\n",
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        self.assertEqual(
+            online_command_lint.returncode,
+            0,
+            msg=online_command_lint.stderr,
+        )
+        self.assertEqual(provenance["artifacts"]["release_readme"]["file"], "README.md")
         self.assertEqual(
             provenance["source_audit"]["gitlinks"],
             [

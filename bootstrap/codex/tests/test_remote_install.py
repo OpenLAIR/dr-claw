@@ -924,6 +924,47 @@ class RemoteInstallIntegrationTests(unittest.TestCase):
         self.assertTrue(checkout_b.is_dir())
         self.assert_unrelated_state_unchanged()
 
+    def test_release_documentation_tracks_manifest_and_pinning_contract(self) -> None:
+        manifest = json.loads(
+            (REPO_ROOT / "bootstrap" / "codex" / "manifest.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        bundle_version = manifest["bundle_version"]
+        release_ref = manifest["baseline"]["bundle_release_ref"]
+        self.assertEqual(release_ref, f"codex-bootstrap-v{bundle_version}")
+        self.assertIn(
+            "docs/codex-bootstrap.md",
+            manifest["required_repository_paths"],
+        )
+
+        documents = {
+            "README.md": REPO_ROOT / "README.md",
+            "README.zh-CN.md": REPO_ROOT / "README.zh-CN.md",
+            "docs/codex-bootstrap.md": REPO_ROOT / "docs" / "codex-bootstrap.md",
+            "bootstrap/codex/README.zh-CN.md": (
+                REPO_ROOT / "bootstrap" / "codex" / "README.zh-CN.md"
+            ),
+            "CHANGELOG.md": REPO_ROOT / "CHANGELOG.md",
+        }
+        for label, path in documents.items():
+            with self.subTest(document=label):
+                self.assertTrue(path.is_file())
+                self.assertIn(release_ref, path.read_text(encoding="utf-8"))
+
+        english_guide = documents["docs/codex-bootstrap.md"].read_text(
+            encoding="utf-8"
+        )
+        chinese_guide = documents["bootstrap/codex/README.zh-CN.md"].read_text(
+            encoding="utf-8"
+        )
+        for guide in (english_guide, chinese_guide):
+            self.assertIn("--expected-commit", guide)
+            self.assertIn("--expected-tag-object", guide)
+            self.assertIn("--full", guide)
+            self.assertIn("SHA256SUMS", guide)
+            self.assertIn("codex login --device-auth", guide)
+
     def test_release_workflow_run_blocks_have_valid_shell_and_heredocs(self) -> None:
         workflow = REPO_ROOT / ".github" / "workflows" / "codex-bootstrap-release.yml"
         lines = workflow.read_text(encoding="utf-8").splitlines()
@@ -1006,6 +1047,9 @@ class RemoteInstallIntegrationTests(unittest.TestCase):
             2,
         )
         self.assertIn('id: release-output', workflow_text)
+        self.assertIn('"README.md",', workflow_text)
+        self.assertIn('--notes-file release-artifacts/README.md', workflow_text)
+        self.assertNotIn('--generate-notes', workflow_text)
         self.assertIn(
             'release_parent=$(mktemp -d -- "/tmp/drclaw-release-artifacts.XXXXXXXX")',
             workflow_text,

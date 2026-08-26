@@ -30,7 +30,7 @@ from urllib.parse import urlsplit
 
 
 SCHEMA_VERSION = 1
-BUILDER_VERSION = "1"
+BUILDER_VERSION = "2"
 MANIFEST_PATH = "bootstrap/codex/manifest.json"
 REMOTE_INSTALL_PATH = "bootstrap/codex/remote-install.sh"
 BUILDER_PATH = "bootstrap/codex/build_release_kit.py"
@@ -683,6 +683,82 @@ def write_checksum_sidecar(path: Path, digest: str, artifact_name: str) -> None:
     write_bytes(path, f"{digest}  {artifact_name}\n".encode("ascii"))
 
 
+def build_release_readme(*, tag: str, tag_object: str, commit: str) -> bytes:
+    """Return the deterministic, checksum-covered release and offline-kit guide."""
+
+    return f"""# Dr. Claw Codex bootstrap `{tag}`
+
+This is a pinned, reproducible Dr. Claw deployment for the official Codex CLI on Linux x86_64 and aarch64. It installs the portable Codex configuration, global `AGENTS.md`, the `drclaw-skill-library` router, and—when `--full` is used—the Dr. Claw control CLI and Web application.
+
+这是面向 Linux x86_64/aarch64 官方 Codex CLI 的固定、可复现 Dr. Claw 部署。它会安装可移植 Codex 配置、全局 `AGENTS.md`、`drclaw-skill-library` 路由；使用 `--full` 时还会安装 Dr. Claw 控制 CLI 和 Web 应用。
+
+## One-command online install / 在线一键安装
+
+Run this as the final non-root Unix user who will run Codex. The script URL, annotated tag object, and peeled commit are all pinned:
+
+请以最终运行 Codex 的非 root Unix 用户执行。脚本 URL、annotated tag object 和 peeled commit 均已固定：
+
+```bash
+bash -c 'set -Eeuo pipefail; curl -fsSL "https://raw.githubusercontent.com/OpenLAIR/dr-claw/{commit}/bootstrap/codex/remote-install.sh" | bash -s -- --ref "{tag}" --expected-commit "{commit}" --expected-tag-object "{tag_object}" --full'
+```
+
+- If a compatible official Codex CLI is already installed, it is preserved and contract-tested. If Codex is missing or too old, the audited version is installed. Append `--codex-release latest` only when you explicitly want the newest official CLI on a fresh host.
+- `--full` installs the control CLI and Web application. The Web service is not started unless you append `--app-service auto --start-app`.
+- On a verified NCSA Delta host, the Delta skill is selected automatically. Do not run production computation on a login node.
+- A zero-write preview is available by appending `--dry-run`.
+
+- 已安装且兼容的官方 Codex CLI 会被保留并接受合同测试；Codex 缺失或过旧时安装已审计版本。只有明确要求全新主机安装官方最新版本时才追加 `--codex-release latest`。
+- `--full` 会安装控制 CLI 和 Web 应用；只有追加 `--app-service auto --start-app` 才会立即启动 Web 服务。
+- 在已验证的 NCSA Delta 主机上会自动选择 Delta skill；生产计算不得运行在登录节点。
+- 追加 `--dry-run` 可进行零写入预览。
+
+## Offline source transport / 离线源码传输
+
+Keep every file from this Release in one private directory, then run:
+
+将本 Release 的全部文件放在同一个私有目录后执行：
+
+```bash
+sha256sum --strict --check SHA256SUMS
+bash ./install.sh --full
+```
+
+The offline kit avoids fetching Dr. Claw source from GitHub. A full install still needs the approved Codex, PyPI, Node, and npm endpoints unless separately reviewed mirrors are provided.
+
+离线包不再依赖 GitHub 获取 Dr. Claw 源码；但完整安装仍需要获准的 Codex、PyPI、Node 和 npm endpoint，除非另行提供经过审查的镜像。
+
+## Activation and security boundary / 激活与安全边界
+
+After installation, complete authentication on the target host. For a headless server, the usual command is:
+
+安装后必须在目标主机自行完成认证；无头服务器通常执行：
+
+```bash
+codex login --device-auth
+codex login status
+```
+
+The release never copies Codex auth/session databases, connector OAuth, API keys, SSH keys or Duo state, caches, `.env` files, existing research projects, or another machine's trusted paths. The first Dr. Claw browser account, connector authorization, and a post-login read-only model smoke remain target-user actions.
+
+本 Release 永不复制 Codex auth/session 数据库、connector OAuth、API key、SSH key/Duo 状态、缓存、`.env`、已有研究项目或另一台机器的可信路径。首次 Dr. Claw 浏览器账户、connector 授权以及登录后的只读模型 smoke 仍由目标用户完成。
+
+## Immutable identity / 不可变身份
+
+- Tag: `{tag}`
+- Annotated tag object: `{tag_object}`
+- Peeled commit: `{commit}`
+- Integrity index: `SHA256SUMS`
+- Machine-readable provenance: `drclaw-{tag}.provenance.json`
+
+## Documentation / 文档
+
+- English: https://github.com/OpenLAIR/dr-claw/blob/{commit}/docs/codex-bootstrap.md
+- 中文: https://github.com/OpenLAIR/dr-claw/blob/{commit}/bootstrap/codex/README.zh-CN.md
+- Official Codex CLI: https://learn.chatgpt.com/docs/codex/cli
+- Official Codex authentication: https://learn.chatgpt.com/docs/auth
+""".encode("utf-8")
+
+
 def build_wrapper(
     *,
     tag: str,
@@ -1116,6 +1192,13 @@ def build_release_kit(
         write_checksum_sidecar(staging / bundle_sidecar_name, bundle_digest, bundle_name)
         write_checksum_sidecar(staging / archive_sidecar_name, archive_digest, archive_name)
 
+        readme_name = "README.md"
+        readme_path = staging / readme_name
+        write_bytes(
+            readme_path,
+            build_release_readme(tag=tag, tag_object=tag_object, commit=commit),
+        )
+
         install_name = "install.sh"
         checksum_index_name = "SHA256SUMS"
         # The wrapper validates this exact inventory before invoking the tagged
@@ -1123,6 +1206,7 @@ def build_release_kit(
         # itself is written, so all names are known up front.
         expected_wrapper_files = [
             install_name,
+            readme_name,
             remote_install_name,
             bundle_name,
             archive_name,
@@ -1147,6 +1231,7 @@ def build_release_kit(
             "source_archive": archive_path,
             "remote_installer": remote_install_path,
             "offline_installer": install_path,
+            "release_readme": readme_path,
             "git_bundle_checksum": staging / bundle_sidecar_name,
             "source_archive_checksum": staging / archive_sidecar_name,
         }
@@ -1221,6 +1306,7 @@ def build_release_kit(
         indexed_names = sorted(
             [
                 install_name,
+                readme_name,
                 remote_install_name,
                 bundle_name,
                 archive_name,

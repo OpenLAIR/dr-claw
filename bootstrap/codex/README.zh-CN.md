@@ -69,7 +69,7 @@
 
 必须以最终实际运行 Codex 的非 root Unix 用户执行本方案；管理员应先 `sudo -iu <USER>`，再 clone 和安装。`--home` 只用于同一用户的隔离测试，不是跨用户 provision 开关；安装器会拒绝 root、owner 不匹配、受保护系统目录后代和隐式符号链接写穿。`$CODEX_HOME` 必须是 `$HOME` 内的专用目录；新建权限为 `0700`，已有目录及其自 HOME 起的现存祖先不得由其他主体替换或写入。唯一例外是上一表所述、经过 POSIX ACL 完整验证的 root-owned Delta HOME；例外不会向 HOME 以下受管目录传播。
 
-生产部署必须由维护者批准一个 immutable Git tag 或完整 commit SHA。当前 manifest 固定到 `codex-bootstrap-v0.2.8`；`audited_base_commit` 只是编写本方案时检查的起始树，不是可部署 revision。实际安装还必须把该 annotated tag 与 release provenance 中的完整 commit SHA 绑定；不要部署 moving branch，也不要移动既有 tag。
+生产部署必须由维护者批准一个 immutable annotated Git tag。当前 manifest 固定到 `codex-bootstrap-v0.2.9`；`audited_base_commit` 只是编写本方案时检查的起始树，不是可部署 revision。实际安装必须同时固定 release provenance 中的 tag object SHA 与 peeled commit SHA；不要部署 moving branch，也不要移动既有 tag。
 
 ## 四、NCSA Delta：先建立交互连接
 
@@ -119,13 +119,13 @@ scontrol show config | grep -Ei 'ClusterName|SlurmctldHost|SlurmVersion'
 
 ### 0. 推荐：GitHub 固定 release 的一命令入口
 
-发布者先把 `manifest.json` 的 `bundle_release_ref` 设置为 release tag，并记录该 tag 对应的完整 commit SHA。`codex-bootstrap-release.yml` 会在只读 job 完成 Python、Node、真实 Codex 和隔离 Web 验收，再调用同一 release-kit builder 生成 tar、Git bundle、离线入口、checksums 和 provenance；单独的写权限 job 只发布这些已验证文件。仓库还应给 `codex-bootstrap-v*` 配置 protected tag rule，并把 `codex-bootstrap-release` environment 设为需维护者批准。目标服务器以最终运行 Codex 的**非 root 用户**执行下面一条命令；raw 脚本 URL 固定到 commit，tag 再由 `--expected-commit` 绑定到同一个 commit，所以 tag 被移动时安装会失败：
+发布者先把 `manifest.json` 的 `bundle_release_ref` 设置为 release tag，并记录该 tag 对应的 tag object 与完整 commit SHA。`codex-bootstrap-release.yml` 会在只读 job 完成 Python、Node、真实 Codex 和隔离 Web 验收，再调用同一 release-kit builder 生成 tar、Git bundle、带双语 README 的离线入口、checksums 和 provenance；单独的写权限 job 只发布这些已验证文件，并直接使用受 checksum 保护的 README 作为 GitHub Release 正文。仓库还应给 `codex-bootstrap-v*` 配置 protected tag rule，并把 `codex-bootstrap-release` environment 设为需维护者批准。目标服务器以最终运行 Codex 的**非 root 用户**执行下面一条命令；raw 脚本 URL 固定到 commit，tag object 与 peeled commit 再分别由 `--expected-tag-object` 和 `--expected-commit` 固定，任一发布身份漂移都会失败：
 
 ```bash
-bash -c 'set -Eeuo pipefail; curl -fsSL "https://raw.githubusercontent.com/OpenLAIR/dr-claw/<FULL_COMMIT_SHA>/bootstrap/codex/remote-install.sh" | bash -s -- --ref "<RELEASE_TAG>" --expected-commit "<FULL_COMMIT_SHA>" --full'
+bash -c 'set -Eeuo pipefail; curl -fsSL "https://raw.githubusercontent.com/OpenLAIR/dr-claw/<FULL_COMMIT_SHA>/bootstrap/codex/remote-install.sh" | bash -s -- --ref "<RELEASE_TAG>" --expected-commit "<FULL_COMMIT_SHA>" --expected-tag-object "<ANNOTATED_TAG_OBJECT_SHA>" --full'
 ```
 
-先做零写入预览时，在末尾加 `--dry-run`。若维护者只发布完整 SHA，也可把 raw URL 和 `--ref` 都设为该 SHA，不传 `--expected-commit`。不要在 URL 中嵌入 Git token；私有 fork 使用目标机 credential helper 或 SSH agent，并显式传不含凭据的 `--repo-url`。
+先做零写入预览时，在末尾加 `--dry-run`。若维护者只发布完整 SHA，也可把 raw URL 和 `--ref` 都设为该 SHA，不传 `--expected-commit` 或 `--expected-tag-object`。不要在 URL 中嵌入 Git token；私有 fork 使用目标机 credential helper 或 SSH agent，并显式传不含凭据的 `--repo-url`。
 
 远程入口会：
 
@@ -150,7 +150,7 @@ bash bootstrap/codex/remote-install.sh --help
 在 release tag 所在的 clean checkout 上生成一个新的、不可覆盖的目录：
 
 ```bash
-release_tag=codex-bootstrap-v0.2.8
+release_tag=codex-bootstrap-v0.2.9
 release_commit=$(git rev-parse "${release_tag}^{commit}")
 kit_parent="$PWD/../drclaw-release-output-private"
 (umask 077; mkdir "$kit_parent")
@@ -172,7 +172,7 @@ builder 只接受与 manifest、HEAD 和完整 SHA 一致的 annotated tag；拒
 完整搬运该目录到新服务器后，只需一条离线命令，不必先从 bundle 手动提取脚本：
 
 ```bash
-bash /path/to/drclaw-codex-bootstrap-v0.2.8-offline/install.sh --full
+bash /path/to/drclaw-codex-bootstrap-v0.2.9-offline/install.sh --full
 ```
 
 wrapper 会先拒绝目录中的任何额外 entry、symlink、缺失文件、owner/mode 异常或 checksum inventory 漂移，并验证每个 payload，再把同目录 bundle 交给现有远程安装器；tag object 与 peeled commit 两个身份也同时固定。Git bundle 为了保留发布身份与 commit 原始 SHA 必须携带其可达 Git 历史，因此 builder 会扫描**全部可达历史路径，以及所有可达 blob、commit 和 tag payload**，而不只检查当前 tree；允许的 community gitlink 只记录路径与 object ID，bundle/archive 都不携带其仓库内容。内部 checksum 可证明搬运完整性；抵抗“payload 与 checksum 同时被替换”仍需通过独立可信渠道保存并核对 provenance sidecar 的 SHA256。
