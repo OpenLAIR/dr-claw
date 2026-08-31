@@ -79,6 +79,20 @@
     "steps": "执行步骤",
     "streaming": "传输中..."
   },
+  "revertAgent": {
+    "button": "回滚更改",
+    "tooltip": "丢弃代理对 {{count}} 个文件的修改",
+    "confirmLabel_one": "将 1 个文件恢复到最近一次提交的状态？对该文件的手动修改也会丢失。",
+    "confirmLabel_other": "将 {{count}} 个文件恢复到最近一次提交的状态？对这些文件的手动修改也会丢失。",
+    "confirm": "回滚",
+    "cancel": "取消",
+    "inProgress": "正在回滚...",
+    "done_one": "已回滚 1 个文件",
+    "done_other": "已回滚 {{count}} 个文件",
+    "skipped_one": "1 个无变动",
+    "skipped_other": "{{count}} 个无变动",
+    "error": "回滚失败"
+  },
   "skill": {
     "contentLoaded": "技能内容已加载"
   },
