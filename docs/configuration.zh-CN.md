@@ -2,7 +2,7 @@
 
 # 配置参考
 
-Dr. Claw 通过项目根目录下的 `.env` 文件中的环境变量进行配置。本指南记录常用部署变量；各 provider 专用与实验性变量还可能定义在相应 server 模块中，生产部署前必须另行盘点。
+Dr. Claw 通过项目根目录下的 `.env` 文件中的环境变量进行配置。本指南记录了应用读取的所有变量。
 
 ## `.env` 加载机制
 
@@ -10,7 +10,7 @@ Dr. Claw 通过项目根目录下的 `.env` 文件中的环境变量进行配置
 2. **前端** — Vite 自动加载 `.env`。只有以 `VITE_` 为前缀的变量会暴露给浏览器端代码。
 3. **优先级** — 系统环境变量 > `.env` 文件值。
 
-> **快速开始：** `cp .env.example .env` 会得到仅绑定本机回环地址的开发默认值。网络部署前必须审核所有安全敏感值。
+> **快速开始：** `cp .env.example .env` 即可获得合理的默认值。请参阅[快速入门指南](./quickstart.zh-CN.md)了解分步操作。
 
 ---
 
@@ -22,7 +22,6 @@ Dr. Claw 通过项目根目录下的 `.env` 文件中的环境变量进行配置
 |------|---------|--------|------|
 | `PORT` | 否 | `3001` | Express API + WebSocket 服务器端口。 |
 | `VITE_PORT` | 否 | `5173` | Vite 开发服务器端口（仅开发模式）。 |
-| `HOST` | 否 | `127.0.0.1` | 绑定地址。使用非回环地址时必须显式设置 `JWT_SECRET`，并通过已审核的反向代理提供 TLS。 |
 | `CLAUDE_CLI_PATH` | 否 | `claude` | Claude Code 二进制文件的绝对或相对路径。如果 `claude` 不在你的 `PATH` 中，可在此处覆盖。 |
 | `CURSOR_CLI_PATH` | 否 | 自动探测（先 `cursor-agent` 后 `agent`） | 覆盖 Cursor CLI 命令/二进制名。适用于你的环境只提供某一个别名的情况。 |
 | `GEMINI_CLI_PATH` | 否 | `gemini` | 覆盖 Gemini CLI 命令/二进制名。适用于通过自定义别名或路径安装 Gemini 的环境。 |
@@ -40,7 +39,7 @@ Dr. Claw 通过项目根目录下的 `.env` 文件中的环境变量进行配置
 
 | 变量 | 是否必需 | 默认值 | 说明 |
 |------|---------|--------|------|
-| `JWT_SECRET` | **是**（生产/公开绑定） | 仅回环开发模式有默认值 | 用于签名和验证 JWT 令牌。生产模式或 `HOST` 非回环时未设置将拒绝启动。生成方法：`node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
+| `JWT_SECRET` | **是**（生产环境） | `claude-ui-dev-secret-change-in-production` | 用于签名和验证 JWT 令牌的密钥。在将 Dr. Claw 暴露到 localhost 以外之前**必须**更改。生成方法：`node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
 | `API_KEY` | 否 | *（无 — 跳过验证）* | 设置后，每个 HTTP 请求必须包含值为此密钥的 `X-Api-Key` 请求头。适用于托管部署中限制访问。 |
 
 ### 上下文窗口
@@ -69,7 +68,7 @@ Dr. Claw 通过项目根目录下的 `.env` 文件中的环境变量进行配置
 
 | 变量 | 是否必需 | 默认值 | 说明 |
 |------|---------|--------|------|
-| `TOOL_APPROVAL_TIMEOUT_MS` | 否 | `55000` | Claude 工具审批提示的超时时间（毫秒），超时后自动拒绝。 |
+| `CLAUDE_TOOL_APPROVAL_TIMEOUT_MS` | 否 | `55000` | Claude 工具审批提示的超时时间（毫秒），超时后自动拒绝。 |
 
 ---
 

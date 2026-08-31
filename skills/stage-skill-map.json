@@ -77,7 +77,7 @@
       "dataset-discovery",
       "inno-experiment-dev",
       "inno-experiment-analysis",
-      "init-analysis",
+      "bioinformatics-init-analysis",
       "aris-experiment-bridge",
       "aris-run-experiment",
       "autoresearch",
@@ -87,7 +87,7 @@
     "byTaskType": {
       "implementation": [
         "inno-experiment-dev",
-        "init-analysis",
+        "bioinformatics-init-analysis",
         "aris-experiment-bridge",
         "aris-experiment-plan",
         "autoresearch",
@@ -96,7 +96,7 @@
       ],
       "analysis": [
         "inno-experiment-analysis",
-        "init-analysis",
+        "bioinformatics-init-analysis",
         "aris-analyze-results",
         "aris-result-to-claim",
         "ds-analysis-campaign",

@@ -16,7 +16,8 @@
 import { Codex } from '@openai/codex-sdk';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { encodeProjectPath, ensureProjectSkillLinks, reconcileCodexSessionIndex } from './projects.js';
+import os from 'os';
+import { encodeProjectPath, reconcileCodexSessionIndex } from './projects.js';
 import { sessionDb } from './database/db.js';
 import { applyStageTagsToSession, recordIndexedSession } from './utils/sessionIndex.js';
 import { classifyError, classifySDKError } from '../shared/errorClassifier.js';
@@ -24,7 +25,6 @@ import { buildTempAttachmentFilename } from './utils/imageAttachmentFiles.js';
 import { buildCodexRealtimeTokenBudget } from './utils/sessionTokenUsage.js';
 import { expandSkillCommand } from './utils/skillExpander.js';
 import { resolveCodexWorkingDirectory } from './utils/codexWorkingDir.js';
-import { resolveCodexHome } from './utils/codexHome.js';
 import { CODEX_MODELS } from '../shared/modelConstants.js';
 import { BTW_SYSTEM_PROMPT, buildBtwUserMessage } from './utils/btw.js';
 import { debugLog, isVerboseLogging } from './utils/logger.js';
@@ -369,18 +369,6 @@ export async function queryCodex(command, options = {}, ws) {
   } = options;
 
   const workingDirectory = cwd || projectPath || process.cwd();
-  // Codex is a first-class project provider. Keep its AGENTS.md, compact skill
-  // index, and managed links in sync for every new thread. A resumed thread is
-  // repaired only when its index is missing, avoiding hundreds of filesystem
-  // checks on every turn while still closing the Codex-only initialization gap.
-  let shouldSyncProject = !sessionId;
-  if (!shouldSyncProject) {
-    const indexPath = path.join(workingDirectory, '.agents', 'skills', 'skills-index.md');
-    shouldSyncProject = !(await fs.access(indexPath).then(() => true).catch(() => false));
-  }
-  if (shouldSyncProject) {
-    await ensureProjectSkillLinks(workingDirectory);
-  }
   // Codex embeds this path verbatim into an HTTP header; non-ASCII paths crash
   // the request. Hand the SDK an ASCII symlink while keeping the real path for
   // dr-claw's own indexing/tags. ASCII paths are returned unchanged.
@@ -739,13 +727,13 @@ function sendMessage(ws, data) {
 }
 
 /**
- * Resolve an OpenAI API key from environment or $CODEX_HOME/auth.json.
+ * Resolve an OpenAI API key from environment or ~/.codex/auth.json.
  */
 async function resolveOpenAIApiKey(env) {
   if (env?.OPENAI_API_KEY) return env.OPENAI_API_KEY;
   if (process.env.OPENAI_API_KEY) return process.env.OPENAI_API_KEY;
   try {
-    const authPath = path.join(resolveCodexHome(), 'auth.json');
+    const authPath = path.join(os.homedir(), '.codex', 'auth.json');
     const content = await fs.readFile(authPath, 'utf8');
     const auth = JSON.parse(content);
     if (auth?.OPENAI_API_KEY) return auth.OPENAI_API_KEY;

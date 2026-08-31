@@ -23,7 +23,7 @@ The pipeline auto-detects input data type:
 Run the complete 7-step analysis:
 
 ```bash
-python3 ../../scripts/run_pipeline.py <input_path> \
+python3 scripts/run_pipeline.py <input_path> \
     [--data-type auto|cytof|scrnaseq|flow] \
     [--subsample 500] \
     [--output-dir ./analysis_output] \
@@ -96,10 +96,10 @@ Generate HTML report with embedded figures and interpretations. Two styles:
 ## Reference Files
 
 For detailed guidance, consult:
-- **`../../references/plot_interpretation_guide.md`** - How to explain each plot type to non-experts
-- **`../../references/cytof_specifics.md`** - CyTOF-specific QC, normalization, and markers
-- **`../../references/scrnaseq_specifics.md`** - scRNA-seq-specific processing details
-- **`../../references/statistical_methods.md`** - Plain-language glossary of statistical methods
+- **`references/plot_interpretation_guide.md`** - How to explain each plot type to non-experts
+- **`references/cytof_specifics.md`** - CyTOF-specific QC, normalization, and markers
+- **`references/scrnaseq_specifics.md`** - scRNA-seq-specific processing details
+- **`references/statistical_methods.md`** - Plain-language glossary of statistical methods
 
 ## Important Notes
 

@@ -1,8 +1,0 @@
-# Audited Delta profile from 2026-08-19. Apply only on an explicitly trusted host.
-model = "gpt-5.6-sol"
-model_reasoning_effort = "ultra"
-approval_policy = "never"
-approvals_reviewer = "user"
-sandbox_mode = "danger-full-access"
-service_tier = "default"
-project_doc_max_bytes = 65536

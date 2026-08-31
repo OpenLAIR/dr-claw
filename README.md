@@ -44,7 +44,6 @@
 - [Overview](#overview)
 - [What's New](#whats-new)
 - [Highlights](#highlights)
-- [One-command Codex Server Deployment](#one-command-codex-server-deployment)
 - [Quick Start](#quick-start)
 - [Configuration](#configuration)
 - [OpenClaw Integration](#openclaw-integration)
@@ -181,14 +180,6 @@ Dr. Claw is a general-purpose AI research assistant designed to help researchers
 
 </details>
 
-
-## One-command Codex Server Deployment
-
-To reproduce the Dr. Claw Codex setup on a new Linux `x86_64` or `aarch64` server, use the immutable [`codex-bootstrap-v0.2.9` release](https://github.com/OpenLAIR/dr-claw/releases/tag/codex-bootstrap-v0.2.9). The Release page contains the exact one-command installer pinned to its full commit and annotated tag object, plus an offline bundle and `SHA256SUMS`.
-
-The `--full` path installs the safe Codex profile, global `AGENTS.md`, the on-demand router for the complete 172-skill library, the Dr. Claw control CLI, and the Web application, then runs a strict credential-free doctor. Codex login, connector OAuth, API keys, SSH/Duo state, caches, and existing projects are never copied.
-
-See the [English deployment guide](docs/codex-bootstrap.md) or the [complete Chinese operations guide](bootstrap/codex/README.zh-CN.md) for prerequisites, online/offline installation, Delta behavior, service activation, updates, and rollback.
 
 ## Quick Start
 

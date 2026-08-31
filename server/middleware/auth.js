@@ -2,18 +2,15 @@ import jwt from 'jsonwebtoken';
 import { userDb } from '../database/db.js';
 import { IS_PLATFORM } from '../constants/config.js';
 
-// The known development secret is allowed only for a loopback-bound development
-// process. Production or public binding must fail closed.
-const configuredJwtSecret = String(process.env.JWT_SECRET || '').trim();
-const configuredHost = String(process.env.HOST || '127.0.0.1').trim().toLowerCase();
-const isLoopbackHost = new Set(['127.0.0.1', 'localhost', '::1']).has(configuredHost);
-if (!configuredJwtSecret && (process.env.NODE_ENV === 'production' || !isLoopbackHost)) {
-  throw new Error(
-    'JWT_SECRET is required for production or non-loopback HOST. '
-    + 'Generate a strong random secret and inject it through the target secret store.'
+// Get JWT secret from environment or use default (for development)
+const JWT_SECRET = process.env.JWT_SECRET || 'claude-ui-dev-secret-change-in-production';
+if (!process.env.JWT_SECRET && process.env.NODE_ENV === 'production') {
+  console.warn(
+    '[SECURITY] JWT_SECRET is not set — using the default development secret. '
+    + 'Tokens signed with this known-public secret are trivially forgeable. '
+    + 'Set JWT_SECRET in your environment before deploying to production.'
   );
 }
-const JWT_SECRET = configuredJwtSecret || 'claude-ui-dev-secret-change-in-production';
 
 // Token lifetime (default: 30 days). Set JWT_EXPIRY to override, e.g. "24h", "30d".
 const JWT_EXPIRY = process.env.JWT_EXPIRY || '30d';

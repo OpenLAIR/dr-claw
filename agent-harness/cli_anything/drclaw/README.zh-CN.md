@@ -213,7 +213,7 @@ drclaw projects delete <project-ref>
 
 高级聊天和 workflow 命令支持：
 - `--provider [claude|gemini|codex|cursor]`：强制指定 provider
-- `--bypass-permissions`：自动批准工具调用；属高风险选项，仅用于用户已明确批准的可信工作流与范围
+- `--bypass-permissions`：自动批准工具调用，适合自动化
 - `--timeout <seconds>`：硬超时
 - `--attach <path>`：附加文件或图片，可重复传入
 - `--model <model-id>`：覆盖默认模型

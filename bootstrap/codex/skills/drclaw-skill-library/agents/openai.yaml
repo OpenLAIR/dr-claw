@@ -1,4 +1,0 @@
-interface:
-  display_name: "Dr. Claw Skill Library"
-  short_description: "Route tasks to the right Dr. Claw research skill"
-  default_prompt: "Use $drclaw-skill-library to select the best Dr. Claw skill for this task."

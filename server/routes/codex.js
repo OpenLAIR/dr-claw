@@ -2,10 +2,9 @@ import express from 'express';
 import { spawn } from 'child_process';
 import { promises as fs } from 'fs';
 import path from 'path';
+import os from 'os';
 import TOML from '@iarna/toml';
 import { getCodexSessions, getCodexSessionMessages, deleteCodexSession } from '../projects.js';
-import { buildCodexCliEnv, getCodexCliCommand } from '../utils/codexCli.js';
-import { resolveCodexHome } from '../utils/codexHome.js';
 
 const router = express.Router();
 
@@ -22,7 +21,7 @@ function createCliResponder(res) {
 
 router.get('/config', async (req, res) => {
   try {
-    const configPath = path.join(resolveCodexHome(), 'config.toml');
+    const configPath = path.join(os.homedir(), '.codex', 'config.toml');
     const content = await fs.readFile(configPath, 'utf8');
     const config = TOML.parse(content);
 
@@ -31,7 +30,7 @@ router.get('/config', async (req, res) => {
       config: {
         model: config.model || null,
         mcpServers: config.mcp_servers || {},
-        approvalMode: config.approval_policy || config.approval_mode || 'suggest'
+        approvalMode: config.approval_mode || 'suggest'
       }
     });
   } catch (error) {
@@ -101,10 +100,7 @@ router.delete('/sessions/:sessionId', async (req, res) => {
 router.get('/mcp/cli/list', async (req, res) => {
   try {
     const respond = createCliResponder(res);
-    const proc = spawn(getCodexCliCommand(), ['mcp', 'list'], {
-      env: buildCodexCliEnv(),
-      stdio: ['pipe', 'pipe', 'pipe']
-    });
+    const proc = spawn('codex', ['mcp', 'list'], { stdio: ['pipe', 'pipe', 'pipe'] });
 
     let stdout = '';
     let stderr = '';
@@ -155,10 +151,7 @@ router.post('/mcp/cli/add', async (req, res) => {
     }
 
     const respond = createCliResponder(res);
-    const proc = spawn(getCodexCliCommand(), cliArgs, {
-      env: buildCodexCliEnv(),
-      stdio: ['pipe', 'pipe', 'pipe']
-    });
+    const proc = spawn('codex', cliArgs, { stdio: ['pipe', 'pipe', 'pipe'] });
 
     let stdout = '';
     let stderr = '';
@@ -192,10 +185,7 @@ router.delete('/mcp/cli/remove/:name', async (req, res) => {
     const { name } = req.params;
 
     const respond = createCliResponder(res);
-    const proc = spawn(getCodexCliCommand(), ['mcp', 'remove', name], {
-      env: buildCodexCliEnv(),
-      stdio: ['pipe', 'pipe', 'pipe']
-    });
+    const proc = spawn('codex', ['mcp', 'remove', name], { stdio: ['pipe', 'pipe', 'pipe'] });
 
     let stdout = '';
     let stderr = '';
@@ -229,10 +219,7 @@ router.get('/mcp/cli/get/:name', async (req, res) => {
     const { name } = req.params;
 
     const respond = createCliResponder(res);
-    const proc = spawn(getCodexCliCommand(), ['mcp', 'get', name], {
-      env: buildCodexCliEnv(),
-      stdio: ['pipe', 'pipe', 'pipe']
-    });
+    const proc = spawn('codex', ['mcp', 'get', name], { stdio: ['pipe', 'pipe', 'pipe'] });
 
     let stdout = '';
     let stderr = '';
@@ -263,7 +250,7 @@ router.get('/mcp/cli/get/:name', async (req, res) => {
 
 router.get('/mcp/config/read', async (req, res) => {
   try {
-    const configPath = path.join(resolveCodexHome(), 'config.toml');
+    const configPath = path.join(os.homedir(), '.codex', 'config.toml');
 
     let configData = null;
 

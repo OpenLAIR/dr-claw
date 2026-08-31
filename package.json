@@ -9,11 +9,8 @@
     "dr-claw": "server/cli.js"
   },
   "files": [
-    "agent-harness/",
-    "bootstrap/codex/",
     "server/",
     "shared/",
-    "skills/",
     "dist/",
     "public/",
     "scripts/",
@@ -46,13 +43,10 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "start": "npm run build && npm run server",
     "release": "./release.sh",
-    "prepublishOnly": "npm run skills:catalog && npm run skills:validate && npm run bootstrap:test && npm run build",
+    "prepublishOnly": "npm run build",
     "postinstall": "node scripts/fix-node-pty.js",
     "test": "vitest run",
     "test:watch": "vitest",
-    "skills:catalog": "node scripts/export-skills-catalog-v2.mjs",
-    "skills:validate": "python3 bootstrap/codex/skills/drclaw-skill-library/scripts/query_library.py --validate",
-    "bootstrap:test": "python3 -m unittest discover -s bootstrap/codex/tests -v",
     "desktop:pack:mac": "node electron/cli.mjs pack --mac",
     "desktop:pack:win": "node electron/cli.mjs pack --win",
     "desktop:dist:mac": "node electron/cli.mjs dist --mac dmg --publish never",
@@ -69,7 +63,7 @@
   "author": "Dr. Claw Contributors",
   "license": "(GPL-3.0-only AND AGPL-3.0-only)",
   "engines": {
-    "node": "22.x || 24.x"
+    "node": "20.x || 22.x || 24.x"
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "0.3.170",
@@ -84,8 +78,8 @@
     "@iarna/toml": "^2.2.5",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@octokit/rest": "^22.0.0",
-    "@openai/codex": "0.147.0",
-    "@openai/codex-sdk": "0.147.0",
+    "@openai/codex": "0.144.1",
+    "@openai/codex-sdk": "0.144.1",
     "@replit/codemirror-minimap": "^0.5.2",
     "@tailwindcss/typography": "^0.5.16",
     "@uiw/react-codemirror": "^4.23.13",
@@ -94,9 +88,9 @@
     "@xterm/addon-web-links": "^0.11.0",
     "@xterm/addon-webgl": "^0.18.0",
     "@xterm/xterm": "^5.5.0",
-    "adm-zip": "0.6.0",
+    "adm-zip": "^0.5.16",
     "bcryptjs": "^3.0.2",
-    "better-sqlite3": "13.0.3",
+    "better-sqlite3": "^12.2.0",
     "chokidar": "^4.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -121,14 +115,14 @@
     "react-dropzone": "^14.2.3",
     "react-i18next": "^16.5.3",
     "react-markdown": "^10.1.0",
-    "react-router-dom": "7.18.2",
-    "react-syntax-highlighter": "16.1.1",
+    "react-router-dom": "^6.8.1",
+    "react-syntax-highlighter": "^15.6.1",
     "rehype-katex": "^7.0.1",
     "rehype-raw": "^7.0.0",
     "remark-gfm": "^4.0.0",
     "remark-math": "^6.0.0",
     "sqlite": "^5.1.1",
-    "sqlite3": "5.1.7",
+    "sqlite3": "^5.1.7",
     "tailwind-merge": "^3.3.1",
     "ws": "^8.14.2"
   },
@@ -141,13 +135,13 @@
     "auto-changelog": "^2.5.0",
     "autoprefixer": "^10.4.16",
     "concurrently": "^8.2.2",
-    "electron": "41.10.3",
-    "electron-builder": "26.15.0",
-    "node-gyp": "11.5.0",
+    "electron": "^37.3.1",
+    "electron-builder": "^26.0.12",
+    "node-gyp": "^10.0.0",
     "png-to-ico": "^3.0.1",
     "postcss": "^8.4.32",
-    "release-it": "21.0.2",
-    "sharp": "0.35.3",
+    "release-it": "^19.0.5",
+    "sharp": "^0.34.2",
     "tailwindcss": "^3.4.0",
     "typescript": "^5.9.3",
     "vite": "^7.0.4",
@@ -192,11 +186,5 @@
       "perMachine": false,
       "allowToChangeInstallationDirectory": true
     }
-  },
-  "overrides": {
-    "tar": "7.5.22",
-    "make-fetch-happen": "14.0.3",
-    "cacache": "19.0.1",
-    "http-proxy-agent": "7.0.2"
   }
 }
