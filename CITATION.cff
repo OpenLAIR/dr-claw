@@ -1,6 +1,6 @@
 cff-version: 1.2.0
-message: "If you use Dr. Claw in your research, please cite this repository."
-title: "Dr. Claw: An AI Research Workspace from Idea to Paper"
+message: "If you use Dr. Claw in your research, please cite the paper below."
+title: "Dr. Claw: An AI Scientist Workspace for Vibe Research"
 type: software
 authors:
   - family-names: Song
@@ -23,3 +23,39 @@ year: 2026
 repository-code: "https://github.com/OpenLAIR/dr-claw"
 url: "https://github.com/OpenLAIR/dr-claw"
 license: "GPL-3.0-or-later AND AGPL-3.0-or-later"
+preferred-citation:
+  type: article
+  title: "Dr. Claw: An AI Scientist Workspace for Vibe Research"
+  authors:
+    - family-names: Song
+      given-names: Dingjie
+    - family-names: Zhang
+      given-names: Hanrong
+    - family-names: Liu
+      given-names: Dawei
+    - family-names: Liu
+      given-names: Yixin
+    - family-names: Li
+      given-names: Zongxia
+    - family-names: Yuan
+      given-names: Zhengqing
+    - family-names: Zhang
+      given-names: Siqi
+    - family-names: Zou
+      given-names: Henry Peng
+    - family-names: Yan
+      given-names: Zhiling
+    - family-names: Zhang
+      given-names: Yuxuan
+    - family-names: Ye
+      given-names: Yanfang
+    - family-names: Yu
+      given-names: Philip S.
+    - family-names: Sun
+      given-names: Lichao
+  year: 2026
+  month: 8
+  journal: "arXiv preprint arXiv:2609.00365"
+  url: "https://arxiv.org/abs/2609.00365"
+  doi: "10.48550/arXiv.2609.00365"
+  notes: "Accepted to EMNLP 2026 System Demonstrations."

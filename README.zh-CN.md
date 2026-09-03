@@ -2,6 +2,7 @@
   <img src="public/dr-claw.png" alt="Dr. Claw" width="128" height="128">
   <h1>Dr. Claw: 面向科研全流程的通用 AI 研究助手</h1>
   <p><strong>在一个工作区里完成研究规划、执行与写作。</strong></p>
+  <p>🎉 <strong>论文被 <a href="https://2026.emnlp.org/">EMNLP 2026</a> System Demonstrations 接收</strong></p>
 </div>
 
 <p align="center">
@@ -10,6 +11,9 @@
 </a>
 <a href="https://openlair.github.io/dr-claw">
 <img src="https://img.shields.io/badge/%F0%9F%8C%90-%E4%B8%BB%E9%A1%B5-2563EB?style=for-the-badge" alt="主页" />
+</a>
+<a href="https://arxiv.org/abs/2609.00365">
+<img src="https://img.shields.io/badge/arXiv-2609.00365-B31B1B?style=for-the-badge&logo=arxiv&logoColor=white" alt="arXiv" />
 </a>
 <a href="https://www.npmjs.com/package/dr-claw">
 <img src="https://img.shields.io/npm/v/dr-claw?style=for-the-badge&logo=npm&color=CB3837" alt="npm version" />
@@ -102,6 +106,7 @@ Dr. Claw 是一个面向不同研究方向的通用 AI 研究助手，帮助研�
 
 ## 最新动态
 
+- 🎉 **论文被 EMNLP 2026 接收** `2026-08-22` — 我们的论文 [*Dr. Claw: An AI Scientist Workspace for Vibe Research*](https://arxiv.org/abs/2609.00365) 被 **[EMNLP 2026](https://2026.emnlp.org/) System Demonstrations** 接收！欢迎在匈牙利布达佩斯（2026 年 10 月 24–29 日）现场看我们的 Demo。
 - 🧪 **Auto Research Hub** `2026-04-08` — 一键启动全自动科研！选工具包、点配置、选工作流——然后去睡觉，醒来收论文。支持 ARIS、Autoresearch、DeepScientist 三大工具包，从 idea 到 paper 全程无人值守。
 - 🖥️ **桌面应用 & npx** `2026-04-06` — Dr. Claw 现已支持原生桌面应用！从 [GitHub Releases](https://github.com/OpenLAIR/dr-claw/releases) 下载 `.dmg` / `.exe`，或运行 `npx dr-claw` 零配置一键启动。
 - 🗂️ **多标签侧边栏** `2026-04-06` — Research Lab 和文件浏览器合并为右侧可切换标签页，所有信息一目了然。
@@ -945,16 +950,19 @@ Dr. Claw 完全响应式设计。在移动设备上：
 
 ## 引用
 
-如果这个项目对你的研究有帮助，欢迎引用我们的工作：
+Dr. Claw 的设计与评测发表于论文 **[Dr. Claw: An AI Scientist Workspace for Vibe Research](https://arxiv.org/abs/2609.00365)**（arXiv:2609.00365），已被 **EMNLP 2026 System Demonstrations** 接收。如果这个项目对你的研究有帮助，欢迎引用我们的工作：
 
 ```bibtex
 @misc{song2026drclaw,
-  author       = {Dingjie Song and Hanrong Zhang and Dawei Liu and Yixin Liu and Zongxia Li and Zhengqing Yuan and Siqi Zhang and Lichao Sun},
-  title        = {Dr. Claw: An AI Research Workspace from Idea to Paper},
-  year         = {2026},
-  organization = {GitHub},
-  url          = {https://github.com/OpenLAIR/dr-claw},
-  homepage     = {https://openlair.github.io/dr-claw},
+  title         = {Dr. Claw: An AI Scientist Workspace for Vibe Research},
+  author        = {Dingjie Song and Hanrong Zhang and Dawei Liu and Yixin Liu and Zongxia Li and Zhengqing Yuan and Siqi Zhang and Henry Peng Zou and Zhiling Yan and Yuxuan Zhang and Yanfang Ye and Philip S. Yu and Lichao Sun},
+  year          = {2026},
+  eprint        = {2609.00365},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.AI},
+  doi           = {10.48550/arXiv.2609.00365},
+  url           = {https://arxiv.org/abs/2609.00365},
+  note          = {Accepted to EMNLP 2026 System Demonstrations},
 }
 ```
 

@@ -2,6 +2,7 @@
   <img src="public/dr-claw.png" alt="Dr. Claw" width="128" height="128">
   <h1>Dr. Claw: Your AI Research Assistant</h1>
   <p><strong>Full-stack research workspace.</strong></p>
+  <p>🎉 <strong>Accepted to <a href="https://2026.emnlp.org/">EMNLP 2026</a> System Demonstrations</strong></p>
 </div>
 
 <p align="center">
@@ -10,6 +11,9 @@
 </a>
 <a href="https://openlair.github.io/dr-claw">
 <img src="https://img.shields.io/badge/%F0%9F%8C%90-Homepage-2563EB?style=for-the-badge" alt="Homepage" />
+</a>
+<a href="https://arxiv.org/abs/2609.00365">
+<img src="https://img.shields.io/badge/arXiv-2609.00365-B31B1B?style=for-the-badge&logo=arxiv&logoColor=white" alt="arXiv" />
 </a>
 <a href="https://www.npmjs.com/package/dr-claw">
 <img src="https://img.shields.io/npm/v/dr-claw?style=for-the-badge&logo=npm&color=CB3837" alt="npm version" />
@@ -101,6 +105,7 @@ Dr. Claw is a general-purpose AI research assistant designed to help researchers
 
 ## What's New
 
+- 🎉 **Accepted to EMNLP 2026** `2026-08-22` — Our paper [*Dr. Claw: An AI Scientist Workspace for Vibe Research*](https://arxiv.org/abs/2609.00365) has been accepted to the **[EMNLP 2026](https://2026.emnlp.org/) System Demonstrations** track! Catch the live demo in Budapest, Hungary, October 24–29, 2026.
 - 🧪 **Auto Research Hub** `2026-04-08` — One click to launch fully autonomous research! Pick a tool pack (ARIS, Autoresearch, DeepScientist), hit configure, choose a workflow in Chat — and watch the agent run your entire research pipeline from idea to paper while you sleep.
 - 🖥️ **Desktop App & npx** `2026-04-06` — Dr. Claw now runs as a native desktop app! Grab the `.dmg` / `.exe` from [GitHub Releases](https://github.com/OpenLAIR/dr-claw/releases), or run `npx dr-claw` for zero-setup instant start.
 - 🗂️ **Multi-Tab Sidebar** `2026-04-06` — Research Lab and Files now live side-by-side as switchable tabs in the right sidebar — everything you need, one glance away.
@@ -960,16 +965,19 @@ See [LICENSE](LICENSE) and [NOTICE](NOTICE) for the full license texts and scope
 
 ## Citation
 
-If you find Dr. Claw useful in your research, please cite:
+Dr. Claw is described in our paper **[Dr. Claw: An AI Scientist Workspace for Vibe Research](https://arxiv.org/abs/2609.00365)** (arXiv:2609.00365), accepted to **EMNLP 2026 System Demonstrations**. If you find Dr. Claw useful in your research, please cite:
 
 ```bibtex
 @misc{song2026drclaw,
-  author       = {Dingjie Song and Hanrong Zhang and Dawei Liu and Yixin Liu and Zongxia Li and Zhengqing Yuan and Siqi Zhang and Lichao Sun},
-  title        = {Dr. Claw: An AI Research Workspace from Idea to Paper},
-  year         = {2026},
-  organization = {GitHub},
-  url          = {https://github.com/OpenLAIR/dr-claw},
-  homepage     = {https://openlair.github.io/dr-claw},
+  title         = {Dr. Claw: An AI Scientist Workspace for Vibe Research},
+  author        = {Dingjie Song and Hanrong Zhang and Dawei Liu and Yixin Liu and Zongxia Li and Zhengqing Yuan and Siqi Zhang and Henry Peng Zou and Zhiling Yan and Yuxuan Zhang and Yanfang Ye and Philip S. Yu and Lichao Sun},
+  year          = {2026},
+  eprint        = {2609.00365},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.AI},
+  doi           = {10.48550/arXiv.2609.00365},
+  url           = {https://arxiv.org/abs/2609.00365},
+  note          = {Accepted to EMNLP 2026 System Demonstrations},
 }
 ```
 
