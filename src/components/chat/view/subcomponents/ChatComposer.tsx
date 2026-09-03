@@ -9,7 +9,7 @@ import ReferencePicker from '../../../references/view/ReferencePicker';
 import PromptBadgeDropdown from './PromptBadgeDropdown';
 import { Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type {
   ChangeEvent,
   ClipboardEvent,
@@ -30,6 +30,7 @@ import type { SessionMode, SessionProvider } from '../../../../types/app';
 import { CLAUDE_MODELS, CURSOR_MODELS, CODEX_MODELS, GEMINI_MODELS, LOCAL_MODELS, NANO_CLAUDE_CODE_MODELS, OPENROUTER_MODELS } from '../../../../../shared/modelConstants';
 import { authenticatedFetch } from '../../../../utils/api';
 import { isAutoResearchScenario } from '../../utils/autoResearch';
+import { useHarnessModels } from '../../hooks/useHarnessModels';
 
 // New subcomponents
 import SkillDropdown from './SkillDropdown';
@@ -336,10 +337,17 @@ export default function ChatComposer({
     };
   }, [sessionProvider, localModelProp, setLocalModel, t]);
 
+  // Prefer the list the harness reports over the compiled-in one, so a CLI that
+  // ships new models is picked up without a dr-claw release. Falls back to the
+  // built-in list whenever discovery is unavailable.
+  const { options: discoveredModels, defaultModel: discoveredDefault } = useHarnessModels(sessionProvider);
+
   const rawModelConfig = getModelConfig(sessionProvider);
   const modelConfig = sessionProvider === 'local' && ollamaModels.length > 0
     ? { ...rawModelConfig, OPTIONS: ollamaModels }
-    : rawModelConfig;
+    : discoveredModels && discoveredModels.length > 0
+      ? { ...rawModelConfig, OPTIONS: discoveredModels }
+      : rawModelConfig;
 
   const selectProvider = (next: SessionProvider) => {
     if (providerAvailability?.[next]?.cliAvailable === false) return;
@@ -357,6 +365,36 @@ export default function ChatComposer({
     else if (sessionProvider === 'nano') { setNanoModel?.(value); localStorage.setItem('nano-claude-code-model', value); }
     else { setCursorModel?.(value); localStorage.setItem('cursor-model', value); }
   };
+
+  // Rescue a stored preference the harness has retired. Discovery keeps such a
+  // model visible in the picker so nothing silently disappears, but leaving it
+  // *selected* means every new session is submitted against a model the harness
+  // will reject. Only fires when the harness answered and positively excludes
+  // the current value, and at most once per (provider, model) so it can never
+  // fight a user who deliberately re-selects a deprecated entry.
+  const rescuedModelRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!discoveredModels || !discoveredDefault || !currentModel) return;
+    // Providers that accept free-form model ids (OpenRouter, local) can
+    // legitimately hold a value the catalogue does not list — a relay-only
+    // model, for instance — so absence from the list is not evidence the
+    // harness rejects it. Never rescue those.
+    if ((rawModelConfig as { ALLOWS_CUSTOM?: boolean }).ALLOWS_CUSTOM) return;
+    if (discoveredDefault === currentModel) return;
+
+    const servedByHarness = discoveredModels.some(
+      (option) => option.value === currentModel && !option.deprecated,
+    );
+    if (servedByHarness) return;
+
+    const rescueKey = `${sessionProvider}:${currentModel}`;
+    if (rescuedModelRef.current === rescueKey) return;
+    rescuedModelRef.current = rescueKey;
+
+    handleModelChange(discoveredDefault);
+    // handleModelChange is redefined every render but only closes over setters.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [discoveredModels, discoveredDefault, currentModel, sessionProvider]);
 
   const sessionModeChoices: Array<{ id: SessionMode; titleKey: string }> = [
     { id: 'research', titleKey: 'session.mode.researchTitle' },

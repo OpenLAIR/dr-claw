@@ -72,6 +72,39 @@ Platform mode is an advanced deployment option. Most users should leave these co
 
 ---
 
+## Model Discovery
+
+Dr. Claw asks each harness which models it actually supports rather than relying
+only on the list compiled into the app, so a CLI that ships a new model shows up
+without waiting for a Dr. Claw release.
+
+| Provider | Source | Notes |
+|----------|--------|-------|
+| Codex | `codex app-server` → `model/list` JSON-RPC | Same catalogue the Codex CLI's own picker reads. Honours `CODEX_CLI_PATH`. |
+| OpenRouter | `GET https://openrouter.ai/api/v1/models` | Public endpoint, no key needed. |
+| Claude, Cursor, Gemini, Nano | Built-in list | These CLIs expose no model-listing command today. |
+| Local GPU | Ollama `/api/tags` | Existing behaviour, unchanged. |
+
+Discovery is strictly additive and never blocks the UI:
+
+- Results are cached for 10 minutes; a failed probe is re-tried after 1 minute
+  so the picker recovers on its own once a CLI is installed or logged in.
+- Every probe has a 15-second hard timeout. If the harness is missing, old,
+  logged out, or unresponsive, the built-in list is used instead.
+- Models present in the built-in list but no longer served by the harness are
+  kept at the end of the picker and marked deprecated, so an existing saved
+  model preference is never stranded.
+
+### API
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /api/models/:provider` | Model list for a provider. `source` is `discovered` or `static`. Add `?refresh=1` to bypass the cache. |
+| `POST /api/models/:provider/refresh` | Drop the cache and re-probe — useful right after upgrading or logging into a CLI. |
+| `GET /api/models/providers` | Providers this build can probe. |
+
+---
+
 ## OSS Mode vs Platform Mode
 
 Dr. Claw supports two authentication paths:

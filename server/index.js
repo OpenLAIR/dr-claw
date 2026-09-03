@@ -67,6 +67,7 @@ import cliAuthRoutes from './routes/cli-auth.js';
 import userRoutes from './routes/user.js';
 import codexRoutes from './routes/codex.js';
 import skillsRoutes from './routes/skills.js';
+import modelsRoutes from './routes/models.js';
 import telemetryRoutes from './routes/telemetry.js';
 import computeRoutes from './routes/compute.js';
 import newsRoutes from './routes/news.js';
@@ -526,6 +527,9 @@ app.use('/api/codex', authenticateToken, codexRoutes);
 
 // Skills API Routes (protected)
 app.use('/api/skills', authenticateToken, skillsRoutes);
+
+// Harness model discovery Routes (protected)
+app.use('/api/models', authenticateToken, modelsRoutes);
 
 // Telemetry API Routes (protected)
 app.use('/api/telemetry', authenticateToken, telemetryRoutes);

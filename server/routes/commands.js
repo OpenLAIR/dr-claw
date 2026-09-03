@@ -5,6 +5,9 @@ import { fileURLToPath } from 'url';
 import os from 'os';
 import matter from 'gray-matter';
 import { CLAUDE_MODELS, CURSOR_MODELS, CODEX_MODELS } from '../../shared/modelConstants.js';
+import { getModelsForProvider } from '../utils/harnessModelDiscovery.js';
+
+const MODEL_COMMAND_DISCOVERY_TIMEOUT_MS = 3000;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -189,11 +192,23 @@ Custom commands can be created in:
   },
 
   '/model': async (args, context) => {
-    // Read available models from centralized constants
+    // Ask each harness for its live list, falling back to the built-in
+    // constants. Without this, /model would keep offering models a CLI has
+    // retired while hiding ones it just shipped.
+    // A slash command is interactive, so cap the Codex probe well below the
+    // default discovery timeout: a hung CLI should degrade to the built-in
+    // list quickly rather than make /model feel frozen. (A missing binary
+    // already fails instantly with ENOENT.)
+    const [claude, cursor, codex] = await Promise.all([
+      getModelsForProvider('claude'),
+      getModelsForProvider('cursor'),
+      getModelsForProvider('codex', { timeoutMs: MODEL_COMMAND_DISCOVERY_TIMEOUT_MS }),
+    ]);
+
     const availableModels = {
-      claude: CLAUDE_MODELS.OPTIONS.map(o => o.value),
-      cursor: CURSOR_MODELS.OPTIONS.map(o => o.value),
-      codex: CODEX_MODELS.OPTIONS.map(o => o.value)
+      claude: claude.options.map(o => o.value),
+      cursor: cursor.options.map(o => o.value),
+      codex: codex.options.map(o => o.value)
     };
 
     const currentProvider = context?.provider || 'claude';
