@@ -38,7 +38,14 @@ export function useHarnessModels(provider: SessionProvider | string | null | und
   // away from overwriting the current one.
   const requestedProviderRef = useRef<string | null>(null);
 
-  const refresh = useCallback(() => setRefreshToken((n) => n + 1), []);
+  // One-shot: only the request triggered by refresh() bypasses the server
+  // cache. Deriving it from `refreshToken > 0` would make every later provider
+  // switch bypass the cache too, for the life of the mount.
+  const forceNextRef = useRef(false);
+  const refresh = useCallback(() => {
+    forceNextRef.current = true;
+    setRefreshToken((n) => n + 1);
+  }, []);
 
   useEffect(() => {
     if (!provider) {
@@ -57,7 +64,9 @@ export function useHarnessModels(provider: SessionProvider | string | null | und
     setSource(null);
     setDefaultModel(null);
 
-    const query = refreshToken > 0 ? '?refresh=1' : '';
+    const force = forceNextRef.current;
+    forceNextRef.current = false;
+    const query = force ? '?refresh=1' : '';
     authenticatedFetch(`/api/models/${encodeURIComponent(provider)}${query}`)
       .then(async (res) => (res.ok ? res.json() : null))
       .then((data) => {

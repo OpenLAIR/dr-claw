@@ -79,7 +79,10 @@ export function mergeModelOptions(discovered, staticOptions) {
   for (const option of discovered) {
     if (!option?.value || seen.has(option.value)) continue;
     seen.add(option.value);
-    merged.push({ value: option.value, label: option.label || option.value });
+    // Spread rather than pick: discoverers attach metadata (description,
+    // isDefault) that clients may want to surface, and dropping it here would
+    // silently strip it from the API response.
+    merged.push({ ...option, label: option.label || option.value });
   }
 
   for (const option of staticOptions || []) {

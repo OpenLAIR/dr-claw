@@ -71,6 +71,16 @@ describe('mergeModelOptions', () => {
     expect(merged[2].deprecated).toBe(true);
   });
 
+  it('keeps metadata the discoverer attached, such as description', () => {
+    const merged = mod.mergeModelOptions(
+      [{ value: 'm', label: 'M', description: 'fast and cheap', isDefault: true }],
+      [],
+    );
+    expect(merged).toEqual([
+      { value: 'm', label: 'M', description: 'fast and cheap', isDefault: true },
+    ]);
+  });
+
   it('drops duplicates and entries without a value', () => {
     const merged = mod.mergeModelOptions(
       [{ value: 'a' }, { value: 'a', label: 'dupe' }, { label: 'no value' }],

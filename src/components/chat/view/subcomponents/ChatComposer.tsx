@@ -375,6 +375,11 @@ export default function ChatComposer({
   const rescuedModelRef = useRef<string | null>(null);
   useEffect(() => {
     if (!discoveredModels || !discoveredDefault || !currentModel) return;
+    // Providers that accept free-form model ids (OpenRouter, local) can
+    // legitimately hold a value the catalogue does not list — a relay-only
+    // model, for instance — so absence from the list is not evidence the
+    // harness rejects it. Never rescue those.
+    if ((rawModelConfig as { ALLOWS_CUSTOM?: boolean }).ALLOWS_CUSTOM) return;
     if (discoveredDefault === currentModel) return;
 
     const servedByHarness = discoveredModels.some(
