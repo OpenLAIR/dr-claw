@@ -178,5 +178,11 @@
     "intents": ["writing", "research"],
     "capabilities": ["visualization-reporting"],
     "domains": ["general"]
+  },
+  "writing-style": {
+    "primaryIntent": "writing",
+    "intents": ["writing"],
+    "capabilities": ["visualization-reporting"],
+    "domains": ["general"]
   }
 }
