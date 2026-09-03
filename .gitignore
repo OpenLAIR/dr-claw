@@ -1,5 +1,7 @@
 # Dependencies
 node_modules/
+# also match a node_modules symlink (the trailing-slash form only matches directories)
+node_modules
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
