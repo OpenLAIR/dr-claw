@@ -2906,6 +2906,8 @@ app.get('/api/projects/:projectName/sessions/:sessionId/token-usage', authentica
 
     // Determine context window from model name
     const MODEL_CONTEXT_WINDOWS = {
+      'claude-fable-5-1[1m]': 1000000,
+      'claude-fable-5-1':    1000000,
       'claude-fable-5[1m]':  1000000,
       'claude-fable-5':      200000,
       'claude-opus-5':       1000000,
@@ -2935,6 +2937,10 @@ app.get('/api/projects/:projectName/sessions/:sessionId/token-usage', authentica
     } else if (modelName) {
       // Try exact match first, then prefix match
       contextWindow = MODEL_CONTEXT_WINDOWS[modelName];
+      if (!contextWindow && modelName.endsWith('[1m]')) {
+        // Any `[1m]` alias the CLI serves (e.g. `opus[1m]`) is a 1M-context variant.
+        contextWindow = 1000000;
+      }
       if (!contextWindow) {
         const prefix = Object.keys(MODEL_CONTEXT_WINDOWS).find(k => modelName.startsWith(k));
         contextWindow = prefix ? MODEL_CONTEXT_WINDOWS[prefix] : 200000;

@@ -80,9 +80,10 @@ without waiting for a Dr. Claw release.
 
 | Provider | Source | Notes |
 |----------|--------|-------|
+| Claude | Agent SDK `supportedModels()` control request | The menu the bundled Claude Code CLI serves (e.g. `default`, `opus[1m]`, `claude-fable-5-1[1m]`, `sonnet`), so it tracks the SDK version Dr. Claw ships. The CLI also accepts ids it does not list, so built-in entries are kept without a deprecated marker. No tokens are consumed and settings/hooks are not loaded during the probe. |
 | Codex | `codex app-server` → `model/list` JSON-RPC | Same catalogue the Codex CLI's own picker reads. Honours `CODEX_CLI_PATH`. |
 | OpenRouter | `GET https://openrouter.ai/api/v1/models` | Public endpoint, no key needed. |
-| Claude, Cursor, Gemini, Nano | Built-in list | These CLIs expose no model-listing command today. |
+| Cursor, Gemini, Nano | Built-in list | These CLIs expose no model-listing command today. |
 | Local GPU | Ollama `/api/tags` | Existing behaviour, unchanged. |
 
 Discovery is strictly additive and never blocks the UI:
@@ -93,7 +94,8 @@ Discovery is strictly additive and never blocks the UI:
   logged out, or unresponsive, the built-in list is used instead.
 - Models present in the built-in list but no longer served by the harness are
   kept at the end of the picker and marked deprecated, so an existing saved
-  model preference is never stranded.
+  model preference is never stranded. (Not for Claude: its CLI runs ids it does
+  not advertise, so nothing is demoted there.)
 
 ### API
 

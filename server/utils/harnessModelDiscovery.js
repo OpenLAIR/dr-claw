@@ -16,6 +16,7 @@
  */
 
 import { spawn } from 'child_process';
+import os from 'os';
 import { StringDecoder } from 'string_decoder';
 import {
   CLAUDE_MODELS,
@@ -36,6 +37,18 @@ const STATIC_MODELS = {
   local: LOCAL_MODELS,
   nano: NANO_CLAUDE_CODE_MODELS,
   openrouter: OPENROUTER_MODELS,
+};
+
+/**
+ * Per-provider facts discovery cannot infer from the list itself.
+ *
+ * acceptsUnlisted: the harness accepts model ids beyond the ones it advertises.
+ * Claude Code's list is a short menu of aliases (`opus[1m]`, `sonnet`) while the
+ * CLI still runs any `claude-*` id you hand it, so for that provider absence
+ * from the list must not demote a built-in entry or trigger a rescue.
+ */
+const PROVIDER_TRAITS = {
+  claude: { acceptsUnlisted: true },
 };
 
 export const DISCOVERY_TTL_MS = 10 * 60 * 1000;
@@ -72,7 +85,7 @@ function reportDiscoveryFailure(provider, error) {
  * entitled to — and silently deleting a model a user already has selected would
  * strand their saved preference.
  */
-export function mergeModelOptions(discovered, staticOptions) {
+export function mergeModelOptions(discovered, staticOptions, { acceptsUnlisted = false } = {}) {
   const seen = new Set();
   const merged = [];
 
@@ -88,7 +101,7 @@ export function mergeModelOptions(discovered, staticOptions) {
   for (const option of staticOptions || []) {
     if (!option?.value || seen.has(option.value)) continue;
     seen.add(option.value);
-    merged.push({ ...option, deprecated: true });
+    merged.push(acceptsUnlisted ? { ...option } : { ...option, deprecated: true });
   }
 
   return merged;
@@ -270,6 +283,64 @@ async function discoverCodexModels({ timeoutMs, env = process.env } = {}) {
 }
 
 /**
+ * Claude Code reports the models its bundled CLI serves over the Agent SDK's
+ * control channel, so the list tracks the SDK version dr-claw ships rather
+ * than a hand-maintained table (the 0.3.226 CLI lists Opus 5 and Fable 5.1;
+ * 0.3.170 did not know Opus 5 existed).
+ *
+ * The session is opened in streaming-input mode with a prompt that never
+ * yields: the CLI answers the control request during initialization and is
+ * closed before any turn is consumed, so this costs no tokens. Settings
+ * sources are disabled so the probe cannot fire SessionStart hooks or pick up
+ * project configuration.
+ */
+async function discoverClaudeModels({ timeoutMs, sdkQuery } = {}) {
+  const queryFn = sdkQuery || (await import('@anthropic-ai/claude-agent-sdk')).query;
+
+  async function* idle() {
+    await new Promise(() => {});
+  }
+
+  const session = queryFn({
+    prompt: idle(),
+    options: {
+      cwd: os.tmpdir(),
+      settingSources: [],
+      maxTurns: 1,
+    },
+  });
+
+  let timer;
+  try {
+    const models = await Promise.race([
+      session.supportedModels(),
+      new Promise((_, reject) => {
+        timer = setTimeout(
+          () => reject(new Error(`claude supportedModels timed out after ${timeoutMs}ms`)),
+          timeoutMs,
+        );
+      }),
+    ]);
+
+    return (Array.isArray(models) ? models : [])
+      .filter((model) => model && typeof model.value === 'string' && model.value)
+      .map((model) => ({
+        value: model.value,
+        label: model.displayName || model.value,
+        description: model.description || undefined,
+        // The CLI's "default" pseudo-model resolves to whatever it currently
+        // recommends; it is the closest thing the list has to a harness default.
+        isDefault: model.value === 'default',
+      }));
+  } finally {
+    clearTimeout(timer);
+    // close() tears the child down; without it a timed-out probe would leave a
+    // CLI process alive for the rest of the server's life.
+    try { session.close(); } catch (_) { /* already gone */ }
+  }
+}
+
+/**
  * OpenRouter publishes its full catalogue over HTTP, so no CLI is involved.
  * The list is thousands of entries long; the picker already allows free-form
  * entry, so we surface it whole and let the combo box filter.
@@ -302,6 +373,7 @@ async function discoverOpenRouterModels({ timeoutMs } = {}) {
 }
 
 const DISCOVERERS = {
+  claude: discoverClaudeModels,
   codex: discoverCodexModels,
   openrouter: discoverOpenRouterModels,
 };
@@ -318,36 +390,40 @@ function buildFallbackPayload(provider, error = null) {
     options: config?.OPTIONS || [],
     default: config?.DEFAULT ?? '',
     allowsCustom: Boolean(config?.ALLOWS_CUSTOM),
+    acceptsUnlisted: Boolean(PROVIDER_TRAITS[provider]?.acceptsUnlisted),
     source: 'static',
     discoveredAt: null,
     error: error ? String(error.message || error) : null,
   };
 }
 
-async function runDiscovery(provider, { timeoutMs, env }) {
+async function runDiscovery(provider, { timeoutMs, env, sdkQuery }) {
   const config = STATIC_MODELS[provider];
   const discoverer = DISCOVERERS[provider];
+  const acceptsUnlisted = Boolean(PROVIDER_TRAITS[provider]?.acceptsUnlisted);
 
   if (!discoverer) {
     return buildFallbackPayload(provider);
   }
 
   try {
-    const discovered = await discoverer({ timeoutMs, env });
+    const discovered = await discoverer({ timeoutMs, env, sdkQuery });
 
     if (!Array.isArray(discovered) || discovered.length === 0) {
       throw new Error('harness returned no models');
     }
 
-    const options = mergeModelOptions(discovered, config?.OPTIONS);
+    const options = mergeModelOptions(discovered, config?.OPTIONS, { acceptsUnlisted });
     const discoveredDefault = discovered.find((model) => model.isDefault)?.value;
 
     // Keep the configured default only if the *harness* still serves it — not
     // merely if it survived into the merged list, which also carries retired
     // entries. Defaulting to a model the harness dropped sends every new session
-    // straight into an error.
+    // straight into an error. A harness that accepts unlisted ids cannot have
+    // dropped anything, so its configured default always stands.
     const configuredDefault = config?.DEFAULT;
-    const harnessStillServesConfigured = discovered.some((model) => model.value === configuredDefault);
+    const harnessStillServesConfigured = acceptsUnlisted
+      || discovered.some((model) => model.value === configuredDefault);
 
     return {
       provider,
@@ -356,6 +432,7 @@ async function runDiscovery(provider, { timeoutMs, env }) {
         ? configuredDefault
         : (discoveredDefault || options[0]?.value || configuredDefault || ''),
       allowsCustom: Boolean(config?.ALLOWS_CUSTOM),
+      acceptsUnlisted,
       source: 'discovered',
       discoveredAt: new Date().toISOString(),
       error: null,
@@ -378,6 +455,7 @@ export async function getModelsForProvider(provider, options = {}) {
     timeoutMs = DISCOVERY_TIMEOUT_MS,
     ttlMs = DISCOVERY_TTL_MS,
     env = process.env,
+    sdkQuery = null, // test seam: replaces the Agent SDK's query() for Claude
   } = options;
 
   if (!STATIC_MODELS[provider]) {
@@ -405,7 +483,7 @@ export async function getModelsForProvider(provider, options = {}) {
   const myGeneration = (generation.get(provider) || 0) + 1;
   generation.set(provider, myGeneration);
 
-  const promise = runDiscovery(provider, { timeoutMs, env })
+  const promise = runDiscovery(provider, { timeoutMs, env, sdkQuery })
     .then((payload) => {
       if (generation.get(provider) !== myGeneration) {
         return payload;
@@ -451,6 +529,7 @@ export function clearModelDiscoveryCache(provider = null) {
 }
 
 export const __testing = {
+  discoverClaudeModels,
   discoverCodexModels,
   discoverOpenRouterModels,
   jsonRpcOverStdio,
