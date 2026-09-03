@@ -1,7 +1,7 @@
 {
   "generatedAt": "2026-03-24T17:51:17.721Z",
   "schema": "skills-taxonomy-v2",
-  "totalSkills": 170,
+  "totalSkills": 171,
   "skills": [
     {
       "name": "academic-researcher",
@@ -7455,6 +7455,50 @@
         "ds-experiment",
         "ds-write",
         "ds-review"
+      ]
+    },
+    {
+      "name": "writing-style",
+      "primaryIntent": "writing",
+      "intents": [
+        "writing"
+      ],
+      "capabilities": [
+        "visualization-reporting"
+      ],
+      "domains": [
+        "general"
+      ],
+      "keywords": [
+        "writing-style",
+        "paper writing",
+        "visualization-reporting",
+        "writing",
+        "style",
+        "apply",
+        "21",
+        "prose",
+        "rules",
+        "from",
+        "elements",
+        "agent"
+      ],
+      "source": "imported",
+      "status": "verified",
+      "summary": "Apply the 21 prose rules from \"The Elements of Agent Style\" — 12 canonical rules (Strunk, Orwell, Pinker) plus 9 field-observed AI-output patterns. Use when the user says \"writing style\", \"agent style\", \"apply style rules\", \"style review\",...",
+      "legacy": {
+        "dirPath": "writing-style",
+        "skillFile": "skills/writing-style/SKILL.md",
+        "topLevelGroup": "Standalone",
+        "collection": "Paper Writing",
+        "domain": "General"
+      },
+      "owner": "yzhao062/agent-style",
+      "relatedSkills": [
+        "inno-paper-writing",
+        "scientific-writing",
+        "inno-figure-gen",
+        "inno-humanizer"
       ]
     }
   ]

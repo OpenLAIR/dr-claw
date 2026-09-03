@@ -49,6 +49,7 @@ skills/
 │  ├─ Review & Polish
 │  │  ├─ inno-paper-reviewer                Structured peer review with checklist-based evaluation
 │  │  ├─ inno-humanizer                     Rewrite to remove AI-writing markers
+│  │  ├─ writing-style                      Apply 21 prose rules (Strunk/Orwell/Pinker + AI-output patterns)
 │  │  └─ inno-reference-audit               Citation verification and fake citation prevention
 │  └─ inno-rclone-to-overleaf               Access & sync Overleaf projects via CLI
 │
