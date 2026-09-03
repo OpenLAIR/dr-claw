@@ -55,6 +55,82 @@ afterEach(async () => {
   vi.restoreAllMocks();
 });
 
+describe('claude discovery', () => {
+  const CLI_MENU = [
+    { value: 'default', displayName: 'Default (recommended)', description: 'Opus 5 with 1M context' },
+    { value: 'opus[1m]', displayName: 'Opus (1M context)', description: 'Opus 5 with 1M context' },
+    { value: 'claude-fable-5-1[1m]', displayName: 'Fable', description: 'Fable 5.1' },
+    { value: 'sonnet', displayName: 'Sonnet', description: 'Sonnet 5' },
+    { value: '', displayName: 'broken' },
+  ];
+
+  function fakeSdk({ models = CLI_MENU, hang = false, fail = null } = {}) {
+    const calls = { closed: 0, options: null };
+    const query = (args) => {
+      calls.options = args.options;
+      return {
+        supportedModels: () => {
+          if (fail) return Promise.reject(fail);
+          if (hang) return new Promise(() => {});
+          return Promise.resolve(models);
+        },
+        close: () => { calls.closed += 1; },
+      };
+    };
+    return { query, calls };
+  }
+
+  it('lists what the CLI serves, keeps built-ins undemoted, and closes the session', async () => {
+    const { CLAUDE_MODELS } = await import('../../../shared/modelConstants.js');
+    const { query, calls } = fakeSdk();
+
+    const payload = await mod.getModelsForProvider('claude', { sdkQuery: query });
+
+    expect(payload.source).toBe('discovered');
+    expect(payload.acceptsUnlisted).toBe(true);
+    expect(payload.options.slice(0, 4).map((o) => o.value))
+      .toEqual(['default', 'opus[1m]', 'claude-fable-5-1[1m]', 'sonnet']);
+    expect(payload.options.map((o) => o.value)).not.toContain('');
+    // Descriptions ride along so the picker can explain each alias.
+    expect(payload.options[1].description).toBe('Opus 5 with 1M context');
+    // The CLI runs ids it does not advertise, so nothing built-in is deprecated
+    // and the configured default is left alone.
+    for (const builtIn of CLAUDE_MODELS.OPTIONS) {
+      const entry = payload.options.find((o) => o.value === builtIn.value);
+      expect(entry).toBeDefined();
+      expect(entry.deprecated).toBeUndefined();
+    }
+    expect(payload.default).toBe(CLAUDE_MODELS.DEFAULT);
+    expect(calls.closed).toBe(1);
+    // The probe must not load settings (hooks) or run in a user project.
+    expect(calls.options.settingSources).toEqual([]);
+  });
+
+  it('falls back and closes the session when the SDK never answers', async () => {
+    const { CLAUDE_MODELS } = await import('../../../shared/modelConstants.js');
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { query, calls } = fakeSdk({ hang: true });
+
+    const payload = await mod.getModelsForProvider('claude', { sdkQuery: query, timeoutMs: 50 });
+
+    expect(payload.source).toBe('static');
+    expect(payload.options).toEqual(CLAUDE_MODELS.OPTIONS);
+    expect(payload.error).toMatch(/timed out/);
+    expect(calls.closed).toBe(1);
+  });
+
+  it('falls back when the SDK throws', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { query, calls } = fakeSdk({ fail: new Error('no credentials') });
+
+    const payload = await mod.getModelsForProvider('claude', { sdkQuery: query });
+
+    expect(payload.source).toBe('static');
+    expect(payload.error).toContain('no credentials');
+    expect(calls.closed).toBe(1);
+  });
+});
+
 describe('mergeModelOptions', () => {
   it('puts discovered models first and keeps unlisted built-ins as deprecated', () => {
     const merged = mod.mergeModelOptions(
@@ -69,6 +145,16 @@ describe('mergeModelOptions', () => {
     // A model the harness no longer serves is kept but marked, so a user whose
     // saved preference points at it is not stranded.
     expect(merged[2].deprecated).toBe(true);
+  });
+
+  it('leaves built-ins undemoted for a harness that accepts unlisted ids', () => {
+    const merged = mod.mergeModelOptions(
+      [{ value: 'opus[1m]', label: 'Opus' }],
+      [{ value: 'claude-opus-4-6', label: 'Opus 4.6' }],
+      { acceptsUnlisted: true },
+    );
+    expect(merged.map((o) => o.value)).toEqual(['opus[1m]', 'claude-opus-4-6']);
+    expect(merged[1].deprecated).toBeUndefined();
   });
 
   it('keeps metadata the discoverer attached, such as description', () => {
@@ -453,11 +539,11 @@ process.stdin.on('data', (d) => {
 
 describe('providers without a discoverer', () => {
   it('returns the built-in list unchanged', async () => {
-    const { CLAUDE_MODELS } = await import('../../../shared/modelConstants.js');
-    const payload = await mod.getModelsForProvider('claude');
+    const { GEMINI_MODELS } = await import('../../../shared/modelConstants.js');
+    const payload = await mod.getModelsForProvider('gemini');
 
     expect(payload.source).toBe('static');
-    expect(payload.options).toEqual(CLAUDE_MODELS.OPTIONS);
+    expect(payload.options).toEqual(GEMINI_MODELS.OPTIONS);
     expect(payload.error).toBeNull();
   });
 
@@ -469,6 +555,6 @@ describe('providers without a discoverer', () => {
   });
 
   it('only advertises providers it can actually probe', () => {
-    expect(mod.getDiscoverableProviders()).toEqual(['codex', 'openrouter']);
+    expect(mod.getDiscoverableProviders()).toEqual(['claude', 'codex', 'openrouter']);
   });
 });

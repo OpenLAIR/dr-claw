@@ -13,6 +13,7 @@
 export const CLAUDE_MODELS = {
   // Models in SDK format (what the actual SDK accepts)
   OPTIONS: [
+    { value: 'claude-opus-5', label: 'Opus 5' },
     { value: 'claude-fable-5', label: 'Fable 5' },
     { value: 'claude-fable-5[1m]', label: 'Fable 5 [1M]' },
     { value: 'sonnet', label: 'Sonnet' },

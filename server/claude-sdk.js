@@ -242,8 +242,11 @@ function getContextWindowForModel(modelName) {
     'opusplan':            200000,
     'sonnet[1m]':          1000000,
     // API format names
+    'claude-fable-5-1[1m]':        1000000,
+    'claude-fable-5-1':            1000000,
     'claude-fable-5[1m]':          1000000,
     'claude-fable-5':              200000,
+    'claude-opus-5':               1000000,
     'claude-opus-4-8':             200000,
     'claude-opus-4-7':             200000,
     'claude-opus-4-6':             200000,
@@ -266,6 +269,9 @@ function getContextWindowForModel(modelName) {
     // Exact match first
     const exact = MODEL_CONTEXT_WINDOWS[modelName];
     if (exact) return exact;
+    // Any `[1m]` alias the CLI serves (e.g. `opus[1m]`) is a 1M-context
+    // variant, whatever the base name resolves to.
+    if (modelName.endsWith('[1m]')) return 1000000;
     // Prefix match (e.g. 'claude-opus-4-6-20260301' matches 'claude-opus-4-6')
     const prefix = Object.keys(MODEL_CONTEXT_WINDOWS).find(k => modelName.startsWith(k));
     if (prefix) return MODEL_CONTEXT_WINDOWS[prefix];
