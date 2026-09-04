@@ -1,6 +1,6 @@
 ---
 name: autoresearch
-description: Autonomous Goal-directed Iteration. Apply Karpathy's autoresearch principles to ANY task. Loops autonomously — modify, verify, keep/discard, repeat. 9 subcommands: plan, debug, fix, security, ship, scenario, predict, learn.
+description: "Autonomous Goal-directed Iteration. Apply Karpathy's autoresearch principles to ANY task. Loops autonomously — modify, verify, keep/discard, repeat. 9 subcommands: plan, debug, fix, security, ship, scenario, predict, learn."
 version: 1.8.2
 license: MIT
 metadata:
