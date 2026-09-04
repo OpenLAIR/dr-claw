@@ -219,6 +219,10 @@
       "max": {
         "name": "Max",
         "description": "Maximum reasoning effort"
+      },
+      "ultra": {
+        "name": "Ultra",
+        "description": "The highest reasoning effort the model offers"
       }
     },
     "buttonTitle": "Reasoning effort: {{level}}"

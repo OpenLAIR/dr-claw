@@ -8,6 +8,28 @@ interface UseChatProviderStateArgs {
   selectedSession: ProjectSession | null;
 }
 
+/**
+ * A model id that can never belong to the slot it was saved in. A picker race
+ * (since fixed in useHarnessModels) briefly let one provider's model be written
+ * into another provider's storage key, e.g. `claude-model` = `gpt-5.6-sol`.
+ * Such a value would send every new session straight into an error, so drop
+ * it and fall back to the provider default instead of trusting storage.
+ */
+const FOREIGN_MODEL_PATTERNS: Partial<Record<string, RegExp>> = {
+  claude: /^(gpt-|o\d)/i,
+  codex: /^(claude-|sonnet|opus|haiku|default$)/i,
+};
+
+function readStoredModel(key: string, providerSlot: string, fallback: string): string {
+  const stored = localStorage.getItem(key);
+  if (!stored) return fallback;
+  if (FOREIGN_MODEL_PATTERNS[providerSlot]?.test(stored)) {
+    localStorage.removeItem(key);
+    return fallback;
+  }
+  return stored;
+}
+
 export function useChatProviderState({ selectedSession }: UseChatProviderStateArgs) {
   const [permissionMode, setPermissionMode] = useState<PermissionMode>('default');
   const [pendingPermissionRequests, setPendingPermissionRequests] = useState<PendingPermissionRequest[]>([]);
@@ -18,10 +40,10 @@ export function useChatProviderState({ selectedSession }: UseChatProviderStateAr
     return localStorage.getItem('cursor-model') || CURSOR_MODELS.DEFAULT;
   });
   const [claudeModel, setClaudeModel] = useState<string>(() => {
-    return localStorage.getItem('claude-model') || CLAUDE_MODELS.DEFAULT;
+    return readStoredModel('claude-model', 'claude', CLAUDE_MODELS.DEFAULT);
   });
   const [codexModel, setCodexModel] = useState<string>(() => {
-    return localStorage.getItem('codex-model') || CODEX_MODELS.DEFAULT;
+    return readStoredModel('codex-model', 'codex', CODEX_MODELS.DEFAULT);
   });
   const [geminiModel, setGeminiModel] = useState<string>(() => {
     return localStorage.getItem('gemini-model') || GEMINI_MODELS.DEFAULT;

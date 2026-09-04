@@ -21,7 +21,9 @@ async function writeFakeCodex(name, body) {
 
 const RESPOND_WITH_MODELS = `
 const models = [
-  { id: 'gpt-9-alpha', model: 'gpt-9-alpha', displayName: 'GPT-9 Alpha', hidden: false, isDefault: true },
+  { id: 'gpt-9-alpha', model: 'gpt-9-alpha', displayName: 'GPT-9 Alpha', hidden: false, isDefault: true,
+    supportedReasoningEfforts: [{ reasoningEffort: 'low' }, { reasoningEffort: 'high' }, { reasoningEffort: 'ultra' }],
+    defaultReasoningEffort: 'low' },
   { id: 'gpt-9-beta',  model: 'gpt-9-beta',  displayName: 'GPT-9 Beta',  hidden: false, isDefault: false },
   { id: 'gpt-9-secret', model: 'gpt-9-secret', displayName: 'Hidden',    hidden: true,  isDefault: false },
 ];
@@ -64,6 +66,12 @@ describe('claude discovery', () => {
     { value: '', displayName: 'broken' },
   ];
 
+  // Point the discoverer at an empty config dir so the developer's own
+  // ~/.claude/settings.json cannot leak a configured model into the assertions.
+  function isolatedEnv(extra = {}) {
+    return { ...process.env, CLAUDE_CONFIG_DIR: tmpDir, ANTHROPIC_MODEL: '', ...extra };
+  }
+
   function fakeSdk({ models = CLI_MENU, hang = false, fail = null } = {}) {
     const calls = { closed: 0, options: null };
     const query = (args) => {
@@ -84,7 +92,7 @@ describe('claude discovery', () => {
     const { CLAUDE_MODELS } = await import('../../../shared/modelConstants.js');
     const { query, calls } = fakeSdk();
 
-    const payload = await mod.getModelsForProvider('claude', { sdkQuery: query });
+    const payload = await mod.getModelsForProvider('claude', { sdkQuery: query, env: isolatedEnv() });
 
     expect(payload.source).toBe('discovered');
     expect(payload.acceptsUnlisted).toBe(true);
@@ -106,12 +114,57 @@ describe('claude discovery', () => {
     expect(calls.options.settingSources).toEqual([]);
   });
 
+  it('tells apart versions the CLI lists under one display name', async () => {
+    const { query } = fakeSdk({
+      models: [
+        { value: 'claude-fable-5[1m]', displayName: 'Fable', description: 'Fable 5 · Most capable' },
+        { value: 'claude-fable-5-1[1m]', displayName: 'Fable', description: 'Fable 5.1 · Most capable' },
+        { value: 'sonnet', displayName: 'Sonnet', description: 'Sonnet 5 · Efficient' },
+      ],
+    });
+
+    const payload = await mod.getModelsForProvider('claude', { sdkQuery: query, env: isolatedEnv() });
+    const labels = Object.fromEntries(payload.options.map((o) => [o.value, o.label]));
+
+    expect(labels['claude-fable-5[1m]']).toBe('Fable 5');
+    expect(labels['claude-fable-5-1[1m]']).toBe('Fable 5.1');
+    // A name used once keeps the CLI's own wording.
+    expect(labels['sonnet']).toBe('Sonnet');
+  });
+
+  it('surfaces the model configured in the user settings, as the CLI itself does', async () => {
+    // A model the CLI menu does not list on its own, as Fable 5.1 was not on
+    // the 0.3.226 menu until a user configured it.
+    await fs.writeFile(path.join(tmpDir, 'settings.json'), JSON.stringify({ model: 'claude-opus-4-9[1m]' }));
+    const { query } = fakeSdk();
+
+    const payload = await mod.getModelsForProvider('claude', { sdkQuery: query, env: isolatedEnv() });
+    const configured = payload.options.find((o) => o.value === 'claude-opus-4-9[1m]');
+
+    expect(configured).toBeDefined();
+    expect(configured.label).toBe('Opus 4.9 [1M]');
+    expect(configured.description).toMatch(/settings/);
+    expect(configured.deprecated).toBeUndefined();
+    // It is offered, not imposed: dr-claw's own default is untouched.
+    const { CLAUDE_MODELS } = await import('../../../shared/modelConstants.js');
+    expect(payload.default).toBe(CLAUDE_MODELS.DEFAULT);
+  });
+
+  it('honours ANTHROPIC_MODEL the same way', async () => {
+    const { query } = fakeSdk();
+    const payload = await mod.getModelsForProvider('claude', {
+      sdkQuery: query,
+      env: isolatedEnv({ ANTHROPIC_MODEL: 'claude-opus-4-9' }),
+    });
+    expect(payload.options.some((o) => o.value === 'claude-opus-4-9')).toBe(true);
+  });
+
   it('falls back and closes the session when the SDK never answers', async () => {
     const { CLAUDE_MODELS } = await import('../../../shared/modelConstants.js');
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     const { query, calls } = fakeSdk({ hang: true });
 
-    const payload = await mod.getModelsForProvider('claude', { sdkQuery: query, timeoutMs: 50 });
+    const payload = await mod.getModelsForProvider('claude', { sdkQuery: query, timeoutMs: 50, env: isolatedEnv() });
 
     expect(payload.source).toBe('static');
     expect(payload.options).toEqual(CLAUDE_MODELS.OPTIONS);
@@ -123,11 +176,24 @@ describe('claude discovery', () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     const { query, calls } = fakeSdk({ fail: new Error('no credentials') });
 
-    const payload = await mod.getModelsForProvider('claude', { sdkQuery: query });
+    const payload = await mod.getModelsForProvider('claude', { sdkQuery: query, env: isolatedEnv() });
 
     expect(payload.source).toBe('static');
     expect(payload.error).toContain('no credentials');
     expect(calls.closed).toBe(1);
+  });
+});
+
+describe('labelForClaudeModelId', () => {
+  it('renders family, dotted version and the 1M marker', () => {
+    expect(mod.labelForClaudeModelId('claude-fable-5-1[1m]')).toBe('Fable 5.1 [1M]');
+    expect(mod.labelForClaudeModelId('claude-opus-4-8')).toBe('Opus 4.8');
+    expect(mod.labelForClaudeModelId('claude-sonnet-5')).toBe('Sonnet 5');
+  });
+
+  it('leaves ids it does not understand alone', () => {
+    expect(mod.labelForClaudeModelId('opus[1m]')).toBe('opus[1m]');
+    expect(mod.labelForClaudeModelId('default')).toBe('default');
   });
 });
 
@@ -188,6 +254,21 @@ describe('codex model discovery', () => {
     const discovered = payload.options.filter((o) => !o.deprecated).map((o) => o.value);
     expect(discovered).toEqual(['gpt-9-alpha', 'gpt-9-beta']);
     expect(payload.options.map((o) => o.value)).not.toContain('gpt-9-secret');
+  });
+
+  it('carries each model\'s supported reasoning efforts through to the payload', async () => {
+    const fake = await writeFakeCodex('fake-codex.mjs', RESPOND_WITH_MODELS);
+
+    const payload = await mod.getModelsForProvider('codex', {
+      env: { ...process.env, CODEX_CLI_PATH: fake },
+    });
+
+    const alpha = payload.options.find((o) => o.value === 'gpt-9-alpha');
+    expect(alpha.reasoningEfforts).toEqual(['low', 'high', 'ultra']);
+    expect(alpha.defaultReasoningEffort).toBe('low');
+    // A model the harness reports nothing for carries no claim either way.
+    const beta = payload.options.find((o) => o.value === 'gpt-9-beta');
+    expect(beta.reasoningEfforts).toBeUndefined();
   });
 
   it('adopts the harness default when the configured one is no longer served', async () => {

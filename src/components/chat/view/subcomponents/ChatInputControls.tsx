@@ -20,6 +20,8 @@ interface ChatInputControlsProps {
   setThinkingMode: React.Dispatch<React.SetStateAction<string>>;
   codexReasoningEffort: CodexReasoningEffortId;
   setCodexReasoningEffort: React.Dispatch<React.SetStateAction<CodexReasoningEffortId>>;
+  /** Efforts the Codex CLI reported for `codexModel`; null when discovery is unavailable. */
+  codexReasoningEfforts?: readonly string[] | null;
   geminiThinkingMode: GeminiThinkingModeId;
   setGeminiThinkingMode: React.Dispatch<React.SetStateAction<GeminiThinkingModeId>>;
   tokenBudget: TokenBudget | null;
@@ -41,6 +43,7 @@ export default function ChatInputControls({
   setThinkingMode,
   codexReasoningEffort,
   setCodexReasoningEffort,
+  codexReasoningEfforts = null,
   geminiThinkingMode,
   setGeminiThinkingMode,
   tokenBudget,
@@ -95,9 +98,10 @@ export default function ChatInputControls({
         <ThinkingModeSelector selectedMode={thinkingMode} onModeChange={setThinkingMode} onClose={() => {}} className="" compact={compact} />
       )}
 
-      {provider === 'codex' && supportsExplicitCodexReasoningEffort(codexModel) && (
+      {provider === 'codex' && supportsExplicitCodexReasoningEffort(codexModel, codexReasoningEfforts) && (
         <CodexReasoningEffortSelector
           model={codexModel}
+          supportedEfforts={codexReasoningEfforts}
           selectedEffort={codexReasoningEffort}
           onEffortChange={setCodexReasoningEffort}
           onClose={() => {}}

@@ -30,7 +30,7 @@ import type { SessionMode, SessionProvider } from '../../../../types/app';
 import { CLAUDE_MODELS, CURSOR_MODELS, CODEX_MODELS, GEMINI_MODELS, LOCAL_MODELS, NANO_CLAUDE_CODE_MODELS, OPENROUTER_MODELS } from '../../../../../shared/modelConstants';
 import { authenticatedFetch } from '../../../../utils/api';
 import { isAutoResearchScenario } from '../../utils/autoResearch';
-import { useHarnessModels } from '../../hooks/useHarnessModels';
+import type { HarnessModels } from '../../hooks/useHarnessModels';
 
 // New subcomponents
 import SkillDropdown from './SkillDropdown';
@@ -107,6 +107,8 @@ interface ChatComposerProps {
   setThinkingMode: Dispatch<SetStateAction<string>>;
   codexReasoningEffort: CodexReasoningEffortId;
   setCodexReasoningEffort: Dispatch<SetStateAction<CodexReasoningEffortId>>;
+  /** Live model list for `provider`, owned by ChatInterface so composer state can share it. */
+  harnessModels: HarnessModels;
   geminiThinkingMode: GeminiThinkingModeId;
   setGeminiThinkingMode: Dispatch<SetStateAction<GeminiThinkingModeId>>;
   tokenBudget: TokenBudget | null;
@@ -194,6 +196,7 @@ export default function ChatComposer({
   setThinkingMode,
   codexReasoningEffort,
   setCodexReasoningEffort,
+  harnessModels,
   geminiThinkingMode,
   setGeminiThinkingMode,
   tokenBudget,
@@ -340,7 +343,10 @@ export default function ChatComposer({
   // Prefer the list the harness reports over the compiled-in one, so a CLI that
   // ships new models is picked up without a dr-claw release. Falls back to the
   // built-in list whenever discovery is unavailable.
-  const { options: discoveredModels, defaultModel: discoveredDefault } = useHarnessModels(sessionProvider);
+  const { options: discoveredModels, defaultModel: discoveredDefault } = harnessModels;
+  const codexReasoningEfforts = sessionProvider === 'codex'
+    ? discoveredModels?.find((option) => option.value === codexModel)?.reasoningEfforts ?? null
+    : null;
 
   const rawModelConfig = getModelConfig(sessionProvider);
   const modelConfig = sessionProvider === 'local' && ollamaModels.length > 0
@@ -698,6 +704,7 @@ export default function ChatComposer({
                     setThinkingMode={setThinkingMode}
                     codexReasoningEffort={codexReasoningEffort}
                     setCodexReasoningEffort={setCodexReasoningEffort}
+                    codexReasoningEfforts={codexReasoningEfforts}
                     geminiThinkingMode={geminiThinkingMode}
                     setGeminiThinkingMode={setGeminiThinkingMode}
                     tokenBudget={tokenBudget}

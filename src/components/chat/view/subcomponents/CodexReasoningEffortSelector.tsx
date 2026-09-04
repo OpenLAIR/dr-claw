@@ -8,6 +8,8 @@ import { getSupportedCodexReasoningEfforts } from '../../constants/codexReasonin
 
 type CodexReasoningEffortSelectorProps = {
   model: string;
+  /** Efforts the Codex CLI reported for `model`; null when discovery is unavailable. */
+  supportedEfforts?: readonly string[] | null;
   selectedEffort: CodexReasoningEffortId;
   onEffortChange: (effortId: CodexReasoningEffortId) => void;
   onClose?: () => void;
@@ -17,6 +19,7 @@ type CodexReasoningEffortSelectorProps = {
 
 function CodexReasoningEffortSelector({
   model,
+  supportedEfforts,
   selectedEffort,
   onEffortChange,
   onClose,
@@ -39,7 +42,7 @@ function CodexReasoningEffortSelector({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [onClose]);
 
-  const supportedEffortIds = getSupportedCodexReasoningEfforts(model);
+  const supportedEffortIds = getSupportedCodexReasoningEfforts(model, supportedEfforts);
 
   const translatedEfforts = codexReasoningEfforts
     .filter((effort) => supportedEffortIds.includes(effort.id))

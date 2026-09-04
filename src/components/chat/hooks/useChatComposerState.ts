@@ -69,6 +69,8 @@ interface UseChatComposerStateArgs {
   cursorModel: string;
   claudeModel: string;
   codexModel: string;
+  /** Efforts the Codex CLI reported for `codexModel`; null when discovery is unavailable. */
+  codexReasoningEfforts?: readonly string[] | null;
   geminiModel: string;
   openrouterModel: string;
   localModel: string;
@@ -248,6 +250,7 @@ export function useChatComposerState({
   cursorModel,
   claudeModel,
   codexModel,
+  codexReasoningEfforts = null,
   geminiModel,
   openrouterModel,
   localModel,
@@ -295,6 +298,7 @@ export function useChatComposerState({
       case 'high':
       case 'xhigh':
       case 'max':
+      case 'ultra':
       case 'default':
         return savedValue;
       default:
@@ -385,11 +389,11 @@ export function useChatComposerState({
   }, [geminiThinkingMode]);
 
   useEffect(() => {
-    const normalizedEffort = normalizeCodexReasoningEffort(codexModel, codexReasoningEffort);
+    const normalizedEffort = normalizeCodexReasoningEffort(codexModel, codexReasoningEffort, codexReasoningEfforts);
     if (normalizedEffort !== codexReasoningEffort) {
       setCodexReasoningEffort(normalizedEffort);
     }
-  }, [codexModel, codexReasoningEffort]);
+  }, [codexModel, codexReasoningEffort, codexReasoningEfforts]);
 
   useEffect(() => {
     const supportedModes = getSupportedGeminiThinkingModes(geminiModel);

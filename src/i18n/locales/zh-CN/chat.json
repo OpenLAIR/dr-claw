@@ -219,6 +219,10 @@
       "max": {
         "name": "最高",
         "description": "最大推理强度"
+      },
+      "ultra": {
+        "name": "极限",
+        "description": "模型提供的最高推理强度"
       }
     },
     "buttonTitle": "思考强度：{{level}}"

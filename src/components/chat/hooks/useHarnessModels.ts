@@ -8,6 +8,10 @@ export interface HarnessModelOption {
   description?: string;
   /** Present in the built-in list but not reported by the harness itself. */
   deprecated?: boolean;
+  isDefault?: boolean;
+  /** Reasoning efforts the harness says this model accepts (Codex). */
+  reasoningEfforts?: string[];
+  defaultReasoningEffort?: string;
 }
 
 export interface HarnessModels {
@@ -19,6 +23,22 @@ export interface HarnessModels {
   refresh: () => void;
 }
 
+interface LoadedModels {
+  /** The provider this answer was fetched for. */
+  provider: string;
+  options: HarnessModelOption[] | null;
+  source: 'discovered' | 'static' | null;
+  defaultModel: string | null;
+}
+
+const EMPTY: HarnessModels = {
+  options: null,
+  source: null,
+  defaultModel: null,
+  isLoading: false,
+  refresh: () => {},
+};
+
 /**
  * Ask the server for the model list the selected harness actually supports.
  *
@@ -26,17 +46,18 @@ export interface HarnessModels {
  * callers keep rendering their built-in list rather than flashing an empty
  * picker. The server never fails this call — it falls back to the built-in list
  * — so the only states here are "not answered yet" and "answered".
+ *
+ * Every answer is tagged with the provider it was fetched for, and only an
+ * answer for the *current* provider is ever exposed. State updates are
+ * asynchronous, so for at least one render after a provider switch the stored
+ * answer still describes the previous provider; handing that out would let a
+ * consumer act on Codex's list while `provider` already says Claude (which is
+ * exactly how a Codex model once ended up saved as the Claude model).
  */
 export function useHarnessModels(provider: SessionProvider | string | null | undefined): HarnessModels {
-  const [options, setOptions] = useState<HarnessModelOption[] | null>(null);
-  const [source, setSource] = useState<'discovered' | 'static' | null>(null);
-  const [defaultModel, setDefaultModel] = useState<string | null>(null);
+  const [loaded, setLoaded] = useState<LoadedModels | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [refreshToken, setRefreshToken] = useState(0);
-
-  // Guards against a slow response for a provider the user has already switched
-  // away from overwriting the current one.
-  const requestedProviderRef = useRef<string | null>(null);
 
   // One-shot: only the request triggered by refresh() bypasses the server
   // cache. Deriving it from `refreshToken > 0` would make every later provider
@@ -49,20 +70,12 @@ export function useHarnessModels(provider: SessionProvider | string | null | und
 
   useEffect(() => {
     if (!provider) {
-      setOptions(null);
-      setSource(null);
-      setDefaultModel(null);
+      setLoaded(null);
       return;
     }
 
     let cancelled = false;
-    requestedProviderRef.current = provider;
     setIsLoading(true);
-    // Clear immediately rather than on response: otherwise the picker keeps
-    // rendering the previous provider's models for the duration of the request.
-    setOptions(null);
-    setSource(null);
-    setDefaultModel(null);
 
     const force = forceNextRef.current;
     forceNextRef.current = false;
@@ -70,22 +83,23 @@ export function useHarnessModels(provider: SessionProvider | string | null | und
     authenticatedFetch(`/api/models/${encodeURIComponent(provider)}${query}`)
       .then(async (res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (cancelled || requestedProviderRef.current !== provider) return;
+        if (cancelled) return;
         if (!data || !Array.isArray(data.options)) {
-          setOptions(null);
-          setSource(null);
+          setLoaded({ provider, options: null, source: null, defaultModel: null });
           return;
         }
-        // A static answer carries no information the caller does not already
-        // have compiled in, so leave it on its own list.
-        setSource(data.source ?? null);
-        setOptions(data.source === 'discovered' ? data.options : null);
-        setDefaultModel(typeof data.default === 'string' ? data.default : null);
+        setLoaded({
+          provider,
+          source: data.source ?? null,
+          // A static answer carries no information the caller does not already
+          // have compiled in, so leave it on its own list.
+          options: data.source === 'discovered' ? data.options : null,
+          defaultModel: typeof data.default === 'string' ? data.default : null,
+        });
       })
       .catch(() => {
         if (cancelled) return;
-        setOptions(null);
-        setSource(null);
+        setLoaded({ provider, options: null, source: null, defaultModel: null });
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false);
@@ -96,7 +110,16 @@ export function useHarnessModels(provider: SessionProvider | string | null | und
     };
   }, [provider, refreshToken]);
 
-  return { options, source, defaultModel, isLoading, refresh };
+  if (!provider) return EMPTY;
+
+  const current = loaded && loaded.provider === provider ? loaded : null;
+  return {
+    options: current?.options ?? null,
+    source: current?.source ?? null,
+    defaultModel: current?.defaultModel ?? null,
+    isLoading,
+    refresh,
+  };
 }
 
 export default useHarnessModels;
