@@ -276,6 +276,82 @@ ${RESPOND_WITH_MODELS}
   });
 });
 
+describe('pi model discovery', () => {
+  it('parses Pi table rows into canonical provider/model values', async () => {
+    const fake = await writeFakeCodex('fake-pi.mjs', `
+process.stdout.write([
+  'provider   model                         context  max-out  thinking  images',
+  'anthropic  claude-sonnet-5              1M       64K      yes       yes',
+  'openai     gpt-5.5                       400K     128K     yes       yes',
+  'lmstudio   unsloth/qwen3.5-35b-a3b      32K      8K       no        no',
+].join('\\n') + '\\n');
+`);
+
+    const payload = await mod.getModelsForProvider('pi', {
+      env: { ...process.env, PI_CLI_PATH: fake },
+    });
+
+    expect(payload.source).toBe('discovered');
+    expect(payload.acceptsUnlisted).toBe(true);
+    expect(payload.options.slice(0, 3)).toEqual([
+      { value: 'anthropic/claude-sonnet-5', label: 'claude-sonnet-5 (anthropic)' },
+      { value: 'openai/gpt-5.5', label: 'gpt-5.5 (openai)' },
+      { value: 'lmstudio/unsloth/qwen3.5-35b-a3b', label: 'unsloth/qwen3.5-35b-a3b (lmstudio)' },
+    ]);
+  });
+
+  it('keeps Pi custom models undemoted and preserves its configured default', async () => {
+    const fake = await writeFakeCodex('partial-pi.mjs', `
+process.stdout.write('provider  model  context  max-out  thinking  images\\nopenai  gpt-5.5  400K  128K  yes  yes\\n');
+`);
+    const { PI_MODELS } = await import('../../../shared/modelConstants.js');
+
+    const payload = await mod.getModelsForProvider('pi', {
+      env: { ...process.env, PI_CLI_PATH: fake },
+    });
+
+    expect(payload.default).toBe(PI_MODELS.DEFAULT);
+    for (const builtIn of PI_MODELS.OPTIONS) {
+      const entry = payload.options.find((option) => option.value === builtIn.value);
+      expect(entry).toBeDefined();
+      expect(entry.deprecated).toBeUndefined();
+    }
+  });
+
+  it('falls back when Pi reports no authenticated models', async () => {
+    const fake = await writeFakeCodex('empty-pi.mjs', `
+process.stdout.write('No models available. Use /login to log into a provider via OAuth or API key.\\n');
+`);
+    const { PI_MODELS } = await import('../../../shared/modelConstants.js');
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const payload = await mod.getModelsForProvider('pi', {
+      env: { ...process.env, PI_CLI_PATH: fake },
+    });
+
+    expect(payload.source).toBe('static');
+    expect(payload.options).toEqual(PI_MODELS.OPTIONS);
+    expect(payload.error).toContain('no models');
+  });
+
+  it('falls back when the Pi CLI is missing or does not exit', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const missing = await mod.getModelsForProvider('pi', {
+      env: { ...process.env, PI_CLI_PATH: path.join(tmpDir, 'does-not-exist') },
+    });
+    expect(missing.source).toBe('static');
+
+    mod.clearModelDiscoveryCache('pi');
+    const fake = await writeFakeCodex('hanging-pi.mjs', 'setInterval(() => {}, 1000);');
+    const hanging = await mod.getModelsForProvider('pi', {
+      timeoutMs: 100,
+      env: { ...process.env, PI_CLI_PATH: fake },
+    });
+    expect(hanging.source).toBe('static');
+    expect(hanging.error).toContain('timed out');
+  });
+});
+
 describe('protocol robustness', () => {
   it('follows nextCursor pagination across pages', async () => {
     const fake = await writeFakeCodex('paged.mjs', `
@@ -555,6 +631,6 @@ describe('providers without a discoverer', () => {
   });
 
   it('only advertises providers it can actually probe', () => {
-    expect(mod.getDiscoverableProviders()).toEqual(['claude', 'codex', 'openrouter']);
+    expect(mod.getDiscoverableProviders()).toEqual(['claude', 'codex', 'openrouter', 'pi']);
   });
 });

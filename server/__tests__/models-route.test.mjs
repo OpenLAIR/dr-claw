@@ -84,6 +84,6 @@ describe('GET /api/models/providers', () => {
     const { status, body } = await get('/api/models/providers');
 
     expect(status).toBe(200);
-    expect(body.providers).toEqual(['claude', 'codex', 'openrouter']);
+    expect(body.providers).toEqual(['claude', 'codex', 'openrouter', 'pi']);
   });
 });
