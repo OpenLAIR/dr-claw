@@ -5008,17 +5008,21 @@ async function reconcilePiSessionIndex(projectPath, options = {}) {
   }
 }
 
-/** Locate a Pi transcript by session id. Filenames embed the uuid. */
+/** Locate a Pi transcript by session id, using filenames only to prioritize candidates. */
 async function findPiSessionFilePath(sessionId) {
   if (!sessionId) return null;
 
   const files = await findPiSessionFiles(getPiSessionsRoot());
+  const likelyMatches = [];
+  const remainingFiles = [];
   for (const filePath of files) {
-    if (path.basename(filePath).includes(sessionId)) return filePath;
+    const destination = path.basename(filePath).includes(sessionId) ? likelyMatches : remainingFiles;
+    destination.push(filePath);
   }
 
-  // Fall back to headers for a file whose name does not carry the id.
-  for (const filePath of files) {
+  // Filenames are not authoritative: one session id can be a substring of
+  // another, and Pi may write an opaque filename. Always verify the header id.
+  for (const filePath of [...likelyMatches, ...remainingFiles]) {
     try {
       const session = await readPiSessionFileCached(filePath);
       if (session?.id === sessionId) return filePath;

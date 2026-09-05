@@ -158,6 +158,7 @@ export const getAllSessions = (
   const piSessions = (project.piSessions || []).map((session) => ({
     ...session,
     __provider: 'pi' as const,
+    __projectName: project.name,
   }));
 
   const nanoSessions = (project.nanoSessions || []).map((session) => ({
