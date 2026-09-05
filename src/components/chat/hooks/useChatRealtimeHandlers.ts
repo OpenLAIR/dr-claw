@@ -15,6 +15,7 @@ import {
   safeLocalStorage,
 } from '../utils/chatStorage';
 import { invalidateSessionMessageCache } from './useChatSessionState';
+import { applyPiToolEvent } from './piToolEvents';
 import { RESUMING_STATUS_TEXT } from '../types/types';
 import i18n from '../../../i18n/config';
 import type { ChatMessage, PendingPermissionRequest } from '../types/types';
@@ -1029,31 +1030,12 @@ export function useChatRealtimeHandlers({
             break;
 
           case 'tool_use':
-            setChatMessages((previous) => [
-              ...previous,
-              {
-                type: 'tool_use',
-                content: '',
-                timestamp: new Date(),
-                toolName: piData.toolName,
-                toolInput: piData.toolInput,
-                toolCallId: piData.toolCallId,
-              },
-            ]);
+            flushAndFinalizePendingStream();
+            setChatMessages((previous) => applyPiToolEvent(previous, piData));
             break;
 
           case 'tool_result':
-            setChatMessages((previous) => [
-              ...previous,
-              {
-                type: 'tool_result',
-                content: piData.output || '',
-                timestamp: new Date(),
-                toolName: piData.toolName,
-                toolCallId: piData.toolCallId,
-                isError: piData.isError === true,
-              },
-            ]);
+            setChatMessages((previous) => applyPiToolEvent(previous, piData));
             break;
 
           default:
