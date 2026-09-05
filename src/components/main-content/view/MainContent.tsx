@@ -1,7 +1,6 @@
 import React, { lazy, Suspense, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import ErrorBoundary from '../../ErrorBoundary';
 import LazyLoadBoundary from '../../LazyLoadBoundary';
 
 import ChatTabBar from '../../chat/view/ChatTabBar';
@@ -365,9 +364,8 @@ function MainContent({
                 openNewTab();
               }}
             />
-            <ErrorBoundary showDetails>
-              <Suspense fallback={<ContentLoadingFallback />}>
-                <ChatInterface
+            <LazyContent resetKey="chat">
+              <ChatInterface
                 selectedProject={selectedProject}
                 selectedSession={effectiveSession}
                 ws={ws}
@@ -395,9 +393,8 @@ function MainContent({
                 clearImportedProjectAnalysisPrompt={clearImportedProjectAnalysisPrompt}
                 newSessionMode={newSessionMode}
                 onNewSessionModeChange={onNewSessionModeChange}
-                />
-              </Suspense>
-            </ErrorBoundary>
+              />
+            </LazyContent>
           </div>
 
           {activeTab === 'survey' && (
