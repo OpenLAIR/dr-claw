@@ -12,6 +12,7 @@ import { buildTempAttachmentFilename, toPortableAtPath } from './utils/imageAtta
 import { splitLegacyGeminiThoughtContent } from '../shared/geminiThoughtParser.js';
 import { classifyError } from '../shared/errorClassifier.js';
 import { buildGeminiThinkingConfig } from '../shared/geminiThinkingSupport.js';
+import { buildGeminiSystemSettingsOverride } from './utils/geminiSystemSettings.js';
 import { buildMemoryBlock } from './utils/memoryPrompt.js';
 import { COMPUTE_GUARD_BLOCK } from './utils/computeGuardPrompt.js';
 import { expandSkillCommand } from './utils/skillExpander.js';
@@ -458,27 +459,17 @@ function deepMergeObjects(baseValue, overrideValue) {
 }
 
 async function prepareGeminiThinkingSettings(model, thinkingMode, env = {}) {
-  const thinkingConfig = buildGeminiThinkingConfig(model, thinkingMode);
-  if (!thinkingConfig || !model) {
+  const thinkingConfig = model ? buildGeminiThinkingConfig(model, thinkingMode) : null;
+  const built = buildGeminiSystemSettingsOverride({
+    model,
+    thinkingConfig,
+    apiKey: env.GEMINI_API_KEY || env.GOOGLE_API_KEY || null,
+  });
+  if (!built) {
     return null;
   }
 
-  const aliasName = '__dr_claw_session_model';
-  const overrideSettings = {
-    modelConfigs: {
-      customAliases: {
-        [aliasName]: {
-          extends: model,
-          modelConfig: {
-            model,
-            generateContentConfig: {
-              thinkingConfig,
-            },
-          },
-        },
-      },
-    },
-  };
+  const { override: overrideSettings, cliModel: aliasName } = built;
 
   let mergedSettings = overrideSettings;
   const inheritedSettingsPath = env.GEMINI_CLI_SYSTEM_SETTINGS_PATH;
