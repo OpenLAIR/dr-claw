@@ -547,10 +547,14 @@ async function checkGeminiCredentials() {
           }
         }
 
-        console.log(`[DEBUG] Gemini: Authenticated via OAuth as ${email}`);
+        // Since 2026-06-18 the Gemini CLI no longer serves individual Google
+        // accounts: with only OAuth credentials every session exits with
+        // IneligibleTierError. Report that rather than a green tick.
+        console.log(`[DEBUG] Gemini: OAuth credentials for ${email}, but individual OAuth access is retired`);
         return {
-          authenticated: true,
+          authenticated: false,
           email: email,
+          error: 'Gemini CLI stopped serving individual Google accounts on 2026-06-18. Add a Gemini API key in Settings to keep using it, or switch to Antigravity CLI.',
           cliAvailable: true,
           cliCommand
         };

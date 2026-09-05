@@ -20,6 +20,10 @@ function isGemini25Model(model) {
   return typeof model === 'string' && model.startsWith('gemini-2.5');
 }
 
+function isGeminiProModel(model) {
+  return typeof model === 'string' && /-pro(?:-|$)/.test(model);
+}
+
 export function getGeminiThinkingFamily(model) {
   if (isGemini3Model(model)) return 'gemini-3';
   if (isGemini25Model(model)) return 'gemini-2.5';
@@ -40,8 +44,23 @@ export function getSupportedGeminiThinkingModes(model) {
     case 'gemini-2.5-flash':
     case 'gemini-2.5-flash-lite':
       return ['default', 'dynamic', 'off', 'light', 'balanced', 'deep'];
-    default:
+    default: {
+      // A model this table has not seen (the API list moves faster than we
+      // do) still belongs to a family whose thinking controls are known:
+      // Gemini 3 takes a thinking level, Gemini 2.5 a thinking budget.
+      const family = getGeminiThinkingFamily(model);
+      if (family === 'gemini-3') {
+        return isGeminiProModel(model)
+          ? ['default', 'low', 'medium', 'high']
+          : ['default', 'minimal', 'low', 'medium', 'high'];
+      }
+      if (family === 'gemini-2.5') {
+        return isGeminiProModel(model)
+          ? ['default', 'dynamic', 'light', 'balanced', 'deep', 'max']
+          : ['default', 'dynamic', 'off', 'light', 'balanced', 'deep'];
+      }
       return ['default'];
+    }
   }
 }
 
@@ -90,7 +109,10 @@ export function buildGeminiThinkingConfig(model, mode) {
       },
     };
 
-    const budget = budgetMapByModel[model]?.[mode];
+    // Unknown 2.5 models take the budgets of the closest known sibling.
+    const budgets = budgetMapByModel[model]
+      || (isGeminiProModel(model) ? budgetMapByModel['gemini-2.5-pro'] : budgetMapByModel['gemini-2.5-flash']);
+    const budget = budgets?.[mode];
     return Number.isInteger(budget) ? { thinkingBudget: budget } : null;
   }
 

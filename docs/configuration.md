@@ -82,8 +82,9 @@ without waiting for a Dr. Claw release.
 |----------|--------|-------|
 | Claude | Agent SDK `supportedModels()` control request | The menu the bundled Claude Code CLI serves (e.g. `default`, `opus[1m]`, `sonnet`), so it tracks the SDK version Dr. Claw ships. The model configured in `~/.claude/settings.json` (or `CLAUDE_CONFIG_DIR`, or `ANTHROPIC_MODEL`) is added the way the CLI's own `/model` menu adds it. The CLI also accepts ids it does not list, so built-in entries are kept without a deprecated marker. No tokens are consumed and settings/hooks are not loaded during the probe. |
 | Codex | `codex app-server` → `model/list` JSON-RPC | Same catalogue the Codex CLI's own picker reads, including each model's supported reasoning efforts, which drive the reasoning-effort selector. Honours `CODEX_CLI_PATH`. |
+| Gemini | `GET https://generativelanguage.googleapis.com/v1beta/models` | The Gemini CLI has no model-listing command, so the catalogue comes from the Gemini API using the caller's API key (saved in Settings, else `GEMINI_API_KEY` / `GOOGLE_API_KEY`). Non-chat models (TTS, image, music, embeddings, …) are filtered out. Without a key the built-in list is used. Thinking-mode support for a model the table has not seen falls back to its family (Gemini 3: levels, Gemini 2.5: budgets). Note: since 2026-06-18 the Gemini CLI no longer serves individual Google (OAuth) accounts; an API key is required, and Dr. Claw selects API-key auth for the CLI whenever one is configured. |
 | OpenRouter | `GET https://openrouter.ai/api/v1/models` | Public endpoint, no key needed. |
-| Cursor, Gemini, Nano | Built-in list | These CLIs expose no model-listing command today. |
+| Cursor, Nano | Built-in list | These CLIs expose no model-listing command today. |
 | Local GPU | Ollama `/api/tags` | Existing behaviour, unchanged. |
 
 Discovery is strictly additive and never blocks the UI:

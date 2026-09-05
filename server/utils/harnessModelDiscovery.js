@@ -479,9 +479,79 @@ async function discoverOpenRouterModels({ timeoutMs } = {}) {
   }
 }
 
+/**
+ * Gemini CLI has no model-listing command, and its own /model menu is a
+ * handful of aliases (auto, pro, flash, flash-lite). The Gemini API does
+ * publish the catalogue, so when an API key is available ask it and fall back
+ * to the built-in list otherwise (OAuth-only setups). The catalogue mixes in
+ * TTS, image, music and other non-chat models, which are filtered out.
+ */
+const GEMINI_MODELS_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
+const GEMINI_MAX_PAGES = 5;
+const GEMINI_NON_CHAT_PATTERN = /(tts|image|transcribe|robotics|computer-use|embedding|live|audio|lyria|deep-research|antigravity)/i;
+
+function geminiVersionOf(id) {
+  const match = /^gemini-(\d+(?:\.\d+)?)/.exec(id);
+  return match ? Number(match[1]) : -1;
+}
+
+async function discoverGeminiModels({ timeoutMs, env = process.env } = {}) {
+  const apiKey = env.GEMINI_API_KEY || env.GOOGLE_API_KEY;
+  if (!apiKey) {
+    throw new Error('no Gemini API key (GEMINI_API_KEY); the Gemini CLI cannot list models itself');
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const collected = [];
+
+  try {
+    let pageToken = null;
+    for (let page = 0; page < GEMINI_MAX_PAGES; page += 1) {
+      const url = `${GEMINI_MODELS_URL}?pageSize=200${pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : ''}`;
+      const response = await fetch(url, {
+        signal: controller.signal,
+        headers: { 'x-goog-api-key': apiKey, Accept: 'application/json' },
+      });
+      if (!response.ok) {
+        throw new Error(`Gemini API responded ${response.status}`);
+      }
+      const body = await response.json();
+      collected.push(...(body?.models || []));
+      pageToken = body?.nextPageToken || null;
+      if (!pageToken) break;
+    }
+  } finally {
+    clearTimeout(timer);
+  }
+
+  return collected
+    .map((model) => ({ ...model, id: String(model?.name || '').replace(/^models\//, '') }))
+    .filter((model) =>
+      model.id.startsWith('gemini-')
+      && (model.supportedGenerationMethods || []).includes('generateContent')
+      && !GEMINI_NON_CHAT_PATTERN.test(model.id))
+    // Newest generation first; the API lists them roughly oldest-first.
+    .sort((a, b) => geminiVersionOf(b.id) - geminiVersionOf(a.id))
+    .map((model) => {
+      const context = Number(model.inputTokenLimit);
+      const contextNote = Number.isFinite(context) && context > 0 ? `${Math.round(context / 1024)}K context` : '';
+      const blurb = model.description ? String(model.description).slice(0, 120) : '';
+      return {
+        value: model.id,
+        label: model.displayName || model.id,
+        description: [blurb, contextNote].filter(Boolean).join(' · ') || undefined,
+        isDefault: false,
+        contextWindow: Number.isFinite(context) && context > 0 ? context : undefined,
+        supportsThinking: Boolean(model.thinking),
+      };
+    });
+}
+
 const DISCOVERERS = {
   claude: discoverClaudeModels,
   codex: discoverCodexModels,
+  gemini: discoverGeminiModels,
   openrouter: discoverOpenRouterModels,
 };
 
@@ -563,13 +633,19 @@ export async function getModelsForProvider(provider, options = {}) {
     ttlMs = DISCOVERY_TTL_MS,
     env = process.env,
     sdkQuery = null, // test seam: replaces the Agent SDK's query() for Claude
+    // Separates cache entries when the outcome depends on per-request state
+    // (Gemini discovers with the caller's API key: a keyless caller's fallback
+    // must not be served to a caller who has one, nor the other way round).
+    cacheScope = null,
   } = options;
 
   if (!STATIC_MODELS[provider]) {
     return { ...buildFallbackPayload(provider), error: `Unknown provider: ${provider}` };
   }
 
-  const cached = cache.get(provider);
+  const cacheKey = cacheScope ? `${provider}:${cacheScope}` : provider;
+
+  const cached = cache.get(cacheKey);
   if (!force && cached && cached.expiresAt > Date.now()) {
     return cached.payload;
   }
@@ -579,35 +655,35 @@ export async function getModelsForProvider(provider, options = {}) {
   // already-running probe, though — that probe was started before whatever the
   // user just changed (a CLI upgrade, a login), so its result is exactly the
   // stale answer they asked us to discard.
-  if (!force && inFlight.has(provider)) {
-    return inFlight.get(provider);
+  if (!force && inFlight.has(cacheKey)) {
+    return inFlight.get(cacheKey);
   }
 
   // Probes are not cancellable, so a superseded one still runs to completion and
   // resolves whenever it likes — often after the probe that replaced it. Stamp
   // each with a generation and let only the newest write to the cache, or a slow
   // stale probe lands last and undoes the refresh that replaced it.
-  const myGeneration = (generation.get(provider) || 0) + 1;
-  generation.set(provider, myGeneration);
+  const myGeneration = (generation.get(cacheKey) || 0) + 1;
+  generation.set(cacheKey, myGeneration);
 
   const promise = runDiscovery(provider, { timeoutMs, env, sdkQuery })
     .then((payload) => {
-      if (generation.get(provider) !== myGeneration) {
+      if (generation.get(cacheKey) !== myGeneration) {
         return payload;
       }
       // Only a successful probe earns the full TTL. A fallback is re-tried
       // sooner so the picker recovers once the CLI is installed or logged in.
       const ttl = payload.source === 'discovered' ? ttlMs : Math.min(ttlMs, 60_000);
-      cache.set(provider, { expiresAt: Date.now() + ttl, payload });
+      cache.set(cacheKey, { expiresAt: Date.now() + ttl, payload });
       return payload;
     })
     .finally(() => {
-      if (inFlight.get(provider) === promise) {
-        inFlight.delete(provider);
+      if (inFlight.get(cacheKey) === promise) {
+        inFlight.delete(cacheKey);
       }
     });
 
-  inFlight.set(provider, promise);
+  inFlight.set(cacheKey, promise);
   return promise;
 }
 
@@ -625,12 +701,18 @@ export function clearModelDiscoveryCache(provider = null) {
     generation.set(key, (generation.get(key) || 0) + 1);
   };
 
+  const allKeys = new Set([...cache.keys(), ...inFlight.keys(), ...generation.keys()]);
+
   if (provider) {
+    // Scoped entries (`gemini:key`) belong to the provider too.
     invalidate(provider);
+    for (const key of allKeys) {
+      if (key.startsWith(`${provider}:`)) invalidate(key);
+    }
     return;
   }
 
-  for (const key of new Set([...cache.keys(), ...inFlight.keys(), ...generation.keys()])) {
+  for (const key of allKeys) {
     invalidate(key);
   }
 }
@@ -639,6 +721,7 @@ export const __testing = {
   readConfiguredClaudeModels,
   discoverClaudeModels,
   discoverCodexModels,
+  discoverGeminiModels,
   discoverOpenRouterModels,
   jsonRpcOverStdio,
   STATIC_MODELS,

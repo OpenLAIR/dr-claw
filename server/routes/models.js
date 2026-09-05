@@ -5,8 +5,23 @@ import {
   getDiscoverableProviders,
   getModelsForProvider,
 } from '../utils/harnessModelDiscovery.js';
+import { getGeminiApiKeyForUser, withGeminiApiKeyEnv } from '../utils/geminiApiKey.js';
 
 const router = express.Router();
+
+/**
+ * Gemini discovery needs the caller's API key (from their saved credentials,
+ * else the server environment). Everything else discovers from server state.
+ */
+function discoveryOptionsFor(req, provider, options = {}) {
+  if (provider !== 'gemini') return options;
+  const apiKey = getGeminiApiKeyForUser(req.user?.id);
+  return {
+    ...options,
+    env: withGeminiApiKeyEnv(process.env, apiKey),
+    cacheScope: apiKey ? 'key' : 'nokey',
+  };
+}
 
 /**
  * GET /api/models/providers
@@ -35,7 +50,7 @@ router.get('/:provider', async (req, res) => {
     const { provider } = req.params;
     const force = req.query.refresh === '1' || req.query.refresh === 'true';
 
-    const payload = await getModelsForProvider(provider, { force });
+    const payload = await getModelsForProvider(provider, discoveryOptionsFor(req, provider, { force }));
     res.json(payload);
   } catch (error) {
     console.error('[ERROR] Failed to resolve models:', error.message);
@@ -52,7 +67,7 @@ router.post('/:provider/refresh', async (req, res) => {
     const { provider } = req.params;
     clearModelDiscoveryCache(provider);
 
-    const payload = await getModelsForProvider(provider, { force: true });
+    const payload = await getModelsForProvider(provider, discoveryOptionsFor(req, provider, { force: true }));
     res.json(payload);
   } catch (error) {
     console.error('[ERROR] Failed to refresh models:', error.message);
