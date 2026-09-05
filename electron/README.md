@@ -6,7 +6,7 @@ This directory contains the Electron wrapper for Dr. Claw.
 
 - The existing Express/WebSocket backend runs unchanged as a child process.
 - A `BrowserWindow` loads the local app URL after the embedded server starts.
-- A **preload script** (`preload.mjs`) exposes a safe IPC bridge (`window.electronAPI`) using `contextBridge`.
+- A sandbox-compatible **CommonJS preload script** (`preload.cjs`) exposes a safe IPC bridge (`window.electronAPI`) using `contextBridge`.
 - The renderer stays fully sandboxed with `contextIsolation: true` and `sandbox: true`.
 
 ## Features

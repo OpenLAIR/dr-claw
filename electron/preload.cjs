@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron';
+const { contextBridge, ipcRenderer } = require('electron');
 
 const ALLOWED_CHANNELS_INVOKE = new Set([
   'app:getInfo',
@@ -81,8 +81,3 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
 contextBridge.exposeInMainWorld('isElectron', true);
 contextBridge.exposeInMainWorld('electronPlatform', process.platform);
-
-// Stamp data attributes onto <html> before React renders so CSS / first-paint
-// logic can detect Electron + platform without any async round-trips.
-document.documentElement.dataset.electron = 'true';
-document.documentElement.dataset.platform = process.platform;
