@@ -12,26 +12,18 @@ export interface ModelSelectorOption {
 interface ModelSelectorProps {
   value: string;
   options: ModelSelectorOption[];
-  /**
-   * Entries kept out of the main list (the compiled-in table, once the harness
-   * has reported its own menu). Reachable behind a toggle so nothing is lost,
-   * but not in the way.
-   */
-  moreOptions?: ModelSelectorOption[];
   onChange: (v: string) => void;
 }
 
 export default function ModelSelector({
   value,
   options,
-  moreOptions = [],
   onChange,
 }: ModelSelectorProps) {
   const { t } = useTranslation('chat');
   const [open, setOpen] = useState(false);
-  const [showMore, setShowMore] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const displayLabel = [...options, ...moreOptions].find((o) => o.value === value)?.label || value;
+  const displayLabel = options.find((o) => o.value === value)?.label || value;
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -85,20 +77,6 @@ export default function ModelSelector({
       {open && (
         <div className="absolute z-50 bottom-full mb-1 left-0 w-52 max-h-[280px] bg-popover border border-border rounded-xl shadow-xl overflow-y-auto">
           {options.map(renderOption)}
-          {moreOptions.length > 0 && (
-            <>
-              <button
-                type="button"
-                onClick={() => setShowMore((v) => !v)}
-                className="w-full px-3 py-1.5 text-left text-[10px] text-muted-foreground/70 hover:bg-muted/50 border-t border-border/50"
-              >
-                {showMore
-                  ? t('modelSelector.hideBuiltIn')
-                  : t('modelSelector.showBuiltIn', { count: moreOptions.length })}
-              </button>
-              {showMore && moreOptions.map(renderOption)}
-            </>
-          )}
         </div>
       )}
     </div>

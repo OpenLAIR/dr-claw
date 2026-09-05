@@ -95,10 +95,10 @@ Discovery is strictly additive and never blocks the UI:
 - Built-in entries the harness did not report are still returned by the API,
   flagged `builtIn: true` (and `deprecated: true` where the harness would reject
   them), so an existing saved model preference is never stranded. Once the
-  harness has answered, the picker reads like the CLI's own menu and folds the
-  built-in entries behind a "show more built-in models" toggle, so one model
-  does not appear under two names (`claude-fable-5` next to the CLI's
-  `claude-fable-5[1m]`).
+  harness has answered, the picker shows only what the harness reported (plus
+  the currently selected value): the built-in table is a fallback for when
+  discovery is unavailable, not a second list, so one model does not appear
+  under two names (`claude-fable-5` next to the CLI's `claude-fable-5[1m]`).
 
 ### API
 
