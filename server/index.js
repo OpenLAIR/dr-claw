@@ -51,7 +51,7 @@ import { spawnGemini, abortGeminiSession, isGeminiSessionActive, getGeminiSessio
 import { queryOpenRouter, abortOpenRouterSession, isOpenRouterSessionActive, getOpenRouterSessionStartTime, getActiveOpenRouterSessions } from './openrouter.js';
 import { queryLocalGPU, abortLocalGPUSession, isLocalGPUSessionActive, getLocalGPUSessionStartTime, getActiveLocalGPUSessions } from './local-gpu.js';
 import { spawnNanoClaudeCode, abortNanoClaudeCodeSession, isNanoClaudeCodeSessionActive, getNanoClaudeCodeSessionStartTime, getActiveNanoClaudeCodeSessions } from './nano-claude-code.js';
-import { spawnPi, abortPiSession, isPiSessionActive, getPiSessionStartTime, getActivePiSessions } from './pi-cli.js';
+import { spawnPi, abortPiSession, isPiSessionActive } from './pi-cli.js';
 import gitRoutes from './routes/git.js';
 import authRoutes from './routes/auth.js';
 import mcpRoutes from './routes/mcp.js';

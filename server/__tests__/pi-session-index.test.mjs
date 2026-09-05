@@ -152,6 +152,26 @@ describe('getPiSessionMessages', () => {
     expect(messages.length).toBeGreaterThan(0);
   });
 
+  it('verifies the transcript header when another session id contains the requested id', async () => {
+    await writeSession({
+      sessionId: 'pi-msg-shadow',
+      cwd: projectRoot,
+      prompt: 'wrong transcript',
+      fileName: '2026-08-05T18-00-00-000Z_pi-msg-shadow.jsonl',
+    });
+    await writeSession({
+      sessionId: 'pi-msg',
+      cwd: projectRoot,
+      prompt: 'right transcript',
+      fileName: 'opaque-name.jsonl',
+    });
+    const { projects } = await loadModules();
+
+    const { messages } = await projects.getPiSessionMessages('pi-msg');
+
+    expect(messages[0]).toMatchObject({ type: 'user', message: { content: 'right transcript' } });
+  });
+
   it('returns empty rather than throwing for an unknown session', async () => {
     const { projects } = await loadModules();
     const result = await projects.getPiSessionMessages('does-not-exist');

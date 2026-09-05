@@ -694,8 +694,11 @@ export function useProjectsState({
 
       const piSession = project.piSessions?.find((session) => session.id === targetSessionId);
       if (piSession) {
+        matchedProject = project;
         matchedSession = { ...piSession, __provider: 'pi' };
+        break;
       }
+
       const nanoSession = project.nanoSessions?.find((session) => session.id === targetSessionId);
       if (nanoSession) {
         matchedProject = project;
