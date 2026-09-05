@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Check } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface ModelSelectorProps {
   value: string;
-  options: Array<{ value: string; label: string }>;
+  options: Array<{ value: string; label: string; description?: string; deprecated?: boolean }>;
   onChange: (v: string) => void;
 }
 
@@ -12,6 +13,7 @@ export default function ModelSelector({
   options,
   onChange,
 }: ModelSelectorProps) {
+  const { t } = useTranslation('chat');
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const displayLabel = options.find((o) => o.value === value)?.label || value;
@@ -50,6 +52,7 @@ export default function ModelSelector({
               <button
                 key={opt.value}
                 type="button"
+                title={opt.description || opt.value}
                 onClick={() => { onChange(opt.value); setOpen(false); }}
                 className={`w-full flex items-center gap-2 px-3 py-2 text-left text-[11px] transition-colors ${
                   active
@@ -58,6 +61,9 @@ export default function ModelSelector({
                 }`}
               >
                 <span className="flex-1 truncate">{opt.label}</span>
+                {opt.deprecated && (
+                  <span className="text-[9px] text-muted-foreground/60 shrink-0">{t('modelSelector.notInCliList')}</span>
+                )}
                 {active && <Check className="w-3 h-3 text-primary shrink-0" />}
               </button>
             );

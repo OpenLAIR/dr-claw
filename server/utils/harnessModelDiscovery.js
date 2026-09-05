@@ -333,22 +333,38 @@ export function labelForClaudeModelId(value) {
 }
 
 /**
- * The CLI reuses one display name for several versions ("Fable" for both
- * Fable 5 and Fable 5.1), which makes a picker built from display names
- * ambiguous. Where a name is shared, fall back to the description's leading
- * segment, which is where the CLI puts the concrete version.
+ * Turn the CLI's menu entries into picker labels that stand on their own.
+ *
+ * The CLI's display names are terse ("Fable", "Sonnet") and reused across
+ * versions ("Fable" is both Fable 5 and Fable 5.1), so next to the built-in
+ * entries they read as duplicates. The description's leading segment names
+ * the concrete version ("Fable 5.1 · Most capable…"), so prefer it whenever
+ * it is a more specific form of the display name, and spell out the 1M
+ * context variant the way the built-in list does.
  */
-export function disambiguateClaudeLabels(options) {
+export function labelClaudeOptions(options) {
   const counts = new Map();
   for (const option of options) {
     counts.set(option.displayName, (counts.get(option.displayName) || 0) + 1);
   }
   return options.map(({ displayName, ...option }) => {
-    const shared = (counts.get(displayName) || 0) > 1;
     const detail = option.description ? String(option.description).split(' · ')[0].trim() : '';
-    const label = shared
-      ? (detail && detail !== displayName ? detail : `${displayName} (${option.value})`)
-      : displayName;
+    const baseName = displayName.replace(/\s*\(.*\)$/, '').trim();
+    const shared = (counts.get(displayName) || 0) > 1;
+
+    let label;
+    if (option.value === 'default') {
+      label = detail ? `Default (${detail})` : displayName;
+    } else if (detail && detail.toLowerCase().startsWith(baseName.toLowerCase()) && detail.length > baseName.length) {
+      label = detail;
+    } else if (shared) {
+      label = detail && detail !== displayName ? detail : `${displayName} (${option.value})`;
+    } else {
+      label = displayName;
+    }
+    if (/\[1m\]$/i.test(option.value) && !/1m/i.test(label)) {
+      label = `${label} [1M]`;
+    }
     return { ...option, label };
   });
 }
@@ -393,7 +409,7 @@ async function discoverClaudeModels({ timeoutMs, env = process.env, sdkQuery } =
       }),
     ]);
 
-    const served = disambiguateClaudeLabels(
+    const served = labelClaudeOptions(
       (Array.isArray(models) ? models : [])
         .filter((model) => model && typeof model.value === 'string' && model.value)
         .map((model) => ({

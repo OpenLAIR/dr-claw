@@ -63,11 +63,16 @@ export const CURSOR_MODELS = {
  */
 export const CODEX_MODELS = {
   OPTIONS: [
-    { value: 'gpt-5.6', label: 'GPT-5.6 (Sol)' },
+    // Names as codex-cli 0.145 serves them. `gpt-5.6` on its own was retired in
+    // favour of `gpt-5.6-sol`; listing both made the picker show the same model
+    // twice under two labels.
+    { value: 'gpt-5.6-sol', label: 'GPT-5.6 Sol' },
     { value: 'gpt-5.6-terra', label: 'GPT-5.6 Terra' },
     { value: 'gpt-5.6-luna', label: 'GPT-5.6 Luna' },
     { value: 'gpt-5.5', label: 'GPT-5.5' },
     { value: 'gpt-5.4', label: 'GPT-5.4' },
+    { value: 'gpt-5.4-mini', label: 'GPT-5.4 Mini' },
+    { value: 'gpt-5.3-codex-spark', label: 'GPT-5.3 Codex Spark' },
     { value: 'gpt-5.3-codex', label: 'GPT-5.3 Codex' },
     { value: 'gpt-5.2-codex', label: 'GPT-5.2 Codex' },
     { value: 'gpt-5.2', label: 'GPT-5.2' },
@@ -76,7 +81,7 @@ export const CODEX_MODELS = {
     { value: 'o4-mini', label: 'O4-mini' }
   ],
 
-  DEFAULT: 'gpt-5.6'
+  DEFAULT: 'gpt-5.6-sol'
 };
 
 /**

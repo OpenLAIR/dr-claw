@@ -349,10 +349,17 @@ export default function ChatComposer({
     : null;
 
   const rawModelConfig = getModelConfig(sessionProvider);
+  // A built-in entry the harness no longer serves stays in the API payload
+  // (flagged deprecated) so nothing is silently lost, but it only earns a row
+  // in the picker while it is the selected value — otherwise the list shows
+  // one model under two names, e.g. the retired `gpt-5.6` next to `gpt-5.6-sol`.
+  const pickerModels = discoveredModels?.filter(
+    (option) => !option.deprecated || option.value === currentModel,
+  );
   const modelConfig = sessionProvider === 'local' && ollamaModels.length > 0
     ? { ...rawModelConfig, OPTIONS: ollamaModels }
-    : discoveredModels && discoveredModels.length > 0
-      ? { ...rawModelConfig, OPTIONS: discoveredModels }
+    : pickerModels && pickerModels.length > 0
+      ? { ...rawModelConfig, OPTIONS: pickerModels }
       : rawModelConfig;
 
   const selectProvider = (next: SessionProvider) => {

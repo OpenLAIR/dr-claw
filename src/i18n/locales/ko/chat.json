@@ -572,5 +572,8 @@
       "briefExists": "research_brief.json 감지됨",
       "buttonLabel": "채팅에서 사용"
     }
+  },
+  "modelSelector": {
+    "notInCliList": "CLI 목록에 없음"
   }
 }

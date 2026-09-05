@@ -126,10 +126,21 @@ describe('claude discovery', () => {
     const payload = await mod.getModelsForProvider('claude', { sdkQuery: query, env: isolatedEnv() });
     const labels = Object.fromEntries(payload.options.map((o) => [o.value, o.label]));
 
-    expect(labels['claude-fable-5[1m]']).toBe('Fable 5');
-    expect(labels['claude-fable-5-1[1m]']).toBe('Fable 5.1');
-    // A name used once keeps the CLI's own wording.
-    expect(labels['sonnet']).toBe('Sonnet');
+    expect(labels['claude-fable-5[1m]']).toBe('Fable 5 [1M]');
+    expect(labels['claude-fable-5-1[1m]']).toBe('Fable 5.1 [1M]');
+    // A terse name is expanded from the description when it names a version.
+    expect(labels['sonnet']).toBe('Sonnet 5');
+  });
+
+  it('labels the CLI menu so entries stand apart from the built-in list', async () => {
+    const { query } = fakeSdk();
+    const payload = await mod.getModelsForProvider('claude', { sdkQuery: query, env: isolatedEnv() });
+    const labels = Object.fromEntries(payload.options.map((o) => [o.value, o.label]));
+
+    expect(labels['default']).toBe('Default (Opus 5 with 1M context)');
+    expect(labels['opus[1m]']).toBe('Opus 5 with 1M context');
+    expect(labels['claude-fable-5-1[1m]']).toBe('Fable 5.1 [1M]');
+    expect(labels['sonnet']).toBe('Sonnet 5');
   });
 
   it('surfaces the model configured in the user settings, as the CLI itself does', async () => {

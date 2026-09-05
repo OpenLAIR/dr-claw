@@ -595,5 +595,8 @@
       "briefExists": "已检测到 research_brief.json",
       "buttonLabel": "使用模板"
     }
+  },
+  "modelSelector": {
+    "notInCliList": "CLI 未列出"
   }
 }

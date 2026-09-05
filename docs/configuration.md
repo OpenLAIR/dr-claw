@@ -93,9 +93,11 @@ Discovery is strictly additive and never blocks the UI:
 - Every probe has a 15-second hard timeout. If the harness is missing, old,
   logged out, or unresponsive, the built-in list is used instead.
 - Models present in the built-in list but no longer served by the harness are
-  kept at the end of the picker and marked deprecated, so an existing saved
-  model preference is never stranded. (Not for Claude: its CLI runs ids it does
-  not advertise, so nothing is demoted there.)
+  still returned by the API, flagged `deprecated: true`, so an existing saved
+  model preference is never stranded; the picker shows such an entry only while
+  it is the selected value, so one model does not appear under two names. (Not
+  for Claude: its CLI runs ids it does not advertise, so nothing is demoted
+  there.)
 
 ### API
 
