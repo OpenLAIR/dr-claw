@@ -31,8 +31,17 @@ export default function ModelSelector({
         setOpen(false);
       }
     };
-    if (open) document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    const keyHandler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    if (open) {
+      document.addEventListener('mousedown', handler);
+      document.addEventListener('keydown', keyHandler);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handler);
+      document.removeEventListener('keydown', keyHandler);
+    };
   }, [open]);
 
   const renderOption = (opt: ModelSelectorOption) => {
