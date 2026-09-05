@@ -76,11 +76,7 @@ for (const size of macIconSizes) {
 // --- macOS .icns via iconutil (macOS only) ------------------------------------
 if (isMac) {
   const icnsPath = path.join(buildDir, 'icon.icns');
-  try {
-    execFileSync('iconutil', ['--convert', 'icns', iconsetDir, '--output', icnsPath]);
-  } catch (err) {
-    console.warn('iconutil failed (non-macOS host?) — skipping .icns generation:', err.message);
-  }
+  execFileSync('iconutil', ['--convert', 'icns', iconsetDir, '--output', icnsPath]);
 }
 
 // --- Generic icon.png for BrowserWindow (Windows/Linux taskbar) ---------------
@@ -100,4 +96,6 @@ const icoBuffer = await pngToIco(
 );
 await fs.promises.writeFile(path.join(buildDir, 'icon.ico'), icoBuffer);
 
-console.log('Electron icons built → build/{icon.png, icon-dock.png, icon.ico, icon.icns, icon.iconset/}');
+const outputs = ['icon.png', 'icon-dock.png', 'icon.ico', 'icon.iconset/'];
+if (isMac) outputs.splice(3, 0, 'icon.icns');
+console.log(`Electron icons built → build/{${outputs.join(', ')}}`);

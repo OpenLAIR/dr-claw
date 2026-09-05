@@ -59,10 +59,6 @@ function run(bin, args, extraEnv = {}) {
 
 async function buildIcons() {
   await run(npmBin(), ['run', 'desktop:icons']);
-
-  if (process.platform === 'darwin') {
-    await run('iconutil', ['-c', 'icns', 'build/icon.iconset', '-o', 'build/icon.icns']);
-  }
 }
 
 async function prepareElectronRuntime() {
