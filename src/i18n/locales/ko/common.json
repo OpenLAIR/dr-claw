@@ -191,6 +191,12 @@
     "untitledSession": "제목 없는 세션",
     "projectFiles": "프로젝트 파일"
   },
+  "lazyLoad": {
+    "errorTitle": "Dr. Claw의 이 부분을 불러올 수 없습니다",
+    "errorDescription": "앱이 업데이트되었거나 연결이 끊겼을 수 있습니다. 최신 버전을 받으려면 다시 불러오세요.",
+    "reload": "다시 불러오기",
+    "close": "닫기"
+  },
   "projectDashboard": {
     "title": "프로젝트 대시보드",
     "trashTitle": "프로젝트 휴지통",

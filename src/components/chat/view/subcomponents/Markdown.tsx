@@ -1,12 +1,33 @@
-import React, { useMemo, useState } from 'react';
+import React, { lazy, Suspense, useMemo, useState } from 'react';
+import type { ComponentType, LazyExoticComponent } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useTranslation } from 'react-i18next';
 import { normalizeInlineCodeFences } from '../../utils/chatFormatting';
+import LazyLoadBoundary from '../../../LazyLoadBoundary';
+
+type SyntaxHighlighterProps = {
+  children: string;
+  language: string;
+  style: unknown;
+  customStyle: React.CSSProperties;
+  codeTagProps: { style: React.CSSProperties };
+};
+
+const SyntaxHighlighter = lazy(() =>
+  import('react-syntax-highlighter').then((module) => ({ default: module.Prism })),
+) as LazyExoticComponent<ComponentType<SyntaxHighlighterProps>>;
+
+function PlainCodeBlock({ code }: { code: string }) {
+  return (
+    <pre className="m-0 overflow-x-auto rounded-lg bg-[#282c34] p-4 text-sm text-gray-100">
+      <code>{code}</code>
+    </pre>
+  );
+}
 
 type MarkdownProps = {
   children: React.ReactNode;
@@ -125,24 +146,28 @@ const CodeBlock = ({ node, inline, className, children, ...props }: CodeBlockPro
         )}
       </button>
 
-      <SyntaxHighlighter
-        language={language}
-        style={oneDark}
-        customStyle={{
-          margin: 0,
-          borderRadius: '0.5rem',
-          fontSize: '0.875rem',
-          padding: language && language !== 'text' ? '2rem 1rem 1rem 1rem' : '1rem',
-        }}
-        codeTagProps={{
-          style: {
-            fontFamily:
-              'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-          },
-        }}
-      >
-        {raw}
-      </SyntaxHighlighter>
+      <LazyLoadBoundary fallback={<PlainCodeBlock code={raw} />}>
+        <Suspense fallback={<PlainCodeBlock code={raw} />}>
+          <SyntaxHighlighter
+            language={language}
+            style={oneDark}
+            customStyle={{
+              margin: 0,
+              borderRadius: '0.5rem',
+              fontSize: '0.875rem',
+              padding: language && language !== 'text' ? '2rem 1rem 1rem 1rem' : '1rem',
+            }}
+            codeTagProps={{
+              style: {
+                fontFamily:
+                  'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+              },
+            }}
+          >
+            {raw}
+          </SyntaxHighlighter>
+        </Suspense>
+      </LazyLoadBoundary>
     </div>
   );
 };

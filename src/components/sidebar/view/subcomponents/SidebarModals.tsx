@@ -1,10 +1,10 @@
-import { useMemo } from 'react';
+import { lazy, Suspense, useMemo } from 'react';
+import type { ComponentType, LazyExoticComponent } from 'react';
 import ReactDOM from 'react-dom';
 import { AlertTriangle, Trash2 } from 'lucide-react';
 import type { TFunction } from 'i18next';
 import { Button } from '../../../ui/button';
-import Settings from '../../../Settings';
-import VersionUpgradeModal from '../../../modals/VersionUpgradeModal';
+import LazyLoadBoundary, { LazyModalLoadingFallback } from '../../../LazyLoadBoundary';
 import type { Project } from '../../../../types/app';
 import type { ReleaseInfo } from '../../../../types/sharedTypes';
 import type { InstallMode } from '../../../../hooks/useVersionCheck';
@@ -39,11 +39,8 @@ type TypedSettingsProps = {
   initialTab: string;
 };
 
-const SettingsComponent = Settings as (props: TypedSettingsProps) => JSX.Element;
-
-function TypedSettings(props: TypedSettingsProps) {
-  return <SettingsComponent {...props} />;
-}
+const Settings = lazy(() => import('../../../Settings')) as LazyExoticComponent<ComponentType<TypedSettingsProps>>;
+const VersionUpgradeModal = lazy(() => import('../../../modals/VersionUpgradeModal'));
 
 export default function SidebarModals({
   projects,
@@ -74,12 +71,16 @@ export default function SidebarModals({
     <>
       {showSettings &&
         ReactDOM.createPortal(
-          <TypedSettings
-            isOpen={showSettings}
-            onClose={onCloseSettings}
-            projects={settingsProjects}
-            initialTab={settingsInitialTab}
-          />,
+          <LazyLoadBoundary mode="modal" resetKey="settings" onClose={onCloseSettings}>
+            <Suspense fallback={<LazyModalLoadingFallback onClose={onCloseSettings} />}>
+              <Settings
+                isOpen={showSettings}
+                onClose={onCloseSettings}
+                projects={settingsProjects}
+                initialTab={settingsInitialTab}
+              />
+            </Suspense>
+          </LazyLoadBoundary>,
           document.body,
         )}
 
@@ -181,15 +182,21 @@ export default function SidebarModals({
           document.body,
         )}
 
-      <VersionUpgradeModal
-        isOpen={showVersionModal}
-        onClose={onCloseVersionModal}
-        onLater={onLaterVersionModal}
-        releaseInfo={releaseInfo}
-        currentVersion={currentVersion}
-        latestVersion={latestVersion}
-        installMode={installMode}
-      />
+      {showVersionModal && (
+        <LazyLoadBoundary mode="modal" resetKey="version-upgrade" onClose={onCloseVersionModal}>
+          <Suspense fallback={<LazyModalLoadingFallback onClose={onCloseVersionModal} />}>
+            <VersionUpgradeModal
+              isOpen={showVersionModal}
+              onClose={onCloseVersionModal}
+              onLater={onLaterVersionModal}
+              releaseInfo={releaseInfo}
+              currentVersion={currentVersion}
+              latestVersion={latestVersion}
+              installMode={installMode}
+            />
+          </Suspense>
+        </LazyLoadBoundary>
+      )}
     </>
   );
 }

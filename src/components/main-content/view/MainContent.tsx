@@ -1,14 +1,8 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { lazy, Suspense, useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
-import ChatInterface from '../../chat/view/ChatInterface';
-import SkillsDashboard from '../../SkillsDashboard';
-import AutoResearchHub from '../../AutoResearchHub';
-import ComputeResourcesDashboard from '../../compute-dashboard/ComputeResourcesDashboard';
 import ErrorBoundary from '../../ErrorBoundary';
-import SurveyPage from '../../survey/view/SurveyPage';
-import ProjectDashboard from '../../project-dashboard/view/ProjectDashboard';
-import TrashDashboard from '../../project-dashboard/view/TrashDashboard';
-import NewsDashboard from '../../news-dashboard/view/NewsDashboard';
+import LazyLoadBoundary from '../../LazyLoadBoundary';
 
 import ChatTabBar from '../../chat/view/ChatTabBar';
 import { useChatTabs } from '../../../hooks/useChatTabs';
@@ -22,6 +16,36 @@ import { useUiPreferences } from '../../../hooks/useUiPreferences';
 import type { Project } from '../../../types/app';
 import type { Reference } from '../../references/types';
 import { queueSkillCommandDraft } from '../../../utils/skillCommandDraft';
+
+const ChatInterface = lazy(() => import('../../chat/view/ChatInterface'));
+const SkillsDashboard = lazy(() => import('../../SkillsDashboard'));
+const AutoResearchHub = lazy(() => import('../../AutoResearchHub'));
+const ComputeResourcesDashboard = lazy(() => import('../../compute-dashboard/ComputeResourcesDashboard'));
+const SurveyPage = lazy(() => import('../../survey/view/SurveyPage'));
+const ProjectDashboard = lazy(() => import('../../project-dashboard/view/ProjectDashboard'));
+const TrashDashboard = lazy(() => import('../../project-dashboard/view/TrashDashboard'));
+const NewsDashboard = lazy(() => import('../../news-dashboard/view/NewsDashboard'));
+
+function ContentLoadingFallback() {
+  const { t } = useTranslation('common');
+
+  return (
+    <div className="flex h-full min-h-48 items-center justify-center" role="status" aria-live="polite">
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-muted border-t-primary" />
+        <span>{t('mainContent.loading')}</span>
+      </div>
+    </div>
+  );
+}
+
+function LazyContent({ children, resetKey }: { children: React.ReactNode; resetKey: string }) {
+  return (
+    <LazyLoadBoundary resetKey={resetKey}>
+      <Suspense fallback={<ContentLoadingFallback />}>{children}</Suspense>
+    </LazyLoadBoundary>
+  );
+}
 
 type TaskMasterContextValue = {
   currentProject?: Project | null;
@@ -171,16 +195,18 @@ function MainContent({
         />
 
         <div className="flex-1 min-h-0 overflow-hidden">
-          <ProjectDashboard
-            projects={projects}
-            onProjectAction={(project, tab, sessionId) => {
-              onProjectSelect(project);
-              setActiveTab(tab);
-              if (sessionId && tab === 'chat') {
-                onNavigateToSession(sessionId, undefined, project.name);
-              }
-            }}
-          />
+          <LazyContent resetKey="dashboard">
+            <ProjectDashboard
+              projects={projects}
+              onProjectAction={(project, tab, sessionId) => {
+                onProjectSelect(project);
+                setActiveTab(tab);
+                if (sessionId && tab === 'chat') {
+                  onNavigateToSession(sessionId, undefined, project.name);
+                }
+              }}
+            />
+          </LazyContent>
         </div>
       </div>
     );
@@ -199,7 +225,7 @@ function MainContent({
           onMenuClick={onMenuClick}
         />
         <div className="flex-1 min-h-0 overflow-hidden">
-          <AutoResearchHub />
+          <LazyContent resetKey="auto-research"><AutoResearchHub /></LazyContent>
         </div>
       </div>
     );
@@ -219,17 +245,19 @@ function MainContent({
         />
 
         <div className="flex-1 min-h-0 overflow-hidden">
-          <SkillsDashboard
-            onSendToChat={(command: string) => {
-              queueSkillCommandDraft(command);
-              // Select the most recent project if available, then switch to chat
-              const recentProject = projects?.[0];
-              if (recentProject) {
-                onProjectSelect(recentProject);
-              }
-              setActiveTab('chat');
-            }}
-          />
+          <LazyContent resetKey="skills">
+            <SkillsDashboard
+              onSendToChat={(command: string) => {
+                queueSkillCommandDraft(command);
+                // Select the most recent project if available, then switch to chat
+                const recentProject = projects?.[0];
+                if (recentProject) {
+                  onProjectSelect(recentProject);
+                }
+                setActiveTab('chat');
+              }}
+            />
+          </LazyContent>
         </div>
       </div>
     );
@@ -249,16 +277,18 @@ function MainContent({
         />
 
         <div className="flex-1 min-h-0 overflow-hidden">
-          <TrashDashboard
-            projects={trashProjects}
-            isLoading={Boolean(isTrashLoading)}
-            onRefresh={async () => {
-              await Promise.all([
-                window.refreshProjects?.(),
-                window.refreshTrashProjects?.(),
-              ]);
-            }}
-          />
+          <LazyContent resetKey="trash">
+            <TrashDashboard
+              projects={trashProjects}
+              isLoading={Boolean(isTrashLoading)}
+              onRefresh={async () => {
+                await Promise.all([
+                  window.refreshProjects?.(),
+                  window.refreshTrashProjects?.(),
+                ]);
+              }}
+            />
+          </LazyContent>
         </div>
       </div>
     );
@@ -278,7 +308,7 @@ function MainContent({
         />
 
         <div className="flex-1 min-h-0 overflow-hidden">
-          <NewsDashboard />
+          <LazyContent resetKey="news"><NewsDashboard /></LazyContent>
         </div>
       </div>
     );
@@ -298,7 +328,7 @@ function MainContent({
         />
 
         <div className="flex-1 min-h-0 overflow-hidden">
-          <ComputeResourcesDashboard />
+          <LazyContent resetKey="compute"><ComputeResourcesDashboard /></LazyContent>
         </div>
       </div>
     );
@@ -336,7 +366,8 @@ function MainContent({
               }}
             />
             <ErrorBoundary showDetails>
-              <ChatInterface
+              <Suspense fallback={<ContentLoadingFallback />}>
+                <ChatInterface
                 selectedProject={selectedProject}
                 selectedSession={effectiveSession}
                 ws={ws}
@@ -364,16 +395,19 @@ function MainContent({
                 clearImportedProjectAnalysisPrompt={clearImportedProjectAnalysisPrompt}
                 newSessionMode={newSessionMode}
                 onNewSessionModeChange={onNewSessionModeChange}
-              />
+                />
+              </Suspense>
             </ErrorBoundary>
           </div>
 
           {activeTab === 'survey' && (
             <div className="h-full overflow-hidden">
-              <SurveyPage
-                selectedProject={selectedProject}
-                onChatFromReference={onChatFromReference ? (ref: Reference) => onChatFromReference(selectedProject, ref) : undefined}
-              />
+              <LazyContent resetKey="survey">
+                <SurveyPage
+                  selectedProject={selectedProject}
+                  onChatFromReference={onChatFromReference ? (ref: Reference) => onChatFromReference(selectedProject, ref) : undefined}
+                />
+              </LazyContent>
             </div>
           )}
 

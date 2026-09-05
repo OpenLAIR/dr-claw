@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDeviceSettings } from '../../../hooks/useDeviceSettings';
 import { useVersionCheck } from '../../../hooks/useVersionCheck';
@@ -10,11 +10,13 @@ import { useAuth } from '../../../contexts/AuthContext';
 import SidebarCollapsed from './subcomponents/SidebarCollapsed';
 import SidebarContent from './subcomponents/SidebarContent';
 import SidebarModals from './subcomponents/SidebarModals';
-import ProjectCreationWizard from '../../ProjectCreationWizard';
+import LazyLoadBoundary, { LazyModalLoadingFallback } from '../../LazyLoadBoundary';
 import type { Project } from '../../../types/app';
 import type { ProjectCreationOptions } from '../../../types/app';
 import type { SidebarProjectListProps } from './subcomponents/SidebarProjectList';
 import type { MCPServerStatus, SidebarProps } from '../types/types';
+
+const ProjectCreationWizard = lazy(() => import('../../ProjectCreationWizard'));
 
 type TaskMasterSidebarContext = {
   setCurrentProject: (project: Project) => void;
@@ -250,22 +252,26 @@ function Sidebar({
       />
 
       {showWizard && (
-        <ProjectCreationWizard
-          onClose={() => setShowWizard(false)}
-          onProjectCreated={(project: Project, options?: ProjectCreationOptions) => {
-            setShowWizard(false);
-            window.refreshProjects?.();
-            if (options?.importedProjectAnalysisPrompt) {
-              onImportedProjectCreated?.(project, options);
-              return;
-            }
-            if (window.handleProjectCreatedWithIntake) {
-              window.handleProjectCreatedWithIntake(project, options);
-            } else {
-              handleProjectSelect(project);
-            }
-          }}
-        />
+        <LazyLoadBoundary mode="modal" resetKey="project-wizard" onClose={() => setShowWizard(false)}>
+          <Suspense fallback={<LazyModalLoadingFallback onClose={() => setShowWizard(false)} />}>
+            <ProjectCreationWizard
+              onClose={() => setShowWizard(false)}
+              onProjectCreated={(project: Project, options?: ProjectCreationOptions) => {
+                setShowWizard(false);
+                window.refreshProjects?.();
+                if (options?.importedProjectAnalysisPrompt) {
+                  onImportedProjectCreated?.(project, options);
+                  return;
+                }
+                if (window.handleProjectCreatedWithIntake) {
+                  window.handleProjectCreatedWithIntake(project, options);
+                } else {
+                  handleProjectSelect(project);
+                }
+              }}
+            />
+          </Suspense>
+        </LazyLoadBoundary>
       )}
 
       {isSidebarCollapsed ? (

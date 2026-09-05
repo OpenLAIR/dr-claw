@@ -22,8 +22,18 @@ class ErrorBoundary extends React.Component {
     });
   }
 
+  componentDidUpdate(previousProps) {
+    if (this.state.hasError && previousProps.resetKey !== this.props.resetKey) {
+      this.setState({ hasError: false, error: null, errorInfo: null });
+    }
+  }
+
   render() {
     if (this.state.hasError) {
+      if (this.props.fallback) {
+        return this.props.fallback;
+      }
+
       // Fallback UI
       return (
         <div className="flex flex-col items-center justify-center p-8 text-center">
