@@ -78,6 +78,7 @@ export async function spawnNanoClaudeCode(command, options = {}, ws) {
   installNanoProcessShutdownHooks();
   const {
     sessionId,
+    clientSessionId,
     projectPath,
     cwd,
     model,
@@ -135,6 +136,7 @@ export async function spawnNanoClaudeCode(command, options = {}, ws) {
     ws.send({
       type: 'session-created',
       sessionId: capturedSessionId,
+      clientSessionId: clientSessionId || undefined,
       provider: 'nano',
       mode: sessionMode || 'research',
       projectName: encodeProjectPath(workingDir),

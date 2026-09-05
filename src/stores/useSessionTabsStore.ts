@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { ProjectSession, SessionProvider } from '../types/app';
+import type { ProjectSession, SessionMode } from '../types/app';
 import type {
   BackgroundSessionStatus,
   SessionSnapshot,
@@ -22,6 +22,7 @@ interface SessionTabsState {
 
   // --- Tab CRUD ---
   addTab: (session: ProjectSession, projectName: string) => void;
+  addNewTab: (projectName: string, mode?: SessionMode) => string;
   removeTab: (sessionId: string) => void;
   setActiveTab: (sessionId: string) => void;
   reorderTab: (fromIndex: number, toIndex: number) => void;
@@ -46,6 +47,13 @@ interface SessionTabsState {
 }
 
 const MAX_OPEN_TABS = 20;
+
+export function isSessionVisibleInTabs(
+  state: Pick<SessionTabsState, 'activeTabId' | 'splitMode' | 'secondaryTabId'>,
+  sessionId: string,
+) {
+  return state.activeTabId === sessionId || (state.splitMode && state.secondaryTabId === sessionId);
+}
 
 export const useSessionTabsStore = create<SessionTabsState>((set, get) => ({
   tabs: [],
@@ -88,6 +96,14 @@ export const useSessionTabsStore = create<SessionTabsState>((set, get) => ({
     set({ tabs: next, activeTabId: session.id });
   },
 
+  addNewTab: (projectName, mode = 'research') => {
+    const id = `new-session-${typeof crypto !== 'undefined' && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`}`;
+    get().addTab({ id, mode, __projectName: projectName }, projectName);
+    return id;
+  },
+
   removeTab: (sessionId) => {
     const { tabs, activeTabId, secondaryTabId, snapshots, backgroundStatus } = get();
     const idx = tabs.findIndex((t) => t.id === sessionId);
@@ -109,11 +125,18 @@ export const useSessionTabsStore = create<SessionTabsState>((set, get) => ({
   },
 
   setActiveTab: (sessionId) => {
-    // Always clear background tracking when the tab becomes active.
-    // If the session was loading in the background, the foreground loading
-    // spinner will take over; there's no need to keep a background entry.
-    const { [sessionId]: _, ...rest } = get().backgroundStatus;
-    set({ activeTabId: sessionId, backgroundStatus: rest });
+    const currentStatus = get().backgroundStatus[sessionId];
+    if (!currentStatus) {
+      set({ activeTabId: sessionId });
+      return;
+    }
+    set({
+      activeTabId: sessionId,
+      backgroundStatus: {
+        ...get().backgroundStatus,
+        [sessionId]: { ...currentStatus, hasUnread: false },
+      },
+    });
   },
 
   reorderTab: (fromIndex, toIndex) => {
@@ -175,8 +198,14 @@ export const useSessionTabsStore = create<SessionTabsState>((set, get) => ({
   },
 
   markTabRead: (sessionId) => {
-    const { [sessionId]: _, ...rest } = get().backgroundStatus;
-    set({ backgroundStatus: rest });
+    const currentStatus = get().backgroundStatus[sessionId];
+    if (!currentStatus) return;
+    set({
+      backgroundStatus: {
+        ...get().backgroundStatus,
+        [sessionId]: { ...currentStatus, hasUnread: false },
+      },
+    });
   },
 
   replaceTabSessionId: (oldId, realSession, projectName) => {

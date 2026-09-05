@@ -785,6 +785,7 @@ export function useProjectsState({
 
   const handleNewSession = useCallback(
     (project: Project, mode: SessionMode = 'research') => {
+      useSessionTabsStore.getState().addNewTab(project.name, mode);
       setSessionNavigationSource('user');
       setSelectedProject(project);
       setSelectedSession(null);
@@ -802,6 +803,7 @@ export function useProjectsState({
 
   const handleStartWorkspaceQa = useCallback(
     (project: Project, prompt: string) => {
+      useSessionTabsStore.getState().addNewTab(project.name, 'workspace_qa');
       setSelectedProject(project);
       setSelectedSession(null);
       setActiveTab('chat');
@@ -819,6 +821,7 @@ export function useProjectsState({
 
   const handleChatFromReference = useCallback(
     (project: Project, ref: Reference) => {
+      useSessionTabsStore.getState().addNewTab(project.name, 'research');
       setSelectedProject(project);
       setSelectedSession(null);
       setActiveTab('chat');
@@ -840,6 +843,7 @@ export function useProjectsState({
 
   const handleProjectCreatedWithIntake = useCallback(
     (project: Project, options?: ProjectCreationOptions) => {
+      useSessionTabsStore.getState().addNewTab(project.name, 'research');
       setSelectedProject(project);
       setSelectedSession(null);
       setActiveTab('chat');

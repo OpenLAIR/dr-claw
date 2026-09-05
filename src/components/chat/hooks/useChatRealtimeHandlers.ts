@@ -18,7 +18,7 @@ import { RESUMING_STATUS_TEXT } from '../types/types';
 import i18n from '../../../i18n/config';
 import type { ChatMessage, PendingPermissionRequest } from '../types/types';
 import type { Project, ProjectSession, SessionNavigationSource, SessionProvider } from '../../../types/app';
-import { useSessionTabsStore } from '../../../stores/useSessionTabsStore';
+import { isSessionVisibleInTabs, useSessionTabsStore } from '../../../stores/useSessionTabsStore';
 
 type PendingViewSession = {
   sessionId: string | null;
@@ -38,6 +38,7 @@ type LatestChatMessage = {
   exitCode?: number;
   isProcessing?: boolean;
   actualSessionId?: string;
+  clientSessionId?: string;
   [key: string]: any;
 };
 
@@ -80,6 +81,22 @@ type FinalizeSessionLifecycleOptions = {
   onSessionStatusResolved?: (sessionId?: string | null, isProcessing?: boolean) => void;
   invalidateSessionCache?: (projectName: string, sessionId: string) => void;
 };
+
+export function shouldHandleCreatedSession({
+  currentSessionId,
+  clientSessionId,
+  activeTabId,
+}: {
+  currentSessionId: string | null;
+  clientSessionId?: string;
+  activeTabId: string | null;
+}) {
+  return clientSessionId
+    ? currentSessionId === clientSessionId
+    : !currentSessionId || (
+        currentSessionId.startsWith('new-session-') && activeTabId === currentSessionId
+      );
+}
 
 export function finalizeSessionLifecycle(
   sessionIds: Array<string | null | undefined>,
@@ -544,7 +561,8 @@ export function useChatRealtimeHandlers({
     const updateBackgroundSessionStatus = (bgSessionId: string, msgType: string) => {
       const store = useSessionTabsStore.getState();
       const isTabOpen = store.tabs.some((t) => t.id === bgSessionId);
-      if (!isTabOpen) return;
+      const isPrimaryInstance = activeViewSessionId === store.activeTabId;
+      if (!isPrimaryInstance || !isTabOpen || isSessionVisibleInTabs(store, bgSessionId)) return;
 
       const prevSeq = store.backgroundStatus[bgSessionId]?.messageSeq ?? 0;
       const isComplete = lifecycleMessageTypes.has(msgType);
@@ -598,8 +616,14 @@ export function useChatRealtimeHandlers({
     }
 
     switch (latestMessage.type) {
-      case 'session-created':
-        if (latestMessage.sessionId && (!currentSessionId || currentSessionId.startsWith('new-session-'))) {
+      case 'session-created': {
+        const tabStore = useSessionTabsStore.getState();
+        const ownsCreatedSession = shouldHandleCreatedSession({
+          currentSessionId,
+          clientSessionId: latestMessage.clientSessionId,
+          activeTabId: tabStore.activeTabId,
+        });
+        if (latestMessage.sessionId && ownsCreatedSession) {
           const createdSessionProvider =
             (latestMessage.provider as SessionProvider | undefined) || provider;
           const pendingStartTime = pendingViewSessionRef.current?.startedAt;
@@ -631,6 +655,7 @@ export function useChatRealtimeHandlers({
               selectedProject?.name || '',
             );
           }
+          setCurrentSessionId(latestMessage.sessionId);
           onReplaceTemporarySession?.(latestMessage.sessionId);
           onNavigateToSession?.(latestMessage.sessionId, createdSessionProvider, selectedProject?.name, { source: 'system' });
           setPendingPermissionRequests((previous) =>
@@ -640,6 +665,7 @@ export function useChatRealtimeHandlers({
           );
         }
         break;
+      }
 
       case 'token-budget':
         if (latestMessage.data) {

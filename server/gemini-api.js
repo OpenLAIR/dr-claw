@@ -1405,6 +1405,7 @@ function getNextGeminiFallbackModel(model) {
 export async function queryGeminiApi(command, options = {}, ws) {
   const {
     sessionId,
+    clientSessionId,
     cwd,
     projectPath,
     model: requestedModel = 'gemini-2.5-flash',
@@ -1525,6 +1526,7 @@ export async function queryGeminiApi(command, options = {}, ws) {
     sendMessage(ws, {
       type: 'session-created',
       sessionId: currentSessionId,
+      clientSessionId: clientSessionId || undefined,
       provider: 'gemini',
       mode: sessionMode || 'research',
       startTime: sessionStartTime,

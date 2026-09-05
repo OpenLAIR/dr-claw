@@ -10,7 +10,7 @@ let activeCursorProcesses = new Map(); // Track active processes by session ID
 
 async function spawnCursor(command, options = {}, ws) {
   return new Promise(async (resolve, reject) => {
-    const { sessionId, projectPath, cwd, resume, toolsSettings, skipPermissions, model, images, sessionMode, stageTagKeys, stageTagSource = 'task_context', env } = options;
+    const { sessionId, clientSessionId, projectPath, cwd, resume, toolsSettings, skipPermissions, model, images, sessionMode, stageTagKeys, stageTagSource = 'task_context', env } = options;
     let capturedSessionId = sessionId; // Track session ID throughout the process
     let sessionCreatedSent = false; // Track if we've already sent session-created event
     let messageBuffer = ''; // Buffer for accumulating assistant messages
@@ -156,6 +156,7 @@ async function spawnCursor(command, options = {}, ws) {
                     ws.send({
                       type: 'session-created',
                       sessionId: capturedSessionId,
+                      clientSessionId: clientSessionId || undefined,
                       model: response.model,
                       cwd: response.cwd,
                       mode: sessionMode || 'research',

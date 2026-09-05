@@ -485,7 +485,7 @@ async function loadMcpConfig(cwd) {
  * @returns {Promise<void>}
  */
 async function queryClaudeSDK(command, options = {}, ws) {
-  const { sessionId, sessionMode, stageTagKeys, stageTagSource = 'task_context' } = options;
+  const { sessionId, clientSessionId, sessionMode, stageTagKeys, stageTagSource = 'task_context' } = options;
   let capturedSessionId = sessionId;
   let sessionCreatedSent = false;
   let tempImagePaths = [];
@@ -680,6 +680,7 @@ async function queryClaudeSDK(command, options = {}, ws) {
           ws.send({
             type: 'session-created',
             sessionId: capturedSessionId,
+            clientSessionId: clientSessionId || undefined,
             provider: 'claude',
             mode: sessionMode || 'research'
           });
@@ -777,6 +778,7 @@ async function queryClaudeSDK(command, options = {}, ws) {
       ws.send({
         type: 'session-created',
         sessionId: capturedSessionId,
+        clientSessionId: clientSessionId || undefined,
         provider: 'claude',
         mode: sessionMode || 'research',
       });

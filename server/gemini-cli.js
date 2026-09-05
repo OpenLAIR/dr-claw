@@ -552,7 +552,7 @@ async function syncSessionMetadata(sessionId, projectPath, sessionMode = 'resear
  */
 export async function spawnGemini(command, options = {}, ws) {
   return new Promise(async (resolve, reject) => {
-    const { sessionId, projectPath, cwd, model, images, attachments, permissionMode, thinkingMode, toolsSettings, sessionMode, stageTagKeys, stageTagSource = 'task_context', env } = options;
+    const { sessionId, clientSessionId, projectPath, cwd, model, images, attachments, permissionMode, thinkingMode, toolsSettings, sessionMode, stageTagKeys, stageTagSource = 'task_context', env } = options;
     let capturedSessionId = sessionId;
     let sessionCreatedSent = false;
     let messageStartedSent = false;
@@ -931,7 +931,7 @@ export async function spawnGemini(command, options = {}, ws) {
                   stageTagKeys,
                   tagSource: stageTagSource,
                 });
-                ws.send({ type: 'session-created', sessionId: capturedSessionId, provider: 'gemini', mode: sessionMode || 'research' });
+                ws.send({ type: 'session-created', sessionId: capturedSessionId, clientSessionId: clientSessionId || undefined, provider: 'gemini', mode: sessionMode || 'research' });
               }
             }
             break;

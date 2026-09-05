@@ -576,6 +576,7 @@ async function consumeStream(response, { onText, onAbortCheck }) {
 export async function queryOpenRouter(command, options = {}, ws) {
   const {
     sessionId,
+    clientSessionId,
     cwd,
     projectPath,
     model = 'anthropic/claude-sonnet-4',
@@ -649,6 +650,7 @@ export async function queryOpenRouter(command, options = {}, ws) {
     sendMessage(ws, {
       type: 'session-created',
       sessionId: currentSessionId,
+      clientSessionId: clientSessionId || undefined,
       provider: 'openrouter',
       mode: sessionMode || 'research',
       startTime: activeOpenRouterSessions.get(currentSessionId).startTime,

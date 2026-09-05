@@ -670,6 +670,7 @@ async function buildSystemPrompt(workingDir) {
 export async function queryLocalGPU(command, options = {}, ws) {
   const {
     sessionId,
+    clientSessionId,
     cwd,
     projectPath,
     model = 'qwen3-32b',
@@ -757,6 +758,7 @@ export async function queryLocalGPU(command, options = {}, ws) {
     sendMessage(ws, {
       type: 'session-created',
       sessionId: currentSessionId,
+      clientSessionId: clientSessionId || undefined,
       provider: 'local',
       mode: sessionMode || 'research',
       startTime: activeLocalGPUSessions.get(currentSessionId).startTime,

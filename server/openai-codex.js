@@ -353,6 +353,7 @@ async function cleanupCodexTempFiles(tempImagePaths, tempDir) {
 export async function queryCodex(command, options = {}, ws) {
   const {
     sessionId,
+    clientSessionId,
     cwd,
     projectPath,
     model,
@@ -443,6 +444,7 @@ export async function queryCodex(command, options = {}, ws) {
       sendMessage(ws, {
         type: 'session-created',
         sessionId: currentSessionId,
+        clientSessionId: clientSessionId || undefined,
         provider: 'codex',
         mode: sessionMode || 'research'
       });

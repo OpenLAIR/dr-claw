@@ -1559,7 +1559,7 @@ function handleChatConnection(ws, request) {
                     return;
                 }
                 
-                queryClaudeSDK(data.command, { ...data.options, env: sessionEnv }, writer).catch(error => {
+                queryClaudeSDK(data.command, { ...data.options, clientSessionId: data.clientSessionId || null, env: sessionEnv }, writer).catch(error => {
                     console.error('[ERROR] Claude query error:', error);
                 });
             } else if (data.type === 'cursor-command') {
@@ -1588,7 +1588,7 @@ function handleChatConnection(ws, request) {
                 );
                 writer.telemetryContext = { ...telemetryContext, provider: 'cursor', telemetryEnabled: commandTelemetryEnabled };
                 writer.setProjectPath(data.options?.projectPath || data.options?.cwd || null);
-                spawnCursor(data.command, { ...data.options, env: sessionEnv }, writer).catch(error => {
+                spawnCursor(data.command, { ...data.options, clientSessionId: data.clientSessionId || null, env: sessionEnv }, writer).catch(error => {
                     console.error('[ERROR] Cursor spawn error:', error);
                 });
             } else if (data.type === 'codex-command') {
@@ -1617,7 +1617,7 @@ function handleChatConnection(ws, request) {
                 );
                 writer.telemetryContext = { ...telemetryContext, provider: 'codex', telemetryEnabled: commandTelemetryEnabled };
                 writer.setProjectPath(data.options?.projectPath || data.options?.cwd || null);
-                queryCodex(data.command, { ...data.options, env: sessionEnv }, writer).catch(error => {
+                queryCodex(data.command, { ...data.options, clientSessionId: data.clientSessionId || null, env: sessionEnv }, writer).catch(error => {
                     console.error('[ERROR] Codex query error:', error);
                 });
             } else if (data.type === 'gemini-command') {
@@ -1646,7 +1646,7 @@ function handleChatConnection(ws, request) {
                 );
                 writer.telemetryContext = { ...telemetryContext, provider: 'gemini', telemetryEnabled: commandTelemetryEnabled };
                 writer.setProjectPath(data.options?.projectPath || data.options?.cwd || null);
-                spawnGemini(data.command, { ...data.options, env: sessionEnv }, writer).catch(error => {
+                spawnGemini(data.command, { ...data.options, clientSessionId: data.clientSessionId || null, env: sessionEnv }, writer).catch(error => {
                     console.error('[ERROR] Gemini spawn error:', error);
                 });
             } else if (data.type === 'openrouter-command') {
@@ -1675,7 +1675,7 @@ function handleChatConnection(ws, request) {
                 );
                 writer.telemetryContext = { ...telemetryContext, provider: 'openrouter', telemetryEnabled: commandTelemetryEnabled };
                 writer.setProjectPath(data.options?.projectPath || data.options?.cwd || null);
-                queryOpenRouter(data.command, { ...data.options, env: sessionEnv }, writer).catch(error => {
+                queryOpenRouter(data.command, { ...data.options, clientSessionId: data.clientSessionId || null, env: sessionEnv }, writer).catch(error => {
                     console.error('[ERROR] OpenRouter query error:', error);
                 });
             } else if (data.type === 'local-command') {
@@ -1705,7 +1705,7 @@ function handleChatConnection(ws, request) {
                 );
                 writer.telemetryContext = { ...telemetryContext, provider: 'local', telemetryEnabled: commandTelemetryEnabled };
                 writer.setProjectPath(data.options?.projectPath || data.options?.cwd || null);
-                queryLocalGPU(data.command, { ...data.options, env: sessionEnv }, writer).catch(error => {
+                queryLocalGPU(data.command, { ...data.options, clientSessionId: data.clientSessionId || null, env: sessionEnv }, writer).catch(error => {
                     console.error('[ERROR] Local GPU query error:', error);
                 });
             } else if (data.type === 'nano-command') {
@@ -1734,7 +1734,7 @@ function handleChatConnection(ws, request) {
                 );
                 writer.telemetryContext = { ...telemetryContext, provider: 'nano', telemetryEnabled: commandTelemetryEnabled };
                 writer.setProjectPath(data.options?.projectPath || data.options?.cwd || null);
-                spawnNanoClaudeCode(data.command, { ...data.options, env: sessionEnv }, writer).catch(error => {
+                spawnNanoClaudeCode(data.command, { ...data.options, clientSessionId: data.clientSessionId || null, env: sessionEnv }, writer).catch(error => {
                     console.error('[ERROR] Nano Claude Code error:', error);
                 });
             } else if (data.type === 'cursor-resume') {

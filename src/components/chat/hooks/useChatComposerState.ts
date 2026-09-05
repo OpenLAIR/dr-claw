@@ -195,6 +195,35 @@ function formatRejectedFileMessage(rejection: FileRejection) {
 const isTemporarySessionId = (sessionId: string | null | undefined) =>
   Boolean(sessionId && sessionId.startsWith('new-session-'));
 
+export function resolveConversationSessionIds({
+  selectedSessionId,
+  currentSessionId,
+  routedSessionId,
+  pendingViewSessionId,
+  providerSessionId,
+}: {
+  selectedSessionId?: string | null;
+  currentSessionId?: string | null;
+  routedSessionId?: string | null;
+  pendingViewSessionId?: string | null;
+  providerSessionId?: string | null;
+}) {
+  const effectiveSessionId =
+    selectedSessionId ||
+    currentSessionId ||
+    routedSessionId ||
+    pendingViewSessionId ||
+    providerSessionId ||
+    null;
+  const temporarySessionId = isTemporarySessionId(effectiveSessionId) ? effectiveSessionId : null;
+
+  return {
+    effectiveSessionId,
+    temporarySessionId,
+    serverSessionId: temporarySessionId ? null : effectiveSessionId,
+  };
+}
+
 const BTW_TRANSCRIPT_MAX_CHARS = 120_000;
 
 function buildBtwTranscript(messages: ChatMessage[]): string {
@@ -1300,16 +1329,17 @@ export function useChatComposerState({
           ? sessionStorage.getItem('cursorSessionId')
           : null;
       const pendingViewSessionId = pendingViewSessionRef.current?.sessionId || null;
-      const effectiveSessionId =
-        currentSessionId ||
-        selectedSession?.id ||
-        routedSessionId ||
-        pendingViewSessionId ||
-        providerSessionId;
-      const isNewSession = !effectiveSessionId;
+      const { effectiveSessionId, temporarySessionId, serverSessionId } = resolveConversationSessionIds({
+        selectedSessionId: selectedSession?.id,
+        currentSessionId,
+        routedSessionId,
+        pendingViewSessionId,
+        providerSessionId,
+      });
+      const isNewSession = !serverSessionId;
       const sessionToActivate = effectiveSessionId || `new-session-${Date.now()}`;
 
-      if (!effectiveSessionId && !selectedSession?.id) {
+      if (!serverSessionId) {
         if (typeof window !== 'undefined') {
           // Reset stale pending IDs from previous interrupted runs before creating a new one.
           sessionStorage.removeItem('pendingSessionId');
@@ -1356,12 +1386,13 @@ export function useChatComposerState({
         sendMessage({
           type: 'cursor-command',
           command: messageContent,
-          sessionId: effectiveSessionId,
+          sessionId: serverSessionId,
+          clientSessionId: temporarySessionId,
           options: {
             cwd: resolvedProjectPath,
             projectPath: resolvedProjectPath,
-            sessionId: effectiveSessionId,
-            resume: Boolean(effectiveSessionId),
+            sessionId: serverSessionId,
+            resume: Boolean(serverSessionId),
             model: cursorModel,
             skipPermissions: toolsSettings?.skipPermissions || false,
             toolsSettings,
@@ -1376,12 +1407,13 @@ export function useChatComposerState({
         sendMessage({
           type: 'gemini-command',
           command: messageContent,
-          sessionId: effectiveSessionId,
+          sessionId: serverSessionId,
+          clientSessionId: temporarySessionId,
           options: {
             cwd: resolvedProjectPath,
             projectPath: resolvedProjectPath,
-            sessionId: effectiveSessionId,
-            resume: Boolean(effectiveSessionId),
+            sessionId: serverSessionId,
+            resume: Boolean(serverSessionId),
             model: geminiModel,
             permissionMode: effectivePermissionMode,
             thinkingMode: geminiThinkingMode,
@@ -1398,12 +1430,13 @@ export function useChatComposerState({
         sendMessage({
           type: 'codex-command',
           command: messageContent,
-          sessionId: effectiveSessionId,
+          sessionId: serverSessionId,
+          clientSessionId: temporarySessionId,
           options: {
             cwd: resolvedProjectPath,
             projectPath: resolvedProjectPath,
-            sessionId: effectiveSessionId,
-            resume: Boolean(effectiveSessionId),
+            sessionId: serverSessionId,
+            resume: Boolean(serverSessionId),
             model: codexModel,
             permissionMode: effectivePermissionMode === 'plan' ? 'default' : effectivePermissionMode,
             modelReasoningEffort: codexReasoningEffort === 'default' ? undefined : codexReasoningEffort,
@@ -1420,12 +1453,13 @@ export function useChatComposerState({
         sendMessage({
           type: 'openrouter-command',
           command: messageContent,
-          sessionId: effectiveSessionId,
+          sessionId: serverSessionId,
+          clientSessionId: temporarySessionId,
           options: {
             cwd: resolvedProjectPath,
             projectPath: resolvedProjectPath,
-            sessionId: effectiveSessionId,
-            resume: Boolean(effectiveSessionId),
+            sessionId: serverSessionId,
+            resume: Boolean(serverSessionId),
             model: openrouterModel,
             permissionMode: effectivePermissionMode,
             toolsSettings,
@@ -1440,12 +1474,13 @@ export function useChatComposerState({
         sendMessage({
           type: 'local-command',
           command: messageContent,
-          sessionId: effectiveSessionId,
+          sessionId: serverSessionId,
+          clientSessionId: temporarySessionId,
           options: {
             cwd: resolvedProjectPath,
             projectPath: resolvedProjectPath,
-            sessionId: effectiveSessionId,
-            resume: Boolean(effectiveSessionId),
+            sessionId: serverSessionId,
+            resume: Boolean(serverSessionId),
             model: localModel,
             serverUrl: localStorage.getItem('local-gpu-server-url') || 'http://localhost:11434',
             gpuId: localStorage.getItem('local-gpu-selected') || undefined,
@@ -1462,12 +1497,13 @@ export function useChatComposerState({
         sendMessage({
           type: 'nano-command',
           command: messageContent,
-          sessionId: effectiveSessionId,
+          sessionId: serverSessionId,
+          clientSessionId: temporarySessionId,
           options: {
             cwd: resolvedProjectPath,
             projectPath: resolvedProjectPath,
-            sessionId: effectiveSessionId,
-            resume: Boolean(effectiveSessionId),
+            sessionId: serverSessionId,
+            resume: Boolean(serverSessionId),
             model: nanoModel,
             toolsSettings,
             telemetryEnabled,
@@ -1481,11 +1517,12 @@ export function useChatComposerState({
         sendMessage({
           type: 'claude-command',
           command: messageContent,
+          clientSessionId: temporarySessionId,
           options: {
             projectPath: resolvedProjectPath,
             cwd: resolvedProjectPath,
-            sessionId: effectiveSessionId,
-            resume: Boolean(effectiveSessionId),
+            sessionId: serverSessionId,
+            resume: Boolean(serverSessionId),
             toolsSettings,
             permissionMode: effectivePermissionMode,
             model: claudeModel,
