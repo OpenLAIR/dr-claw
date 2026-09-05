@@ -38,14 +38,14 @@ async function get(path) {
 
 describe('GET /api/models/:provider', () => {
   it('always returns a usable list, even for a provider it cannot probe', async () => {
-    const { GEMINI_MODELS } = await import('../../shared/modelConstants.js');
-    const { status, body } = await get('/api/models/gemini');
+    const { CURSOR_MODELS } = await import('../../shared/modelConstants.js');
+    const { status, body } = await get('/api/models/cursor');
 
     expect(status).toBe(200);
-    expect(body.provider).toBe('gemini');
+    expect(body.provider).toBe('cursor');
     expect(body.source).toBe('static');
-    expect(body.options).toEqual(GEMINI_MODELS.OPTIONS);
-    expect(body.default).toBe(GEMINI_MODELS.DEFAULT);
+    expect(body.options).toEqual(CURSOR_MODELS.OPTIONS);
+    expect(body.default).toBe(CURSOR_MODELS.DEFAULT);
   });
 
   it('reports allowsCustom so the client can render a free-text picker', async () => {
@@ -84,6 +84,6 @@ describe('GET /api/models/providers', () => {
     const { status, body } = await get('/api/models/providers');
 
     expect(status).toBe(200);
-    expect(body.providers).toEqual(['claude', 'codex', 'openrouter']);
+    expect(body.providers).toEqual(['claude', 'codex', 'gemini', 'openrouter']);
   });
 });

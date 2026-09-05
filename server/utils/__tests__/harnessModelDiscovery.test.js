@@ -195,6 +195,104 @@ describe('claude discovery', () => {
   });
 });
 
+describe('gemini discovery', () => {
+  const CATALOGUE = {
+    models: [
+      { name: 'models/gemini-2.5-flash', displayName: 'Gemini 2.5 Flash', description: 'Stable', inputTokenLimit: 1048576, supportedGenerationMethods: ['generateContent'], thinking: true },
+      { name: 'models/gemini-3.8-flash', displayName: 'Gemini 3.8 Flash', description: 'Newest', inputTokenLimit: 1048576, supportedGenerationMethods: ['generateContent'], thinking: true },
+      { name: 'models/gemini-2.5-flash-preview-tts', displayName: 'TTS', supportedGenerationMethods: ['generateContent'] },
+      { name: 'models/gemini-3-pro-image', displayName: 'Nano Banana Pro', supportedGenerationMethods: ['generateContent'] },
+      { name: 'models/gemini-embedding-001', displayName: 'Embedding', supportedGenerationMethods: ['embedContent'] },
+      { name: 'models/gemma-4-31b-it', displayName: 'Gemma', supportedGenerationMethods: ['generateContent'] },
+    ],
+  };
+
+  function stubCatalogue(handler) {
+    vi.stubGlobal('fetch', vi.fn(handler));
+  }
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('lists chat-capable gemini models from the API, newest generation first', async () => {
+    const seen = [];
+    stubCatalogue(async (url, init) => {
+      seen.push({ url: String(url), key: init?.headers?.['x-goog-api-key'] });
+      return { ok: true, status: 200, json: async () => CATALOGUE };
+    });
+
+    const payload = await mod.getModelsForProvider('gemini', {
+      env: { ...process.env, GEMINI_API_KEY: 'test-key', GOOGLE_API_KEY: '' },
+      cacheScope: 'key',
+    });
+
+    expect(payload.source).toBe('discovered');
+    expect(seen[0].key).toBe('test-key');
+    const live = payload.options.filter((o) => !o.builtIn).map((o) => o.value);
+    expect(live).toEqual(['gemini-3.8-flash', 'gemini-2.5-flash']);
+    expect(payload.options[0].description).toContain('1024K context');
+    expect(payload.options[0].contextWindow).toBe(1048576);
+    // Built-in entries the API did not confirm are kept but flagged.
+    const stale = payload.options.find((o) => o.value === 'gemini-3.1-pro-preview');
+    expect(stale.builtIn).toBe(true);
+    expect(stale.deprecated).toBe(true);
+  });
+
+  it('falls back to the built-in list without an API key, and says why', async () => {
+    const { GEMINI_MODELS } = await import('../../../shared/modelConstants.js');
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    stubCatalogue(async () => { throw new Error('fetch should not be called without a key'); });
+
+    const payload = await mod.getModelsForProvider('gemini', {
+      env: { ...process.env, GEMINI_API_KEY: '', GOOGLE_API_KEY: '' },
+      cacheScope: 'nokey',
+    });
+
+    expect(payload.source).toBe('static');
+    expect(payload.options).toEqual(GEMINI_MODELS.OPTIONS);
+    expect(payload.error).toMatch(/API key/);
+  });
+
+  it('keeps keyless and keyed callers on separate cache entries', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    stubCatalogue(async () => ({ ok: true, status: 200, json: async () => CATALOGUE }));
+
+    const keyless = await mod.getModelsForProvider('gemini', {
+      env: { ...process.env, GEMINI_API_KEY: '', GOOGLE_API_KEY: '' },
+      cacheScope: 'nokey',
+    });
+    const keyed = await mod.getModelsForProvider('gemini', {
+      env: { ...process.env, GEMINI_API_KEY: 'test-key' },
+      cacheScope: 'key',
+    });
+
+    expect(keyless.source).toBe('static');
+    expect(keyed.source).toBe('discovered');
+    // And clearing the provider drops both scopes.
+    mod.clearModelDiscoveryCache('gemini');
+    const again = await mod.getModelsForProvider('gemini', {
+      env: { ...process.env, GEMINI_API_KEY: 'test-key' },
+      cacheScope: 'key',
+    });
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(again.source).toBe('discovered');
+  });
+
+  it('falls back when the API rejects the key', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    stubCatalogue(async () => ({ ok: false, status: 403, json: async () => ({}) }));
+
+    const payload = await mod.getModelsForProvider('gemini', {
+      env: { ...process.env, GEMINI_API_KEY: 'bad-key' },
+      cacheScope: 'key',
+    });
+
+    expect(payload.source).toBe('static');
+    expect(payload.error).toContain('403');
+  });
+});
+
 describe('labelForClaudeModelId', () => {
   it('renders family, dotted version and the 1M marker', () => {
     expect(mod.labelForClaudeModelId('claude-fable-5-1[1m]')).toBe('Fable 5.1 [1M]');
@@ -635,11 +733,11 @@ process.stdin.on('data', (d) => {
 
 describe('providers without a discoverer', () => {
   it('returns the built-in list unchanged', async () => {
-    const { GEMINI_MODELS } = await import('../../../shared/modelConstants.js');
-    const payload = await mod.getModelsForProvider('gemini');
+    const { CURSOR_MODELS } = await import('../../../shared/modelConstants.js');
+    const payload = await mod.getModelsForProvider('cursor');
 
     expect(payload.source).toBe('static');
-    expect(payload.options).toEqual(GEMINI_MODELS.OPTIONS);
+    expect(payload.options).toEqual(CURSOR_MODELS.OPTIONS);
     expect(payload.error).toBeNull();
   });
 
@@ -651,6 +749,6 @@ describe('providers without a discoverer', () => {
   });
 
   it('only advertises providers it can actually probe', () => {
-    expect(mod.getDiscoverableProviders()).toEqual(['claude', 'codex', 'openrouter']);
+    expect(mod.getDiscoverableProviders()).toEqual(['claude', 'codex', 'gemini', 'openrouter']);
   });
 });
