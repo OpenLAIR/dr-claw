@@ -32,15 +32,45 @@ function squircleMask(size) {
   );
 }
 
+async function createMacIcon(size) {
+  const artworkSize = Math.round(size * 0.82);
+  const offset = Math.round((size - artworkSize) / 2);
+  const artwork = await sharp(sourceIcon).resize(artworkSize, artworkSize).png().toBuffer();
+  const maskedArtwork = await sharp(artwork)
+    .composite([{ input: squircleMask(artworkSize), blend: 'dest-in' }])
+    .png()
+    .toBuffer();
+
+  return sharp({
+    create: {
+      width: size,
+      height: size,
+      channels: 4,
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+    },
+  })
+    .composite([{ input: maskedArtwork, left: offset, top: offset }])
+    .png()
+    .toBuffer();
+}
+
 await fs.promises.rm(iconsetDir, { recursive: true, force: true });
 await fs.promises.mkdir(iconsetDir, { recursive: true });
 await fs.promises.mkdir(buildDir, { recursive: true });
 
-// --- macOS .iconset (raw squares — macOS applies its own mask to .icns) -------
+// --- macOS .iconset -----------------------------------------------------------
+// macOS preserves the pixels embedded in .icns files, so each source image
+// needs its own rounded mask and transparent padding.
 for (const size of macIconSizes) {
   const baseName = `icon_${size}x${size}`;
-  await sharp(sourceIcon).resize(size, size).png().toFile(path.join(iconsetDir, `${baseName}.png`));
-  await sharp(sourceIcon).resize(size * 2, size * 2).png().toFile(path.join(iconsetDir, `${baseName}@2x.png`));
+  await fs.promises.writeFile(
+    path.join(iconsetDir, `${baseName}.png`),
+    await createMacIcon(size),
+  );
+  await fs.promises.writeFile(
+    path.join(iconsetDir, `${baseName}@2x.png`),
+    await createMacIcon(size * 2),
+  );
 }
 
 // --- macOS .icns via iconutil (macOS only) ------------------------------------
@@ -60,22 +90,7 @@ await sharp(sourceIcon).resize(512, 512).png().toFile(path.join(buildDir, 'icon.
 // Native macOS icons have ~18% padding around the artwork inside the dock tile.
 // We resize the artwork to ~82% of the canvas and center it on a transparent
 // background so the icon matches the visual weight of Finder, Safari, etc.
-const dockCanvas = 512;
-const dockArtwork = Math.round(dockCanvas * 0.82);
-const dockOffset = Math.round((dockCanvas - dockArtwork) / 2);
-
-const artwork = await sharp(sourceIcon).resize(dockArtwork, dockArtwork).png().toBuffer();
-const maskedArtwork = await sharp(artwork)
-  .composite([{ input: squircleMask(dockArtwork), blend: 'dest-in' }])
-  .png()
-  .toBuffer();
-
-await sharp({
-  create: { width: dockCanvas, height: dockCanvas, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
-})
-  .composite([{ input: maskedArtwork, left: dockOffset, top: dockOffset }])
-  .png()
-  .toFile(path.join(buildDir, 'icon-dock.png'));
+await fs.promises.writeFile(path.join(buildDir, 'icon-dock.png'), await createMacIcon(512));
 
 // --- Windows .ico -------------------------------------------------------------
 const icoBuffer = await pngToIco(
