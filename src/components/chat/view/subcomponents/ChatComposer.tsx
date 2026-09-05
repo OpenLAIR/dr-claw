@@ -349,13 +349,17 @@ export default function ChatComposer({
     : null;
 
   const rawModelConfig = getModelConfig(sessionProvider);
-  // A built-in entry the harness no longer serves stays in the API payload
-  // (flagged deprecated) so nothing is silently lost, but it only earns a row
-  // in the picker while it is the selected value — otherwise the list shows
-  // one model under two names, e.g. the retired `gpt-5.6` next to `gpt-5.6-sol`.
+  // Once the harness has answered, the picker reads like the CLI's own menu:
+  // entries from the compiled-in table are folded behind a "show built-in"
+  // toggle unless one is the selected value. Showing both at once lists the
+  // same model under two names (`claude-fable-5` next to the CLI's
+  // `claude-fable-5[1m]`, the retired `gpt-5.6` next to `gpt-5.6-sol`).
   const pickerModels = discoveredModels?.filter(
-    (option) => !option.deprecated || option.value === currentModel,
+    (option) => !option.builtIn || option.value === currentModel,
   );
+  const builtInModels = discoveredModels?.filter(
+    (option) => option.builtIn && option.value !== currentModel,
+  ) ?? [];
   const modelConfig = sessionProvider === 'local' && ollamaModels.length > 0
     ? { ...rawModelConfig, OPTIONS: ollamaModels }
     : pickerModels && pickerModels.length > 0
@@ -684,6 +688,7 @@ export default function ChatComposer({
                         <ModelSelector
                           value={currentModel}
                           options={modelConfig.OPTIONS}
+                          moreOptions={builtInModels}
                           onChange={handleModelChange}
                         />
                       )}

@@ -219,9 +219,11 @@ describe('mergeModelOptions', () => {
     // The harness's own label wins for a model both lists know about.
     expect(merged[1].label).toBe('Shared (live)');
     expect(merged[1].deprecated).toBeUndefined();
+    expect(merged[1].builtIn).toBeUndefined();
     // A model the harness no longer serves is kept but marked, so a user whose
     // saved preference points at it is not stranded.
     expect(merged[2].deprecated).toBe(true);
+    expect(merged[2].builtIn).toBe(true);
   });
 
   it('leaves built-ins undemoted for a harness that accepts unlisted ids', () => {
@@ -232,6 +234,8 @@ describe('mergeModelOptions', () => {
     );
     expect(merged.map((o) => o.value)).toEqual(['opus[1m]', 'claude-opus-4-6']);
     expect(merged[1].deprecated).toBeUndefined();
+    // Still marked as coming from the table, so the picker can fold it away.
+    expect(merged[1].builtIn).toBe(true);
   });
 
   it('keeps metadata the discoverer attached, such as description', () => {

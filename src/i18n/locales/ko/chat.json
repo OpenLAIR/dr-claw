@@ -574,6 +574,8 @@
     }
   },
   "modelSelector": {
-    "notInCliList": "CLI 목록에 없음"
+    "notInCliList": "CLI 목록에 없음",
+    "showBuiltIn": "내장 모델 {{count}}개 더 보기",
+    "hideBuiltIn": "내장 모델 숨기기"
   }
 }

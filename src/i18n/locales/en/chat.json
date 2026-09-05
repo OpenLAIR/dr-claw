@@ -597,6 +597,8 @@
     }
   },
   "modelSelector": {
-    "notInCliList": "not in CLI list"
+    "notInCliList": "not in CLI list",
+    "showBuiltIn": "Show {{count}} more built-in models",
+    "hideBuiltIn": "Hide built-in models"
   }
 }

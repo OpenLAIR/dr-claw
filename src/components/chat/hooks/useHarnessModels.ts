@@ -6,6 +6,8 @@ export interface HarnessModelOption {
   value: string;
   label: string;
   description?: string;
+  /** From the compiled-in table rather than the harness; folded away in the picker by default. */
+  builtIn?: boolean;
   /** Present in the built-in list but not reported by the harness itself. */
   deprecated?: boolean;
   isDefault?: boolean;

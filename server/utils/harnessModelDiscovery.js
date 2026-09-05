@@ -103,7 +103,12 @@ export function mergeModelOptions(discovered, staticOptions, { acceptsUnlisted =
   for (const option of staticOptions || []) {
     if (!option?.value || seen.has(option.value)) continue;
     seen.add(option.value);
-    merged.push(acceptsUnlisted ? { ...option } : { ...option, deprecated: true });
+    // builtIn: came from the compiled-in table, not from the harness. The
+    // picker folds these away by default so the list reads like the CLI's own
+    // menu, which is where the same model would otherwise appear twice
+    // (`claude-fable-5` next to the CLI's `claude-fable-5[1m]`).
+    // deprecated: the harness rejects unlisted ids, so this one cannot be used.
+    merged.push(acceptsUnlisted ? { ...option, builtIn: true } : { ...option, builtIn: true, deprecated: true });
   }
 
   return merged;

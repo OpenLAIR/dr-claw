@@ -597,6 +597,8 @@
     }
   },
   "modelSelector": {
-    "notInCliList": "CLI 未列出"
+    "notInCliList": "CLI 未列出",
+    "showBuiltIn": "显示其余 {{count}} 个内置模型",
+    "hideBuiltIn": "隐藏内置模型"
   }
 }
