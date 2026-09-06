@@ -53,6 +53,17 @@ function runtimePortSyncPlugin() {
   }
 }
 
+// Vendor chunks pinned by package. Patterns require a path separator after the
+// package name so `react` does not also capture react-i18next, react-markdown, etc.
+const VENDOR_CHUNKS = [
+  ['vendor-react', /[\\/]node_modules[\\/](react|react-dom|scheduler|react-router|react-router-dom|@remix-run[\\/]router)[\\/]/],
+  [
+    'vendor-codemirror',
+    /[\\/]node_modules[\\/](@uiw[\\/](react-codemirror|codemirror-extensions-basic-setup)|@codemirror|@lezer|@marijn[\\/]find-cluster-break|style-mod|w3c-keyname|crelt)[\\/]/,
+  ],
+  ['vendor-xterm', /[\\/]node_modules[\\/]@xterm[\\/]/],
+];
+
 export default defineConfig(({ command, mode }) => {
   // Load env file based on `mode` in the current working directory.
   const env = loadEnv(mode, process.cwd(), '')
@@ -98,19 +109,13 @@ export default defineConfig(({ command, mode }) => {
       chunkSizeWarningLimit: 1000,
       rollupOptions: {
         output: {
-          manualChunks: {
-            'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-            'vendor-codemirror': [
-              '@uiw/react-codemirror',
-              '@codemirror/lang-css',
-              '@codemirror/lang-html',
-              '@codemirror/lang-javascript',
-              '@codemirror/lang-json',
-              '@codemirror/lang-markdown',
-              '@codemirror/lang-python',
-              '@codemirror/theme-one-dark'
-            ],
-            'vendor-xterm': ['@xterm/xterm', '@xterm/addon-fit', '@xterm/addon-clipboard', '@xterm/addon-webgl']
+          // Function form on purpose: the object form also captures each listed
+          // package's transitive dependencies, which pulled react/jsx-runtime and
+          // the @babel/runtime helpers into the CodeMirror chunk and made every
+          // page load (including the login screen) download all of CodeMirror.
+          manualChunks(id) {
+            const match = VENDOR_CHUNKS.find(([, pattern]) => pattern.test(id));
+            return match ? match[0] : undefined;
           }
         }
       }

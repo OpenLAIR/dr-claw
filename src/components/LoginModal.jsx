@@ -1,9 +1,13 @@
-import { useMemo, useState } from 'react';
+import { Suspense, useMemo, useState } from 'react';
 import { ExternalLink, Loader2, RefreshCw, Wrench, X } from 'lucide-react';
-import StandaloneShell from './StandaloneShell';
+import LazyLoadBoundary from './LazyLoadBoundary';
+import lazyWithRetry from '../utils/lazyWithRetry';
 import { authenticatedFetch } from '../utils/api';
 import { IS_PLATFORM } from '../constants/config';
 import { useDesktop } from '../hooks/useDesktop';
+
+// StandaloneShell pulls in xterm; this modal is reachable before login, so keep it off the entry chunk.
+const StandaloneShell = lazyWithRetry(() => import('./StandaloneShell'));
 
 function LoginModal({
   isOpen,
@@ -230,12 +234,22 @@ function LoginModal({
           </button>
         </div>
         <div className="flex-1 overflow-hidden">
-          <StandaloneShell
-            project={project}
-            command={getCommand()}
-            onComplete={handleComplete}
-            minimal={true}
-          />
+          <LazyLoadBoundary onClose={onClose}>
+            <Suspense
+              fallback={(
+                <div className="flex h-full items-center justify-center text-gray-400">
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                </div>
+              )}
+            >
+              <StandaloneShell
+                project={project}
+                command={getCommand()}
+                onComplete={handleComplete}
+                minimal={true}
+              />
+            </Suspense>
+          </LazyLoadBoundary>
         </div>
       </div>
     </div>

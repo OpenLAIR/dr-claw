@@ -192,40 +192,76 @@ export default function AppContent() {
   const desktopSidebarWidth = sidebarVisible ? sidebarWidth : SIDEBAR_COLLAPSED_WIDTH;
 
   const isResizing = useRef(false);
+  const sidebarContainerRef = useRef<HTMLDivElement>(null);
+  const resizeFrameRef = useRef<number | null>(null);
+  const pendingWidthRef = useRef(sidebarWidth);
+  const resizeCleanupRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => () => {
+    resizeCleanupRef.current?.();
+    if (resizeFrameRef.current !== null) {
+      cancelAnimationFrame(resizeFrameRef.current);
+    }
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+  }, []);
 
   const handleResizeStart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
+    resizeCleanupRef.current?.();
     isResizing.current = true;
+    sidebarContainerRef.current?.style.setProperty('transition', 'none');
     document.body.style.cursor = 'col-resize';
     document.body.style.userSelect = 'none';
 
     const onMouseMove = (ev: MouseEvent) => {
       if (!isResizing.current) return;
-      const newWidth = Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, ev.clientX));
-      setSidebarWidth(newWidth);
+      pendingWidthRef.current = Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, ev.clientX));
+      if (resizeFrameRef.current !== null) return;
+
+      resizeFrameRef.current = requestAnimationFrame(() => {
+        if (sidebarContainerRef.current) {
+          sidebarContainerRef.current.style.width = `${pendingWidthRef.current}px`;
+        }
+        resizeFrameRef.current = null;
+      });
     };
 
-    const onMouseUp = () => {
+    const cleanupResize = () => {
       isResizing.current = false;
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
-      setSidebarWidth((w) => {
-        localStorage.setItem(STORAGE_KEY, String(w));
-        localStorage.removeItem(LEGACY_STORAGE_KEY);
-        return w;
-      });
+      window.removeEventListener('blur', onMouseUp);
+      resizeCleanupRef.current = null;
     };
 
+    const onMouseUp = () => {
+      if (resizeFrameRef.current !== null) {
+        cancelAnimationFrame(resizeFrameRef.current);
+        resizeFrameRef.current = null;
+      }
+      const finalWidth = pendingWidthRef.current;
+      sidebarContainerRef.current?.style.setProperty('width', `${finalWidth}px`);
+      setSidebarWidth(finalWidth);
+      localStorage.setItem(STORAGE_KEY, String(finalWidth));
+      localStorage.removeItem(LEGACY_STORAGE_KEY);
+      sidebarContainerRef.current?.style.removeProperty('transition');
+      cleanupResize();
+    };
+
+    resizeCleanupRef.current = cleanupResize;
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
+    window.addEventListener('blur', onMouseUp);
   }, []);
 
   return (
     <div className="fixed inset-0 flex bg-background">
       {!isMobile ? (
         <div
+          ref={sidebarContainerRef}
           className="h-full flex-shrink-0 relative transition-[width] duration-150 ease-out"
           style={{ width: desktopSidebarWidth }}
         >

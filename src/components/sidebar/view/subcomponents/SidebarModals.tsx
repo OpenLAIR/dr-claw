@@ -1,10 +1,12 @@
-import { useMemo } from 'react';
+import { Suspense, useMemo } from 'react';
+import type { ComponentType } from 'react';
 import ReactDOM from 'react-dom';
 import { AlertTriangle, Trash2 } from 'lucide-react';
 import type { TFunction } from 'i18next';
 import { Button } from '../../../ui/button';
-import Settings from '../../../Settings';
+import LazyLoadBoundary, { LazyModalLoadingFallback } from '../../../LazyLoadBoundary';
 import VersionUpgradeModal from '../../../modals/VersionUpgradeModal';
+import lazyWithRetry from '../../../../utils/lazyWithRetry';
 import type { Project } from '../../../../types/app';
 import type { ReleaseInfo } from '../../../../types/sharedTypes';
 import type { InstallMode } from '../../../../hooks/useVersionCheck';
@@ -39,11 +41,7 @@ type TypedSettingsProps = {
   initialTab: string;
 };
 
-const SettingsComponent = Settings as (props: TypedSettingsProps) => JSX.Element;
-
-function TypedSettings(props: TypedSettingsProps) {
-  return <SettingsComponent {...props} />;
-}
+const Settings = lazyWithRetry(() => import('../../../Settings')) as ComponentType<TypedSettingsProps>;
 
 export default function SidebarModals({
   projects,
@@ -74,12 +72,16 @@ export default function SidebarModals({
     <>
       {showSettings &&
         ReactDOM.createPortal(
-          <TypedSettings
-            isOpen={showSettings}
-            onClose={onCloseSettings}
-            projects={settingsProjects}
-            initialTab={settingsInitialTab}
-          />,
+          <LazyLoadBoundary mode="modal" resetKey="settings" onClose={onCloseSettings}>
+            <Suspense fallback={<LazyModalLoadingFallback onClose={onCloseSettings} />}>
+              <Settings
+                isOpen={showSettings}
+                onClose={onCloseSettings}
+                projects={settingsProjects}
+                initialTab={settingsInitialTab}
+              />
+            </Suspense>
+          </LazyLoadBoundary>,
           document.body,
         )}
 
@@ -181,6 +183,9 @@ export default function SidebarModals({
           document.body,
         )}
 
+      {/* Stays mounted while closed: it owns the in-flight update output, and
+          unmounting it would both drop that output and let a reopened instance
+          start a second concurrent update. It is small enough not to lazy-load. */}
       <VersionUpgradeModal
         isOpen={showVersionModal}
         onClose={onCloseVersionModal}

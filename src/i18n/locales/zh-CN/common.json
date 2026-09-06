@@ -191,6 +191,12 @@
     "untitledSession": "未命名会话",
     "projectFiles": "项目文件"
   },
+  "lazyLoad": {
+    "errorTitle": "Dr. Claw 的此部分无法加载",
+    "errorDescription": "应用可能已更新，或网络连接被中断。请重新加载以获取最新版本。",
+    "reload": "重新加载",
+    "close": "关闭"
+  },
   "projectDashboard": {
     "title": "项目仪表盘",
     "trashTitle": "项目回收站",

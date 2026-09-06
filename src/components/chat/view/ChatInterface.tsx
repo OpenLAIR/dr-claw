@@ -1,6 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import QuickSettingsPanel from '../../QuickSettingsPanel';
-import CodeEditor from '../../CodeEditor';
 import ChatTaskProgressPill from './subcomponents/ChatTaskProgressPill';
 import { useTasksSettings } from '../../../contexts/TasksSettingsContext';
 import { useTaskMaster } from '../../../contexts/TaskMasterContext';
@@ -29,6 +28,10 @@ import { getProviderDisplayName } from '../utils/chatFormatting';
 import { buildEditableMessageDraft, buildReplayMessageDraft, getChatMessageId, getMessageReplayContent } from '../utils/chatMessages';
 import { normalizePath, toRelativePath, isSafePath, fileNameFromPath } from '../../../utils/pathUtils';
 import { useDeviceSettings } from '../../../hooks/useDeviceSettings';
+import LazyLoadBoundary from '../../LazyLoadBoundary';
+import lazyWithRetry from '../../../utils/lazyWithRetry';
+
+const CodeEditor = lazyWithRetry(() => import('../../CodeEditor'));
 
 const DEFAULT_PROVIDER_AVAILABILITY: Record<Provider, ProviderAvailability> = {
   claude: { cliAvailable: true, cliCommand: 'claude', installHint: null },
@@ -1002,14 +1005,25 @@ function ChatInterface({
         )}
 
         {editingFile && selectedProject && (
-          <CodeEditor
-            file={editingFile}
-            onClose={handleCloseEditor}
-            projectPath={selectedProject.fullPath || selectedProject.path}
-            selectedProject={selectedProject}
-            onStartWorkspaceQa={onStartWorkspaceQa}
-            displayMode="embedded"
-          />
+          <LazyLoadBoundary resetKey={editingFile.path} onClose={handleCloseEditor}>
+            <Suspense
+              fallback={(
+                <div className="flex h-full items-center justify-center text-sm text-muted-foreground" role="status" aria-live="polite">
+                  <div className="mr-2 h-5 w-5 animate-spin rounded-full border-2 border-muted border-t-primary" />
+                  {t('common:mainContent.loading')}
+                </div>
+              )}
+            >
+              <CodeEditor
+                file={editingFile}
+                onClose={handleCloseEditor}
+                projectPath={selectedProject.fullPath || selectedProject.path}
+                selectedProject={selectedProject}
+                onStartWorkspaceQa={onStartWorkspaceQa}
+                displayMode="embedded"
+              />
+            </Suspense>
+          </LazyLoadBoundary>
         )}
 
           </div>

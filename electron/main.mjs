@@ -723,7 +723,9 @@ function createWindow(baseUrl) {
   logDesktop('Creating BrowserWindow', { baseUrl });
 
   const iconPath = path.join(resolveAppRoot(), 'build', 'icon.png');
-  const preloadPath = path.join(__dirname, 'preload.mjs');
+  // Sandboxed preload scripts run in a CommonJS-like environment and cannot
+  // execute ESM imports. Keep this file as .cjs while sandbox remains enabled.
+  const preloadPath = path.join(__dirname, 'preload.cjs');
 
   const savedState = loadWindowState();
   const defaultWidth = 1440;
@@ -829,6 +831,14 @@ function createWindow(baseUrl) {
 
   mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
     logDesktop('did-fail-load', { errorCode, errorDescription, validatedURL });
+  });
+
+  mainWindow.webContents.on('preload-error', (_event, failedPreloadPath, error) => {
+    logDesktop('preload-error', {
+      preloadPath: failedPreloadPath,
+      message: error?.message || String(error),
+      stack: error?.stack,
+    });
   });
 
   mainWindow.webContents.on('render-process-gone', (_event, details) => {

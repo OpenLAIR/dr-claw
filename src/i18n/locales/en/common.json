@@ -191,6 +191,12 @@
     "untitledSession": "Untitled Session",
     "projectFiles": "Project Files"
   },
+  "lazyLoad": {
+    "errorTitle": "This part of Dr. Claw could not be loaded",
+    "errorDescription": "The app may have been updated or the connection was interrupted. Reload to fetch the latest version.",
+    "reload": "Reload",
+    "close": "Close"
+  },
   "projectDashboard": {
     "title": "Project Dashboard",
     "trashTitle": "Project Trash",
