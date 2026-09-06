@@ -1,9 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Check } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+
+export interface ModelSelectorOption {
+  value: string;
+  label: string;
+  description?: string;
+  deprecated?: boolean;
+}
 
 interface ModelSelectorProps {
   value: string;
-  options: Array<{ value: string; label: string }>;
+  options: ModelSelectorOption[];
   onChange: (v: string) => void;
 }
 
@@ -12,6 +20,7 @@ export default function ModelSelector({
   options,
   onChange,
 }: ModelSelectorProps) {
+  const { t } = useTranslation('chat');
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const displayLabel = options.find((o) => o.value === value)?.label || value;
@@ -22,9 +31,41 @@ export default function ModelSelector({
         setOpen(false);
       }
     };
-    if (open) document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    const keyHandler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    if (open) {
+      document.addEventListener('mousedown', handler);
+      document.addEventListener('keydown', keyHandler);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handler);
+      document.removeEventListener('keydown', keyHandler);
+    };
   }, [open]);
+
+  const renderOption = (opt: ModelSelectorOption) => {
+    const active = opt.value === value;
+    return (
+      <button
+        key={opt.value}
+        type="button"
+        title={opt.description || opt.value}
+        onClick={() => { onChange(opt.value); setOpen(false); }}
+        className={`w-full flex items-center gap-2 px-3 py-2 text-left text-[11px] transition-colors ${
+          active
+            ? 'bg-primary/8 text-foreground font-medium'
+            : 'hover:bg-muted/50 text-muted-foreground'
+        }`}
+      >
+        <span className="flex-1 truncate">{opt.label}</span>
+        {opt.deprecated && (
+          <span className="text-[9px] text-muted-foreground/60 shrink-0">{t('modelSelector.notInCliList')}</span>
+        )}
+        {active && <Check className="w-3 h-3 text-primary shrink-0" />}
+      </button>
+    );
+  };
 
   return (
     <div ref={containerRef} className="relative">
@@ -43,25 +84,8 @@ export default function ModelSelector({
       </button>
 
       {open && (
-        <div className="absolute z-50 bottom-full mb-1 left-0 w-52 max-h-[240px] bg-popover border border-border rounded-xl shadow-xl overflow-y-auto">
-          {options.map((opt) => {
-            const active = opt.value === value;
-            return (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => { onChange(opt.value); setOpen(false); }}
-                className={`w-full flex items-center gap-2 px-3 py-2 text-left text-[11px] transition-colors ${
-                  active
-                    ? 'bg-primary/8 text-foreground font-medium'
-                    : 'hover:bg-muted/50 text-muted-foreground'
-                }`}
-              >
-                <span className="flex-1 truncate">{opt.label}</span>
-                {active && <Check className="w-3 h-3 text-primary shrink-0" />}
-              </button>
-            );
-          })}
+        <div className="absolute z-50 bottom-full mb-1 left-0 w-52 max-h-[280px] bg-popover border border-border rounded-xl shadow-xl overflow-y-auto">
+          {options.map(renderOption)}
         </div>
       )}
     </div>

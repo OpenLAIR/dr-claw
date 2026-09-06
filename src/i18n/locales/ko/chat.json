@@ -219,6 +219,10 @@
       "max": {
         "name": "최대",
         "description": "최대 추론 강도"
+      },
+      "ultra": {
+        "name": "울트라",
+        "description": "모델이 제공하는 최고 추론 강도"
       }
     },
     "buttonTitle": "추론 강도: {{level}}"
@@ -568,5 +572,8 @@
       "briefExists": "research_brief.json 감지됨",
       "buttonLabel": "채팅에서 사용"
     }
+  },
+  "modelSelector": {
+    "notInCliList": "CLI 목록에 없음"
   }
 }

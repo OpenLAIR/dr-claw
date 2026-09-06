@@ -219,6 +219,10 @@
       "max": {
         "name": "Max",
         "description": "Maximum reasoning effort"
+      },
+      "ultra": {
+        "name": "Ultra",
+        "description": "The highest reasoning effort the model offers"
       }
     },
     "buttonTitle": "Reasoning effort: {{level}}"
@@ -591,5 +595,8 @@
       "briefExists": "research_brief.json detected",
       "buttonLabel": "Use in Chat"
     }
+  },
+  "modelSelector": {
+    "notInCliList": "not in CLI list"
   }
 }

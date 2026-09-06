@@ -16,7 +16,9 @@
  */
 
 import { spawn } from 'child_process';
+import fs from 'fs';
 import os from 'os';
+import path from 'path';
 import { StringDecoder } from 'string_decoder';
 import {
   CLAUDE_MODELS,
@@ -101,7 +103,12 @@ export function mergeModelOptions(discovered, staticOptions, { acceptsUnlisted =
   for (const option of staticOptions || []) {
     if (!option?.value || seen.has(option.value)) continue;
     seen.add(option.value);
-    merged.push(acceptsUnlisted ? { ...option } : { ...option, deprecated: true });
+    // builtIn: came from the compiled-in table, not from the harness. The
+    // picker folds these away by default so the list reads like the CLI's own
+    // menu, which is where the same model would otherwise appear twice
+    // (`claude-fable-5` next to the CLI's `claude-fable-5[1m]`).
+    // deprecated: the harness rejects unlisted ids, so this one cannot be used.
+    merged.push(acceptsUnlisted ? { ...option, builtIn: true } : { ...option, builtIn: true, deprecated: true });
   }
 
   return merged;
@@ -274,12 +281,97 @@ async function discoverCodexModels({ timeoutMs, env = process.env } = {}) {
 
   return models
     .filter((model) => model && !model.hidden && (model.model || model.id))
-    .map((model) => ({
-      value: model.model || model.id,
-      label: model.displayName || model.model || model.id,
-      description: model.description || undefined,
-      isDefault: Boolean(model.isDefault),
-    }));
+    .map((model) => {
+      // Codex reports which reasoning efforts each model accepts; without this
+      // the picker would have to guess from a hand-maintained table that is
+      // wrong for every model name it has not seen yet.
+      const reasoningEfforts = (Array.isArray(model.supportedReasoningEfforts) ? model.supportedReasoningEfforts : [])
+        .map((effort) => (typeof effort === 'string' ? effort : effort?.reasoningEffort))
+        .filter((effort) => typeof effort === 'string' && effort);
+
+      return {
+        value: model.model || model.id,
+        label: model.displayName || model.model || model.id,
+        description: model.description || undefined,
+        isDefault: Boolean(model.isDefault),
+        reasoningEfforts: reasoningEfforts.length > 0 ? reasoningEfforts : undefined,
+        defaultReasoningEffort: typeof model.defaultReasoningEffort === 'string' ? model.defaultReasoningEffort : undefined,
+      };
+    });
+}
+
+/**
+ * Claude Code appends the model configured in the user's own settings to its
+ * menu (that is how a `claude-fable-5-1[1m]` set in settings.json shows up in
+ * the CLI's /model list). The probe below runs with settings disabled so no
+ * hooks can fire, so mirror that one behaviour here: read `model` from the
+ * user settings file, honouring CLAUDE_CONFIG_DIR like the CLI does, plus the
+ * ANTHROPIC_MODEL override.
+ */
+function readConfiguredClaudeModels(env = process.env) {
+  const values = [];
+  if (typeof env.ANTHROPIC_MODEL === 'string' && env.ANTHROPIC_MODEL.trim()) {
+    values.push(env.ANTHROPIC_MODEL.trim());
+  }
+  const configDir = env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude');
+  try {
+    const settings = JSON.parse(fs.readFileSync(path.join(configDir, 'settings.json'), 'utf8'));
+    if (typeof settings?.model === 'string' && settings.model.trim()) {
+      values.push(settings.model.trim());
+    }
+  } catch (_) {
+    // No settings file, or not JSON: nothing configured.
+  }
+  return values;
+}
+
+/**
+ * Human label for a Claude model id: `claude-fable-5-1[1m]` -> `Fable 5.1 [1M]`.
+ * Ids that do not follow the `claude-<family>-<version>` shape come back as-is.
+ */
+export function labelForClaudeModelId(value) {
+  const match = /^claude-([a-z]+)-(\d+(?:-\d+)*)(\[1m\])?$/i.exec(String(value || ''));
+  if (!match) return value;
+  const family = match[1][0].toUpperCase() + match[1].slice(1).toLowerCase();
+  const version = match[2].replace(/-/g, '.');
+  return `${family} ${version}${match[3] ? ' [1M]' : ''}`;
+}
+
+/**
+ * Turn the CLI's menu entries into picker labels that stand on their own.
+ *
+ * The CLI's display names are terse ("Fable", "Sonnet") and reused across
+ * versions ("Fable" is both Fable 5 and Fable 5.1), so next to the built-in
+ * entries they read as duplicates. The description's leading segment names
+ * the concrete version ("Fable 5.1 · Most capable…"), so prefer it whenever
+ * it is a more specific form of the display name, and spell out the 1M
+ * context variant the way the built-in list does.
+ */
+export function labelClaudeOptions(options) {
+  const counts = new Map();
+  for (const option of options) {
+    counts.set(option.displayName, (counts.get(option.displayName) || 0) + 1);
+  }
+  return options.map(({ displayName, ...option }) => {
+    const detail = option.description ? String(option.description).split(' · ')[0].trim() : '';
+    const baseName = displayName.replace(/\s*\(.*\)$/, '').trim();
+    const shared = (counts.get(displayName) || 0) > 1;
+
+    let label;
+    if (option.value === 'default') {
+      label = detail ? `Default (${detail})` : displayName;
+    } else if (detail && detail.toLowerCase().startsWith(baseName.toLowerCase()) && detail.length > baseName.length) {
+      label = detail;
+    } else if (shared) {
+      label = detail && detail !== displayName ? detail : `${displayName} (${option.value})`;
+    } else {
+      label = displayName;
+    }
+    if (/\[1m\]$/i.test(option.value) && !/1m/i.test(label)) {
+      label = `${label} [1M]`;
+    }
+    return { ...option, label };
+  });
 }
 
 /**
@@ -294,7 +386,7 @@ async function discoverCodexModels({ timeoutMs, env = process.env } = {}) {
  * sources are disabled so the probe cannot fire SessionStart hooks or pick up
  * project configuration.
  */
-async function discoverClaudeModels({ timeoutMs, sdkQuery } = {}) {
+async function discoverClaudeModels({ timeoutMs, env = process.env, sdkQuery } = {}) {
   const queryFn = sdkQuery || (await import('@anthropic-ai/claude-agent-sdk')).query;
 
   async function* idle() {
@@ -322,16 +414,31 @@ async function discoverClaudeModels({ timeoutMs, sdkQuery } = {}) {
       }),
     ]);
 
-    return (Array.isArray(models) ? models : [])
-      .filter((model) => model && typeof model.value === 'string' && model.value)
-      .map((model) => ({
-        value: model.value,
-        label: model.displayName || model.value,
-        description: model.description || undefined,
-        // The CLI's "default" pseudo-model resolves to whatever it currently
-        // recommends; it is the closest thing the list has to a harness default.
-        isDefault: model.value === 'default',
-      }));
+    const served = labelClaudeOptions(
+      (Array.isArray(models) ? models : [])
+        .filter((model) => model && typeof model.value === 'string' && model.value)
+        .map((model) => ({
+          value: model.value,
+          displayName: model.displayName || model.value,
+          description: model.description || undefined,
+          // The CLI's "default" pseudo-model resolves to whatever it currently
+          // recommends; it is the closest thing the list has to a harness default.
+          isDefault: model.value === 'default',
+        })),
+    );
+
+    for (const configured of readConfiguredClaudeModels(env)) {
+      if (!served.some((option) => option.value === configured)) {
+        served.push({
+          value: configured,
+          label: labelForClaudeModelId(configured),
+          description: 'Configured in your Claude Code settings',
+          isDefault: false,
+        });
+      }
+    }
+
+    return served;
   } finally {
     clearTimeout(timer);
     // close() tears the child down; without it a timed-out probe would leave a
@@ -529,6 +636,7 @@ export function clearModelDiscoveryCache(provider = null) {
 }
 
 export const __testing = {
+  readConfiguredClaudeModels,
   discoverClaudeModels,
   discoverCodexModels,
   discoverOpenRouterModels,

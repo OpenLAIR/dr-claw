@@ -1,4 +1,4 @@
-import { Atom, Brain, Circle, CircleOff, Crown, Gauge, Sparkles, Zap } from 'lucide-react';
+import { Atom, Brain, Circle, CircleOff, Crown, Gauge, Rocket, Sparkles, Zap } from 'lucide-react';
 
 export const codexReasoningEfforts = [
   {
@@ -56,6 +56,13 @@ export const codexReasoningEfforts = [
     description: 'Maximum reasoning effort',
     icon: Crown,
     color: 'text-red-600',
+  },
+  {
+    id: 'ultra',
+    name: 'Ultra',
+    description: 'The highest reasoning effort the model offers',
+    icon: Rocket,
+    color: 'text-rose-700',
   },
 ] as const;
 

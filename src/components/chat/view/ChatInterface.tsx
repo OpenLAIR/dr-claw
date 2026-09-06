@@ -17,6 +17,7 @@ import { useChatProviderState } from '../hooks/useChatProviderState';
 import { useChatSessionState } from '../hooks/useChatSessionState';
 import { useChatRealtimeHandlers } from '../hooks/useChatRealtimeHandlers';
 import { useChatComposerState } from '../hooks/useChatComposerState';
+import { useHarnessModels } from '../hooks/useHarnessModels';
 import type { Provider } from '../types/types';
 import { authenticatedFetch } from '../../../utils/api';
 import { readCliAvailability, writeCliAvailability } from '../../../utils/cliAvailability';
@@ -246,6 +247,14 @@ function ChatInterface({
   chatMessagesForBtwRef.current = chatMessages;
   const getChatMessagesForBtw = useCallback(() => chatMessagesForBtwRef.current, []);
 
+  // Owned here rather than in ChatComposer so the composer state hook can
+  // normalise the saved Codex reasoning effort against the same live list the
+  // picker renders.
+  const harnessModels = useHarnessModels(provider);
+  const codexReasoningEfforts = provider === 'codex'
+    ? harnessModels.options?.find((option) => option.value === codexModel)?.reasoningEfforts ?? null
+    : null;
+
   const {
     input,
     setInput,
@@ -314,6 +323,7 @@ function ChatInterface({
     cursorModel,
     claudeModel,
     codexModel,
+    codexReasoningEfforts,
     geminiModel,
     openrouterModel,
     localModel,
@@ -916,6 +926,7 @@ function ChatInterface({
           setThinkingMode={setThinkingMode}
           codexReasoningEffort={codexReasoningEffort}
           setCodexReasoningEffort={setCodexReasoningEffort}
+          harnessModels={harnessModels}
           geminiThinkingMode={geminiThinkingMode}
           setGeminiThinkingMode={setGeminiThinkingMode}
           tokenBudget={tokenBudget}

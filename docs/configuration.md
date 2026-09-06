@@ -80,8 +80,8 @@ without waiting for a Dr. Claw release.
 
 | Provider | Source | Notes |
 |----------|--------|-------|
-| Claude | Agent SDK `supportedModels()` control request | The menu the bundled Claude Code CLI serves (e.g. `default`, `opus[1m]`, `claude-fable-5-1[1m]`, `sonnet`), so it tracks the SDK version Dr. Claw ships. The CLI also accepts ids it does not list, so built-in entries are kept without a deprecated marker. No tokens are consumed and settings/hooks are not loaded during the probe. |
-| Codex | `codex app-server` → `model/list` JSON-RPC | Same catalogue the Codex CLI's own picker reads. Honours `CODEX_CLI_PATH`. |
+| Claude | Agent SDK `supportedModels()` control request | The menu the bundled Claude Code CLI serves (e.g. `default`, `opus[1m]`, `sonnet`), so it tracks the SDK version Dr. Claw ships. The model configured in `~/.claude/settings.json` (or `CLAUDE_CONFIG_DIR`, or `ANTHROPIC_MODEL`) is added the way the CLI's own `/model` menu adds it. The CLI also accepts ids it does not list, so built-in entries are kept without a deprecated marker. No tokens are consumed and settings/hooks are not loaded during the probe. |
+| Codex | `codex app-server` → `model/list` JSON-RPC | Same catalogue the Codex CLI's own picker reads, including each model's supported reasoning efforts, which drive the reasoning-effort selector. Honours `CODEX_CLI_PATH`. |
 | OpenRouter | `GET https://openrouter.ai/api/v1/models` | Public endpoint, no key needed. |
 | Cursor, Gemini, Nano | Built-in list | These CLIs expose no model-listing command today. |
 | Local GPU | Ollama `/api/tags` | Existing behaviour, unchanged. |
@@ -92,10 +92,13 @@ Discovery is strictly additive and never blocks the UI:
   so the picker recovers on its own once a CLI is installed or logged in.
 - Every probe has a 15-second hard timeout. If the harness is missing, old,
   logged out, or unresponsive, the built-in list is used instead.
-- Models present in the built-in list but no longer served by the harness are
-  kept at the end of the picker and marked deprecated, so an existing saved
-  model preference is never stranded. (Not for Claude: its CLI runs ids it does
-  not advertise, so nothing is demoted there.)
+- Built-in entries the harness did not report are still returned by the API,
+  flagged `builtIn: true` (and `deprecated: true` where the harness would reject
+  them), so an existing saved model preference is never stranded. Once the
+  harness has answered, the picker shows only what the harness reported (plus
+  the currently selected value): the built-in table is a fallback for when
+  discovery is unavailable, not a second list, so one model does not appear
+  under two names (`claude-fable-5` next to the CLI's `claude-fable-5[1m]`).
 
 ### API
 
