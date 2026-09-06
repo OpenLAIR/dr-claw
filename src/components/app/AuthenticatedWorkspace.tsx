@@ -1,13 +1,14 @@
-import { lazy, Suspense } from 'react';
+import { Suspense } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 import { TaskMasterProvider } from '../../contexts/TaskMasterContext';
 import { TasksSettingsProvider } from '../../contexts/TasksSettingsContext';
 import { WebSocketProvider } from '../../contexts/WebSocketContext';
+import lazyWithRetry from '../../utils/lazyWithRetry';
 
-const AppContent = lazy(() => import('./AppContent'));
-const SurveyDiagramWindow = lazy(() => import('../survey/view/SurveyDiagramWindow'));
+const AppContent = lazyWithRetry(() => import('./AppContent'));
+const SurveyDiagramWindow = lazyWithRetry(() => import('../survey/view/SurveyDiagramWindow'));
 
 function WorkspaceLoadingFallback() {
   const { t } = useTranslation('common');

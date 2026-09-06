@@ -1,12 +1,13 @@
-import { lazy, Suspense } from 'react';
+import { Suspense } from 'react';
 import { I18nextProvider, useTranslation } from 'react-i18next';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import LazyLoadBoundary from './components/LazyLoadBoundary';
+import lazyWithRetry from './utils/lazyWithRetry';
 import i18n from './i18n/config.js';
 
-const AuthenticatedWorkspace = lazy(() => import('./components/app/AuthenticatedWorkspace'));
+const AuthenticatedWorkspace = lazyWithRetry(() => import('./components/app/AuthenticatedWorkspace'));
 
 function WorkspaceLoadingFallback() {
   const { t } = useTranslation('common');

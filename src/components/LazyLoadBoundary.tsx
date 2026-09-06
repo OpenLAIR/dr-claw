@@ -10,6 +10,20 @@ type LazyLoadBoundaryProps = {
   fallback?: ReactNode;
 };
 
+const CHUNK_LOAD_ERROR_PATTERNS = [
+  /failed to fetch dynamically imported module/i, // Chromium (Vite)
+  /error loading dynamically imported module/i, // Firefox
+  /importing a module script failed/i, // Safari
+  /loading (?:css )?chunk [\w-]+ failed/i, // webpack-style bundlers
+  /ChunkLoadError/i,
+];
+
+export function isChunkLoadError(error: unknown): boolean {
+  if (!error) return false;
+  const text = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+  return CHUNK_LOAD_ERROR_PATTERNS.some((pattern) => pattern.test(text));
+}
+
 export function LazyModalLoadingFallback({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation('common');
 
@@ -82,6 +96,17 @@ function LazyLoadError({ mode = 'panel', onClose }: Pick<LazyLoadBoundaryProps, 
   );
 }
 
+/**
+ * Error boundary for `lazy()` subtrees.
+ *
+ * Only chunk-load failures get the "the app may have been updated, reload" copy.
+ * Any other error is a runtime bug and falls through to ErrorBoundary's default
+ * UI, which keeps the stack trace and an in-place "Try Again". An explicit
+ * `fallback` is a graceful-degradation node and is used for either kind.
+ *
+ * `resetKey` clears the error state without remounting the children, so a
+ * boundary keyed on e.g. a file path does not tear down the subtree on change.
+ */
 export default function LazyLoadBoundary({
   children,
   resetKey,
@@ -91,9 +116,13 @@ export default function LazyLoadBoundary({
 }: LazyLoadBoundaryProps) {
   return (
     <ErrorBoundary
-      key={resetKey}
       resetKey={resetKey}
-      fallback={fallback ?? <LazyLoadError mode={mode} onClose={onClose} />}
+      showDetails
+      fallbackRender={(error: unknown) => {
+        if (fallback !== undefined) return fallback;
+        if (isChunkLoadError(error)) return <LazyLoadError mode={mode} onClose={onClose} />;
+        return null;
+      }}
     >
       {children}
     </ErrorBoundary>

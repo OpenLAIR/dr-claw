@@ -1,7 +1,8 @@
-import React, { lazy, Suspense, useCallback, useEffect } from 'react';
+import React, { Suspense, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import LazyLoadBoundary from '../../LazyLoadBoundary';
+import lazyWithRetry from '../../../utils/lazyWithRetry';
 
 import ChatTabBar from '../../chat/view/ChatTabBar';
 import { useChatTabs } from '../../../hooks/useChatTabs';
@@ -16,14 +17,14 @@ import type { Project } from '../../../types/app';
 import type { Reference } from '../../references/types';
 import { queueSkillCommandDraft } from '../../../utils/skillCommandDraft';
 
-const ChatInterface = lazy(() => import('../../chat/view/ChatInterface'));
-const SkillsDashboard = lazy(() => import('../../SkillsDashboard'));
-const AutoResearchHub = lazy(() => import('../../AutoResearchHub'));
-const ComputeResourcesDashboard = lazy(() => import('../../compute-dashboard/ComputeResourcesDashboard'));
-const SurveyPage = lazy(() => import('../../survey/view/SurveyPage'));
-const ProjectDashboard = lazy(() => import('../../project-dashboard/view/ProjectDashboard'));
-const TrashDashboard = lazy(() => import('../../project-dashboard/view/TrashDashboard'));
-const NewsDashboard = lazy(() => import('../../news-dashboard/view/NewsDashboard'));
+const ChatInterface = lazyWithRetry(() => import('../../chat/view/ChatInterface'));
+const SkillsDashboard = lazyWithRetry(() => import('../../SkillsDashboard'));
+const AutoResearchHub = lazyWithRetry(() => import('../../AutoResearchHub'));
+const ComputeResourcesDashboard = lazyWithRetry(() => import('../../compute-dashboard/ComputeResourcesDashboard'));
+const SurveyPage = lazyWithRetry(() => import('../../survey/view/SurveyPage'));
+const ProjectDashboard = lazyWithRetry(() => import('../../project-dashboard/view/ProjectDashboard'));
+const TrashDashboard = lazyWithRetry(() => import('../../project-dashboard/view/TrashDashboard'));
+const NewsDashboard = lazyWithRetry(() => import('../../news-dashboard/view/NewsDashboard'));
 
 function ContentLoadingFallback() {
   const { t } = useTranslation('common');

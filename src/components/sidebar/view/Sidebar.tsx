@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDeviceSettings } from '../../../hooks/useDeviceSettings';
 import { useVersionCheck } from '../../../hooks/useVersionCheck';
@@ -11,12 +11,13 @@ import SidebarCollapsed from './subcomponents/SidebarCollapsed';
 import SidebarContent from './subcomponents/SidebarContent';
 import SidebarModals from './subcomponents/SidebarModals';
 import LazyLoadBoundary, { LazyModalLoadingFallback } from '../../LazyLoadBoundary';
+import lazyWithRetry from '../../../utils/lazyWithRetry';
 import type { Project } from '../../../types/app';
 import type { ProjectCreationOptions } from '../../../types/app';
 import type { SidebarProjectListProps } from './subcomponents/SidebarProjectList';
 import type { MCPServerStatus, SidebarProps } from '../types/types';
 
-const ProjectCreationWizard = lazy(() => import('../../ProjectCreationWizard'));
+const ProjectCreationWizard = lazyWithRetry(() => import('../../ProjectCreationWizard'));
 
 type TaskMasterSidebarContext = {
   setCurrentProject: (project: Project) => void;

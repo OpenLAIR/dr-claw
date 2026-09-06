@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import QuickSettingsPanel from '../../QuickSettingsPanel';
 import ChatTaskProgressPill from './subcomponents/ChatTaskProgressPill';
 import { useTasksSettings } from '../../../contexts/TasksSettingsContext';
@@ -29,8 +29,9 @@ import { buildEditableMessageDraft, buildReplayMessageDraft, getChatMessageId, g
 import { normalizePath, toRelativePath, isSafePath, fileNameFromPath } from '../../../utils/pathUtils';
 import { useDeviceSettings } from '../../../hooks/useDeviceSettings';
 import LazyLoadBoundary from '../../LazyLoadBoundary';
+import lazyWithRetry from '../../../utils/lazyWithRetry';
 
-const CodeEditor = lazy(() => import('../../CodeEditor'));
+const CodeEditor = lazyWithRetry(() => import('../../CodeEditor'));
 
 const DEFAULT_PROVIDER_AVAILABILITY: Record<Provider, ProviderAvailability> = {
   claude: { cliAvailable: true, cliCommand: 'claude', installHint: null },

@@ -1,10 +1,12 @@
-import { lazy, Suspense, useMemo } from 'react';
-import type { ComponentType, LazyExoticComponent } from 'react';
+import { Suspense, useMemo } from 'react';
+import type { ComponentType } from 'react';
 import ReactDOM from 'react-dom';
 import { AlertTriangle, Trash2 } from 'lucide-react';
 import type { TFunction } from 'i18next';
 import { Button } from '../../../ui/button';
 import LazyLoadBoundary, { LazyModalLoadingFallback } from '../../../LazyLoadBoundary';
+import VersionUpgradeModal from '../../../modals/VersionUpgradeModal';
+import lazyWithRetry from '../../../../utils/lazyWithRetry';
 import type { Project } from '../../../../types/app';
 import type { ReleaseInfo } from '../../../../types/sharedTypes';
 import type { InstallMode } from '../../../../hooks/useVersionCheck';
@@ -39,8 +41,7 @@ type TypedSettingsProps = {
   initialTab: string;
 };
 
-const Settings = lazy(() => import('../../../Settings')) as LazyExoticComponent<ComponentType<TypedSettingsProps>>;
-const VersionUpgradeModal = lazy(() => import('../../../modals/VersionUpgradeModal'));
+const Settings = lazyWithRetry(() => import('../../../Settings')) as ComponentType<TypedSettingsProps>;
 
 export default function SidebarModals({
   projects,
@@ -182,21 +183,18 @@ export default function SidebarModals({
           document.body,
         )}
 
-      {showVersionModal && (
-        <LazyLoadBoundary mode="modal" resetKey="version-upgrade" onClose={onCloseVersionModal}>
-          <Suspense fallback={<LazyModalLoadingFallback onClose={onCloseVersionModal} />}>
-            <VersionUpgradeModal
-              isOpen={showVersionModal}
-              onClose={onCloseVersionModal}
-              onLater={onLaterVersionModal}
-              releaseInfo={releaseInfo}
-              currentVersion={currentVersion}
-              latestVersion={latestVersion}
-              installMode={installMode}
-            />
-          </Suspense>
-        </LazyLoadBoundary>
-      )}
+      {/* Stays mounted while closed: it owns the in-flight update output, and
+          unmounting it would both drop that output and let a reopened instance
+          start a second concurrent update. It is small enough not to lazy-load. */}
+      <VersionUpgradeModal
+        isOpen={showVersionModal}
+        onClose={onCloseVersionModal}
+        onLater={onLaterVersionModal}
+        releaseInfo={releaseInfo}
+        currentVersion={currentVersion}
+        latestVersion={latestVersion}
+        installMode={installMode}
+      />
     </>
   );
 }
