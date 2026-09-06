@@ -64,7 +64,7 @@ export type NodeFormData = {
   host: string;
   user: string;
   port: string;
-  authType: 'key' | 'password';
+  authType: 'agent' | 'key' | 'password';
   key: string;
   password: string;
   workDir: string;
@@ -80,7 +80,7 @@ export const defaultFormData: NodeFormData = {
   host: '',
   user: '',
   port: '22',
-  authType: 'key',
+  authType: 'agent',
   key: '',
   password: '',
   workDir: '~',
