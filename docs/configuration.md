@@ -26,6 +26,7 @@ Dr. Claw is configured through environment variables in a `.env` file at the pro
 | `CURSOR_CLI_PATH` | No | Auto-detect (`cursor-agent` then `agent`) | Override Cursor CLI command/binary. Useful when your environment only provides one alias. |
 | `GEMINI_CLI_PATH` | No | `gemini` | Override Gemini CLI command/binary. Useful when your shell resolves Gemini through a custom alias or path. |
 | `CODEX_CLI_PATH` | No | `codex` | Override Codex CLI command/binary. Useful when Codex is installed outside your default `PATH`. |
+| `PI_CLI_PATH` | No | `pi` | Override the [Pi coding agent](https://pi.dev) command/binary. |
 
 ### Database
 
@@ -69,6 +70,34 @@ Platform mode is an advanced deployment option. Most users should leave these co
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `CLAUDE_TOOL_APPROVAL_TIMEOUT_MS` | No | `55000` | Timeout in milliseconds for Claude tool-approval prompts before auto-declining. |
+| `PI_MODEL` | No | `anthropic/claude-sonnet-4-6` | Default model for the Pi provider, as `provider/model`. |
+
+---
+
+## Pi Coding Agent
+
+[Pi](https://pi.dev) is an MIT-licensed agent harness that fronts 15+ model
+providers. Dr. Claw drives it non-interactively over its JSON event stream.
+
+```bash
+npm install -g --ignore-scripts @earendil-works/pi-coding-agent
+```
+
+Then run `pi` once and use `/login` to authenticate a provider — Pi has no
+credentials of its own, so with none configured it reports no available models
+and Dr. Claw shows the provider as installed but not logged in.
+
+| Detail | Value |
+|--------|-------|
+| Binary | `pi` (override with `PI_CLI_PATH`) |
+| Model format | `provider/model`, e.g. `anthropic/claude-sonnet-4-6`. Any slug `pi --list-models` reports is valid. |
+| Sessions | `~/.pi/agent/sessions/--<encoded-cwd>--/<timestamp>_<uuid>.jsonl` |
+| Status endpoint | `GET /api/cli/pi/status` |
+
+Prompts are sent to Pi over stdin rather than as a command-line argument: Pi
+parses positional arguments, so a prompt beginning with `-` is read as a flag
+and one beginning with `@` as a file include — and `@` mentions are a normal
+Dr. Claw feature.
 
 ---
 

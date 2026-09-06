@@ -57,6 +57,7 @@ function resolveSessionProviderForLoad(session: ProjectSession | null, project: 
   }
   const { id } = session;
   if (project.nanoSessions?.some((s) => s.id === id)) return 'nano';
+  if (project.piSessions?.some((s) => s.id === id)) return 'pi';
   if (project.localSessions?.some((s) => s.id === id)) return 'local';
   if (project.openrouterSessions?.some((s) => s.id === id)) return 'openrouter';
   if (project.geminiSessions?.some((s) => s.id === id)) return 'gemini';

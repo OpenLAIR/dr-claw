@@ -18,6 +18,7 @@
 import { spawn } from 'child_process';
 import os from 'os';
 import { StringDecoder } from 'string_decoder';
+import { stripVTControlCharacters } from 'util';
 import {
   CLAUDE_MODELS,
   CODEX_MODELS,
@@ -26,8 +27,10 @@ import {
   LOCAL_MODELS,
   NANO_CLAUDE_CODE_MODELS,
   OPENROUTER_MODELS,
+  PI_MODELS,
 } from '../../shared/modelConstants.js';
 import { buildCodexCliEnv, getCodexCliCommand } from './codexCli.js';
+import { getPiCliCommand } from './piCli.js';
 
 const STATIC_MODELS = {
   claude: CLAUDE_MODELS,
@@ -37,6 +40,7 @@ const STATIC_MODELS = {
   local: LOCAL_MODELS,
   nano: NANO_CLAUDE_CODE_MODELS,
   openrouter: OPENROUTER_MODELS,
+  pi: PI_MODELS,
 };
 
 /**
@@ -49,6 +53,7 @@ const STATIC_MODELS = {
  */
 const PROVIDER_TRAITS = {
   claude: { acceptsUnlisted: true },
+  pi: { acceptsUnlisted: true },
 };
 
 export const DISCOVERY_TTL_MS = 10 * 60 * 1000;
@@ -372,10 +377,116 @@ async function discoverOpenRouterModels({ timeoutMs } = {}) {
   }
 }
 
+/**
+ * Run a short-lived CLI probe with bounded output and a hard timeout.
+ */
+function captureCommand({ command, args, env, cwd, timeoutMs, maxOutput = 512 * 1024 }) {
+  return new Promise((resolve, reject) => {
+    let child;
+    try {
+      child = spawn(command, args, {
+        stdio: ['ignore', 'pipe', 'pipe'],
+        env,
+        cwd,
+        shell: false,
+      });
+    } catch (error) {
+      reject(error);
+      return;
+    }
+
+    let settled = false;
+    let stdout = '';
+    let stderr = '';
+
+    const finish = (fn, value, terminate = false) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      if (terminate) {
+        try {
+          child.kill();
+          const killTimer = setTimeout(() => {
+            try { child.kill('SIGKILL'); } catch (_) { /* already gone */ }
+          }, 2000);
+          killTimer.unref?.();
+        } catch (_) { /* already gone */ }
+      }
+      fn(value);
+    };
+
+    const append = (current, chunk) => {
+      const next = current + chunk.toString();
+      if (next.length > maxOutput) {
+        finish(reject, new Error(`${command} exceeded ${maxOutput} characters of output`), true);
+        return current;
+      }
+      return next;
+    };
+
+    const timer = setTimeout(() => {
+      finish(reject, new Error(`${command} timed out after ${timeoutMs}ms`), true);
+    }, timeoutMs);
+
+    child.on('error', (error) => finish(reject, error));
+    child.stdout?.on('data', (chunk) => { stdout = append(stdout, chunk); });
+    child.stderr?.on('data', (chunk) => { stderr = append(stderr, chunk); });
+    child.on('close', (code) => {
+      if (code === 0) {
+        finish(resolve, { stdout, stderr });
+        return;
+      }
+      finish(
+        reject,
+        new Error(`${command} exited with code ${code}${stderr ? `: ${stderr.trim().slice(0, 300)}` : ''}`),
+      );
+    });
+  });
+}
+
+/**
+ * Pi prints its authenticated catalogue as a fixed-width table:
+ *
+ *   provider  model            context  max-out  thinking  images
+ *   anthropic claude-sonnet-5  1M       64K      yes       yes
+ *
+ * Model ids may themselves contain slashes, so preserve the entire model
+ * column and prefix it with the provider to form Pi's canonical selector value.
+ */
+export function parsePiModelList(output) {
+  const lines = stripVTControlCharacters(String(output || '')).split(/\r?\n/);
+  const headerIndex = lines.findIndex((line) => /^\s*provider\s{2,}model(?:\s{2,}|\s*$)/i.test(line));
+  if (headerIndex === -1) return [];
+
+  return lines.slice(headerIndex + 1).flatMap((line) => {
+    const columns = line.trim().split(/\s{2,}/);
+    if (columns.length < 2 || !columns[0] || !columns[1]) return [];
+    const [provider, model] = columns;
+    return [{
+      value: `${provider}/${model}`,
+      label: `${model} (${provider})`,
+    }];
+  });
+}
+
+/** Pi exposes the models usable with the current credentials via --list-models. */
+async function discoverPiModels({ timeoutMs, env = process.env } = {}) {
+  const command = getPiCliCommand(env);
+  const { stdout } = await captureCommand({
+    command,
+    args: ['--list-models'],
+    env,
+    cwd: os.tmpdir(),
+    timeoutMs,
+  });
+  return parsePiModelList(stdout);
+}
+
 const DISCOVERERS = {
   claude: discoverClaudeModels,
   codex: discoverCodexModels,
   openrouter: discoverOpenRouterModels,
+  pi: discoverPiModels,
 };
 
 /** Providers this build knows how to probe. */
@@ -532,6 +643,8 @@ export const __testing = {
   discoverClaudeModels,
   discoverCodexModels,
   discoverOpenRouterModels,
+  discoverPiModels,
+  captureCommand,
   jsonRpcOverStdio,
   STATIC_MODELS,
 };

@@ -27,7 +27,7 @@ import type { GeminiThinkingModeId } from '../../../../../shared/geminiThinkingS
 import type { AttachedPrompt, PendingPermissionRequest, PermissionMode, Provider, TokenBudget } from '../../types/types';
 import type { ProviderAvailability } from '../../types/types';
 import type { SessionMode, SessionProvider } from '../../../../types/app';
-import { CLAUDE_MODELS, CURSOR_MODELS, CODEX_MODELS, GEMINI_MODELS, LOCAL_MODELS, NANO_CLAUDE_CODE_MODELS, OPENROUTER_MODELS } from '../../../../../shared/modelConstants';
+import { CLAUDE_MODELS, CURSOR_MODELS, CODEX_MODELS, GEMINI_MODELS, LOCAL_MODELS, NANO_CLAUDE_CODE_MODELS, OPENROUTER_MODELS, PI_MODELS } from '../../../../../shared/modelConstants';
 import { authenticatedFetch } from '../../../../utils/api';
 import { isAutoResearchScenario } from '../../utils/autoResearch';
 import { useHarnessModels } from '../../hooks/useHarnessModels';
@@ -65,6 +65,7 @@ const PROVIDERS: ProviderDef[] = [
   { id: 'codex', name: 'Codex', accent: 'border-emerald-600 dark:border-emerald-400', ring: 'ring-emerald-600/15', check: 'bg-emerald-600 dark:bg-emerald-500 text-white' },
   { id: 'openrouter', name: 'OpenRouter', accent: 'border-violet-500 dark:border-violet-400', ring: 'ring-violet-500/15', check: 'bg-violet-500 text-white' },
   { id: 'local', name: 'Local GPU', accent: 'border-emerald-500 dark:border-emerald-400', ring: 'ring-emerald-500/15', check: 'bg-emerald-500 text-white' },
+  { id: 'pi', name: 'Pi', accent: 'border-rose-500 dark:border-rose-400', ring: 'ring-rose-500/15', check: 'bg-rose-500 text-white' },
   // { id: 'nano', name: 'Nano Claude Code', accent: 'border-amber-600 dark:border-amber-400', ring: 'ring-amber-600/15', check: 'bg-amber-600 text-white' },
 ];
 
@@ -75,16 +76,18 @@ function getModelConfig(p: SessionProvider) {
   if (p === 'openrouter') return OPENROUTER_MODELS;
   if (p === 'local') return LOCAL_MODELS;
   if (p === 'nano') return NANO_CLAUDE_CODE_MODELS;
+  if (p === 'pi') return PI_MODELS;
   return CURSOR_MODELS;
 }
 
-function getModelValue(p: SessionProvider, c: string, cu: string, co: string, g: string, or: string, lo: string, na: string) {
+function getModelValue(p: SessionProvider, c: string, cu: string, co: string, g: string, or: string, lo: string, na: string, pi: string) {
   if (p === 'claude') return c;
   if (p === 'codex') return co;
   if (p === 'gemini') return g;
   if (p === 'openrouter') return or;
   if (p === 'local') return lo;
   if (p === 'nano') return na;
+  if (p === 'pi') return pi;
   return cu;
 }
 
@@ -173,6 +176,8 @@ interface ChatComposerProps {
   setLocalModel?: (model: string) => void;
   nanoModel?: string;
   setNanoModel?: (model: string) => void;
+  piModel?: string;
+  setPiModel?: (model: string) => void;
   providerAvailability?: Record<SessionProvider, ProviderAvailability>;
   newSessionMode?: SessionMode;
   onNewSessionModeChange?: (mode: SessionMode) => void;
@@ -259,6 +264,8 @@ export default function ChatComposer({
   localModel: localModelProp,
   setLocalModel,
   nanoModel: nanoModelProp,
+  piModel: piModelProp,
+  setPiModel,
   setNanoModel,
   providerAvailability,
   newSessionMode,
@@ -286,7 +293,7 @@ export default function ChatComposer({
 
   // Provider/model handling for centered mode
   const sessionProvider = provider as SessionProvider;
-  const currentModel = getModelValue(sessionProvider, claudeModelProp || '', cursorModelProp || '', codexModel, geminiModel, openrouterModelProp || '', localModelProp || '', nanoModelProp || '');
+  const currentModel = getModelValue(sessionProvider, claudeModelProp || '', cursorModelProp || '', codexModel, geminiModel, openrouterModelProp || '', localModelProp || '', nanoModelProp || '', piModelProp || '');
 
   const [ollamaModels, setOllamaModels] = useState<Array<{ value: string; label: string }>>([]);
   const [isLoadingOllamaModels, setIsLoadingOllamaModels] = useState(false);
@@ -363,6 +370,7 @@ export default function ChatComposer({
     else if (sessionProvider === 'openrouter') { setOpenrouterModel?.(value); localStorage.setItem('openrouter-model', value); }
     else if (sessionProvider === 'local') { setLocalModel?.(value); localStorage.setItem('local-model', value); }
     else if (sessionProvider === 'nano') { setNanoModel?.(value); localStorage.setItem('nano-claude-code-model', value); }
+    else if (sessionProvider === 'pi') { setPiModel?.(value); localStorage.setItem('pi-model', value); }
     else { setCursorModel?.(value); localStorage.setItem('cursor-model', value); }
   };
 

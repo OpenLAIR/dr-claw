@@ -73,6 +73,7 @@ interface UseChatComposerStateArgs {
   openrouterModel: string;
   localModel: string;
   nanoModel: string;
+  piModel: string;
   isLoading: boolean;
   canAbortSession: boolean;
   tokenBudget: TokenBudget | null;
@@ -252,6 +253,7 @@ export function useChatComposerState({
   openrouterModel,
   localModel,
   nanoModel,
+  piModel,
   isLoading,
   canAbortSession,
   tokenBudget,
@@ -566,6 +568,8 @@ export function useChatComposerState({
                     ? openrouterModel
                     : provider === 'local'
                       ? localModel
+                      : provider === 'pi'
+                        ? piModel
                       : provider === 'nano'
                         ? nanoModel
                         : claudeModel,
@@ -1454,6 +1458,26 @@ export function useChatComposerState({
             telemetryEnabled,
             sessionMode: isNewSession ? newSessionMode : selectedSession?.mode,
             stageTagKeys: pendingStageTagKeys,
+            stageTagSource: 'task_context',
+          },
+        });
+      } else if (provider === 'pi') {
+        console.log('[DEBUG] Sending pi-command');
+        sendMessage({
+          type: 'pi-command',
+          command: messageContent,
+          sessionId: effectiveSessionId,
+          options: {
+            cwd: resolvedProjectPath,
+            projectPath: resolvedProjectPath,
+            sessionId: effectiveSessionId,
+            resume: Boolean(effectiveSessionId),
+            model: piModel,
+            toolsSettings,
+            skipPermissions: effectivePermissionMode === 'bypassPermissions',
+            telemetryEnabled,
+            sessionMode: isNewSession ? newSessionMode : selectedSession?.mode,
+            stageTagKeys: currentStageTagKeys,
             stageTagSource: 'task_context',
           },
         });

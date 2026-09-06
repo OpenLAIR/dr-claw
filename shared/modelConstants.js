@@ -163,6 +163,39 @@ export const NANO_CLAUDE_CODE_MODELS = {
 };
 
 /**
+ * Pi Coding Agent models (https://pi.dev)
+ *
+ * Pi fronts 15+ providers, and which models are actually usable depends on
+ * which provider the user has authenticated. `pi --list-models` reports the
+ * real set, so this list is only a starting point — ALLOWS_CUSTOM lets any
+ * "provider/model" slug be entered directly.
+ */
+export const PI_MODELS = {
+  OPTIONS: [
+    // Anthropic
+    { value: 'anthropic/claude-opus-5', label: 'Claude Opus 5 (Anthropic)' },
+    { value: 'anthropic/claude-sonnet-5', label: 'Claude Sonnet 5 (Anthropic)' },
+    { value: 'anthropic/claude-fable-5', label: 'Claude Fable 5 (Anthropic)' },
+    { value: 'anthropic/claude-sonnet-4-6', label: 'Claude Sonnet 4.6 (Anthropic)' },
+    { value: 'anthropic/claude-opus-4-8', label: 'Claude Opus 4.8 (Anthropic)' },
+    { value: 'anthropic/claude-haiku-4-5', label: 'Claude Haiku 4.5 (Anthropic)' },
+    // OpenAI
+    { value: 'openai/gpt-5.5', label: 'GPT-5.5 (OpenAI)' },
+    { value: 'openai/gpt-5', label: 'GPT-5 (OpenAI)' },
+    { value: 'openai/gpt-5-mini', label: 'GPT-5 Mini (OpenAI)' },
+    // Google
+    { value: 'google/gemini-3.5-flash', label: 'Gemini 3.5 Flash (Google)' },
+    { value: 'google/gemini-2.5-pro', label: 'Gemini 2.5 Pro (Google)' },
+  ],
+
+  ALLOWS_CUSTOM: true,
+
+  DEFAULT:
+    (typeof process !== 'undefined' && process.env?.PI_MODEL) ||
+    'anthropic/claude-sonnet-4-6'
+};
+
+/**
  * Local GPU Models (open-source models for self-hosted deployment)
  */
 export const LOCAL_MODELS = {

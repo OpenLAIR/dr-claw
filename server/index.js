@@ -51,6 +51,7 @@ import { spawnGemini, abortGeminiSession, isGeminiSessionActive, getGeminiSessio
 import { queryOpenRouter, abortOpenRouterSession, isOpenRouterSessionActive, getOpenRouterSessionStartTime, getActiveOpenRouterSessions } from './openrouter.js';
 import { queryLocalGPU, abortLocalGPUSession, isLocalGPUSessionActive, getLocalGPUSessionStartTime, getActiveLocalGPUSessions } from './local-gpu.js';
 import { spawnNanoClaudeCode, abortNanoClaudeCodeSession, isNanoClaudeCodeSessionActive, getNanoClaudeCodeSessionStartTime, getActiveNanoClaudeCodeSessions } from './nano-claude-code.js';
+import { spawnPi, abortPiSession, isPiSessionActive } from './pi-cli.js';
 import gitRoutes from './routes/git.js';
 import authRoutes from './routes/auth.js';
 import mcpRoutes from './routes/mcp.js';
@@ -91,6 +92,7 @@ import {
 } from './utils/runtimePorts.js';
 import { buildCodexTokenUsageFromJsonl } from './utils/sessionTokenUsage.js';
 import { getNanoDrClawSessionsRoot } from './nanoSessionPaths.js';
+import { getPiSessionsRoot } from './utils/piCli.js';
 
 // File system watchers for provider project/session folders
 const PROVIDER_WATCH_PATHS = [
@@ -99,6 +101,7 @@ const PROVIDER_WATCH_PATHS = [
     { provider: 'codex', rootPath: path.join(os.homedir(), '.codex', 'sessions') },
     { provider: 'gemini', rootPath: path.join(os.homedir(), '.gemini', 'sessions') },
     { provider: 'nano', rootPath: getNanoDrClawSessionsRoot() },
+    { provider: 'pi', rootPath: getPiSessionsRoot() },
 ];
 const WATCHER_IGNORED_PATTERNS = [
     '**/node_modules/**',
@@ -129,7 +132,7 @@ function shouldProcessProjectsWatcherEvent(eventType, filePath, provider) {
     }
 
     const normalized = String(filePath || '').toLowerCase();
-    if (provider === 'claude' || provider === 'codex' || provider === 'gemini') {
+    if (provider === 'claude' || provider === 'codex' || provider === 'gemini' || provider === 'pi') {
         return normalized.endsWith('.jsonl');
     }
 
@@ -1637,6 +1640,35 @@ function handleChatConnection(ws, request) {
                 queryCodex(data.command, { ...data.options, env: sessionEnv }, writer).catch(error => {
                     console.error('[ERROR] Codex query error:', error);
                 });
+            } else if (data.type === 'pi-command') {
+                console.log('[DEBUG] Pi message:', data.command || '[Continue/Resume]');
+                console.log('📁 Project:', data.options?.projectPath || data.options?.cwd || 'Unknown');
+                console.log('🔄 Session:', data.options?.sessionId ? 'Resume' : 'New');
+                console.log('🤖 Model:', data.options?.model || 'default');
+                const commandTelemetryEnabled = data.options?.telemetryEnabled !== false;
+                const sessionId = data.options?.sessionId || data.sessionId;
+
+                if (sessionId && isPiSessionActive(sessionId)) {
+                    console.log(`[WARN] Pi session ${sessionId} is already active. Ignoring concurrent request.`);
+                    return;
+                }
+
+                enqueueConversationTelemetry(
+                    {
+                        name: 'agent_dialogue_meta',
+                        direction: 'user_to_agent',
+                        provider: 'pi',
+                        sessionId: sessionId || null,
+                        projectPath: data.options?.projectPath || data.options?.cwd || null,
+                        transportType: data.type,
+                    },
+                    { ...telemetryContext, telemetryEnabled: commandTelemetryEnabled },
+                );
+                writer.telemetryContext = { ...telemetryContext, provider: 'pi', telemetryEnabled: commandTelemetryEnabled };
+                writer.setProjectPath(data.options?.projectPath || data.options?.cwd || null);
+                spawnPi(data.command, { ...data.options, env: sessionEnv }, writer).catch(error => {
+                    console.error('[ERROR] Pi query error:', error);
+                });
             } else if (data.type === 'gemini-command') {
                 console.log('[DEBUG] Gemini message:', data.command || '[Continue/Resume]');
                 console.log('📁 Project:', data.options?.projectPath || data.options?.cwd || 'Unknown');
@@ -1789,6 +1821,8 @@ function handleChatConnection(ws, request) {
                     success = abortLocalGPUSession(data.sessionId);
                 } else if (provider === 'nano') {
                     success = abortNanoClaudeCodeSession(data.sessionId);
+                } else if (provider === 'pi') {
+                    success = abortPiSession(data.sessionId);
                 } else {
                     // Use Claude Agents SDK
                     success = await abortClaudeSDKSession(data.sessionId);
