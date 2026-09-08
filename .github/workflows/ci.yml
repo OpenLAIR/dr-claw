@@ -1,4 +1,4 @@
-# CI: npm ci, typecheck, build — PR must be green to merge
+# CI: npm ci, client regressions, typecheck, build — PR must be green to merge
 name: CI
 
 on:
@@ -24,6 +24,18 @@ jobs:
 
       - name: npm ci
         run: npm ci
+
+      - name: Electron preload and service worker regressions
+        run: node --test test/electron-preload.test.mjs test/service-worker.test.mjs
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Install Chromium for loading regressions
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser loading regressions
+        run: node --test test/lazy-loading.test.mjs
 
       - name: typecheck
         run: npm run typecheck

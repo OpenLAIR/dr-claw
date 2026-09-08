@@ -1,6 +1,8 @@
+import { Suspense, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import ErrorBoundary from './ErrorBoundary';
+import { LazyRetryScopeContext } from '../utils/lazyWithRetry';
 
 type LazyLoadBoundaryProps = {
   children: ReactNode;
@@ -8,6 +10,7 @@ type LazyLoadBoundaryProps = {
   mode?: 'page' | 'panel' | 'modal';
   onClose?: () => void;
   fallback?: ReactNode;
+  loadingFallback?: ReactNode;
 };
 
 const CHUNK_LOAD_ERROR_PATTERNS = [
@@ -96,6 +99,17 @@ function LazyLoadError({ mode = 'panel', onClose }: Pick<LazyLoadBoundaryProps, 
   );
 }
 
+function LazyLoadingFallback({ mode, onClose }: Pick<LazyLoadBoundaryProps, 'mode' | 'onClose'>) {
+  const { t } = useTranslation('common');
+  if (mode === 'modal' && onClose) return <LazyModalLoadingFallback onClose={onClose} />;
+
+  return (
+    <div className={`${mode === 'page' ? 'min-h-screen' : 'h-full min-h-48'} flex items-center justify-center p-4`} role="status" aria-live="polite">
+      {t('mainContent.loading')}
+    </div>
+  );
+}
+
 /**
  * Error boundary for `lazy()` subtrees.
  *
@@ -104,8 +118,12 @@ function LazyLoadError({ mode = 'panel', onClose }: Pick<LazyLoadBoundaryProps, 
  * UI, which keeps the stack trace and an in-place "Try Again". An explicit
  * `fallback` is a graceful-degradation node and is used for either kind.
  *
- * `resetKey` clears the error state without remounting the children, so a
- * boundary keyed on e.g. a file path does not tear down the subtree on change.
+ * `resetKey` starts a fresh load only when recovering from an error. Healthy
+ * children keep their state when the key changes.
+ *
+ * The inner Suspense lets this scope commit even if callers only provide an
+ * outer Suspense. Callers may still nest a Suspense for a specific loading UI,
+ * or pass `loadingFallback` here.
  */
 export default function LazyLoadBoundary({
   children,
@@ -113,10 +131,14 @@ export default function LazyLoadBoundary({
   mode = 'panel',
   onClose,
   fallback,
+  loadingFallback,
 }: LazyLoadBoundaryProps) {
+  const [retryScope, setRetryScope] = useState<object>(() => ({}));
+
   return (
     <ErrorBoundary
       resetKey={resetKey}
+      onReset={() => setRetryScope({})}
       showDetails
       fallbackRender={(error: unknown) => {
         if (fallback !== undefined) return fallback;
@@ -124,7 +146,11 @@ export default function LazyLoadBoundary({
         return null;
       }}
     >
-      {children}
+      <LazyRetryScopeContext.Provider value={retryScope}>
+        <Suspense fallback={loadingFallback !== undefined ? loadingFallback : <LazyLoadingFallback mode={mode} onClose={onClose} />}>
+          {children}
+        </Suspense>
+      </LazyRetryScopeContext.Provider>
     </ErrorBoundary>
   );
 }

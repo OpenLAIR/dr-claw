@@ -1,4 +1,4 @@
-import { lazy } from 'react';
+import { createContext, lazy, useContext } from 'react';
 import type { ComponentProps, ComponentType } from 'react';
 
 type Loader<T extends ComponentType<any>> = () => Promise<{ default: T }>;
@@ -11,6 +11,10 @@ type LazyWithRetryOptions = {
 };
 
 const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+// LazyLoadBoundary owns a stable scope until an explicit retry or remount.
+// Outside a boundary, keep React.lazy's normal (including rejected) cache.
+export const LazyRetryScopeContext = createContext<object>({});
 
 export async function loadWithRetry<T extends ComponentType<any>>(
   loader: Loader<T>,
@@ -34,28 +38,28 @@ export async function loadWithRetry<T extends ComponentType<any>>(
  * single transient chunk-load failure leaves the component permanently broken
  * until a full page reload, even after an error boundary resets.
  *
- * This wrapper retries transient failures and, if the loader still fails,
- * discards the rejected lazy component so the next render (after an error
- * boundary reset or a close/reopen) starts a fresh load instead of rethrowing
- * the cached error.
+ * Keep the lazy identity stable while React delivers a rejected load to the
+ * error boundary. Replacing it in the rejection handler would make Suspense
+ * start another load forever instead of showing the error UI.
+ *
+ * LazyLoadBoundary supplies a new scope on retry/reset or remount. Each scope
+ * gets its own lazy instance, so retries and late failures cannot affect other
+ * boundaries. Browsers may still cache a failed import URL; those failures
+ * require the boundary's full-page reload action to recover.
  */
 export default function lazyWithRetry<T extends ComponentType<any>>(
   loader: Loader<T>,
   { retries = 2, delayMs = 500 }: LazyWithRetryOptions = {},
 ): ComponentType<ComponentProps<T>> {
-  let Lazy: ComponentType<any> = createLazy();
-
-  function createLazy() {
-    return lazy(() =>
-      loadWithRetry(loader, retries, delayMs).catch((error) => {
-        Lazy = createLazy();
-        throw error;
-      }),
-    );
-  }
+  const components = new WeakMap<object, ComponentType<any>>();
 
   function LazyWithRetry(props: ComponentProps<T>) {
-    const Component = Lazy;
+    const scope = useContext(LazyRetryScopeContext);
+    let Component = components.get(scope);
+    if (!Component) {
+      Component = lazy(() => loadWithRetry(loader, retries, delayMs));
+      components.set(scope, Component);
+    }
     return <Component {...props} />;
   }
 

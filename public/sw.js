@@ -24,14 +24,22 @@ self.addEventListener('fetch', event => {
   const isHTML = url.pathname === '/' || url.pathname.endsWith('.html');
 
   if (isNavigation || isHTML) {
-    event.respondWith(
-      fetch(event.request)
+    const networkResponse = fetch(event.request);
+
+    // Keep the last good HTML on HTTP errors. Cache writes must outlive the
+    // response, but a quota/storage failure must not break a successful load.
+    event.waitUntil(
+      networkResponse
         .then(response => {
+          if (!response.ok) return;
           const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-          return response;
+          return caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
         })
-        .catch(() => caches.match(event.request))
+        .catch(() => {})
+    );
+
+    event.respondWith(
+      networkResponse.catch(() => caches.match(event.request))
     );
     return;
   }

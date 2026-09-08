@@ -1,9 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { MessageSquare, RefreshCcw, UserPlus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { preloadAuthenticatedWorkspace } from './app/loadAuthenticatedWorkspace';
 
 const LoginForm = () => {
+  useEffect(() => {
+    preloadAuthenticatedWorkspace();
+  }, []);
+
   const { t } = useTranslation('auth');
   const [mode, setMode] = useState('login');
   const [username, setUsername] = useState('');

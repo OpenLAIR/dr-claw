@@ -24,9 +24,14 @@ class ErrorBoundary extends React.Component {
 
   componentDidUpdate(previousProps) {
     if (this.state.hasError && previousProps.resetKey !== this.props.resetKey) {
-      this.setState({ hasError: false, error: null, errorInfo: null });
+      this.resetError();
     }
   }
+
+  resetError = () => {
+    if (this.props.onReset) this.props.onReset();
+    this.setState({ hasError: false, error: null, errorInfo: null });
+  };
 
   render() {
     if (this.state.hasError) {
@@ -69,7 +74,7 @@ class ErrorBoundary extends React.Component {
             <div className="mt-4">
               <button
                 onClick={() => {
-                  this.setState({ hasError: false, error: null, errorInfo: null });
+                  this.resetError();
                   if (this.props.onRetry) this.props.onRetry();
                 }}
                 className="bg-red-600 text-white px-4 py-2 rounded text-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
