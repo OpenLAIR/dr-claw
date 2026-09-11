@@ -3,9 +3,9 @@ import { useAuth } from '../contexts/AuthContext';
 import { MessageSquare, RefreshCcw, UserPlus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-const LoginForm = () => {
+const LoginForm = ({ initialMode = 'login', isFirstRun = false }) => {
   const { t } = useTranslation('auth');
-  const [mode, setMode] = useState('login');
+  const [mode, setMode] = useState(initialMode === 'register' ? 'register' : 'login');
   const [username, setUsername] = useState('');
   const [notificationEmail, setNotificationEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -86,7 +86,9 @@ const LoginForm = () => {
               {isRegisterMode ? t('register.title') : t('login.title')}
             </h1>
             <p className="text-muted-foreground mt-2">
-              {isRegisterMode ? t('register.description') : t('login.description')}
+              {isRegisterMode
+                ? (isFirstRun ? t('register.firstRunDescription') : t('register.description'))
+                : t('login.description')}
             </p>
           </div>
 
@@ -162,7 +164,7 @@ const LoginForm = () => {
             {isRegisterMode && (
               <div className="p-3 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/50 rounded-md">
                 <p className="text-sm text-blue-700 dark:text-blue-300">
-                  {t('register.description')}
+                  {isFirstRun ? t('register.firstRunHint') : t('register.description')}
                 </p>
               </div>
             )}
