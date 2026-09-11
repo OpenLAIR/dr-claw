@@ -39,7 +39,8 @@ Dr. Claw 通过项目根目录下的 `.env` 文件中的环境变量进行配置
 
 | 变量 | 是否必需 | 默认值 | 说明 |
 |------|---------|--------|------|
-| `JWT_SECRET` | **是**（生产环境） | `claude-ui-dev-secret-change-in-production` | 用于签名和验证 JWT 令牌的密钥。在将 Dr. Claw 暴露到 localhost 以外之前**必须**更改。生成方法：`node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
+| `JWT_SECRET` | 否 | *（自动生成，见说明）* | 用于签名和验证 JWT 令牌的密钥。未设置时，Dr. Claw 会在首次启动时生成一个 256 位随机密钥，保存在数据库（`DATABASE_PATH`）同目录的 `jwt-secret` 文件中（权限 `0600`）。多实例需要互认 token、或由外部密钥管理系统统一下发时请显式设置。生成方法：`node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`。旧的公开默认值 `claude-ui-dev-secret-change-in-production` 会在启动时被**拒绝**。 |
+| `JWT_SECRET_FILE` | 否 | `<数据库目录>/jwt-secret` | 存放 JWT 密钥的文件路径，仅在 `JWT_SECRET` 未设置时生效。文件不存在时会自动生成随机值。适合 Docker/Kubernetes secrets，例如 `/run/secrets/jwt-secret`。 |
 | `API_KEY` | 否 | *（无 — 跳过验证）* | 设置后，每个 HTTP 请求必须包含值为此密钥的 `X-Api-Key` 请求头。适用于托管部署中限制访问。 |
 
 ### 上下文窗口
@@ -91,7 +92,7 @@ Dr. Claw 支持两种身份认证路径：
 
 在将 Dr. Claw 部署到网络（而非仅 `localhost`）之前，请检查以下事项：
 
-1. **`JWT_SECRET`** — 将默认值替换为强随机字符串。默认值是公开的，不提供任何安全保障。
+1. **`JWT_SECRET`** — 显式设置一个强随机字符串，或者直接使用自动生成的 `jwt-secret` 文件。请把该文件和数据库一起备份：丢失会让所有用户被登出，泄露则任何人都能伪造 token。历史默认值已不再接受。
 2. **`API_KEY`** — 考虑设置 API 密钥以增加额外的认证层。
 3. **`WORKSPACES_ROOT`** — 在平台模式下，确保此路径指向你信任的目录。Dr. Claw 会提供该目录树下的文件内容。
 4. **`.gitignore`** — 确认 `.env` 已列入 `.gitignore`（默认已包含），防止密钥被提交。
@@ -103,4 +104,4 @@ Dr. Claw 支持两种身份认证路径：
 
 - 变量未生效？检查是否有同名的系统环境变量在覆盖它。
 - 数据库错误？请参阅 [FAQ — SQLITE_CANTOPEN](./faq.zh-CN.md#8-数据库权限错误sqlite_cantopen)。
-- JWT 问题？请参阅 [FAQ — JWT_SECRET 安全警告](./faq.zh-CN.md#11-jwt_secret-安全警告)。
+- 启动时报 `Refusing to start: the JWT secret ... is the publicly known development default`？把 `.env`（或密钥文件）里的这个值删掉，让 Dr. Claw 自动生成，或设置一个新的随机 `JWT_SECRET`。已登录用户需要重新登录。

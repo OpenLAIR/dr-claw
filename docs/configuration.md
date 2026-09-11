@@ -39,7 +39,8 @@ Dr. Claw is configured through environment variables in a `.env` file at the pro
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `JWT_SECRET` | **Yes** (production) | `claude-ui-dev-secret-change-in-production` | Secret used to sign and verify JWT tokens. **Must** be changed before exposing Dr. Claw outside localhost. Generate one with: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
+| `JWT_SECRET` | No | *(auto-generated, see below)* | Secret used to sign and verify JWT tokens. When unset, Dr. Claw generates a random 256-bit secret on first start and stores it in a `jwt-secret` file next to the database (`DATABASE_PATH`, mode `0600`). Set it explicitly when several instances must accept each other's tokens or when you manage secrets externally. Generate one with: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`. The former public default `claude-ui-dev-secret-change-in-production` is **rejected at startup**. |
+| `JWT_SECRET_FILE` | No | `<database dir>/jwt-secret` | Path to a file containing the JWT secret. Used only when `JWT_SECRET` is unset. Created with a random value if it does not exist. Handy for Docker/Kubernetes secrets, e.g. `/run/secrets/jwt-secret`. |
 | `API_KEY` | No | *(none — validation skipped)* | When set, every HTTP request must include an `X-Api-Key` header with this value. Useful for restricting access in hosted setups. |
 
 ### Context Window
@@ -130,7 +131,7 @@ Dr. Claw supports two authentication paths:
 
 Before deploying Dr. Claw on a network (not just `localhost`), review the following:
 
-1. **`JWT_SECRET`** — Replace the default with a strong random string. The default value is public and provides zero security.
+1. **`JWT_SECRET`** — Either set a strong random string or rely on the auto-generated `jwt-secret` file. Back that file up with the database: losing it signs every user out; leaking it lets anyone forge tokens. The historical default is no longer accepted.
 2. **`API_KEY`** — Consider setting an API key to add an extra authentication layer.
 3. **`WORKSPACES_ROOT`** — In Platform mode, ensure this is scoped to a directory you trust. Dr. Claw serves file contents from this tree.
 4. **`.gitignore`** — Verify that `.env` is listed in `.gitignore` (it is by default) so secrets are never committed.
@@ -142,4 +143,4 @@ Before deploying Dr. Claw on a network (not just `localhost`), review the follow
 
 - Variable not taking effect? Check that there is no system environment variable with the same name overriding it.
 - Database errors? See [FAQ — SQLITE_CANTOPEN](./faq.md#8-database-permission-errors-sqlite_cantopen).
-- JWT issues? See [FAQ — JWT_SECRET security warning](./faq.md#11-jwt_secret-security-warning).
+- Server refuses to start with `Refusing to start: the JWT secret ... is the publicly known development default`? Remove that value from `.env` (or from the secret file) and let Dr. Claw generate a new one, or set a fresh random `JWT_SECRET`. Existing logins will need to sign in again.
