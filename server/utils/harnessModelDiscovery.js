@@ -29,7 +29,7 @@ import {
   NANO_CLAUDE_CODE_MODELS,
   OPENROUTER_MODELS,
 } from '../../shared/modelConstants.js';
-import { buildCodexCliEnv, getCodexCliCommand } from './codexCli.js';
+import { getBundledCodexCliInvocation } from './codexCli.js';
 
 const STATIC_MODELS = {
   claude: CLAUDE_MODELS,
@@ -214,6 +214,10 @@ function jsonRpcOverStdio({ command, args, env, cwd, timeoutMs, requests, onMess
 /**
  * Codex exposes its live catalogue through the app-server's `model/list`
  * JSON-RPC method, which is the same source the Codex UI's own picker reads.
+ *
+ * The catalogue is served per client version, so it must come from the CLI
+ * that will run the chat turn: the `@openai/codex` bundled with the SDK, not
+ * whatever `codex` happens to be on PATH (that one is for the embedded shell).
  */
 const CODEX_INITIALIZE_ID = 1;
 const CODEX_MODEL_LIST_BASE_ID = 100;
@@ -222,7 +226,7 @@ const CODEX_MODEL_LIST_BASE_ID = 100;
 const CODEX_MAX_MODEL_PAGES = 10;
 
 async function discoverCodexModels({ timeoutMs, env = process.env } = {}) {
-  const command = getCodexCliCommand(env);
+  const cli = getBundledCodexCliInvocation(env);
   const collected = [];
   let page = 0;
 
@@ -237,9 +241,9 @@ async function discoverCodexModels({ timeoutMs, env = process.env } = {}) {
   };
 
   const models = await jsonRpcOverStdio({
-    command,
-    args: ['app-server'],
-    env: buildCodexCliEnv(env),
+    command: cli.command,
+    args: [...cli.args, 'app-server'],
+    env: cli.env,
     timeoutMs,
     requests: [{
       jsonrpc: '2.0',

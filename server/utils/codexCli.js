@@ -1,9 +1,11 @@
 import path from 'path';
+import { createRequire } from 'module';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const APP_ROOT = path.resolve(__dirname, '..', '..');
+const moduleRequire = createRequire(import.meta.url);
 
 function getPathEnvKey(env = process.env) {
   if (process.platform !== 'win32') return 'PATH';
@@ -46,6 +48,37 @@ function getCodexCliCommand(env = process.env) {
   return String(env.CODEX_CLI_PATH || '').trim() || 'codex';
 }
 
+/**
+ * How to launch the Codex CLI that Dr. Claw's chat turns actually run on.
+ *
+ * `@openai/codex-sdk` spawns the `@openai/codex` package it depends on, never
+ * the `codex` on PATH. Anything that describes that executor to the user (the
+ * model picker, most of all) has to ask the very same binary, otherwise the
+ * catalogue it shows and the catalogue the chat can use drift apart: a newer
+ * global CLI lists models the bundled one cannot run, an older one hides
+ * models it can. The bundled CLI is resolved the way the SDK resolves it,
+ * through Node's module lookup, and is run via `process.execPath` so it works
+ * without relying on the file's exec bit or shebang.
+ *
+ * `CODEX_CLI_PATH` still wins so an operator can point every Codex call at one
+ * explicit binary. If the package cannot be resolved (an install that dropped
+ * it), fall back to `codex` on PATH exactly like the shell does.
+ *
+ * @returns {{ command: string, args: string[], env: object }}
+ */
+function getBundledCodexCliInvocation(env = process.env) {
+  const override = String(env.CODEX_CLI_PATH || '').trim();
+  if (override) {
+    return { command: override, args: [], env: buildCodexCliEnv(env) };
+  }
+  try {
+    const entry = moduleRequire.resolve('@openai/codex/bin/codex.js');
+    return { command: process.execPath, args: [entry], env: { ...env } };
+  } catch (_) {
+    return { command: 'codex', args: [], env: buildCodexCliEnv(env) };
+  }
+}
+
 function quotePosix(value) {
   return `'${String(value).replace(/'/g, `'\\''`)}'`;
 }
@@ -66,5 +99,6 @@ function codexCommandForShell(env = process.env, platform = process.platform) {
 export {
   buildCodexCliEnv,
   codexCommandForShell,
+  getBundledCodexCliInvocation,
   getCodexCliCommand,
 };

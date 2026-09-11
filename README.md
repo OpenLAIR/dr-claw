@@ -580,7 +580,7 @@ Dr. Claw reads local settings from `.env`. For most users, the only required ste
 - `PORT`: backend server port
 - `VITE_PORT`: frontend dev server port
 - `HOST`: bind address for the frontend and backend
-- `JWT_SECRET`: required before exposing Dr. Claw beyond localhost
+- `JWT_SECRET`: optional; a random secret is generated and stored next to the database on first start. Set it only when you need to control the value
 - `WORKSPACES_ROOT`: default root for new project workspaces
 
 For the full environment reference and deployment notes, see [docs/configuration.md](docs/configuration.md).

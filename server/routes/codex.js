@@ -5,8 +5,19 @@ import path from 'path';
 import os from 'os';
 import TOML from '@iarna/toml';
 import { getCodexSessions, getCodexSessionMessages, deleteCodexSession } from '../projects.js';
+import { getBundledCodexCliInvocation } from '../utils/codexCli.js';
 
 const router = express.Router();
+
+/**
+ * `codex mcp ...` edits ~/.codex/config.toml, which the CLI behind Dr. Claw's
+ * chat turns reads back. Run it on that same bundled CLI so the file is never
+ * written in a format a different codex version cannot parse.
+ */
+function spawnCodex(args) {
+  const cli = getBundledCodexCliInvocation(process.env);
+  return spawn(cli.command, [...cli.args, ...args], { stdio: ['pipe', 'pipe', 'pipe'], env: cli.env });
+}
 
 function createCliResponder(res) {
   let responded = false;
@@ -100,7 +111,7 @@ router.delete('/sessions/:sessionId', async (req, res) => {
 router.get('/mcp/cli/list', async (req, res) => {
   try {
     const respond = createCliResponder(res);
-    const proc = spawn('codex', ['mcp', 'list'], { stdio: ['pipe', 'pipe', 'pipe'] });
+    const proc = spawnCodex(['mcp', 'list']);
 
     let stdout = '';
     let stderr = '';
@@ -151,7 +162,7 @@ router.post('/mcp/cli/add', async (req, res) => {
     }
 
     const respond = createCliResponder(res);
-    const proc = spawn('codex', cliArgs, { stdio: ['pipe', 'pipe', 'pipe'] });
+    const proc = spawnCodex(cliArgs);
 
     let stdout = '';
     let stderr = '';
@@ -185,7 +196,7 @@ router.delete('/mcp/cli/remove/:name', async (req, res) => {
     const { name } = req.params;
 
     const respond = createCliResponder(res);
-    const proc = spawn('codex', ['mcp', 'remove', name], { stdio: ['pipe', 'pipe', 'pipe'] });
+    const proc = spawnCodex(['mcp', 'remove', name]);
 
     let stdout = '';
     let stderr = '';
@@ -219,7 +230,7 @@ router.get('/mcp/cli/get/:name', async (req, res) => {
     const { name } = req.params;
 
     const respond = createCliResponder(res);
-    const proc = spawn('codex', ['mcp', 'get', name], { stdio: ['pipe', 'pipe', 'pipe'] });
+    const proc = spawnCodex(['mcp', 'get', name]);
 
     let stdout = '';
     let stderr = '';

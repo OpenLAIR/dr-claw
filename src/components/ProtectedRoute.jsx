@@ -1,9 +1,7 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import SetupForm from './SetupForm';
 import LoginForm from './LoginForm';
 import Onboarding from './Onboarding';
-import { IS_PLATFORM } from '../constants/config';
 
 const LoadingScreen = () => (
   <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -37,7 +35,9 @@ const ProtectedRoute = ({ children }) => {
   }
 
   if (needsSetup) {
-    return <SetupForm />;
+    // Fresh install: default to the register form, but keep the login toggle
+    // reachable (e.g. the account was just created in another tab/device).
+    return <LoginForm initialMode="register" isFirstRun />;
   }
 
   if (!user) {

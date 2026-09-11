@@ -119,6 +119,7 @@ export const AuthProvider = ({ children }) => {
       if (response.ok) {
         setToken(data.token);
         setUser(data.user);
+        setNeedsSetup(false);
         localStorage.setItem('auth-token', data.token);
         await checkOnboardingStatus();
         return { success: true };

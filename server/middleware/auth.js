@@ -1,16 +1,12 @@
 import jwt from 'jsonwebtoken';
 import { userDb } from '../database/db.js';
 import { IS_PLATFORM } from '../constants/config.js';
+import { resolveJwtSecret } from '../utils/jwtSecret.js';
 
-// Get JWT secret from environment or use default (for development)
-const JWT_SECRET = process.env.JWT_SECRET || 'claude-ui-dev-secret-change-in-production';
-if (!process.env.JWT_SECRET && process.env.NODE_ENV === 'production') {
-  console.warn(
-    '[SECURITY] JWT_SECRET is not set — using the default development secret. '
-    + 'Tokens signed with this known-public secret are trivially forgeable. '
-    + 'Set JWT_SECRET in your environment before deploying to production.'
-  );
-}
+// Resolve the JWT signing secret: JWT_SECRET, else JWT_SECRET_FILE, else a
+// random secret generated once and stored next to the database. There is no
+// static fallback (see GitHub issue #225).
+const JWT_SECRET = resolveJwtSecret();
 
 // Token lifetime (default: 30 days). Set JWT_EXPIRY to override, e.g. "24h", "30d".
 const JWT_EXPIRY = process.env.JWT_EXPIRY || '30d';

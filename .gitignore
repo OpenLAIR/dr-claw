@@ -124,6 +124,9 @@ temp/
 *.sqlite
 *.sqlite3
 
+# Auto-generated JWT signing secret (lives next to the database)
+jwt-secret
+
 logs
 dev-debug.log
 # Editor directories and files

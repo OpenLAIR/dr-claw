@@ -576,7 +576,7 @@ Dr. Claw 会从 `.env` 读取本地配置。对大多数用户来说，只需要
 - `PORT`：后端服务端口
 - `VITE_PORT`：前端开发服务器端口
 - `HOST`：前后端服务绑定地址
-- `JWT_SECRET`：当你要把 Dr. Claw 暴露到 localhost 之外时必须设置
+- `JWT_SECRET`：可选；首次启动时会自动生成随机密钥并保存在数据库同目录。只有需要自行控制该值时才设置
 - `WORKSPACES_ROOT`：新项目工作区的默认根目录
 
 完整环境变量说明和部署注意事项见 [docs/configuration.zh-CN.md](docs/configuration.zh-CN.md)。
