@@ -4,6 +4,7 @@ import type { AppTab } from '../../../../types/app';
 import { Button } from '../../../ui/button';
 import { Input } from '../../../ui/input';
 import { IS_PLATFORM } from '../../../../constants/config';
+import { isElectron, isMacElectron } from '../../../../hooks/useDesktop';
 
 type SidebarHeaderProps = {
   isPWA: boolean;
@@ -55,22 +56,15 @@ export default function SidebarHeader({
     </div>
   );
 
-  // UA detection — Chromium always injects "Electron/x.y.z" into the user
-  // agent regardless of preload/contextBridge, so this is unconditionally
-  // reliable.  Module-level detection via window.isElectron can miss if the
-  // bundle evaluates before the preload wires contextBridge values.
-  const isDesktopApp = typeof navigator !== 'undefined' && /Electron/.test(navigator.userAgent);
-  const isMacDesktop = isDesktopApp && /Macintosh/.test(navigator.userAgent);
-
   return (
     <div className="flex-shrink-0">
       {/* Desktop header */}
       <div className="hidden md:block px-3 pt-3 pb-2 electron-drag">
         <div
           className="flex items-center gap-2"
-          style={{ paddingLeft: isMacDesktop ? '68px' : '0px' }}
+          style={{ paddingLeft: isMacElectron ? '68px' : '0px' }}
         >
-          {!isDesktopApp && (
+          {!isElectron && (
             IS_PLATFORM ? (
               <a
                 href="https://github.com/OpenLAIR/dr-claw"

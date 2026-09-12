@@ -1,5 +1,6 @@
 import { Settings, Sparkles, PanelLeftOpen } from 'lucide-react';
 import type { TFunction } from 'i18next';
+import { isMacElectron } from '../../../../hooks/useDesktop';
 
 type SidebarCollapsedProps = {
   onExpand: () => void;
@@ -18,13 +19,10 @@ export default function SidebarCollapsed({
   onShowVersionModal,
   t,
 }: SidebarCollapsedProps) {
-  const isMacDesktop = typeof navigator !== 'undefined'
-    && /Electron/.test(navigator.userAgent) && /Macintosh/.test(navigator.userAgent);
-
   return (
     <div
       className="h-full flex flex-col items-center pb-3 gap-1 bg-background/80 backdrop-blur-sm w-12 electron-drag"
-      style={{ paddingTop: isMacDesktop ? '32px' : '12px' }}
+      style={{ paddingTop: isMacElectron ? '32px' : '12px' }}
     >
       {/* Expand button with brand logo */}
       <button
