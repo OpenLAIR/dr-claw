@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../utils/api';
+import { emitAutoresearchEvent } from '../utils/autoresearchTelemetry';
 import { AUTO_RESEARCH_PACKS, type LocaleKey, type PackDef } from '../constants/autoResearchPacks';
 import useLocalStorage from '../hooks/useLocalStorage';
 
@@ -170,6 +171,13 @@ export default function AutoResearchHub() {
 
   const [expandedWorkflows, setExpandedWorkflows] = useState<Set<string>>(new Set());
 
+  useEffect(() => {
+    emitAutoresearchEvent('autoresearch_hub_viewed', {
+      pack_count: PACKS.length,
+      workflow_count: PACKS.reduce((sum, p) => sum + p.workflows.length, 0),
+    });
+  }, []);
+
   const copyToClipboard = useCallback((text: string) => {
     navigator.clipboard.writeText(text).then(() => {
       setCopiedCommand(text);
@@ -182,11 +190,22 @@ export default function AutoResearchHub() {
     const mcpOpt = pack.mcp.find(m => m.key === mcpKey) || pack.mcp[0];
 
     const apiKeys: Record<string, string> = {};
+    let envVarsFilled = 0;
     if (mcpOpt) {
       for (const ev of mcpOpt.envVars) {
-        if (apiKeyInputs[ev.name]) apiKeys[ev.name] = apiKeyInputs[ev.name];
+        if (apiKeyInputs[ev.name]) {
+          apiKeys[ev.name] = apiKeyInputs[ev.name];
+          envVarsFilled += 1;
+        }
       }
     }
+
+    emitAutoresearchEvent('autoresearch_configure_clicked', {
+      pack: pack.name,
+      mcp_key: mcpKey || null,
+      env_vars_required: mcpOpt?.envVars.length ?? 0,
+      env_vars_filled: envVarsFilled,
+    });
 
     setConfiguring(true);
     setConfigResult(null);
@@ -194,16 +213,36 @@ export default function AutoResearchHub() {
       const resp = await api.communityTools.configure(null, mcpKey, apiKeys, null);
       if (!resp.ok) {
         const text = await resp.text();
+        emitAutoresearchEvent('autoresearch_configure_result', {
+          pack: pack.name,
+          mcp_key: mcpKey || null,
+          success: false,
+          error_type: 'http_error',
+          http_status: resp.status,
+        });
         setConfigResult({ success: false, message: `Server error (${resp.status}): ${text}` });
         return;
       }
       const data = await resp.json();
+      emitAutoresearchEvent('autoresearch_configure_result', {
+        pack: pack.name,
+        mcp_key: mcpKey || null,
+        success: Boolean(data.success),
+        error_type: data.success ? null : 'server_reported_error',
+        error_count: Array.isArray(data.errors) ? data.errors.length : 0,
+      });
       setConfigResult({
         success: data.success,
         message: data.success ? t.configSuccess : (data.errors || []).map((e: { error: string }) => e.error).join('; '),
       });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
+      emitAutoresearchEvent('autoresearch_configure_result', {
+        pack: pack.name,
+        mcp_key: mcpKey || null,
+        success: false,
+        error_type: 'exception',
+      });
       setConfigResult({ success: false, message: msg });
     } finally {
       setConfiguring(false);
@@ -285,7 +324,11 @@ export default function AutoResearchHub() {
                 <button
                   type="button"
                   className="inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium text-slate-700 hover:bg-sky-100/60 hover:text-slate-900 dark:text-sky-100/80 dark:hover:bg-sky-900/30 dark:hover:text-sky-100"
-                  onClick={() => setGuideCollapsed(!guideCollapsed)}
+                  onClick={() => {
+                    emitAutoresearchEvent('autoresearch_guide_toggled', { collapsed: !guideCollapsed });
+                    setGuideCollapsed(!guideCollapsed);
+                  }}
+                  data-telemetry-id="autoresearch-hub-guide-toggle"
                 >
                   {guideCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
                   {guideCollapsed ? t.guideExpand : t.guideCollapse}
@@ -293,7 +336,11 @@ export default function AutoResearchHub() {
                 <button
                   type="button"
                   className="inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium text-slate-700 hover:bg-sky-100/60 hover:text-slate-900 dark:text-sky-100/80 dark:hover:bg-sky-900/30 dark:hover:text-sky-100"
-                  onClick={() => setGuideDismissed(true)}
+                  onClick={() => {
+                    emitAutoresearchEvent('autoresearch_guide_dismissed', {});
+                    setGuideDismissed(true);
+                  }}
+                  data-telemetry-id="autoresearch-hub-guide-dismiss"
                 >
                   <X className="h-4 w-4" />
                   {t.guideDismiss}
@@ -352,7 +399,18 @@ export default function AutoResearchHub() {
                   {/* Collapsible workflows list */}
                   <button
                     type="button"
-                    onClick={() => setExpandedWorkflows(prev => { const n = new Set(prev); n.has(pack.name) ? n.delete(pack.name) : n.add(pack.name); return n; })}
+                    onClick={() => setExpandedWorkflows(prev => {
+                      const n = new Set(prev);
+                      const willExpand = !n.has(pack.name);
+                      emitAutoresearchEvent('autoresearch_pack_expanded', {
+                        pack: pack.name,
+                        expanded: willExpand,
+                        source: 'hub',
+                      });
+                      if (n.has(pack.name)) n.delete(pack.name); else n.add(pack.name);
+                      return n;
+                    })}
+                    data-telemetry-id={`autoresearch-hub-pack-workflows-${pack.name}`}
                     className="mt-3 flex w-full items-center justify-between rounded-lg border border-border/40 bg-muted/30 px-3 py-2 text-left transition-colors hover:bg-muted/60"
                   >
                     <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
@@ -381,7 +439,17 @@ export default function AutoResearchHub() {
                   <div className="border-t border-border/40">
                     <button
                       type="button"
-                      onClick={() => setExpandedConfig(prev => { const n = new Set(prev); n.has(pack.name) ? n.delete(pack.name) : n.add(pack.name); return n; })}
+                      onClick={() => setExpandedConfig(prev => {
+                        const n = new Set(prev);
+                        const willExpand = !n.has(pack.name);
+                        emitAutoresearchEvent('autoresearch_config_section_opened', {
+                          pack: pack.name,
+                          expanded: willExpand,
+                        });
+                        if (n.has(pack.name)) n.delete(pack.name); else n.add(pack.name);
+                        return n;
+                      })}
+                      data-telemetry-id={`autoresearch-hub-config-${pack.name}`}
                       className="flex w-full items-center justify-between px-5 py-3 transition-colors hover:bg-muted/30"
                     >
                       <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
@@ -400,8 +468,19 @@ export default function AutoResearchHub() {
                           {pack.mcp.length > 1 && (
                           <div className="mb-2 flex flex-wrap gap-1.5">
                             {pack.mcp.map(opt => (
-                              <button key={opt.key} type="button" onClick={() => setSelectedMcp(p => ({ ...p, [pack.name]: opt.key }))}
-                                className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-all ${mcpKey === opt.key ? 'border-sky-400 bg-sky-100 text-sky-700 shadow-sm dark:border-sky-600 dark:bg-sky-900/40 dark:text-sky-200' : 'border-border/60 bg-background text-muted-foreground hover:bg-muted/60'}`}>
+                              <button
+                                key={opt.key}
+                                type="button"
+                                onClick={() => {
+                                  emitAutoresearchEvent('autoresearch_mcp_selected', {
+                                    pack: pack.name,
+                                    mcp_key: opt.key,
+                                  });
+                                  setSelectedMcp(p => ({ ...p, [pack.name]: opt.key }));
+                                }}
+                                data-telemetry-id={`autoresearch-hub-mcp-${pack.name}-${opt.key}`}
+                                className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-all ${mcpKey === opt.key ? 'border-sky-400 bg-sky-100 text-sky-700 shadow-sm dark:border-sky-600 dark:bg-sky-900/40 dark:text-sky-200' : 'border-border/60 bg-background text-muted-foreground hover:bg-muted/60'}`}
+                              >
                                 {opt.label}
                               </button>
                             ))}
@@ -460,8 +539,13 @@ export default function AutoResearchHub() {
                         )}
 
                         {/* Configure button */}
-                        <button type="button" disabled={configuring} onClick={() => handleConfigure(pack)}
-                          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-sky-700 active:scale-[0.98] disabled:opacity-60 dark:bg-sky-500 dark:hover:bg-sky-600">
+                        <button
+                          type="button"
+                          disabled={configuring}
+                          onClick={() => handleConfigure(pack)}
+                          data-telemetry-id={`autoresearch-hub-configure-${pack.name}`}
+                          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-sky-700 active:scale-[0.98] disabled:opacity-60 dark:bg-sky-500 dark:hover:bg-sky-600"
+                        >
                           {configuring ? <><Loader2 className="h-4 w-4 animate-spin" />{t.configApplying}</> : <><Settings className="h-4 w-4" />{t.configApply}</>}
                         </button>
                         {configResult && (
