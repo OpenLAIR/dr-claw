@@ -30,6 +30,7 @@ import type { SessionMode, SessionProvider } from '../../../../types/app';
 import { CLAUDE_MODELS, CURSOR_MODELS, CODEX_MODELS, GEMINI_MODELS, LOCAL_MODELS, NANO_CLAUDE_CODE_MODELS, OPENROUTER_MODELS, PI_MODELS } from '../../../../../shared/modelConstants';
 import { authenticatedFetch } from '../../../../utils/api';
 import { isAutoResearchScenario } from '../../utils/autoResearch';
+import { shouldRescueHarnessModel } from '../../utils/harnessModelSelection';
 import type { HarnessModels } from '../../hooks/useHarnessModels';
 
 // New subcomponents
@@ -398,17 +399,13 @@ export default function ChatComposer({
   const rescuedModelRef = useRef<string | null>(null);
   useEffect(() => {
     if (!discoveredModels || !discoveredDefault || !currentModel) return;
-    // Providers that accept free-form model ids (OpenRouter, local) can
-    // legitimately hold a value the catalogue does not list — a relay-only
-    // model, for instance — so absence from the list is not evidence the
-    // harness rejects it. Never rescue those.
-    if ((rawModelConfig as { ALLOWS_CUSTOM?: boolean }).ALLOWS_CUSTOM) return;
-    if (discoveredDefault === currentModel) return;
-
-    const servedByHarness = discoveredModels.some(
-      (option) => option.value === currentModel && !option.deprecated,
-    );
-    if (servedByHarness) return;
+    if (!shouldRescueHarnessModel({
+      provider: sessionProvider,
+      allowsCustom: Boolean((rawModelConfig as { ALLOWS_CUSTOM?: boolean }).ALLOWS_CUSTOM),
+      currentModel,
+      discoveredDefault,
+      options: discoveredModels,
+    })) return;
 
     const rescueKey = `${sessionProvider}:${currentModel}`;
     if (rescuedModelRef.current === rescueKey) return;

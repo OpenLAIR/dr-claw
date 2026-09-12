@@ -87,6 +87,7 @@ import {
 import { resolveNanoSessionAbsPath, safeNanoSessionFilename } from './nanoSessionPaths.js';
 import { readJsonlLinesFrom } from './utils/jsonlTailReader.js';
 import { getPiSessionsRoot } from './utils/piCli.js';
+import { extractPiTextContent } from './utils/piMessages.js';
 import { EventEmitter } from 'events';
 
 /**
@@ -258,7 +259,7 @@ async function bootstrapProjectsIndexFromLegacySources(config, projectDb, userId
   return seededCount;
 }
 
-function collectCodexProjectCandidates(sessionsByProject = new Map()) {
+function collectSessionProjectCandidates(sessionsByProject = new Map()) {
   const candidatesByProject = new Map();
 
   for (const sessions of sessionsByProject.values()) {
@@ -300,65 +301,79 @@ function collectCodexProjectCandidates(sessionsByProject = new Map()) {
   return Array.from(candidatesByProject.values());
 }
 
-const CODEX_SYNC_COOLDOWN_MS = 30_000;
-let lastCodexSyncTimestamp = 0;
-let codexSyncInFlight = null;
-let lastCodexSyncSignature = '';
-let lastBroadcastCodexSyncSignature = null;
+function collectCodexProjectCandidates(sessionsByProject = new Map()) {
+  return collectSessionProjectCandidates(sessionsByProject);
+}
+
+const FILESYSTEM_SYNC_COOLDOWN_MS = 30_000;
+const filesystemSyncState = {
+  codex: { lastTimestamp: 0, inFlight: null, signature: '', broadcastSignature: null },
+  pi: { lastTimestamp: 0, inFlight: null, signature: '', broadcastSignature: null },
+};
 
 /**
- * Run the Codex discovery sync without blocking the caller.
+ * Run a filesystem-backed provider discovery sync without blocking the caller.
  *
  * getProjects() answers from the project database, so it does not need the sync
  * to finish first — and it must not wait for it. The first sync after start-up
- * walks the whole ~/.codex/sessions tree, which can take many seconds on a heavy
+ * may walk a large transcript tree, which can take many seconds on a heavy
  * user; awaiting it made the initial /api/projects request (and therefore the
  * whole UI) hang. Instead the sync runs in the background and emits
  * 'projects-changed' when it actually adds something, which the server
  * re-broadcasts so newly discovered projects appear without a manual refresh.
  */
-function scheduleCodexProjectSync(config, projectDb, userId = null, visibleWorkspaceRoots = []) {
-  if (codexSyncInFlight) {
-    return codexSyncInFlight;
+function scheduleFilesystemProjectSync(provider, config, projectDb, userId = null, visibleWorkspaceRoots = []) {
+  const state = filesystemSyncState[provider];
+  if (state.inFlight) {
+    return state.inFlight;
   }
 
-  if (Date.now() - lastCodexSyncTimestamp < CODEX_SYNC_COOLDOWN_MS) {
+  if (Date.now() - state.lastTimestamp < FILESYSTEM_SYNC_COOLDOWN_MS) {
     return Promise.resolve(0);
   }
 
-  codexSyncInFlight = syncDiscoveredProjectsFromCodexSessions(config, projectDb, userId, visibleWorkspaceRoots)
+  state.inFlight = syncDiscoveredProjectsFromSessionFiles(provider, config, projectDb, userId, visibleWorkspaceRoots)
     .then((syncedProjects) => {
       // Only wake the UI when the sync actually changed something; otherwise a
       // steady 30s cadence of no-op syncs would keep re-broadcasting an
       // identical project list to every connected client. The signature covers
       // session counts and newest activity per project, not just project names —
-      // a new Codex session inside an existing project changes the sidebar too.
-      if (lastCodexSyncSignature !== lastBroadcastCodexSyncSignature) {
-        lastBroadcastCodexSyncSignature = lastCodexSyncSignature;
-        projectsEvents.emit('projects-changed', { reason: 'codex-sync', syncedProjects });
+      // a new session inside an existing project changes the sidebar too.
+      if (state.signature !== state.broadcastSignature) {
+        state.broadcastSignature = state.signature;
+        projectsEvents.emit('projects-changed', { reason: `${provider}-sync`, syncedProjects });
       }
       return syncedProjects;
     })
     .catch((error) => {
-      console.warn('[projects] Codex discovery sync failed:', error.message);
+      console.warn(`[projects] ${provider} discovery sync failed:`, error.message);
       return 0;
     })
     .finally(() => {
-      codexSyncInFlight = null;
+      state.inFlight = null;
     });
 
-  return codexSyncInFlight;
+  return state.inFlight;
 }
 
-async function syncDiscoveredProjectsFromCodexSessions(config, projectDb, userId = null, visibleWorkspaceRoots = []) {
+function scheduleCodexProjectSync(config, projectDb, userId = null, visibleWorkspaceRoots = []) {
+  return scheduleFilesystemProjectSync('codex', config, projectDb, userId, visibleWorkspaceRoots);
+}
+
+function schedulePiProjectSync(config, projectDb, userId = null, visibleWorkspaceRoots = []) {
+  return scheduleFilesystemProjectSync('pi', config, projectDb, userId, visibleWorkspaceRoots);
+}
+
+async function syncDiscoveredProjectsFromSessionFiles(provider, config, projectDb, userId = null, visibleWorkspaceRoots = []) {
+  const state = filesystemSyncState[provider];
   const now = Date.now();
-  if (now - lastCodexSyncTimestamp < CODEX_SYNC_COOLDOWN_MS) {
+  if (now - state.lastTimestamp < FILESYSTEM_SYNC_COOLDOWN_MS) {
     return 0;
   }
 
   const { sessionDb } = await import('./database/db.js');
-  const discoveredSessions = await buildCodexSessionsIndex();
-  const candidates = collectCodexProjectCandidates(discoveredSessions);
+  const discoveredSessions = provider === 'pi' ? await buildPiSessionsIndex() : await buildCodexSessionsIndex();
+  const candidates = collectSessionProjectCandidates(discoveredSessions);
   let syncedProjects = 0;
   const syncedProjectFingerprints = [];
 
@@ -400,8 +415,8 @@ async function syncDiscoveredProjectsFromCodexSessions(config, projectDb, userId
     );
 
     for (const session of sessions) {
-      sessionDb.upsertSessionFromSource(session.id, projectName, 'codex', {
-        displayName: session.summary || session.name || 'Codex Session',
+      sessionDb.upsertSessionFromSource(session.id, projectName, provider, {
+        displayName: session.summary || session.name || (provider === 'pi' ? 'Pi Session' : 'Codex Session'),
         lastActivity: session.lastActivity || new Date(),
         messageCount: session.messageCount || 0,
         createdAt: session.createdAt || session.lastActivity || new Date(),
@@ -423,8 +438,8 @@ async function syncDiscoveredProjectsFromCodexSessions(config, projectDb, userId
     syncedProjectFingerprints.push(`${projectName}:${sessions.length}:${newestActivity}`);
   }
 
-  lastCodexSyncSignature = syncedProjectFingerprints.sort().join('\n');
-  lastCodexSyncTimestamp = Date.now();
+  state.signature = syncedProjectFingerprints.sort().join('\n');
+  state.lastTimestamp = Date.now();
   return syncedProjects;
 }
 
@@ -1189,6 +1204,20 @@ function mapIndexedSessionToProjectSession(session, provider) {
     };
   }
 
+  if (provider === 'pi') {
+    return {
+      id: session.id,
+      summary: baseName || 'Pi Session',
+      name: baseName || 'Pi Session',
+      createdAt,
+      lastActivity,
+      messageCount,
+      mode,
+      tags,
+      __provider: 'pi',
+    };
+  }
+
   return {
     id: session.id,
     summary: baseName || 'New Session',
@@ -1213,6 +1242,8 @@ function getSessionPlaceholderName(provider) {
       return 'OpenRouter Session';
     case 'nano':
       return 'Nano Claude Code Session';
+    case 'pi':
+      return 'Pi Session';
     default:
       return 'New Session';
   }
@@ -1473,6 +1504,7 @@ async function getProjects(userId, progressCallback = null) {
   // Fire-and-forget: the response is built from the project database, so it must
   // not wait on a filesystem walk of ~/.codex/sessions.
   scheduleCodexProjectSync(config, projectDb, userId || null, visibleWorkspaceRoots);
+  schedulePiProjectSync(config, projectDb, userId || null, visibleWorkspaceRoots);
   const dbProjects = projectDb.getAllProjects(userId || null);
 
   try {
@@ -4807,17 +4839,6 @@ function summarizePiText(text) {
   return firstLine.length > 50 ? `${firstLine.slice(0, 50)}...` : firstLine;
 }
 
-function extractPiMessageText(message) {
-  if (!message) return '';
-  const content = message.content;
-  if (typeof content === 'string') return content;
-  if (!Array.isArray(content)) return '';
-  return content
-    .filter((block) => block?.type === 'text' && typeof block.text === 'string')
-    .map((block) => block.text)
-    .join('');
-}
-
 async function parsePiSessionFile(filePath) {
   const fileStream = fsSync.createReadStream(filePath);
   const rl = readline.createInterface({ input: fileStream, crlfDelay: Infinity });
@@ -4857,7 +4878,7 @@ async function parsePiSessionFile(filePath) {
           messageCount += 1;
         }
         if (role === 'user' && !firstUserMessage) {
-          const text = extractPiMessageText(entry.message);
+          const text = extractPiTextContent(entry.message?.content);
           if (text.trim()) firstUserMessage = text;
         }
       }
@@ -5059,7 +5080,7 @@ async function getPiSessionMessages(sessionId, limit = null, offset = 0) {
       const message = entry.message;
 
       if (message.role === 'user' || message.role === 'assistant') {
-        const text = extractPiMessageText(message);
+        const text = extractPiTextContent(message.content);
         const toolCalls = Array.isArray(message.content)
           ? message.content.filter((block) => block?.type === 'toolCall')
           : [];
@@ -5091,7 +5112,7 @@ async function getPiSessionMessages(sessionId, limit = null, offset = 0) {
           toolCallId: message.toolCallId,
           toolName: message.toolName,
           isError: Boolean(message.isError),
-          output: extractPiMessageText(message) || (typeof message.output === 'string' ? message.output : ''),
+          output: extractPiTextContent(message.content) || (typeof message.output === 'string' ? message.output : ''),
         });
       }
     }

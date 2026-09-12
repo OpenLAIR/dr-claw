@@ -4,6 +4,7 @@ import { api } from '../utils/api';
 import { isTemporarySessionId } from '../constants/session';
 import { queueWorkspaceQaDraft } from '../utils/workspaceQa';
 import { queueReferenceChatDraft } from '../utils/referenceChatDraft';
+import { getSessionCollectionKey } from '../utils/sessionProviderCollections';
 import type { Reference } from '../components/references/types';
 import { formatReferenceChatPrompt } from '../components/references/types';
 import type {
@@ -464,36 +465,29 @@ export function useProjectsState({
         };
 
         if (createdProjectName && project.name === createdProjectName && createdProvider) {
-          const sessionArrayKey = createdProvider === 'claude' ? 'sessions'
-            : createdProvider === 'cursor' ? 'cursorSessions'
-            : createdProvider === 'codex' ? 'codexSessions'
-            : createdProvider === 'gemini' ? 'geminiSessions'
-            : createdProvider === 'openrouter' ? 'openrouterSessions'
-            : createdProvider === 'local' ? 'localSessions'
-            : createdProvider === 'nano' ? 'nanoSessions'
-            : null;
+          const sessionArrayKey = getSessionCollectionKey(createdProvider);
 
-          if (sessionArrayKey) {
-            const arr = (nextProject[sessionArrayKey] as ProjectSession[] | undefined) || [];
-            const alreadyExists = arr.some((s) => s.id === latestMessage.sessionId);
-            if (!alreadyExists) {
-              const fallbackName = createdProvider === 'local'
-                ? 'Local GPU Session'
-                : createdProvider === 'nano'
-                  ? 'Nano Claude Code Session'
+          const arr = (nextProject[sessionArrayKey] as ProjectSession[] | undefined) || [];
+          const alreadyExists = arr.some((s) => s.id === latestMessage.sessionId);
+          if (!alreadyExists) {
+            const fallbackName = createdProvider === 'local'
+              ? 'Local GPU Session'
+              : createdProvider === 'nano'
+                ? 'Nano Claude Code Session'
+                : createdProvider === 'pi'
+                  ? 'Pi Session'
                   : 'New Session';
-              const newSession: ProjectSession = {
-                id: latestMessage.sessionId as string,
-                name: createdDisplayName || fallbackName,
-                summary: createdDisplayName || fallbackName,
-                mode: sessionMode,
-                __provider: createdProvider,
-                __projectName: project.name,
-                createdAt: new Date().toISOString(),
-                lastActivity: new Date().toISOString(),
-              };
-              (nextProject as Record<string, unknown>)[sessionArrayKey] = [newSession, ...arr];
-            }
+            const newSession: ProjectSession = {
+              id: latestMessage.sessionId as string,
+              name: createdDisplayName || fallbackName,
+              summary: createdDisplayName || fallbackName,
+              mode: sessionMode,
+              __provider: createdProvider,
+              __projectName: project.name,
+              createdAt: new Date().toISOString(),
+              lastActivity: new Date().toISOString(),
+            };
+            (nextProject as Record<string, unknown>)[sessionArrayKey] = [newSession, ...arr];
           }
         }
 

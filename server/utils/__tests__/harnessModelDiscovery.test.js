@@ -494,7 +494,7 @@ process.stdout.write([
     ]);
   });
 
-  it('keeps Pi custom models undemoted and preserves its configured default', async () => {
+  it('keeps Pi custom models undemoted and defaults to an authenticated model', async () => {
     const fake = await writeFakeCodex('partial-pi.mjs', `
 process.stdout.write('provider  model  context  max-out  thinking  images\\nopenai  gpt-5.5  400K  128K  yes  yes\\n');
 `);
@@ -504,7 +504,7 @@ process.stdout.write('provider  model  context  max-out  thinking  images\\nopen
       env: { ...process.env, PI_CLI_PATH: fake },
     });
 
-    expect(payload.default).toBe(PI_MODELS.DEFAULT);
+    expect(payload.default).toBe('openai/gpt-5.5');
     for (const builtIn of PI_MODELS.OPTIONS) {
       const entry = payload.options.find((option) => option.value === builtIn.value);
       expect(entry).toBeDefined();

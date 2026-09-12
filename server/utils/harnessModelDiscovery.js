@@ -714,8 +714,13 @@ async function runDiscovery(provider, { timeoutMs, env, sdkQuery }) {
     // straight into an error. A harness that accepts unlisted ids cannot have
     // dropped anything, so its configured default always stands.
     const configuredDefault = config?.DEFAULT;
-    const harnessStillServesConfigured = acceptsUnlisted
-      || discovered.some((model) => model.value === configuredDefault);
+    // Pi's catalogue is credential-scoped: a syntactically valid custom id can
+    // still target a provider the user has not logged into. Prefer an actually
+    // available model for new sessions while continuing to allow explicit
+    // free-form selections in the picker.
+    const harnessStillServesConfigured = provider === 'pi'
+      ? discovered.some((model) => model.value === configuredDefault)
+      : acceptsUnlisted || discovered.some((model) => model.value === configuredDefault);
 
     return {
       provider,

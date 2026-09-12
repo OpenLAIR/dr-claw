@@ -26,8 +26,10 @@ import crypto from 'crypto';
 import { StringDecoder } from 'string_decoder';
 
 import { getPiCliCommand } from './utils/piCli.js';
+import { extractPiTextContent } from './utils/piMessages.js';
 import { applyStageTagsToSession, recordIndexedSession } from './utils/sessionIndex.js';
 import { classifyError } from '../shared/errorClassifier.js';
+import { encodeProjectPath, reconcilePiSessionIndex } from './projects.js';
 
 // cross-spawn resolves .cmd shims correctly on Windows.
 const spawnFunction = process.platform === 'win32' ? crossSpawn : spawn;
@@ -63,16 +65,6 @@ function createLineSplitter(onLine) {
       if (line.trim()) onLine(line);
     },
   };
-}
-
-/** Concatenate the text blocks of a Pi message's content array. */
-function extractText(content) {
-  if (typeof content === 'string') return content;
-  if (!Array.isArray(content)) return '';
-  return content
-    .filter((block) => block?.type === 'text' && typeof block.text === 'string')
-    .map((block) => block.text)
-    .join('');
 }
 
 function extractThinking(content) {
@@ -115,7 +107,7 @@ export function transformPiEvent(event) {
       // caller turns this into a pi-error rather than an empty bubble.
       if (message.stopReason === 'error') return null;
 
-      const text = extractText(message.content);
+      const text = extractPiTextContent(message.content);
       const thinking = extractThinking(message.content);
       if (!text.trim() && !thinking.trim()) return null;
 
@@ -292,6 +284,7 @@ export async function spawnPi(command, options = {}, ws) {
     let settled = false;
     let stderrBuffer = '';
     let sawSessionHeader = false;
+    let sessionProjectPath = workingDir;
     let reportedError = null;
     let latestUsage = null;
 
@@ -317,13 +310,14 @@ export async function spawnPi(command, options = {}, ws) {
     const emitSessionCreated = (headerCwd) => {
       if (sawSessionHeader) return;
       sawSessionHeader = true;
+      sessionProjectPath = headerCwd || workingDir;
 
       if (!isNewSession) return;
 
       recordIndexedSession({
         sessionId: effectiveSessionId,
         provider: 'pi',
-        projectPath: headerCwd || workingDir,
+        projectPath: sessionProjectPath,
         sessionMode: sessionMode || 'research',
         stageTagKeys,
         tagSource: stageTagSource,
@@ -335,6 +329,8 @@ export async function spawnPi(command, options = {}, ws) {
         provider: 'pi',
         mode: sessionMode || 'research',
         startTime,
+        displayName: 'Pi Session',
+        projectName: encodeProjectPath(sessionProjectPath),
       });
     };
 
@@ -405,7 +401,7 @@ export async function spawnPi(command, options = {}, ws) {
       finish(reject, new Error(message));
     });
 
-    piProcess.on('close', (code) => {
+    piProcess.on('close', async (code) => {
       // 'error' and 'close' both fire when a spawn fails. The promise is already
       // guarded, but the websocket is not: without this the client would receive
       // a pi-complete (or a second pi-error) contradicting the failure it was
@@ -446,6 +442,16 @@ export async function spawnPi(command, options = {}, ws) {
         actualSessionId: effectiveSessionId,
       });
       finish(resolve, { sessionId: effectiveSessionId });
+
+      // Keep completion latency independent of the filesystem scan. The
+      // placeholder is already visible; reconciliation enriches it with the
+      // transcript title, counts, and activity in the background.
+      reconcilePiSessionIndex(sessionProjectPath, {
+        sessionId: effectiveSessionId,
+        projectName: encodeProjectPath(sessionProjectPath),
+      }).catch((error) => {
+        console.warn(`[Pi] Failed to reconcile indexed session ${effectiveSessionId}:`, error.message);
+      });
     });
   });
 }

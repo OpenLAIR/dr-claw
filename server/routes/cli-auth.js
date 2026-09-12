@@ -573,7 +573,7 @@ router.get('/pi/status', async (req, res) => {
     const result = await checkPiCredentials();
     return res.json(buildStatusPayload(result, 'pi'));
   } catch (error) {
-    console.error('Error checking Pi status:', error);
+    console.error('[ERROR] Error checking Pi status:', error);
     res.status(500).json({ authenticated: false, email: null, error: error.message });
   }
 });

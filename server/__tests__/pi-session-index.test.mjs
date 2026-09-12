@@ -13,6 +13,7 @@ import path from 'path';
 const originalHome = process.env.HOME;
 const originalUserProfile = process.env.USERPROFILE;
 const originalDatabasePath = process.env.DATABASE_PATH;
+const originalWorkspacesRoot = process.env.WORKSPACES_ROOT;
 
 let tempRoot;
 let projectRoot;
@@ -48,6 +49,7 @@ beforeEach(async () => {
   process.env.HOME = tempRoot;
   process.env.USERPROFILE = tempRoot;
   process.env.DATABASE_PATH = path.join(tempRoot, 'db', 'auth.db');
+  process.env.WORKSPACES_ROOT = path.join(tempRoot, 'workspace');
 
   projectRoot = path.join(tempRoot, 'workspace', 'demo');
   await mkdir(projectRoot, { recursive: true });
@@ -58,6 +60,8 @@ afterEach(async () => {
   process.env.HOME = originalHome;
   process.env.USERPROFILE = originalUserProfile;
   process.env.DATABASE_PATH = originalDatabasePath;
+  if (originalWorkspacesRoot === undefined) delete process.env.WORKSPACES_ROOT;
+  else process.env.WORKSPACES_ROOT = originalWorkspacesRoot;
   vi.restoreAllMocks();
 });
 
@@ -129,6 +133,33 @@ describe('buildPiSessionsIndex', () => {
     const sessions = [...(await projects.buildPiSessionsIndex()).values()].flat();
 
     expect(sessions.map((s) => s.id)).toEqual(['pi-good']);
+  });
+
+  it('background-syncs existing Pi transcripts into project responses', async () => {
+    await writeSession({ sessionId: 'pi-existing', cwd: projectRoot, prompt: 'existing Pi session' });
+    const { projects } = await loadModules();
+    const database = await import('../database/db.js');
+    await database.initializeDatabase();
+
+    // The first response remains database-backed while the filesystem scan runs
+    // asynchronously, matching the Codex discovery path.
+    await projects.getProjects(null);
+
+    const deadline = Date.now() + 5000;
+    while (!database.sessionDb.getSessionById('pi-existing') && Date.now() < deadline) {
+      await new Promise((resolve) => setTimeout(resolve, 25));
+    }
+
+    const synced = database.sessionDb.getSessionById('pi-existing');
+    expect(synced).toMatchObject({ provider: 'pi', display_name: 'existing Pi session' });
+
+    const hydrated = await projects.getProjects(null);
+    const project = hydrated.find((item) => item.fullPath === projectRoot);
+    expect(project?.piSessions).toContainEqual(expect.objectContaining({
+      id: 'pi-existing',
+      __provider: 'pi',
+      summary: 'existing Pi session',
+    }));
   });
 });
 

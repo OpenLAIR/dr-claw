@@ -44,14 +44,15 @@ import mime from 'mime-types';
 
 import { getProjects, getTrashedProjects, getSessions, getSessionMessages, renameProject, renameSession, deleteSession, deleteProject, restoreProject, deleteTrashedProject, addProjectManually, extractProjectDirectory, resolveClaudeProjectDirs, clearProjectDirectoryCache, projectsEvents } from './projects.js';
 import { getProjectTokenUsageSummary } from './project-token-usage.js';
-import { queryClaudeSDK, abortClaudeSDKSession, isClaudeSDKSessionActive, getClaudeSDKSessionStartTime, getActiveClaudeSDKSessions, resolveToolApproval } from './claude-sdk.js';
-import { spawnCursor, abortCursorSession, isCursorSessionActive, getCursorSessionStartTime, getActiveCursorSessions } from './cursor-cli.js';
-import { queryCodex, abortCodexSession, isCodexSessionActive, getCodexSessionStartTime, getActiveCodexSessions } from './openai-codex.js';
-import { spawnGemini, abortGeminiSession, isGeminiSessionActive, getGeminiSessionStartTime, getActiveGeminiSessions } from './gemini-cli.js';
-import { queryOpenRouter, abortOpenRouterSession, isOpenRouterSessionActive, getOpenRouterSessionStartTime, getActiveOpenRouterSessions } from './openrouter.js';
-import { queryLocalGPU, abortLocalGPUSession, isLocalGPUSessionActive, getLocalGPUSessionStartTime, getActiveLocalGPUSessions } from './local-gpu.js';
-import { spawnNanoClaudeCode, abortNanoClaudeCodeSession, isNanoClaudeCodeSessionActive, getNanoClaudeCodeSessionStartTime, getActiveNanoClaudeCodeSessions } from './nano-claude-code.js';
+import { queryClaudeSDK, abortClaudeSDKSession, isClaudeSDKSessionActive, resolveToolApproval } from './claude-sdk.js';
+import { spawnCursor, abortCursorSession, isCursorSessionActive } from './cursor-cli.js';
+import { queryCodex, abortCodexSession, isCodexSessionActive } from './openai-codex.js';
+import { spawnGemini, abortGeminiSession, isGeminiSessionActive } from './gemini-cli.js';
+import { queryOpenRouter, abortOpenRouterSession, isOpenRouterSessionActive } from './openrouter.js';
+import { queryLocalGPU, abortLocalGPUSession, isLocalGPUSessionActive } from './local-gpu.js';
+import { spawnNanoClaudeCode, abortNanoClaudeCodeSession, isNanoClaudeCodeSessionActive } from './nano-claude-code.js';
 import { spawnPi, abortPiSession, isPiSessionActive } from './pi-cli.js';
+import { getAllActiveProviderSessions, getProviderSessionStatus } from './utils/sessionProviderState.js';
 import gitRoutes from './routes/git.js';
 import authRoutes from './routes/auth.js';
 import mcpRoutes from './routes/mcp.js';
@@ -1859,32 +1860,7 @@ function handleChatConnection(ws, request) {
                 // Check if a specific session is currently processing
                 const provider = data.provider || 'claude';
                 const sessionId = data.sessionId;
-                let isActive;
-                let startTime = null;
-
-                if (provider === 'cursor') {
-                    isActive = isCursorSessionActive(sessionId);
-                    startTime = getCursorSessionStartTime(sessionId);
-                } else if (provider === 'codex') {
-                    isActive = isCodexSessionActive(sessionId);
-                    startTime = getCodexSessionStartTime(sessionId);
-                } else if (provider === 'gemini') {
-                    isActive = isGeminiSessionActive(sessionId);
-                    startTime = getGeminiSessionStartTime(sessionId);
-                } else if (provider === 'openrouter') {
-                    isActive = isOpenRouterSessionActive(sessionId);
-                    startTime = getOpenRouterSessionStartTime(sessionId);
-                } else if (provider === 'local') {
-                    isActive = isLocalGPUSessionActive(sessionId);
-                    startTime = getLocalGPUSessionStartTime(sessionId);
-                } else if (provider === 'nano') {
-                    isActive = isNanoClaudeCodeSessionActive(sessionId);
-                    startTime = getNanoClaudeCodeSessionStartTime(sessionId);
-                } else {
-                    // Use Claude Agents SDK
-                    isActive = isClaudeSDKSessionActive(sessionId);
-                    startTime = getClaudeSDKSessionStartTime(sessionId);
-                }
+                const { isActive, startTime } = getProviderSessionStatus(provider, sessionId);
 
                 writer.send({
                     type: 'session-status',
@@ -1895,14 +1871,7 @@ function handleChatConnection(ws, request) {
                 });
             } else if (data.type === 'get-active-sessions') {
                 // Get all currently active sessions
-                const activeSessions = {
-                    claude: getActiveClaudeSDKSessions(),
-                    cursor: getActiveCursorSessions(),
-                    codex: getActiveCodexSessions(),
-                    gemini: getActiveGeminiSessions(),
-                    local: getActiveLocalGPUSessions(),
-                    nano: getActiveNanoClaudeCodeSessions()
-                };
+                const activeSessions = getAllActiveProviderSessions();
 
                 writer.send({
                     type: 'active-sessions',

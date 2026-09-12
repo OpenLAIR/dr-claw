@@ -12,6 +12,9 @@ import path from 'path';
 
 let tmpDir;
 let mod;
+const originalHome = process.env.HOME;
+const originalUserProfile = process.env.USERPROFILE;
+const originalDatabasePath = process.env.DATABASE_PATH;
 
 async function writeFakePi(name, body) {
   const file = path.join(tmpDir, name);
@@ -39,12 +42,21 @@ out({ type: 'agent_end', messages: [] });
 
 beforeEach(async () => {
   tmpDir = await mkdtemp(path.join(os.tmpdir(), 'drclaw-pi-'));
+  process.env.HOME = tmpDir;
+  process.env.USERPROFILE = tmpDir;
+  process.env.DATABASE_PATH = path.join(tmpDir, 'db', 'auth.db');
   vi.resetModules();
   mod = await import('../pi-cli.js');
 });
 
 afterEach(async () => {
   await rm(tmpDir, { recursive: true, force: true });
+  if (originalHome === undefined) delete process.env.HOME;
+  else process.env.HOME = originalHome;
+  if (originalUserProfile === undefined) delete process.env.USERPROFILE;
+  else process.env.USERPROFILE = originalUserProfile;
+  if (originalDatabasePath === undefined) delete process.env.DATABASE_PATH;
+  else process.env.DATABASE_PATH = originalDatabasePath;
   vi.restoreAllMocks();
 });
 
@@ -163,6 +175,11 @@ describe('spawnPi', () => {
     expect(responses.some((d) => d.type === 'tool_use' && d.toolName === 'bash')).toBe(true);
     expect(responses.some((d) => d.type === 'tool_result' && d.output === 'file.txt')).toBe(true);
     expect(ws.events.some((e) => e.type === 'token-budget' && e.data.used === 15)).toBe(true);
+    expect(ws.events.find((e) => e.type === 'session-created')).toMatchObject({
+      provider: 'pi',
+      projectName: expect.any(String),
+      displayName: 'Pi Session',
+    });
     expect(result.sessionId).toBeTruthy();
   });
 
