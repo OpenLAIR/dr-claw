@@ -32,13 +32,13 @@ export default function SessionModeSelector({
     <button
       type="button"
       onClick={handleToggle}
-      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-border/50 text-[10px] font-medium transition-all duration-150 ${
+      className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap px-2.5 py-1 rounded-lg border border-border/50 text-[10px] font-medium transition-all duration-150 ${
         isResearch 
           ? 'bg-primary/10 text-primary hover:bg-primary/15' 
           : 'bg-muted/60 text-muted-foreground hover:bg-muted/80'
       }`}
     >
-      <span className={`inline-block h-1.5 w-1.5 rounded-full ${isResearch ? 'bg-sky-500' : 'bg-muted-foreground/40'}`} />
+      <span className={`inline-block h-1.5 w-1.5 shrink-0 rounded-full ${isResearch ? 'bg-sky-500' : 'bg-muted-foreground/40'}`} />
       <span>{t(activeChoice.titleKey)}</span>
     </button>
   );

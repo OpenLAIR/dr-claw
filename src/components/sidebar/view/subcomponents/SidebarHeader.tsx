@@ -4,6 +4,7 @@ import type { AppTab } from '../../../../types/app';
 import { Button } from '../../../ui/button';
 import { Input } from '../../../ui/input';
 import { IS_PLATFORM } from '../../../../constants/config';
+import { isElectron, isMacElectron } from '../../../../hooks/useDesktop';
 
 type SidebarHeaderProps = {
   isPWA: boolean;
@@ -58,21 +59,28 @@ export default function SidebarHeader({
   return (
     <div className="flex-shrink-0">
       {/* Desktop header */}
-      <div className="hidden md:block px-3 pt-3 pb-2">
-        <div className="flex items-center justify-between gap-2">
-          {IS_PLATFORM ? (
-            <a
-              href="https://github.com/OpenLAIR/dr-claw"
-              className="flex items-center gap-2.5 min-w-0 hover:opacity-80 transition-opacity"
-              title={t('tooltips.viewEnvironments')}
-            >
-              <LogoBlock />
-            </a>
-          ) : (
-            <LogoBlock />
+      <div className="hidden md:block px-3 pt-3 pb-2 electron-drag">
+        <div
+          className="flex items-center gap-2"
+          style={{ paddingLeft: isMacElectron ? '68px' : '0px' }}
+        >
+          {!isElectron && (
+            IS_PLATFORM ? (
+              <a
+                href="https://github.com/OpenLAIR/dr-claw"
+                className="flex items-center gap-2.5 min-w-0 hover:opacity-80 transition-opacity electron-no-drag"
+                title={t('tooltips.viewEnvironments')}
+              >
+                <LogoBlock />
+              </a>
+            ) : (
+              <div className="min-w-0">
+                <LogoBlock />
+              </div>
+            )
           )}
 
-          <div className="flex items-center gap-0.5 flex-shrink-0">
+          <div className="flex items-center gap-0.5 flex-shrink-0 ml-auto electron-no-drag">
             <Button
               type="button"
               variant="ghost"
@@ -113,7 +121,7 @@ export default function SidebarHeader({
 
         {/* Search bar */}
         {!isLoading && (
-          <div className="mt-2.5 space-y-2">
+          <div className="mt-2.5 space-y-2 electron-no-drag">
             {projectsCount > 0 && (
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50 pointer-events-none" />

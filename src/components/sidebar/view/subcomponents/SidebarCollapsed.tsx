@@ -1,5 +1,6 @@
 import { Settings, Sparkles, PanelLeftOpen } from 'lucide-react';
 import type { TFunction } from 'i18next';
+import { isMacElectron } from '../../../../hooks/useDesktop';
 
 type SidebarCollapsedProps = {
   onExpand: () => void;
@@ -20,12 +21,13 @@ export default function SidebarCollapsed({
 }: SidebarCollapsedProps) {
   return (
     <div
-      className="h-full flex flex-col items-center pt-3 pb-3 gap-1 bg-background/80 backdrop-blur-sm w-12"
+      className="h-full flex flex-col items-center pb-3 gap-1 bg-background/80 backdrop-blur-sm w-12 electron-drag"
+      style={{ paddingTop: isMacElectron ? '32px' : '12px' }}
     >
       {/* Expand button with brand logo */}
       <button
         onClick={onExpand}
-        className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-accent/80 transition-colors group"
+        className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-accent/80 transition-colors group electron-no-drag"
         aria-label={t('common:versionUpdate.ariaLabels.showSidebar')}
         title={t('common:versionUpdate.ariaLabels.showSidebar')}
       >
@@ -37,7 +39,7 @@ export default function SidebarCollapsed({
       {/* Settings */}
       <button
         onClick={onShowSettings}
-        className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-accent/80 transition-colors group"
+        className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-accent/80 transition-colors group electron-no-drag"
         aria-label={t('actions.settings')}
         title={t('actions.settings')}
       >
@@ -48,7 +50,7 @@ export default function SidebarCollapsed({
       {updateAvailable && (
         <button
           onClick={onShowVersionModal}
-          className="relative w-8 h-8 rounded-lg flex items-center justify-center hover:bg-accent/80 transition-colors"
+          className="relative w-8 h-8 rounded-lg flex items-center justify-center hover:bg-accent/80 transition-colors electron-no-drag"
           aria-label={t('common:versionUpdate.ariaLabels.updateAvailable')}
           title={t('common:versionUpdate.ariaLabels.updateAvailable')}
         >
