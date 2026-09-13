@@ -42,11 +42,11 @@ export default function AgentSelector({
   }, [open]);
 
   return (
-    <div ref={containerRef} className="relative">
+    <div ref={containerRef} className="relative shrink-0">
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-medium transition-all duration-150 ${
+        className={`flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1 rounded-lg border text-[11px] font-medium transition-all duration-150 ${
           activeProviderDef
             ? `${activeProviderDef.accent} ${activeProviderDef.ring} ring-1 bg-card/90 text-foreground`
             : 'border-border/50 bg-card/50 text-muted-foreground'
@@ -54,7 +54,7 @@ export default function AgentSelector({
       >
         <SessionProviderLogo provider={activeProvider} className="w-3.5 h-3.5 shrink-0" />
         <span>{activeProviderDef?.name || activeProvider}</span>
-        <svg className="w-3 h-3 text-muted-foreground/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-3 h-3 shrink-0 text-muted-foreground/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </button>

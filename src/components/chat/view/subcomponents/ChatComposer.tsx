@@ -269,6 +269,24 @@ export default function ChatComposer({
 }: ChatComposerProps) {
   const { t } = useTranslation('chat');
   const [showReferencePicker, setShowReferencePicker] = useState(false);
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea || input) return;
+
+    // Empty textareas must also grow when their placeholder wraps, including
+    // when a sidebar changes the available width without resizing the window.
+    let previousWidth = -1;
+    const resizePlaceholder = () => {
+      if (textarea.clientWidth === previousWidth) return;
+      previousWidth = textarea.clientWidth;
+      textarea.style.height = 'auto';
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    };
+    resizePlaceholder();
+    const observer = new ResizeObserver(resizePlaceholder);
+    observer.observe(textarea);
+    return () => observer.disconnect();
+  }, [input, placeholder, centered, textareaRef]);
   const AnyCommandMenu = CommandMenu as any;
   const textareaRect = textareaRef.current?.getBoundingClientRect();
   const commandMenuPosition = {
@@ -597,24 +615,25 @@ export default function ChatComposer({
               </svg>
             </button>
 
-            {!centered && (
-              <div
-                className={`absolute bottom-1 left-5 right-14 sm:right-40 text-xs text-muted-foreground/50 pointer-events-none hidden sm:block transition-opacity duration-200 ${
-                  input.trim() ? 'opacity-0' : 'opacity-100'
-                }`}
-              >
-                {sendByCtrlEnter ? t('input.hintText.ctrlEnter') : t('input.hintText.enter')}
-              </div>
-            )}
           </div>
+
+          {!centered && (
+            <div
+              className={`relative px-5 pb-2 text-xs text-muted-foreground/50 pointer-events-none hidden sm:block transition-opacity duration-200 ${
+                input.trim() ? 'opacity-0' : 'opacity-100'
+              }`}
+            >
+              {sendByCtrlEnter ? t('input.hintText.ctrlEnter') : t('input.hintText.enter')}
+            </div>
+          )}
 
           {/* Bottom toolbar inside text box */}
           {!hasQuestionPanel && (
             <div className="relative z-10 border-t border-border/30">
               {/* Controls row */}
-              <div className="flex items-center gap-2 px-4 py-2">
+              <div className="flex flex-wrap items-center gap-2 px-4 py-2">
                 {/* Left side */}
-                <div className="flex items-center gap-2.5">
+                <div className="flex max-w-full flex-wrap items-center gap-2.5 [&>*]:shrink-0">
                   <button
                     type="button"
                     onClick={openFilePicker}
@@ -652,11 +671,8 @@ export default function ChatComposer({
                   )}
                 </div>
 
-                {/* Spacer */}
-                <div className="flex-1" />
-
                 {/* Right side */}
-                <div className="flex items-center gap-1.5">
+                <div className="ml-auto flex max-w-full flex-wrap items-center justify-end gap-1.5 [&>*]:shrink-0">
                   {/* Agent selector — only in empty state */}
                   {centered && providerAvailability && (
                     <AgentSelector
