@@ -1,0 +1,17 @@
+{
+  "_README": "Query set for trigger_eval.py. Keys are skill names; values are user-intent queries that SHOULD trigger that skill. RULE: paraphrase intent, never quote the skill's own trigger phrases verbatim \u2014 a query containing the literal description trigger string is trivially positive and measures nothing. Prefix a skill key with '_' to comment it out. For negative testing (measuring FALSE triggering), add queries under a skill that should NOT fire and read the confusion matrix in the report. This sample covers a few well-scoped skills; extend per the skill you're tuning.",
+  "aris-research-lit": [
+    "find me recent papers on this topic",
+    "what has been published about diffusion language models lately",
+    "pull together related work for my intro section"
+  ],
+  "aris-novelty-check": [
+    "has anyone already done this idea?",
+    "is my approach actually new or is it in the literature already",
+    "check if this contribution is novel before I build it"
+  ],
+  "aris-meta-optimize": [
+    "Which repeated steps in my logged research sessions could be improved?",
+    "Use our accumulated workflow history to suggest smaller, better skill instructions."
+  ]
+}

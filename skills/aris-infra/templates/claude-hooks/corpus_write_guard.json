@@ -1,0 +1,16 @@
+{
+  "_comment": "Opt-in regex blacklist for common Bash writes, NOT a sandbox or provenance verifier; does not gate Write/Edit. Preview and merge via tools/meta_opt/configure.py; never replace existing settings.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PROJECT_DIR}/skills/aris-infra/templates/claude-hooks/corpus_write_guard.py\""
+          }
+        ]
+      }
+    ]
+  }
+}

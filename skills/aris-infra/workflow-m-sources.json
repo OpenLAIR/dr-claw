@@ -1,0 +1,168 @@
+{
+  "repository": "https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep",
+  "commit": "f1bd907b58f653131ebe6807c482e2554e07f9b9",
+  "files": [
+    {
+      "upstream": "skills/meta-optimize/SKILL.md",
+      "bundled": "skills/aris-meta-optimize/SKILL.md",
+      "upstreamSha256": "0599dcc7eec1b7204e67bb7960487c652b5034af8b2d18323f0a3ff057580fd2",
+      "adapted": true
+    },
+    {
+      "upstream": "skills/meta-apply/SKILL.md",
+      "bundled": "skills/aris-meta-apply/SKILL.md",
+      "upstreamSha256": "0760749e7a26315d836f0ce52c94b2014f09b186f5de015cb3da5ead9875e629",
+      "adapted": true
+    },
+    {
+      "upstream": "LICENSE",
+      "bundled": "skills/aris-infra/LICENSE",
+      "upstreamSha256": "e30cf5dd5f49b4f9b656590e23d782b4756c924a9f0ff0162b3e7b5d87006bf5",
+      "adapted": false
+    },
+    {
+      "upstream": "tools/meta_opt/log_event.sh",
+      "bundled": "skills/aris-infra/tools/meta_opt/log_event.sh",
+      "upstreamSha256": "9bf323361b0f0613e70c3d88d44600b8608f647433ca288cc8eda2411cdefce1",
+      "adapted": true
+    },
+    {
+      "upstream": "tools/meta_opt/check_ready.sh",
+      "bundled": "skills/aris-infra/tools/meta_opt/check_ready.sh",
+      "upstreamSha256": "6c581e592893db7fb288c91bb8b4a7f94c34c13bb8e4d5fe11f6f5205f841fc6",
+      "adapted": true
+    },
+    {
+      "upstream": "tools/meta_opt/trigger_eval.py",
+      "bundled": "skills/aris-infra/tools/meta_opt/trigger_eval.py",
+      "upstreamSha256": "ec0dfb8b08de96c97b751968dd9b8e08bf323828cbf727e757a8bf2fc2d6ed76",
+      "adapted": true
+    },
+    {
+      "upstream": "tools/meta_opt/trigger_evals.sample.json",
+      "bundled": "skills/aris-infra/tools/meta_opt/trigger_evals.sample.json",
+      "upstreamSha256": "20db057ba06ac3c7d1cd89e1297b80449c38462c1bf010531e053f368139f7f7",
+      "adapted": true
+    },
+    {
+      "upstream": "tools/provenance.py",
+      "bundled": "skills/aris-infra/tools/provenance.py",
+      "upstreamSha256": "355bcd4ef02903d4686460fa6142badc57bb34ea62b369e5239f673a4f615a1e",
+      "adapted": false
+    },
+    {
+      "upstream": "tools/capture_filter.py",
+      "bundled": "skills/aris-infra/tools/capture_filter.py",
+      "upstreamSha256": "04cf93f079612fa1454e424101cef3069bb29c79dad11488e659b40bb1c118d0",
+      "adapted": false
+    },
+    {
+      "upstream": "tools/save_trace.sh",
+      "bundled": "skills/aris-infra/tools/save_trace.sh",
+      "upstreamSha256": "052896125aa6f655ff1b6c5f8262766fa6f3c3f758cb5b0ec142f46ee38a9de0",
+      "adapted": true
+    },
+    {
+      "upstream": "tools/copilot_native_evidence.py",
+      "bundled": "skills/aris-infra/tools/copilot_native_evidence.py",
+      "upstreamSha256": "f8137fccba9874b7d04e0ddbbee5755d2d036509415680da760910959d7aff02",
+      "adapted": false
+    },
+    {
+      "upstream": "templates/claude-hooks/meta_logging.json",
+      "bundled": "skills/aris-infra/templates/claude-hooks/meta_logging.json",
+      "upstreamSha256": "4162f4d902e6ba6740a377b0a7d01d85f15f7a36bda2645b6181bb51636aa303",
+      "adapted": true
+    },
+    {
+      "upstream": "templates/claude-hooks/corpus_write_guard.json",
+      "bundled": "skills/aris-infra/templates/claude-hooks/corpus_write_guard.json",
+      "upstreamSha256": "b32a2d9200be0d70a55ea3d14e199db04a42b0cc5aab243afeee354329ccc363",
+      "adapted": true
+    },
+    {
+      "upstream": "templates/claude-hooks/corpus_write_guard.py",
+      "bundled": "skills/aris-infra/templates/claude-hooks/corpus_write_guard.py",
+      "upstreamSha256": "9005bc1bc94378952237439096d9c2c05f1ff6243456878da5c9fc94efdd5893",
+      "adapted": true
+    },
+    {
+      "upstream": "mcp-servers/codex-exec/server.py",
+      "bundled": "skills/aris-infra/mcp-servers/codex-exec/server.py",
+      "upstreamSha256": "4de7d09e53813c4a2c1b3f301fa22979612d598eb875626483ed22918bf566f0",
+      "adapted": true
+    },
+    {
+      "upstream": "mcp-servers/codex-exec/README.md",
+      "bundled": "skills/aris-infra/mcp-servers/codex-exec/README.md",
+      "upstreamSha256": "229462daa0015848a726523271a2800444dbb741d759da2314c92eceba9a1696",
+      "adapted": true
+    },
+    {
+      "upstream": "skills/shared-references/reviewer-independence.md",
+      "bundled": "skills/aris-infra/shared-references/reviewer-independence.md",
+      "upstreamSha256": "fbbfcb6e7ff53010b596e8e01ce456d1906734f5bd198745f76ccd62787af3e3",
+      "adapted": true
+    },
+    {
+      "upstream": "skills/shared-references/output-language.md",
+      "bundled": "skills/aris-infra/shared-references/output-language.md",
+      "upstreamSha256": "7b326400dca5130ce4beedf72fc2010680afe96eb56a6ab21210d323adc9a52e",
+      "adapted": true
+    },
+    {
+      "upstream": "skills/shared-references/review-tracing.md",
+      "bundled": "skills/aris-infra/shared-references/review-tracing.md",
+      "upstreamSha256": "b531253ccee0414bde9e3d233e743d9dba9a4283cd40ec527c5863ba0fee6d44",
+      "adapted": true
+    },
+    {
+      "upstream": "skills/shared-references/reviewer-routing.md",
+      "bundled": "skills/aris-infra/shared-references/reviewer-routing.md",
+      "upstreamSha256": "948275890ca3a6c56fe6ebdc12ba39663df96778657e0cf1ddaefe39f83c21d8",
+      "adapted": true
+    },
+    {
+      "upstream": "skills/shared-references/integration-contract.md",
+      "bundled": "skills/aris-infra/shared-references/integration-contract.md",
+      "upstreamSha256": "891b4254337b6da02b25bef55cbe750e90f36fd7c8b537218e49febf6d69ddc0",
+      "adapted": true
+    },
+    {
+      "upstream": "skills/shared-references/output-manifest.md",
+      "bundled": "skills/aris-infra/shared-references/output-manifest.md",
+      "upstreamSha256": "28e29bc8e53c52afe4eeeb590df8893282a3bbced08e105e154ad228b6cd1922",
+      "adapted": true
+    },
+    {
+      "upstream": "skills/shared-references/review-scope-limits.md",
+      "bundled": "skills/aris-infra/shared-references/review-scope-limits.md",
+      "upstreamSha256": "e383dbaa57aed6f8fd2c2bb6bcaefc6806648126d11b21cb6c39eeeec76100f6",
+      "adapted": true
+    },
+    {
+      "upstream": "skills/shared-references/output-versioning.md",
+      "bundled": "skills/aris-infra/shared-references/output-versioning.md",
+      "upstreamSha256": "73a4269b537be728b0ecc35789f11fa6d1fafa6d0430d07ad2738f064b1e4da3",
+      "adapted": true
+    },
+    {
+      "upstream": "skills/shared-references/capture-antipatterns.md",
+      "bundled": "skills/aris-infra/shared-references/capture-antipatterns.md",
+      "upstreamSha256": "419b914ade074842b815bff5133c18993a31305ca36e40b08918856777857378",
+      "adapted": true
+    },
+    {
+      "upstream": "skills/shared-references/acceptance-gate.md",
+      "bundled": "skills/aris-infra/shared-references/acceptance-gate.md",
+      "upstreamSha256": "acfe2e790d97445396ff4eb605b91e4de756082d617b89cf9278bff76dc25623",
+      "adapted": true
+    },
+    {
+      "upstream": "skills/shared-references/skill-governance.md",
+      "bundled": "skills/aris-infra/shared-references/skill-governance.md",
+      "upstreamSha256": "2da8e745ce5dc511206ab3a6a378a26d3bc6e4ca035c1f763f7a0b1793155c73",
+      "adapted": true
+    }
+  ]
+}
