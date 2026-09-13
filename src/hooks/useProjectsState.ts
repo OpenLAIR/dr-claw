@@ -4,6 +4,7 @@ import { api } from '../utils/api';
 import { isTemporarySessionId } from '../constants/session';
 import { queueWorkspaceQaDraft } from '../utils/workspaceQa';
 import { queueReferenceChatDraft } from '../utils/referenceChatDraft';
+import { getSessionCollectionKey } from '../utils/sessionProviderCollections';
 import type { Reference } from '../components/references/types';
 import { formatReferenceChatPrompt } from '../components/references/types';
 import type {
@@ -106,7 +107,8 @@ const projectsHaveChanges = (
       serialize(nextProject.geminiSessions) !== serialize(prevProject.geminiSessions) ||
       serialize(nextProject.openrouterSessions) !== serialize(prevProject.openrouterSessions) ||
       serialize(nextProject.localSessions) !== serialize(prevProject.localSessions) ||
-      serialize(nextProject.nanoSessions) !== serialize(prevProject.nanoSessions)
+      serialize(nextProject.nanoSessions) !== serialize(prevProject.nanoSessions) ||
+      serialize(nextProject.piSessions) !== serialize(prevProject.piSessions)
     );
   });
 };
@@ -120,6 +122,7 @@ const getProjectSessions = (project: Project): ProjectSession[] => {
     ...(project.openrouterSessions ?? []),
     ...(project.localSessions ?? []),
     ...(project.nanoSessions ?? []),
+    ...(project.piSessions ?? []),
   ];
 };
 
@@ -183,6 +186,7 @@ const applySessionTagsToProject = (
   const nextOpenrouterSessions = applySessionTagsToList(project.openrouterSessions, detail, 'openrouter');
   const nextLocalSessions = applySessionTagsToList(project.localSessions, detail, 'local');
   const nextNanoSessions = applySessionTagsToList(project.nanoSessions, detail, 'nano');
+  const nextPiSessions = applySessionTagsToList(project.piSessions, detail, 'pi');
 
   if (
     nextClaudeSessions === project.sessions &&
@@ -191,7 +195,8 @@ const applySessionTagsToProject = (
     nextGeminiSessions === project.geminiSessions &&
     nextOpenrouterSessions === project.openrouterSessions &&
     nextLocalSessions === project.localSessions &&
-    nextNanoSessions === project.nanoSessions
+    nextNanoSessions === project.nanoSessions &&
+    nextPiSessions === project.piSessions
   ) {
     return project;
   }
@@ -205,6 +210,7 @@ const applySessionTagsToProject = (
     openrouterSessions: nextOpenrouterSessions,
     localSessions: nextLocalSessions,
     nanoSessions: nextNanoSessions,
+    piSessions: nextPiSessions,
   };
 };
 
@@ -455,39 +461,33 @@ export function useProjectsState({
           openrouterSessions: updateSessionList(project.openrouterSessions, 'openrouter'),
           localSessions: updateSessionList(project.localSessions, 'local'),
           nanoSessions: updateSessionList(project.nanoSessions, 'nano'),
+          piSessions: updateSessionList(project.piSessions, 'pi'),
         };
 
         if (createdProjectName && project.name === createdProjectName && createdProvider) {
-          const sessionArrayKey = createdProvider === 'claude' ? 'sessions'
-            : createdProvider === 'cursor' ? 'cursorSessions'
-            : createdProvider === 'codex' ? 'codexSessions'
-            : createdProvider === 'gemini' ? 'geminiSessions'
-            : createdProvider === 'openrouter' ? 'openrouterSessions'
-            : createdProvider === 'local' ? 'localSessions'
-            : createdProvider === 'nano' ? 'nanoSessions'
-            : null;
+          const sessionArrayKey = getSessionCollectionKey(createdProvider);
 
-          if (sessionArrayKey) {
-            const arr = (nextProject[sessionArrayKey] as ProjectSession[] | undefined) || [];
-            const alreadyExists = arr.some((s) => s.id === latestMessage.sessionId);
-            if (!alreadyExists) {
-              const fallbackName = createdProvider === 'local'
-                ? 'Local GPU Session'
-                : createdProvider === 'nano'
-                  ? 'Nano Claude Code Session'
+          const arr = (nextProject[sessionArrayKey] as ProjectSession[] | undefined) || [];
+          const alreadyExists = arr.some((s) => s.id === latestMessage.sessionId);
+          if (!alreadyExists) {
+            const fallbackName = createdProvider === 'local'
+              ? 'Local GPU Session'
+              : createdProvider === 'nano'
+                ? 'Nano Claude Code Session'
+                : createdProvider === 'pi'
+                  ? 'Pi Session'
                   : 'New Session';
-              const newSession: ProjectSession = {
-                id: latestMessage.sessionId as string,
-                name: createdDisplayName || fallbackName,
-                summary: createdDisplayName || fallbackName,
-                mode: sessionMode,
-                __provider: createdProvider,
-                __projectName: project.name,
-                createdAt: new Date().toISOString(),
-                lastActivity: new Date().toISOString(),
-              };
-              (nextProject as Record<string, unknown>)[sessionArrayKey] = [newSession, ...arr];
-            }
+            const newSession: ProjectSession = {
+              id: latestMessage.sessionId as string,
+              name: createdDisplayName || fallbackName,
+              summary: createdDisplayName || fallbackName,
+              mode: sessionMode,
+              __provider: createdProvider,
+              __projectName: project.name,
+              createdAt: new Date().toISOString(),
+              lastActivity: new Date().toISOString(),
+            };
+            (nextProject as Record<string, unknown>)[sessionArrayKey] = [newSession, ...arr];
           }
         }
 
@@ -683,6 +683,13 @@ export function useProjectsState({
       if (localSession) {
         matchedProject = project;
         matchedSession = { ...localSession, __provider: 'local' };
+        break;
+      }
+
+      const piSession = project.piSessions?.find((session) => session.id === targetSessionId);
+      if (piSession) {
+        matchedProject = project;
+        matchedSession = { ...piSession, __provider: 'pi' };
         break;
       }
 
@@ -933,6 +940,7 @@ export function useProjectsState({
           openrouterSessions: filterOut(project.openrouterSessions),
           localSessions: filterOut(project.localSessions),
           nanoSessions: filterOut(project.nanoSessions),
+          piSessions: filterOut(project.piSessions),
           sessionMeta: {
             ...project.sessionMeta,
             total: Math.max(0, (project.sessionMeta?.total as number | undefined ?? 0) - 1),
