@@ -5,6 +5,7 @@ import { promises as fs } from 'fs';
 import { extractProjectDirectory } from '../projects.js';
 import { queryClaudeSDK } from '../claude-sdk.js';
 import { spawnCursor } from '../cursor-cli.js';
+import { safePath } from '../utils/safePath.js';
 
 const router = express.Router();
 
@@ -1339,6 +1340,219 @@ router.post('/delete-untracked', async (req, res) => {
     }
   } catch (error) {
     console.error('Git delete untracked error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * Revert a list of files in a validated git project back to their last
+ * committed (HEAD) state, file-by-file.
+ *
+ * Semantics — intentionally conservative:
+ *   - Each file is handled independently; errors on one do not affect others.
+ *   - Untracked regular files the agent created are deleted.  Directories
+ *     and symlinks are *not* recursively removed even if listed — the caller
+ *     would have to opt in explicitly (not currently exposed), because
+ *     recursive deletion of an agent-chosen path is too dangerous to trigger
+ *     from a single UI click.
+ *   - Tracked modifications are restored with `git restore -- <file>`.  This
+ *     overwrites the working-tree copy with HEAD; any user edits the agent
+ *     did NOT trigger will be lost if they touched one of these same files.
+ *     The UI must warn the user before calling this endpoint.
+ *   - Rename (`R`) and copy (`C`) entries are currently skipped rather than
+ *     guessed at — git's porcelain output would require additional parsing.
+ *
+ * Path traversal is blocked via `safePath()`; symlinked paths inside the
+ * project are additionally re-validated with `realpath()` so a symlink that
+ * points outside the repo cannot be used to unlink an external file.
+ *
+ * @returns {Promise<{success: boolean, reverted: string[], skipped: string[], errors: Array<{file: string, reason: string}>}>}
+ */
+export async function revertFilesAtProjectPath(projectPath, files) {
+  if (!Array.isArray(files) || files.length === 0) {
+    return { success: true, reverted: [], skipped: [], errors: [] };
+  }
+
+  const uniqueFiles = Array.from(new Set(files.filter(f => typeof f === 'string' && f.length > 0)));
+  const reverted = [];
+  const skipped = [];
+  const errors = [];
+  const normalizedRoot = path.resolve(projectPath);
+
+  // Single porcelain snapshot of the whole repo so rename detection and
+  // per-file status are taken from the same instant.  Uses -z so NUL
+  // delimits records and rename pairs — this means a filename containing
+  // a literal " -> " cannot confuse the parser.
+  const statusByPath = new Map(); // path -> 2-char status (XY)
+  const renamedPaths = new Set();
+  let snapshotError = null;
+  try {
+    const { stdout: fullStatus } = await spawnAsync(
+      'git',
+      ['status', '--porcelain', '-z'],
+      { cwd: projectPath },
+    );
+
+    // In -z output, each record is "XY path\0", and for rename/copy entries
+    // the SOURCE path comes as an additional NUL-terminated record immediately
+    // after: "R. new\0old\0".  We have to stream through the tokens instead of
+    // splitting once.
+    const tokens = fullStatus.split('\0');
+    for (let i = 0; i < tokens.length; i++) {
+      const record = tokens[i];
+      if (!record) continue;
+      if (record.length < 4) continue; // "XY " + path
+      const xy = record.slice(0, 2);
+      const newPath = record.slice(3).replace(/\/+$/, '');
+      if ((xy[0] === 'R' || xy[0] === 'C') && i + 1 < tokens.length) {
+        const oldPath = (tokens[i + 1] || '').replace(/\/+$/, '');
+        if (oldPath) renamedPaths.add(oldPath);
+        if (newPath) {
+          renamedPaths.add(newPath);
+          statusByPath.set(newPath, xy);
+        }
+        i += 1; // consume the source path token
+        continue;
+      }
+      if (newPath) statusByPath.set(newPath, xy);
+    }
+  } catch (err) {
+    snapshotError = err;
+  }
+
+  // If the repo-wide snapshot failed, don't silently downgrade every
+  // input to "skipped" — that hides real breakage like a corrupt repo.
+  // Surface a single error per file so the caller can show a useful
+  // message.  Individual file safety checks still run afterwards for
+  // the traversal-protection path so malicious inputs still get rejected.
+  if (snapshotError) {
+    for (const file of uniqueFiles) {
+      try {
+        safePath(file, projectPath);
+      } catch (safeErr) {
+        errors.push({ file, reason: safeErr.message || String(safeErr) });
+        continue;
+      }
+      errors.push({ file, reason: `git status failed: ${getGitErrorText(snapshotError).trim()}` });
+    }
+    return { success: false, reverted, skipped, errors };
+  }
+
+  for (const file of uniqueFiles) {
+    try {
+      const resolved = safePath(file, projectPath);
+      const relFile = path.relative(projectPath, resolved);
+      if (!relFile || relFile.startsWith('..')) {
+        errors.push({ file, reason: 'Path outside project root' });
+        continue;
+      }
+
+      if (renamedPaths.has(relFile)) {
+        // Part of a rename/copy pair.  Reverting one side of a detected
+        // rename would leave the other side inconsistent; bail instead.
+        skipped.push(file);
+        continue;
+      }
+
+      const xy = statusByPath.get(relFile) ?? '';
+      if (!xy) {
+        skipped.push(file);
+        continue;
+      }
+
+      const status = xy;
+
+      if (status === '??') {
+        // Untracked — agent created this path.  Use lstat so we see the
+        // symlink itself rather than its target, then revalidate after
+        // realpath for any regular files we intend to unlink.
+        let lstats;
+        try {
+          lstats = await fs.lstat(resolved);
+        } catch (statError) {
+          if (statError.code === 'ENOENT') {
+            skipped.push(file);
+            continue;
+          }
+          throw statError;
+        }
+
+        if (lstats.isDirectory()) {
+          errors.push({ file, reason: 'Refusing to delete untracked directory via revert' });
+          continue;
+        }
+        if (lstats.isSymbolicLink()) {
+          // Delete the symlink itself; do not follow it.  The safePath
+          // check already bound the link path to the project root.
+          await fs.unlink(resolved);
+        } else {
+          // Regular file — re-check realpath points inside the repo in
+          // case the filesystem has cross-boundary symlinks we missed.
+          try {
+            const real = await fs.realpath(resolved);
+            if (real !== normalizedRoot && !real.startsWith(normalizedRoot + path.sep)) {
+              errors.push({ file, reason: 'Resolved path escapes project root via symlink' });
+              continue;
+            }
+          } catch (realpathError) {
+            if (realpathError.code !== 'ENOENT') throw realpathError;
+          }
+          await fs.unlink(resolved);
+        }
+      } else {
+        const indexChar = status[0];
+        const worktreeChar = status[1];
+
+        if (indexChar === 'A' && worktreeChar !== 'D') {
+          // Agent staged a new file (may or may not be further modified in
+          // worktree).  Unstage the add and remove the working-tree copy.
+          await spawnAsync('git', ['reset', 'HEAD', '--', relFile], { cwd: projectPath });
+          try {
+            await fs.unlink(resolved);
+          } catch (unlinkError) {
+            if (unlinkError.code !== 'ENOENT') throw unlinkError;
+          }
+        } else if ('MDT'.includes(indexChar) || 'MDT'.includes(worktreeChar) || status === 'AD') {
+          // Anything that existed at HEAD and has staged and/or worktree
+          // modifications, deletions, or type changes.  --staged --worktree
+          // together restore BOTH the index and the working tree to HEAD
+          // so mixed states like MM / AM / AD / MD / DM all land back
+          // at the committed state.
+          await spawnAsync('git', ['restore', '--source=HEAD', '--staged', '--worktree', '--', relFile], {
+            cwd: projectPath,
+          });
+        } else {
+          // Unrecognized porcelain code — skip rather than guess.
+          skipped.push(file);
+          continue;
+        }
+      }
+
+      reverted.push(file);
+    } catch (fileError) {
+      errors.push({ file, reason: fileError.message || String(fileError) });
+    }
+  }
+
+  return { success: errors.length === 0, reverted, skipped, errors };
+}
+
+// Revert multiple files modified by a specific agent interaction.
+router.post('/revert-agent-changes', async (req, res) => {
+  const { project, files } = req.body;
+
+  if (!project || !Array.isArray(files)) {
+    return res.status(400).json({ error: 'Project name and files array are required' });
+  }
+
+  try {
+    const projectPath = await getActualProjectPath(project);
+    await validateGitRepository(projectPath);
+
+    const result = await revertFilesAtProjectPath(projectPath, files);
+    res.json(result);
+  } catch (error) {
+    console.error('Git revert-agent-changes error:', error);
     res.status(500).json({ error: error.message });
   }
 });

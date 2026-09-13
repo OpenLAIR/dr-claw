@@ -79,6 +79,20 @@
     "steps": "에이전트 단계",
     "streaming": "스트리밍 중..."
   },
+  "revertAgent": {
+    "button": "변경 사항 되돌리기",
+    "tooltip": "에이전트가 {{count}}개 파일에 적용한 변경을 취소",
+    "confirmLabel_one": "1개 파일을 마지막 커밋 상태로 되돌릴까요? 해당 파일에 대한 수동 편집도 함께 손실됩니다.",
+    "confirmLabel_other": "{{count}}개 파일을 마지막 커밋 상태로 되돌릴까요? 해당 파일들에 대한 수동 편집도 함께 손실됩니다.",
+    "confirm": "되돌리기",
+    "cancel": "취소",
+    "inProgress": "되돌리는 중...",
+    "done_one": "1개 파일 되돌림",
+    "done_other": "{{count}}개 파일 되돌림",
+    "skipped_one": "1개 변경 없음",
+    "skipped_other": "{{count}}개 변경 없음",
+    "error": "되돌리기 실패"
+  },
   "skill": {
     "contentLoaded": "스킬 콘텐츠 로드됨"
   },
