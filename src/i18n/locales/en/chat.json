@@ -313,7 +313,7 @@
   },
   "localModels": {
     "loading": "Loading models...",
-    "notRunning": "Ollama offline",
+    "notRunning": "Local model server offline",
     "loadFailed": "Model load failed",
     "networkError": "Model server unreachable",
     "empty": "No models"
