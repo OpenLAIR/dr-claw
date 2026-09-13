@@ -850,6 +850,11 @@
       "zh": "类别: DeepScientist",
       "en": "Category: DeepScientist",
       "ko": "카테고리: DeepScientist"
+    },
+    "aris-meta-apply": {
+      "zh": "类别: ARIS 基础设施",
+      "en": "Category: ARIS Infra",
+      "ko": "카테고리: ARIS 인프라"
     }
   },
   "domainOverrides": {
@@ -1604,6 +1609,11 @@
       "ko": "영역: cs"
     },
     "ds-intake-audit": {
+      "zh": "领域: cs",
+      "en": "Domain: cs",
+      "ko": "영역: cs"
+    },
+    "aris-meta-apply": {
       "zh": "领域: cs",
       "en": "Domain: cs",
       "ko": "영역: cs"
