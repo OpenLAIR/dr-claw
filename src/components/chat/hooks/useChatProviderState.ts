@@ -61,6 +61,12 @@ export function useChatProviderState({ selectedSession }: UseChatProviderStateAr
     );
   });
 
+  useEffect(() => {
+    const syncLocalModel = () => setLocalModel(localStorage.getItem('local-model') || LOCAL_MODELS.DEFAULT);
+    window.addEventListener('local-model-config-changed', syncLocalModel);
+    return () => window.removeEventListener('local-model-config-changed', syncLocalModel);
+  }, []);
+
   const lastProviderRef = useRef(provider);
 
   const getProviderPermissionModes = useCallback((p: SessionProvider): PermissionMode[] => {

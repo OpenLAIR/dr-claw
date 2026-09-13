@@ -126,14 +126,11 @@ export default function AccountContent({ agent, authStatus, onLogin }) {
   );
   const [localServerUrl, setLocalServerUrl] = useState(() => {
     const saved = localStorage.getItem('local-gpu-server-url');
-    if (saved === 'http://localhost:8000') {
-      localStorage.setItem('local-gpu-server-url', 'http://localhost:11434');
-      return 'http://localhost:11434';
-    }
     return saved || 'http://localhost:11434';
   });
   const [isDeploying, setIsDeploying] = useState(false);
   const [deployResult, setDeployResult] = useState(null);
+  const [localServerType, setLocalServerType] = useState(null);
   const [ollamaModels, setOllamaModels] = useState([]);
   const [isLoadingModels, setIsLoadingModels] = useState(false);
   const [ollamaModelsError, setOllamaModelsError] = useState(null);
@@ -173,11 +170,13 @@ export default function AccountContent({ agent, authStatus, onLogin }) {
   const handleLoadOllamaModels = useCallback(async () => {
     setIsLoadingModels(true);
     setOllamaModelsError(null);
+    setLocalServerType(null);
     try {
       const res = await authenticatedFetch(`/api/cli/local/models?serverUrl=${encodeURIComponent(localServerUrl)}`);
       const data = await res.json();
       if (res.ok && data.models) {
         setOllamaModels(data.models);
+        setLocalServerType(data.provider);
         if (data.hasGpu && data.models.length > 0) {
           const smallModels = data.models.filter(m => m.sizeB && m.sizeB <= 14);
           if (smallModels.length > 0 && !localStorage.getItem('local-model')) {
@@ -203,6 +202,16 @@ export default function AccountContent({ agent, authStatus, onLogin }) {
     }
   }, [agent, handleDetectGpus, handleLoadOllamaModels]);
 
+  useEffect(() => {
+    if (agent !== 'local' || localStorage.getItem('local-gpu-server-url')) return;
+    let cancelled = false;
+    authenticatedFetch('/api/cli/local/config')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => { if (!cancelled && data?.serverUrl) setLocalServerUrl(current => current === 'http://localhost:11434' ? data.serverUrl : current); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [agent]);
+
   const handleSaveLocalConfig = async () => {
     localStorage.setItem('local-gpu-selected', selectedGpu);
     try {
@@ -218,7 +227,8 @@ export default function AccountContent({ agent, authStatus, onLogin }) {
         });
         return;
       }
-      localStorage.setItem('local-gpu-server-url', localServerUrl);
+      localStorage.setItem('local-gpu-server-url', data.serverUrl || localServerUrl);
+      window.dispatchEvent(new Event('local-model-config-changed'));
       setDeployResult({ success: true, message: 'Configuration saved.' });
       handleLoadOllamaModels();
       if (typeof onLogin === 'function') onLogin();
@@ -239,9 +249,10 @@ export default function AccountContent({ agent, authStatus, onLogin }) {
       const data = await res.json();
       if (res.ok && data.models) {
         setOllamaModels(data.models);
+        setLocalServerType(data.provider);
         setDeployResult({
           success: true,
-          message: `Connected! Ollama has ${data.models.length} model${data.models.length !== 1 ? 's' : ''} available.${data.hasGpu ? ' GPU detected.' : ''}`,
+          message: `Connected! Local server has ${data.models.length} model${data.models.length !== 1 ? 's' : ''} available.${data.hasGpu ? ' GPU detected.' : ''}`,
         });
       } else {
         setDeployResult({ success: false, message: data.error || 'Could not connect' });
@@ -249,7 +260,7 @@ export default function AccountContent({ agent, authStatus, onLogin }) {
     } catch (err) {
       setDeployResult({
         success: false,
-        message: `Cannot reach Ollama at ${localServerUrl}. Run: ollama serve`,
+        message: `Cannot reach local model server at ${localServerUrl}. Check that it is running.`,
       });
     } finally {
       setIsDeploying(false);
@@ -773,10 +784,10 @@ export default function AccountContent({ agent, authStatus, onLogin }) {
               <div>
                 <div className="flex items-center gap-2 mb-3">
                   <Server className="w-4 h-4 text-emerald-500" />
-                  <div className={`font-medium ${config.textClass}`}>Ollama Server</div>
+                  <div className={`font-medium ${config.textClass}`}>Local Model Server</div>
                 </div>
                 <p className={`text-sm ${config.subtextClass} mb-3`}>
-                  Connect to Ollama to run open-source models locally.
+                  Connect to Ollama, vLLM, SGLang, or another OpenAI-compatible local server. Use a loopback URL, e.g. http://localhost:8000/v1.
                   {gpuInfo?.gpus?.length > 0 && ' GPU-accelerated models ≤14B will be auto-selected.'}
                 </p>
                 <div className="space-y-3">
@@ -850,6 +861,7 @@ export default function AccountContent({ agent, authStatus, onLogin }) {
                           key={m.name}
                           onClick={() => {
                             localStorage.setItem('local-model', m.name);
+                            window.dispatchEvent(new Event('local-model-config-changed'));
                             setDeployResult({ success: true, message: `Selected model: ${m.name}` });
                           }}
                           className={`w-full text-left px-3 py-2.5 rounded-lg border transition-all ${
@@ -884,13 +896,13 @@ export default function AccountContent({ agent, authStatus, onLogin }) {
                   </div>
                 ) : (
                   <div className="rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-3 text-sm text-muted-foreground text-center">
-                    {isLoadingModels ? 'Loading models...' : 'No models found. Pull a model below or run: ollama pull qwen3:8b'}
+                    {isLoadingModels ? 'Loading models...' : 'No models found. Start or load a model in your local server.'}
                   </div>
                 )}
               </div>
 
-              {/* Pull New Model */}
-              <div>
+              {/* Model management is Ollama-specific. */}
+              {localServerType === 'ollama' && <div>
                 <div className="flex items-center gap-2 mb-3">
                   <HardDrive className="w-4 h-4 text-emerald-500" />
                   <div className={`font-medium ${config.textClass}`}>Pull New Model</div>
@@ -938,7 +950,7 @@ export default function AccountContent({ agent, authStatus, onLogin }) {
                     </p>
                   </div>
                 </div>
-              </div>
+              </div>}
             </div>
           )}
 

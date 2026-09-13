@@ -1,0 +1,21 @@
+<!doctype html><html><head><meta charset="UTF-8"></head><body><div id="root"></div><script type="module">
+import React from 'react';
+import {createRoot} from 'react-dom/client';
+import {ThemeProvider} from '/src/contexts/ThemeContext.jsx';
+import AccountContent from '/src/components/settings/AccountContent.jsx';
+import {useChatProviderState} from '/src/components/chat/hooks/useChatProviderState.ts';
+import '/src/i18n/config.js';
+import '/src/index.css';
+localStorage.removeItem('local-gpu-server-url');
+localStorage.setItem('local-model', 'qwen3:8b');
+localStorage.setItem('selected-provider', 'local');
+window.fetch = async (url, options={}) => {
+  if(url.includes('/local/config')) return Response.json({serverUrl:'http://localhost:8000/v1'});
+  if(url.includes('/gpu-info')) return Response.json({gpus:[],system:{}});
+  if(url.includes('/local/models')) return Response.json({provider:'openai-compatible',models:[{name:'org/vllm-model',displayName:'org/vllm-model'}]});
+  if(url.includes('/local/save-config')) return Response.json({success:true,serverUrl:JSON.parse(options.body).serverUrl});
+  return Response.json({});
+};
+function Harness(){const state=useChatProviderState({selectedSession:null});return React.createElement('main',{style:{maxWidth:800,margin:'24px auto'}},React.createElement('p',{id:'chat-model'},'Mounted chat model: '+state.localModel),React.createElement(AccountContent,{agent:'local',authStatus:{authenticated:true}}));}
+createRoot(document.getElementById('root')).render(React.createElement(ThemeProvider,null,React.createElement(Harness)));
+</script></body></html>
