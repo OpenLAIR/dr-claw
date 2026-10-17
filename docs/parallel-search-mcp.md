@@ -43,8 +43,9 @@ claude mcp add --scope user --transport http parallel-search https://search.para
 ```
 
 User scope stores the entry in `~/.claude.json`, which Dr. Claw loads for Claude
-chat sessions. Choose either the UI or CLI setup; running both with the same
-name is unnecessary.
+chat sessions. Use Claude's default configuration location for this setup;
+Dr. Claw's loader does not read a custom `CLAUDE_CONFIG_DIR`. Choose either the
+UI or CLI setup; running both with the same name is unnecessary.
 
 ## Check the connection and research a topic
 
