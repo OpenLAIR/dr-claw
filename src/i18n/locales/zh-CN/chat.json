@@ -91,7 +91,15 @@
     "addTo": "将 {{entry}} 添加到允许的工具。",
     "retry": "权限已保存。重试请求以使用该工具。",
     "error": "无法更新权限。请重试。",
-    "openSettings": "打开设置"
+    "openSettings": "打开设置",
+    "required": "需要授权",
+    "tool": "工具",
+    "rule": "授权规则",
+    "viewInput": "查看工具输入",
+    "allowOnce": "允许一次",
+    "allowSaved": "允许（已保存）",
+    "allowRemember": "允许并记住",
+    "deny": "拒绝"
   },
   "todo": {
     "updated": "待办列表已成功更新",
@@ -142,7 +150,9 @@
     "clickToChangeMode": "点击更改权限模式（或在输入框中按 Tab）",
     "showAllCommands": "显示所有命令",
     "clearInput": "清空输入",
-    "scrollToBottom": "滚动到底部"
+    "scrollToBottom": "滚动到底部",
+    "configuration": "模型与执行设置",
+    "configurationDescription": "选择此会话使用的模型和推理强度。"
   },
   "thinkingMode": {
     "selector": {
@@ -597,6 +607,19 @@
     }
   },
   "modelSelector": {
-    "notInCliList": "CLI 未列出"
+    "notInCliList": "CLI 未列出",
+    "label": "模型"
+  },
+  "attachments": {
+    "pdfUploaded": "PDF 已上传到工作区",
+    "imageUploaded": "图片已上传到工作区",
+    "fileUploaded": "文件已上传到工作区"
+  },
+  "autoResearchPicker": {
+    "title": "自动研究",
+    "description": "选择工具包和工作流，再输入研究主题。",
+    "setup": "需要配置",
+    "ready": "无需配置 MCP",
+    "configure": "在研究中心配置"
   }
 }

@@ -91,7 +91,15 @@
     "addTo": "{{entry}}을(를) 허용된 도구에 추가합니다.",
     "retry": "권한이 저장되었습니다. 도구를 사용하려면 요청을 재시도하세요.",
     "error": "권한을 업데이트할 수 없습니다. 다시 시도해주세요.",
-    "openSettings": "설정 열기"
+    "openSettings": "설정 열기",
+    "required": "권한 필요",
+    "tool": "도구",
+    "rule": "허용 규칙",
+    "viewInput": "도구 입력 보기",
+    "allowOnce": "한 번 허용",
+    "allowSaved": "허용(저장됨)",
+    "allowRemember": "허용 및 저장",
+    "deny": "거부"
   },
   "todo": {
     "updated": "Todo 리스트가 업데이트되었습니다",
@@ -142,7 +150,9 @@
     "clickToChangeMode": "클릭하여 권한 모드 변경 (또는 입력창에서 Tab)",
     "showAllCommands": "모든 명령어 보기",
     "clearInput": "입력 지우기",
-    "scrollToBottom": "맨 아래로 스크롤"
+    "scrollToBottom": "맨 아래로 스크롤",
+    "configuration": "모델 및 실행 설정",
+    "configurationDescription": "이 대화의 모델과 추론 수준을 선택하세요."
   },
   "thinkingMode": {
     "selector": {
@@ -574,6 +584,19 @@
     }
   },
   "modelSelector": {
-    "notInCliList": "CLI 목록에 없음"
+    "notInCliList": "CLI 목록에 없음",
+    "label": "모델"
+  },
+  "attachments": {
+    "pdfUploaded": "PDF가 작업 공간에 업로드되었습니다",
+    "imageUploaded": "이미지가 작업 공간에 업로드되었습니다",
+    "fileUploaded": "파일이 작업 공간에 업로드되었습니다"
+  },
+  "autoResearchPicker": {
+    "title": "자동 연구",
+    "description": "도구 팩과 워크플로를 선택한 후 연구 주제를 입력하세요.",
+    "setup": "설정 필요",
+    "ready": "MCP 설정 불필요",
+    "configure": "연구 허브에서 설정"
   }
 }

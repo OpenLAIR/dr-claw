@@ -10,8 +10,10 @@ import { IS_PLATFORM } from '../constants/config';
 import { isTelemetryEnabled, setTelemetryEnabled } from '../utils/telemetry';
 import { writeCliAvailability } from '../utils/cliAvailability';
 import { useDesktop } from '../hooks/useDesktop';
+import { useTranslation } from 'react-i18next';
 
 const Onboarding = ({ onComplete }) => {
+  const { t } = useTranslation('common');
   const { isDesktop, checkDependencies, appInfo, openExternal: desktopOpenExternal } = useDesktop();
   const [currentStep, setCurrentStep] = useState(0);
   const [telemetryConsent, setTelemetryConsentState] = useState(() => isTelemetryEnabled());
@@ -167,7 +169,7 @@ const Onboarding = ({ onComplete }) => {
       } else {
         setClaudeAuthStatus(buildDefaultAuthState({
           cliCommand: 'claude',
-          error: 'Failed to check authentication status'
+          error: t('onboarding.statusFailed')
         }));
       }
     } catch (error) {
@@ -193,7 +195,7 @@ const Onboarding = ({ onComplete }) => {
       } else {
         setCursorAuthStatus(buildDefaultAuthState({
           cliCommand: 'agent',
-          error: 'Failed to check authentication status'
+          error: t('onboarding.statusFailed')
         }));
       }
     } catch (error) {
@@ -219,7 +221,7 @@ const Onboarding = ({ onComplete }) => {
       } else {
         setCodexAuthStatus(buildDefaultAuthState({
           cliCommand: 'codex',
-          error: 'Failed to check authentication status'
+          error: t('onboarding.statusFailed')
         }));
       }
     } catch (error) {
@@ -245,7 +247,7 @@ const Onboarding = ({ onComplete }) => {
       } else {
         setGeminiAuthStatus(buildDefaultAuthState({
           cliCommand: 'gemini',
-          error: 'Failed to check authentication status'
+          error: t('onboarding.statusFailed')
         }));
       }
     } catch (error) {
@@ -333,7 +335,7 @@ const Onboarding = ({ onComplete }) => {
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Failed to complete onboarding');
+        throw new Error(data.error || t('onboarding.completeFailed'));
       }
 
       if (onComplete) {
@@ -348,20 +350,20 @@ const Onboarding = ({ onComplete }) => {
 
   const steps = [
     {
-      title: 'Preferences',
-      description: 'Configure onboarding preferences',
+      title: t('onboarding.preferences'),
+      description: t('onboarding.preferencesStep'),
       icon: FileText,
       required: false
     },
     ...(isDesktop ? [{
-      title: 'System Check',
-      description: 'Verify system tools and dependencies',
+      title: t('onboarding.systemCheck'),
+      description: t('onboarding.systemStep'),
       icon: Monitor,
       required: false
     }] : []),
     {
-      title: 'Dependencies & Login',
-      description: 'Install missing CLIs and connect your AI coding assistants',
+      title: t('onboarding.agentsStep'),
+      description: t('onboarding.agentsStepDescription'),
       icon: LogIn,
       required: false
     }
@@ -371,71 +373,55 @@ const Onboarding = ({ onComplete }) => {
     {
       id: 'claude',
       name: 'Claude Code',
-      description: 'Anthropic CLI assistant',
+      description: t('onboarding.claudeDescription'),
       logo: <ClaudeLogo size={20} />,
       status: claudeAuthStatus,
       onAction: handleClaudeLogin,
-      accent: {
-        connected: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800',
-        icon: 'bg-blue-100 dark:bg-blue-900/30',
-        button: 'bg-blue-600 hover:bg-blue-700'
-      }
+      accent: { connected: 'bg-muted border-border', icon: 'bg-muted', button: 'bg-primary text-primary-foreground hover:bg-primary/90' }
     },
     {
       id: 'cursor',
       name: 'Cursor CLI',
-      description: 'Cursor agent command line',
+      description: t('onboarding.cursorDescription'),
       logo: <CursorLogo size={20} />,
       status: cursorAuthStatus,
       onAction: handleCursorLogin,
-      accent: {
-        connected: 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800',
-        icon: 'bg-purple-100 dark:bg-purple-900/30',
-        button: 'bg-purple-600 hover:bg-purple-700'
-      }
+      accent: { connected: 'bg-muted border-border', icon: 'bg-muted', button: 'bg-primary text-primary-foreground hover:bg-primary/90' }
     },
     {
       id: 'codex',
       name: 'Codex CLI',
-      description: 'OpenAI coding CLI',
+      description: t('onboarding.codexDescription'),
       logo: <CodexLogo size={20} />,
       status: codexAuthStatus,
       onAction: handleCodexLogin,
-      accent: {
-        connected: 'bg-slate-50 dark:bg-slate-900/20 border-slate-200 dark:border-slate-800',
-        icon: 'bg-slate-100 dark:bg-slate-900/30',
-        button: 'bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200'
-      }
+      accent: { connected: 'bg-muted border-border', icon: 'bg-muted', button: 'bg-primary text-primary-foreground hover:bg-primary/90' }
     },
     {
       id: 'gemini',
       name: 'Gemini CLI',
-      description: 'Google Gemini terminal assistant',
+      description: t('onboarding.geminiDescription'),
       logo: <GeminiLogo className="w-6 h-6" />,
       status: geminiAuthStatus,
       onAction: handleGeminiLogin,
-      accent: {
-        connected: 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800',
-        icon: 'bg-emerald-100 dark:bg-emerald-900/30',
-        button: 'bg-emerald-600 hover:bg-emerald-700'
-      }
+      accent: { connected: 'bg-muted border-border', icon: 'bg-muted', button: 'bg-primary text-primary-foreground hover:bg-primary/90' }
     }
   ];
 
   const getProviderStatusText = (status) => {
     if (status.loading) {
-      return 'Checking...';
+      return t('onboarding.checking');
     }
 
     if (status.cliAvailable === false) {
-      return status.installHint || 'CLI is not installed yet';
+      return status.installHint || t('onboarding.cliMissing');
     }
 
     if (status.authenticated) {
-      return status.email || 'Connected';
+      return status.email || t('onboarding.connected');
     }
 
-    return 'CLI is ready. Login is optional.';
+    return t('onboarding.cliReady');
   };
 
   const getProviderAction = (status) => {
@@ -445,20 +431,20 @@ const Onboarding = ({ onComplete }) => {
 
     if (status.cliAvailable === false) {
       return {
-        label: 'Install',
+        label: t('onboarding.install'),
         icon: Wrench,
       };
     }
 
     if (status.authenticated) {
       return {
-        label: 'Re-login',
+        label: t('onboarding.relogin'),
         icon: LogIn,
       };
     }
 
     return {
-      label: 'Login',
+      label: t('onboarding.login'),
       icon: LogIn,
     };
   };
@@ -469,17 +455,15 @@ const Onboarding = ({ onComplete }) => {
   const renderSystemCheckStep = () => (
     <div className="space-y-6">
       <div className="text-center mb-6">
-        <div className="w-16 h-16 bg-cyan-100 dark:bg-cyan-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Monitor className="w-8 h-8 text-cyan-600 dark:text-cyan-400" />
+        <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+          <Monitor className="w-8 h-8 text-muted-foreground" />
         </div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">System Check</h2>
-        <p className="text-muted-foreground">
-          Verifying your development environment has the required tools.
-        </p>
+        <h2 className="text-2xl font-semibold text-foreground mb-2">{t('onboarding.systemCheck')}</h2>
+        <p className="text-muted-foreground">{t('onboarding.systemDescription')}</p>
       </div>
 
       {appInfo && (
-        <div className="rounded-lg border border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+        <div className="rounded-lg border border-border bg-muted/30 px-4 py-3 text-sm text-sm leading-6 text-muted-foreground">
           <span className="font-medium text-foreground">Dr. Claw Desktop</span> v{appInfo.version} &middot; {appInfo.platform}/{appInfo.arch} &middot; Electron {appInfo.electronVersion}
         </div>
       )}
@@ -487,7 +471,7 @@ const Onboarding = ({ onComplete }) => {
       {systemDepsLoading ? (
         <div className="flex items-center justify-center gap-3 py-8 text-muted-foreground">
           <Loader2 className="w-5 h-5 animate-spin" />
-          <span>Checking system dependencies...</span>
+          <span>{t('onboarding.checkingDependencies')}</span>
         </div>
       ) : (
         <>
@@ -522,22 +506,16 @@ const Onboarding = ({ onComplete }) => {
                 onClick={runSystemCheck}
                 className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
               >
-                <RefreshCw className="w-4 h-4" />
-                Re-check
-              </button>
+                <RefreshCw className="w-4 h-4" />{t('onboarding.recheck')}</button>
             </div>
           )}
 
           {systemDeps.some(d => !d.available && ['node', 'npm', 'git'].includes(d.name)) && (
-            <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
-              Some core tools (Node.js, npm, or Git) are missing. Dr. Claw will still work, but some features may be limited. Install them via your package manager and click Re-check.
-            </div>
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">{t('onboarding.missingTools')}</div>
           )}
 
           {!systemDeps.some(d => !d.available && ['node', 'npm', 'git'].includes(d.name)) && systemDeps.length > 0 && (
-            <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800 dark:border-green-900/40 dark:bg-green-950/20 dark:text-green-200">
-              Core system tools are available. You can set up AI agent CLIs in the next step.
-            </div>
+            <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800 dark:border-green-900/40 dark:bg-green-950/20 dark:text-green-200">{t('onboarding.toolsReady')}</div>
           )}
         </>
       )}
@@ -549,20 +527,15 @@ const Onboarding = ({ onComplete }) => {
       return (
         <div className="space-y-6">
           <div className="text-center mb-6">
-            <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FileText className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+              <FileText className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">
-              Welcome to Dr. Claw{isDesktop ? ' Desktop' : ''}
+            <h2 className="text-2xl font-semibold text-foreground mb-2">
+              {t('onboarding.welcome', { app: isDesktop ? 'Dr. Claw Desktop' : 'Dr. Claw' })}
             </h2>
-            <p className="text-muted-foreground">
-              Configure your data usage preference before continuing.
-            </p>
+            <p className="text-muted-foreground">{t('onboarding.preferencesDescription')}</p>
           </div>
 
-          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
-            Internal beta agreement is temporarily disabled. Users can continue onboarding without accepting it.
-          </div>
 
           <div className="space-y-3 rounded-lg border border-border bg-card p-4">
             <label className="flex items-start gap-3 text-sm text-foreground">
@@ -573,9 +546,7 @@ const Onboarding = ({ onComplete }) => {
                 className="mt-0.5 h-4 w-4 rounded border-border text-blue-600 focus:ring-blue-500"
                 disabled={isSubmitting}
               />
-              <span>
-                Allow my usage data to improve Dr. Claw models and features (recommended). You can still continue without this and change it anytime in Settings.
-              </span>
+              <span>{t('onboarding.telemetry')}</span>
             </label>
           </div>
         </div>
@@ -590,15 +561,11 @@ const Onboarding = ({ onComplete }) => {
       return (
           <div className="space-y-6">
             <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-foreground mb-2">Install Dependencies and Connect Agents</h2>
-              <p className="text-muted-foreground">
-                After finishing the basic agreement step, you can immediately see which local CLIs are missing and install or log into them here.
-              </p>
+              <h2 className="text-2xl font-semibold text-foreground mb-2">{t('onboarding.connectAgents')}</h2>
+              <p className="text-muted-foreground">{t('onboarding.agentsDescription')}</p>
             </div>
 
-            <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 dark:border-blue-900/40 dark:bg-blue-950/20 dark:text-blue-200">
-              You can skip this step, but installing here will reduce the user's setup cost the first time they enter Dr. Claw.
-            </div>
+            <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 dark:border-blue-900/40 dark:bg-blue-950/20 dark:text-blue-200">{t('onboarding.optionalSetup')}</div>
 
             <div className="grid gap-3 md:grid-cols-2">
               {providerCards.map((provider) => {
@@ -634,17 +601,11 @@ const Onboarding = ({ onComplete }) => {
                       {provider.status.loading ? (
                         <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
                       ) : provider.status.authenticated ? (
-                        <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-300">
-                          Connected
-                        </span>
+                        <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-300">{t('onboarding.connected')}</span>
                       ) : isMissing ? (
-                        <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
-                          Install required
-                        </span>
+                        <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">{t('onboarding.installRequired')}</span>
                       ) : (
-                        <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
-                          Ready
-                        </span>
+                        <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">{t('onboarding.ready')}</span>
                       )}
                     </div>
 
@@ -662,7 +623,7 @@ const Onboarding = ({ onComplete }) => {
                       {action && (
                         <button
                           onClick={provider.onAction}
-                          className={`${provider.accent.button} text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors inline-flex items-center gap-2`}
+                          className={`${provider.accent.button} text-sm font-medium py-2 px-4 rounded-lg transition-colors inline-flex items-center gap-2`}
                         >
                           {ActionIcon && <ActionIcon className="w-4 h-4" />}
                           {action.label}
@@ -674,9 +635,7 @@ const Onboarding = ({ onComplete }) => {
                           onClick={() => openExternal(provider.status.downloadUrl || provider.status.docsUrl)}
                           className="border border-border bg-background text-foreground text-sm font-medium py-2 px-4 rounded-lg transition-colors hover:bg-accent inline-flex items-center gap-2"
                         >
-                          <ExternalLink className="w-4 h-4" />
-                          Guide
-                        </button>
+                          <ExternalLink className="w-4 h-4" />{t('onboarding.guide')}</button>
                       )}
                     </div>
                   </div>
@@ -685,7 +644,7 @@ const Onboarding = ({ onComplete }) => {
             </div>
 
             <div className="text-center text-sm text-muted-foreground pt-2">
-              <p>You can configure these later in Settings.</p>
+              <p>{t('onboarding.configureLater')}</p>
             </div>
           </div>
         );
@@ -700,7 +659,7 @@ const Onboarding = ({ onComplete }) => {
 
   return (
     <>
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="min-h-dvh bg-background flex items-center justify-center p-4">
         <div className="w-full max-w-2xl">
           {/* Progress Steps */}
           <div className="mb-8">
@@ -728,7 +687,7 @@ const Onboarding = ({ onComplete }) => {
                         {step.title}
                       </p>
                       {step.required && (
-                        <span className="text-xs text-red-500">Required</span>
+                        <span className="text-xs text-red-500">{t('onboarding.required')}</span>
                       )}
                     </div>
                   </div>
@@ -743,12 +702,12 @@ const Onboarding = ({ onComplete }) => {
           </div>
 
           {/* Main Card */}
-          <div className="bg-card rounded-lg shadow-lg border border-border p-8">
+          <div className="bg-background rounded-lg border border-border p-4 sm:p-6">
             {renderStepContent()}
 
             {/* Error Message */}
             {error && (
-              <div className="mt-6 p-4 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-800 rounded-lg">
+              <div role="alert" className="mt-6 p-4 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-800 rounded-lg">
                 <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
               </div>
             )}
@@ -760,26 +719,20 @@ const Onboarding = ({ onComplete }) => {
                 disabled={currentStep === 0 || isSubmitting}
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
               >
-                <ChevronLeft className="w-4 h-4" />
-                Previous
-              </button>
+                <ChevronLeft className="w-4 h-4" />{t('onboarding.previous')}</button>
 
               <div className="flex items-center gap-3">
                 {currentStep < steps.length - 1 ? (
                   <button
                     onClick={handleNextStep}
                     disabled={!isStepValid() || isSubmitting}
-                    className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors duration-200"
+                    className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground font-medium rounded-lg transition-colors duration-200"
                   >
                     {isSubmitting ? (
                       <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Saving...
-                      </>
+                        <Loader2 className="w-4 h-4 animate-spin" />{t('onboarding.saving')}</>
                     ) : (
-                      <>
-                        Next
-                        <ChevronRight className="w-4 h-4" />
+                      <>{t('onboarding.next')}<ChevronRight className="w-4 h-4" />
                       </>
                     )}
                   </button>
@@ -787,18 +740,14 @@ const Onboarding = ({ onComplete }) => {
                   <button
                     onClick={handleFinish}
                     disabled={isSubmitting}
-                    className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-green-400 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors duration-200"
+                    className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground font-medium rounded-lg transition-colors duration-200"
                   >
                     {isSubmitting ? (
                       <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Completing...
-                      </>
+                        <Loader2 className="w-4 h-4 animate-spin" />{t('onboarding.completing')}</>
                     ) : (
                       <>
-                        <Check className="w-4 h-4" />
-                        Complete Setup
-                      </>
+                        <Check className="w-4 h-4" />{t('onboarding.complete')}</>
                     )}
                   </button>
                 )}

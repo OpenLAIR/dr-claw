@@ -30,51 +30,14 @@ function resolveLocaleKey(lang: string): LocaleKey {
   return 'en';
 }
 
-const TEXT: Record<LocaleKey, Record<string, string>> = {
-  zh: {
-    guideTitle: '如何使用 Compute Nodes',
-    guideDesc: '只需 5 步即可配置并监控远程计算节点。',
-    guideStep1: '点击右上角的"Add Node"注册新的远程计算节点。',
-    guideStep2: '填写节点详情（名称、主机地址、端口）并保存。',
-    guideStep3: '在目标服务器上运行提供的配置脚本建立连接。',
-    guideStep4: '连接成功后，可在此仪表板实时监控 GPU 和 CPU 使用率。',
-    guideStep5: '将节点设为"Active"（活动状态），即可自动将 AI 计算任务路由至该节点。',
-    guideCollapse: '收起',
-    guideExpand: '展开',
-    guideDismiss: '不再显示',
-  },
-  en: {
-    guideTitle: 'How to use Compute Nodes',
-    guideDesc: 'Set up and monitor remote compute nodes in 5 easy steps.',
-    guideStep1: "Click 'Add Node' to register a new remote compute node.",
-    guideStep2: 'Fill in the node details (name, host, port) and save.',
-    guideStep3: 'Run the provided configuration script on your remote server to establish a connection.',
-    guideStep4: 'Once connected, monitor real-time GPU and CPU utilization directly from this dashboard.',
-    guideStep5: "Set a node as 'Active' to route AI compute jobs to it automatically.",
-    guideCollapse: 'Collapse',
-    guideExpand: 'Expand',
-    guideDismiss: 'Remove forever',
-  },
-  ko: {
-    guideTitle: 'Compute Nodes 사용 방법',
-    guideDesc: '5단계로 원격 컴퓨팅 노드를 설정하고 모니터링하세요.',
-    guideStep1: "오른쪽 상단의 'Add Node'를 클릭하여 새 노드를 등록합니다.",
-    guideStep2: '노드 세부 정보(이름, 호스트, 포트)를 입력하고 저장합니다.',
-    guideStep3: '제공된 설정 스크립트를 원격 서버에서 실행하여 연결을 설정합니다.',
-    guideStep4: '연결되면 이 대시보드에서 실시간으로 GPU 및 CPU 사용률을 모니터링할 수 있습니다.',
-    guideStep5: "노드를 'Active'로 설정하면 AI 컴퓨팅 작업이 해당 노드로 자동 라우팅됩니다.",
-    guideCollapse: '접기',
-    guideExpand: '펼치기',
-    guideDismiss: '다시 표시 안 함',
-  },
-};
+
 
 export default function ComputeResourcesDashboard() {
-  const { i18n } = useTranslation();
+  const { i18n, t: tr } = useTranslation('common');
   const locale = useMemo(() => resolveLocaleKey(i18n.language || 'en'), [i18n.language]);
-  const t = TEXT[locale];
+  const t = useMemo(() => tr('computeGuide', { returnObjects: true }) as Record<string, string>, [tr, i18n.language]);
 
-  const [guideCollapsed, setGuideCollapsed] = useLocalStorage('compute-node-guide-collapsed', false);
+  const [guideCollapsed, setGuideCollapsed] = useLocalStorage('compute-node-guide-collapsed', true);
   const [guideDismissed, setGuideDismissed] = useLocalStorage('compute-node-guide-dismissed', false);
 
   // ─── State ───
@@ -85,6 +48,8 @@ export default function ComputeResourcesDashboard() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [nodesLoadError, setNodesLoadError] = useState(false);
+  const [actionError, setActionError] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // ─── Data fetchers ───
@@ -92,6 +57,7 @@ export default function ComputeResourcesDashboard() {
   const fetchLocalMonitor = useCallback(async () => {
     try {
       const resp = await api.compute.monitorLocal();
+      if (!resp.ok) throw new Error('monitor unavailable');
       return (await resp.json()) as LocalMonitorData;
     } catch {
       return { success: false, gpus: [], cpu: null, error: 'Network error', timestamp: Date.now() } as LocalMonitorData;
@@ -101,10 +67,13 @@ export default function ComputeResourcesDashboard() {
   const fetchNodes = useCallback(async () => {
     try {
       const resp = await api.compute.getNodes();
+      if (!resp.ok) throw new Error('nodes unavailable');
       const data = (await resp.json()) as { nodes: ComputeNode[]; activeNodeId?: string };
+      setNodesLoadError(false);
       return { nodes: data.nodes || [], activeNodeId: data.activeNodeId };
     } catch {
-      return { nodes: [], activeNodeId: undefined };
+      setNodesLoadError(true);
+      return { nodes: null, activeNodeId: undefined };
     }
   }, []);
 
@@ -128,7 +97,7 @@ export default function ComputeResourcesDashboard() {
     setLocalData(localResult);
     setLocalLoading(false);
     setNodesData(
-      nodes.map((node) => ({
+      (nodes || []).map((node) => ({
         node,
         monitor: null,
         loading: false,
@@ -202,6 +171,7 @@ export default function ComputeResourcesDashboard() {
 
   const reloadNodes = useCallback(async () => {
     const { nodes, activeNodeId } = await fetchNodes();
+    if (!nodes) return;
     setNodesData((prev) =>
       nodes.map((node) => {
         const existing = prev.find((d) => d.node.id === node.id);
@@ -217,18 +187,25 @@ export default function ComputeResourcesDashboard() {
 
   const handleSetActive = useCallback(
     async (nodeId: string) => {
-      await api.compute.setActive(nodeId);
-      await reloadNodes();
+      setActionError(false);
+      try {
+        const response = await api.compute.setActive(nodeId);
+        if (!response.ok) throw new Error('update failed');
+        await reloadNodes();
+      } catch { setActionError(true); }
     },
     [reloadNodes],
   );
 
   const handleDeleteNode = useCallback(
     async (nodeId: string) => {
+      setActionError(false);
       try {
-        await api.compute.deleteNode(nodeId);
+        const response = await api.compute.deleteNode(nodeId);
+        if (!response.ok) throw new Error('delete failed');
       } catch {
-        // ignore
+        setActionError(true);
+        return;
       }
       setConnectedNodeIds((prev) => {
         const next = new Set(prev);
@@ -304,17 +281,17 @@ export default function ComputeResourcesDashboard() {
     ...nodesData.filter((d) => connectedNodeIds.has(d.node.id)).map((d) => d.monitor),
   ].filter((m): m is MonitorData => !!m && m.success);
 
-  const totalGpus = allMonitors.reduce((n, m) => n + m.gpus.length, 0);
+  const totalGpus = allMonitors.reduce((n, m) => n + (m.gpus || []).length, 0);
   const activeGpus = allMonitors.reduce(
-    (n, m) => n + m.gpus.filter((g) => g.gpuUtil > 5 || g.memUtil > 5).length,
+    (n, m) => n + (m.gpus || []).filter((g) => g.gpuUtil > 5 || g.memUtil > 5).length,
     0,
   );
-  const totalCpuCores = allMonitors.reduce((n, m) => n + (m.cpu?.cores ?? 0), 0);
   const cpuMonitors = allMonitors.filter((m) => m.cpu);
-  const avgCpuUtil =
-    cpuMonitors.length > 0
-      ? Math.round(cpuMonitors.reduce((s, m) => s + m.cpu!.utilPercent, 0) / cpuMonitors.length)
-      : 0;
+  const coresKnown = cpuMonitors.length > 0 && cpuMonitors.every(m => Number.isFinite(m.cpu?.cores));
+  const loadKnown = cpuMonitors.length > 0 && cpuMonitors.every(m => Number.isFinite(m.cpu?.utilPercent));
+  const gpuStatusKnown = allMonitors.every(m => (m.gpus || []).every(g => Number.isFinite(g.gpuUtil) && Number.isFinite(g.memUtil)));
+  const totalCpuCores = coresKnown ? cpuMonitors.reduce((n, m) => n + m.cpu!.cores, 0) : null;
+  const avgCpuUtil = loadKnown ? Math.round(cpuMonitors.reduce((sum, m) => sum + m.cpu!.utilPercent, 0) / cpuMonitors.length) : null;
 
   const connectedCount = connectedNodeIds.size;
 
@@ -322,46 +299,46 @@ export default function ComputeResourcesDashboard() {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="max-w-6xl mx-auto p-6 space-y-6">
+      <div className="workbench-page space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Compute Resources</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">{tr('computeUI.title')}</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Monitor GPU and CPU usage across your compute nodes
+              {tr('computeUI.description')}
             </p>
           </div>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
-              className="rounded-xl"
+              className="rounded-lg"
               onClick={() => setShowAddForm(true)}
               disabled={showAddForm}
             >
               <Plus className="h-3.5 w-3.5 mr-1.5" />
-              Add Node
+              {tr('computeForm.add')}
             </Button>
             <Button
               variant="outline"
               size="sm"
-              className="rounded-xl"
+              className="rounded-lg"
               onClick={() => void handleRefresh()}
               disabled={isRefreshing}
             >
               <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-              Refresh
+              {tr('buttons.refresh')}
             </Button>
           </div>
         </div>
 
         {/* Usage guide */}
         {!guideDismissed && (
-          <div className="relative overflow-hidden rounded-[28px] border border-sky-200/70 bg-[radial-gradient(circle_at_top_left,rgba(125,211,252,0.24),transparent_38%),linear-gradient(180deg,rgba(248,250,252,0.96),rgba(239,246,255,0.94))] p-5 shadow-sm dark:border-sky-900/70 dark:bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.18),transparent_38%),linear-gradient(180deg,rgba(15,23,42,0.96),rgba(2,6,23,0.94))]">
-            <div className="absolute -right-10 -top-8 h-28 w-28 rounded-full bg-sky-200/40 blur-3xl dark:bg-sky-500/10" />
+          <div className="rounded-lg border border-border p-4">
+
             <div className="relative flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="flex min-w-0 items-start gap-3">
-                <div className="relative flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl border border-sky-200/80 bg-white/80 text-sky-700 shadow-sm dark:border-sky-900/70 dark:bg-slate-950/50 dark:text-sky-300">
+                <div className="flex shrink-0 items-center justify-center py-1 text-muted-foreground">
                   <AlertCircle className="w-5 h-5" />
                 </div>
                 <div className="min-w-0">
@@ -374,7 +351,7 @@ export default function ComputeResourcesDashboard() {
                     </p>
                   ) : (
                     <p className="mt-1 text-xs text-slate-600 dark:text-sky-100/70">
-                      {locale === 'zh' ? '教程已折叠，点击展开查看。' : 'Guide hidden. Expand to view steps.'}
+                      {tr('computeMetrics.guideHidden')}
                     </p>
                   )}
                 </div>
@@ -399,7 +376,7 @@ export default function ComputeResourcesDashboard() {
               </div>
             </div>
             {!guideCollapsed && (
-              <div className="relative mt-4 space-y-3 pl-14">
+              <div className="relative mt-4 space-y-3 sm:pl-8">
                 <ol className="list-decimal pl-4 space-y-1.5 text-sm text-slate-700 dark:text-sky-100/85">
                   {(['guideStep1', 'guideStep2', 'guideStep3', 'guideStep4', 'guideStep5'] as const).map((key) => (
                     <li key={key}>{t[key]}</li>
@@ -410,31 +387,35 @@ export default function ComputeResourcesDashboard() {
           </div>
         )}
 
+        {(nodesLoadError || actionError) && <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/30 p-4 text-sm">
+          <span>{tr(nodesLoadError ? 'workbench.computeNodesFailed' : 'workbench.computeActionFailed')}</span>
+          {nodesLoadError && <Button variant="outline" size="sm" onClick={() => void reloadNodes()}>{tr('buttons.retry')}</Button>}
+        </div>}
         {initialLoad ? (
           <div className="flex items-center justify-center py-20 text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin mr-2" />
-            Loading compute resources...
+            {tr('computeUI.loading')}
           </div>
         ) : (
           <>
             {/* Summary cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 gap-4 border-y border-border py-4 md:grid-cols-4">
               <SummaryCard
-                label="Nodes"
-                value={1 + nodesData.length}
+                label={tr('computeMetrics.nodes')}
+                value={nodesLoadError ? '—' : 1 + nodesData.length}
                 sublabel={
                   nodesData.length > 0
-                    ? `(1 local + ${nodesData.length} remote${connectedCount > 0 ? `, ${connectedCount} connected` : ''})`
-                    : '(local)'
+                    ? tr('computeMetrics.nodeCounts', { remote: nodesData.length, connected: connectedCount })
+                    : tr('computeMetrics.local')
                 }
               />
               <SummaryCard
                 label="GPUs"
-                value={totalGpus > 0 ? `${activeGpus} / ${totalGpus}` : '0'}
-                sublabel={totalGpus > 0 ? 'in use' : 'detected'}
+                value={!allMonitors.length ? '—' : totalGpus > 0 ? `${gpuStatusKnown ? activeGpus : '—'} / ${totalGpus}` : '0'}
+                sublabel={tr(totalGpus > 0 ? 'computeMetrics.inUse' : 'computeMetrics.detected')}
               />
-              <SummaryCard label="CPU Cores" value={totalCpuCores} />
-              <SummaryCard label="Avg CPU Load" value={`${avgCpuUtil}%`} />
+              <SummaryCard label={tr('computeMetrics.cpuCores')} value={totalCpuCores ?? '—'} />
+              <SummaryCard label={tr('computeMetrics.avgCpu')} value={avgCpuUtil === null ? '—' : `${avgCpuUtil}%`} />
             </div>
 
             {/* Local machine */}
@@ -443,11 +424,11 @@ export default function ComputeResourcesDashboard() {
                 <div className="flex items-center gap-2">
                   <Laptop className="h-4 w-4 text-muted-foreground" />
                   <h3 className="text-base font-semibold">
-                    {localData?.hostname || 'Local Machine'}
+                    {localData?.hostname || tr('computeMetrics.machine')}
                   </h3>
                 </div>
                 <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 font-medium">
-                  This Machine
+                  {tr('computeUI.local')}
                 </span>
                 {localData?.platform && (
                   <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
@@ -460,29 +441,29 @@ export default function ComputeResourcesDashboard() {
               {localData && !localData.success && (
                 <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 rounded-lg px-3 py-2">
                   <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                  <span>{localData.error || 'Failed to read local stats'}</span>
+                  <span>{tr('computeMetrics.loadFailed')}</span>
                 </div>
               )}
 
-              {localData?.success && (localData.cpu || localData.gpus.length > 0) && (
+              {localData?.success && (localData.cpu || (localData.gpus || []).length > 0) && (
                 <ResourceCards monitor={localData} />
               )}
 
-              {localData?.success && !localData.cpu && localData.gpus.length === 0 && (
+              {localData?.success && !localData.cpu && (localData.gpus || []).length === 0 && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/40 rounded-lg px-3 py-2">
                   <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
-                  <span>No GPU detected on this machine</span>
+                  <span>{tr('computeUI.noGpu')}</span>
                 </div>
               )}
             </div>
 
             {/* Remote nodes */}
             <div className="border-t pt-4">
-              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-                Remote Nodes
+              <h2 className="text-sm font-medium text-muted-foreground mb-4">
+                {tr('computeUI.remote')}
                 {nodesData.length > 0 && (
                   <span className="font-normal ml-2">
-                    ({connectedCount} of {nodesData.length} connected)
+                    {tr('computeUI.connectedCount', { connected: connectedCount, total: nodesData.length })}
                   </span>
                 )}
               </h2>
@@ -513,18 +494,18 @@ export default function ComputeResourcesDashboard() {
                 ))}
               </div>
             ) : (
-              !showAddForm && (
+              !showAddForm && !nodesLoadError && (
                 <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
                   <Server className="h-8 w-8 mb-3 opacity-40" />
-                  <p className="text-sm">No remote nodes configured</p>
+                  <p className="text-sm">{tr('computeUI.empty')}</p>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="rounded-xl mt-3"
+                    className="rounded-lg mt-3"
                     onClick={() => setShowAddForm(true)}
                   >
                     <Plus className="h-3.5 w-3.5 mr-1.5" />
-                    Add your first node
+                    {tr('computeUI.first')}
                   </Button>
                 </div>
               )
@@ -533,7 +514,7 @@ export default function ComputeResourcesDashboard() {
             {/* Timestamp */}
             {connectedCount > 0 && (
               <p className="text-xs text-muted-foreground text-center pt-2">
-                Auto-refreshes every {POLL_INTERVAL_MS / 1000}s for connected nodes
+                {tr('computeUI.poll', { seconds: POLL_INTERVAL_MS / 1000 })}
               </p>
             )}
           </>

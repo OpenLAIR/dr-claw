@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Server,
   AlertCircle,
@@ -31,10 +32,11 @@ type ActionResult = {
 };
 
 function ResultBlock({ result }: { result: ActionResult | null }) {
+  const { t } = useTranslation('common');
   if (!result) return null;
   const ok = result.success;
   return (
-    <div
+    <div role={ok ? 'status' : 'alert'}
       className={`mt-2 p-2.5 rounded-lg text-xs border ${
         ok
           ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200'
@@ -48,7 +50,7 @@ function ResultBlock({ result }: { result: ActionResult | null }) {
           <XCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
         )}
         <pre className="whitespace-pre-wrap break-all font-mono flex-1 max-h-40 overflow-y-auto">
-          {result.output || result.error || result.message || 'Done'}
+          {result.output || result.error || result.message || t(ok ? 'slurm.done' : 'messages.operationFailed')}
         </pre>
       </div>
     </div>
@@ -72,6 +74,8 @@ export default function NodeCard({
   onNodeUpdated: () => void;
   onSetActive: () => void;
 }) {
+  const { t } = useTranslation('common');
+  const commandId = useId();
   const { node, monitor, loading, isActive } = data;
   const hasData = monitor?.success && (monitor.gpus.length > 0 || monitor.cpu);
 
@@ -95,9 +99,9 @@ export default function NodeCard({
     try {
       const res = await api.compute.testNode(node.id);
       const d = await res.json();
-      setTestResult(d);
+      setTestResult({ ...d, success: res.ok && d.success === true });
     } catch (err: unknown) {
-      setTestResult({ success: false, error: err instanceof Error ? err.message : 'Test failed' });
+      setTestResult({ success: false, error: err instanceof Error ? err.message : t('messages.operationFailed') });
     } finally {
       setIsTesting(false);
     }
@@ -110,9 +114,9 @@ export default function NodeCard({
     try {
       const res = await api.compute.runOnNode(node.id, runCmd.trim(), node.workDir || undefined, true);
       const d = await res.json();
-      setRunResult(d);
+      setRunResult({ ...d, success: res.ok && d.success === true });
     } catch (err: unknown) {
-      setRunResult({ success: false, error: err instanceof Error ? err.message : 'Run failed' });
+      setRunResult({ success: false, error: err instanceof Error ? err.message : t('messages.operationFailed') });
     } finally {
       setIsRunning(false);
     }
@@ -139,7 +143,7 @@ export default function NodeCard({
   }
 
   return (
-    <div className="rounded-xl border bg-card p-5 space-y-4">
+    <div className="rounded-md border bg-card p-5 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3 flex-wrap">
@@ -153,11 +157,11 @@ export default function NodeCard({
           </span>
           {isActive && (
             <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 font-medium">
-              Active
+              {t('computeUI.active')}
             </span>
           )}
           <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-            {node.type === 'slurm' ? 'Slurm HPC' : 'Direct GPU'}
+            {node.type === 'slurm' ? 'Slurm HPC' : t('computeForm.direct')}
           </span>
           {loading && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
         </div>
@@ -167,7 +171,7 @@ export default function NodeCard({
       {isConnected && monitor && !monitor.success && (
         <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 rounded-lg px-3 py-2">
           <AlertCircle className="h-4 w-4 flex-shrink-0" />
-          <span>{monitor.error || 'Failed to connect'}</span>
+          <span>{monitor.error || t('computeUI.connectFailed')}</span>
         </div>
       )}
 
@@ -176,7 +180,7 @@ export default function NodeCard({
       {isConnected && !loading && !hasData && monitor?.success && (
         <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/40 rounded-lg px-3 py-2">
           <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
-          <span>Connected — no GPU detected on this node</span>
+          <span>{t('computeUI.connectedNoGpu')}</span>
         </div>
       )}
 
@@ -188,7 +192,7 @@ export default function NodeCard({
             <Button
               variant="outline"
               size="sm"
-              className="rounded-xl"
+              className="rounded-md"
               onClick={() => void handleTest()}
               disabled={isTesting}
             >
@@ -197,26 +201,26 @@ export default function NodeCard({
               ) : (
                 <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
               )}
-              Test Connection
+              {t('computeUI.test')}
             </Button>
             <ResultBlock result={testResult} />
           </div>
 
           {/* Run command */}
           <div className="space-y-1">
-            <label className="text-xs text-muted-foreground">Run Command</label>
+            <label htmlFor={commandId} className="text-sm text-muted-foreground">{t('computeUI.run')}</label>
             <div className="flex gap-2">
               <Input
-                className="rounded-xl h-9"
+                className="rounded-md h-9"
                 placeholder="nvidia-smi"
-                value={runCmd}
+                id={commandId} value={runCmd}
                 onChange={(e) => setRunCmd(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') void handleRun(); }}
+                onKeyDown={(e) => { if (e.key === 'Enter' && !e.nativeEvent.isComposing) void handleRun(); }}
               />
               <Button
                 size="sm"
-                className="rounded-xl"
-                onClick={() => void handleRun()}
+                className="rounded-md"
+                aria-label={t('computeUI.run')} onClick={() => void handleRun()}
                 disabled={isRunning || !runCmd.trim()}
               >
                 {isRunning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
@@ -229,26 +233,26 @@ export default function NodeCard({
           <Button
             variant={showTerminal ? 'default' : 'outline'}
             size="sm"
-            className="rounded-xl"
+            className="rounded-md"
             onClick={() => {
               if (!showTerminal) setTerminalKey((prev) => prev + 1);
               setShowTerminal(!showTerminal);
             }}
           >
             <Terminal className="w-3.5 h-3.5 mr-1.5" />
-            {showTerminal ? 'Close SSH Terminal' : 'Open SSH Terminal'}
+            {t(showTerminal ? 'computeUI.closeTerminal' : 'computeUI.openTerminal')}
           </Button>
 
           {/* SSH Terminal */}
           {showTerminal && (
-            <div className="rounded-xl border overflow-hidden">
+            <div className="rounded-md border overflow-hidden">
               <div className="p-2.5 border-b flex items-center gap-2 bg-muted/30">
                 <Terminal className="w-4 h-4 text-emerald-500" />
                 <span className="text-sm font-medium">
                   SSH — {node.user}@{node.host}
                   {node.port && node.port !== 22 ? `:${node.port}` : ''}
                 </span>
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <div className="w-2 h-2 rounded-full bg-emerald-500 " />
               </div>
               <div className="h-96">
                 <Shell
@@ -276,79 +280,79 @@ export default function NodeCard({
       )}
 
       {/* Bottom actions */}
-      <div className="flex items-center justify-between pt-1">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+        <div className="flex flex-wrap items-center gap-2">
           {isConnected ? (
             <Button
               variant="outline"
               size="sm"
-              className="rounded-xl"
+              className="rounded-md"
               onClick={() => { setShowTerminal(false); onDisconnect(); }}
             >
               <Unplug className="h-3.5 w-3.5 mr-1.5" />
-              Disconnect
+              {t('computeUI.disconnect')}
             </Button>
           ) : (
             <Button
               variant="outline"
               size="sm"
-              className="rounded-xl"
+              className="rounded-md"
               onClick={onConnect}
               disabled={loading}
             >
               <Plug className="h-3.5 w-3.5 mr-1.5" />
-              Connect
+              {t('computeUI.connect')}
             </Button>
           )}
           <Button
             variant="ghost"
             size="sm"
-            className="rounded-xl text-muted-foreground"
+            className="rounded-md text-muted-foreground"
             onClick={() => setShowEdit(true)}
           >
             <Edit3 className="h-3.5 w-3.5 mr-1.5" />
-            Edit
+            {t('buttons.edit')}
           </Button>
           {!isActive && (
             <Button
               variant="ghost"
               size="sm"
-              className="rounded-xl text-muted-foreground"
+              className="rounded-md text-muted-foreground"
               onClick={() => void handleSetActive()}
               disabled={isSettingActive}
             >
               {isSettingActive ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Server className="h-3.5 w-3.5 mr-1.5" />}
-              Set as Active
+              {t('computeUI.setActive')}
             </Button>
           )}
         </div>
 
         {confirmDelete ? (
           <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">Delete this node?</span>
+            <span className="text-xs text-muted-foreground">{t('computeUI.deleteConfirm')}</span>
             <Button
               variant="destructive"
               size="sm"
-              className="rounded-xl h-7 text-xs"
+              className="rounded-md h-7 text-xs"
               onClick={() => { setConfirmDelete(false); onDelete(); }}
             >
-              Confirm
+              {t('buttons.confirm')}
             </Button>
             <Button
               variant="outline"
               size="sm"
-              className="rounded-xl h-7 text-xs"
+              className="rounded-md h-7 text-xs"
               onClick={() => setConfirmDelete(false)}
             >
-              Cancel
+              {t('buttons.cancel')}
             </Button>
           </div>
         ) : (
           <Button
             variant="ghost"
             size="sm"
-            className="rounded-xl text-muted-foreground hover:text-destructive"
-            onClick={() => setConfirmDelete(true)}
+            className="rounded-md text-muted-foreground hover:text-destructive"
+            aria-label={t('buttons.delete')} onClick={() => setConfirmDelete(true)}
           >
             <Trash2 className="h-3.5 w-3.5" />
           </Button>

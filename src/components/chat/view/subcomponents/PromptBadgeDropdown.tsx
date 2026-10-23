@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ChevronDown, ChevronUp, X } from 'lucide-react';
+import { ChevronDown, ChevronUp, X, FlaskConical, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { AttachedPrompt } from '../../types/types';
 
@@ -34,9 +34,9 @@ export default function PromptBadgeDropdown({ prompt, onRemove, onUpdate }: Prom
   return (
     <div className="px-3 pt-2.5 pb-1">
       {/* Badge chip */}
-      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/8 border border-primary/20 text-sm">
-        <span className="text-sm leading-none">{prompt.scenarioIcon}</span>
-        <span className="font-medium text-foreground/80 text-xs">{prompt.scenarioTitle}</span>
+      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-muted border border-border text-sm">
+        {prompt.scenarioId.startsWith('autoresearch-') ? <FlaskConical className="h-4 w-4 shrink-0" /> : <Sparkles className="h-4 w-4 shrink-0" />}
+        <span className="min-w-0 break-words font-medium text-foreground text-xs">{prompt.scenarioTitle}</span>
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
@@ -65,6 +65,7 @@ export default function PromptBadgeDropdown({ prompt, onRemove, onUpdate }: Prom
       {isOpen && (
         <div className="mt-2 mb-1" id="prompt-edit-area">
           <textarea
+            aria-label={t('attachedPrompt.showPrompt')}
             value={editText}
             onChange={(e) => setEditText(e.target.value)}
             onBlur={handleBlur}

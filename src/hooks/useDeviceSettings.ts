@@ -53,7 +53,10 @@ const getIsMobile = (mobileBreakpoint: number): boolean => {
     return false;
   }
 
-  return getShortestScreenSide() < mobileBreakpoint && (isMobileUserAgent() || hasCoarsePointer());
+  // Layout follows the viewport, including narrow desktop/Electron windows.
+  // Device hints still recognize a small touch screen in landscape.
+  return window.innerWidth <= mobileBreakpoint
+    || (getShortestScreenSide() < mobileBreakpoint && (isMobileUserAgent() || hasCoarsePointer()));
 };
 
 const getIsPWA = (): boolean => {

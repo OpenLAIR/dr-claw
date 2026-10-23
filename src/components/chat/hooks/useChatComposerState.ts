@@ -1569,16 +1569,15 @@ export function useChatComposerState({
     inputValueRef.current = input;
   }, [input]);
 
+  const restoredDraftProjectRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!selectedProject) {
-      return;
-    }
+    if (!selectedProject || restoredDraftProjectRef.current === selectedProject.name) return;
+    // StrictMode replays mount effects. Restore once per project so a queued
+    // reference/skill draft is not overwritten by the second restoration pass.
+    restoredDraftProjectRef.current = selectedProject.name;
     const savedInput = safeLocalStorage.getItem(`draft_input_${selectedProject.name}`) || '';
-    setInput((previous) => {
-      const next = previous === savedInput ? previous : savedInput;
-      inputValueRef.current = next;
-      return next;
-    });
+    inputValueRef.current = savedInput;
+    setInput(savedInput);
   }, [selectedProject?.name]);
 
   useEffect(() => {
@@ -1586,11 +1585,7 @@ export function useChatComposerState({
       return;
     }
 
-    const applyDraft = (draft: string) => {
-      setInput(draft);
-      inputValueRef.current = draft;
-      syncTextareaLayout(draft, true);
-    };
+    const applyDraft = (draft: string) => loadMessageIntoComposer({ content: draft });
 
     const applyQueuedDraft = () => {
       const skillDraft = consumeSkillCommandDraft();
@@ -1605,7 +1600,7 @@ export function useChatComposerState({
       }
       const refDraft = consumeReferenceChatDraft(selectedProject.name);
       if (refDraft) {
-        applyDraft(refDraft.text);
+        if (!applyDraft(refDraft.text)) return;
 
         if (refDraft.pdfCached && refDraft.referenceId) {
           (async () => {
@@ -1642,7 +1637,7 @@ export function useChatComposerState({
       window.removeEventListener(REFERENCE_CHAT_DRAFT_EVENT, handleQueuedDraft);
       window.removeEventListener(SKILL_COMMAND_DRAFT_EVENT, handleQueuedDraft);
     };
-  }, [selectedProject?.name, setInput]);
+  }, [selectedProject?.name, loadMessageIntoComposer]);
 
   useEffect(() => {
     if (!selectedProject) {

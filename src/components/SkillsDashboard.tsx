@@ -28,7 +28,10 @@ import {
   EyeOff,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import translations from 'i18next';
 import { api } from '../utils/api';
+import WorkbenchDialog from './ui/WorkbenchDialog';
+import { useDeviceSettings } from '../hooks/useDeviceSettings';
 
 type SkillNode = {
   name: string;
@@ -185,47 +188,47 @@ const EMPTY_TAG_MAPPING: SkillTagMapping = {
 };
 
 const INTENT_LABELS: Record<string, LocalizedLabel> = {
-  research: { zh: '调研', en: 'Research', ko: 'Research' },
-  ideation: { zh: '想法生成', en: 'Ideation', ko: 'Ideation' },
-  data: { zh: '数据处理', en: 'Data', ko: 'Data' },
-  experiment: { zh: '实验开发', en: 'Experiment', ko: 'Experiment' },
-  training: { zh: '模型训练', en: 'Training', ko: 'Training' },
-  evaluation: { zh: '评测分析', en: 'Evaluation', ko: 'Evaluation' },
-  writing: { zh: '论文与汇报', en: 'Writing', ko: 'Writing' },
-  deployment: { zh: '部署集成', en: 'Deployment', ko: 'Deployment' },
+  research: { zh: '调研', en: 'Research', ko: '연구' },
+  ideation: { zh: '想法生成', en: 'Ideation', ko: '아이디어 생성' },
+  data: { zh: '数据处理', en: 'Data', ko: '데이터' },
+  experiment: { zh: '实验开发', en: 'Experiment', ko: '실험' },
+  training: { zh: '模型训练', en: 'Training', ko: '훈련' },
+  evaluation: { zh: '评测分析', en: 'Evaluation', ko: '평가' },
+  writing: { zh: '论文与汇报', en: 'Writing', ko: '논문 작성' },
+  deployment: { zh: '部署集成', en: 'Deployment', ko: '배포' },
 };
 
 const CAPABILITY_LABELS: Record<string, LocalizedLabel> = {
-  'search-retrieval': { zh: '检索搜索', en: 'Search & Retrieval', ko: 'Search & Retrieval' },
-  'research-planning': { zh: '研究规划', en: 'Research Planning', ko: 'Research Planning' },
-  'agent-workflow': { zh: 'Agent 工作流', en: 'Agent Workflow', ko: 'Agent Workflow' },
-  'data-processing': { zh: '数据处理', en: 'Data Processing', ko: 'Data Processing' },
-  'training-tuning': { zh: '训练与调优', en: 'Training & Tuning', ko: 'Training & Tuning' },
-  'inference-serving': { zh: '推理与服务', en: 'Inference & Serving', ko: 'Inference & Serving' },
-  'evaluation-benchmarking': { zh: '评测与基准', en: 'Evaluation & Benchmarking', ko: 'Evaluation & Benchmarking' },
-  'prompt-structured-output': { zh: '提示与结构化输出', en: 'Prompt & Structured Output', ko: 'Prompt & Structured Output' },
-  multimodal: { zh: '多模态', en: 'Multimodal', ko: 'Multimodal' },
-  interpretability: { zh: '可解释性', en: 'Interpretability', ko: 'Interpretability' },
-  'safety-alignment': { zh: '安全与对齐', en: 'Safety & Alignment', ko: 'Safety & Alignment' },
-  'infrastructure-ops': { zh: '基础设施与运维', en: 'Infrastructure & Ops', ko: 'Infrastructure & Ops' },
-  'visualization-reporting': { zh: '可视化与汇报', en: 'Visualization & Reporting', ko: 'Visualization & Reporting' },
+  'search-retrieval': { zh: '检索搜索', en: 'Search & Retrieval', ko: '검색 및 검색 결과 수집' },
+  'research-planning': { zh: '研究规划', en: 'Research Planning', ko: '연구 계획' },
+  'agent-workflow': { zh: 'Agent 工作流', en: 'Agent Workflow', ko: '에이전트 워크플로' },
+  'data-processing': { zh: '数据处理', en: 'Data Processing', ko: '데이터 처리' },
+  'training-tuning': { zh: '训练与调优', en: 'Training & Tuning', ko: '훈련 및 튜닝' },
+  'inference-serving': { zh: '推理与服务', en: 'Inference & Serving', ko: '추론 및 서비스' },
+  'evaluation-benchmarking': { zh: '评测与基准', en: 'Evaluation & Benchmarking', ko: '평가 및 벤치마킹' },
+  'prompt-structured-output': { zh: '提示与结构化输出', en: 'Prompt & Structured Output', ko: '프롬프트 및 구조화된 출력' },
+  multimodal: { zh: '多模态', en: 'Multimodal', ko: '멀티모달' },
+  interpretability: { zh: '可解释性', en: 'Interpretability', ko: '해석 가능성' },
+  'safety-alignment': { zh: '安全与对齐', en: 'Safety & Alignment', ko: '안전 및 정렬' },
+  'infrastructure-ops': { zh: '基础设施与运维', en: 'Infrastructure & Ops', ko: '인프라 및 운영' },
+  'visualization-reporting': { zh: '可视化与汇报', en: 'Visualization & Reporting', ko: '시각화 및 보고' },
 };
 
 const TAXONOMY_DOMAIN_LABELS: Record<string, LocalizedLabel> = {
-  general: { zh: '通用', en: 'General', ko: 'General' },
+  general: { zh: '通用', en: 'General', ko: '일반' },
   'cs-ai': { zh: 'CS / AI', en: 'CS / AI', ko: 'CS / AI' },
-  bioinformatics: { zh: '生物信息学', en: 'Bioinformatics', ko: 'Bioinformatics' },
-  medical: { zh: '医疗', en: 'Medical', ko: 'Medical' },
-  vision: { zh: '视觉', en: 'Vision', ko: 'Vision' },
+  bioinformatics: { zh: '生物信息学', en: 'Bioinformatics', ko: '생물정보학' },
+  medical: { zh: '医疗', en: 'Medical', ko: '의료' },
+  vision: { zh: '视觉', en: 'Vision', ko: '비전' },
   nlp: { zh: 'NLP', en: 'NLP', ko: 'NLP' },
-  'data-engineering': { zh: '数据工程', en: 'Data Engineering', ko: 'Data Engineering' },
+  'data-engineering': { zh: '数据工程', en: 'Data Engineering', ko: '데이터 엔지니어링' },
 };
 
 const STATUS_LABELS: Record<string, LocalizedLabel> = {
-  candidate: { zh: '待校正', en: 'Candidate', ko: 'Candidate' },
-  verified: { zh: '已校正', en: 'Verified', ko: 'Verified' },
-  experimental: { zh: '实验中', en: 'Experimental', ko: 'Experimental' },
-  deprecated: { zh: '已废弃', en: 'Deprecated', ko: 'Deprecated' },
+  candidate: { zh: '待校正', en: 'Candidate', ko: '검증 대기' },
+  verified: { zh: '已校正', en: 'Verified', ko: '검증됨' },
+  experimental: { zh: '实验中', en: 'Experimental', ko: '실험 중' },
+  deprecated: { zh: '已废弃', en: 'Deprecated', ko: '사용 중단' },
 };
 
 const PATH_GROUP_LABELS: Record<string, string> = {
@@ -369,333 +372,13 @@ const COMMUNITY_PACK_CONFIGS: Record<string, PackConfig> = {
   },
 };
 
-const FACET_PREFIX_PATTERN = /^(Domain|Stage|Category|Source|领域|阶段|类别|来源|영역|단계|카테고리):\s*/i;
-const SOURCE_PLATFORM_PATTERN = /^(来源: 平台自研|Source: Dr\. Claw)$/i;
+const FACET_PREFIX_PATTERN = /^(Domain|Stage|Category|Source|领域|阶段|类别|来源|영역|단계|카테고리|출처):\s*/i;
+const SOURCE_PLATFORM_PATTERN = /^(来源: 平台自研|Source: Dr\. Claw|출처: Dr\. Claw)$/i;
 
 function normalizeSourceKey(value: string) {
   return value === 'vibelab' ? 'dr-claw' : value;
 }
 
-const UI_TEXT: Record<LocaleKey, Record<string, string>> = {
-  zh: {
-    loading: '加载技能中...',
-    eyebrow: '共享技能目录',
-    title: '技能库',
-    subtitle: '按主意图、技术能力、领域和治理状态浏览 100+ 技能，而不是把工作流阶段和技术类别混在一起。',
-    refresh: '刷新',
-    noRoots: '当前项目中未找到技能目录。',
-    notFoundRoots: '当前工作区未检测到可用技能。',
-    noSkills: '暂未检测到技能。创建或关联技能后点击刷新。',
-    searchPlaceholder: '搜索技能名、意图、能力、领域或标签...',
-    clearSearch: '清除搜索',
-    allTags: '全部标签',
-    noFilterResult: '当前筛选条件下没有技能，尝试清空搜索词或切换筛选。',
-    clickForMore: '点击查看完整描述',
-    detailTitle: '技能详情',
-    fallbackDesc: 'Skill available, but description could not be extracted from SKILL.md.',
-    fallbackNoSkillMd: 'No SKILL.md detected at the root. Contains {{count}} files (likely script- or workflow-based skill).',
-    defaultDomain: '领域: 通用',
-    sourcePlatform: '来源: 平台自研',
-    sourcePlatformShort: 'Dr. Claw',
-    sourceImportedShort: '导入',
-    headerCount: '{{shown}}/{{total}} skills',
-    summaryIntents: '{{count}} 个主意图',
-    summaryCapabilities: '{{count}} 个技术能力',
-    summaryDomains: '{{count}} 个领域',
-    summaryVerified: '{{count}} 个已校正技能',
-    quickViews: '快速视图',
-    allSkills: '全部技能',
-    nativeSkills: '平台自研',
-    communitySkills: '外部导入',
-    verifiedSkills: '已校正',
-    intents: '主意图',
-    capabilities: '技术能力',
-    domains: '领域',
-    statuses: '状态',
-    allIntents: '全部主意图',
-    allCapabilities: '全部技术能力',
-    allDomains: '全部领域',
-    allStatuses: '全部状态',
-    clearFilters: '清空筛选',
-    results: '结果',
-    resultsSummary: '当前显示 {{shown}} 个技能',
-    overview: '概览',
-    relatedSkills: '相关技能',
-    emptySelection: '选择一个技能以查看详情、标签和相关技能。',
-    pathField: '路径',
-    primaryIntentField: '主意图',
-    intentsField: '意图',
-    capabilitiesField: '能力',
-    domainField: '领域',
-    sourceField: '来源',
-    statusField: '状态',
-    ownerField: '维护者',
-    legacyField: '旧分类',
-    keywordsField: '关键词',
-    rawTagsField: '原始标签',
-    standaloneGroup: '独立技能',
-    noSkillFile: '根目录未检测到 SKILL.md',
-    discardChanges: '放弃未保存的修改？',
-    tabPlatform: '平台技能',
-    tabCommunity: '社区工具',
-    communityTitle: '社区工具包',
-    communitySubtitle: '来自开源社区的完整研究工作流，一键配置即可使用。',
-    packSetup: '配置环境',
-    packWorkflows: '一键工作流',
-    packSubSkills: '子技能 & 工具',
-    packAllSkills: '全部 {{count}} 个技能',
-    packAuthor: '作者',
-    packVerified: '{{count}} 个已验证',
-    copyCommand: '复制',
-    copied: '已复制!',
-    noCommunityPacks: '暂无社区工具包。可通过"导入本地技能"添加社区技能。',
-    packConfig: '必要配置',
-    configMcp: '① MCP 审稿服务',
-    configMcpDesc: '选择外部 LLM 进行跨模型审稿（必填）',
-    configGpu: '② GPU 环境',
-    configGpuDesc: '将以下模板添加到项目 CLAUDE.md（跑实验需要）',
-    configSetupScript: '③ 一键安装脚本',
-    configInstall: '安装',
-    configRegister: '注册 MCP',
-    configEnvVar: '环境变量',
-    configClaudeMd: '添加到 CLAUDE.md',
-    configApply: '一键配置',
-    configApplying: '配置中...',
-    configSuccess: '配置完成！重启 Claude Code 会话后生效。',
-    importLocal: '导入本地技能',
-    importModalTitle: '从本地目录导入技能',
-    scan: '扫描',
-    scanning: '扫描中...',
-    importSelected: '导入选中',
-    importing: '导入中...',
-    importSuccess: '成功导入 {{count}} 个技能',
-    importSkipped: '已跳过 {{count}} 个已存在的技能',
-    noSkillsFound: '未在该目录中发现技能。',
-    alreadyImported: '已导入',
-    pathLabel: '技能目录路径',
-    editSkill: '编辑',
-    deleteSkill: '删除',
-    saveSkill: '保存',
-    cancelEdit: '取消',
-    confirmDeleteSkill: '确定要删除技能 "{{name}}" 吗？此操作不可撤销。',
-    skillDeleted: '技能 "{{name}}" 已删除',
-    skillSaved: '技能 "{{name}}" 已保存',
-    saving: '保存中...',
-    deleting: '删除中...',
-  },
-  en: {
-    loading: 'Loading skills...',
-    eyebrow: 'Shared Skill Catalog',
-    title: 'Skills Library',
-    subtitle: 'Browse 100+ skills by primary intent, capability, domain, and governance state instead of mixing workflow stage with technical type.',
-    refresh: 'Refresh',
-    noRoots: 'No skill directories found in this project.',
-    notFoundRoots: 'No skills are currently available in this workspace.',
-    noSkills: 'No skills detected yet. Click Refresh after creating or linking skills.',
-    searchPlaceholder: 'Search skills, intents, capabilities, domains, or tags...',
-    clearSearch: 'Clear search',
-    allTags: 'All Tags',
-    noFilterResult: 'No skills match the current filters. Try clearing search or switching filters.',
-    clickForMore: 'Click to view full description',
-    detailTitle: 'Skill details',
-    fallbackDesc: 'Skill available, but description could not be extracted from SKILL.md.',
-    fallbackNoSkillMd: 'No SKILL.md detected at the root. Contains {{count}} files (likely script- or workflow-based skill).',
-    defaultDomain: 'Domain: General',
-    sourcePlatform: 'Source: Dr. Claw',
-    sourcePlatformShort: 'Dr. Claw',
-    sourceImportedShort: 'Imported',
-    headerCount: '{{shown}}/{{total}} skills',
-    summaryIntents: '{{count}} primary intents',
-    summaryCapabilities: '{{count}} capabilities',
-    summaryDomains: '{{count}} domains',
-    summaryVerified: '{{count}} verified skills',
-    quickViews: 'Quick Views',
-    allSkills: 'All Skills',
-    nativeSkills: 'Dr. Claw',
-    communitySkills: 'Imported',
-    verifiedSkills: 'Verified',
-    intents: 'Primary Intent',
-    capabilities: 'Capabilities',
-    domains: 'Domains',
-    statuses: 'Status',
-    allIntents: 'All Intents',
-    allCapabilities: 'All Capabilities',
-    allDomains: 'All Domains',
-    allStatuses: 'All Statuses',
-    clearFilters: 'Clear Filters',
-    results: 'Results',
-    resultsSummary: '{{shown}} skills shown',
-    overview: 'Overview',
-    relatedSkills: 'Related Skills',
-    emptySelection: 'Select a skill to inspect its details, tags, and nearby skills.',
-    pathField: 'Path',
-    primaryIntentField: 'Primary Intent',
-    intentsField: 'Intents',
-    capabilitiesField: 'Capabilities',
-    domainField: 'Domain',
-    sourceField: 'Source',
-    statusField: 'Status',
-    ownerField: 'Owner',
-    legacyField: 'Legacy',
-    keywordsField: 'Keywords',
-    rawTagsField: 'Raw Tags',
-    standaloneGroup: 'Standalone',
-    noSkillFile: 'No root SKILL.md found',
-    discardChanges: 'Discard unsaved changes?',
-    tabPlatform: 'Platform Skills',
-    tabCommunity: 'Community Tools',
-    communityTitle: 'Community Tool Packs',
-    communitySubtitle: 'Complete research workflows from the open-source community. One-click setup, ready to use.',
-    packSetup: 'Setup',
-    packWorkflows: 'One-Click Workflows',
-    packSubSkills: 'Sub-skills & Utilities',
-    packAllSkills: 'All {{count}} skills',
-    packAuthor: 'Author',
-    packVerified: '{{count}} verified',
-    copyCommand: 'Copy',
-    copied: 'Copied!',
-    noCommunityPacks: 'No community tool packs found. Import community skills via "Import Local Skills".',
-    packConfig: 'Configuration',
-    configMcp: '① MCP Reviewer',
-    configMcpDesc: 'Choose an external LLM for cross-model review (required)',
-    configGpu: '② GPU Environment',
-    configGpuDesc: 'Add the template below to your project CLAUDE.md (for experiments)',
-    configSetupScript: '③ Setup Script',
-    configInstall: 'Install',
-    configRegister: 'Register MCP',
-    configEnvVar: 'Env Variable',
-    configClaudeMd: 'Add to CLAUDE.md',
-    configApply: 'Auto Configure',
-    configApplying: 'Configuring...',
-    configSuccess: 'Configured! Restart Claude Code session to activate.',
-    importLocal: 'Import Local Skills',
-    importModalTitle: 'Import skills from local directory',
-    scan: 'Scan',
-    scanning: 'Scanning...',
-    importSelected: 'Import Selected',
-    importing: 'Importing...',
-    importSuccess: 'Successfully imported {{count}} skills',
-    importSkipped: 'Skipped {{count}} already-imported skills',
-    noSkillsFound: 'No skills found in this directory.',
-    alreadyImported: 'Already imported',
-    pathLabel: 'Skills directory path',
-    editSkill: 'Edit',
-    deleteSkill: 'Delete',
-    saveSkill: 'Save',
-    cancelEdit: 'Cancel',
-    confirmDeleteSkill: 'Delete skill "{{name}}"? This cannot be undone.',
-    skillDeleted: '"{{name}}" deleted',
-    skillSaved: '"{{name}}" saved',
-    saving: 'Saving...',
-    deleting: 'Deleting...',
-  },
-  ko: {
-    loading: 'Loading skills...',
-    eyebrow: '공유 스킬 카탈로그',
-    title: '스킬 라이브러리',
-    subtitle: 'Browse 100+ skills by primary intent, capability, domain, and governance state instead of mixing workflow stage with technical type.',
-    refresh: 'Refresh',
-    noRoots: 'No skill directories found in this project.',
-    notFoundRoots: 'No skills are currently available in this workspace.',
-    noSkills: 'No skills detected yet. Click Refresh after creating or linking skills.',
-    searchPlaceholder: 'Search skills, intents, capabilities, domains, or tags...',
-    clearSearch: 'Clear search',
-    allTags: 'All Tags',
-    noFilterResult: 'No skills match the current filters. Try clearing search or switching filters.',
-    clickForMore: 'Click to view full description',
-    detailTitle: 'Skill details',
-    fallbackDesc: 'Skill available, but description could not be extracted from SKILL.md.',
-    fallbackNoSkillMd: 'No SKILL.md detected at the root. Contains {{count}} files (likely script- or workflow-based skill).',
-    defaultDomain: 'Domain: General',
-    sourcePlatform: 'Source: Dr. Claw',
-    sourcePlatformShort: 'Dr. Claw',
-    sourceImportedShort: 'Imported',
-    headerCount: '{{shown}}/{{total}} skills',
-    summaryIntents: '{{count}} primary intents',
-    summaryCapabilities: '{{count}} capabilities',
-    summaryDomains: '{{count}} domains',
-    summaryVerified: '{{count}} verified skills',
-    quickViews: 'Quick Views',
-    allSkills: 'All Skills',
-    nativeSkills: 'Dr. Claw',
-    communitySkills: 'Imported',
-    verifiedSkills: 'Verified',
-    intents: 'Primary Intent',
-    capabilities: 'Capabilities',
-    domains: 'Domains',
-    statuses: 'Status',
-    allIntents: 'All Intents',
-    allCapabilities: 'All Capabilities',
-    allDomains: 'All Domains',
-    allStatuses: 'All Statuses',
-    clearFilters: 'Clear Filters',
-    results: 'Results',
-    resultsSummary: '{{shown}} skills shown',
-    overview: 'Overview',
-    relatedSkills: 'Related Skills',
-    emptySelection: 'Select a skill to inspect its details, tags, and nearby skills.',
-    pathField: 'Path',
-    primaryIntentField: 'Primary Intent',
-    intentsField: 'Intents',
-    capabilitiesField: 'Capabilities',
-    domainField: 'Domain',
-    sourceField: 'Source',
-    statusField: 'Status',
-    ownerField: 'Owner',
-    legacyField: 'Legacy',
-    keywordsField: 'Keywords',
-    rawTagsField: 'Raw Tags',
-    standaloneGroup: 'Standalone',
-    noSkillFile: 'No root SKILL.md found',
-    discardChanges: 'Discard unsaved changes?',
-    tabPlatform: 'Platform Skills',
-    tabCommunity: 'Community Tools',
-    communityTitle: 'Community Tool Packs',
-    communitySubtitle: 'Complete research workflows from the open-source community. One-click setup, ready to use.',
-    packSetup: 'Setup',
-    packWorkflows: 'One-Click Workflows',
-    packSubSkills: 'Sub-skills & Utilities',
-    packAllSkills: 'All {{count}} skills',
-    packAuthor: 'Author',
-    packVerified: '{{count}} verified',
-    copyCommand: 'Copy',
-    copied: 'Copied!',
-    noCommunityPacks: 'No community tool packs found.',
-    packConfig: 'Configuration',
-    configMcp: '① MCP Reviewer',
-    configMcpDesc: 'Choose an external LLM for cross-model review (required)',
-    configGpu: '② GPU Environment',
-    configGpuDesc: 'Add the template below to your project CLAUDE.md (for experiments)',
-    configSetupScript: '③ Setup Script',
-    configInstall: 'Install',
-    configRegister: 'Register MCP',
-    configEnvVar: 'Env Variable',
-    configClaudeMd: 'Add to CLAUDE.md',
-    configApply: 'Auto Configure',
-    configApplying: 'Configuring...',
-    configSuccess: 'Configured! Restart Claude Code session to activate.',
-    importLocal: 'Import Local Skills',
-    importModalTitle: 'Import skills from local directory',
-    scan: 'Scan',
-    scanning: 'Scanning...',
-    importSelected: 'Import Selected',
-    importing: 'Importing...',
-    importSuccess: 'Successfully imported {{count}} skills',
-    importSkipped: 'Skipped {{count}} already-imported skills',
-    noSkillsFound: 'No skills found in this directory.',
-    alreadyImported: 'Already imported',
-    pathLabel: 'Skills directory path',
-    editSkill: 'Edit',
-    deleteSkill: 'Delete',
-    saveSkill: 'Save',
-    cancelEdit: 'Cancel',
-    confirmDeleteSkill: 'Delete skill "{{name}}"? This cannot be undone.',
-    skillDeleted: '"{{name}}" deleted',
-    skillSaved: '"{{name}}" saved',
-    saving: 'Saving...',
-    deleting: 'Deleting...',
-  },
-};
 
 function resolveLocaleKey(language: string): LocaleKey {
   const normalized = language.toLowerCase();
@@ -1074,11 +757,11 @@ function inferTags(
   }
 
   if (!inferred.some((tag) => tag.type === 'domain')) {
-    push(UI_TEXT[localeKey].defaultDomain, 'domain');
+    push(String(translations.t('common:skillsLibrary.defaultDomain', { lng: localeKey === 'zh' ? 'zh-CN' : localeKey })), 'domain');
   }
 
   if (nativeSkillSet.has(normalizedSkillName)) {
-    push(UI_TEXT[localeKey].sourcePlatform, 'meta');
+    push(String(translations.t('common:skillsLibrary.sourcePlatform', { lng: localeKey === 'zh' ? 'zh-CN' : localeKey })), 'meta');
   }
 
   return inferred;
@@ -1169,29 +852,8 @@ function buildMultiFacetOptions(
   return Array.from(counts.values()).sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
 }
 
-function tagStyleClass(type: SkillTagType, label?: string): string {
-  if (type === 'source' || (label && isSourcePlatformTag(label))) {
-    return 'border-amber-300/80 bg-amber-50 text-amber-800 shadow-sm dark:border-amber-500/60 dark:bg-amber-900/30 dark:text-amber-200';
-  }
-  if (type === 'intent') {
-    return 'border-sky-300/60 bg-sky-50 text-sky-700 dark:border-sky-600/60 dark:bg-sky-950/40 dark:text-sky-200';
-  }
-  if (type === 'capability') {
-    return 'border-violet-300/60 bg-violet-50 text-violet-700 dark:border-violet-600/60 dark:bg-violet-950/40 dark:text-violet-200';
-  }
-  if (type === 'stage') {
-    if (label && /^(Category:|类别:|카테고리:)/.test(label)) {
-      return 'border-violet-300/60 bg-violet-50 text-violet-700 dark:border-violet-600/60 dark:bg-violet-950/40 dark:text-violet-200';
-    }
-    return 'border-cyan-300/60 bg-cyan-50 text-cyan-700 dark:border-cyan-600/60 dark:bg-cyan-950/40 dark:text-cyan-200';
-  }
-  if (type === 'domain') {
-    return 'border-emerald-300/60 bg-emerald-50 text-emerald-700 dark:border-emerald-600/60 dark:bg-emerald-950/40 dark:text-emerald-200';
-  }
-  if (type === 'status') {
-    return 'border-rose-300/60 bg-rose-50 text-rose-700 dark:border-rose-600/60 dark:bg-rose-950/40 dark:text-rose-200';
-  }
-  return 'border-slate-300/60 bg-slate-50 text-slate-700 dark:border-slate-600/60 dark:bg-slate-900/60 dark:text-slate-200';
+function tagStyleClass(_type: SkillTagType, _label?: string): string {
+  return 'border-border bg-muted text-muted-foreground';
 }
 
 function getTagPriority(tag: SkillTag): number {
@@ -1262,6 +924,7 @@ function buildExplorerSkills(
     defaultDomainLabel: string;
     sourcePlatformShort: string;
     sourceImportedShort: string;
+    localeKey: LocaleKey;
   }
 ): SkillExplorerItem[] {
   const seeds: SkillExplorerSeed[] = skills.map((skill) => {
@@ -1280,7 +943,7 @@ function buildExplorerSkills(
     const intentLabel = taxonomy?.primaryIntent.label ?? collectionLabel;
     const sourceLabel = taxonomy?.source.label ?? (fallbackSourceKey === 'dr-claw' ? options.sourcePlatformShort : options.sourceImportedShort);
     const statusKey = taxonomy?.status.key ?? (fallbackSourceKey === 'dr-claw' ? 'verified' : 'candidate');
-    const statusLabel = taxonomy?.status.label ?? humanizeSlug(statusKey);
+    const statusLabel = taxonomy?.status.label ?? (STATUS_LABELS[statusKey] ? localize(STATUS_LABELS[statusKey], options.localeKey) : humanizeSlug(statusKey));
     const domains = taxonomy?.domains ?? [{ key: fallbackDomainKey, label: primaryDomainLabel }];
     const capabilities = taxonomy?.capabilities ?? fallbackCapabilities;
     const tags = taxonomy
@@ -1421,9 +1084,9 @@ function buildExplorerSkills(
 }
 
 function facetButtonClass(active: boolean): string {
-  return `flex w-full items-center justify-between rounded-xl border px-3 py-2 text-left text-sm transition ${
+  return `flex w-full items-center justify-between rounded-lg border px-3 py-2 text-left text-sm transition ${
     active
-      ? 'border-sky-400/70 bg-sky-50 text-sky-700 shadow-sm dark:border-sky-500/60 dark:bg-sky-950/40 dark:text-sky-200'
+      ? 'border-foreground/30 bg-muted text-foreground'
       : 'border-border/70 bg-background text-foreground hover:bg-muted/60'
   }`;
 }
@@ -1448,7 +1111,7 @@ function DetailChipSection({
         {values.map((value) => (
           <span
             key={`${title}-${value}`}
-            className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium ${tagStyleClass(type, value)}`}
+            className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${tagStyleClass(type, value)}`}
           >
             {value}
           </span>
@@ -1478,9 +1141,12 @@ type SkillsDashboardProps = {
 };
 
 export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps = {}) {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
+  const { isMobile: isCompact } = useDeviceSettings({ mobileBreakpoint: 1279, trackPWA: false });
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
   const localeKey = useMemo(() => resolveLocaleKey(i18n.language || 'en'), [i18n.language]);
-  const text = UI_TEXT[localeKey];
+  const text = useMemo(() => t('common:skillsLibrary', { returnObjects: true }) as Record<string, string>, [t, i18n.language]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -1842,8 +1508,9 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
       defaultDomainLabel: text.defaultDomain,
       sourcePlatformShort: text.sourcePlatformShort,
       sourceImportedShort: text.sourceImportedShort,
+      localeKey,
     }),
-    [skills, text.defaultDomain, text.sourceImportedShort, text.sourcePlatformShort, text.standaloneGroup]
+    [skills, localeKey, text.defaultDomain, text.sourceImportedShort, text.sourcePlatformShort, text.standaloneGroup]
   );
 
   const skillLookup = useMemo(
@@ -2129,12 +1796,17 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
   }, [explorerSkills, filteredSkills, isEditing, skillLookup]);
 
   const handleSelectSkill = useCallback((skill: SkillExplorerItem) => {
+    if (isEditing && focusedSkill?.dirPath === skill.dirPath) {
+      setMobileDetailOpen(true);
+      return;
+    }
     if (isEditing && focusedSkill && focusedSkill.dirPath !== skill.dirPath) {
       if (!confirm(text.discardChanges)) {
         return;
       }
     }
     setFocusedSkill(skill);
+    setMobileDetailOpen(true);
     setIsEditing(false);
     setEditContent('');
     setModalMessage(null);
@@ -2149,6 +1821,227 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
     setActiveStatus('all');
   }, []);
 
+  const detailPanel = <>
+              <div className="overflow-hidden rounded-lg border border-border/80 bg-card/95 ">
+                {!focusedSkill && (
+                  <div className="p-6 text-sm text-muted-foreground">{text.emptySelection}</div>
+                )}
+
+                {focusedSkill && (
+                  <>
+                    <div className="border-b border-border/60 p-5">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-xs font-medium text-muted-foreground">{text.detailTitle}</p>
+                          <h3 className="mt-2 break-all text-xl font-semibold text-foreground">{focusedSkill.name}</h3>
+                          <p className="mt-2 text-sm leading-6 text-muted-foreground">{focusedSkill.summary}</p>
+                          <div className="mt-3 flex flex-wrap gap-1.5">
+                            <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${tagStyleClass('intent', focusedSkill.primaryIntentLabel)}`}>
+                              {focusedSkill.primaryIntentLabel}
+                            </span>
+                            <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${tagStyleClass('status', focusedSkill.statusLabel)}`}>
+                              {focusedSkill.statusLabel}
+                            </span>
+                            <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${tagStyleClass('source', focusedSkill.sourceLabel)}`}>
+                              {focusedSkill.sourceLabel}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap justify-end gap-2">
+                          {!isEditing && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={handleStartEdit}
+                                disabled={editLoading || !focusedSkill.hasSkillMd}
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50"
+                                title={focusedSkill.hasSkillMd ? text.editSkill : text.noSkillFile}
+                              >
+                                {editLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Edit3 className="h-3.5 w-3.5" />}
+                                {text.editSkill}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={handleDeleteSkill}
+                                disabled={deleteLoading}
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-2 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/30 disabled:opacity-50"
+                              >
+                                {deleteLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                                {text.deleteSkill}
+                              </button>
+                            </>
+                          )}
+                          {isEditing && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={handleSaveEdit}
+                                disabled={editLoading}
+                                className="inline-flex items-center gap-1.5 rounded-lg bg-sky-600 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-sky-700 disabled:opacity-50"
+                              >
+                                {editLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                                {editLoading ? text.saving : text.saveSkill}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={handleCancelEdit}
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+                              >
+                                {text.cancelEdit}
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-5 p-5">
+                      {modalMessage && (
+                        <div className={`rounded-md border px-3 py-2 text-sm ${modalMessage.type === 'success' ? 'border-green-300/60 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300' : 'border-red-300/60 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'}`}>
+                          {modalMessage.text}
+                        </div>
+                      )}
+
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <div className="border-b border-border pb-3">
+                          <p className="text-sm text-muted-foreground">{text.primaryIntentField}</p>
+                          <p className="mt-1 text-sm font-medium text-foreground">{focusedSkill.primaryIntentLabel}</p>
+                        </div>
+                        <div className="border-b border-border pb-3">
+                          <p className="text-sm text-muted-foreground">{text.intentsField}</p>
+                          <p className="mt-1 text-sm font-medium text-foreground">{focusedSkill.intentLabels.join(', ')}</p>
+                        </div>
+                        <div className="border-b border-border pb-3">
+                          <p className="text-sm text-muted-foreground">{text.statusField}</p>
+                          <p className="mt-1 text-sm font-medium text-foreground">{focusedSkill.statusLabel}</p>
+                        </div>
+                        <div className="border-b border-border pb-3">
+                          <p className="text-sm text-muted-foreground">{text.domainField}</p>
+                          <p className="mt-1 text-sm font-medium text-foreground">{focusedSkill.domainLabels.join(', ')}</p>
+                        </div>
+                        <div className="border-b border-border pb-3">
+                          <p className="text-sm text-muted-foreground">{text.sourceField}</p>
+                          <p className="mt-1 text-sm font-medium text-foreground">{focusedSkill.sourceLabel}</p>
+                        </div>
+                        <div className="border-b border-border pb-3 sm:col-span-2">
+                          <p className="text-sm text-muted-foreground">{text.capabilitiesField}</p>
+                          <p className="mt-1 text-sm font-medium text-foreground">{focusedSkill.capabilityLabels.join(', ') || '—'}</p>
+                        </div>
+                        {focusedSkill.owner && (
+                          <div className="border-b border-border pb-3 sm:col-span-2">
+                            <p className="text-sm text-muted-foreground">{text.ownerField}</p>
+                            <p className="mt-1 text-sm font-medium text-foreground">{focusedSkill.owner}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="border-b border-border pb-3">
+                        <p className="text-sm text-muted-foreground">{text.pathField}</p>
+                        <p className="mt-1 break-all text-sm font-medium text-foreground">{`skills/${focusedSkill.dirPath}`}</p>
+                      </div>
+
+                      <div className="border-b border-border pb-3">
+                        <p className="text-sm text-muted-foreground">{text.legacyField}</p>
+                        <p className="mt-1 text-sm font-medium text-foreground">
+                          {`${focusedSkill.legacyCollectionLabel} / ${focusedSkill.legacyGroupLabel}`}
+                        </p>
+                      </div>
+
+                      {!focusedSkill.hasSkillMd && !isEditing && (
+                        <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+                          {text.noSkillFile}
+                        </div>
+                      )}
+
+                      {isEditing ? (
+                        <textarea
+                          aria-label={`${text.editSkill} ${focusedSkill.name}`}
+                          value={editContent}
+                          onChange={(e) => setEditContent(e.target.value)}
+                          className="min-h-[360px] w-full resize-y rounded-lg border border-border/70 bg-background p-4 font-mono text-sm leading-6 text-foreground outline-none transition focus:ring-2 focus:ring-sky-300/70 dark:focus:ring-sky-700/70"
+                          spellCheck={false}
+                        />
+                      ) : (
+                        <>
+                          <div className="grid gap-5">
+                            <DetailChipSection
+                              title={text.intentsField}
+                              values={focusedSkill.intentLabels}
+                              type="intent"
+                            />
+                            <DetailChipSection
+                              title={text.capabilitiesField}
+                              values={focusedSkill.capabilityLabels}
+                              type="capability"
+                            />
+                            <DetailChipSection
+                              title={text.domainField}
+                              values={focusedSkill.domainLabels}
+                              type="domain"
+                            />
+                            <DetailChipSection
+                              title={text.keywordsField}
+                              values={focusedSkill.keywordLabels}
+                              type="meta"
+                            />
+                            {!focusedSkill.taxonomy && focusedSkill.tags.length > 0 && (
+                              <div>
+                                <h4 className="text-sm font-semibold text-foreground">{text.rawTagsField}</h4>
+                                <div className="mt-2 flex flex-wrap gap-1.5">
+                                  {focusedSkill.tags.map((tag) => (
+                                    <span
+                                      key={`${focusedSkill.dirPath}-detail-${tag.label}`}
+                                      className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${tagStyleClass(tag.type, tag.label)}`}
+                                    >
+                                      {tag.label}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          <div>
+                            <h4 className="text-sm font-semibold text-foreground">{text.overview}</h4>
+                            <div className="mt-2 max-h-[38vh] overflow-auto rounded-lg border border-border/70 bg-muted/30 p-4">
+                              <p className="whitespace-pre-wrap text-sm leading-7 text-foreground">{focusedSkill.fullDescription}</p>
+                            </div>
+                          </div>
+
+                          {focusedSkill.relatedSkills.length > 0 && (
+                            <div>
+                              <h4 className="text-sm font-semibold text-foreground">{text.relatedSkills}</h4>
+                              <div className="mt-2 space-y-2">
+                                {focusedSkill.relatedSkills.map((relation) => {
+                                  const relatedSkill = skillLookup.get(relation.dirPath);
+                                  if (!relatedSkill) return null;
+
+                                  return (
+                                    <button
+                                      key={relation.dirPath}
+                                      type="button"
+                                      onClick={() => handleSelectSkill(relatedSkill)}
+                                      className="flex w-full items-start justify-between gap-3 rounded-lg border border-border/70 bg-background px-3 py-3 text-left transition hover:bg-muted/60"
+                                    >
+                                      <div className="min-w-0">
+                                        <p className="break-all text-sm font-medium text-foreground">{relatedSkill.name}</p>
+                                        <p className="mt-1 text-xs text-muted-foreground">{relation.reason}</p>
+                                      </div>
+                                      <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            </>;
+
   if (loading) {
     return (
       <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
@@ -2159,78 +2052,32 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
 
   return (
     <div className="h-full overflow-auto bg-background">
-      <div className="mx-auto max-w-[1600px] p-4 sm:p-6">
-        <div className="relative mb-5 overflow-hidden rounded-[28px] border border-border/80 bg-[radial-gradient(circle_at_top_left,_rgba(125,211,252,0.24),_transparent_36%),linear-gradient(135deg,_rgba(248,250,252,0.95),_rgba(240,249,255,0.9))] p-5 shadow-sm dark:bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.18),_transparent_34%),linear-gradient(135deg,_rgba(2,6,23,0.96),_rgba(15,23,42,0.92))]">
-          <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-sky-200/50 blur-3xl dark:bg-sky-500/20" />
-          <div className="absolute bottom-0 right-20 h-24 w-24 rounded-full bg-emerald-200/40 blur-2xl dark:bg-emerald-500/10" />
-
-          <div className="relative flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-            <div className="min-w-0 flex-1">
-              <div className="inline-flex items-center gap-2 rounded-full border border-sky-200/70 bg-white/80 px-3 py-1 text-xs font-medium uppercase tracking-[0.24em] text-sky-700 shadow-sm dark:border-sky-800/60 dark:bg-slate-950/60 dark:text-sky-200">
-                <Sparkles className="h-3.5 w-3.5" />
-                {text.eyebrow}
-              </div>
-              <h1 className="mt-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-                {text.title}
-              </h1>
-              <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-                {text.subtitle}
-              </p>
-              <p className="mt-3 text-sm font-medium text-foreground">{headerSummary}</p>
-
-              <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <div className="rounded-2xl border border-white/80 bg-white/80 p-4 shadow-sm backdrop-blur dark:border-white/10 dark:bg-slate-950/50">
-                  <p className="text-xl font-semibold text-foreground">{skills.length}</p>
-                  <p className="mt-1 text-xs uppercase tracking-[0.2em] text-muted-foreground">{text.allSkills}</p>
-                </div>
-                <div className="rounded-2xl border border-white/80 bg-white/80 p-4 shadow-sm backdrop-blur dark:border-white/10 dark:bg-slate-950/50">
-                  <p className="text-xl font-semibold text-foreground">{allCollectionOptions.length}</p>
-                  <p className="mt-1 text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                    {text.summaryIntents.replace('{{count}}', String(allCollectionOptions.length))}
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-white/80 bg-white/80 p-4 shadow-sm backdrop-blur dark:border-white/10 dark:bg-slate-950/50">
-                  <p className="text-xl font-semibold text-foreground">{allGroupOptions.length}</p>
-                  <p className="mt-1 text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                    {text.summaryCapabilities.replace('{{count}}', String(allGroupOptions.length))}
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-white/80 bg-white/80 p-4 shadow-sm backdrop-blur dark:border-white/10 dark:bg-slate-950/50">
-                  <p className="text-xl font-semibold text-foreground">{verifiedCount}</p>
-                  <p className="mt-1 text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                    {text.summaryVerified.replace('{{count}}', String(verifiedCount))}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex shrink-0 flex-wrap items-center gap-2">
-              <button
+      <div className="workbench-page">
+        <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0"><h1 className="text-2xl font-semibold tracking-tight">{text.title}</h1><p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">{t('common:workbench.skillsDescription')}</p><p className="mt-3 text-sm tabular-nums text-muted-foreground">{headerSummary}</p></div>
+          <div className="flex flex-wrap gap-2"><button
                 onClick={openImportModal}
-                className="inline-flex items-center gap-2 rounded-xl border border-border bg-background/85 px-4 py-2 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-muted"
+                className="inline-flex items-center gap-2 rounded-lg border border-border bg-background/85 px-4 py-2 text-sm font-medium text-foreground  transition-colors hover:bg-muted"
               >
                 <Download className="h-4 w-4" />
                 {text.importLocal}
-              </button>
-              <button
+              </button><button
                 onClick={loadSkills}
-                className="inline-flex items-center gap-2 rounded-xl border border-border bg-background/85 px-4 py-2 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-muted"
+                className="inline-flex items-center gap-2 rounded-lg border border-border bg-background/85 px-4 py-2 text-sm font-medium text-foreground  transition-colors hover:bg-muted"
               >
                 <RefreshCw className="h-4 w-4" />
                 {text.refresh}
-              </button>
-            </div>
-          </div>
-        </div>
+              </button></div>
+        </header>
 
         {/* ── Tab Bar: Platform vs Community ── */}
-        <div className="mb-5 flex items-center gap-1 rounded-2xl border border-border/80 bg-card/95 p-1.5 shadow-sm w-fit">
+        <div className="mb-5 flex items-center gap-1 rounded-lg border border-border/80 bg-card/95 p-1.5  w-fit">
           <button
             type="button"
             onClick={() => setViewMode('platform')}
-            className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium transition-all ${
+            className={`inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium transition-colors ${
               viewMode === 'platform'
-                ? 'bg-sky-100 text-sky-700 shadow-sm dark:bg-sky-900/40 dark:text-sky-200'
+                ? 'bg-muted text-foreground'
                 : 'text-muted-foreground hover:bg-muted/60'
             }`}
           >
@@ -2240,9 +2087,9 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
           <button
             type="button"
             onClick={() => setViewMode('community')}
-            className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium transition-all ${
+            className={`inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium transition-colors ${
               viewMode === 'community'
-                ? 'bg-amber-100 text-amber-700 shadow-sm dark:bg-amber-900/40 dark:text-amber-200'
+                ? 'bg-muted text-foreground'
                 : 'text-muted-foreground hover:bg-muted/60'
             }`}
           >
@@ -2264,19 +2111,19 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
         {viewMode === 'community' && (
           <div className="space-y-6">
             {communityPacks.length === 0 ? (
-              <div className="rounded-2xl border border-border/80 bg-card/95 p-8 text-center text-sm text-muted-foreground">
+              <div className="rounded-lg border border-border/80 bg-card/95 p-8 text-center text-sm text-muted-foreground">
                 <Package className="mx-auto mb-3 h-10 w-10 text-muted-foreground/40" />
                 {text.noCommunityPacks}
               </div>
             ) : (
               communityPacks.map((pack) => (
-                <div key={pack.name} className="rounded-2xl border border-amber-200/60 bg-gradient-to-br from-amber-50/60 via-card to-card shadow-sm dark:border-amber-800/30 dark:from-amber-950/20">
+                <div key={pack.name} className="rounded-lg border border-amber-200/60 bg-muted     dark:border-amber-800/30 ">
                   {/* Pack Header */}
                   <div className="p-6 pb-4">
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200">
                             <Package className="h-5 w-5" />
                           </div>
                           <div>
@@ -2291,7 +2138,7 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
                         <button
                           type="button"
                           onClick={() => copyToClipboard(`/${pack.setupSkill!.name}`)}
-                          className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-amber-300/60 bg-amber-100/80 px-4 py-2 text-sm font-medium text-amber-800 shadow-sm transition-colors hover:bg-amber-200/80 dark:border-amber-700/40 dark:bg-amber-900/30 dark:text-amber-200 dark:hover:bg-amber-800/40"
+                          className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-amber-300/60 bg-amber-100/80 px-4 py-2 text-sm font-medium text-amber-800  transition-colors hover:bg-amber-200/80 dark:border-amber-700/40 dark:bg-amber-900/30 dark:text-amber-200 dark:hover:bg-amber-800/40"
                         >
                           <Settings className="h-4 w-4" />
                           {copiedCommand === `/${pack.setupSkill.name}` ? text.copied : text.packSetup}
@@ -2339,9 +2186,9 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
                                     key={opt.key}
                                     type="button"
                                     onClick={() => setSelectedMcp((prev) => ({ ...prev, [pack.name]: opt.key }))}
-                                    className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-all ${
+                                    className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
                                       mcpKey === opt.key
-                                        ? 'border-sky-400 bg-sky-100 text-sky-700 shadow-sm dark:border-sky-600 dark:bg-sky-900/40 dark:text-sky-200'
+                                        ? 'border-sky-400 bg-sky-100 text-sky-700  dark:border-sky-600 dark:bg-sky-900/40 dark:text-sky-200'
                                         : 'border-border/60 bg-background text-muted-foreground hover:bg-muted/60'
                                     }`}
                                   >
@@ -2349,7 +2196,7 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
                                   </button>
                                 ))}
                               </div>
-                              <div className="space-y-2 rounded-xl border border-sky-200/50 bg-sky-50/30 p-3 dark:border-sky-800/30 dark:bg-sky-950/10">
+                              <div className="space-y-2 rounded-lg border border-sky-200/50 bg-sky-50/30 p-3 dark:border-sky-800/30 dark:bg-sky-950/10">
                                 {mcpOpt.install && (
                                   <div className="flex items-center justify-between gap-2">
                                     <div className="min-w-0 flex-1">
@@ -2406,14 +2253,14 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
                                   <button
                                     type="button"
                                     onClick={() => setSelectedGpu((prev) => ({ ...prev, [pack.name]: 'compute-node' }))}
-                                    className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-all ${
+                                    className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
                                       gpuKey === 'compute-node'
-                                        ? 'border-green-400 bg-green-100 text-green-700 shadow-sm dark:border-green-600 dark:bg-green-900/40 dark:text-green-200'
+                                        ? 'border-green-400 bg-green-100 text-green-700  dark:border-green-600 dark:bg-green-900/40 dark:text-green-200'
                                         : 'border-border/60 bg-background text-muted-foreground hover:bg-muted/60'
                                     }`}
                                   >
                                     <Server className="h-3 w-3" />
-                                    {localeKey === 'zh' ? '已有服务器' : 'Existing Server'}
+                                    {text.existingServer}
                                   </button>
                                 )}
                                 {cfg.gpu.map((opt) => (
@@ -2421,9 +2268,9 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
                                     key={opt.key}
                                     type="button"
                                     onClick={() => setSelectedGpu((prev) => ({ ...prev, [pack.name]: opt.key }))}
-                                    className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-all ${
+                                    className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
                                       gpuKey === opt.key
-                                        ? 'border-sky-400 bg-sky-100 text-sky-700 shadow-sm dark:border-sky-600 dark:bg-sky-900/40 dark:text-sky-200'
+                                        ? 'border-sky-400 bg-sky-100 text-sky-700  dark:border-sky-600 dark:bg-sky-900/40 dark:text-sky-200'
                                         : 'border-border/60 bg-background text-muted-foreground hover:bg-muted/60'
                                     }`}
                                   >
@@ -2435,9 +2282,9 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
 
                               {/* Compute node selector */}
                               {gpuKey === 'compute-node' && computeNodes.length > 0 && (
-                                <div className="mb-3 rounded-xl border border-green-200/50 bg-green-50/30 p-3 dark:border-green-800/30 dark:bg-green-950/10">
+                                <div className="mb-3 rounded-lg border border-green-200/50 bg-green-50/30 p-3 dark:border-green-800/30 dark:bg-green-950/10">
                                   <p className="mb-2 text-xs font-medium text-muted-foreground">
-                                    {localeKey === 'zh' ? '选择服务器并自动检测 GPU' : 'Select server to auto-detect GPU'}
+                                    {text.selectServer}
                                   </p>
                                   <div className="space-y-1.5">
                                     {computeNodes.map((node) => (
@@ -2446,7 +2293,7 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
                                         type="button"
                                         disabled={detectingGpu}
                                         onClick={() => handleDetectGpu(node.id, pack.name)}
-                                        className="group flex w-full items-center justify-between gap-2 rounded-lg border border-border/40 bg-background/60 px-3 py-2 text-left transition-all hover:border-green-300/60 hover:bg-green-50/40 active:scale-[0.99] disabled:opacity-50 dark:hover:border-green-700/40"
+                                        className="group flex w-full items-center justify-between gap-2 rounded-lg border border-border/40 bg-background/60 px-3 py-2 text-left transition-colors hover:border-green-300/60 hover:bg-green-50/40 active:scale-[0.99] disabled:opacity-50 dark:hover:border-green-700/40"
                                       >
                                         <div className="flex items-center gap-2">
                                           <Server className="h-3.5 w-3.5 text-green-600" />
@@ -2454,21 +2301,21 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
                                           <span className="text-xs text-muted-foreground">{node.user}@{node.host}</span>
                                         </div>
                                         <span className="text-xs text-muted-foreground group-hover:text-green-600">
-                                          {detectingGpu ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : (localeKey === 'zh' ? '检测 GPU' : 'Detect GPU')}
+                                          {detectingGpu ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : (text.detectGpu)}
                                         </span>
                                       </button>
                                     ))}
                                   </div>
                                   {detectedGpuInfo[pack.name] && (
                                     <p className="mt-2 text-xs font-medium text-green-700 dark:text-green-300">
-                                      ✓ {detectedGpuInfo[pack.name]}
+                                      <Check className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" />{detectedGpuInfo[pack.name]}
                                     </p>
                                   )}
                                 </div>
                               )}
 
                               {/* Template display */}
-                              <div className="rounded-xl border border-sky-200/50 bg-sky-50/30 p-3 dark:border-sky-800/30 dark:bg-sky-950/10">
+                              <div className="rounded-lg border border-sky-200/50 bg-sky-50/30 p-3 dark:border-sky-800/30 dark:bg-sky-950/10">
                                 <div className="flex items-start justify-between gap-2">
                                   <div className="min-w-0 flex-1">
                                     <p className="mb-1 text-xs font-medium text-muted-foreground">{text.configClaudeMd}</p>
@@ -2477,7 +2324,7 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
                                         ? detectedGpuTemplate[pack.name]
                                         : gpuOpt.template}
                                     </pre>
-                                    {gpuKey !== 'compute-node' && gpuOpt.note && <p className="mt-1.5 text-xs text-muted-foreground">💡 {gpuOpt.note}</p>}
+                                    {gpuKey !== 'compute-node' && gpuOpt.note && <p className="mt-1.5 text-xs text-muted-foreground">{gpuOpt.note}</p>}
                                   </div>
                                   <button
                                     type="button"
@@ -2502,7 +2349,7 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
                               <button
                                 type="button"
                                 onClick={() => copyToClipboard(cfg.setupScript)}
-                                className="group flex w-full items-center justify-between gap-2 rounded-xl border border-border/60 bg-background/80 px-4 py-2.5 text-left transition-all hover:border-sky-300/80 hover:bg-sky-50/40 active:scale-[0.99] dark:hover:border-sky-700/50 dark:hover:bg-sky-950/20"
+                                className="group flex w-full items-center justify-between gap-2 rounded-lg border border-border/60 bg-background/80 px-4 py-2.5 text-left transition-colors hover:border-sky-300/80 hover:bg-sky-50/40 active:scale-[0.99] dark:hover:border-sky-700/50 dark:hover:bg-sky-950/20"
                               >
                                 <div className="flex items-center gap-2">
                                   <Terminal className="h-4 w-4 text-sky-500" />
@@ -2515,12 +2362,12 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
                             </div>
 
                             {/* Auto Configure Button */}
-                            <div className="mt-1 rounded-xl border border-sky-300/50 bg-sky-50/50 p-4 dark:border-sky-800/30 dark:bg-sky-950/20">
+                            <div className="mt-1 rounded-lg border border-sky-300/50 bg-sky-50/50 p-4 dark:border-sky-800/30 dark:bg-sky-950/20">
                               <button
                                 type="button"
                                 disabled={configuring}
                                 onClick={() => handleConfigure(pack.name)}
-                                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-sky-700 active:scale-[0.98] disabled:opacity-60 dark:bg-sky-500 dark:hover:bg-sky-600"
+                                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white  transition-colors hover:bg-sky-700 active:scale-[0.98] disabled:opacity-60 dark:bg-sky-500 dark:hover:bg-sky-600"
                               >
                                 {configuring ? (
                                   <>
@@ -2540,7 +2387,7 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
                                 </p>
                               )}
                               <p className="mt-2 text-center text-xs text-muted-foreground">
-                                {localeKey === 'zh' ? '填写 API Key → 选择 MCP 和 GPU → 点击配置' : 'Fill API Key → Select MCP & GPU → Click to configure'}
+                                {text.configureHint}
                               </p>
                             </div>
                           </div>
@@ -2553,22 +2400,22 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
                   {pack.workflows.length > 0 && (
                     <div className="border-t border-amber-200/40 px-6 py-4 dark:border-amber-800/20">
                       <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
-                        <Play className="h-4 w-4 text-amber-600" />
+                        <Play className="h-4 w-4 text-muted-foreground" />
                         {text.packWorkflows}
                       </h3>
                       <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                         {pack.workflows.map((skill) => (
                           <div
                             key={skill.name}
-                            className="group flex flex-col items-start gap-1.5 rounded-xl border border-border/60 bg-background/80 px-4 py-3 transition-all hover:border-amber-300/80 hover:bg-amber-50/60 hover:shadow-sm dark:hover:border-amber-700/50 dark:hover:bg-amber-950/20"
+                            className="group flex flex-col items-start gap-1.5 rounded-lg border border-border/60 bg-background/80 px-4 py-3 transition-colors hover:border-amber-300/80 hover:bg-amber-50/60  dark:hover:border-amber-700/50 dark:hover:bg-amber-950/20"
                           >
                             <div className="flex w-full items-center justify-between gap-2">
                               <p className="truncate text-sm font-semibold text-foreground">{skill.name}</p>
                               <button
                                 type="button"
                                 onClick={(e) => { e.stopPropagation(); copyToClipboard(`/${skill.name}`); }}
-                                className="shrink-0 rounded p-1 text-muted-foreground opacity-0 transition-all hover:text-amber-600 group-hover:opacity-100"
-                                title={localeKey === 'zh' ? '复制命令' : 'Copy command'}
+                                className="shrink-0 rounded p-1 text-muted-foreground opacity-0 transition-colors hover:text-amber-600 group-hover:opacity-100"
+                                title={text.copyCommandTitle}
                               >
                                 {copiedCommand === `/${skill.name}` ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5" />}
                               </button>
@@ -2578,10 +2425,10 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
                               <button
                                 type="button"
                                 onClick={() => onSendToChat ? onSendToChat(`/${skill.name}`) : copyToClipboard(`/${skill.name}`)}
-                                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-all hover:bg-amber-700 active:scale-[0.97] dark:bg-amber-500 dark:hover:bg-amber-600"
+                                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white  transition-colors hover:bg-amber-700 active:scale-[0.97] dark:bg-amber-500 dark:hover:bg-amber-600"
                               >
                                 <Play className="h-3 w-3" />
-                                {localeKey === 'zh' ? '在Chat中使用' : 'Use in Chat'}
+                                {text.useInChat}
                               </button>
                             </div>
                           </div>
@@ -2611,7 +2458,7 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
                                 key={skill.name}
                                 type="button"
                                 onClick={() => copyToClipboard(`/${skill.name}`)}
-                                className="group flex items-center justify-between gap-2 rounded-lg border border-border/40 bg-background/60 px-3 py-2 text-left transition-all hover:border-amber-200/60 hover:bg-amber-50/30 active:scale-[0.98] dark:hover:border-amber-800/40 dark:hover:bg-amber-950/10"
+                                className="group flex items-center justify-between gap-2 rounded-lg border border-border/40 bg-background/60 px-3 py-2 text-left transition-colors hover:border-amber-200/60 hover:bg-amber-50/30 active:scale-[0.98] dark:hover:border-amber-800/40 dark:hover:bg-amber-950/10"
                               >
                                 <div className="min-w-0 flex-1">
                                   <p className="truncate text-xs font-medium text-foreground">{skill.name}</p>
@@ -2654,15 +2501,16 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
         {viewMode === 'platform' && skills.length > 0 && (
           <div className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)_420px]">
             <aside className="space-y-4 xl:sticky xl:top-6 xl:max-h-[calc(100vh-3rem)] xl:self-start xl:overflow-y-auto xl:pr-1">
-              <div className="rounded-2xl border border-border/80 bg-card/95 p-4 shadow-sm">
+              <div className="border-t border-border py-4">
                 <div className="relative">
                   <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
+                    aria-label={text.searchPlaceholder}
                     placeholder={text.searchPlaceholder}
-                    className="w-full rounded-xl border border-border bg-background pl-9 pr-9 py-2.5 text-sm text-foreground outline-none transition focus:ring-2 focus:ring-sky-300/70 dark:focus:ring-sky-700/70"
+                    className="w-full rounded-lg border border-border bg-background pl-9 pr-9 py-2.5 text-sm text-foreground outline-none transition focus:ring-2 focus:ring-sky-300/70 dark:focus:ring-sky-700/70"
                   />
                   {searchQuery && (
                     <button
@@ -2688,9 +2536,11 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
                 )}
               </div>
 
-              <div className="rounded-2xl border border-border/80 bg-card/95 p-4 shadow-sm">
-                <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
-                  <Layers className="h-4 w-4 text-sky-600" />
+              {isCompact && <button type="button" className="w-full rounded-md border border-border px-3 py-2 text-left text-sm" aria-expanded={filtersOpen} onClick={() => setFiltersOpen(value => !value)}>{t('common:workbench.filters')}</button>}
+              <div className={isCompact && !filtersOpen ? 'hidden' : 'space-y-4'}>
+              <div className="border-t border-border py-4">
+              <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
+                  <Layers className="h-4 w-4 text-muted-foreground" />
                   {text.quickViews}
                 </div>
                 <div className="space-y-2">
@@ -2755,15 +2605,15 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
                       className={facetButtonClass(item.active)}
                     >
                       <span>{item.label}</span>
-                      <span className="text-xs text-muted-foreground">{item.count}</span>
+                      <span className="text-xs tabular-nums text-muted-foreground">{item.count}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-border/80 bg-card/95 p-4 shadow-sm">
+              <div className="border-t border-border py-4">
                 <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
-                  <Sparkles className="h-4 w-4 text-amber-600" />
+                  <Sparkles className="h-4 w-4 text-muted-foreground" />
                   {text.intents}
                 </div>
                 <div className="max-h-[320px] space-y-2 overflow-auto pr-1">
@@ -2773,7 +2623,7 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
                     className={facetButtonClass(activeIntent === 'all')}
                   >
                     <span>{text.allIntents}</span>
-                    <span className="text-xs text-muted-foreground">{searchFilteredSkills.length}</span>
+                    <span className="text-xs tabular-nums text-muted-foreground">{searchFilteredSkills.length}</span>
                   </button>
                   {collectionOptions.map((option) => (
                     <button
@@ -2783,15 +2633,15 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
                       className={facetButtonClass(activeIntent === option.key)}
                     >
                       <span className="min-w-0 truncate">{option.label}</span>
-                      <span className="text-xs text-muted-foreground">{option.count}</span>
+                      <span className="text-xs tabular-nums text-muted-foreground">{option.count}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-border/80 bg-card/95 p-4 shadow-sm">
+              <div className="border-t border-border py-4">
                 <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
-                  <FolderTree className="h-4 w-4 text-emerald-600" />
+                  <FolderTree className="h-4 w-4 text-muted-foreground" />
                   {text.capabilities}
                 </div>
                 <div className="max-h-[320px] space-y-2 overflow-auto pr-1">
@@ -2801,7 +2651,7 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
                     className={facetButtonClass(activeCapability === 'all')}
                   >
                     <span>{text.allCapabilities}</span>
-                    <span className="text-xs text-muted-foreground">{searchFilteredSkills.length}</span>
+                    <span className="text-xs tabular-nums text-muted-foreground">{searchFilteredSkills.length}</span>
                   </button>
                   {groupOptions.map((option) => (
                     <button
@@ -2811,16 +2661,16 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
                       className={facetButtonClass(activeCapability === option.key)}
                     >
                       <span className="min-w-0 truncate">{option.label}</span>
-                      <span className="text-xs text-muted-foreground">{option.count}</span>
+                      <span className="text-xs tabular-nums text-muted-foreground">{option.count}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
               {domainOptions.length > 1 && (
-                <div className="rounded-2xl border border-border/80 bg-card/95 p-4 shadow-sm">
+                <div className="border-t border-border py-4">
                   <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
-                    <Compass className="h-4 w-4 text-violet-600" />
+                    <Compass className="h-4 w-4 text-muted-foreground" />
                     {text.domains}
                   </div>
                   <div className="max-h-[260px] space-y-2 overflow-auto pr-1">
@@ -2830,7 +2680,7 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
                       className={facetButtonClass(activeDomain === 'all')}
                     >
                       <span>{text.allDomains}</span>
-                      <span className="text-xs text-muted-foreground">{searchFilteredSkills.length}</span>
+                      <span className="text-xs tabular-nums text-muted-foreground">{searchFilteredSkills.length}</span>
                     </button>
                     {domainOptions.map((option) => (
                       <button
@@ -2840,7 +2690,7 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
                         className={facetButtonClass(activeDomain === option.key)}
                       >
                         <span className="min-w-0 truncate">{option.label}</span>
-                        <span className="text-xs text-muted-foreground">{option.count}</span>
+                        <span className="text-xs tabular-nums text-muted-foreground">{option.count}</span>
                       </button>
                     ))}
                   </div>
@@ -2848,9 +2698,9 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
               )}
 
               {statusOptions.length > 1 && (
-                <div className="rounded-2xl border border-border/80 bg-card/95 p-4 shadow-sm">
+                <div className="border-t border-border py-4">
                   <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
-                    <Check className="h-4 w-4 text-rose-600" />
+                    <Check className="h-4 w-4 text-muted-foreground" />
                     {text.statuses}
                   </div>
                   <div className="max-h-[220px] space-y-2 overflow-auto pr-1">
@@ -2860,7 +2710,7 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
                       className={facetButtonClass(activeStatus === 'all')}
                     >
                       <span>{text.allStatuses}</span>
-                      <span className="text-xs text-muted-foreground">{searchFilteredSkills.length}</span>
+                      <span className="text-xs tabular-nums text-muted-foreground">{searchFilteredSkills.length}</span>
                     </button>
                     {statusOptions.map((option) => (
                       <button
@@ -2870,20 +2720,21 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
                         className={facetButtonClass(activeStatus === option.key)}
                       >
                         <span className="min-w-0 truncate">{option.label}</span>
-                        <span className="text-xs text-muted-foreground">{option.count}</span>
+                        <span className="text-xs tabular-nums text-muted-foreground">{option.count}</span>
                       </button>
                     ))}
                   </div>
                 </div>
               )}
+              </div>
             </aside>
 
             <section className="min-w-0 space-y-4">
-              <div className="rounded-2xl border border-border/80 bg-card/95 p-4 shadow-sm">
+              <div className="border-t border-border py-4">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                   <div>
-                    <p className="text-xs font-medium uppercase tracking-[0.24em] text-sky-600 dark:text-sky-300">{text.results}</p>
-                    <h3 className="mt-1 text-xl font-semibold text-foreground">{headerSummary}</h3>
+                    <p className="text-xs font-medium text-muted-foreground">{text.results}</p>
+                    <h3 className="mt-1 text-xl font-semibold tabular-nums text-foreground">{headerSummary}</h3>
                     <p className="mt-1 text-sm text-muted-foreground">
                       {text.resultsSummary.replace('{{shown}}', String(filteredSkills.length))}
                     </p>
@@ -2905,13 +2756,13 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
               </div>
 
               {filteredSkills.length === 0 && (
-                <div className="rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground shadow-sm">
+                <div className="rounded-lg border border-border bg-card p-6 text-sm text-muted-foreground ">
                   {text.noFilterResult}
                 </div>
               )}
 
               {filteredSkills.length > 0 && (
-                <div className="overflow-hidden rounded-2xl border border-border/80 bg-card/95 shadow-sm">
+                <div className="overflow-hidden rounded-lg border border-border/80 bg-card/95 ">
                   <div className="divide-y divide-border/60">
                     {filteredSkills.map((skill) => {
                       const isFocused = focusedSkill?.dirPath === skill.dirPath;
@@ -2923,7 +2774,7 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
                           onClick={() => handleSelectSkill(skill)}
                           className={`flex w-full items-start justify-between gap-4 px-4 py-4 text-left transition ${
                             isFocused
-                              ? 'bg-sky-50/80 dark:bg-sky-950/25'
+                              ? 'bg-muted'
                               : 'hover:bg-slate-50 dark:hover:bg-slate-900/40'
                           }`}
                         >
@@ -2933,13 +2784,13 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
                               {cardTags.map((tag) => (
                                 <span
                                   key={`${skill.dirPath}-${tag.type}-${tag.label}`}
-                                  className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${tagStyleClass(tag.type, tag.label)}`}
+                                  className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${tagStyleClass(tag.type, tag.label)}`}
                                 >
                                   {tag.label}
                                 </span>
                               ))}
                               {hiddenCount > 0 && (
-                                <span className="inline-flex items-center rounded-full border border-border/70 bg-muted/40 px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                                <span className="inline-flex items-center rounded-full border border-border/70 bg-muted/40 px-2 py-0.5 text-xs font-medium text-muted-foreground">
                                   +{hiddenCount}
                                 </span>
                               )}
@@ -2966,260 +2817,23 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
               )}
             </section>
 
-            <aside className="min-w-0 xl:sticky xl:top-6 xl:max-h-[calc(100vh-3rem)] xl:self-start xl:overflow-y-auto xl:pr-1">
-              <div className="overflow-hidden rounded-2xl border border-border/80 bg-card/95 shadow-sm">
-                {!focusedSkill && (
-                  <div className="p-6 text-sm text-muted-foreground">{text.emptySelection}</div>
-                )}
-
-                {focusedSkill && (
-                  <>
-                    <div className="border-b border-border/60 p-5">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="text-xs font-medium uppercase tracking-[0.24em] text-sky-600 dark:text-sky-300">{text.detailTitle}</p>
-                          <h3 className="mt-2 break-all text-xl font-semibold text-foreground">{focusedSkill.name}</h3>
-                          <p className="mt-2 text-sm leading-6 text-muted-foreground">{focusedSkill.summary}</p>
-                          <div className="mt-3 flex flex-wrap gap-1.5">
-                            <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium ${tagStyleClass('intent', focusedSkill.primaryIntentLabel)}`}>
-                              {focusedSkill.primaryIntentLabel}
-                            </span>
-                            <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium ${tagStyleClass('status', focusedSkill.statusLabel)}`}>
-                              {focusedSkill.statusLabel}
-                            </span>
-                            <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium ${tagStyleClass('source', focusedSkill.sourceLabel)}`}>
-                              {focusedSkill.sourceLabel}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex flex-wrap justify-end gap-2">
-                          {!isEditing && (
-                            <>
-                              <button
-                                type="button"
-                                onClick={handleStartEdit}
-                                disabled={editLoading || !focusedSkill.hasSkillMd}
-                                className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50"
-                                title={focusedSkill.hasSkillMd ? text.editSkill : text.noSkillFile}
-                              >
-                                {editLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Edit3 className="h-3.5 w-3.5" />}
-                                {text.editSkill}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={handleDeleteSkill}
-                                disabled={deleteLoading}
-                                className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-2 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/30 disabled:opacity-50"
-                              >
-                                {deleteLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
-                                {text.deleteSkill}
-                              </button>
-                            </>
-                          )}
-                          {isEditing && (
-                            <>
-                              <button
-                                type="button"
-                                onClick={handleSaveEdit}
-                                disabled={editLoading}
-                                className="inline-flex items-center gap-1.5 rounded-lg bg-sky-600 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-sky-700 disabled:opacity-50"
-                              >
-                                {editLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
-                                {editLoading ? text.saving : text.saveSkill}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={handleCancelEdit}
-                                className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted"
-                              >
-                                {text.cancelEdit}
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-5 p-5">
-                      {modalMessage && (
-                        <div className={`rounded-md border px-3 py-2 text-sm ${modalMessage.type === 'success' ? 'border-green-300/60 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300' : 'border-red-300/60 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'}`}>
-                          {modalMessage.text}
-                        </div>
-                      )}
-
-                      <div className="grid gap-3 sm:grid-cols-2">
-                        <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
-                          <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{text.primaryIntentField}</p>
-                          <p className="mt-1 text-sm font-medium text-foreground">{focusedSkill.primaryIntentLabel}</p>
-                        </div>
-                        <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
-                          <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{text.intentsField}</p>
-                          <p className="mt-1 text-sm font-medium text-foreground">{focusedSkill.intentLabels.join(', ')}</p>
-                        </div>
-                        <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
-                          <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{text.statusField}</p>
-                          <p className="mt-1 text-sm font-medium text-foreground">{focusedSkill.statusLabel}</p>
-                        </div>
-                        <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
-                          <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{text.domainField}</p>
-                          <p className="mt-1 text-sm font-medium text-foreground">{focusedSkill.domainLabels.join(', ')}</p>
-                        </div>
-                        <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
-                          <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{text.sourceField}</p>
-                          <p className="mt-1 text-sm font-medium text-foreground">{focusedSkill.sourceLabel}</p>
-                        </div>
-                        <div className="rounded-xl border border-border/70 bg-muted/30 p-3 sm:col-span-2">
-                          <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{text.capabilitiesField}</p>
-                          <p className="mt-1 text-sm font-medium text-foreground">{focusedSkill.capabilityLabels.join(', ') || '—'}</p>
-                        </div>
-                        {focusedSkill.owner && (
-                          <div className="rounded-xl border border-border/70 bg-muted/30 p-3 sm:col-span-2">
-                            <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{text.ownerField}</p>
-                            <p className="mt-1 text-sm font-medium text-foreground">{focusedSkill.owner}</p>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
-                        <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{text.pathField}</p>
-                        <p className="mt-1 break-all text-sm font-medium text-foreground">{`skills/${focusedSkill.dirPath}`}</p>
-                      </div>
-
-                      <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
-                        <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{text.legacyField}</p>
-                        <p className="mt-1 text-sm font-medium text-foreground">
-                          {`${focusedSkill.legacyCollectionLabel} / ${focusedSkill.legacyGroupLabel}`}
-                        </p>
-                      </div>
-
-                      {!focusedSkill.hasSkillMd && !isEditing && (
-                        <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
-                          {text.noSkillFile}
-                        </div>
-                      )}
-
-                      {isEditing ? (
-                        <textarea
-                          value={editContent}
-                          onChange={(e) => setEditContent(e.target.value)}
-                          className="min-h-[360px] w-full resize-y rounded-xl border border-border/70 bg-background p-4 font-mono text-sm leading-6 text-foreground outline-none transition focus:ring-2 focus:ring-sky-300/70 dark:focus:ring-sky-700/70"
-                          spellCheck={false}
-                        />
-                      ) : (
-                        <>
-                          <div className="grid gap-5">
-                            <DetailChipSection
-                              title={text.intentsField}
-                              values={focusedSkill.intentLabels}
-                              type="intent"
-                            />
-                            <DetailChipSection
-                              title={text.capabilitiesField}
-                              values={focusedSkill.capabilityLabels}
-                              type="capability"
-                            />
-                            <DetailChipSection
-                              title={text.domainField}
-                              values={focusedSkill.domainLabels}
-                              type="domain"
-                            />
-                            <DetailChipSection
-                              title={text.keywordsField}
-                              values={focusedSkill.keywordLabels}
-                              type="meta"
-                            />
-                            {!focusedSkill.taxonomy && focusedSkill.tags.length > 0 && (
-                              <div>
-                                <h4 className="text-sm font-semibold text-foreground">{text.rawTagsField}</h4>
-                                <div className="mt-2 flex flex-wrap gap-1.5">
-                                  {focusedSkill.tags.map((tag) => (
-                                    <span
-                                      key={`${focusedSkill.dirPath}-detail-${tag.label}`}
-                                      className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium ${tagStyleClass(tag.type, tag.label)}`}
-                                    >
-                                      {tag.label}
-                                    </span>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-
-                          <div>
-                            <h4 className="text-sm font-semibold text-foreground">{text.overview}</h4>
-                            <div className="mt-2 max-h-[38vh] overflow-auto rounded-xl border border-border/70 bg-muted/30 p-4">
-                              <p className="whitespace-pre-wrap text-sm leading-7 text-foreground">{focusedSkill.fullDescription}</p>
-                            </div>
-                          </div>
-
-                          {focusedSkill.relatedSkills.length > 0 && (
-                            <div>
-                              <h4 className="text-sm font-semibold text-foreground">{text.relatedSkills}</h4>
-                              <div className="mt-2 space-y-2">
-                                {focusedSkill.relatedSkills.map((relation) => {
-                                  const relatedSkill = skillLookup.get(relation.dirPath);
-                                  if (!relatedSkill) return null;
-
-                                  return (
-                                    <button
-                                      key={relation.dirPath}
-                                      type="button"
-                                      onClick={() => handleSelectSkill(relatedSkill)}
-                                      className="flex w-full items-start justify-between gap-3 rounded-xl border border-border/70 bg-background px-3 py-3 text-left transition hover:bg-muted/60"
-                                    >
-                                      <div className="min-w-0">
-                                        <p className="break-all text-sm font-medium text-foreground">{relatedSkill.name}</p>
-                                        <p className="mt-1 text-xs text-muted-foreground">{relation.reason}</p>
-                                      </div>
-                                      <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
-            </aside>
+            {!isCompact && <aside className="min-w-0 xl:sticky xl:top-6 xl:max-h-[calc(100vh-3rem)] xl:self-start xl:overflow-y-auto">{detailPanel}</aside>}
+            {isCompact && mobileDetailOpen && focusedSkill && <WorkbenchDialog title={focusedSkill.name} size="wide" onClose={() => setMobileDetailOpen(false)}>{detailPanel}</WorkbenchDialog>}
           </div>
         )}
       </div>
 
       {showImportModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
-          onClick={() => setShowImportModal(false)}
-        >
-          <div
-            className="w-full max-w-lg rounded-2xl border border-border bg-card p-5 shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="mb-4 flex items-start justify-between gap-3">
-              <div>
-                <h3 className="text-lg font-semibold text-foreground">{text.importModalTitle}</h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowImportModal(false)}
-                className="rounded-md border border-border p-1.5 text-muted-foreground hover:bg-muted"
-                aria-label="Close"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
+        <WorkbenchDialog title={text.importModalTitle} onClose={() => setShowImportModal(false)}>
             <div className="mb-4">
-              <label className="mb-1.5 block text-sm font-medium text-foreground">{text.pathLabel}</label>
+              <label htmlFor="skill-import-path" className="mb-1.5 block text-sm font-medium text-foreground">{text.pathLabel}</label>
               <div className="flex gap-2">
                 <input
                   type="text"
+                  id="skill-import-path"
                   value={importPath}
                   onChange={(e) => setImportPath(e.target.value)}
-                  className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition focus:ring-2 focus:ring-sky-300/70 dark:focus:ring-sky-700/70"
+                  className="min-w-0 flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition focus:ring-2 focus:ring-sky-300/70 dark:focus:ring-sky-700/70"
                   placeholder="~/.claude/skills"
                 />
                 <button
@@ -3234,7 +2848,7 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
             </div>
 
             {importMessage && (
-              <div className={`mb-4 rounded-md border px-3 py-2 text-sm ${importMessage.type === 'success' ? 'border-green-300/60 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300' : 'border-red-300/60 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'}`}>
+              <div role={importMessage.type === 'error' ? 'alert' : 'status'} className={`mb-4 rounded-md border px-3 py-2 text-sm ${importMessage.type === 'success' ? 'border-green-300/60 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300' : 'border-red-300/60 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'}`}>
                 {importMessage.text}
               </div>
             )}
@@ -3271,10 +2885,10 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
                       <span className="text-sm font-medium text-foreground">{skill.name}</span>
                       <div className="mt-0.5 flex items-center gap-2">
                         {skill.hasSkillMd && (
-                          <span className="text-[11px] text-muted-foreground">SKILL.md</span>
+                          <span className="text-xs text-muted-foreground">SKILL.md</span>
                         )}
                         {skill.alreadyImported && (
-                          <span className="inline-flex items-center gap-1 text-[11px] text-green-600 dark:text-green-400">
+                          <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
                             <Check className="h-3 w-3" />
                             {text.alreadyImported}
                           </span>
@@ -3298,8 +2912,7 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
                 </button>
               </div>
             )}
-          </div>
-        </div>
+        </WorkbenchDialog>
       )}
     </div>
   );

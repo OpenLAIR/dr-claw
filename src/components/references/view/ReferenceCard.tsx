@@ -37,10 +37,10 @@ export default function ReferenceCard({
   return (
     <div
       className={cn(
-        'group relative rounded-xl border px-4 py-3 transition-all cursor-pointer',
+        'group relative rounded-lg border px-4 py-3 transition-colors cursor-pointer',
         isSelected
-          ? 'border-primary/60 bg-primary/8 shadow-sm'
-          : 'border-border/40 bg-background/55 hover:border-border/60 hover:bg-muted/40',
+          ? 'border-primary/60 bg-primary/8'
+          : 'border-border/40 bg-background hover:border-border/60 hover:bg-muted/40',
       )}
       onClick={() => onSelect?.(reference)}
     >
@@ -48,6 +48,7 @@ export default function ReferenceCard({
         {onToggleCheck && (
           <input
             type="checkbox"
+            aria-label={reference.title}
             checked={isChecked}
             onChange={(e) => { e.stopPropagation(); onToggleCheck(reference); }}
             onClick={(e) => e.stopPropagation()}
@@ -56,34 +57,34 @@ export default function ReferenceCard({
         )}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <FileText className="h-4 w-4 shrink-0 text-sky-500" />
-            <h4 className="truncate text-sm font-medium text-foreground">{reference.title}</h4>
+            <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <button type="button" className="min-w-0 break-words text-left text-sm font-medium text-foreground">{reference.title}</button>
           </div>
           {authorsStr && (
             <p className="mt-1 truncate text-xs text-muted-foreground">{authorsStr}</p>
           )}
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
             {reference.year && (
-              <Badge variant="secondary" className="text-[10px]">{reference.year}</Badge>
+              <Badge variant="secondary" className="text-xs">{reference.year}</Badge>
             )}
             {reference.journal && (
-              <Badge variant="outline" className="max-w-[180px] truncate text-[10px]">{reference.journal}</Badge>
+              <Badge variant="outline" className="max-w-[180px] truncate text-xs">{reference.journal}</Badge>
             )}
             {reference.source && (
-              <Badge variant="outline" className="text-[10px] capitalize">{reference.source}</Badge>
+              <Badge variant="outline" className="text-xs capitalize">{reference.source}</Badge>
             )}
             {reference.pdf_cached ? (
-              <Badge variant="secondary" className="text-[10px]">PDF</Badge>
+              <Badge variant="secondary" className="text-xs">PDF</Badge>
             ) : null}
           </div>
         </div>
-        <div className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+        <div className="flex shrink-0 gap-1 flex-wrap">
           {onChat && (
             <Button
               size="sm"
               variant="ghost"
               className="h-7 w-7 p-0"
-              title={t('actions.chatAbout')}
+              aria-label={t('actions.chatAbout')}
               onClick={(e) => { e.stopPropagation(); onChat(reference); }}
             >
               <MessageSquare className="h-3.5 w-3.5" />
@@ -94,7 +95,7 @@ export default function ReferenceCard({
               size="sm"
               variant="ghost"
               className="h-7 w-7 p-0"
-              title={t('actions.unlinkFromProject')}
+              aria-label={t('actions.unlinkFromProject')}
               onClick={(e) => { e.stopPropagation(); onUnlink(reference); }}
             >
               <Unlink className="h-3.5 w-3.5" />
@@ -104,7 +105,7 @@ export default function ReferenceCard({
               size="sm"
               variant="ghost"
               className="h-7 w-7 p-0"
-              title={t('actions.linkToProject')}
+              aria-label={t('actions.linkToProject')}
               onClick={(e) => { e.stopPropagation(); onLink(reference); }}
             >
               <Link2 className="h-3.5 w-3.5" />
@@ -115,7 +116,7 @@ export default function ReferenceCard({
               size="sm"
               variant="ghost"
               className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-              title={t('actions.delete')}
+              aria-label={t('actions.delete')}
               onClick={(e) => { e.stopPropagation(); onDelete(reference); }}
             >
               <Trash2 className="h-3.5 w-3.5" />

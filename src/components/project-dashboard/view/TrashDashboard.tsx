@@ -63,30 +63,31 @@ export default function TrashDashboard({ projects, onRefresh, isLoading = false 
   };
 
   return (
-    <div className="h-full overflow-y-auto bg-gradient-to-b from-background via-background to-muted/20">
-      <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
+    <div className="h-full overflow-y-auto bg-background">
+      <div className="workbench-page">
+        <header className="mb-6"><h1 className="text-2xl font-semibold tracking-tight">{t('common:tabs.trash')}</h1><p className="mt-2 text-sm text-muted-foreground">{t('common:projectDashboard.trashSubtitle')}</p></header>
         {errorMessage && (
-          <div className="mb-4 rounded-2xl border border-red-200 bg-red-50/90 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300">
+          <div role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50/90 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300">
             {errorMessage}
           </div>
         )}
         {isLoading ? (
-          <div className="rounded-3xl border border-border bg-card/70 px-8 py-16 text-center shadow-sm">
-            <div className="mx-auto h-16 w-16 animate-pulse rounded-2xl bg-muted" />
+          <div className="py-12 text-center">
+            <div className="mx-auto h-5 w-5 animate-spin rounded-full border-2 border-muted border-t-foreground" />
             <p className="mt-6 text-sm text-muted-foreground">{t('common:status.loading')}</p>
           </div>
         ) : projects.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-border bg-card/70 px-8 py-16 text-center shadow-sm">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+          <div className="border-t border-border py-12 text-center">
+            <div className="mx-auto flex h-8 w-8 items-center justify-center text-muted-foreground">
               <Trash2 className="h-7 w-7" />
             </div>
-            <h2 className="mt-6 text-2xl font-semibold text-foreground">{t('common:projectDashboard.trashEmptyTitle')}</h2>
+            <h2 className="mt-6 text-base font-semibold text-foreground">{t('common:projectDashboard.trashEmptyTitle')}</h2>
             <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">
               {t('common:projectDashboard.trashEmptyDescription')}
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="divide-y divide-border border-t border-border">
             {projects.map((project) => {
               const restoreKey = `restore:${project.name}`;
               const logicalKey = `logical:${project.name}`;
@@ -95,23 +96,23 @@ export default function TrashDashboard({ projects, onRefresh, isLoading = false 
               return (
                 <div
                   key={project.name}
-                  className="rounded-3xl border border-border/60 bg-card/90 p-5 shadow-sm backdrop-blur"
+                  className="py-5"
                 >
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-muted-foreground">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Trash2 className="h-3.5 w-3.5" />
                         {t('common:projectDashboard.trashBadge')}
                       </div>
-                      <h3 className="mt-2 text-xl font-semibold text-foreground">{project.displayName}</h3>
+                      <h3 className="mt-2 break-words text-base font-semibold text-foreground">{project.displayName}</h3>
                       <p className="mt-1 break-all text-sm text-muted-foreground">{project.originalPath || project.fullPath}</p>
                       <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                        <span className="rounded-full border border-border/60 px-3 py-1">
+                        <span className="py-1">
                           {t('common:projectDashboard.trashDeletedAt', {
                             time: formatTimeAgo(project.trashedAt, currentTime, t),
                           })}
                         </span>
-                        <span className="rounded-full border border-border/60 px-3 py-1">
+                        <span className="py-1">
                           {t('common:projectDashboard.trashSessions', { count: project.sessionCount ?? 0 })}
                         </span>
                         {!project.filesExist && (
@@ -145,7 +146,7 @@ export default function TrashDashboard({ projects, onRefresh, isLoading = false 
                   </div>
 
                   {deleteTarget?.name === project.name && (
-                    <div className="mt-4 rounded-2xl border border-red-200 bg-red-50/80 p-4 dark:border-red-900/60 dark:bg-red-950/20">
+                    <div className="mt-4 rounded-lg border border-red-200 bg-red-50/80 p-4 dark:border-red-900/60 dark:bg-red-950/20">
                       <div className="flex items-start gap-3">
                         <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600 dark:text-red-400" />
                         <div className="flex-1">

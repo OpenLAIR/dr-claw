@@ -82,7 +82,7 @@ const LANGUAGE_COLORS: Record<string, string> = {
   c: 'bg-gray-500',
   ruby: 'bg-red-600',
   swift: 'bg-orange-500',
-  kotlin: 'bg-purple-500',
+  kotlin: 'bg-muted',
   shell: 'bg-emerald-500',
   cuda: 'bg-green-600',
 };
@@ -130,7 +130,7 @@ function ScoreBar({ label, score, max = 3, barClass, dotClass }: { label: string
         {label}
       </span>
       <div className="flex-1 h-[5px] bg-muted/50 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full transition-all duration-500 ${barClass}`} style={{ width: `${pct}%` }} />
+        <div className={`h-full rounded-full transition-colors duration-500 ${barClass}`} style={{ width: `${pct}%` }} />
       </div>
       <span className="w-7 text-right font-medium tabular-nums text-foreground/70">{score.toFixed(1)}</span>
     </div>
@@ -151,7 +151,7 @@ function EngagementBadges({ engagement }: { engagement: NewsItem['engagement'] }
   return (
     <div className="flex items-center gap-3 mt-2">
       {items.map(({ icon: Icon, value, label }) => (
-        <span key={label} className="flex items-center gap-1 text-[10px] text-muted-foreground">
+        <span key={label} className="flex items-center gap-1 text-xs text-muted-foreground">
           <Icon className="h-3 w-3" /> {value}
         </span>
       ))}
@@ -164,7 +164,7 @@ export default function NewsItemCard({ item, index, sourceKey }: { item: NewsIte
   const [expanded, setExpanded] = useState(false);
 
   const isTopItem = index < 3;
-  const borderAccent = isTopItem ? 'border-amber-200/80 dark:border-amber-800/50' : 'border-border/60';
+  const borderAccent = 'border-border';
 
   // Build links based on source
   const arxivId = item.id?.replace(/^https?:\/\/arxiv\.org\/abs\//, '') ?? '';
@@ -179,17 +179,17 @@ export default function NewsItemCard({ item, index, sourceKey }: { item: NewsIte
     : 'XHS';
 
   const SCORE_COLORS = [
-    { label: t('card.relevance'), key: 'relevance_score' as const, bar: 'bg-gradient-to-r from-sky-400 to-sky-500', dot: 'bg-sky-500' },
-    { label: t('card.recency'), key: 'recency_score' as const, bar: 'bg-gradient-to-r from-emerald-400 to-emerald-500', dot: 'bg-emerald-500' },
-    { label: t('card.popularity'), key: 'popularity_score' as const, bar: 'bg-gradient-to-r from-amber-400 to-amber-500', dot: 'bg-amber-500' },
-    { label: t('card.quality'), key: 'quality_score' as const, bar: 'bg-gradient-to-r from-violet-400 to-violet-500', dot: 'bg-violet-500' },
+    { label: t('card.relevance'), key: 'relevance_score' as const, bar: 'bg-muted  ', dot: 'bg-sky-500' },
+    { label: t('card.recency'), key: 'recency_score' as const, bar: 'bg-muted  ', dot: 'bg-emerald-500' },
+    { label: t('card.popularity'), key: 'popularity_score' as const, bar: 'bg-muted  ', dot: 'bg-amber-500' },
+    { label: t('card.quality'), key: 'quality_score' as const, bar: 'bg-muted  ', dot: 'bg-muted' },
   ];
 
   // XHS / X: compact card — cover image, title, abstract snippet, and link
   if (sourceKey === 'xiaohongshu' || sourceKey === 'x') {
     const coverUrl = item.media_urls?.[0];
     return (
-      <article className={`group relative overflow-hidden rounded-[22px] border ${borderAccent} bg-card/85 shadow-sm backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg`}>
+      <article className={`group relative overflow-hidden rounded-lg border ${borderAccent} bg-card/85   transition-colors duration-200  `}>
         <a href={primaryUrl} target="_blank" rel="noopener noreferrer" className="block">
           {coverUrl && (
             <MediaPreview url={coverUrl} className="w-full max-h-[260px] object-cover" />
@@ -197,15 +197,15 @@ export default function NewsItemCard({ item, index, sourceKey }: { item: NewsIte
           <div className="p-4">
             <div className="flex items-start justify-between gap-2">
               <h3 className="text-sm font-semibold leading-snug text-foreground tracking-tight line-clamp-2 flex-1 min-w-0">{item.title}</h3>
-              <span className="flex-shrink-0 inline-flex items-center gap-1 rounded-lg border border-border/50 bg-background/80 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+              <span className="flex-shrink-0 inline-flex items-center gap-1 rounded-lg border border-border/50 bg-background/80 px-2 py-0.5 text-xs font-medium text-muted-foreground">
                 {sourceBadgeLabel} <ExternalLink className="h-2.5 w-2.5" />
               </span>
             </div>
             {item.abstract && (
-              <p className="mt-2 text-xs leading-relaxed text-muted-foreground/70 line-clamp-3 whitespace-pre-line">{item.abstract}</p>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground line-clamp-3 whitespace-pre-line">{item.abstract}</p>
             )}
             {item.authors && (
-              <p className="mt-2 text-[11px] text-muted-foreground/60">@{item.authors}</p>
+              <p className="mt-2 text-xs text-muted-foreground/60">@{item.authors}</p>
             )}
           </div>
         </a>
@@ -217,7 +217,7 @@ export default function NewsItemCard({ item, index, sourceKey }: { item: NewsIte
   if (sourceKey === 'wechat') {
     const accountName = item.account_name || item.authors || '';
     return (
-      <article className={`group relative overflow-hidden rounded-2xl border ${borderAccent} bg-card/85 shadow-sm backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg`}>
+      <article className={`group relative overflow-hidden rounded-lg border ${borderAccent} bg-card/85   transition-colors duration-200  `}>
         <div className="p-4 flex flex-col gap-3 h-full">
           {/* Header: account chip + title + score */}
           <div className="flex items-start gap-2.5">
@@ -234,7 +234,7 @@ export default function NewsItemCard({ item, index, sourceKey }: { item: NewsIte
                 {item.title || t('card.untitled')}
               </a>
               {accountName && (
-                <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{accountName}</p>
+                <p className="text-xs text-muted-foreground mt-0.5 truncate">{accountName}</p>
               )}
             </div>
             <div className="flex items-center gap-1 rounded-lg bg-amber-50 px-2 py-1 dark:bg-amber-950/30 flex-shrink-0">
@@ -245,11 +245,11 @@ export default function NewsItemCard({ item, index, sourceKey }: { item: NewsIte
 
           {/* Excerpt */}
           {item.abstract && item.abstract !== '(no excerpt)' && (
-            <p className="text-xs leading-relaxed text-muted-foreground/85 line-clamp-4">{item.abstract}</p>
+            <p className="text-sm leading-relaxed text-muted-foreground line-clamp-4">{item.abstract}</p>
           )}
 
           {/* Footer: published + open link */}
-          <div className="mt-auto flex flex-wrap items-center gap-3 pt-2 border-t border-border/40 text-[11px] text-muted-foreground">
+          <div className="mt-auto flex flex-wrap items-center gap-3 pt-2 border-t border-border/40 text-xs text-muted-foreground">
             {item.published && (
               <span className="tabular-nums">{item.published.slice(0, 10)}</span>
             )}
@@ -257,7 +257,7 @@ export default function NewsItemCard({ item, index, sourceKey }: { item: NewsIte
               href={primaryUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="ml-auto inline-flex items-center gap-1 rounded-md border border-border/50 bg-background/80 px-2 py-0.5 text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+              className="ml-auto inline-flex items-center gap-1 rounded-md border border-border/50 bg-background/80 px-2 py-0.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
               {t('card.openInWechat')} <ExternalLink className="h-2.5 w-2.5" />
             </a>
@@ -273,15 +273,15 @@ export default function NewsItemCard({ item, index, sourceKey }: { item: NewsIte
     const forks = item.forks ?? item.engagement?.comments ?? 0;
     const isTrending = item.mode === 'trending';
     return (
-      <article className={`group relative overflow-hidden rounded-2xl border ${borderAccent} bg-card/85 shadow-sm backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg`}>
+      <article className={`group relative overflow-hidden rounded-lg border ${borderAccent} bg-card/85   transition-colors duration-200  `}>
         <div className="p-4 flex flex-col gap-3 h-full">
           {/* Header: avatar + repo name + score */}
           <div className="flex items-start gap-2.5">
             {item.owner_avatar ? (
               <img src={item.owner_avatar} alt="" className="h-8 w-8 rounded-lg object-cover border border-border/30 flex-shrink-0" />
             ) : (
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-950/40 flex-shrink-0">
-                <FileText className="h-4 w-4 text-violet-600 dark:text-violet-300" />
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted dark:bg-muted flex-shrink-0">
+                <FileText className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
               </span>
             )}
             <div className="flex-1 min-w-0">
@@ -294,7 +294,7 @@ export default function NewsItemCard({ item, index, sourceKey }: { item: NewsIte
                 {item.title}
               </a>
               {item.authors && (
-                <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{item.authors}</p>
+                <p className="text-xs text-muted-foreground mt-0.5 truncate">{item.authors}</p>
               )}
             </div>
             <div className="flex items-center gap-1 rounded-lg bg-amber-50 px-2 py-1 dark:bg-amber-950/30 flex-shrink-0">
@@ -305,21 +305,21 @@ export default function NewsItemCard({ item, index, sourceKey }: { item: NewsIte
 
           {/* Trending pill */}
           {isTrending && (
-            <span className="inline-flex w-fit items-center gap-1 rounded-full bg-gradient-to-r from-violet-500/15 to-fuchsia-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-violet-700 dark:text-violet-300">
+            <span className="inline-flex w-fit items-center gap-1 rounded-full bg-muted   px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground dark:text-muted-foreground">
               <TrendingUp className="h-2.5 w-2.5" /> {t('card.trending')}
             </span>
           )}
 
           {/* Description */}
           {item.abstract && item.abstract !== '(no description)' && (
-            <p className="text-xs leading-relaxed text-muted-foreground/85 line-clamp-3">{item.abstract}</p>
+            <p className="text-sm leading-relaxed text-muted-foreground line-clamp-3">{item.abstract}</p>
           )}
 
           {/* Topics */}
           {item.categories && item.categories.length > 0 && (
             <div className="flex flex-wrap gap-1">
               {item.categories.slice(0, 4).map((topic) => (
-                <span key={topic} className="rounded-md border border-violet-200/60 bg-violet-50/70 px-1.5 py-0.5 text-[10px] font-medium text-violet-700 dark:border-violet-800/40 dark:bg-violet-950/30 dark:text-violet-300">
+                <span key={topic} className="rounded-md border border-border bg-muted px-1.5 py-0.5 text-xs font-medium text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
                   {topic}
                 </span>
               ))}
@@ -327,7 +327,7 @@ export default function NewsItemCard({ item, index, sourceKey }: { item: NewsIte
           )}
 
           {/* Footer: language + stars + forks + license */}
-          <div className="mt-auto flex flex-wrap items-center gap-3 pt-2 border-t border-border/40 text-[11px] text-muted-foreground">
+          <div className="mt-auto flex flex-wrap items-center gap-3 pt-2 border-t border-border/40 text-xs text-muted-foreground">
             {item.language && (
               <span className="flex items-center gap-1.5">
                 <span className={`h-2.5 w-2.5 rounded-full ${langColor(item.language)}`} />
@@ -349,7 +349,7 @@ export default function NewsItemCard({ item, index, sourceKey }: { item: NewsIte
               href={primaryUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="ml-auto inline-flex items-center gap-1 rounded-md border border-border/50 bg-background/80 px-2 py-0.5 text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+              className="ml-auto inline-flex items-center gap-1 rounded-md border border-border/50 bg-background/80 px-2 py-0.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
               GitHub <ExternalLink className="h-2.5 w-2.5" />
             </a>
@@ -372,12 +372,12 @@ export default function NewsItemCard({ item, index, sourceKey }: { item: NewsIte
       const kindBadge: Record<string, { label: string; className: string }> = {
         models: { label: t('card.kindModel'), className: 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300' },
         datasets: { label: t('card.kindDataset'), className: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' },
-        spaces: { label: t('card.kindSpace'), className: 'bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-950/40 dark:text-fuchsia-300' },
+        spaces: { label: t('card.kindSpace'), className: 'bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground' },
       };
       const badge = kindBadge[item.kind as string];
 
       return (
-        <article className={`group relative overflow-hidden rounded-2xl border ${borderAccent} bg-card/85 shadow-sm backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg`}>
+        <article className={`group relative overflow-hidden rounded-lg border ${borderAccent} bg-card/85   transition-colors duration-200  `}>
           <div className="p-4 flex flex-col gap-3 h-full">
             <div className="flex items-start gap-2.5">
               <div className="flex flex-col items-center pt-0.5 flex-shrink-0">
@@ -399,7 +399,7 @@ export default function NewsItemCard({ item, index, sourceKey }: { item: NewsIte
                   {item.title}
                 </a>
                 {item.organization && (
-                  <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{item.organization}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 truncate">{item.organization}</p>
                 )}
               </div>
               <div className="flex items-center gap-1 rounded-lg bg-amber-50 px-2 py-1 dark:bg-amber-950/30 flex-shrink-0">
@@ -409,25 +409,25 @@ export default function NewsItemCard({ item, index, sourceKey }: { item: NewsIte
             </div>
 
             {item.abstract && item.abstract !== `${(item.kind ?? '').toString().replace(/^\w/, (c) => c.toUpperCase())} on Hugging Face Hub.` && (
-              <p className="text-xs leading-relaxed text-muted-foreground/85 line-clamp-3">{item.abstract}</p>
+              <p className="text-sm leading-relaxed text-muted-foreground line-clamp-3">{item.abstract}</p>
             )}
 
             {item.categories && item.categories.length > 0 && (
               <div className="flex flex-wrap gap-1">
                 {item.pipeline_tag && (
-                  <span className="rounded-md border border-yellow-200/70 bg-yellow-50 px-1.5 py-0.5 text-[10px] font-semibold text-yellow-700 dark:border-yellow-800/40 dark:bg-yellow-950/30 dark:text-yellow-300">
+                  <span className="rounded-md border border-yellow-200/70 bg-yellow-50 px-1.5 py-0.5 text-xs font-semibold text-yellow-700 dark:border-yellow-800/40 dark:bg-yellow-950/30 dark:text-yellow-300">
                     {item.pipeline_tag}
                   </span>
                 )}
                 {item.categories.filter((c) => c !== item.pipeline_tag).slice(0, 4).map((tag) => (
-                  <span key={tag} className="rounded-md border border-border/40 bg-muted/40 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                  <span key={tag} className="rounded-md border border-border/40 bg-muted/40 px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
                     {tag}
                   </span>
                 ))}
               </div>
             )}
 
-            <div className="mt-auto flex items-center gap-3 pt-2 border-t border-border/40 text-[11px] text-muted-foreground">
+            <div className="mt-auto flex items-center gap-3 pt-2 border-t border-border/40 text-xs text-muted-foreground">
               {downloads > 0 && (
                 <span className="flex items-center gap-1 tabular-nums">
                   <Download className="h-3 w-3" /> {formatCompact(downloads)}
@@ -440,7 +440,7 @@ export default function NewsItemCard({ item, index, sourceKey }: { item: NewsIte
                 href={primaryUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="ml-auto inline-flex items-center gap-1 rounded-md border border-border/50 bg-background/80 px-2 py-0.5 text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+                className="ml-auto inline-flex items-center gap-1 rounded-md border border-border/50 bg-background/80 px-2 py-0.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
                 HF <ExternalLink className="h-2.5 w-2.5" />
               </a>
@@ -452,20 +452,20 @@ export default function NewsItemCard({ item, index, sourceKey }: { item: NewsIte
 
     // Daily Paper card (original layout)
     return (
-      <article className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg">
+      <article className="group relative overflow-hidden rounded-lg border border-border/60 bg-card  transition-colors duration-200  ">
         {/* Thumbnail */}
         <a href={primaryUrl} target="_blank" rel="noopener noreferrer" className="block">
           {thumbnailUrl ? (
             <div className="relative aspect-[16/9] overflow-hidden bg-muted/30">
               <img src={thumbnailUrl} alt="" className="h-full w-full object-cover" />
               {item.submitted_by && (
-                <div className="absolute bottom-2 right-2 rounded-lg bg-black/60 px-2 py-1 text-[10px] text-white backdrop-blur-sm">
+                <div className="absolute bottom-2 right-2 rounded-lg bg-black/60 px-2 py-1 text-xs text-white ">
                   {t('card.submittedBy', { name: item.submitted_by })}
                 </div>
               )}
             </div>
           ) : (
-            <div className="flex aspect-[16/9] items-center justify-center bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-900 dark:to-slate-800">
+            <div className="flex aspect-[16/9] items-center justify-center bg-muted    ">
               <FileText className="h-10 w-10 text-muted-foreground/20" />
             </div>
           )}
@@ -490,18 +490,18 @@ export default function NewsItemCard({ item, index, sourceKey }: { item: NewsIte
               {/* Organization badge + stats */}
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 {item.organization && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
                     {item.organization}
                   </span>
                 )}
                 {pdfUrl && (
                   <a href={pdfUrl} target="_blank" rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors">
+                    className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
                     <FileText className="h-3 w-3" /> {t('card.pdf')}
                   </a>
                 )}
                 {comments > 0 && (
-                  <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                     <MessageCircle className="h-3 w-3" /> {comments}
                   </span>
                 )}
@@ -514,11 +514,11 @@ export default function NewsItemCard({ item, index, sourceKey }: { item: NewsIte
   }
 
   return (
-    <article className={`group relative overflow-hidden rounded-[22px] border ${borderAccent} bg-card/85 shadow-sm backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg`}>
+    <article className={`group relative overflow-hidden rounded-lg border ${borderAccent} bg-card/85   transition-colors duration-200  `}>
       {isTopItem ? (
-        <div className="h-[3px] bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500" />
+        <div className="h-[3px] bg-muted   " />
       ) : (
-        <div className="h-[2px] bg-gradient-to-r from-amber-500/40 via-orange-500/40 to-rose-500/40" />
+        <div className="h-[2px] bg-muted   " />
       )}
 
       <div className="p-5">
@@ -526,11 +526,11 @@ export default function NewsItemCard({ item, index, sourceKey }: { item: NewsIte
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2.5">
             {item.avatar_url ? (
-              <img src={item.avatar_url} alt="" className="h-8 w-8 rounded-xl object-cover" />
+              <img src={item.avatar_url} alt="" className="h-8 w-8 rounded-lg object-cover" />
             ) : (
-              <span className={`flex h-8 w-8 items-center justify-center rounded-xl text-xs font-bold ${
+              <span className={`flex h-8 w-8 items-center justify-center rounded-lg text-xs font-bold ${
                 isTopItem
-                  ? 'bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-sm'
+                  ? 'bg-muted text-foreground'
                   : 'bg-muted/80 text-muted-foreground'
               }`}>
                 {index + 1}
@@ -543,12 +543,12 @@ export default function NewsItemCard({ item, index, sourceKey }: { item: NewsIte
           </div>
           <div className="flex items-center gap-1.5">
             <a href={primaryUrl} target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 rounded-lg border border-border/50 bg-background/80 px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:border-border transition-colors">
+              className="inline-flex items-center gap-1 rounded-lg border border-border/50 bg-background/80 px-2.5 py-1 text-xs font-medium text-muted-foreground hover:text-foreground hover:border-border transition-colors">
               {sourceBadgeLabel} <ExternalLink className="h-2.5 w-2.5" />
             </a>
             {pdfUrl && (
               <a href={pdfUrl} target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 rounded-lg border border-border/50 bg-background/80 px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:border-border transition-colors">
+                className="inline-flex items-center gap-1 rounded-lg border border-border/50 bg-background/80 px-2.5 py-1 text-xs font-medium text-muted-foreground hover:text-foreground hover:border-border transition-colors">
                 {t('card.pdf')} <ExternalLink className="h-2.5 w-2.5" />
               </a>
             )}
@@ -561,7 +561,7 @@ export default function NewsItemCard({ item, index, sourceKey }: { item: NewsIte
             <h3 className="text-[15px] font-semibold leading-snug text-foreground tracking-tight">{item.title}</h3>
             <p className="mt-1.5 text-xs text-muted-foreground/80 line-clamp-1">{item.authors}</p>
             {item.abstract && (
-              <p className="mt-2 text-xs leading-relaxed text-muted-foreground/70 line-clamp-3">{item.abstract}</p>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground line-clamp-3">{item.abstract}</p>
             )}
             <EngagementBadges engagement={item.engagement} />
           </div>
@@ -570,7 +570,7 @@ export default function NewsItemCard({ item, index, sourceKey }: { item: NewsIte
               <img
                 src={item.media_urls[0]}
                 alt=""
-                className="h-20 w-20 rounded-xl object-cover border border-border/30 sm:h-24 sm:w-24"
+                className="h-20 w-20 rounded-lg object-cover border border-border/30 sm:h-24 sm:w-24"
               />
             </a>
           )}
@@ -579,17 +579,17 @@ export default function NewsItemCard({ item, index, sourceKey }: { item: NewsIte
         {/* Tags */}
         <div className="mt-3 flex flex-wrap gap-1.5">
           {item.matched_domain && (
-            <span className="rounded-lg border border-amber-200/80 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-300">
+            <span className="rounded-lg border border-amber-200/80 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-300">
               {item.matched_domain}
             </span>
           )}
           {item.categories?.slice(0, 3).map((cat) => (
-            <span key={cat} className="rounded-lg border border-border/40 bg-muted/40 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+            <span key={cat} className="rounded-lg border border-border/40 bg-muted/40 px-2 py-0.5 text-xs font-medium text-muted-foreground">
               {cat}
             </span>
           ))}
           {item.published && (
-            <span className="flex items-center gap-1 rounded-lg border border-border/40 bg-muted/40 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+            <span className="flex items-center gap-1 rounded-lg border border-border/40 bg-muted/40 px-2 py-0.5 text-xs font-medium text-muted-foreground">
               <Clock className="h-2.5 w-2.5" />
               {item.published.slice(0, 10)}
             </span>
@@ -607,8 +607,8 @@ export default function NewsItemCard({ item, index, sourceKey }: { item: NewsIte
 
         {/* Expanded content */}
         {expanded && (
-          <div className="mt-3.5 space-y-4 rounded-xl bg-muted/20 p-4 border border-border/30">
-            <p className="text-xs leading-[1.7] text-muted-foreground whitespace-pre-line">{item.abstract}</p>
+          <div className="mt-3.5 space-y-4 rounded-lg bg-muted/20 p-4 border border-border/30">
+            <p className="text-sm leading-[1.7] text-muted-foreground whitespace-pre-line">{item.abstract}</p>
 
             {/* Media images for social sources */}
             {item.media_urls && item.media_urls.length > 0 && (
@@ -620,7 +620,7 @@ export default function NewsItemCard({ item, index, sourceKey }: { item: NewsIte
             )}
 
             <div className="space-y-2">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70 mb-2">{t('card.scoreBreakdown')}</div>
+              <div className="text-sm font-medium text-muted-foreground mb-2">{t('card.scoreBreakdown')}</div>
               {SCORE_COLORS.map(({ label, key, bar, dot }) => (
                 <ScoreBar key={key} label={label} score={item[key] ?? 0} barClass={bar} dotClass={dot} />
               ))}
@@ -628,9 +628,9 @@ export default function NewsItemCard({ item, index, sourceKey }: { item: NewsIte
 
             {item.matched_keywords?.length > 0 && (
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="text-[10px] font-medium text-muted-foreground/70 mr-0.5">{t('card.matchedKeywords')}</span>
+                <span className="text-xs font-medium text-muted-foreground/70 mr-0.5">{t('card.matchedKeywords')}</span>
                 {item.matched_keywords.map((kw) => (
-                  <span key={kw} className="rounded-md bg-primary/8 px-2 py-0.5 text-[10px] font-medium text-primary/80 border border-primary/10">{kw}</span>
+                  <span key={kw} className="rounded-md bg-primary/8 px-2 py-0.5 text-xs font-medium text-primary/80 border border-primary/10">{kw}</span>
                 ))}
               </div>
             )}

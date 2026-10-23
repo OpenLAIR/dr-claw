@@ -128,6 +128,12 @@ function Sidebar({
   });
 
   useEffect(() => {
+    const openCreate = () => setShowWizard(true);
+    window.addEventListener('workbench:create-project', openCreate);
+    return () => window.removeEventListener('workbench:create-project', openCreate);
+  }, []);
+
+  useEffect(() => {
     if (!updateAvailable || !latestVersion || typeof window === 'undefined') {
       return;
     }

@@ -1,5 +1,4 @@
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import QuickSettingsPanel from '../../QuickSettingsPanel';
 import ChatTaskProgressPill from './subcomponents/ChatTaskProgressPill';
 import { useTasksSettings } from '../../../contexts/TasksSettingsContext';
 import { useTaskMaster } from '../../../contexts/TaskMasterContext';
@@ -86,6 +85,8 @@ type PendingViewSession = {
 type SidebarTab = 'context' | 'research' | 'files' | 'shell' | 'git';
 
 function ChatInterface({
+  researchTaskDraft,
+  onConsumeResearchTaskDraft,
   selectedProject,
   selectedSession,
   ws,
@@ -118,6 +119,8 @@ function ChatInterface({
   const { refreshTasks } = useTaskMaster();
   const { t } = useTranslation('chat');
   const { isMobile } = useDeviceSettings({ trackPWA: false });
+  const [mobileToolsOpen, setMobileToolsOpen] = useState(false);
+  const mobileToolsTrigger = useRef<HTMLButtonElement>(null);
   const [isShellEditPromptOpen, setIsShellEditPromptOpen] = useState(false);
   const [editingFile, setEditingFile] = useState<EditingFile | null>(null);
 
@@ -126,6 +129,7 @@ function ChatInterface({
     const relative = toRelativePath(filePath, root);
     if (!relative || !isSafePath(relative)) return;
     const name = fileNameFromPath(normalizePath(filePath));
+    setMobileToolsOpen(false);
     setEditingFile({
       name,
       path: relative,
@@ -146,7 +150,7 @@ function ChatInterface({
   });
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     if (typeof window === 'undefined') return false;
-    return window.localStorage.getItem('chat-session-context-collapsed') === '1';
+    return window.localStorage.getItem('chat-session-context-collapsed') !== '0';
   });
 
   useEffect(() => {
@@ -479,10 +483,16 @@ function ChatInterface({
     const nextPrompt = prompt && prompt.trim()
       ? prompt
       : t('tasks.nextTaskPrompt', { defaultValue: 'Start the next task' });
-    setInput(nextPrompt);
+    if (!loadMessageIntoComposer({ content: nextPrompt })) return;
     const stage = String(task?.stage || '').trim().toLowerCase();
     setPendingStageTagKeys(stage ? [stage] : []);
-  }, [setInput, setPendingStageTagKeys, t]);
+  }, [loadMessageIntoComposer, setPendingStageTagKeys, t]);
+
+  useEffect(() => {
+    if (!researchTaskDraft || researchTaskDraft.projectName !== selectedProject?.name || selectedSession || isLoading) return;
+    handleStartTaskInChat(researchTaskDraft.prompt, researchTaskDraft);
+    onConsumeResearchTaskDraft?.();
+  }, [researchTaskDraft, selectedProject?.name, selectedSession, isLoading, handleStartTaskInChat, onConsumeResearchTaskDraft]);
 
   useEffect(() => {
     let cancelled = false;
@@ -770,6 +780,7 @@ function ChatInterface({
     setIsShellEditPromptOpen(false);
     setSidebarTab('shell');
     setIsSidebarCollapsed(false);
+    setMobileToolsOpen(true);
   }, []);
 
   const isEmpty = chatMessages.length === 0 && !isLoadingSessionMessages && !selectedSession && !currentSessionId;
@@ -801,24 +812,25 @@ function ChatInterface({
 
   return (
     <>
-      <div className={`h-full flex min-h-0 ${isMobile ? 'flex-col' : 'flex-row'}`}>
-        <div className="relative flex min-h-0 min-w-0 flex-1 flex-col">
+      <div className={`relative h-full flex min-h-0 ${isMobile ? 'flex-col' : 'flex-row'}`}>
+        {isMobile && !mobileToolsOpen && <div className="flex shrink-0 justify-end border-b border-border px-3 py-1"><Button variant="ghost" size="sm" ref={mobileToolsTrigger} onClick={() => setMobileToolsOpen(true)}>{t('common:workbench.researchTools')}</Button></div>}
+        <div className={`relative min-h-0 min-w-0 flex-1 flex-col ${isMobile && mobileToolsOpen ? 'hidden' : 'flex'}`}>
           <div className={`flex min-h-0 flex-1 flex-col ${isEmpty ? 'justify-start pt-[18vh] overflow-y-auto' : ''}`}>
         {shouldShowImportedProjectAnalysisPrompt && (
           <div className="mx-auto mt-4 w-full max-w-3xl px-3 sm:px-4">
-            <div className="rounded-xl border border-border bg-card/95 shadow-sm px-4 py-4 sm:px-5">
+            <div className="rounded-lg border border-border bg-card px-4 py-4 sm:px-5">
               <div className="flex flex-col gap-4">
                 <div>
-                  <h3 className="text-sm font-semibold text-foreground">Analyze Imported Project?</h3>
+                  <h3 className="text-sm font-semibold text-foreground">{t('common:importedAnalysis.title')}</h3>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Start a new session to scan this workspace, analyze the project structure and implementation, and summarize next steps.
+                    {t('common:importedAnalysis.description')}
                   </p>
                 </div>
 
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                   <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
                     <label className="flex flex-col gap-1.5">
-                      <span className="text-xs font-medium text-muted-foreground">Provider</span>
+                      <span className="text-xs font-medium text-muted-foreground">{t('common:importedAnalysis.provider')}</span>
                       <select
                         value={importedProjectAnalysisProvider}
                         onChange={(event) => setImportedProjectAnalysisProvider(event.target.value as Provider)}
@@ -828,7 +840,7 @@ function ChatInterface({
                           const unavailable = providerAvailability[id]?.cliAvailable === false;
                           return (
                             <option key={id} value={id} disabled={unavailable}>
-                              {unavailable ? `${label} (Not installed)` : label}
+                              {unavailable ? `${label} (${t('common:importedAnalysis.unavailable')})` : label}
                             </option>
                           );
                         })}
@@ -836,7 +848,7 @@ function ChatInterface({
                     </label>
 
                     <label className="flex flex-col gap-1.5">
-                      <span className="text-xs font-medium text-muted-foreground">Model</span>
+                      <span className="text-xs font-medium text-muted-foreground">{t('common:importedAnalysis.model')}</span>
                       <select
                         value={importedProjectAnalysisModel}
                         onChange={(event) => handleImportedProjectAnalysisModelChange(event.target.value)}
@@ -851,17 +863,17 @@ function ChatInterface({
 
                   <div className="flex gap-2 sm:flex-shrink-0">
                     <Button variant="outline" onClick={handleImportedProjectAnalysisDismiss}>
-                      Not Now
+                      {t('common:importedAnalysis.dismiss')}
                     </Button>
                     <Button onClick={handleImportedProjectAnalysisConfirm}>
-                      Analyze Project
+                      {t('common:importedAnalysis.confirm')}
                     </Button>
                   </div>
                 </div>
 
                 {providerAvailability[importedProjectAnalysisProvider]?.cliAvailable === false && (
                   <p className="text-xs text-amber-700 dark:text-amber-300">
-                    {providerAvailability[importedProjectAnalysisProvider]?.installHint || 'Selected provider is not installed.'}
+                    {providerAvailability[importedProjectAnalysisProvider]?.installHint || t('common:importedAnalysis.unavailable')}
                   </p>
                 )}
 
@@ -1040,6 +1052,8 @@ function ChatInterface({
           </div>
         </div>
 
+        <div className={isMobile ? `absolute inset-0 z-20 flex-col bg-background ${mobileToolsOpen ? 'flex' : 'hidden'}` : 'contents'}>
+          {isMobile && <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-2"><span className="text-sm font-medium">{t('common:workbench.researchTools')}</span><Button variant="ghost" size="sm" onClick={() => { setMobileToolsOpen(false); requestAnimationFrame(() => mobileToolsTrigger.current?.focus()); }}>{t('common:buttons.close')}</Button></div>}
         <ChatContextSidebar
           selectedProject={selectedProject}
           selectedSession={selectedSession}
@@ -1053,17 +1067,18 @@ function ChatInterface({
           isCollapsed={isSidebarCollapsed}
           onCollapsedChange={setIsSidebarCollapsed}
           onStartWorkspaceQa={onStartWorkspaceQa}
-          onStartTask={handleStartTaskInChat}
+          onStartTask={(prompt, task) => { handleStartTaskInChat(prompt, task); setMobileToolsOpen(false); }}
         />
+        </div>
       </div>
 
       {isShellEditPromptOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
           <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/50"
             onClick={handleCloseShellEditPrompt}
           />
-          <div className="relative z-10 w-full max-w-md rounded-2xl border border-border bg-background shadow-2xl">
+          <div className="relative z-10 w-full max-w-md rounded-lg border border-border bg-background shadow-xl">
             <div className="px-5 py-4">
               <h3 className="text-base font-semibold text-foreground">
                 {t('shell.historyEdit.promptTitle')}
@@ -1084,7 +1099,6 @@ function ChatInterface({
         </div>
       )}
 
-      <QuickSettingsPanel />
       <BtwOverlay state={btwOverlay} onClose={closeBtwOverlay} />
     </>
   );

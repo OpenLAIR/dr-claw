@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useId } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Badge } from './ui/badge';
@@ -27,6 +27,15 @@ const VALID_SETTINGS_TABS = new Set(['agents', 'email', 'appearance', 'git', 'ap
 function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
   const { isDarkMode, toggleDarkMode } = useTheme();
   const { t } = useTranslation('settings');
+  const dialogRef = useRef(null);
+  const dialogTitleId = useId();
+  useEffect(() => {
+    if (!isOpen) return;
+    const trigger = document.activeElement;
+    const dialog = dialogRef.current;
+    dialog?.showModal();
+    return () => { dialog?.close(); trigger?.focus(); };
+  }, [isOpen]);
   const { isDesktop, selectDirectory, showItemInFolder } = useDesktop();
   const [allowedTools, setAllowedTools] = useState([]);
   const [disallowedTools, setDisallowedTools] = useState([]);
@@ -1260,12 +1269,12 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
   if (!isOpen) return null;
 
   return (
-    <div className="modal-backdrop fixed inset-0 flex items-center justify-center z-[9999] md:p-4 bg-background/95">
+    <dialog ref={dialogRef} aria-labelledby={dialogTitleId} onCancel={event => { event.preventDefault(); onClose(); }} className="workbench-wizard m-0 h-dvh w-screen max-h-none max-w-none border-0 bg-transparent p-0 text-foreground open:flex items-center justify-center md:p-4">
       <div className="bg-background border border-border md:rounded-lg shadow-xl w-full md:max-w-4xl h-full md:h-[90vh] flex flex-col">
         <div className="flex items-center justify-between p-4 md:p-6 border-b border-border flex-shrink-0">
           <div className="flex items-center gap-3">
-            <SettingsIcon className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
-            <h2 className="text-lg md:text-xl font-semibold text-foreground">
+            <SettingsIcon className="w-5 h-5 md:w-6 md:h-6 text-muted-foreground" />
+            <h2 id={dialogTitleId} className="text-lg md:text-xl font-semibold text-foreground">
               {t('title')}
             </h2>
           </div>
@@ -1273,6 +1282,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
             variant="ghost"
             size="sm"
             onClick={onClose}
+            aria-label={t('common:buttons.close')}
             className="text-muted-foreground hover:text-foreground touch-manipulation"
           >
             <X className="w-5 h-5" />
@@ -1282,10 +1292,17 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
         <div className="flex-1 overflow-y-auto">
           {/* Tab Navigation */}
           <div className="border-b border-border">
-            <div className="flex px-4 md:px-6">
+            <div role="tablist" aria-label={t('title')} className="flex max-w-full overflow-x-auto px-4 md:px-6" onKeyDown={event => {
+              if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+              const tabs = Array.from(event.currentTarget.querySelectorAll('[role="tab"]'));
+              const index = tabs.indexOf(document.activeElement);
+              const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+              event.preventDefault(); tabs[next]?.focus(); tabs[next]?.click();
+            }}>
               <button
+                role="tab" aria-selected={activeTab === 'agents'}
                 onClick={() => setActiveTab('agents')}
-                className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                className={`shrink-0 whitespace-nowrap px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === 'agents'
                     ? 'border-blue-600 text-blue-600 dark:text-blue-400'
                     : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -1294,8 +1311,9 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
                 {t('mainTabs.agents')}
               </button>
               <button
+                role="tab" aria-selected={activeTab === 'email'}
                 onClick={() => setActiveTab('email')}
-                className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                className={`shrink-0 whitespace-nowrap px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === 'email'
                     ? 'border-blue-600 text-blue-600 dark:text-blue-400'
                     : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -1305,8 +1323,9 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
                 {t('mainTabs.email')}
               </button>
               <button
+                role="tab" aria-selected={activeTab === 'appearance'}
                 onClick={() => setActiveTab('appearance')}
-                className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                className={`shrink-0 whitespace-nowrap px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === 'appearance'
                     ? 'border-blue-600 text-blue-600 dark:text-blue-400'
                     : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -1315,8 +1334,9 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
                 {t('mainTabs.appearance')}
               </button>
               <button
+                role="tab" aria-selected={activeTab === 'git'}
                 onClick={() => setActiveTab('git')}
-                className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                className={`shrink-0 whitespace-nowrap px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === 'git'
                     ? 'border-blue-600 text-blue-600 dark:text-blue-400'
                     : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -1326,8 +1346,9 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
                 {t('mainTabs.git')}
               </button>
               <button
+                role="tab" aria-selected={activeTab === 'api'}
                 onClick={() => setActiveTab('api')}
-                className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                className={`shrink-0 whitespace-nowrap px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === 'api'
                     ? 'border-blue-600 text-blue-600 dark:text-blue-400'
                     : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -1367,7 +1388,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
             <span
               className={`${
                 isDarkMode ? 'translate-x-7' : 'translate-x-1'
-              } inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform duration-200 flex items-center justify-center`}
+              } inline-block h-6 w-6 transform rounded-full bg-white transition-transform duration-200 flex items-center justify-center`}
             >
               {isDarkMode ? (
                 <Moon className="w-3.5 h-3.5 text-gray-700" />
@@ -1415,7 +1436,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
               <span
                 className={`${
                   telemetryEnabled ? 'translate-x-7' : 'translate-x-1'
-                } inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform duration-200`}
+                } inline-block h-6 w-6 transform rounded-full bg-white transition-transform duration-200`}
               />
             </button>
           </div>
@@ -1557,7 +1578,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
             <span
               className={`${
                 codeEditorTheme === 'dark' ? 'translate-x-7' : 'translate-x-1'
-              } inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform duration-200 flex items-center justify-center`}
+              } inline-block h-6 w-6 transform rounded-full bg-white transition-transform duration-200 flex items-center justify-center`}
             >
               {codeEditorTheme === 'dark' ? (
                 <Moon className="w-3.5 h-3.5 text-gray-700" />
@@ -1591,7 +1612,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
             <span
               className={`${
                 codeEditorWordWrap ? 'translate-x-7' : 'translate-x-1'
-              } inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform duration-200`}
+              } inline-block h-6 w-6 transform rounded-full bg-white transition-transform duration-200`}
             />
           </button>
         </div>
@@ -1619,7 +1640,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
             <span
               className={`${
                 codeEditorShowMinimap ? 'translate-x-7' : 'translate-x-1'
-              } inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform duration-200`}
+              } inline-block h-6 w-6 transform rounded-full bg-white transition-transform duration-200`}
             />
           </button>
         </div>
@@ -1647,7 +1668,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
             <span
               className={`${
                 codeEditorLineNumbers ? 'translate-x-7' : 'translate-x-1'
-              } inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform duration-200`}
+              } inline-block h-6 w-6 transform rounded-full bg-white transition-transform duration-200`}
             />
           </button>
         </div>
@@ -2180,7 +2201,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
                           <p className="text-xs text-muted-foreground mt-2">
                             {t('mcpForm.validation.jsonHelp')}
                             <br />• stdio: {`{"type":"stdio","command":"npx","args":["@upstash/context7-mcp"]}`}
-                            <br />• http/sse: {`{"type":"http","url":"https://api.example.com/mcp"}`}
+                            <br />• http/sse: {`{"type":"http","url":"https://api.example.com/mcp"}`} {/* taste-skill-ignore: literal MCP configuration example, not product data. */}
                           </p>
                         </div>
                       </div>
@@ -2224,7 +2245,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
                         <Input
                           value={mcpFormData.config.url}
                           onChange={(e) => updateMcpConfig('url', e.target.value)}
-                          placeholder="https://api.example.com/mcp"
+                          placeholder={/* taste-skill-ignore: reserved example domain for a user-supplied endpoint. */ "https://api.example.com/mcp"}
                           type="url"
                           required
                         />
@@ -2288,7 +2309,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
                       <Button
                         type="submit"
                         disabled={mcpLoading}
-                        className="bg-purple-600 hover:bg-purple-700 disabled:opacity-50"
+                        className="disabled:opacity-50"
                       >
                         {mcpLoading ? t('mcpForm.actions.saving') : (editingMcpServer ? t('mcpForm.actions.updateServer') : t('mcpForm.actions.addServer'))}
                       </Button>
@@ -2517,7 +2538,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
         }
         onStatusRefresh={() => refreshProviderStatus(loginProvider)}
       />
-    </div>
+    </dialog>
   );
 }
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { MessageSquare, RefreshCcw, UserPlus } from 'lucide-react';
+import { RefreshCcw, UserPlus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { preloadAuthenticatedWorkspace } from './app/loadAuthenticatedWorkspace';
 
@@ -77,20 +77,18 @@ const LoginForm = ({ initialMode = 'login', isFirstRun = false }) => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-dvh bg-background flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-md">
-        <div className="bg-card rounded-lg shadow-lg border border-border p-8 space-y-6">
+        <div className="space-y-6 p-4 sm:p-6">
           {/* Logo and Title */}
           <div className="text-center">
             <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 bg-primary rounded-lg flex items-center justify-center shadow-sm">
-                <MessageSquare className="w-8 h-8 text-primary-foreground" />
-              </div>
+              <img src="/icons/file.svg" alt="Dr. Claw" className="h-12 w-12" />
             </div>
-            <h1 className="text-2xl font-bold text-foreground">
+            <h1 className="text-2xl font-semibold text-foreground">
               {isRegisterMode ? t('register.title') : t('login.title')}
             </h1>
-            <p className="text-muted-foreground mt-2">
+            <p className="text-sm leading-6 text-muted-foreground mt-2">
               {isRegisterMode
                 ? (isFirstRun ? t('register.firstRunDescription') : t('register.description'))
                 : t('login.description')}
@@ -104,7 +102,7 @@ const LoginForm = ({ initialMode = 'login', isFirstRun = false }) => {
               </label>
               <input
                 type="text"
-                id="username"
+                id="username" autoComplete="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -121,7 +119,7 @@ const LoginForm = ({ initialMode = 'login', isFirstRun = false }) => {
                 </label>
                 <input
                   type="email"
-                  id="notificationEmail"
+                  id="notificationEmail" autoComplete="email"
                   value={notificationEmail}
                   onChange={(e) => setNotificationEmail(e.target.value)}
                   className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -138,7 +136,7 @@ const LoginForm = ({ initialMode = 'login', isFirstRun = false }) => {
               </label>
               <input
                 type="password"
-                id="password"
+                id="password" autoComplete={isRegisterMode ? 'new-password' : 'current-password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -155,7 +153,7 @@ const LoginForm = ({ initialMode = 'login', isFirstRun = false }) => {
                 </label>
                 <input
                   type="password"
-                  id="confirmPassword"
+                  id="confirmPassword" autoComplete="new-password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -175,7 +173,7 @@ const LoginForm = ({ initialMode = 'login', isFirstRun = false }) => {
             )}
 
             {error && (
-              <div className="p-3 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-800 rounded-md">
+              <div role="alert" className="p-3 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-800 rounded-md">
                 <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
               </div>
             )}
@@ -183,7 +181,7 @@ const LoginForm = ({ initialMode = 'login', isFirstRun = false }) => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200"
+              className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 text-primary-foreground font-medium py-2 px-4 rounded-md transition-colors duration-200"
             >
               {isLoading
                 ? (isRegisterMode ? t('register.loading') : t('login.loading'))
@@ -191,9 +189,9 @@ const LoginForm = ({ initialMode = 'login', isFirstRun = false }) => {
             </button>
           </form>
 
-          <div className="rounded-lg border border-border/70 bg-muted/30 p-4">
+          <div className="border-t border-border pt-5">
             <div className="flex items-start gap-3">
-              <div className="mt-0.5 rounded-md bg-background p-2 border border-border/60">
+              <div className="mt-0.5 text-muted-foreground">
                 {isRegisterMode ? (
                   <RefreshCcw className="w-4 h-4 text-foreground" />
                 ) : (

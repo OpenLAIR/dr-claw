@@ -1,4 +1,5 @@
 import {
+  Check,
   Cookie,
   Eye,
   EyeOff,
@@ -17,6 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { IS_PLATFORM } from '../../../constants/config';
 import { api } from '../../../utils/api';
 import { Button } from '../../ui/button';
+import WorkbenchDialog from '../../ui/WorkbenchDialog';
 import type { NewsSourceKey, ResearchDomain, SourceInfo } from './useNewsDashboardData';
 
 const ARXIV_CATEGORIES = [
@@ -176,7 +178,7 @@ function TokenInput({
 
   return (
     <div className="space-y-1.5">
-      <label className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">
+      <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">
         <KeyRound className="h-3 w-3" />
         {t('settings.apiToken')}
         <span className="ml-1 rounded bg-muted/60 px-1 py-px font-mono text-[9px] tracking-normal text-muted-foreground">
@@ -203,27 +205,27 @@ function TokenInput({
         </button>
       </div>
       {showSavedBadge ? (
-        <p className="flex flex-wrap items-center gap-2 text-[10px] text-muted-foreground/70">
+        <p className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground/70">
           <span className="inline-flex items-center gap-1 font-medium text-emerald-600 dark:text-emerald-400">
-            <span aria-hidden>✓</span>
+            <Check aria-hidden="true" className="h-3.5 w-3.5" />
             {t('settings.tokenSavedIndicator')}
           </span>
           {onClear && (
             <button
               type="button"
               onClick={onClear}
-              className="rounded text-[10px] font-medium text-muted-foreground underline-offset-2 hover:text-destructive hover:underline transition-colors"
+              className="rounded text-xs font-medium text-muted-foreground underline-offset-2 hover:text-destructive hover:underline transition-colors"
             >
               {t('settings.tokenClearAction')}
             </button>
           )}
         </p>
       ) : pendingClear ? (
-        <p className="text-[10px] font-medium text-amber-600 dark:text-amber-400">
+        <p className="text-xs font-medium text-amber-600 dark:text-amber-400">
           {t('settings.tokenPendingClear')}
         </p>
       ) : (
-        <p className="text-[10px] text-muted-foreground/70">{t('settings.tokenHelp')}</p>
+        <p className="text-xs text-muted-foreground/70">{t('settings.tokenHelp')}</p>
       )}
     </div>
   );
@@ -268,12 +270,12 @@ function DomainEditor({
   };
 
   return (
-    <div className="rounded-2xl border border-border/50 bg-background/60 p-4 space-y-3 transition-colors hover:border-border/80">
+    <div className="rounded-lg border border-border/50 bg-background/60 p-4 space-y-3 transition-colors hover:border-border/80">
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-semibold text-foreground">{name}</h4>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
-            <label className="text-[10px] font-medium text-muted-foreground">{t('settings.priority')}</label>
+            <label className="text-xs font-medium text-muted-foreground">{t('settings.priority')}</label>
             <EditableNumberInput
               min={1}
               max={10}
@@ -290,10 +292,10 @@ function DomainEditor({
       </div>
 
       <div>
-        <label className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">{t('settings.keywords')}</label>
+        <label className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">{t('settings.keywords')}</label>
         <div className="mt-1.5 flex flex-wrap gap-1.5">
           {domain.keywords.map((kw) => (
-            <span key={kw} className="inline-flex items-center gap-1 rounded-lg border border-sky-200/60 bg-sky-50/80 px-2 py-0.5 text-[10px] font-medium text-sky-700 dark:border-sky-800/40 dark:bg-sky-950/30 dark:text-sky-300">
+            <span key={kw} className="inline-flex items-center gap-1 rounded-lg border border-sky-200/60 bg-sky-50/80 px-2 py-0.5 text-xs font-medium text-sky-700 dark:border-sky-800/40 dark:bg-sky-950/30 dark:text-sky-300">
               {kw}
               <button onClick={() => removeKeyword(kw)} className="text-sky-400 hover:text-destructive transition-colors">&times;</button>
             </span>
@@ -304,7 +306,7 @@ function DomainEditor({
               onChange={(e) => setKeywordInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && addKeyword()}
               placeholder={t('settings.addPlaceholder')}
-              className="w-20 rounded-lg border border-dashed border-border/60 bg-transparent px-2 py-0.5 text-[10px] placeholder:text-muted-foreground/40 focus:border-primary/40 focus:outline-none"
+              className="w-20 rounded-lg border border-dashed border-border/60 bg-transparent px-2 py-0.5 text-xs placeholder:text-muted-foreground/40 focus:border-primary/40 focus:outline-none"
             />
             <button onClick={addKeyword} className="rounded p-0.5 text-primary/60 hover:text-primary transition-colors"><Plus className="h-3 w-3" /></button>
           </div>
@@ -313,10 +315,10 @@ function DomainEditor({
 
       {showCategories && (
         <div>
-          <label className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">{t('settings.arxivCategories')}</label>
+          <label className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">{t('settings.arxivCategories')}</label>
           <div className="mt-1.5 flex flex-wrap gap-1.5">
             {domain.arxiv_categories.map((cat) => (
-              <span key={cat} className="inline-flex items-center gap-1 rounded-lg border border-emerald-200/60 bg-emerald-50/80 px-2 py-0.5 text-[10px] font-medium text-emerald-700 dark:border-emerald-800/40 dark:bg-emerald-950/30 dark:text-emerald-300">
+              <span key={cat} className="inline-flex items-center gap-1 rounded-lg border border-emerald-200/60 bg-emerald-50/80 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:border-emerald-800/40 dark:bg-emerald-950/30 dark:text-emerald-300">
                 {cat}
                 <button onClick={() => onUpdate(name, { ...domain, arxiv_categories: domain.arxiv_categories.filter((c) => c !== cat) })} className="text-emerald-400 hover:text-destructive transition-colors">&times;</button>
               </span>
@@ -330,7 +332,7 @@ function DomainEditor({
                 }
                 setCatInput('');
               }}
-              className="rounded-lg border border-dashed border-border/60 bg-transparent px-2 py-0.5 text-[10px] text-muted-foreground/70 focus:border-primary/40 focus:outline-none"
+              className="rounded-lg border border-dashed border-border/60 bg-transparent px-2 py-0.5 text-xs text-muted-foreground/70 focus:border-primary/40 focus:outline-none"
             >
               <option value="">{t('settings.addPlaceholder')}</option>
               {ARXIV_CATEGORIES.filter((c) => !domain.arxiv_categories.includes(c)).map((c) => (
@@ -401,24 +403,24 @@ function XhsLoginSection() {
   };
 
   return (
-    <div className="rounded-2xl border border-border/50 bg-background/60 p-4 space-y-3">
+    <div className="rounded-lg border border-border/50 bg-background/60 p-4 space-y-3">
       <div className="flex items-center gap-2">
         <Cookie className="h-4 w-4 text-muted-foreground" />
         <h4 className="text-sm font-semibold text-foreground">{t('settings.browserCookieAuth')}</h4>
       </div>
-      <p className="text-[11px] text-muted-foreground">
+      <p className="text-xs text-muted-foreground">
         {t('settings.browserCookieDescription')}
       </p>
-      <div className="rounded-xl border border-amber-200/70 bg-amber-50/80 p-3 text-[11px] text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100">
+      <div className="rounded-lg border border-amber-200/70 bg-amber-50/80 p-3 text-xs text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100">
         {t('settings.serviceMachineHint')}
       </div>
       {preferQrLogin && (
-        <div className="rounded-xl border border-sky-200/70 bg-sky-50/80 p-3 text-[11px] text-sky-900 dark:border-sky-900/50 dark:bg-sky-950/30 dark:text-sky-100">
+        <div className="rounded-lg border border-sky-200/70 bg-sky-50/80 p-3 text-xs text-sky-900 dark:border-sky-900/50 dark:bg-sky-950/30 dark:text-sky-100">
           {t('settings.qrRecommendedHint')}
         </div>
       )}
 
-      <div className={`rounded-xl border p-3.5 space-y-2.5 ${preferQrLogin ? 'border-primary/40 bg-primary/5' : 'border-border/40 bg-background/50'}`}>
+      <div className={`rounded-lg border p-3.5 space-y-2.5 ${preferQrLogin ? 'border-primary/40 bg-primary/5' : 'border-border/40 bg-background/50'}`}>
         <div className="flex items-center gap-2">
           <QrCode className="h-4 w-4 text-muted-foreground" />
           <h5 className="text-xs font-semibold text-foreground">{t('settings.qrLoginTitle')}</h5>
@@ -428,7 +430,7 @@ function XhsLoginSection() {
             </span>
           )}
         </div>
-        <p className="text-[11px] text-muted-foreground">{t('settings.qrLoginDescription')}</p>
+        <p className="text-xs text-muted-foreground">{t('settings.qrLoginDescription')}</p>
         <Button
           size="sm"
           variant={preferQrLogin ? 'default' : 'outline'}
@@ -441,14 +443,14 @@ function XhsLoginSection() {
         </Button>
       </div>
 
-      <div className={`rounded-xl border p-3.5 space-y-2.5 ${preferQrLogin ? 'border-border/40 bg-background/50' : 'border-primary/40 bg-primary/5'}`}>
+      <div className={`rounded-lg border p-3.5 space-y-2.5 ${preferQrLogin ? 'border-border/40 bg-background/50' : 'border-primary/40 bg-primary/5'}`}>
         <div className="flex items-center gap-2">
           <Cookie className="h-4 w-4 text-muted-foreground" />
           <h5 className="text-xs font-semibold text-foreground">{t('settings.browserCookieAuth')}</h5>
         </div>
-        <p className="text-[11px] text-muted-foreground">{t('settings.cookieSourceDescription')}</p>
+        <p className="text-xs text-muted-foreground">{t('settings.cookieSourceDescription')}</p>
         <div className="space-y-1.5">
-          <label className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">
+          <label className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">
             {t('settings.cookieSource')}
           </label>
           <select
@@ -476,7 +478,7 @@ function XhsLoginSection() {
       {logs.length > 0 && (
         <div
           ref={scrollRef}
-          className="max-h-28 overflow-y-auto rounded-xl border border-border/40 bg-slate-950/90 p-2.5 font-mono text-[10px] leading-4 text-emerald-400 dark:border-border/30"
+          className="max-h-28 overflow-y-auto rounded-lg border border-border/40 bg-slate-950/90 p-2.5 font-mono text-xs leading-4 text-emerald-400 dark:border-border/30"
         >
           {logs.map((line, i) => (
             <div key={i} className="flex gap-1.5">
@@ -489,11 +491,11 @@ function XhsLoginSection() {
 
       {result && (
         <div className="space-y-1">
-          <p className={`text-[11px] font-medium ${result.success ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'}`}>
+          <p className={`text-xs font-medium ${result.success ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'}`}>
             {result.message}
           </p>
           {result.hint && (
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               {result.hint}
             </p>
           )}
@@ -511,6 +513,7 @@ export default function SourceSettingsDialog({
   onClose,
   sourceInfo,
   configDirty,
+  error,
 }: {
   sourceKey: NewsSourceKey;
   config: AnyConfig;
@@ -519,6 +522,7 @@ export default function SourceSettingsDialog({
   onClose: () => void;
   sourceInfo?: SourceInfo;
   configDirty: boolean;
+  error?: string | null;
 }) {
   const { t } = useTranslation('news');
   const [newDomainName, setNewDomainName] = useState('');
@@ -549,45 +553,25 @@ export default function SourceSettingsDialog({
   }, [config, newDomainName, onConfigChange, sourceKey]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={onClose}>
-      <div
-        className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-[28px] border border-border/60 bg-card p-6 shadow-2xl space-y-5"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10">
-              <Settings2 className="h-4 w-4 text-primary" />
-            </div>
-            <h3 className="text-sm font-semibold text-foreground">{t(SOURCE_TITLE_KEYS[sourceKey])}</h3>
-          </div>
-          <div className="flex items-center gap-2">
-            {configDirty && (
-              <Button size="sm" className="rounded-full text-xs gap-1.5 shadow-sm" onClick={onSave}>
-                {t('actions.save')}
-              </Button>
-            )}
-            <button onClick={onClose} className="rounded-lg p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors">
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
+    <WorkbenchDialog title={t(SOURCE_TITLE_KEYS[sourceKey])} onClose={onClose} size="wide">
+      <div className="space-y-5">
+        {error && <div role="alert" className="rounded-md border border-destructive/30 p-3 text-sm">{error}</div>}
+        {configDirty && <div className="flex justify-end"><Button size="sm" onClick={onSave}>{t('actions.save')}</Button></div>}
 
         {/* Authentication — CLI-based, auto-extracts browser cookies */}
         {sourceKey === 'x' && (
-          <div className="rounded-2xl border border-border/50 bg-background/60 p-4 space-y-2">
+          <div className="rounded-lg border border-border/50 bg-background/60 p-4 space-y-2">
             <h4 className="text-sm font-semibold text-foreground">{t('settings.authentication')}</h4>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               {t('settings.xAuthDescription')}
             </p>
           </div>
         )}
         {sourceKey === 'xiaohongshu' && <XhsLoginSection />}
         {sourceKey === 'github' && (
-          <div className="rounded-2xl border border-border/50 bg-background/60 p-4 space-y-3">
+          <div className="rounded-lg border border-border/50 bg-background/60 p-4 space-y-3">
             <h4 className="text-sm font-semibold text-foreground">{t('settings.authentication')}</h4>
-            <p className="text-[11px] text-muted-foreground">{t('settings.githubAuthDescription')}</p>
+            <p className="text-xs text-muted-foreground">{t('settings.githubAuthDescription')}</p>
             <TokenInput
               value={config.api_token as string | null | undefined}
               onChange={(next) => updateField('api_token', next)}
@@ -599,9 +583,9 @@ export default function SourceSettingsDialog({
           </div>
         )}
         {sourceKey === 'huggingface' && (
-          <div className="rounded-2xl border border-border/50 bg-background/60 p-4 space-y-3">
+          <div className="rounded-lg border border-border/50 bg-background/60 p-4 space-y-3">
             <h4 className="text-sm font-semibold text-foreground">{t('settings.authentication')}</h4>
-            <p className="text-[11px] text-muted-foreground">{t('settings.hfAuthDescription')}</p>
+            <p className="text-xs text-muted-foreground">{t('settings.hfAuthDescription')}</p>
             <TokenInput
               value={config.api_token as string | null | undefined}
               onChange={(next) => updateField('api_token', next)}
@@ -615,9 +599,9 @@ export default function SourceSettingsDialog({
 
         {/* HuggingFace: mode toggles */}
         {sourceKey === 'huggingface' && (
-          <div className="rounded-xl border border-border/40 bg-background/50 p-3.5">
-            <label className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">{t('settings.hfModes')}</label>
-            <p className="mt-1 text-[11px] text-muted-foreground/80">{t('settings.hfModesHelp')}</p>
+          <div className="rounded-lg border border-border/40 bg-background/50 p-3.5">
+            <label className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">{t('settings.hfModes')}</label>
+            <p className="mt-1 text-xs text-muted-foreground/80">{t('settings.hfModesHelp')}</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {HF_MODE_OPTIONS.map((opt) => {
                 const active = parseModes(config.modes).includes(opt.value);
@@ -641,7 +625,7 @@ export default function SourceSettingsDialog({
                     }}
                     className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                       active
-                        ? 'bg-yellow-500 text-white shadow-sm'
+                        ? 'bg-yellow-500 text-white '
                         : 'bg-muted/40 text-muted-foreground hover:bg-muted/60'
                     }`}
                   >
@@ -656,8 +640,8 @@ export default function SourceSettingsDialog({
         {/* GitHub: language + time window + trending toggle */}
         {sourceKey === 'github' && (
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-xl border border-border/40 bg-background/50 p-3.5">
-              <label className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">{t('settings.githubLanguage')}</label>
+            <div className="rounded-lg border border-border/40 bg-background/50 p-3.5">
+              <label className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">{t('settings.githubLanguage')}</label>
               <select
                 value={config.language || ''}
                 onChange={(e) => updateField('language', e.target.value)}
@@ -668,8 +652,8 @@ export default function SourceSettingsDialog({
                 ))}
               </select>
             </div>
-            <div className="rounded-xl border border-border/40 bg-background/50 p-3.5">
-              <label className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">{t('settings.githubTimeWindow')}</label>
+            <div className="rounded-lg border border-border/40 bg-background/50 p-3.5">
+              <label className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">{t('settings.githubTimeWindow')}</label>
               <select
                 value={config.time_window || 'weekly'}
                 onChange={(e) => updateField('time_window', e.target.value)}
@@ -680,21 +664,21 @@ export default function SourceSettingsDialog({
                 ))}
               </select>
             </div>
-            <div className="rounded-xl border border-border/40 bg-background/50 p-3.5 sm:col-span-2 flex items-center justify-between">
+            <div className="rounded-lg border border-border/40 bg-background/50 p-3.5 sm:col-span-2 flex items-center justify-between">
               <div>
-                <label className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">{t('settings.githubIncludeTrending')}</label>
-                <p className="mt-1 text-[11px] text-muted-foreground/80">{t('settings.githubIncludeTrendingHelp')}</p>
+                <label className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">{t('settings.githubIncludeTrending')}</label>
+                <p className="mt-1 text-xs text-muted-foreground/80">{t('settings.githubIncludeTrendingHelp')}</p>
               </div>
               <button
                 type="button"
                 onClick={() => updateField('include_trending', !(config.include_trending ?? true))}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  config.include_trending !== false ? 'bg-violet-500' : 'bg-muted'
+                  config.include_trending !== false ? 'bg-muted' : 'bg-muted'
                 }`}
                 aria-pressed={config.include_trending !== false}
               >
                 <span
-                  className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+                  className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
                     config.include_trending !== false ? 'translate-x-5' : 'translate-x-0.5'
                   }`}
                 />
@@ -706,11 +690,11 @@ export default function SourceSettingsDialog({
         {/* WeChat 公众号: RSSHub instance + accounts list + access key */}
         {sourceKey === 'wechat' && (
           <>
-            <div className="rounded-2xl border border-border/50 bg-background/60 p-4 space-y-3">
+            <div className="rounded-lg border border-border/50 bg-background/60 p-4 space-y-3">
               <h4 className="text-sm font-semibold text-foreground">{t('settings.wechatRsshubTitle')}</h4>
-              <p className="text-[11px] text-muted-foreground">{t('settings.wechatRsshubDescription')}</p>
+              <p className="text-xs text-muted-foreground">{t('settings.wechatRsshubDescription')}</p>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">
+                <label className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">
                   {t('settings.wechatInstanceUrl')}
                 </label>
                 <input
@@ -721,7 +705,7 @@ export default function SourceSettingsDialog({
                   spellCheck={false}
                   className="w-full rounded-lg border border-border/50 bg-background px-3 py-2 text-sm font-mono focus:border-primary/40 focus:outline-none focus:ring-1 focus:ring-primary/20"
                 />
-                <p className="text-[10px] text-muted-foreground/70">{t('settings.wechatInstanceHelp')}</p>
+                <p className="text-xs text-muted-foreground/70">{t('settings.wechatInstanceHelp')}</p>
               </div>
               <TokenInput
                 value={config.access_key as string | null | undefined}
@@ -732,11 +716,11 @@ export default function SourceSettingsDialog({
                 envVarLabel="?key=…"
               />
             </div>
-            <div className="rounded-xl border border-border/40 bg-background/50 p-3.5 space-y-2">
-              <label className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">
+            <div className="rounded-lg border border-border/40 bg-background/50 p-3.5 space-y-2">
+              <label className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">
                 {t('settings.wechatAccounts')}
               </label>
-              <p className="text-[11px] text-muted-foreground/80">{t('settings.wechatAccountsHelp')}</p>
+              <p className="text-xs text-muted-foreground/80">{t('settings.wechatAccountsHelp')}</p>
               <textarea
                 value={
                   Array.isArray(config.accounts)
@@ -755,7 +739,7 @@ export default function SourceSettingsDialog({
                 spellCheck={false}
                 className="w-full rounded-lg border border-border/50 bg-background px-3 py-2 text-xs font-mono focus:border-primary/40 focus:outline-none focus:ring-1 focus:ring-primary/20"
               />
-              <p className="text-[10px] text-muted-foreground/70">
+              <p className="text-xs text-muted-foreground/70">
                 {t('settings.wechatAccountsFormat')}
               </p>
             </div>
@@ -765,8 +749,8 @@ export default function SourceSettingsDialog({
         {/* Source-specific fields */}
         {sourceKey === 'x' && (
           <>
-            <div className="rounded-xl border border-border/40 bg-background/50 p-3.5">
-              <label className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">{t('settings.searchQueries')}</label>
+            <div className="rounded-lg border border-border/40 bg-background/50 p-3.5">
+              <label className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">{t('settings.searchQueries')}</label>
               <input
                 value={config.queries || ''}
                 onChange={(e) => updateField('queries', e.target.value)}
@@ -774,8 +758,8 @@ export default function SourceSettingsDialog({
                 className="mt-1.5 w-full rounded-lg border border-border/50 bg-background px-3 py-2 text-sm focus:border-primary/40 focus:outline-none focus:ring-1 focus:ring-primary/20"
               />
             </div>
-            <div className="rounded-xl border border-border/40 bg-background/50 p-3.5">
-              <label className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">{t('settings.trackedAccounts')}</label>
+            <div className="rounded-lg border border-border/40 bg-background/50 p-3.5">
+              <label className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">{t('settings.trackedAccounts')}</label>
               <input
                 value={config.accounts || ''}
                 onChange={(e) => updateField('accounts', e.target.value)}
@@ -787,8 +771,8 @@ export default function SourceSettingsDialog({
         )}
 
         {sourceKey === 'xiaohongshu' && (
-          <div className="rounded-xl border border-border/40 bg-background/50 p-3.5">
-            <label className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">{t('settings.searchKeywords')}</label>
+          <div className="rounded-lg border border-border/40 bg-background/50 p-3.5">
+            <label className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">{t('settings.searchKeywords')}</label>
             <input
               value={config.keywords || ''}
               onChange={(e) => updateField('keywords', e.target.value)}
@@ -800,8 +784,8 @@ export default function SourceSettingsDialog({
 
         {/* Common fields */}
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-xl border border-border/40 bg-background/50 p-3.5">
-            <label className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">{t('settings.resultsToShow')}</label>
+          <div className="rounded-lg border border-border/40 bg-background/50 p-3.5">
+            <label className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">{t('settings.resultsToShow')}</label>
             <EditableNumberInput
               min={1}
               max={50}
@@ -812,8 +796,8 @@ export default function SourceSettingsDialog({
             />
           </div>
           {sourceKey === 'arxiv' && (
-            <div className="rounded-xl border border-border/40 bg-background/50 p-3.5">
-              <label className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">{t('settings.maxArxivResults')}</label>
+            <div className="rounded-lg border border-border/40 bg-background/50 p-3.5">
+              <label className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">{t('settings.maxArxivResults')}</label>
               <EditableNumberInput
                 min={50}
                 max={1000}
@@ -829,7 +813,7 @@ export default function SourceSettingsDialog({
 
         {/* Research Domains */}
         <div className="space-y-3">
-          <label className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">{t('settings.researchDomains')}</label>
+          <label className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">{t('settings.researchDomains')}</label>
           {Object.entries(config.research_domains || {}).map(([name, domain]) => (
             <DomainEditor
               key={name}
@@ -846,7 +830,7 @@ export default function SourceSettingsDialog({
               onChange={(e) => setNewDomainName(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && addDomain()}
               placeholder={t('settings.newDomainPlaceholder')}
-              className="flex-1 rounded-xl border border-dashed border-border/60 bg-transparent px-3.5 py-2 text-sm placeholder:text-muted-foreground/40 focus:border-primary/40 focus:outline-none"
+              className="min-w-0 flex-1 rounded-lg border border-dashed border-border/60 bg-transparent px-3.5 py-2 text-sm placeholder:text-muted-foreground/40 focus:border-primary/40 focus:outline-none"
             />
             <Button size="sm" variant="outline" className="rounded-full gap-1.5" onClick={addDomain} disabled={!newDomainName.trim()}>
               <Plus className="h-3.5 w-3.5" /> {t('settings.addDomain')}
@@ -854,6 +838,6 @@ export default function SourceSettingsDialog({
           </div>
         </div>
       </div>
-    </div>
+    </WorkbenchDialog>
   );
 }

@@ -1,4 +1,4 @@
-import React, { Suspense, useCallback, useEffect } from 'react';
+import React, { Suspense, useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import LazyLoadBoundary from '../../LazyLoadBoundary';
@@ -13,7 +13,8 @@ import { resolveChatTabSyncAction } from './chatTabSync';
 
 import { useTaskMaster } from '../../../contexts/TaskMasterContext';
 import { useUiPreferences } from '../../../hooks/useUiPreferences';
-import type { Project } from '../../../types/app';
+import type { Project, ProjectSession } from '../../../types/app';
+import type { ResearchTaskDraft } from '../../chat/types/types';
 import type { Reference } from '../../references/types';
 import { queueSkillCommandDraft } from '../../../utils/skillCommandDraft';
 
@@ -22,6 +23,7 @@ const SkillsDashboard = lazyWithRetry(() => import('../../SkillsDashboard'));
 const AutoResearchHub = lazyWithRetry(() => import('../../AutoResearchHub'));
 const ComputeResourcesDashboard = lazyWithRetry(() => import('../../compute-dashboard/ComputeResourcesDashboard'));
 const SurveyPage = lazyWithRetry(() => import('../../survey/view/SurveyPage'));
+const ProjectOverview = lazyWithRetry(() => import('../../project-dashboard/view/ProjectOverview'));
 const ProjectDashboard = lazyWithRetry(() => import('../../project-dashboard/view/ProjectDashboard'));
 const TrashDashboard = lazyWithRetry(() => import('../../project-dashboard/view/TrashDashboard'));
 const NewsDashboard = lazyWithRetry(() => import('../../news-dashboard/view/NewsDashboard'));
@@ -66,6 +68,8 @@ function MainContent({
   onMenuClick,
   isLoading,
   isTrashLoading,
+  projectsError,
+  onRetryProjects,
   onInputFocusChange,
   onSessionActive,
   onSessionInactive,
@@ -94,6 +98,8 @@ function MainContent({
 
   const { currentProject, setCurrentProject } = useTaskMaster() as TaskMasterContextValue;
   const shouldShowTasksTab = false;
+  const [researchTaskDraft, setResearchTaskDraft] = useState<ResearchTaskDraft | null>(null);
+  const consumeResearchTaskDraft = useCallback(() => setResearchTaskDraft(null), []);
 
   const handleActivateBlankTab = useCallback(() => {
     if (selectedProject && onNewSession) {
@@ -163,6 +169,16 @@ function MainContent({
     ? null
     : selectedSession;
 
+  // Browsing another project's overview must not retarget the mounted chat.
+  // Only an explicit chat destination changes its project/session selection.
+  const [chatSelection, setChatSelection] = useState<{
+    project: Project | null; session: ProjectSession | null;
+  }>({ project: null, session: null });
+  if (activeTab === 'chat' && selectedProject &&
+      (chatSelection.project !== selectedProject || chatSelection.session !== effectiveSession)) {
+    setChatSelection({ project: selectedProject, session: effectiveSession });
+  }
+
   useEffect(() => {
     if (selectedProject && selectedProject !== currentProject) {
       setCurrentProject?.(selectedProject);
@@ -177,10 +193,11 @@ function MainContent({
     }
   }, [activeTab, setActiveTab]);
 
-  if (isLoading) {
+  if (isLoading && !projects.length && !selectedProject) {
     return <MainContentStateView mode="loading" isMobile={isMobile} onMenuClick={onMenuClick} />;
   }
 
+  const renderGlobalContent = () => {
   if (activeTab === 'dashboard') {
     return (
       <div className="h-full flex flex-col">
@@ -198,6 +215,10 @@ function MainContent({
           <LazyContent resetKey="dashboard">
             <ProjectDashboard
               projects={projects}
+              processingSessions={processingSessions}
+              error={projectsError}
+              onRetry={onRetryProjects}
+              onCreateProject={() => window.dispatchEvent(new Event('workbench:create-project'))}
               onProjectAction={(project, tab, sessionId) => {
                 onProjectSelect(project);
                 setActiveTab(tab);
@@ -334,12 +355,19 @@ function MainContent({
     );
   }
 
+    return null;
+  };
+  const globalContent = renderGlobalContent();
+
   if (!selectedProject) {
-    return <MainContentStateView mode="empty" isMobile={isMobile} onMenuClick={onMenuClick} />;
+    return globalContent || <MainContentStateView mode="empty" isMobile={isMobile} onMenuClick={onMenuClick} />;
   }
 
   return (
-    <div className="h-full flex flex-col">
+    <>
+    {globalContent}
+    <div className={`h-full flex-col ${globalContent ? 'hidden' : 'flex'}`}>
+
       <MainContentHeader
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -366,9 +394,11 @@ function MainContent({
               }}
             />
             <LazyContent resetKey="chat">
-              <ChatInterface
-                selectedProject={selectedProject}
-                selectedSession={effectiveSession}
+              {chatSelection.project && <ChatInterface
+                researchTaskDraft={researchTaskDraft}
+                onConsumeResearchTaskDraft={consumeResearchTaskDraft}
+                selectedProject={chatSelection.project}
+                selectedSession={chatSelection.session}
                 ws={ws}
                 sendMessage={sendMessage}
                 latestMessage={latestMessage}
@@ -394,9 +424,25 @@ function MainContent({
                 clearImportedProjectAnalysisPrompt={clearImportedProjectAnalysisPrompt}
                 newSessionMode={newSessionMode}
                 onNewSessionModeChange={onNewSessionModeChange}
-              />
+              />}
             </LazyContent>
           </div>
+
+          {activeTab === 'overview' && (
+            <LazyContent resetKey={`overview:${selectedProject.name}`}>
+              <ProjectOverview project={selectedProject} processingSessions={processingSessions}
+                onContinue={(session) => {
+                  if (session) onNavigateToSession(session.id, session.__provider, selectedProject.name);
+                  else setActiveTab('chat');
+                }}
+                onNewSession={() => onNewSession?.(selectedProject, 'research')}
+                onPrepareTask={(prompt, stage) => {
+                  setResearchTaskDraft({ projectName: selectedProject.name, prompt, stage });
+                  onNewSession?.(selectedProject, 'research');
+                }}
+              />
+            </LazyContent>
+          )}
 
           {activeTab === 'survey' && (
             <div className="h-full overflow-hidden">
@@ -413,6 +459,7 @@ function MainContent({
         </div>
       </div>
     </div>
+    </>
   );
 }
 

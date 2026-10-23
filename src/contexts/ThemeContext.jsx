@@ -41,7 +41,7 @@ export const ThemeProvider = ({ children }) => {
       
       const themeColorMeta = document.querySelector('meta[name="theme-color"]');
       if (themeColorMeta) {
-        themeColorMeta.setAttribute('content', '#0c1117'); // Dark background color (hsl(222.2 84% 4.9%))
+        themeColorMeta.setAttribute('content', '#121212'); // Dark background color (hsl(222.2 84% 4.9%))
       }
     } else {
       document.documentElement.classList.remove('dark');

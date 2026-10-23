@@ -112,11 +112,8 @@ export default function SidebarProjectItem({
   };
 
   const selectAndToggleProject = () => {
-    if (selectedProject?.name !== project.name) {
-      onProjectSelect(project);
-    }
-
-    toggleProject();
+    onProjectSelect(project);
+    if (!isExpanded) toggleProject();
   };
 
   return (

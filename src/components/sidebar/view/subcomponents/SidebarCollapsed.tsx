@@ -21,7 +21,7 @@ export default function SidebarCollapsed({
 }: SidebarCollapsedProps) {
   return (
     <div
-      className="h-full flex flex-col items-center pb-3 gap-1 bg-background/80 backdrop-blur-sm w-12 electron-drag"
+      className="h-full flex flex-col items-center pb-3 gap-1 bg-background w-12 electron-drag"
       style={{ paddingTop: isMacElectron ? '32px' : '12px' }}
     >
       {/* Expand button with brand logo */}
@@ -60,7 +60,7 @@ export default function SidebarCollapsed({
       )}
 
       <div
-        className="mt-auto w-8 px-0.5 pb-1 text-center text-[8px] leading-tight font-mono text-muted-foreground/60 break-all select-none"
+        className="mt-auto w-full pb-1 text-center text-xs leading-tight tabular-nums text-muted-foreground whitespace-nowrap select-none"
         title={`${t('common:common.version')} v${currentVersion}`}
       >
         v{currentVersion}

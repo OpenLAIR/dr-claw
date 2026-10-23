@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useId } from 'react';
 import { X, FolderPlus, ChevronRight, ChevronLeft, Check, Loader2, AlertCircle, FolderOpen, Eye, EyeOff, Plus, RefreshCw, GitBranch } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
+import WorkbenchDialog from './ui/WorkbenchDialog';
 import { api } from '../utils/api';
 import { useTranslation } from 'react-i18next';
 import generateWorkspaceName from '../utils/workspaceNameGenerator';
@@ -9,6 +10,13 @@ import { buildImportedWorkspaceScanPrompt } from '../utils/importedWorkspaceAnal
 
 const ProjectCreationWizard = ({ onClose, onProjectCreated }) => {
   const { t } = useTranslation();
+  const dialogRef = useRef(null);
+  const titleId = useId();
+  useEffect(() => {
+    const trigger = document.activeElement;
+    dialogRef.current?.showModal();
+    return () => { dialogRef.current?.close(); trigger?.focus(); };
+  }, []);
   // Wizard state
   const [step, setStep] = useState(1); // 1: Choose type, 2: Configure, 3: Confirm
   const [workspaceType, setWorkspaceType] = useState('new'); // 'existing' or 'new' - default to 'new'
@@ -26,6 +34,7 @@ const ProjectCreationWizard = ({ onClose, onProjectCreated }) => {
   const [browserCurrentPath, setBrowserCurrentPath] = useState('~');
   const [browserFolders, setBrowserFolders] = useState([]);
   const [loadingFolders, setLoadingFolders] = useState(false);
+  const [folderError, setFolderError] = useState(null);
   const [showHiddenFolders, setShowHiddenFolders] = useState(false);
   const [showNewFolderInput, setShowNewFolderInput] = useState(false);
   const [newFolderName, setNewFolderName] = useState(generateWorkspaceName());
@@ -229,12 +238,17 @@ const ProjectCreationWizard = ({ onClose, onProjectCreated }) => {
   const loadBrowserFolders = async (path) => {
     try {
       setLoadingFolders(true);
+      setFolderError(null);
+      setBrowserCurrentPath(path);
+      setBrowserFolders([]);
       const response = await api.browseFilesystem(path);
+      if (!response.ok) throw new Error('folders');
       const data = await response.json();
       setBrowserCurrentPath(data.path || path);
       setBrowserFolders(data.suggestions || []);
     } catch (error) {
       console.error('Error loading folders:', error);
+      setFolderError(t('projectWizard.folderBrowser.loadError'));
     } finally {
       setLoadingFolders(false);
     }
@@ -281,20 +295,21 @@ const ProjectCreationWizard = ({ onClose, onProjectCreated }) => {
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 bottom-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60] p-0 sm:p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-none sm:rounded-lg shadow-xl w-full h-full sm:h-auto sm:max-w-2xl border-0 sm:border border-gray-200 dark:border-gray-700 overflow-y-auto">
+    <dialog ref={dialogRef} aria-labelledby={titleId} onCancel={event => { event.preventDefault(); if (!isCreating) onClose(); }} className="workbench-wizard m-0 h-dvh w-screen max-h-none max-w-none border-0 bg-transparent p-0 text-foreground open:flex items-center justify-center sm:p-4">
+      <div className="bg-background rounded-none sm:rounded-lg shadow-xl w-full h-full sm:h-auto sm:max-h-[90dvh] sm:max-w-2xl border-0 sm:border border-border overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/50 rounded-lg flex items-center justify-center">
               <FolderPlus className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <h3 id={titleId} className="text-lg font-semibold text-foreground">
               {t('projectWizard.title')}
             </h3>
           </div>
           <button
             onClick={onClose}
+              aria-label={t('buttons.close')}
             className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
             disabled={isCreating}
           >
@@ -365,8 +380,8 @@ const ProjectCreationWizard = ({ onClose, onProjectCreated }) => {
                     }`}
                   >
                     <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 bg-green-100 dark:bg-green-900/50 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <FolderPlus className="w-5 h-5 text-green-600 dark:text-green-400" />
+                      <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center flex-shrink-0">
+                        <FolderPlus className="w-5 h-5 text-muted-foreground" />
                       </div>
                       <div className="flex-1">
                         <h5 className="font-semibold text-gray-900 dark:text-white mb-1">
@@ -389,8 +404,8 @@ const ProjectCreationWizard = ({ onClose, onProjectCreated }) => {
                     }`}
                   >
                     <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/50 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <GitBranch className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                      <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center flex-shrink-0">
+                        <GitBranch className="w-5 h-5 text-muted-foreground" />
                       </div>
                       <div className="flex-1">
                         <h5 className="font-semibold text-gray-900 dark:text-white mb-1">
@@ -412,12 +427,13 @@ const ProjectCreationWizard = ({ onClose, onProjectCreated }) => {
             <div className="space-y-4">
               {/* Project Name (Optional/New) */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="workspace-project-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   {t('projectWizard.step2.projectName', 'Project Name')}
                 </label>
                 <div className="flex gap-2">
                   <Input
                     type="text"
+                    id="workspace-project-name"
                     value={projectName}
                     onChange={(e) => {
                       const newName = e.target.value;
@@ -456,13 +472,14 @@ const ProjectCreationWizard = ({ onClose, onProjectCreated }) => {
 
               {/* Workspace Path */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="workspace-project-path" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   {workspaceType === 'existing' ? t('projectWizard.step2.existingPath') : t('projectWizard.step2.newPath')}
                 </label>
                 <div className="relative flex gap-2">
                   <div className="flex-1 relative">
                     <Input
                       type="text"
+                      id="workspace-project-path"
                       value={workspacePath}
                       onChange={(e) => setWorkspacePath(e.target.value)}
                       placeholder={workspaceType === 'existing' ? '/path/to/existing/workspace' : '/path/to/new/workspace'}
@@ -488,7 +505,7 @@ const ProjectCreationWizard = ({ onClose, onProjectCreated }) => {
                     variant="outline"
                     onClick={openFolderBrowser}
                     className="px-3"
-                    title="Browse folders"
+                    title={t('projectWizard.folderBrowser.title')}
                   >
                     <FolderOpen className="w-4 h-4" />
                   </Button>
@@ -579,18 +596,10 @@ const ProjectCreationWizard = ({ onClose, onProjectCreated }) => {
 
       {/* Folder Browser Modal */}
       {showFolderBrowser && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[70] p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] border border-gray-200 dark:border-gray-700 flex flex-col">
+        <WorkbenchDialog title={t('projectWizard.folderBrowser.title')} onClose={() => setShowFolderBrowser(false)} size="wide">
+          <div className="flex min-w-0 flex-col">
             {/* Browser Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/50 rounded-lg flex items-center justify-center">
-                  <FolderOpen className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Select Folder
-                </h3>
-              </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setShowHiddenFolders(!showHiddenFolders)}
@@ -599,7 +608,7 @@ const ProjectCreationWizard = ({ onClose, onProjectCreated }) => {
                       ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30'
                       : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
-                  title={showHiddenFolders ? 'Hide hidden folders' : 'Show hidden folders'}
+                  aria-pressed={showHiddenFolders} title={t(showHiddenFolders ? 'projectWizard.folderBrowser.hideHidden' : 'projectWizard.folderBrowser.showHidden')}
                 >
                   {showHiddenFolders ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
                 </button>
@@ -616,33 +625,29 @@ const ProjectCreationWizard = ({ onClose, onProjectCreated }) => {
                       ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30'
                       : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
-                  title="Create new folder"
+                  title={t('projectWizard.folderBrowser.createFolder')}
                 >
                   <Plus className="w-5 h-5" />
                 </button>
-                <button
-                  onClick={() => setShowFolderBrowser(false)}
-                  className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+
               </div>
             </div>
 
             {/* New Folder Input */}
             {showNewFolderInput && (
               <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-blue-50 dark:bg-blue-900/20">
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-2 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex min-w-0 flex-1 items-center gap-2">
                     <Input
                       type="text"
                       value={newFolderName}
                       onChange={(e) => setNewFolderName(e.target.value)}
-                      placeholder="New folder name"
-                      className="flex-1"
+                      aria-label={t('projectWizard.folderBrowser.newName')} placeholder={t('projectWizard.folderBrowser.newName')}
+                      className="min-w-0 flex-1"
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter') createNewFolder();
+                        if (e.key === 'Enter' && !e.nativeEvent.isComposing) createNewFolder();
                         if (e.key === 'Escape') {
+                          e.preventDefault(); e.stopPropagation();
                           setShowNewFolderInput(false);
                           setNewFolderName('');
                         }
@@ -665,7 +670,7 @@ const ProjectCreationWizard = ({ onClose, onProjectCreated }) => {
                     onClick={createNewFolder}
                     disabled={!newFolderName.trim() || creatingFolder}
                   >
-                    {creatingFolder ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Create'}
+                    {creatingFolder ? <Loader2 className="w-4 h-4 animate-spin" /> : t('buttons.create')}
                   </Button>
                   <Button
                     size="sm"
@@ -675,14 +680,16 @@ const ProjectCreationWizard = ({ onClose, onProjectCreated }) => {
                       setNewFolderName('');
                     }}
                   >
-                    Cancel
+                    {t('buttons.cancel')}
                   </Button>
                 </div>
               </div>
             )}
 
+            {folderError && <p role="alert" className="p-4 text-sm text-red-700 dark:text-red-300">{folderError} <button className="underline" onClick={() => loadBrowserFolders(browserCurrentPath)}>{t('buttons.retry')}</button></p>}
+            {error && <p role="alert" className="p-4 text-sm text-red-700 dark:text-red-300">{error}</p>}
             {/* Folder List */}
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="max-h-[45dvh] min-h-32 overflow-y-auto p-4">
               {loadingFolders ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
@@ -706,15 +713,15 @@ const ProjectCreationWizard = ({ onClose, onProjectCreated }) => {
                       }}
                       className="w-full px-4 py-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg flex items-center gap-3"
                     >
-                      <FolderOpen className="w-5 h-5 text-gray-400" />
+                      <FolderOpen className="w-5 h-5 shrink-0 text-muted-foreground" />
                       <span className="font-medium text-gray-700 dark:text-gray-300">..</span>
                     </button>
                   )}
 
                   {/* Folders */}
-                  {browserFolders.length === 0 ? (
+                  {browserFolders.length === 0 ? folderError ? null : (
                     <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                      No subfolders found
+                      {t('projectWizard.folderBrowser.empty')}
                     </div>
                   ) : (
                     browserFolders
@@ -724,10 +731,10 @@ const ProjectCreationWizard = ({ onClose, onProjectCreated }) => {
                       <div key={index} className="flex items-center gap-2">
                         <button
                           onClick={() => navigateToFolder(folder.path)}
-                          className="flex-1 px-4 py-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg flex items-center gap-3"
+                          className="min-w-0 flex-1 px-4 py-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg flex items-center gap-3"
                         >
-                          <FolderPlus className="w-5 h-5 text-blue-500" />
-                          <span className="font-medium text-gray-900 dark:text-white">{folder.name}</span>
+                          <FolderPlus className="w-5 h-5 shrink-0 text-muted-foreground" />
+                          <span className="break-all text-left font-medium text-foreground">{folder.name}</span>
                         </button>
                         <Button
                           variant="ghost"
@@ -735,7 +742,7 @@ const ProjectCreationWizard = ({ onClose, onProjectCreated }) => {
                           onClick={() => selectFolder(folder.path, workspaceType === 'existing')}
                           className="text-xs px-3"
                         >
-                          Select
+                          {t('projectWizard.folderBrowser.select')}
                         </Button>
                       </div>
                     ))
@@ -747,7 +754,7 @@ const ProjectCreationWizard = ({ onClose, onProjectCreated }) => {
             {/* Browser Footer with Current Path */}
             <div className="border-t border-gray-200 dark:border-gray-700">
               <div className="px-4 py-3 bg-gray-50 dark:bg-gray-900/50 flex items-center gap-2">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Path:</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">{t('projectWizard.folderBrowser.path')}</span>
                 <code className="text-sm font-mono text-gray-900 dark:text-white flex-1 truncate">
                   {browserCurrentPath}
                 </code>
@@ -761,20 +768,20 @@ const ProjectCreationWizard = ({ onClose, onProjectCreated }) => {
                     setNewFolderName('');
                   }}
                 >
-                  Cancel
+                  {t('buttons.cancel')}
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => selectFolder(browserCurrentPath, workspaceType === 'existing')}
                 >
-                  Use this folder
+                  {t('projectWizard.folderBrowser.useFolder')}
                 </Button>
               </div>
             </div>
           </div>
-        </div>
+        </WorkbenchDialog>
       )}
-    </div>
+    </dialog>
   );
 };
 

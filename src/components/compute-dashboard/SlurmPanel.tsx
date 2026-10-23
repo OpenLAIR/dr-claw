@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useId } from 'react';
 import { Layers, RefreshCw, Play, Upload, X, Clock, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { api } from '../../utils/api';
@@ -25,10 +26,11 @@ type ActionResult = {
 };
 
 function ResultBlock({ result }: { result: ActionResult | null }) {
+  const { t } = useTranslation('common');
   if (!result) return null;
   const ok = result.success;
   return (
-    <div
+    <div role={ok ? 'status' : 'alert'}
       className={`mt-2 p-2.5 rounded-lg text-xs border ${
         ok
           ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200'
@@ -42,7 +44,7 @@ function ResultBlock({ result }: { result: ActionResult | null }) {
           <XCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
         )}
         <pre className="whitespace-pre-wrap break-all font-mono flex-1 max-h-40 overflow-y-auto">
-          {result.output || result.error || result.message || 'Done'}
+          {result.output || result.error || result.message || t(ok ? 'slurm.done' : 'messages.operationFailed')}
         </pre>
       </div>
     </div>
@@ -62,6 +64,9 @@ export default function SlurmPanel({
   node: ComputeNode;
   projectPath?: string;
 }) {
+  const { t } = useTranslation('common');
+  const formId = useId();
+  const [loadErrors, setLoadErrors] = useState({ info: false, queue: false });
   const s = node.slurm || {};
   const [partitions, setPartitions] = useState<SlurmPartition[]>([]);
   const [jobs, setJobs] = useState<SlurmJob[]>([]);
@@ -95,9 +100,12 @@ echo "Job started on $(hostname)"
     try {
       const res = await api.compute.slurmInfo(node.id);
       const data = await res.json();
-      if (data.success) setPartitions(data.partitions || []);
+      if (!res.ok || !data.success || !Array.isArray(data.partitions)) throw new Error('slurm');
+      setPartitions(data.partitions);
+      setLoadErrors(previous => ({ ...previous, info: false }));
     } catch (err) {
       console.error('sinfo error:', err);
+      setLoadErrors(previous => ({ ...previous, info: true }));
     } finally {
       setLoading((l) => ({ ...l, info: false }));
     }
@@ -108,9 +116,12 @@ echo "Job started on $(hostname)"
     try {
       const res = await api.compute.slurmQueue(node.id);
       const data = await res.json();
-      if (data.success) setJobs(data.jobs || []);
+      if (!res.ok || !data.success || !Array.isArray(data.jobs)) throw new Error('slurm');
+      setJobs(data.jobs);
+      setLoadErrors(previous => ({ ...previous, queue: false }));
     } catch (err) {
       console.error('squeue error:', err);
+      setLoadErrors(previous => ({ ...previous, queue: true }));
     } finally {
       setLoading((l) => ({ ...l, queue: false }));
     }
@@ -128,21 +139,23 @@ echo "Job started on $(hostname)"
   }, [fetchQueue]);
 
   const handleSalloc = async () => {
+    const gpus = slurmForm.gpus === '' ? 1 : Number(slurmForm.gpus);
+    if (!Number.isInteger(gpus) || gpus < 0 || gpus > 8) { setResult({ success: false, error: t('computeForm.gpusInvalid') }); return; }
     setLoading((l) => ({ ...l, salloc: true }));
     setResult(null);
     try {
       const res = await api.compute.slurmSalloc(node.id, {
         partition: slurmForm.partition || undefined,
         time: slurmForm.time,
-        gpus: parseInt(slurmForm.gpus) || 1,
+        gpus,
         account: slurmForm.account || undefined,
         command: slurmForm.command || undefined,
       });
       const data = await res.json();
-      setResult(data);
+      setResult({ ...data, success: res.ok && data.success === true });
       void fetchQueue();
     } catch (err: unknown) {
-      setResult({ success: false, error: err instanceof Error ? err.message : 'salloc failed' });
+      setResult({ success: false, error: err instanceof Error ? err.message : t('messages.operationFailed') });
     } finally {
       setLoading((l) => ({ ...l, salloc: false }));
     }
@@ -159,10 +172,10 @@ echo "Job started on $(hostname)"
         script: scriptContent,
       });
       const data = await res.json();
-      setResult(data);
+      setResult({ ...data, success: res.ok && data.success === true });
       void fetchQueue();
     } catch (err: unknown) {
-      setResult({ success: false, error: err instanceof Error ? err.message : 'sbatch failed' });
+      setResult({ success: false, error: err instanceof Error ? err.message : t('messages.operationFailed') });
     } finally {
       setLoading((l) => ({ ...l, sbatch: false }));
     }
@@ -171,10 +184,14 @@ echo "Job started on $(hostname)"
   const handleCancel = async (jobId: string) => {
     setLoading((l) => ({ ...l, cancel: jobId }));
     try {
-      await api.compute.slurmCancel(node.id, jobId);
+      const response = await api.compute.slurmCancel(node.id, jobId);
+      const data = await response.json();
+      if (!response.ok || data.success === false) throw new Error(data.error || t('messages.operationFailed'));
+      setResult({ success: true, message: t('slurm.cancelled', { id: jobId }) });
       void fetchQueue();
     } catch (err) {
       console.error('scancel error:', err);
+      setResult({ success: false, error: err instanceof Error ? err.message : t('messages.operationFailed') });
     } finally {
       setLoading((l) => ({ ...l, cancel: '' }));
     }
@@ -187,23 +204,25 @@ echo "Job started on $(hostname)"
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-semibold flex items-center gap-1.5">
-          <Layers className="w-4 h-4" /> Slurm Jobs
+          <Layers className="w-4 h-4" /> {t('slurm.title')}
         </h4>
-        <Button variant="ghost" size="sm" className="rounded-xl" onClick={() => void fetchQueue()} disabled={loading.queue}>
+        <Button variant="ghost" size="sm" className="rounded-md" aria-label={t('slurm.refresh')} onClick={() => { void fetchQueue(); void fetchSinfo(); }} disabled={loading.queue || loading.info}>
           <RefreshCw className={`w-3.5 h-3.5 ${loading.queue ? 'animate-spin' : ''}`} />
         </Button>
       </div>
 
+      {(loadErrors.info || loadErrors.queue) && <p role="alert" className="text-sm text-destructive">{t('slurm.loadFailed')}</p>}
       {/* Resource selector */}
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-1">
-          <label className="text-xs text-muted-foreground">Partition</label>
+          <label htmlFor={`${formId}-partition`} className="text-sm text-muted-foreground">{t('computeForm.partition')}</label>
           <select
-            className="w-full rounded-xl border border-input bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring h-9"
+            className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring h-9"
+            id={`${formId}-partition`}
             value={slurmForm.partition}
             onChange={(e) => setSlurmForm({ ...slurmForm, partition: e.target.value })}
           >
-            <option value="">Default</option>
+            <option value="">{t('slurm.default')}</option>
             {partitions.map((p) => (
               <option key={p.name} value={p.name}>
                 {p.name} ({p.gres || 'CPU'})
@@ -212,30 +231,33 @@ echo "Job started on $(hostname)"
           </select>
         </div>
         <div className="space-y-1">
-          <label className="text-xs text-muted-foreground">Account</label>
+          <label htmlFor={`${formId}-account`} className="text-sm text-muted-foreground">{t('computeForm.account')}</label>
           <Input
-            className="rounded-xl h-9"
+            className="rounded-md h-9"
+            id={`${formId}-account`}
             value={slurmForm.account}
             onChange={(e) => setSlurmForm({ ...slurmForm, account: e.target.value })}
-            placeholder="account"
+            placeholder={t('computeForm.account')}
           />
         </div>
         <div className="space-y-1">
-          <label className="text-xs text-muted-foreground">Time</label>
+          <label htmlFor={`${formId}-time`} className="text-sm text-muted-foreground">{t('computeForm.time')}</label>
           <Input
-            className="rounded-xl h-9"
+            className="rounded-md h-9"
+            id={`${formId}-time`}
             value={slurmForm.time}
             onChange={(e) => setSlurmForm({ ...slurmForm, time: e.target.value })}
             placeholder="00:30:00"
           />
         </div>
         <div className="space-y-1">
-          <label className="text-xs text-muted-foreground">GPUs</label>
+          <label htmlFor={`${formId}-gpus`} className="text-sm text-muted-foreground">{t('computeForm.gpus')}</label>
           <Input
-            className="rounded-xl h-9"
+            className="rounded-md h-9"
             type="number"
             min="0"
             max="8"
+            id={`${formId}-gpus`}
             value={slurmForm.gpus}
             onChange={(e) => setSlurmForm({ ...slurmForm, gpus: e.target.value })}
           />
@@ -244,15 +266,16 @@ echo "Job started on $(hostname)"
 
       {/* salloc */}
       <div className="space-y-1">
-        <label className="text-xs text-muted-foreground">Interactive Command (salloc)</label>
+        <label htmlFor={`${formId}-command`} className="text-sm text-muted-foreground">{t('slurm.command')}</label>
         <div className="flex gap-2">
           <Input
-            className="rounded-xl h-9"
-            placeholder="python train.py (optional)"
+            className="rounded-md h-9"
+            placeholder={t('slurm.commandPlaceholder')}
+            id={`${formId}-command`}
             value={slurmForm.command}
             onChange={(e) => setSlurmForm({ ...slurmForm, command: e.target.value })}
           />
-          <Button size="sm" className="rounded-xl" onClick={() => void handleSalloc()} disabled={loading.salloc}>
+          <Button size="sm" className="rounded-md" aria-label={t('slurm.allocate')} onClick={() => void handleSalloc()} disabled={loading.salloc}>
             {loading.salloc ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
           </Button>
         </div>
@@ -261,27 +284,27 @@ echo "Job started on $(hostname)"
       {/* sbatch */}
       <div>
         <div className="flex items-center justify-between mb-1">
-          <label className="text-xs text-muted-foreground">Batch Script (sbatch)</label>
+          <label htmlFor={`${formId}-script`} className="text-sm text-muted-foreground">{t('slurm.script')}</label>
           <button
             className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
-            onClick={() => setShowScript(!showScript)}
+            aria-expanded={showScript} onClick={() => setShowScript(!showScript)}
           >
-            {showScript ? 'Hide' : 'Edit & submit script'}
+            {t(showScript ? 'slurm.hide' : 'slurm.editScript')}
           </button>
         </div>
         {showScript && (
           <>
             <p className="text-xs text-muted-foreground mb-1.5">
-              Edit the full sbatch script below, including #SBATCH directives:
+              {t('slurm.scriptHelp')}
             </p>
             <textarea
-              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-xs font-mono h-52 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              value={slurmForm.script}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-xs font-mono h-52 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              id={`${formId}-script`} value={slurmForm.script}
               onChange={(e) => setSlurmForm({ ...slurmForm, script: e.target.value })}
             />
             <Button
               size="sm"
-              className="mt-1 w-full rounded-xl"
+              className="mt-1 w-full rounded-md"
               onClick={() => void handleSbatch()}
               disabled={loading.sbatch || !slurmForm.script.trim()}
             >
@@ -290,7 +313,7 @@ echo "Job started on $(hostname)"
               ) : (
                 <Upload className="w-3.5 h-3.5 mr-1.5" />
               )}
-              Submit Job
+              {t('slurm.submit')}
             </Button>
           </>
         )}
@@ -301,14 +324,14 @@ echo "Job started on $(hostname)"
       {/* Job queue */}
       {jobs.length > 0 && (
         <div className="space-y-1.5">
-          <label className="text-xs text-muted-foreground">Active Jobs ({jobs.length})</label>
+          <label className="text-xs text-muted-foreground">{t('slurm.jobs', { count: jobs.length })}</label>
           {jobs.map((job) => (
             <div
               key={job.jobId}
-              className="flex items-center justify-between p-2 rounded-lg border bg-muted/30 text-xs"
+              className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-lg border bg-muted/30 text-xs"
             >
-              <div>
-                <span className="font-medium">{job.jobId}</span>
+              <div className="min-w-0 break-all">
+                <span className="font-medium tabular-nums">{job.jobId}</span>
                 <span className="text-muted-foreground mx-1.5">{job.name}</span>
                 <span className={`font-medium ${stateColor(job.state)}`}>{job.state}</span>
               </div>
@@ -318,7 +341,7 @@ echo "Job started on $(hostname)"
                   {job.elapsed}
                 </span>
                 <button
-                  onClick={() => void handleCancel(job.jobId)}
+                  aria-label={t('slurm.cancelJob', { id: job.jobId })} onClick={() => void handleCancel(job.jobId)}
                   disabled={loading.cancel === job.jobId}
                   className="p-0.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
                 >
@@ -336,7 +359,7 @@ echo "Job started on $(hostname)"
 
       {loading.info && (
         <div className="text-xs text-muted-foreground flex items-center gap-1">
-          <Loader2 className="w-3 h-3 animate-spin" /> Loading partition info...
+          <Loader2 className="w-3 h-3 animate-spin" /> {t('slurm.loading')}
         </div>
       )}
     </div>

@@ -1,3 +1,4 @@
+import { Blocks, FlaskConical, Monitor, Newspaper, Trash2 } from 'lucide-react';
 import type { AppTab, Project } from '../../../../types/app';
 import { ScrollArea } from '../../../ui/scroll-area';
 import type { TFunction } from 'i18next';
@@ -67,7 +68,7 @@ export default function SidebarContent({
 }: SidebarContentProps) {
   return (
     <div
-      className="h-full flex flex-col bg-background/80 backdrop-blur-sm md:select-none w-full"
+      className="h-full flex flex-col bg-background md:select-none w-full"
       style={{}}
     >
       <SidebarHeader
@@ -96,6 +97,16 @@ export default function SidebarContent({
         <SidebarProjectList {...projectListProps} />
       </ScrollArea>
 
+      <nav aria-label={t('common:workbench.tools')} className="shrink-0 border-t border-border px-3 py-2">
+        <p className="px-2 py-2 text-xs text-muted-foreground">{t('common:workbench.tools')}</p>
+        {[
+          { id: 'news', label: 'tabs.news', Icon: Newspaper, action: onOpenNews },
+          { id: 'skills', label: 'tabs.skills', Icon: Blocks, action: onOpenSkills },
+          { id: 'autoresearch', label: 'tabs.autoResearch', Icon: FlaskConical, action: onOpenAutoResearch },
+          { id: 'compute', label: 'tabs.compute', Icon: Monitor, action: onOpenCompute },
+        ].map(({ id, label, Icon, action }) => <button key={id} onClick={action} aria-current={activeTab === id ? 'page' : undefined} className={`flex min-h-9 w-full items-center gap-2 rounded-md px-2 text-left text-sm hover:bg-muted ${activeTab === id ? 'bg-muted text-foreground' : 'text-muted-foreground'}`}><Icon className="h-4 w-4" />{t(`common:${label}`)}</button>)}
+      </nav>
+      <button onClick={onOpenTrash} aria-current={activeTab === 'trash' ? 'page' : undefined} className="mx-3 flex min-h-9 shrink-0 items-center gap-2 rounded-md px-2 text-sm text-muted-foreground hover:bg-muted"><Trash2 className="h-4 w-4" />{t('common:tabs.trash')}</button>
       <SidebarFooter
         currentVersion={currentVersion}
         updateAvailable={updateAvailable}

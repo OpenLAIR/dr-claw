@@ -91,7 +91,15 @@
     "addTo": "Adds {{entry}} to Allowed Tools.",
     "retry": "Permission saved. Retry the request to use the tool.",
     "error": "Unable to update permissions. Please try again.",
-    "openSettings": "Open settings"
+    "openSettings": "Open settings",
+    "required": "Permission required",
+    "tool": "Tool",
+    "rule": "Allow rule",
+    "viewInput": "View tool input",
+    "allowOnce": "Allow once",
+    "allowSaved": "Allow (saved)",
+    "allowRemember": "Allow & remember",
+    "deny": "Deny"
   },
   "todo": {
     "updated": "Todo list has been updated successfully",
@@ -142,7 +150,9 @@
     "clickToChangeMode": "Click to change permission mode (or press Tab in input)",
     "showAllCommands": "Show all commands",
     "clearInput": "Clear input",
-    "scrollToBottom": "Scroll to bottom"
+    "scrollToBottom": "Scroll to bottom",
+    "configuration": "Model and execution settings",
+    "configurationDescription": "Choose the model and reasoning level for this conversation."
   },
   "thinkingMode": {
     "selector": {
@@ -597,6 +607,19 @@
     }
   },
   "modelSelector": {
-    "notInCliList": "not in CLI list"
+    "notInCliList": "not in CLI list",
+    "label": "Model"
+  },
+  "attachments": {
+    "pdfUploaded": "PDF uploaded to workspace",
+    "imageUploaded": "Image uploaded to workspace",
+    "fileUploaded": "File uploaded to workspace"
+  },
+  "autoResearchPicker": {
+    "title": "Auto Research",
+    "description": "Choose a pack and workflow, then enter your research topic.",
+    "setup": "Setup required",
+    "ready": "No MCP setup",
+    "configure": "Configure in Research Hub"
   }
 }

@@ -136,7 +136,11 @@ export interface Question {
   multiSelect?: boolean;
 }
 
+export type ResearchTaskDraft = { projectName: string; prompt: string; stage?: string };
+
 export interface ChatInterfaceProps {
+  researchTaskDraft?: ResearchTaskDraft | null;
+  onConsumeResearchTaskDraft?: () => void;
   selectedProject: Project | null;
   selectedSession: ProjectSession | null;
   ws: WebSocket | null;

@@ -27,6 +27,12 @@ export default function AppContent() {
   const { isMobile } = useDeviceSettings({ trackPWA: false });
   const { isDesktop, on: onDesktopEvent } = useDesktop();
   const { ws, sendMessage, latestMessage, isConnected } = useWebSocket();
+  const [connectionLost, setConnectionLost] = useState(false);
+  useEffect(() => {
+    if (isConnected) { setConnectionLost(false); return; }
+    const timer = window.setTimeout(() => setConnectionLost(true), 3000);
+    return () => window.clearTimeout(timer);
+  }, [isConnected]);
   const { preferences } = useUiPreferences();
   const { sidebarVisible } = preferences;
 
@@ -48,6 +54,7 @@ export default function AppContent() {
     activeTab,
     sidebarOpen,
     isLoadingProjects,
+    projectsError,
     isLoadingTrashProjects,
     isInputFocused,
     externalMessageUpdate,
@@ -87,6 +94,27 @@ export default function AppContent() {
     activeTab: activeTab || null,
     routePath: location.pathname || null,
   });
+
+  const drawerRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!isMobile || !sidebarOpen) return;
+    const trigger = document.activeElement as HTMLElement | null;
+    const drawer = drawerRef.current;
+    const focusable = () => Array.from(drawer?.querySelectorAll<HTMLElement>('button, input, a[href], [tabindex="0"]') ?? []).filter(el => !el.hasAttribute('disabled') && el.getClientRects().length > 0);
+    focusable()[0]?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      // Native child dialogs own their keyboard handling while open.
+      if (document.querySelector('dialog[open]')) return;
+      if (event.key === 'Escape') { event.preventDefault(); setSidebarOpen(false); }
+      if (event.key !== 'Tab') return;
+      const elements = focusable();
+      const first = elements[0]; const last = elements[elements.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => { document.removeEventListener('keydown', onKeyDown); trigger?.focus(); };
+  }, [isMobile, sidebarOpen, setSidebarOpen]);
 
   useEffect(() => {
     ensureTelemetryDefaultEnabled();
@@ -277,11 +305,15 @@ export default function AppContent() {
         </div>
       ) : (
         <div
-          className={`fixed inset-0 z-50 flex transition-all duration-150 ease-out ${sidebarOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
+          ref={drawerRef}
+          role={sidebarOpen ? 'dialog' : undefined}
+          aria-modal={sidebarOpen ? true : undefined}
+          aria-label={t('workbench.projects')}
+          className={`fixed inset-0 z-[70] flex transition-all duration-150 ease-out ${sidebarOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
             }`}
         >
           <button
-            className="fixed inset-0 bg-background/60 backdrop-blur-sm transition-opacity duration-150 ease-out"
+            className="fixed inset-0 bg-black/40 transition-opacity duration-150 ease-out"
             onClick={(event) => {
               event.stopPropagation();
               setSidebarOpen(false);
@@ -304,7 +336,9 @@ export default function AppContent() {
         </div>
       )}
 
-      <div className={`flex-1 flex flex-col min-w-0 ${isMobile ? 'pb-mobile-nav' : ''}`}>
+      <div {...(isMobile && sidebarOpen ? { inert: '' } : {})} className={`flex-1 flex flex-col min-w-0 ${isMobile ? 'pb-mobile-nav' : ''}`}>
+        {connectionLost && <div role="status" className="shrink-0 border-b border-border bg-muted px-4 py-2 text-sm text-foreground">{t('workbench.disconnected')}</div>}
+        <div className="min-h-0 flex-1">
         <MainContent
           projects={projects}
           trashProjects={trashProjects}
@@ -318,6 +352,8 @@ export default function AppContent() {
           isMobile={isMobile}
           onMenuClick={() => setSidebarOpen(true)}
           isLoading={isLoadingProjects}
+          projectsError={projectsError}
+          onRetryProjects={fetchProjects}
           isTrashLoading={isLoadingTrashProjects}
           onInputFocusChange={setIsInputFocused}
           onSessionActive={markSessionAsActive}
@@ -343,10 +379,12 @@ export default function AppContent() {
           onResetNavigationSource={resetSessionNavigationSource}
           onNewSession={handleNewSession}
         />
+        </div>
       </div>
 
-      {isMobile && (
+      {isMobile && !sidebarOpen && (
         <MobileNav
+            selectedProject={selectedProject}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           isInputFocused={isInputFocused}

@@ -26,7 +26,8 @@
     "startSearch": "Start Search",
     "openSettings": "Open Settings",
     "save": "Save Changes",
-    "close": "Close"
+    "close": "Close",
+    "retry": "다시 시도"
   },
   "status": {
     "loading": "Loading research feed...",
@@ -191,5 +192,10 @@
     "addPlaceholder": "추가...",
     "arxivCategories": "arXiv 카테고리",
     "credentialRequired": "자격 증명 필요"
+  },
+  "errors": {
+    "load": "연구 피드를 불러오지 못했습니다. 다시 시도하세요.",
+    "save": "설정을 저장하지 못했습니다. 변경 내용은 유지됩니다.",
+    "search": "검색에 실패했습니다. 다시 시도하세요."
   }
 }

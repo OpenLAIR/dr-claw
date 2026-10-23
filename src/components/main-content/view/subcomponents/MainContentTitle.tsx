@@ -11,6 +11,10 @@ type MainContentTitleProps = {
 };
 
 function getTabTitle(activeTab: AppTab, shouldShowTasksTab: boolean, t: (key: string) => string) {
+  if (activeTab === 'overview') return t('tabs.overview');
+  if (activeTab === 'compute') return t('tabs.compute');
+  if (activeTab === 'autoresearch') return t('tabs.autoResearch');
+
   if (activeTab === 'files') {
     return t('mainContent.projectFiles');
   }
@@ -85,38 +89,12 @@ export default function MainContentTitle({
         {isDashboard ? (
           <div className="min-w-0">
             <h2 className="text-[15px] font-bold text-foreground leading-tight">
-              {t('projectDashboard.title')}
+              {t('workbench.projects')}
             </h2>
-            <div className="text-[12px] text-muted-foreground truncate leading-tight mt-0.5">
-              {t('projectDashboard.subtitle')}
-            </div>
           </div>
-        ) : isTrash ? (
-          <div className="min-w-0">
-            <h2 className="text-[15px] font-bold text-foreground leading-tight">
-              {t('projectDashboard.trashTitle')}
-            </h2>
-            <div className="text-[12px] text-muted-foreground truncate leading-tight mt-0.5">
-              {t('projectDashboard.trashSubtitle')}
-            </div>
-          </div>
-        ) : isGlobalSkills ? (
-          <div className="min-w-0">
-            <h2 className="text-[15px] font-bold text-foreground leading-tight">
-              {t('projectDashboard.skillsTitle')}
-            </h2>
-            <div className="text-[12px] text-muted-foreground truncate leading-tight mt-0.5">
-              {t('projectDashboard.skillsDescription')}
-            </div>
-          </div>
-        ) : isGlobalNews ? (
-          <div className="min-w-0">
-            <h2 className="text-[15px] font-bold text-foreground leading-tight">
-              {t('newsDashboard.title', 'Paper News')}
-            </h2>
-            <div className="text-[12px] text-muted-foreground truncate leading-tight mt-0.5">
-              {t('newsDashboard.subtitle', 'Discover the latest research from arXiv, automatically scored by relevance, recency, popularity, and quality.')}
-            </div>
+        ) : isTrash || isGlobalSkills || isGlobalNews ? (
+          <div className="min-w-0 text-sm font-medium text-foreground">
+            {t(isTrash ? 'tabs.trash' : isGlobalSkills ? 'tabs.skills' : 'tabs.news')}
           </div>
         ) : activeTab === 'chat' && selectedSession && selectedProject ? (
           <div className="min-w-0">

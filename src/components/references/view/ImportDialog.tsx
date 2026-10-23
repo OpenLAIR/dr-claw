@@ -1,6 +1,7 @@
+import WorkbenchDialog from '../../ui/WorkbenchDialog';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { X, Upload, RefreshCw, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { Upload, RefreshCw, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { Button } from '../../ui/button';
 import { useReferenceImport } from '../hooks/useReferenceImport';
 import ZoteroBrowser from './ZoteroBrowser';
@@ -19,7 +20,7 @@ export default function ImportDialog({ zoteroStatus, projectName, onClose, onCom
   const [dragOver, setDragOver] = useState(false);
   const [showBrowser, setShowBrowser] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
-  const { syncing, importing, syncResult, importResult, error, syncZotero, importBibtex, clearResults } = useReferenceImport(projectName, onComplete);
+  const { syncing, importing, syncResult, importResult, error, syncZotero, importBibtex } = useReferenceImport(projectName, onComplete);
 
   const handleFileSelect = async (file: File) => {
     setLocalError(null);
@@ -46,18 +47,7 @@ export default function ImportDialog({ zoteroStatus, projectName, onClose, onCom
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
-      <div
-        className="relative mx-4 max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute right-4 top-4 rounded-lg p-1 text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-        >
-          <X className="h-5 w-5" />
-        </button>
+    <WorkbenchDialog title={t('import.title')} onClose={onClose}>
 
         {showBrowser ? (
           <ZoteroBrowser
@@ -70,12 +60,12 @@ export default function ImportDialog({ zoteroStatus, projectName, onClose, onCom
           />
         ) : (
           <>
-            <h2 className="text-lg font-semibold text-foreground">{t('import.title')}</h2>
+
             <p className="mt-1 text-sm text-muted-foreground">{t('import.description')}</p>
 
             {/* Zotero Sync */}
-            <div className="mt-6 rounded-xl border border-border/50 p-4">
-              <div className="flex items-center justify-between">
+            <div className="mt-6 rounded-lg border border-border/50 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <h3 className="text-sm font-medium text-foreground">{t('import.zoteroSync')}</h3>
                   <p className="mt-0.5 text-xs text-muted-foreground">
@@ -121,7 +111,7 @@ export default function ImportDialog({ zoteroStatus, projectName, onClose, onCom
             </div>
 
             {/* BibTeX Import */}
-            <div className="mt-4 rounded-xl border border-border/50 p-4">
+            <div className="mt-4 rounded-lg border border-border/50 p-4">
               <h3 className="text-sm font-medium text-foreground">{t('import.bibtexImport')}</h3>
               <p className="mt-0.5 text-xs text-muted-foreground">{t('import.bibtexDescription')}</p>
 
@@ -169,7 +159,7 @@ export default function ImportDialog({ zoteroStatus, projectName, onClose, onCom
             </div>
 
             {(error || localError) && (
-              <div className="mt-4 flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+              <div role="alert" className="mt-4 flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
                 <AlertCircle className="h-4 w-4 shrink-0" />
                 {localError || error}
               </div>
@@ -182,7 +172,6 @@ export default function ImportDialog({ zoteroStatus, projectName, onClose, onCom
             </div>
           </>
         )}
-      </div>
-    </div>
+    </WorkbenchDialog>
   );
 }
