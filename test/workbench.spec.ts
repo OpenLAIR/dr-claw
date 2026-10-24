@@ -3563,3 +3563,39 @@ for (const [language, permissions, label, remove] of [['zh-CN', '权限', '允�
     await page.screenshot({ path: screenshotPath(`permissions-${language}-320.png`) });
   });
 }
+
+for (const [width, theme] of [[1440, 'light'], [390, 'dark']] as const) {
+  test(`conversation selectors share keyboard behavior at ${width}px ${theme}`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await fixture(page, { theme });
+    await page.locator('main article').getByRole('button', { name: 'Continue', exact: true }).click();
+    await page.getByRole('button', { name: 'Model and execution settings', exact: true }).click();
+    const dialog = page.getByRole('dialog', { name: 'Model and execution settings' });
+    const thinking = dialog.getByRole('button', { name: /^Thinking mode:/i });
+    await thinking.click();
+    const list = dialog.getByRole('listbox', { name: 'Thinking Mode', exact: true });
+    await expect(list).toBeVisible();
+    await page.keyboard.press('End');
+    const last = list.getByRole('option').last();
+    await expect(last).toBeFocused();
+    const label = await last.locator('.font-medium').innerText();
+    await page.keyboard.press('Enter');
+    await expect(thinking).toContainText(label);
+    await expect(thinking).toBeFocused();
+    await thinking.click();
+    await expect(list.getByRole('option', { selected: true })).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(list).toBeHidden();
+    await expect(dialog).toBeVisible();
+    await expect(thinking).toBeFocused();
+    const model = dialog.getByRole('button', { name: /^Model:/ });
+    await model.click();
+    await expect(dialog.getByRole('listbox', { name: 'Model', exact: true })).toBeVisible();
+    expect(await dialog.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+    for (const control of [model, thinking]) {
+      const box = await control.boundingBox();
+      expect(box!.height).toBeGreaterThanOrEqual(44);
+    }
+    await page.screenshot({ path: screenshotPath(`unified-selectors-${width}-${theme}.png`) });
+  });
+}

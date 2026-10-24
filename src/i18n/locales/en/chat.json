@@ -665,7 +665,15 @@
   },
   "modelSelector": {
     "notInCliList": "not in CLI list",
-    "label": "Model"
+    "label": "Model",
+    "unavailable": "Unavailable",
+    "search": "Search models…",
+    "loading": "Loading…",
+    "empty": "No models found",
+    "removeCustom": "Remove {{model}}",
+    "customId": "Custom model ID",
+    "add": "Add",
+    "addCustom": "Add custom model"
   },
   "attachments": {
     "pdfUploaded": "PDF uploaded to workspace",

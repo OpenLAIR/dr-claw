@@ -665,7 +665,15 @@
   },
   "modelSelector": {
     "notInCliList": "CLI 未列出",
-    "label": "模型"
+    "label": "模型",
+    "unavailable": "不可用",
+    "search": "搜索模型…",
+    "loading": "加载中…",
+    "empty": "未找到模型",
+    "removeCustom": "移除 {{model}}",
+    "customId": "自定义模型 ID",
+    "add": "添加",
+    "addCustom": "添加自定义模型"
   },
   "attachments": {
     "pdfUploaded": "PDF 已上传到工作区",

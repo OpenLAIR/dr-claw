@@ -920,6 +920,27 @@ button:focus-visible, summary:focus-visible, a:focus-visible {
   position: relative; bottom: auto; right: auto; left: auto;
   width: 100%; max-width: 100%; max-height: 240px; margin: 8px 0 0;
 }
+.composer-select { min-width: 0; width: 100%; }
+.composer-select-label { display: block; margin-bottom: 8px; font-size: 12px; font-weight: 500; color: hsl(var(--muted-foreground)); }
+.composer-select-trigger {
+  display: flex; align-items: center; gap: 10px; min-height: 44px; width: 100%;
+  padding: 10px 12px; border: 1px solid hsl(var(--border)); border-radius: 10px;
+  background: hsl(var(--popover)); color: hsl(var(--foreground)); font-size: 14px; line-height: 20px; text-align: left;
+}
+.composer-select-trigger:hover, .composer-select-trigger[aria-expanded='true'] { background: hsl(var(--muted)); }
+.composer-select-menu {
+  margin-top: 8px; padding: 4px; max-height: 240px; overflow-y: auto; overscroll-behavior: contain;
+  border: 1px solid hsl(var(--border)); border-radius: 12px; background: hsl(var(--popover)); color: hsl(var(--foreground));
+}
+.composer-select-option {
+  display: flex; align-items: center; gap: 10px; min-height: 44px; width: 100%; padding: 10px 12px;
+  border-radius: 8px; font-size: 14px; line-height: 20px; text-align: left; color: hsl(var(--foreground));
+}
+.composer-select-option:hover:not(:disabled), .composer-select-option[aria-selected='true'], .composer-select-option[aria-pressed='true'] { background: hsl(var(--muted)); }
+.composer-select-option:disabled { color: hsl(var(--muted-foreground)); opacity: 0.55; cursor: not-allowed; }
+.composer-select-description { display: block; margin-top: 2px; font-size: 12px; line-height: 18px; color: hsl(var(--muted-foreground)); overflow-wrap: anywhere; }
+.composer-select-icon { display: flex; align-items: center; justify-content: center; width: 16px; flex-shrink: 0; color: hsl(var(--muted-foreground)); }
+.composer-select-trigger:focus-visible, .composer-select-option:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: -2px; }
 .chat-input-placeholder::placeholder,
 .dark .chat-input-placeholder::placeholder,
 .dark textarea.bg-transparent::placeholder {
@@ -952,6 +973,87 @@ button:focus-visible, summary:focus-visible, a:focus-visible {
 .context-sidebar-resizer:hover::after { opacity: 0.5; }
 .context-sidebar-resizer:focus-visible::after,
 .context-sidebar-resizer[data-resizing='true']::after { opacity: 1; }
+
+/* A single writing surface, with a quiet utility row below the draft. */
+.chat-composer-surface {
+  position: relative;
+  min-width: 0;
+  border: 1px solid hsl(var(--border));
+  border-radius: 22px;
+  background: hsl(var(--card));
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.035);
+  transition: border-color 150ms ease;
+}
+.chat-composer-surface:focus-within { border-color: hsl(var(--muted-foreground) / 0.55); }
+.chat-composer-text {
+  padding: 16px 18px 10px;
+  font-size: 16px;
+  line-height: 24px;
+}
+.chat-composer-toolbar {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 10px 10px;
+}
+.chat-composer-action,
+.chat-composer-model,
+.chat-composer-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  border-radius: 999px;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+.chat-composer-action {
+  width: 36px;
+  flex-shrink: 0;
+  color: hsl(var(--muted-foreground));
+}
+.chat-composer-model {
+  min-width: 0;
+  max-width: 260px;
+  gap: 6px;
+  padding-inline: 10px;
+  color: hsl(var(--foreground));
+  font-size: 13px;
+  font-weight: 500;
+}
+.chat-composer-action:hover,
+.chat-composer-model:hover,
+.chat-composer-action[aria-expanded='true'] { background: hsl(var(--muted)); }
+.chat-composer-submit {
+  width: 36px;
+  flex-shrink: 0;
+  margin-left: auto;
+  color: hsl(var(--background));
+  background: hsl(var(--foreground));
+}
+.chat-composer-submit:hover:not(:disabled) { background: hsl(var(--foreground) / 0.8); }
+.chat-composer-submit:disabled {
+  background: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+  cursor: not-allowed;
+}
+.chat-composer-action:focus-visible,
+.chat-composer-model:focus-visible,
+.chat-composer-submit:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+@media (max-width: 768px) {
+  .chat-composer-toolbar { gap: 2px; padding: 0 8px 8px; }
+  .chat-composer-action, .chat-composer-model, .chat-composer-submit { height: 44px; }
+  .chat-composer-action, .chat-composer-submit { width: 44px; }
+  .chat-composer-model { padding-inline: 6px; }
+  .chat-composer-text { padding-inline: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chat-composer-surface, .chat-composer-action, .chat-composer-model, .chat-composer-submit { transition: none; }
+}
 
 .composer-more-tools::backdrop { background: rgb(0 0 0 / 0.25); }
 .composer-more-tools .composer-tool-list > div > button {

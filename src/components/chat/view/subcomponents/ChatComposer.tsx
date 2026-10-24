@@ -10,9 +10,9 @@ import ReferencePicker from '../../../references/view/ReferencePicker';
 import PromptBadgeDropdown from './PromptBadgeDropdown';
 import WorkbenchDialog from '../../../ui/WorkbenchDialog';
 import QuickSettingsPanel from '../../../QuickSettingsPanel';
-import { Plus, SlidersHorizontal, Loader2 } from 'lucide-react';
+import { Plus, ChevronDown, ArrowUp, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useId } from 'react';
 import type {
   ChangeEvent,
   ClipboardEvent,
@@ -249,7 +249,6 @@ export default function ChatComposer({
   onInputFocusChange,
   isInputFocused,
   placeholder,
-  isTextareaExpanded,
   sendByCtrlEnter,
   onTranscript,
   projectName,
@@ -277,6 +276,7 @@ export default function ChatComposer({
   onNewSessionModeChange,
 }: ChatComposerProps) {
   const { t } = useTranslation('chat');
+  const keyboardHintId = useId();
   const [showReferencePicker, setShowReferencePicker] = useState(false);
   useEffect(() => {
     const textarea = textareaRef.current;
@@ -397,6 +397,7 @@ export default function ChatComposer({
     : pickerModels && pickerModels.length > 0
       ? { ...rawModelConfig, OPTIONS: pickerModels }
       : rawModelConfig;
+  const currentModelLabel = modelConfig.OPTIONS.find(option => option.value === currentModel)?.label || currentModel;
 
   const selectProvider = (next: SessionProvider) => {
     if (providerAvailability?.[next]?.cliAvailable === false) return;
@@ -504,21 +505,6 @@ export default function ChatComposer({
           </div>
         )}
 
-        {attachedFiles.length > 0 && (
-          <div className="mb-2 p-2 bg-muted/40 rounded-xl">
-            <div className="flex flex-wrap gap-2">
-              {attachedFiles.map((file, index) => (
-                <ImageAttachment
-                  key={index}
-                  file={file}
-                  onRemove={() => onRemoveFile(index)}
-                  uploadProgress={uploadingFiles.get(getFileKey(file))}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
         {fileErrors.size > 0 && (
           <div className="mb-2 rounded-xl border border-red-500/20 bg-red-500/5 px-3 py-2 text-sm text-red-600">
             {[...new Set(fileErrors.values())].map((error) => (
@@ -578,10 +564,22 @@ export default function ChatComposer({
 
         <div
           {...getRootProps()}
-          className={`relative bg-card rounded-lg border border-border focus-within:border-ring focus-within:ring-1 focus-within:ring-ring transition-[border-color,box-shadow] duration-150 ${isTextareaExpanded ? 'chat-input-expanded' : ''}`}
+          className="chat-composer-surface"
         >
           {queueContent}
           <input {...getInputProps()} />
+          {attachedFiles.length > 0 && (
+            <div className="flex flex-wrap gap-2 px-4 pt-4 pb-1">
+              {attachedFiles.map((file, index) => (
+                <ImageAttachment
+                  key={getFileKey(file)}
+                  file={file}
+                  onRemove={() => onRemoveFile(index)}
+                  uploadProgress={uploadingFiles.get(getFileKey(file))}
+                />
+              ))}
+            </div>
+          )}
           {attachedPrompt && (
             <PromptBadgeDropdown
               prompt={attachedPrompt}
@@ -592,7 +590,7 @@ export default function ChatComposer({
 
           <div className="relative z-10">
             <div ref={inputHighlightRef} aria-hidden="true" className="absolute inset-0 pointer-events-none overflow-hidden rounded-lg">
-              <div className="chat-input-placeholder block w-full px-4 py-3 text-base lg:text-sm text-transparent leading-6 whitespace-pre-wrap break-words">{/* taste-skill-ignore: transparent overlay aligns mention highlights with the visible textarea text. */}
+              <div className="chat-composer-text chat-input-placeholder block w-full text-transparent whitespace-pre-wrap break-words">{/* taste-skill-ignore: transparent overlay aligns mention highlights with the visible textarea text. */}
                 {renderInputWithMentions(input)}
               </div>
             </div>
@@ -608,24 +606,25 @@ export default function ChatComposer({
               onFocus={() => onInputFocusChange?.(true)}
               onInput={onTextareaInput}
               aria-label={t('input.message')}
+              aria-describedby={keyboardHintId}
               placeholder={placeholder}
-              className="chat-input-placeholder block w-full px-4 py-3 min-h-[80px] max-h-[min(40dvh,300px)] text-base lg:text-sm bg-transparent rounded-lg focus:outline-none text-foreground placeholder:text-muted-foreground resize-none overflow-y-auto leading-6"
-              style={{ height: '80px' }}
+              className="chat-composer-text chat-input-placeholder block w-full min-h-[76px] max-h-[min(40dvh,300px)] bg-transparent rounded-t-[22px] focus:outline-none text-foreground placeholder:text-muted-foreground resize-none overflow-y-auto"
+              style={{ height: '76px' }}
             />
           </div>
-          <div className="relative z-10 flex items-center gap-2 px-3 pb-2">
+          <div className="chat-composer-toolbar">
             <button type="button" onClick={openFilePicker}
-              className="h-11 w-11 shrink-0 rounded-md text-muted-foreground hover:bg-muted transition-colors flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="chat-composer-action"
               title={t('input.attachFiles')} aria-label={t('input.attachFiles')}>
-              <Plus className="h-4 w-4" />
+              <Plus aria-hidden="true" className="h-5 w-5" />
             </button>
-                  <button type="button" onClick={() => setShowConfiguration(true)} aria-haspopup="dialog" aria-label={t('input.configuration')} className="flex h-11 min-w-0 max-w-[200px] max-sm:max-w-[140px] items-center gap-2 rounded-md border border-border px-2 text-xs text-foreground hover:bg-muted" title={t('input.configuration')}>
-                    <SlidersHorizontal className="h-4 w-4 shrink-0" /><span className="truncate">{currentModel || t('input.configuration')}</span>
+                  <button type="button" onClick={() => setShowConfiguration(true)} aria-haspopup="dialog" aria-label={t('input.configuration')} className="chat-composer-model" title={t('input.configuration')}>
+                    <span className="truncate">{currentModelLabel || t('input.configuration')}</span><ChevronDown aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                   </button>
-            <p className="hidden min-w-0 flex-1 text-xs text-muted-foreground xl:block">
+            <p id={keyboardHintId} className="sr-only">
               {sendByCtrlEnter ? t('input.hintText.ctrlEnter') : t('input.hintText.enter')}
             </p>
-            <div className="ml-auto flex shrink-0 items-center gap-1">
+            <div className="contents">
               <ComposerMoreTools>
                 <MicButton onTranscript={onTranscript} showLabel className="min-h-11 w-full gap-3 px-3 text-sm" />
                   <>
@@ -689,17 +688,15 @@ export default function ChatComposer({
                 disabled={(!input.trim() && attachedFiles.length === 0 && !attachedPrompt) || isPreparing || isQueueRestoring}
                 aria-busy={isPreparing || undefined} aria-label={t(isPreparing ? 'input.preparing' : isQueueRestoring ? 'queue.waitForRestore' : isLoading ? 'queue.add' : 'input.send')} title={t(isPreparing ? 'input.preparing' : isQueueRestoring ? 'queue.waitForRestore' : isLoading ? 'queue.add' : 'input.send')}
                 onMouseDown={event => event.preventDefault()}
-                className="h-11 w-11 shrink-0 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
-                {isPreparing ? <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" /> : <svg aria-hidden="true" className="h-[18px] w-[18px] rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                </svg>}
+                className="chat-composer-submit">
+                {isPreparing ? <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" /> : <ArrowUp aria-hidden="true" className="h-5 w-5" strokeWidth={2} />}
               </button>
             </div>
           </div>
 
                   {showConfiguration && <WorkbenchDialog title={t('input.configuration')} onClose={() => setShowConfiguration(false)}>
                     <p className="mb-4 text-sm text-muted-foreground">{t('input.configurationDescription')}</p>
-                    <div className="flex flex-wrap items-center gap-3">
+                    <div className="space-y-4">
                   {/* Agent selector — only in empty state */}
                   {centered && providerAvailability && (
                     <AgentSelector
@@ -736,7 +733,7 @@ export default function ChatComposer({
                   )}
 
                     </div>
-                    <div className="mt-5 flex flex-wrap items-center gap-3">
+                    <div className="mt-4 space-y-4">
                       <ChatInputControls
                         configurationOnly
                         permissionMode={permissionMode} onModeSwitch={onModeSwitch}

@@ -52,7 +52,7 @@ export default function ComposerMoreTools({ children }: { children: ReactNode })
   return <>
     <button ref={trigger} type="button" aria-label={t('input.moreTools')} title={t('input.moreTools')}
       aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(value => !value)}
-      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
+      className="chat-composer-action">
       <MoreHorizontal className="h-5 w-5" />
     </button>
     {createPortal(<dialog ref={dialog} aria-labelledby={titleId}
