@@ -1,5 +1,6 @@
 import { LayoutDashboard, PanelLeftClose, Plus, RefreshCw, Search, X } from 'lucide-react';
 import type { TFunction } from 'i18next';
+import type { Ref } from 'react';
 import type { AppTab } from '../../../../types/app';
 import { Button } from '../../../ui/button';
 import { Input } from '../../../ui/input';
@@ -24,20 +25,29 @@ type SidebarHeaderProps = {
   onOpenCompute: () => void;
   onCreateProject: () => void;
   onCollapseSidebar: () => void;
+  toggleButtonRef: Ref<HTMLButtonElement>;
   t: TFunction;
 };
 
 export default function SidebarHeader({
   searchFilter, onSearchFilterChange, onClearSearchFilter,
   onRefresh, isRefreshing, activeTab, onOpenDashboard, onCreateProject,
-  onCollapseSidebar, t,
+  onCollapseSidebar, toggleButtonRef, isMobile, t,
 }: SidebarHeaderProps) {
   return (
-    <div className="shrink-0 p-3">
-      <div className="flex min-h-9 items-center gap-2 electron-drag" style={{ paddingLeft: isMacElectron ? 68 : undefined }}>
-        <img src="/icons/file.svg" alt="" className="h-7 w-7 shrink-0" />
-        <span className="min-w-0 flex-1 truncate text-sm font-semibold">{t('app.title')}</span>
-        <Button className="electron-no-drag h-8 w-8 p-0" variant="ghost" onClick={onCollapseSidebar} aria-label={t('common:workbench.collapseSidebar')}><PanelLeftClose /></Button>
+    <div data-sidebar-header className={`shrink-0 p-3 ${isMobile ? 'sticky top-0 z-10 bg-background' : ''}`}>
+      {isMacElectron && <div className="h-6 electron-drag" aria-hidden="true" />}
+      <div className="flex min-h-9 items-center gap-2 electron-drag">
+        <img src="/icons/file.svg" alt="" className="h-7 w-7 shrink-0 electron-no-drag" />
+        <span data-sidebar-brand className="min-w-0 flex-1 text-sm font-semibold">{t('app.title')}</span>
+        <Button
+          ref={toggleButtonRef}
+          className={`electron-no-drag shrink-0 p-0 ${isMobile ? 'h-11 w-11' : 'h-8 w-8'}`}
+          variant="ghost"
+          onClick={onCollapseSidebar}
+          aria-expanded={isMobile ? undefined : true}
+          aria-label={t(isMobile ? 'common:workbench.closeMenu' : 'common:workbench.collapseSidebar')}
+        >{isMobile ? <X /> : <PanelLeftClose />}</Button>
       </div>
       <Button className="mt-4 w-full justify-start" onClick={onCreateProject}><Plus />{t('common:workbench.newProject')}</Button>
       <div className="relative mt-3">

@@ -24,6 +24,7 @@ export type SidebarProjectListProps = {
   currentTime: Date;
   editingSession: string | null;
   editingSessionName: string;
+  renameFeedback: { pending: boolean; error: string };
   deletingProjects: Set<string>;
   tasksEnabled: boolean;
   mcpServerStatus: MCPServerStatus;
@@ -70,6 +71,7 @@ export default function SidebarProjectList({
   currentTime,
   editingSession,
   editingSessionName,
+  renameFeedback,
   deletingProjects,
   tasksEnabled,
   mcpServerStatus,
@@ -128,6 +130,7 @@ export default function SidebarProjectList({
               currentTime={currentTime}
               editingSession={editingSession}
               editingSessionName={editingSessionName}
+              renameFeedback={renameFeedback}
               tasksEnabled={tasksEnabled}
               mcpServerStatus={mcpServerStatus}
               onEditingNameChange={onEditingNameChange}

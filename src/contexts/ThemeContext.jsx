@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useLayoutEffect } from 'react';
 
 const ThemeContext = createContext();
 
@@ -27,8 +27,11 @@ export const ThemeProvider = ({ children }) => {
     return false;
   });
 
-  // Update document class and localStorage when theme changes
-  useEffect(() => {
+  // Apply foreground and background together before paint. Normal hover/press
+  // transitions resume once the new palette has been painted.
+  useLayoutEffect(() => {
+    const root = document.documentElement;
+    root.setAttribute('data-theme-changing', '');
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
       localStorage.setItem('theme', 'dark');
@@ -58,6 +61,17 @@ export const ThemeProvider = ({ children }) => {
         themeColorMeta.setAttribute('content', '#ffffff'); // Light background color
       }
     }
+    // Flush the palette while transitions are disabled, then restore feedback.
+    void root.offsetHeight;
+    let secondFrame;
+    const firstFrame = requestAnimationFrame(() => {
+      secondFrame = requestAnimationFrame(() => root.removeAttribute('data-theme-changing'));
+    });
+    return () => {
+      cancelAnimationFrame(firstFrame);
+      if (secondFrame !== undefined) cancelAnimationFrame(secondFrame);
+      root.removeAttribute('data-theme-changing');
+    };
   }, [isDarkMode]);
 
   // Listen for system theme changes

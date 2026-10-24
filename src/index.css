@@ -929,3 +929,66 @@ button:focus-visible, summary:focus-visible, a:focus-visible {
 }
 
 .workbench-wizard::backdrop { background: rgb(0 0 0 / 0.4); }
+
+/* A quiet pane boundary with a forgiving hit area, including in Electron. */
+.context-sidebar-resizer {
+  position: absolute;
+  inset: 0 auto 0 -5px;
+  width: 10px;
+  z-index: 30;
+  cursor: col-resize;
+  touch-action: none;
+  outline: none;
+}
+.context-sidebar-resizer::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 4px;
+  width: 2px;
+  background: hsl(var(--muted-foreground));
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+.context-sidebar-resizer:hover::after { opacity: 0.5; }
+.context-sidebar-resizer:focus-visible::after,
+.context-sidebar-resizer[data-resizing='true']::after { opacity: 1; }
+
+.composer-more-tools::backdrop { background: rgb(0 0 0 / 0.25); }
+.composer-more-tools .composer-tool-list > div > button {
+  min-height: 44px;
+  width: 100%;
+  justify-content: flex-start;
+  gap: 12px;
+  border: 0;
+  background: transparent;
+  font-size: 14px;
+  padding-inline: 12px;
+}
+.composer-more-tools .composer-tool-list > div > button:hover { background: hsl(var(--muted)); }
+.composer-more-tools .composer-tool-list > div > button > svg:last-child:not(:first-child) { margin-left: auto; }
+
+/* Theme changes update the entire palette atomically, including utility transitions. */
+html[data-theme-changing] *,
+html[data-theme-changing] *::before,
+html[data-theme-changing] *::after {
+  transition: none !important;
+}
+
+/* File identity uses the full panel width; actions never steal its text column. */
+.file-workspace { container-type: inline-size; }
+.file-tree-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  padding-block: 4px;
+  border-bottom: 1px solid hsl(var(--border));
+}
+.file-row-open { grid-column: 1 / -1; }
+.file-row-actions { grid-column: 2; justify-self: end; }
+.file-row-metadata { grid-column: 1; }
+@container (max-width: 420px) {
+  .file-row-metadata { grid-column: 1 / -1; }
+}
+@media (pointer: fine) and (min-width: 769px) {
+  .file-row-actions button { width: 32px; height: 32px; }
+}

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { ComposerToolsContext } from './ComposerMoreTools';
+import React, { useContext, useState } from 'react';
 import { Sparkles, ChevronDown } from 'lucide-react';
 import WorkbenchDialog from '../../../ui/WorkbenchDialog';
 import { Button } from '../../../ui/button';
@@ -19,6 +20,7 @@ export default function SkillDropdown({
   t,
 }: SkillDropdownProps) {
   const [open, setOpen] = useState(false);
+  const closeTools = useContext(ComposerToolsContext);
   const [expandedCat, setExpandedCat] = useState<string | null>(null);
   const inject = (prompt: string, icon: string, title: string, categoryKey: string) => {
     if (setAttachedPrompt) {
@@ -38,12 +40,13 @@ export default function SkillDropdown({
       }, 100);
     }
     setOpen(false);
+    closeTools();
     setExpandedCat(null);
   };
 
   return (
     <div>
-      <Button type="button" variant="outline" size="sm" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)}>
+      <Button type="button" variant="outline" size="sm" className="min-h-11 px-2 lg:min-h-8" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)}>
         <Sparkles className="h-4 w-4" />{t('skillShortcuts.title')}<ChevronDown className="h-3 w-3" />
       </Button>
 

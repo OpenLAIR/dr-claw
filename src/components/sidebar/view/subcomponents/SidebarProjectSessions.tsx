@@ -15,6 +15,7 @@ type SidebarProjectSessionsProps = {
   currentTime: Date;
   editingSession: string | null;
   editingSessionName: string;
+  renameFeedback: { pending: boolean; error: string };
   onEditingSessionNameChange: (value: string) => void;
   onStartEditingSession: (sessionId: string, initialName: string) => void;
   onCancelEditingSession: () => void;
@@ -62,6 +63,7 @@ export default function SidebarProjectSessions({
   currentTime,
   editingSession,
   editingSessionName,
+  renameFeedback,
   onEditingSessionNameChange,
   onStartEditingSession,
   onCancelEditingSession,
@@ -100,6 +102,7 @@ export default function SidebarProjectSessions({
             currentTime={currentTime}
             editingSession={editingSession}
             editingSessionName={editingSessionName}
+              renameFeedback={renameFeedback}
             onEditingSessionNameChange={onEditingSessionNameChange}
             onStartEditingSession={onStartEditingSession}
             onCancelEditingSession={onCancelEditingSession}

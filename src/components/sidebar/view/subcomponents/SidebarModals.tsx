@@ -1,7 +1,8 @@
 import { Suspense, useMemo } from 'react';
 import type { ComponentType } from 'react';
 import ReactDOM from 'react-dom';
-import { AlertTriangle, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
+import WorkbenchDialog from '../../../ui/WorkbenchDialog';
 import type { TFunction } from 'i18next';
 import { Button } from '../../../ui/button';
 import LazyLoadBoundary, { LazyModalLoadingFallback } from '../../../LazyLoadBoundary';
@@ -14,6 +15,9 @@ import { normalizeProjectForSettings } from '../../utils/utils';
 import type { DeleteProjectConfirmation, SessionDeleteConfirmation, SettingsProject } from '../../types/types';
 
 type SidebarModalsProps = {
+  deletionPending: 'project' | 'session' | null;
+  projectDeleteError: string;
+  sessionDeleteError: string;
   projects: Project[];
   showSettings: boolean;
   settingsInitialTab: string;
@@ -44,6 +48,9 @@ type TypedSettingsProps = {
 const Settings = lazyWithRetry(() => import('../../../Settings')) as ComponentType<TypedSettingsProps>;
 
 export default function SidebarModals({
+  deletionPending,
+  projectDeleteError,
+  sessionDeleteError,
   projects,
   showSettings,
   settingsInitialTab,
@@ -85,103 +92,41 @@ export default function SidebarModals({
           document.body,
         )}
 
-      {deleteConfirmation &&
-        ReactDOM.createPortal(
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-card border border-border rounded-xl shadow-2xl max-w-md w-full overflow-hidden">
-              <div className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
-                    <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-semibold text-foreground mb-2">
-                      {t('deleteConfirmation.deleteProject')}
-                    </h3>
-                    <p className="text-sm text-muted-foreground mb-1">
-                      {t('deleteConfirmation.confirmDelete')}{' '}
-                      <span className="font-medium text-foreground">
-                        {deleteConfirmation.project.displayName || deleteConfirmation.project.name}
-                      </span>
-                      ?
-                    </p>
-                    {deleteConfirmation.sessionCount > 0 && (
-                      <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                        <p className="text-sm text-red-700 dark:text-red-300 font-medium">
-                          {t('deleteConfirmation.sessionCount', { count: deleteConfirmation.sessionCount })}
-                        </p>
-                        <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                          {t('deleteConfirmation.allConversationsDeleted')}
-                        </p>
-                      </div>
-                    )}
-                    <p className="text-xs text-muted-foreground mt-3">
-                      {t('deleteConfirmation.cannotUndo')}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="flex gap-3 p-4 bg-muted/30 border-t border-border">
-                <Button variant="outline" className="flex-1" onClick={onCancelDeleteProject}>
-                  {t('actions.cancel')}
-                </Button>
-                <Button
-                  variant="destructive"
-                  className="flex-1 bg-red-600 hover:bg-red-700 text-white"
-                  onClick={onConfirmDeleteProject}
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  {t('actions.delete')}
-                </Button>
-              </div>
+      {deleteConfirmation && (
+        <WorkbenchDialog title={t('deleteConfirmation.deleteProject')} onClose={onCancelDeleteProject} busy={deletionPending === 'project'}>
+          <p className="break-words text-sm">
+            {t('deleteConfirmation.confirmDelete')}{' '}
+            <strong>{deleteConfirmation.project.displayName || deleteConfirmation.project.name}</strong>?
+          </p>
+          {deleteConfirmation.sessionCount > 0 && (
+            <div className="mt-4 space-y-1 border-t border-border pt-4 text-sm">
+              <p>{t('deleteConfirmation.sessionCount', { count: deleteConfirmation.sessionCount })}</p>
+              <p className="text-muted-foreground">{t('deleteConfirmation.allConversationsDeleted')}</p>
             </div>
-          </div>,
-          document.body,
-        )}
+          )}
+          <p className="mt-3 text-sm text-muted-foreground">{t('deleteConfirmation.cannotUndo')}</p>
+          {projectDeleteError && <p role="alert" className="mt-3 text-sm text-destructive">{projectDeleteError}</p>}
+          <div className="mt-5 flex justify-end gap-2">
+            <Button variant="outline" disabled={!!deletionPending} onClick={onCancelDeleteProject}>{t('actions.cancel')}</Button>
+            <Button variant="destructive" disabled={!!deletionPending} onClick={onConfirmDeleteProject}><Trash2 />{t(deletionPending === 'project' ? 'actions.deleting' : 'actions.delete')}</Button>
+          </div>
+        </WorkbenchDialog>
+      )}
 
-      {sessionDeleteConfirmation &&
-        ReactDOM.createPortal(
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-card border border-border rounded-xl shadow-2xl max-w-md w-full overflow-hidden">
-              <div className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
-                    <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-semibold text-foreground mb-2">
-                      {t('deleteConfirmation.deleteSession')}
-                    </h3>
-                    <p className="text-sm text-muted-foreground mb-1">
-                      {t('deleteConfirmation.confirmDelete')}{' '}
-                      <span className="font-medium text-foreground">
-                        {sessionDeleteConfirmation.sessionTitle || t('sessions.unnamed')}
-                      </span>
-                      ?
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-3">
-                      {t('deleteConfirmation.cannotUndo')}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="flex gap-3 p-4 bg-muted/30 border-t border-border">
-                <Button variant="outline" className="flex-1" onClick={onCancelDeleteSession}>
-                  {t('actions.cancel')}
-                </Button>
-                <Button
-                  variant="destructive"
-                  className="flex-1 bg-red-600 hover:bg-red-700 text-white"
-                  onClick={onConfirmDeleteSession}
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  {t('actions.delete')}
-                </Button>
-              </div>
-            </div>
-          </div>,
-          document.body,
-        )}
+      {sessionDeleteConfirmation && (
+        <WorkbenchDialog title={t('deleteConfirmation.deleteSession')} onClose={onCancelDeleteSession} busy={deletionPending === 'session'}>
+          <p className="break-words text-sm">
+            {t('deleteConfirmation.confirmDelete')}{' '}
+            <strong>{sessionDeleteConfirmation.sessionTitle || t('sessions.unnamed')}</strong>?
+          </p>
+          <p className="mt-3 text-sm text-muted-foreground">{t('deleteConfirmation.sessionCannotUndo')}</p>
+          {sessionDeleteError && <p role="alert" className="mt-3 text-sm text-destructive">{sessionDeleteError}</p>}
+          <div className="mt-5 flex justify-end gap-2">
+            <Button variant="outline" disabled={!!deletionPending} onClick={onCancelDeleteSession}>{t('actions.cancel')}</Button>
+            <Button variant="destructive" disabled={!!deletionPending} onClick={onConfirmDeleteSession}><Trash2 />{t(deletionPending === 'session' ? 'actions.deleting' : 'actions.delete')}</Button>
+          </div>
+        </WorkbenchDialog>
+      )}
 
       {/* Stays mounted while closed: it owns the in-flight update output, and
           unmounting it would both drop that output and let a reopened instance

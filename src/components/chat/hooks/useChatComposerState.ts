@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type {
   ChangeEvent,
   ClipboardEvent,
@@ -38,6 +38,10 @@ import type {
   PermissionMode,
   TokenBudget,
 } from '../types/types';
+import { useWebSocket } from '../../../contexts/WebSocketContext';
+import { useMessageQueue } from './useMessageQueue';
+import { useAuth } from '../../../contexts/AuthContext';
+import type { QueueDraft, SavedQueueItem } from '../utils/messageQueueStorage';
 import { useFileMentions } from './useFileMentions';
 import { type SlashCommand, useSlashCommands } from './useSlashCommands';
 import type { Project, ProjectSession, SessionProvider } from '../../../types/app';
@@ -117,6 +121,8 @@ interface UploadedProjectFile {
   path?: string;
   size?: number;
 }
+
+type SubmissionDraft = QueueDraft;
 
 interface ProgrammaticMessageDraft {
   content?: string;
@@ -335,6 +341,19 @@ export function useChatComposerState({
   const [pendingStageTagKeys, setPendingStageTagKeys] = useState<string[]>([]);
   const [attachedPrompt, setAttachedPrompt] = useState<AttachedPrompt | null>(null);
 
+  const { isConnected } = useWebSocket();
+  const connectionRef = useRef(isConnected);
+  connectionRef.current = isConnected;
+  const [isPreparing, setIsPreparing] = useState(false);
+  const submissionLock = useRef(false);
+  const queueSessionId = selectedSession?.id || currentSessionId || null;
+  const { user } = useAuth() as { user: { id: number | string } | null };
+  const queueScope = `${user?.id ?? 'local'}:${selectedProject?.fullPath || selectedProject?.path || selectedProject?.name || ''}:${provider}:${queueSessionId || 'new'}`;
+  const restoredQueueRunner = useRef<(item: SavedQueueItem, id: string | null, isCurrent: () => boolean) => Promise<boolean>>(async () => { throw new Error('Composer not ready'); });
+  const currentScopeRef = useRef(queueScope);
+  currentScopeRef.current = queueScope;
+  const messageQueue = useMessageQueue(queueScope, queueSessionId, isLoading, isConnected, (item, id, isCurrent) => restoredQueueRunner.current(item, id, isCurrent));
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const inputHighlightRef = useRef<HTMLDivElement>(null);
   const handleSubmitRef = useRef<
@@ -368,7 +387,7 @@ export function useChatComposerState({
     pendingEditedMessageIdRef.current = null;
   }, [selectedProject?.name, selectedSession?.id]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     attachedFilesRef.current = attachedFiles;
   }, [attachedFiles]);
 
@@ -543,7 +562,7 @@ export function useChatComposerState({
   }, [setChatMessages]);
 
   const executeCommand = useCallback(
-    async (command: SlashCommand, rawInput?: string) => {
+    async (command: SlashCommand, rawInput?: string, queued = false) => {
       if (!command || !selectedProject) {
         return;
       }
@@ -570,9 +589,9 @@ export function useChatComposerState({
                     ? openrouterModel
                     : provider === 'local'
                       ? localModel
-                      : provider === 'nano'
-                        ? nanoModel
-                        : claudeModel,
+                        : provider === 'nano'
+                          ? nanoModel
+                          : claudeModel,
           tokenUsage: tokenBudget,
         };
 
@@ -603,8 +622,7 @@ export function useChatComposerState({
         const result = (await response.json()) as CommandExecutionResult;
         if (result.type === 'builtin' && result.action === 'btw') {
           const { data } = result;
-          setInput('');
-          inputValueRef.current = '';
+          if (!queued) { setInput(''); inputValueRef.current = ''; }
           if (data?.error) {
             setChatMessages((previous) => [
               ...previous,
@@ -695,13 +713,14 @@ export function useChatComposerState({
         }
         if (result.type === 'builtin') {
           handleBuiltInCommand(result);
-          setInput('');
-          inputValueRef.current = '';
+          if (!queued) { setInput(''); inputValueRef.current = ''; }
         } else if (result.type === 'custom') {
+          if (queued) return result;
           await handleCustomCommand(result);
         }
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error';
+        if (queued) throw error;
         console.error('Error executing command:', error);
         setChatMessages((previous) => [
           ...previous,
@@ -751,7 +770,7 @@ export function useChatComposerState({
     input,
     setInput,
     textareaRef,
-    onExecuteCommand: executeCommand,
+    onExecuteCommand: async (command, rawInput) => { await executeCommand(command, rawInput); },
   });
 
   const applyProgrammaticDraft = useCallback((draft: ProgrammaticMessageDraft) => {
@@ -932,16 +951,15 @@ export function useChatComposerState({
         return next;
       });
 
-      setAttachedFiles((previous) => {
-        const deduped = [...previous];
-        validFiles.forEach((file) => {
-          const nextKey = getAttachmentKey(file);
-          if (!deduped.some((existing) => getAttachmentKey(existing) === nextKey)) {
-            deduped.push(file);
-          }
-        });
-        return deduped.slice(0, MAX_ATTACHMENTS);
+      const deduped = [...attachedFilesRef.current];
+      validFiles.forEach((file) => {
+        const nextKey = getAttachmentKey(file);
+        if (!deduped.some((existing) => getAttachmentKey(existing) === nextKey)) deduped.push(file);
       });
+      // A send immediately after file selection must see the accepted files,
+      // without waiting for a passive effect to mirror React state.
+      attachedFilesRef.current = deduped.slice(0, MAX_ATTACHMENTS);
+      setAttachedFiles(attachedFilesRef.current);
     }
   }, []);
 
@@ -1072,458 +1090,473 @@ export function useChatComposerState({
     [selectedProject],
   );
 
-  const handleSubmit = useCallback(
+  const submitDraft = useCallback(
     async (
       event: FormEvent<HTMLFormElement> | MouseEvent | TouchEvent | KeyboardEvent<HTMLTextAreaElement>,
-    ) => {
+      draft?: SubmissionDraft,
+      queuedSessionId?: string | null,
+      isCurrent: () => boolean = () => currentScopeRef.current === queueScope,
+    ): Promise<boolean> => {
       event.preventDefault();
-      const currentInput = inputValueRef.current;
-      const currentAttachedFiles = attachedFilesRef.current;
-      const currentAttachedPrompt = attachedPromptRef.current;
-      const currentStageTagKeys = pendingStageTagKeysRef.current;
+      let currentInput = draft?.input ?? inputValueRef.current;
+      const currentAttachedFiles = draft?.files ?? attachedFilesRef.current;
+      const currentAttachedPrompt = draft ? draft.prompt : attachedPromptRef.current;
+      const currentStageTagKeys = draft?.stageKeys ?? pendingStageTagKeysRef.current;
+      if ((!currentInput.trim() && currentAttachedFiles.length === 0 && !currentAttachedPrompt) || !selectedProject) return false;
+      if (submissionLock.current || !connectionRef.current || !isCurrent()) throw new Error('Submission unavailable');
+      submissionLock.current = true;
+      setIsPreparing(true);
+      try {
+        const trimmedInput = currentInput.trim();
+        if (trimmedInput.startsWith('/')) {
+          const firstSpace = trimmedInput.indexOf(' ');
+          const commandName = firstSpace > 0 ? trimmedInput.slice(0, firstSpace) : trimmedInput;
+          const matchedCommand = slashCommands.find((command: SlashCommand) => command.name === commandName);
 
-      if ((!currentInput.trim() && currentAttachedFiles.length === 0 && !currentAttachedPrompt) || isLoading || !selectedProject) {
-        return;
-      }
-
-      const trimmedInput = currentInput.trim();
-      if (trimmedInput.startsWith('/')) {
-        const firstSpace = trimmedInput.indexOf(' ');
-        const commandName = firstSpace > 0 ? trimmedInput.slice(0, firstSpace) : trimmedInput;
-        const matchedCommand = slashCommands.find((command: SlashCommand) => command.name === commandName);
-
-        if (matchedCommand) {
-          if (isLoading && commandName !== '/btw') {
-            return;
+          if (matchedCommand) {
+            const resolved = await executeCommand(matchedCommand, trimmedInput, Boolean(draft));
+            if (draft && resolved?.type === 'custom') {
+              if (resolved.hasBashCommands && !window.confirm('This command contains bash commands that will be executed. Do you want to proceed?')) return false;
+              currentInput = resolved.content || '';
+            } else {
+              if (!draft) {
+                setInput('');
+                inputValueRef.current = '';
+                setAttachedPrompt(null);
+                attachedPromptRef.current = null;
+                pendingEditedMessageIdRef.current = null;
+                setAttachedFiles([]);
+                attachedFilesRef.current = [];
+                setUploadingFiles(new Map());
+                setFileErrors(new Map());
+                setPendingStageTagKeys([]);
+                pendingStageTagKeysRef.current = [];
+                resetCommandMenuState();
+                setIsTextareaExpanded(false);
+                if (textareaRef.current) {
+                  textareaRef.current.style.height = 'auto';
+                }
+              }
+              return false;
+            }
           }
-          await executeCommand(matchedCommand, trimmedInput);
+        }
+
+
+        const normalizedInput =
+          currentInput.trim() ||
+          t('input.attachmentOnlyFallback', {
+            defaultValue: 'Please inspect the attached files and help me with them.',
+          });
+        let messageContent = normalizedInput;
+
+        // Prepend attached prompt text if present
+        if (currentAttachedPrompt) {
+          if (currentInput.trim()) {
+            messageContent = `${currentAttachedPrompt.promptText}\n\n${normalizedInput}`;
+          } else {
+            messageContent = currentAttachedPrompt.promptText;
+          }
+        }
+
+        // Auto-bypass permissions for autoresearch workflows
+        const effectivePermissionMode = isAutoResearchScenario(currentAttachedPrompt?.scenarioId)
+          ? 'bypassPermissions'
+          : (draft?.settings?.permissionMode ?? permissionMode);
+
+        const selectedThinkingMode = thinkingModes.find((mode: { id: string; prefix?: string }) => mode.id === (draft?.settings?.thinkingMode ?? thinkingMode));
+        if (selectedThinkingMode && selectedThinkingMode.prefix) {
+          messageContent = `${selectedThinkingMode.prefix}: ${messageContent}`;
+        }
+
+        // Inject intake greeting context for the first message after auto-intake
+        if (intakeGreeting) {
+          setChatMessages((previous) => [
+            ...previous,
+            {
+              type: 'assistant',
+              content: intakeGreeting,
+              timestamp: new Date(),
+            },
+          ]);
+          messageContent = `[Context: You have already greeted me as Dr. Claw's research assistant and asked about my research project. Continue the intake conversation without re-greeting.]\n\n${messageContent}`;
+          setIntakeGreeting(null);
+        }
+
+        let uploadedImages: ChatImage[] = [];
+        let codexAttachmentPayload:
+          | {
+              imagePaths: string[];
+              documentPaths: string[];
+            }
+          | undefined;
+        let messageAttachments: ChatAttachment[] = [];
+
+        if (currentAttachedFiles.length > 0) {
+          let uploadedFiles: UploadedProjectFile[] = [];
+
+          try {
+            uploadedFiles = await uploadFilesToProject(currentAttachedFiles);
+          } catch (error) {
+            const message = error instanceof Error ? error.message : 'Unknown error';
+            console.error('File upload failed:', error);
+            if (!isCurrent()) throw error;
+            setChatMessages((previous) => [
+              ...previous,
+              {
+                type: 'error',
+                content: `Failed to upload files: ${message}`,
+                timestamp: new Date(),
+              },
+            ]);
+            throw error;
+          }
+
+          messageAttachments = currentAttachedFiles.map((file, index) => {
+            const uploadedFile = uploadedFiles[index];
+            const uploadedPath = uploadedFile?.path && typeof uploadedFile.path === 'string' ? uploadedFile.path : undefined;
+
+            return {
+              name: file.name,
+              kind: getAttachmentKind(file),
+              mimeType: file.type || undefined,
+              path: uploadedPath,
+            };
+          });
+
+          if (uploadedFiles.length > 0) {
+            const fileNote = `\n\n[Files available at the following paths]\n${uploadedFiles
+              .map((file, index) => `${index + 1}. ${file.path}`)
+              .join('\n')}`;
+            messageContent = `${messageContent}${fileNote}`;
+          }
+
+          if (provider === 'codex') {
+            codexAttachmentPayload = uploadedFiles.reduce(
+              (
+                accumulator: {
+                  imagePaths: string[];
+                  documentPaths: string[];
+                },
+                uploadedFile: UploadedProjectFile,
+                index: number,
+              ) => {
+                const sourceFile = currentAttachedFiles[index];
+                const uploadedPath =
+                  uploadedFile?.path && typeof uploadedFile.path === 'string' ? uploadedFile.path : null;
+
+                if (!sourceFile || !uploadedPath) {
+                  return accumulator;
+                }
+
+                if (isImageAttachment(sourceFile)) {
+                  accumulator.imagePaths.push(uploadedPath);
+                } else if (isPdfAttachment(sourceFile)) {
+                  accumulator.documentPaths.push(uploadedPath);
+                }
+
+                return accumulator;
+              },
+              {
+                imagePaths: [] as string[],
+                documentPaths: [] as string[],
+              },
+            );
+          }
+
+          const imageFiles = currentAttachedFiles.filter((file) => isImageAttachment(file));
+          if (imageFiles.length > 0) {
+            try {
+              uploadedImages = await uploadPreviewImages(imageFiles);
+            } catch (error) {
+              console.error('Image preview upload failed:', error);
+            }
+          }
+        }
+
+        if (!isCurrent() || !connectionRef.current) throw new Error('Submission interrupted');
+        const editedMessageId = draft ? draft.editingId : pendingEditedMessageIdRef.current;
+        const userMessageId = createChatMessageId();
+        const userMessage: ChatMessage = {
+          messageId: userMessageId,
+          type: 'user',
+          content: normalizedInput,
+          submittedContent: messageContent,
+          images: uploadedImages.length > 0 ? uploadedImages : undefined,
+          attachments: messageAttachments.length > 0 ? messageAttachments : undefined,
+          timestamp: new Date(),
+          ...(editedMessageId ? { editedFromMessageId: editedMessageId } : {}),
+          ...(currentAttachedPrompt ? { attachedPrompt: currentAttachedPrompt } : {}),
+        };
+
+        setChatMessages((previous) => applyEditedMessageToHistory(previous, userMessage, editedMessageId));
+        if (!draft) pendingEditedMessageIdRef.current = null;
+        if (abortTimeoutRef.current) {
+          clearTimeout(abortTimeoutRef.current);
+          abortTimeoutRef.current = null;
+        }
+        const turnStartTime = Date.now();
+        setIsLoading(true);
+        setCanAbortSession(true);
+        setClaudeStatus({
+          text: 'Processing',
+          tokens: 0,
+          can_interrupt: true,
+          startTime: turnStartTime,
+        });
+
+        setIsUserScrolledUp(false);
+        setTimeout(() => scrollToBottom(), 100);
+
+        // Reuse the session currently represented by the route or pending view state.
+        // This prevents interrupted chats from being treated as brand new sessions.
+        const routedSessionId = getRouteSessionId();
+
+        // If we're on the root path with no routed session AND no selected session,
+        // treat it as an explicit new session start and clear any stale provider-specific session IDs.
+        const isExplicitNewSessionStart = window.location.pathname === '/' && !routedSessionId && !selectedSession?.id;
+        if (isExplicitNewSessionStart && typeof window !== 'undefined') {
+          sessionStorage.removeItem('geminiSessionId');
+          sessionStorage.removeItem('cursorSessionId');
+          sessionStorage.removeItem('pendingSessionId');
+        }
+
+        const providerSessionId =
+          provider === 'gemini'
+            ? sessionStorage.getItem('geminiSessionId')
+            : provider === 'cursor'
+            ? sessionStorage.getItem('cursorSessionId')
+            : null;
+        const pendingViewSessionId = pendingViewSessionRef.current?.sessionId || null;
+        const effectiveSessionId =
+          queuedSessionId ||
+          currentSessionId ||
+          selectedSession?.id ||
+          routedSessionId ||
+          pendingViewSessionId ||
+          providerSessionId;
+        const isNewSession = !effectiveSessionId;
+        const sessionToActivate = effectiveSessionId || `${TEMP_SESSION_PREFIX}${Date.now()}`;
+
+        if (!effectiveSessionId && !selectedSession?.id) {
+          if (typeof window !== 'undefined') {
+            // Reset stale pending IDs from previous interrupted runs before creating a new one.
+            sessionStorage.removeItem('pendingSessionId');
+          }
+          pendingViewSessionRef.current = { sessionId: null, startedAt: Date.now() };
+        }
+        persistSessionTimerStart(sessionToActivate, turnStartTime);
+        onSessionActive?.(sessionToActivate);
+
+        const getToolsSettings = () => {
+          try {
+            const settingsKey = getProviderSettingsKey(provider);
+            const savedSettings = safeLocalStorage.getItem(settingsKey);
+            if (savedSettings) {
+              return JSON.parse(savedSettings);
+            }
+          } catch (error) {
+            console.error('Error loading tools settings:', error);
+          }
+
+          return {
+            allowedTools: [],
+            disallowedTools: [],
+            skipPermissions: false,
+          };
+        };
+
+        const toolsSettings = getToolsSettings();
+        const resolvedProjectPath = selectedProject.fullPath || selectedProject.path || '';
+        const telemetryEnabled = isTelemetryEnabled();
+
+        console.log('[DEBUG] useChatComposerState - provider:', provider);
+        console.log('[DEBUG] useChatComposerState - effectiveSessionId:', effectiveSessionId);
+
+        if (isNewSession) {
+          const sessionModeContext = (draft?.settings?.newSessionMode ?? newSessionMode) === 'workspace_qa'
+            ? '[Context: session-mode=workspace_qa]\n[Context: Treat this as a lightweight workspace Q&A session. Focus on answering questions about files, code, and project structure. Do not start the research intake or pipeline workflow unless the user explicitly asks for it.]\n\n'
+            : '[Context: session-mode=research]\n[Context: This is a research workflow session. Follow the normal project research instructions and pipeline behavior.]\n\n';
+          messageContent = `${sessionModeContext}${messageContent}`;
+        }
+
+        if (provider === 'cursor') {
+          console.log('[DEBUG] Sending cursor-command');
+          sendMessage({
+            type: 'cursor-command',
+            command: messageContent,
+            sessionId: effectiveSessionId,
+            options: {
+              cwd: resolvedProjectPath,
+              projectPath: resolvedProjectPath,
+              sessionId: effectiveSessionId,
+              resume: Boolean(effectiveSessionId),
+              model: draft?.settings?.cursorModel ?? cursorModel,
+              skipPermissions: toolsSettings?.skipPermissions || false,
+              toolsSettings,
+              telemetryEnabled,
+              sessionMode: isNewSession ? (draft?.settings?.newSessionMode ?? newSessionMode) : selectedSession?.mode,
+              stageTagKeys: currentStageTagKeys,
+              stageTagSource: 'task_context',
+            },
+          });
+        } else if (provider === 'gemini') {
+          console.log('[DEBUG] Sending gemini-command');
+          sendMessage({
+            type: 'gemini-command',
+            command: messageContent,
+            sessionId: effectiveSessionId,
+            options: {
+              cwd: resolvedProjectPath,
+              projectPath: resolvedProjectPath,
+              sessionId: effectiveSessionId,
+              resume: Boolean(effectiveSessionId),
+              model: draft?.settings?.geminiModel ?? geminiModel,
+              permissionMode: effectivePermissionMode,
+              thinkingMode: draft?.settings?.geminiThinkingMode ?? geminiThinkingMode,
+              images: uploadedImages.length > 0 ? uploadedImages : undefined,
+              toolsSettings,
+              telemetryEnabled,
+              sessionMode: isNewSession ? (draft?.settings?.newSessionMode ?? newSessionMode) : selectedSession?.mode,
+              stageTagKeys: currentStageTagKeys,
+              stageTagSource: 'task_context',
+            },
+          });
+        } else if (provider === 'codex') {
+          console.log('[DEBUG] Sending codex-command');
+          sendMessage({
+            type: 'codex-command',
+            command: messageContent,
+            sessionId: effectiveSessionId,
+            options: {
+              cwd: resolvedProjectPath,
+              projectPath: resolvedProjectPath,
+              sessionId: effectiveSessionId,
+              resume: Boolean(effectiveSessionId),
+              model: draft?.settings?.codexModel ?? codexModel,
+              permissionMode: effectivePermissionMode === 'plan' ? 'default' : effectivePermissionMode,
+              modelReasoningEffort: (draft?.settings?.codexReasoningEffort ?? codexReasoningEffort) === 'default' ? undefined : (draft?.settings?.codexReasoningEffort ?? codexReasoningEffort),
+              attachments: codexAttachmentPayload,
+              images: uploadedImages,
+              telemetryEnabled,
+              sessionMode: isNewSession ? (draft?.settings?.newSessionMode ?? newSessionMode) : selectedSession?.mode,
+              stageTagKeys: currentStageTagKeys,
+              stageTagSource: 'task_context',
+            },
+          });
+        } else if (provider === 'openrouter') {
+          console.log('[DEBUG] Sending openrouter-command');
+          sendMessage({
+            type: 'openrouter-command',
+            command: messageContent,
+            sessionId: effectiveSessionId,
+            options: {
+              cwd: resolvedProjectPath,
+              projectPath: resolvedProjectPath,
+              sessionId: effectiveSessionId,
+              resume: Boolean(effectiveSessionId),
+              model: draft?.settings?.openrouterModel ?? openrouterModel,
+              permissionMode: effectivePermissionMode,
+              toolsSettings,
+              telemetryEnabled,
+              sessionMode: isNewSession ? (draft?.settings?.newSessionMode ?? newSessionMode) : selectedSession?.mode,
+              stageTagKeys: currentStageTagKeys,
+              stageTagSource: 'task_context',
+            },
+          });
+        } else if (provider === 'local') {
+          console.log('[DEBUG] Sending local-command');
+          sendMessage({
+            type: 'local-command',
+            command: messageContent,
+            sessionId: effectiveSessionId,
+            options: {
+              cwd: resolvedProjectPath,
+              projectPath: resolvedProjectPath,
+              sessionId: effectiveSessionId,
+              resume: Boolean(effectiveSessionId),
+              model: draft?.settings?.localModel ?? localModel,
+              serverUrl: localStorage.getItem('local-gpu-server-url') || 'http://localhost:11434',
+              gpuId: localStorage.getItem('local-gpu-selected') || undefined,
+              permissionMode: effectivePermissionMode,
+              toolsSettings,
+              telemetryEnabled,
+              sessionMode: isNewSession ? (draft?.settings?.newSessionMode ?? newSessionMode) : selectedSession?.mode,
+              stageTagKeys: pendingStageTagKeys,
+              stageTagSource: 'task_context',
+            },
+          });
+        } else if (provider === 'nano') {
+          console.log('[DEBUG] Sending nano-command');
+          sendMessage({
+            type: 'nano-command',
+            command: messageContent,
+            sessionId: effectiveSessionId,
+            options: {
+              cwd: resolvedProjectPath,
+              projectPath: resolvedProjectPath,
+              sessionId: effectiveSessionId,
+              resume: Boolean(effectiveSessionId),
+              model: draft?.settings?.nanoModel ?? nanoModel,
+              toolsSettings,
+              telemetryEnabled,
+              sessionMode: isNewSession ? (draft?.settings?.newSessionMode ?? newSessionMode) : selectedSession?.mode,
+              stageTagKeys: currentStageTagKeys,
+              stageTagSource: 'task_context',
+            },
+          });
+        } else {
+          console.log('[DEBUG] Sending claude-command');
+          sendMessage({
+            type: 'claude-command',
+            command: messageContent,
+            options: {
+              projectPath: resolvedProjectPath,
+              cwd: resolvedProjectPath,
+              sessionId: effectiveSessionId,
+              resume: Boolean(effectiveSessionId),
+              toolsSettings,
+              permissionMode: effectivePermissionMode,
+              model: draft?.settings?.claudeModel ?? claudeModel,
+              images: uploadedImages.length > 0 ? uploadedImages : undefined,
+              telemetryEnabled,
+              sessionMode: isNewSession ? (draft?.settings?.newSessionMode ?? newSessionMode) : selectedSession?.mode,
+              stageTagKeys: currentStageTagKeys,
+              stageTagSource: 'task_context',
+            },
+          });
+        }
+
+        if (!draft) {
           setInput('');
           inputValueRef.current = '';
-          setAttachedPrompt(null);
-          attachedPromptRef.current = null;
-          pendingEditedMessageIdRef.current = null;
+          setPendingStageTagKeys([]);
+          pendingStageTagKeysRef.current = [];
+          resetCommandMenuState();
           setAttachedFiles([]);
           attachedFilesRef.current = [];
           setUploadingFiles(new Map());
           setFileErrors(new Map());
-          setPendingStageTagKeys([]);
-          pendingStageTagKeysRef.current = [];
-          resetCommandMenuState();
           setIsTextareaExpanded(false);
+          setThinkingMode('none');
+          setAttachedPrompt(null);
+          attachedPromptRef.current = null;
+          pendingEditedMessageIdRef.current = null;
+
           if (textareaRef.current) {
             textareaRef.current.style.height = 'auto';
           }
-          return;
+
+          safeLocalStorage.removeItem(`draft_input_${selectedProject.name}`);
         }
+        return true;
+      } finally {
+        submissionLock.current = false;
+        setIsPreparing(false);
       }
-
-      if (isLoading) {
-        return;
-      }
-
-      const normalizedInput =
-        currentInput.trim() ||
-        t('input.attachmentOnlyFallback', {
-          defaultValue: 'Please inspect the attached files and help me with them.',
-        });
-      let messageContent = normalizedInput;
-
-      // Prepend attached prompt text if present
-      if (currentAttachedPrompt) {
-        if (currentInput.trim()) {
-          messageContent = `${currentAttachedPrompt.promptText}\n\n${normalizedInput}`;
-        } else {
-          messageContent = currentAttachedPrompt.promptText;
-        }
-      }
-
-      // Auto-bypass permissions for autoresearch workflows
-      const effectivePermissionMode = isAutoResearchScenario(attachedPrompt?.scenarioId)
-        ? 'bypassPermissions'
-        : permissionMode;
-
-      const selectedThinkingMode = thinkingModes.find((mode: { id: string; prefix?: string }) => mode.id === thinkingMode);
-      if (selectedThinkingMode && selectedThinkingMode.prefix) {
-        messageContent = `${selectedThinkingMode.prefix}: ${messageContent}`;
-      }
-
-      // Inject intake greeting context for the first message after auto-intake
-      if (intakeGreeting) {
-        setChatMessages((previous) => [
-          ...previous,
-          {
-            type: 'assistant',
-            content: intakeGreeting,
-            timestamp: new Date(),
-          },
-        ]);
-        messageContent = `[Context: You have already greeted me as Dr. Claw's research assistant and asked about my research project. Continue the intake conversation without re-greeting.]\n\n${messageContent}`;
-        setIntakeGreeting(null);
-      }
-
-      let uploadedImages: ChatImage[] = [];
-      let codexAttachmentPayload:
-        | {
-            imagePaths: string[];
-            documentPaths: string[];
-          }
-        | undefined;
-      let messageAttachments: ChatAttachment[] = [];
-
-      if (currentAttachedFiles.length > 0) {
-        let uploadedFiles: UploadedProjectFile[] = [];
-
-        try {
-          uploadedFiles = await uploadFilesToProject(currentAttachedFiles);
-        } catch (error) {
-          const message = error instanceof Error ? error.message : 'Unknown error';
-          console.error('File upload failed:', error);
-          setChatMessages((previous) => [
-            ...previous,
-            {
-              type: 'error',
-              content: `Failed to upload files: ${message}`,
-              timestamp: new Date(),
-            },
-          ]);
-          return;
-        }
-
-        messageAttachments = currentAttachedFiles.map((file, index) => {
-          const uploadedFile = uploadedFiles[index];
-          const uploadedPath = uploadedFile?.path && typeof uploadedFile.path === 'string' ? uploadedFile.path : undefined;
-
-          return {
-            name: file.name,
-            kind: getAttachmentKind(file),
-            mimeType: file.type || undefined,
-            path: uploadedPath,
-          };
-        });
-
-        if (uploadedFiles.length > 0) {
-          const fileNote = `\n\n[Files available at the following paths]\n${uploadedFiles
-            .map((file, index) => `${index + 1}. ${file.path}`)
-            .join('\n')}`;
-          messageContent = `${messageContent}${fileNote}`;
-        }
-
-        if (provider === 'codex') {
-          codexAttachmentPayload = uploadedFiles.reduce(
-            (
-              accumulator: {
-                imagePaths: string[];
-                documentPaths: string[];
-              },
-              uploadedFile: UploadedProjectFile,
-              index: number,
-            ) => {
-              const sourceFile = currentAttachedFiles[index];
-              const uploadedPath =
-                uploadedFile?.path && typeof uploadedFile.path === 'string' ? uploadedFile.path : null;
-
-              if (!sourceFile || !uploadedPath) {
-                return accumulator;
-              }
-
-              if (isImageAttachment(sourceFile)) {
-                accumulator.imagePaths.push(uploadedPath);
-              } else if (isPdfAttachment(sourceFile)) {
-                accumulator.documentPaths.push(uploadedPath);
-              }
-
-              return accumulator;
-            },
-            {
-              imagePaths: [] as string[],
-              documentPaths: [] as string[],
-            },
-          );
-        }
-
-        const imageFiles = currentAttachedFiles.filter((file) => isImageAttachment(file));
-        if (imageFiles.length > 0) {
-          try {
-            uploadedImages = await uploadPreviewImages(imageFiles);
-          } catch (error) {
-            console.error('Image preview upload failed:', error);
-          }
-        }
-      }
-
-      const editedMessageId = pendingEditedMessageIdRef.current;
-      const userMessageId = createChatMessageId();
-      const userMessage: ChatMessage = {
-        messageId: userMessageId,
-        type: 'user',
-        content: normalizedInput,
-        submittedContent: messageContent,
-        images: uploadedImages.length > 0 ? uploadedImages : undefined,
-        attachments: messageAttachments.length > 0 ? messageAttachments : undefined,
-        timestamp: new Date(),
-        ...(editedMessageId ? { editedFromMessageId: editedMessageId } : {}),
-        ...(currentAttachedPrompt ? { attachedPrompt: currentAttachedPrompt } : {}),
-      };
-
-      setChatMessages((previous) => applyEditedMessageToHistory(previous, userMessage, editedMessageId));
-      pendingEditedMessageIdRef.current = null;
-      if (abortTimeoutRef.current) {
-        clearTimeout(abortTimeoutRef.current);
-        abortTimeoutRef.current = null;
-      }
-      const turnStartTime = Date.now();
-      setIsLoading(true);
-      setCanAbortSession(true);
-      setClaudeStatus({
-        text: 'Processing',
-        tokens: 0,
-        can_interrupt: true,
-        startTime: turnStartTime,
-      });
-
-      setIsUserScrolledUp(false);
-      setTimeout(() => scrollToBottom(), 100);
-
-      // Reuse the session currently represented by the route or pending view state.
-      // This prevents interrupted chats from being treated as brand new sessions.
-      const routedSessionId = getRouteSessionId();
-      
-      // If we're on the root path with no routed session AND no selected session, 
-      // treat it as an explicit new session start and clear any stale provider-specific session IDs.
-      const isExplicitNewSessionStart = window.location.pathname === '/' && !routedSessionId && !selectedSession?.id;
-      if (isExplicitNewSessionStart && typeof window !== 'undefined') {
-        sessionStorage.removeItem('geminiSessionId');
-        sessionStorage.removeItem('cursorSessionId');
-        sessionStorage.removeItem('pendingSessionId');
-      }
-
-      const providerSessionId =
-        provider === 'gemini'
-          ? sessionStorage.getItem('geminiSessionId')
-          : provider === 'cursor'
-          ? sessionStorage.getItem('cursorSessionId')
-          : null;
-      const pendingViewSessionId = pendingViewSessionRef.current?.sessionId || null;
-      const effectiveSessionId =
-        currentSessionId ||
-        selectedSession?.id ||
-        routedSessionId ||
-        pendingViewSessionId ||
-        providerSessionId;
-      const isNewSession = !effectiveSessionId;
-      const sessionToActivate = effectiveSessionId || `${TEMP_SESSION_PREFIX}${Date.now()}`;
-
-      if (!effectiveSessionId && !selectedSession?.id) {
-        if (typeof window !== 'undefined') {
-          // Reset stale pending IDs from previous interrupted runs before creating a new one.
-          sessionStorage.removeItem('pendingSessionId');
-        }
-        pendingViewSessionRef.current = { sessionId: null, startedAt: Date.now() };
-      }
-      persistSessionTimerStart(sessionToActivate, turnStartTime);
-      onSessionActive?.(sessionToActivate);
-
-      const getToolsSettings = () => {
-        try {
-          const settingsKey = getProviderSettingsKey(provider);
-          const savedSettings = safeLocalStorage.getItem(settingsKey);
-          if (savedSettings) {
-            return JSON.parse(savedSettings);
-          }
-        } catch (error) {
-          console.error('Error loading tools settings:', error);
-        }
-
-        return {
-          allowedTools: [],
-          disallowedTools: [],
-          skipPermissions: false,
-        };
-      };
-
-      const toolsSettings = getToolsSettings();
-      const resolvedProjectPath = selectedProject.fullPath || selectedProject.path || '';
-      const telemetryEnabled = isTelemetryEnabled();
-
-      console.log('[DEBUG] useChatComposerState - provider:', provider);
-      console.log('[DEBUG] useChatComposerState - effectiveSessionId:', effectiveSessionId);
-
-      if (isNewSession) {
-        const sessionModeContext = newSessionMode === 'workspace_qa'
-          ? '[Context: session-mode=workspace_qa]\n[Context: Treat this as a lightweight workspace Q&A session. Focus on answering questions about files, code, and project structure. Do not start the research intake or pipeline workflow unless the user explicitly asks for it.]\n\n'
-          : '[Context: session-mode=research]\n[Context: This is a research workflow session. Follow the normal project research instructions and pipeline behavior.]\n\n';
-        messageContent = `${sessionModeContext}${messageContent}`;
-      }
-
-      if (provider === 'cursor') {
-        console.log('[DEBUG] Sending cursor-command');
-        sendMessage({
-          type: 'cursor-command',
-          command: messageContent,
-          sessionId: effectiveSessionId,
-          options: {
-            cwd: resolvedProjectPath,
-            projectPath: resolvedProjectPath,
-            sessionId: effectiveSessionId,
-            resume: Boolean(effectiveSessionId),
-            model: cursorModel,
-            skipPermissions: toolsSettings?.skipPermissions || false,
-            toolsSettings,
-            telemetryEnabled,
-            sessionMode: isNewSession ? newSessionMode : selectedSession?.mode,
-            stageTagKeys: currentStageTagKeys,
-            stageTagSource: 'task_context',
-          },
-        });
-      } else if (provider === 'gemini') {
-        console.log('[DEBUG] Sending gemini-command');
-        sendMessage({
-          type: 'gemini-command',
-          command: messageContent,
-          sessionId: effectiveSessionId,
-          options: {
-            cwd: resolvedProjectPath,
-            projectPath: resolvedProjectPath,
-            sessionId: effectiveSessionId,
-            resume: Boolean(effectiveSessionId),
-            model: geminiModel,
-            permissionMode: effectivePermissionMode,
-            thinkingMode: geminiThinkingMode,
-            images: uploadedImages.length > 0 ? uploadedImages : undefined,
-            toolsSettings,
-            telemetryEnabled,
-            sessionMode: isNewSession ? newSessionMode : selectedSession?.mode,
-            stageTagKeys: currentStageTagKeys,
-            stageTagSource: 'task_context',
-          },
-        });
-      } else if (provider === 'codex') {
-        console.log('[DEBUG] Sending codex-command');
-        sendMessage({
-          type: 'codex-command',
-          command: messageContent,
-          sessionId: effectiveSessionId,
-          options: {
-            cwd: resolvedProjectPath,
-            projectPath: resolvedProjectPath,
-            sessionId: effectiveSessionId,
-            resume: Boolean(effectiveSessionId),
-            model: codexModel,
-            permissionMode: effectivePermissionMode === 'plan' ? 'default' : effectivePermissionMode,
-            modelReasoningEffort: codexReasoningEffort === 'default' ? undefined : codexReasoningEffort,
-            attachments: codexAttachmentPayload,
-            images: uploadedImages,
-            telemetryEnabled,
-            sessionMode: isNewSession ? newSessionMode : selectedSession?.mode,
-            stageTagKeys: currentStageTagKeys,
-            stageTagSource: 'task_context',
-          },
-        });
-      } else if (provider === 'openrouter') {
-        console.log('[DEBUG] Sending openrouter-command');
-        sendMessage({
-          type: 'openrouter-command',
-          command: messageContent,
-          sessionId: effectiveSessionId,
-          options: {
-            cwd: resolvedProjectPath,
-            projectPath: resolvedProjectPath,
-            sessionId: effectiveSessionId,
-            resume: Boolean(effectiveSessionId),
-            model: openrouterModel,
-            permissionMode: effectivePermissionMode,
-            toolsSettings,
-            telemetryEnabled,
-            sessionMode: isNewSession ? newSessionMode : selectedSession?.mode,
-            stageTagKeys: currentStageTagKeys,
-            stageTagSource: 'task_context',
-          },
-        });
-      } else if (provider === 'local') {
-        console.log('[DEBUG] Sending local-command');
-        sendMessage({
-          type: 'local-command',
-          command: messageContent,
-          sessionId: effectiveSessionId,
-          options: {
-            cwd: resolvedProjectPath,
-            projectPath: resolvedProjectPath,
-            sessionId: effectiveSessionId,
-            resume: Boolean(effectiveSessionId),
-            model: localModel,
-            serverUrl: localStorage.getItem('local-gpu-server-url') || 'http://localhost:11434',
-            gpuId: localStorage.getItem('local-gpu-selected') || undefined,
-            permissionMode: effectivePermissionMode,
-            toolsSettings,
-            telemetryEnabled,
-            sessionMode: isNewSession ? newSessionMode : selectedSession?.mode,
-            stageTagKeys: pendingStageTagKeys,
-            stageTagSource: 'task_context',
-          },
-        });
-      } else if (provider === 'nano') {
-        console.log('[DEBUG] Sending nano-command');
-        sendMessage({
-          type: 'nano-command',
-          command: messageContent,
-          sessionId: effectiveSessionId,
-          options: {
-            cwd: resolvedProjectPath,
-            projectPath: resolvedProjectPath,
-            sessionId: effectiveSessionId,
-            resume: Boolean(effectiveSessionId),
-            model: nanoModel,
-            toolsSettings,
-            telemetryEnabled,
-            sessionMode: isNewSession ? newSessionMode : selectedSession?.mode,
-            stageTagKeys: currentStageTagKeys,
-            stageTagSource: 'task_context',
-          },
-        });
-      } else {
-        console.log('[DEBUG] Sending claude-command');
-        sendMessage({
-          type: 'claude-command',
-          command: messageContent,
-          options: {
-            projectPath: resolvedProjectPath,
-            cwd: resolvedProjectPath,
-            sessionId: effectiveSessionId,
-            resume: Boolean(effectiveSessionId),
-            toolsSettings,
-            permissionMode: effectivePermissionMode,
-            model: claudeModel,
-            images: uploadedImages.length > 0 ? uploadedImages : undefined,
-            telemetryEnabled,
-            sessionMode: isNewSession ? newSessionMode : selectedSession?.mode,
-            stageTagKeys: currentStageTagKeys,
-            stageTagSource: 'task_context',
-          },
-        });
-      }
-
-      setInput('');
-      inputValueRef.current = '';
-      setPendingStageTagKeys([]);
-      pendingStageTagKeysRef.current = [];
-      resetCommandMenuState();
-      setAttachedFiles([]);
-      attachedFilesRef.current = [];
-      setUploadingFiles(new Map());
-      setFileErrors(new Map());
-      setIsTextareaExpanded(false);
-      setThinkingMode('none');
-      setAttachedPrompt(null);
-      attachedPromptRef.current = null;
-      pendingEditedMessageIdRef.current = null;
-
-      if (textareaRef.current) {
-        textareaRef.current.style.height = 'auto';
-      }
-
-      safeLocalStorage.removeItem(`draft_input_${selectedProject.name}`);
     },
     [
+      queueScope,
       attachedFiles,
       attachedPrompt,
       claudeModel,
@@ -1560,6 +1593,39 @@ export function useChatComposerState({
       uploadPreviewImages,
     ],
   );
+
+  restoredQueueRunner.current = (item, id, isCurrent) => submitDraft(createFakeSubmitEvent(), { ...item.draft, input: item.text }, id, isCurrent);
+
+  const clearQueuedDraft = useCallback(() => {
+    setInput(''); inputValueRef.current = '';
+    setAttachedFiles([]); attachedFilesRef.current = [];
+    setAttachedPrompt(null); attachedPromptRef.current = null;
+    setPendingStageTagKeys([]); pendingStageTagKeysRef.current = [];
+    pendingEditedMessageIdRef.current = null;
+    setUploadingFiles(new Map()); setFileErrors(new Map());
+    resetCommandMenuState(); setIsTextareaExpanded(false);
+    if (textareaRef.current) textareaRef.current.style.height = 'auto';
+  }, [resetCommandMenuState]);
+
+  const handleSubmit = useCallback(async (event: FormEvent<HTMLFormElement> | MouseEvent | TouchEvent | KeyboardEvent<HTMLTextAreaElement>) => {
+    event.preventDefault();
+    if (submissionLock.current || messageQueue.restoring || !selectedProject) return;
+    const draft: SubmissionDraft = {
+      input: inputValueRef.current, files: [...attachedFilesRef.current], prompt: attachedPromptRef.current,
+      stageKeys: [...pendingStageTagKeysRef.current], editingId: pendingEditedMessageIdRef.current,
+      settings: { claudeModel, codexModel, cursorModel, geminiModel, openrouterModel, localModel, nanoModel, thinkingMode, codexReasoningEffort, geminiThinkingMode, permissionMode, newSessionMode },
+    };
+    if (!draft.input.trim() && !draft.files.length && !draft.prompt) return;
+    if (isLoading || messageQueue.items.length > 0) {
+      messageQueue.enqueue({ draft, id: createChatMessageId(), text: draft.input, promptTitle: draft.prompt?.scenarioTitle, hasPrompt: Boolean(draft.prompt), files: draft.files.map(file => file.name),
+        run: (id, isCurrent, text) => submitDraft(createFakeSubmitEvent(), { ...draft, input: text }, id, isCurrent),
+      });
+      clearQueuedDraft();
+      return;
+    }
+    messageQueue.start();
+    try { await submitDraft(event); } catch (error) { console.warn('Message submission retained:', error); }
+  }, [isLoading, messageQueue.items.length, messageQueue.enqueue, messageQueue.start, submitDraft, selectedProject, clearQueuedDraft, messageQueue.restoring, claudeModel, codexModel, cursorModel, geminiModel, openrouterModel, localModel, nanoModel, thinkingMode, codexReasoningEffort, geminiThinkingMode, permissionMode, newSessionMode]);
 
   useEffect(() => {
     handleSubmitRef.current = handleSubmit;
@@ -1695,6 +1761,10 @@ export function useChatComposerState({
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLTextAreaElement>) => {
+      // Let the IME accept its candidate before command/mention handlers can
+      // consume Enter. Safari can report keyCode 229 without isComposing.
+      if (event.nativeEvent.isComposing || event.keyCode === 229) return;
+
       if (handleCommandMenuKeyDown(event)) {
         return;
       }
@@ -1703,17 +1773,7 @@ export function useChatComposerState({
         return;
       }
 
-      if (event.key === 'Tab' && !showFileDropdown && !showCommandMenu) {
-        event.preventDefault();
-        cyclePermissionMode();
-        return;
-      }
-
       if (event.key === 'Enter') {
-        if (event.nativeEvent.isComposing) {
-          return;
-        }
-
         if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
           event.preventDefault();
           handleSubmit(event);
@@ -1724,7 +1784,6 @@ export function useChatComposerState({
       }
     },
     [
-      cyclePermissionMode,
       handleCommandMenuKeyDown,
       handleFileMentionsKeyDown,
       handleSubmit,
@@ -1777,6 +1836,7 @@ export function useChatComposerState({
   }, [resetCommandMenuState]);
 
   const handleAbortSession = useCallback(() => {
+    messageQueue.pause();
     if (!canAbortSession) {
       // Force-reset the UI when Stop is clicked but no active abort is possible.
       // This handles stale state after server restarts or lost WebSocket connections.
@@ -1839,7 +1899,7 @@ export function useChatComposerState({
       setClaudeStatus(null);
       if (targetSessionId) clearSessionTimerStart(targetSessionId);
     }, 5000);
-  }, [canAbortSession, currentSessionId, isLoading, pendingViewSessionRef, provider, selectedSession?.id, sendMessage, setCanAbortSession, setChatMessages, setClaudeStatus, setIsLoading, setPendingPermissionRequests]);
+  }, [messageQueue.pause, canAbortSession, currentSessionId, isLoading, pendingViewSessionRef, provider, selectedSession?.id, sendMessage, setCanAbortSession, setChatMessages, setClaudeStatus, setIsLoading, setPendingPermissionRequests]);
 
   const handleTranscript = useCallback((text: string) => {
     if (!text.trim()) {
@@ -1924,6 +1984,9 @@ export function useChatComposerState({
   );
 
   return {
+    isPreparing,
+    isQueueRestoring: messageQueue.restoring,
+    messageQueue,
     input,
     setInput,
     attachedPrompt,

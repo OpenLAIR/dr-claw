@@ -66,9 +66,10 @@ export default function AgentListItem({ agentId, authStatus, isSelected, onClick
     return (
       <button
         onClick={onClick}
+        aria-pressed={isSelected}
         className={`flex-1 text-center py-3 px-2 border-b-2 transition-colors ${
           isSelected
-            ? `${colors.borderBottom} ${colors.bg}`
+            ? 'border-b-foreground bg-muted'
             : 'border-transparent hover:bg-gray-50 dark:hover:bg-gray-800'
         }`}
       >
@@ -90,9 +91,10 @@ export default function AgentListItem({ agentId, authStatus, isSelected, onClick
   return (
     <button
       onClick={onClick}
+        aria-pressed={isSelected}
       className={`w-full text-left p-3 border-l-4 transition-colors ${
         isSelected
-          ? `${colors.border} ${colors.bg}`
+          ? 'border-l-foreground bg-muted'
           : 'border-transparent hover:bg-gray-50 dark:hover:bg-gray-800'
       }`}
     >

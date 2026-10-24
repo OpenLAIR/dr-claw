@@ -2,6 +2,7 @@ import { Blocks, FlaskConical, Monitor, Newspaper, Trash2 } from 'lucide-react';
 import type { AppTab, Project } from '../../../../types/app';
 import { ScrollArea } from '../../../ui/scroll-area';
 import type { TFunction } from 'i18next';
+import type { Ref } from 'react';
 import type { ReleaseInfo } from '../../../../types/sharedTypes';
 import SidebarFooter from './SidebarFooter';
 import SidebarHeader from './SidebarHeader';
@@ -26,6 +27,7 @@ type SidebarContentProps = {
   onOpenCompute: () => void;
   onCreateProject: () => void;
   onCollapseSidebar: () => void;
+  toggleButtonRef: Ref<HTMLButtonElement>;
   currentVersion: string;
   updateAvailable: boolean;
   releaseInfo: ReleaseInfo | null;
@@ -56,6 +58,7 @@ export default function SidebarContent({
   onOpenCompute,
   onCreateProject,
   onCollapseSidebar,
+  toggleButtonRef,
   currentVersion,
   updateAvailable,
   releaseInfo,
@@ -67,9 +70,8 @@ export default function SidebarContent({
   t,
 }: SidebarContentProps) {
   return (
-    <div
-      className="h-full flex flex-col bg-background md:select-none w-full"
-      style={{}}
+    <div data-sidebar-content
+      className={`h-full flex flex-col bg-background md:select-none w-full ${isMobile ? 'overflow-y-auto overscroll-contain' : ''}`}
     >
       <SidebarHeader
         isPWA={isPWA}
@@ -90,10 +92,11 @@ export default function SidebarContent({
         onOpenCompute={onOpenCompute}
         onCreateProject={onCreateProject}
         onCollapseSidebar={onCollapseSidebar}
+        toggleButtonRef={toggleButtonRef}
         t={t}
       />
 
-      <ScrollArea className="flex-1 md:px-1.5 md:py-2 overflow-y-auto overscroll-contain">
+      <ScrollArea className={isMobile ? 'shrink-0' : 'min-h-0 flex-1 px-1.5 py-2 overflow-y-auto overscroll-contain'}>
         <SidebarProjectList {...projectListProps} />
       </ScrollArea>
 

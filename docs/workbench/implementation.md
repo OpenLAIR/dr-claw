@@ -1,6 +1,6 @@
 # Research workbench implementation
 
-**Current status: all three stages complete.** The authoritative acceptance record is Checkpoint 4 and its completion note. Earlier checkpoints document intermediate work.
+**Current acceptance: completed on 2026-10-23 within the available web, macOS Electron and responsive-mobile environments.** See [the current re-audit and acceptance record](reaudit.md) for all 15 confirmed decisions, the 262-test full browser run, the final 10-test focus regression, native checks, screenshots and explicit physical-device/external-service limits. Checkpoints below remain historical evidence, not the final test totals.
 
 ## Scope and baseline
 

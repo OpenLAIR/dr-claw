@@ -773,7 +773,10 @@ export function mergeDistinctChatMessages(baseMessages: ChatMessage[], liveMessa
   const merged = new Map<string, ChatMessage>();
 
   const addMessage = (message: ChatMessage) => {
-    const signature = [
+    // A stable tool ID identifies the same event across paginated history and
+    // live state, even when the UI assigns a message ID or formats input JSON.
+    const toolId = message.isToolUse && (message.toolId || message.toolCallId);
+    const signature = toolId ? `tool::${message.toolName || ''}::${toolId}` : [
       message.type,
       message.timestamp ? new Date(message.timestamp).toISOString() : '',
       message.messageId || '',
@@ -783,8 +786,11 @@ export function mergeDistinctChatMessages(baseMessages: ChatMessage[], liveMessa
       typeof message.toolInput === 'string' ? message.toolInput : JSON.stringify(message.toolInput || ''),
     ].join('::');
 
-    if (!merged.has(signature)) {
+    const existing = merged.get(signature);
+    if (!existing) {
       merged.set(signature, message);
+    } else if (toolId) {
+      merged.set(signature, { ...existing, ...message, toolResult: message.toolResult ?? existing.toolResult });
     }
   };
 

@@ -1,3 +1,4 @@
+import MessageQueueView from './subcomponents/MessageQueueView';
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ChatTaskProgressPill from './subcomponents/ChatTaskProgressPill';
 import { useTasksSettings } from '../../../contexts/TasksSettingsContext';
@@ -260,6 +261,9 @@ function ChatInterface({
     : null;
 
   const {
+    isPreparing,
+    isQueueRestoring,
+    messageQueue,
     input,
     setInput,
     attachedPrompt,
@@ -355,6 +359,8 @@ function ChatInterface({
   });
 
   useChatRealtimeHandlers({
+    onTurnFinished: messageQueue.complete,
+    onQueueSessionBound: messageQueue.bindSession,
     latestMessage,
     provider,
     selectedProject,
@@ -669,6 +675,7 @@ function ChatInterface({
         return;
       }
 
+      if (showCommandMenu || showFileDropdown || editingFile || document.querySelector('dialog[open]') || (event.target instanceof Element && event.target.closest('[data-queue-editor]'))) return;
       event.preventDefault();
       handleAbortSession();
     };
@@ -677,7 +684,7 @@ function ChatInterface({
     return () => {
       document.removeEventListener('keydown', handleGlobalEscape, { capture: true });
     };
-  }, [canAbortSession, handleAbortSession, isLoading]);
+  }, [canAbortSession, handleAbortSession, isLoading, showCommandMenu, showFileDropdown, editingFile]);
 
   const prevIsLoadingForProcessingRef = useRef(false);
   useEffect(() => {
@@ -812,7 +819,7 @@ function ChatInterface({
 
   return (
     <>
-      <div className={`relative h-full flex min-h-0 ${isMobile ? 'flex-col' : 'flex-row'}`}>
+      <div data-chat-workspace className={`relative h-full flex min-h-0 ${isMobile ? 'flex-col' : 'flex-row'}`}>
         {isMobile && !mobileToolsOpen && <div className="flex shrink-0 justify-end border-b border-border px-3 py-1"><Button variant="ghost" size="sm" ref={mobileToolsTrigger} onClick={() => setMobileToolsOpen(true)}>{t('common:workbench.researchTools')}</Button></div>}
         <div className={`relative min-h-0 min-w-0 flex-1 flex-col ${isMobile && mobileToolsOpen ? 'hidden' : 'flex'}`}>
           <div className={`flex min-h-0 flex-1 flex-col ${isEmpty ? 'justify-start pt-[18vh] overflow-y-auto' : ''}`}>
@@ -923,6 +930,9 @@ function ChatInterface({
         />
 
         <ChatComposer
+          isPreparing={isPreparing}
+          isQueueRestoring={isQueueRestoring}
+          queueContent={messageQueue.items.length > 0 || messageQueue.storageError ? <MessageQueueView queue={messageQueue} onFocusComposer={() => textareaRef.current?.focus()} /> : undefined}
           pendingPermissionRequests={pendingPermissionRequests}
           handlePermissionDecision={handlePermissionDecision}
           handleGrantToolPermission={handleGrantToolPermission}

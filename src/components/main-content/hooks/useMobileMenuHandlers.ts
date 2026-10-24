@@ -11,6 +11,9 @@ export function useMobileMenuHandlers(onMenuClick: () => void) {
       if (event) {
         event.preventDefault();
         event.stopPropagation();
+        // preventDefault suppresses touch's normal focus behavior. Establish
+        // the trigger before the modal drawer records its return-focus target.
+        event.currentTarget.focus({ preventScroll: true });
       }
 
       onMenuClick();

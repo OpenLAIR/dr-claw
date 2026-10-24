@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDeviceSettings } from '../../../hooks/useDeviceSettings';
 import { useVersionCheck } from '../../../hooks/useVersionCheck';
@@ -41,6 +41,7 @@ function Sidebar({
   settingsInitialTab,
   onCloseSettings,
   isMobile,
+  onCloseMobile,
   activeTab,
   onOpenDashboard,
   onOpenTrash,
@@ -81,6 +82,9 @@ function Sidebar({
     deletingProjects,
     deleteConfirmation,
     sessionDeleteConfirmation,
+    deletionPending,
+    projectDeleteError,
+    sessionDeleteError,
     showVersionModal,
     filteredProjects,
     handleTouchClick,
@@ -90,6 +94,9 @@ function Sidebar({
     isProjectStarred,
     getProjectSessions,
     startEditing,
+    startEditingSession,
+    cancelEditingSession,
+    renameFeedback,
     cancelEditing,
     saveProjectName,
     showDeleteSessionConfirmation,
@@ -181,6 +188,26 @@ function Sidebar({
   }, [isPWA]);
 
   const [showWizard, setShowWizard] = useState(false);
+  const toggleButtonRef = useRef<HTMLButtonElement>(null);
+  const restoreToggleFocus = useRef(false);
+
+  useLayoutEffect(() => {
+    if (!restoreToggleFocus.current) return;
+    toggleButtonRef.current?.focus({ preventScroll: true });
+    restoreToggleFocus.current = false;
+  }, [isSidebarCollapsed]);
+
+  const toggleSidebar = () => {
+    if (isMobile) {
+      onCloseMobile?.();
+      return;
+    }
+    // Folding replaces the focused button. Hand focus to its counterpart only
+    // after an explicit toggle, never on initial load or a viewport change.
+    restoreToggleFocus.current = true;
+    if (isSidebarCollapsed) handleExpandSidebar();
+    else handleCollapseSidebar();
+  };
 
   const projectListProps: SidebarProjectListProps = {
     projects,
@@ -219,15 +246,10 @@ function Sidebar({
     },
     onNewSession,
     newSessionMode,
+    renameFeedback,
     onEditingSessionNameChange: setEditingSessionName,
-    onStartEditingSession: (sessionId, initialName) => {
-      setEditingSession(sessionId);
-      setEditingSessionName(initialName);
-    },
-    onCancelEditingSession: () => {
-      setEditingSession(null);
-      setEditingSessionName('');
-    },
+    onStartEditingSession: startEditingSession,
+    onCancelEditingSession: cancelEditingSession,
     onSaveEditingSession: (projectName, sessionId, summary, provider) => {
       void updateSessionSummary(projectName, sessionId, summary, provider);
     },
@@ -238,6 +260,9 @@ function Sidebar({
   return (
     <>
       <SidebarModals
+        deletionPending={deletionPending}
+        projectDeleteError={projectDeleteError}
+        sessionDeleteError={sessionDeleteError}
         projects={projects}
         showSettings={showSettings}
         settingsInitialTab={settingsInitialTab}
@@ -283,7 +308,8 @@ function Sidebar({
 
       {isSidebarCollapsed ? (
         <SidebarCollapsed
-          onExpand={handleExpandSidebar}
+          onExpand={toggleSidebar}
+          toggleButtonRef={toggleButtonRef}
           onShowSettings={onShowSettings}
           currentVersion={currentVersion}
           updateAvailable={updateAvailable}
@@ -312,7 +338,8 @@ function Sidebar({
             onOpenNews={onOpenNews}
             onOpenCompute={onOpenCompute}
             onCreateProject={() => setShowWizard(true)}
-            onCollapseSidebar={handleCollapseSidebar}
+            onCollapseSidebar={toggleSidebar}
+            toggleButtonRef={toggleButtonRef}
             currentVersion={currentVersion}
             updateAvailable={updateAvailable}
             releaseInfo={releaseInfo}

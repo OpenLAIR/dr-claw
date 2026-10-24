@@ -355,7 +355,7 @@ const MessageComponent = memo(({ message, index, prevMessage, createDiff, onFile
             </div>
           )}
           {!isGrouped && (
-            <div className="text-[10px] text-gray-400 mt-1 mr-1">
+            <div className="text-xs text-muted-foreground mt-1 mr-1">
               {formattedTime}
             </div>
           )}
@@ -700,7 +700,7 @@ const MessageComponent = memo(({ message, index, prevMessage, createDiff, onFile
             )}
 
             {!isGrouped && (
-              <div className="text-[10px] text-gray-400 dark:text-gray-500 mt-2">
+              <div className="text-xs text-muted-foreground mt-2">
                 {formattedTime}
               </div>
             )}

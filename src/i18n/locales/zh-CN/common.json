@@ -306,7 +306,15 @@
     "askAboutFile": "询问这个文件",
     "askAboutDirectory": "询问这个文件夹",
     "askAboutFilePrompt": "请帮我解释一下文件 `{{path}}`。它的作用是什么，在这个项目里是怎么被使用的，以及我在修改它之前需要知道什么？",
-    "askAboutDirectoryPrompt": "请帮我解释一下目录 `{{path}}`。它的用途是什么，里面重要的文件或子模块有哪些，以及它在这个项目中的位置和作用是什么？"
+    "askAboutDirectoryPrompt": "请帮我解释一下目录 `{{path}}`。它的用途是什么，里面重要的文件或子模块有哪些，以及它在这个项目中的位置和作用是什么？",
+    "loadFailed": "无法加载文件，请重试。",
+    "directoryLoadFailed": "无法打开此文件夹。",
+    "searchFailed": "无法搜索全部文件夹，下方仅显示已加载文件中的结果。",
+    "searching": "正在搜索文件夹…",
+    "emptyFolder": "此文件夹为空。",
+    "copyFailed": "无法复制路径，请重试。",
+    "deleteFailed": "删除失败，此项目仍被保留，请重试。",
+    "deleting": "正在删除…"
   },
   "projectWizard": {
     "title": "创建新项目",
@@ -482,7 +490,9 @@
     "checkingStatus": "正在检查状态…",
     "statusUnavailable": "状态暂不可用",
     "retryStatus": "重试研究状态",
-    "openMenu": "打开菜单"
+    "openMenu": "打开菜单",
+    "closeMenu": "关闭菜单",
+    "resizeSidebar": "调整侧栏宽度"
   },
   "onboarding": {
     "systemCheck": "系统检查",
@@ -891,7 +901,15 @@
     "noMcp": "无需 MCP 配置",
     "workflowCount": "{{count}} 个工作流",
     "includedWorkflows": "包含的工作流",
-    "gpuNote": "GPU 环境从计算资源中已连接的服务器读取。"
+    "gpuNote": "GPU 环境从计算资源中已连接的服务器读取。",
+    "copyCommand": "复制{{label}}命令",
+    "copyFailed": "复制失败，请选中命令文本手动复制。",
+    "showKey": "显示 {{name}}",
+    "hideKey": "隐藏 {{name}}",
+    "otherPending": "请等待 {{name}} 配置完成。",
+    "configFailed": "配置未全部完成，部分步骤可能已生效。你的输入已保留。",
+    "resultDetails": "配置详情",
+    "invalidResponse": "无法读取配置结果（HTTP {{status}}）。"
   },
   "computeGuide": {
     "guideTitle": "如何使用计算节点",
@@ -913,5 +931,85 @@
     "dismiss": "暂不分析",
     "confirm": "分析项目",
     "unavailable": "尚未安装"
+  },
+  "git": {
+    "title": "代码历史",
+    "failed": "请求未能完成。",
+    "details": "错误详情",
+    "retry": "重试",
+    "loading": "正在加载…",
+    "noDiff": "没有可显示的文本差异。",
+    "selectProject": "选择项目以查看代码历史。",
+    "branch": "当前分支",
+    "newBranch": "创建分支",
+    "refresh": "刷新代码历史",
+    "views": "代码历史视图",
+    "changes": "变更",
+    "history": "历史",
+    "completed": "{{action}}已完成。",
+    "noRepo": "尚未启用版本控制",
+    "enableDescription": "启用 Git 以跟踪项目中的变更。",
+    "initialDescription": "此仓库尚无提交，可以为项目创建初始快照。",
+    "commitSelected": "提交所选文件（{{count}}）",
+    "message": "提交说明",
+    "generate": "生成说明",
+    "suggestion": "已保留你的输入。生成的建议：",
+    "useSuggestion": "使用建议",
+    "selected": "已选择 {{count}} / {{total}}",
+    "all": "全选",
+    "none": "取消全选",
+    "selectFile": "选择 {{file}}",
+    "openFile": "打开 {{file}}",
+    "diff": "差异",
+    "deleteFile": "删除 {{file}}",
+    "discardFile": "放弃 {{file}} 的变更",
+    "noChanges": "没有检测到变更。",
+    "noCommits": "暂无提交记录。",
+    "wrap": "差异内容自动换行",
+    "branchName": "分支名称",
+    "branchFrom": "基于 {{branch}} 创建",
+    "cancel": "取消",
+    "confirm": "确认{{action}}",
+    "actions": {
+      "fetch": "获取远程变更",
+      "pull": "拉取",
+      "push": "推送",
+      "publish": "发布分支",
+      "init": "启用 Git",
+      "initial-commit": "创建初始快照",
+      "commit": "提交",
+      "create-branch": "创建分支",
+      "discard": "放弃变更",
+      "delete-untracked": "删除文件",
+      "checkout": "切换分支",
+      "generate-commit-message": "生成说明"
+    },
+    "status": {
+      "modified": "已修改",
+      "added": "已添加",
+      "deleted": "已删除",
+      "untracked": "未跟踪"
+    },
+    "confirmations": {
+      "discard": "放弃 {{file}} 的全部本地变更？此操作无法撤销。",
+      "delete-untracked": "删除未跟踪文件 {{file}}？此操作无法撤销。",
+      "commit": "使用此说明提交所选的 {{count}} 个文件？",
+      "pull": "将远程变更拉取到 {{branch}}？",
+      "push": "将 {{branch}} 的本地提交推送到远程？",
+      "publish": "将 {{branch}} 发布到远程？"
+    }
+  },
+  "loginDialog": {
+    "title": "{{provider}} 登录",
+    "missing": "尚未安装所需的 CLI。请先安装，再重新登录。",
+    "install": "安装 {{provider}}",
+    "installing": "正在安装…",
+    "installed": "安装完成，正在重新检查 CLI 状态…",
+    "installFailed": "安装失败，请重试或打开官方指南。",
+    "recheck": "重新检查",
+    "guide": "打开官方指南",
+    "loading": "正在打开登录终端…",
+    "refreshFailed": "无法刷新 CLI 状态，请重试。",
+    "openFailed": "无法打开指南，请重试。"
   }
 }

@@ -362,3 +362,16 @@ describe('mergeDistinctChatMessages', () => {
     expect(merged[1].timestamp).toBe('2026-03-26T10:01:00.000Z');
   });
 });
+
+
+describe('context trace identity', () => {
+  it('counts a history/live tool event once and keeps the completed result', () => {
+    const history = { type: 'assistant', isToolUse: true, toolName: 'Read', toolId: 'shared-tool', timestamp: '2026-10-23T10:00:00Z', toolInput: '{"file_path":"src/app.ts"}', toolResult: { content: 'source', isError: false } };
+    const live = { ...history, messageId: 'local-message-id', toolInput: JSON.stringify({ file_path: 'src/app.ts' }, null, 2), toolResult: undefined };
+    const next = { ...history, toolId: 'next-tool', timestamp: '2026-10-23T10:01:00Z' };
+    const merged = mergeDistinctChatMessages([history], [live, next] as any);
+    expect(merged).toHaveLength(2);
+    expect(merged[0].toolResult?.content).toBe('source');
+    expect(deriveSessionContextSummary(merged, '/workspace').contextFiles[0].count).toBe(2);
+  });
+});

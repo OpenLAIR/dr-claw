@@ -225,6 +225,22 @@ export default function AppContent() {
   const pendingWidthRef = useRef(sidebarWidth);
   const resizeCleanupRef = useRef<(() => void) | null>(null);
 
+  const handleResizeKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    let width = sidebarWidth;
+    const step = event.shiftKey ? 40 : 10;
+    if (event.key === 'ArrowLeft') width -= step;
+    else if (event.key === 'ArrowRight') width += step;
+    else if (event.key === 'Home') width = SIDEBAR_MIN;
+    else if (event.key === 'End') width = SIDEBAR_MAX;
+    else return;
+    event.preventDefault();
+    width = Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, width));
+    pendingWidthRef.current = width;
+    setSidebarWidth(width);
+    localStorage.setItem(STORAGE_KEY, String(width));
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
+  };
+
   useEffect(() => () => {
     resizeCleanupRef.current?.();
     if (resizeFrameRef.current !== null) {
@@ -234,9 +250,10 @@ export default function AppContent() {
     document.body.style.userSelect = '';
   }, []);
 
-  const handleResizeStart = useCallback((e: React.MouseEvent) => {
+  const handleResizeStart = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
     resizeCleanupRef.current?.();
+    e.currentTarget.focus();
     isResizing.current = true;
     sidebarContainerRef.current?.style.setProperty('transition', 'none');
     document.body.style.cursor = 'col-resize';
@@ -298,8 +315,16 @@ export default function AppContent() {
           </div>
           {sidebarVisible && (
             <div
-              className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/20 active:bg-primary/30 z-10"
+              role="separator"
+              tabIndex={0}
+              aria-label={t('workbench.resizeSidebar')}
+              aria-orientation="vertical"
+              aria-valuemin={SIDEBAR_MIN}
+              aria-valuemax={SIDEBAR_MAX}
+              aria-valuenow={sidebarWidth}
+              className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/20 active:bg-primary/30 focus-visible:bg-primary/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring focus-visible:-outline-offset-2 z-10 electron-no-drag"
               onMouseDown={handleResizeStart}
+              onKeyDown={handleResizeKeyDown}
             />
           )}
         </div>
@@ -309,7 +334,7 @@ export default function AppContent() {
           role={sidebarOpen ? 'dialog' : undefined}
           aria-modal={sidebarOpen ? true : undefined}
           aria-label={t('workbench.projects')}
-          className={`fixed inset-0 z-[70] flex transition-all duration-150 ease-out ${sidebarOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
+          className={`fixed inset-0 z-[70] flex transition-[opacity,visibility] duration-150 ease-out ${sidebarOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
             }`}
         >
           <button
@@ -331,7 +356,7 @@ export default function AppContent() {
             onClick={(event) => event.stopPropagation()}
             onTouchStart={(event) => event.stopPropagation()}
           >
-            <Sidebar {...sidebarSharedProps} />
+            <Sidebar {...sidebarSharedProps} onCloseMobile={() => setSidebarOpen(false)} />
           </div>
         </div>
       )}

@@ -24,6 +24,7 @@
     "subtitle": "AI 编程助手"
   },
   "sessions": {
+    "count": "{{displayCount}} 个会话",
     "title": "会话",
     "newSession": "新建会话",
     "deleteSession": "删除会话",
@@ -60,6 +61,8 @@
     "tasks": "任务"
   },
   "actions": {
+    "saving": "正在保存…",
+    "deleting": "正在删除…",
     "refresh": "刷新",
     "settings": "设置",
     "logout": "退出登录",
@@ -88,6 +91,8 @@
     "daysAgo": "{{count}} 天前"
   },
   "messages": {
+    "renameFailed": "无法保存名称。已保留输入，请重试。",
+    "nameRequired": "请输入名称。",
     "deleteConfirm": "确定要删除吗？",
     "renameSuccess": "重命名成功",
     "deleteSuccess": "删除成功",
@@ -106,6 +111,7 @@
     "updateAvailable": "有可用更新"
   },
   "deleteConfirmation": {
+    "sessionCannotUndo": "此会话将被永久删除，无法恢复。",
     "deleteProject": "删除项目",
     "deleteSession": "删除会话",
     "confirmDelete": "您确定要删除",

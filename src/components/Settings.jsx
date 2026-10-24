@@ -11,7 +11,6 @@ import LoginModal from './LoginModal';
 import { authenticatedFetch, api } from '../utils/api';
 import { isTelemetryEnabled, setTelemetryEnabled } from '../utils/telemetry';
 import { writeCliAvailability } from '../utils/cliAvailability';
-import { useDesktop } from '../hooks/useDesktop';
 
 // New settings components
 import AgentListItem from './settings/AgentListItem';
@@ -19,14 +18,32 @@ import AccountContent from './settings/AccountContent';
 import EmailSettingsContent from './settings/EmailSettingsContent';
 import PermissionsContent from './settings/PermissionsContent';
 import McpServersContent from './settings/McpServersContent';
+import McpServerForm, { withMcpTextDrafts, parseMcpTextDrafts } from './settings/McpServerForm';
+import { settingsRequest, useSettingsRequest } from './settings/useSettingsRequest';
 import MemoryContent from './settings/MemoryContent';
-import LanguageSelector from './LanguageSelector';
+import AppearanceContent from './settings/AppearanceContent';
+import { SettingsDraftProvider, useSettingsDraft, useSettingsNavigation } from './settings/SettingsDraftGuard';
 
 const VALID_SETTINGS_TABS = new Set(['agents', 'email', 'appearance', 'git', 'api']);
 
-function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
+function readStoredSettings(key) {
+  try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; }
+}
+
+function readSavedPermissions() {
+  const claude = readStoredSettings('claude-settings') || {};
+  const cursor = readStoredSettings('cursor-tools-settings') || {};
+  const codex = readStoredSettings('codex-settings') || {};
+  const gemini = readStoredSettings('gemini-settings') || {};
+  return { allowedTools: claude.allowedTools || [], disallowedTools: claude.disallowedTools || [], skipPermissions: claude.skipPermissions || false, cursorAllowedCommands: cursor.allowedCommands || [], cursorDisallowedCommands: cursor.disallowedCommands || [], cursorSkipPermissions: cursor.skipPermissions || false, codexPermissionMode: codex.permissionMode || 'default', geminiPermissionMode: gemini.permissionMode || 'default', geminiAllowedTools: gemini.allowedTools || [], geminiDisallowedTools: gemini.disallowedTools || [] };
+}
+
+function SettingsContent({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
   const { isDarkMode, toggleDarkMode } = useTheme();
-  const { t } = useTranslation('settings');
+  const { t, i18n } = useTranslation('settings');
+  const requestNavigation = useSettingsNavigation();
+  const requestClose = () => requestNavigation(onClose);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
   const dialogRef = useRef(null);
   const dialogTitleId = useId();
   useEffect(() => {
@@ -36,7 +53,6 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
     dialog?.showModal();
     return () => { dialog?.close(); trigger?.focus(); };
   }, [isOpen]);
-  const { isDesktop, selectDirectory, showItemInFolder } = useDesktop();
   const [allowedTools, setAllowedTools] = useState([]);
   const [disallowedTools, setDisallowedTools] = useState([]);
   const [newAllowedTool, setNewAllowedTool] = useState('');
@@ -48,6 +64,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
   const [skipPermissions, setSkipPermissions] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState(null);
+  const savedSnapshot = useRef(null);
   const [projectSortOrder, setProjectSortOrder] = useState('date');
 
   const [mcpServers, setMcpServers] = useState([]);
@@ -69,6 +86,11 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
     jsonInput: '', // For JSON import
     importMode: 'form' // 'form' or 'json'
   });
+  const [mcpError, setMcpError] = useState('');
+  const [codexMcpError, setCodexMcpError] = useState('');
+  const mcpWriteLock = useRef(false);
+  const codexMcpWriteLock = useRef(false);
+  const { states: mcpReads, run: runMcpRead } = useSettingsRequest();
   const [mcpLoading, setMcpLoading] = useState(false);
   const [mcpTestResults, setMcpTestResults] = useState({});
   const [mcpServerTools, setMcpServerTools] = useState({});
@@ -79,6 +101,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
   const [jsonValidationError, setJsonValidationError] = useState('');
   const [selectedAgent, setSelectedAgent] = useState('claude'); // 'claude', 'cursor', or 'codex'
   const [selectedCategory, setSelectedCategory] = useState('account'); // 'account', 'email', 'permissions', 'mcp', or 'memory'
+  const hasIndependentSave = activeTab !== 'appearance' && !(activeTab === 'agents' && selectedCategory === 'permissions');
 
   // Code Editor settings
   const [codeEditorTheme, setCodeEditorTheme] = useState(() =>
@@ -98,11 +121,8 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
   );
   const [telemetryEnabled, setTelemetryEnabledState] = useState(() => isTelemetryEnabled());
 
-  // Workspace root settings
-  const [workspaceRoot, setWorkspaceRoot] = useState('');
-  const [workspaceRootDefault, setWorkspaceRootDefault] = useState('');
-  const [workspaceRootSaved, setWorkspaceRootSaved] = useState(false);
-  const [workspaceRootError, setWorkspaceRootError] = useState('');
+  const [mcpDraftBaseline, setMcpDraftBaseline] = useState(null);
+  const [codexMcpDraftBaseline, setCodexMcpDraftBaseline] = useState(null);
   
   // Cursor-specific states
   const [cursorAllowedCommands, setCursorAllowedCommands] = useState([]);
@@ -250,159 +270,35 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
     'Shell(node)'
   ];
 
-  // Fetch Cursor MCP servers
-  const fetchCursorMcpServers = async () => {
-    try {
-      const response = await authenticatedFetch('/api/cursor/mcp');
-
-      if (response.ok) {
-        const data = await response.json();
-        setCursorMcpServers(data.servers || []);
-      } else {
-        console.error('Failed to fetch Cursor MCP servers');
-      }
-    } catch (error) {
-      console.error('Error fetching Cursor MCP servers:', error);
-    }
-  };
-
-  const fetchCodexMcpServers = async () => {
-    try {
-      const configResponse = await authenticatedFetch('/api/codex/mcp/config/read');
-
-      if (configResponse.ok) {
-        const configData = await configResponse.json();
-        if (configData.success && configData.servers) {
-          setCodexMcpServers(configData.servers);
-          return;
-        }
-      }
-
-      const cliResponse = await authenticatedFetch('/api/codex/mcp/cli/list');
-
-      if (cliResponse.ok) {
-        const cliData = await cliResponse.json();
-        if (cliData.success && cliData.servers) {
-          const servers = cliData.servers.map(server => ({
-            id: server.name,
-            name: server.name,
-            type: server.type || 'stdio',
-            scope: 'user',
-            config: {
-              command: server.command || '',
-              args: server.args || [],
-              env: server.env || {}
-            }
-          }));
-          setCodexMcpServers(servers);
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching Codex MCP servers:', error);
-    }
-  };
-
-  // MCP API functions
-  const fetchMcpServers = async () => {
-    try {
-      // Try to read directly from config files for complete details
-      const configResponse = await authenticatedFetch('/api/mcp/config/read');
-
-      if (configResponse.ok) {
-        const configData = await configResponse.json();
-        if (configData.success && configData.servers) {
-          setMcpServers(configData.servers);
-          return;
-        }
-      }
-
-      // Fallback to Claude CLI
-      const cliResponse = await authenticatedFetch('/api/mcp/cli/list');
-
-      if (cliResponse.ok) {
-        const cliData = await cliResponse.json();
-        if (cliData.success && cliData.servers) {
-          // Convert CLI format to our format
-          const servers = cliData.servers.map(server => ({
-            id: server.name,
-            name: server.name,
-            type: server.type,
-            scope: 'user',
-            config: {
-              command: server.command || '',
-              args: server.args || [],
-              env: server.env || {},
-              url: server.url || '',
-              headers: server.headers || {},
-              timeout: 30000
-            },
-            created: new Date().toISOString(),
-            updated: new Date().toISOString()
-          }));
-          setMcpServers(servers);
-          return;
-        }
-      }
-
-      // Final fallback to direct config reading
-      const response = await authenticatedFetch('/api/mcp/servers?scope=user');
-
-      if (response.ok) {
-        const data = await response.json();
-        setMcpServers(data.servers || []);
-      } else {
-        console.error('Failed to fetch MCP servers');
-      }
-    } catch (error) {
-      console.error('Error fetching MCP servers:', error);
-    }
-  };
+  const fetchMcpList = (agent, url, apply) => runMcpRead(agent, async () => {
+    const data = await settingsRequest(url);
+    if (!Array.isArray(data.servers)) throw new Error('Invalid MCP server list.');
+    return data.servers;
+  }, apply);
+  const fetchCursorMcpServers = () => fetchMcpList('cursor', '/api/cursor/mcp', setCursorMcpServers);
+  const fetchCodexMcpServers = () => fetchMcpList('codex', '/api/codex/mcp/config/read', setCodexMcpServers);
+  const fetchMcpServers = () => fetchMcpList('claude', '/api/mcp/config/read', setMcpServers);
 
   const saveMcpServer = async (serverData) => {
-    try {
-      if (editingMcpServer) {
-        // For editing, remove old server and add new one
-        await deleteMcpServer(editingMcpServer.id, 'user');
-      }
-
-      // Use Claude CLI to add the server
-      const response = await authenticatedFetch('/api/mcp/cli/add', {
-        method: 'POST',
-        body: JSON.stringify({
-          name: serverData.name,
-          type: serverData.type,
-          scope: serverData.scope,
-          projectPath: serverData.projectPath,
-          command: serverData.config?.command,
-          args: serverData.config?.args || [],
-          url: serverData.config?.url,
-          headers: serverData.config?.headers || {},
-          env: serverData.config?.env || {}
-        })
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success) {
-          await fetchMcpServers(); // Refresh the list
-          return true;
-        } else {
-          throw new Error(result.error || 'Failed to save server via Claude CLI');
-        }
-      } else {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to save server');
-      }
-    } catch (error) {
-      console.error('Error saving MCP server:', error);
-      throw error;
+    if (editingMcpServer) {
+      await settingsRequest('/api/mcp/config/server', { method: 'PUT', body: JSON.stringify({
+        originalName: editingMcpServer.name, expected: editingMcpServer.raw,
+        name: serverData.name, scope: editingMcpServer.scope, projectPath: editingMcpServer.projectPath,
+        type: serverData.type, config: serverData.config
+      }) });
+    } else {
+      await settingsRequest('/api/mcp/cli/add', { method: 'POST', body: JSON.stringify({
+        name: serverData.name, type: serverData.type, scope: serverData.scope, projectPath: serverData.projectPath,
+        ...serverData.config
+      }) });
     }
+    await fetchMcpServers();
   };
 
   const deleteMcpServer = async (serverId, scope = 'user') => {
     try {
       // Use Claude CLI to remove the server with proper scope
-      const response = await authenticatedFetch(`/api/mcp/cli/remove/${serverId}?scope=${scope}`, {
+      const response = await authenticatedFetch(`/api/mcp/cli/remove/${encodeURIComponent(serverId)}?scope=${encodeURIComponent(scope)}`, {
         method: 'DELETE'
       });
 
@@ -464,42 +360,19 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
   };
 
   const saveCodexMcpServer = async (serverData) => {
-    try {
-      if (editingCodexMcpServer) {
-        await deleteCodexMcpServer(editingCodexMcpServer.id);
-      }
-
-      const response = await authenticatedFetch('/api/codex/mcp/cli/add', {
-        method: 'POST',
-        body: JSON.stringify({
-          name: serverData.name,
-          command: serverData.config?.command,
-          args: serverData.config?.args || [],
-          env: serverData.config?.env || {}
-        })
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success) {
-          await fetchCodexMcpServers();
-          return true;
-        } else {
-          throw new Error(result.error || 'Failed to save Codex MCP server');
-        }
-      } else {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to save server');
-      }
-    } catch (error) {
-      console.error('Error saving Codex MCP server:', error);
-      throw error;
-    }
+    await settingsRequest(editingCodexMcpServer ? '/api/codex/mcp/config/server' : '/api/codex/mcp/cli/add', {
+      method: editingCodexMcpServer ? 'PUT' : 'POST',
+      body: JSON.stringify(editingCodexMcpServer ? {
+        originalName: editingCodexMcpServer.name, expected: editingCodexMcpServer.raw,
+        name: serverData.name, type: 'stdio', config: serverData.config
+      } : { name: serverData.name, ...serverData.config })
+    });
+    await fetchCodexMcpServers();
   };
 
   const deleteCodexMcpServer = async (serverId) => {
     try {
-      const response = await authenticatedFetch(`/api/codex/mcp/cli/remove/${serverId}`, {
+      const response = await authenticatedFetch(`/api/codex/mcp/cli/remove/${encodeURIComponent(serverId)}`, {
         method: 'DELETE'
       });
 
@@ -522,7 +395,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
   };
 
   const resetCodexMcpForm = () => {
-    setCodexMcpFormData({
+    const nextForm = {
       name: '',
       type: 'stdio',
       config: {
@@ -530,15 +403,18 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
         args: [],
         env: {}
       }
-    });
+    };
+    setCodexMcpFormData(withMcpTextDrafts(nextForm));
+    setCodexMcpDraftBaseline(JSON.stringify(withMcpTextDrafts(nextForm)));
     setEditingCodexMcpServer(null);
     setShowCodexMcpForm(false);
   };
 
   const openCodexMcpForm = (server = null) => {
+    setCodexMcpError('');
     if (server) {
       setEditingCodexMcpServer(server);
-      setCodexMcpFormData({
+      const nextForm = {
         name: server.name,
         type: server.type || 'stdio',
         config: {
@@ -546,7 +422,9 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
           args: server.config?.args || [],
           env: server.config?.env || {}
         }
-      });
+      };
+      setCodexMcpFormData(withMcpTextDrafts(nextForm));
+      setCodexMcpDraftBaseline(JSON.stringify(withMcpTextDrafts(nextForm)));
     } else {
       resetCodexMcpForm();
     }
@@ -555,34 +433,14 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
 
   const handleCodexMcpSubmit = async (e) => {
     e.preventDefault();
-    setCodexMcpLoading(true);
-
+    if (codexMcpWriteLock.current) return;
+    codexMcpWriteLock.current = true;
+    setCodexMcpLoading(true); setCodexMcpError('');
     try {
-      if (editingCodexMcpServer) {
-        // Delete old server first, then add new one
-        await deleteCodexMcpServer(editingCodexMcpServer.name);
-      }
-      await saveCodexMcpServer(codexMcpFormData);
+      await saveCodexMcpServer(parseMcpTextDrafts(codexMcpFormData));
       resetCodexMcpForm();
-      setSaveStatus('success');
-    } catch (error) {
-      alert(`Error: ${error.message}`);
-      setSaveStatus('error');
-    } finally {
-      setCodexMcpLoading(false);
-    }
-  };
-
-  const handleCodexMcpDelete = async (serverName) => {
-    if (confirm('Are you sure you want to delete this MCP server?')) {
-      try {
-        await deleteCodexMcpServer(serverName);
-        setSaveStatus('success');
-      } catch (error) {
-        alert(`Error: ${error.message}`);
-        setSaveStatus('error');
-      }
-    }
+    } catch (error) { setCodexMcpError(error.message); }
+    finally { codexMcpWriteLock.current = false; setCodexMcpLoading(false); }
   };
 
   useEffect(() => {
@@ -687,17 +545,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
         setGeminiDisallowedTools([]);
       }
 
-      // Load workspace root setting
-      try {
-        const wsResponse = await api.getWorkspaceRoot();
-        if (wsResponse.ok) {
-          const wsData = await wsResponse.json();
-          setWorkspaceRoot(wsData.path || '');
-          setWorkspaceRootDefault(wsData.defaultPath || '');
-        }
-      } catch (err) {
-        console.error('Error loading workspace root:', err);
-      }
+      setSettingsLoaded(true);
 
       // Load MCP servers from API
       await fetchMcpServers();
@@ -838,6 +686,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
         const data = await response.json();
         setGeminiAuthStatus({
           authenticated: data.authenticated,
+          hasOAuth: data.hasOAuth, hasApiKey: data.hasApiKey, method: data.method,
           email: data.email,
           cliAvailable: data.cliAvailable !== false,
           cliCommand: data.cliCommand || 'gemini',
@@ -1053,39 +902,14 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
       localStorage.setItem('codex-settings', JSON.stringify(codexSettings));
       localStorage.setItem('gemini-settings', JSON.stringify(geminiSettings));
 
+      savedSnapshot.current = editableSnapshot;
       setSaveStatus('success');
-      
-      setTimeout(() => {
-        onClose();
-      }, 1000);
     } catch (error) {
       console.error('Error saving tool settings:', error);
       setSaveStatus('error');
     } finally {
       setIsSaving(false);
     }
-  };
-
-  const saveWorkspaceRoot = async (newPath) => {
-    setWorkspaceRootError('');
-    setWorkspaceRootSaved(false);
-    try {
-      const response = await api.setWorkspaceRoot(newPath || null);
-      const data = await response.json();
-      if (response.ok) {
-        setWorkspaceRoot(data.path);
-        setWorkspaceRootSaved(true);
-        setTimeout(() => setWorkspaceRootSaved(false), 2000);
-      } else {
-        setWorkspaceRootError(data.error || t('appearanceSettings.defaultProjectPath.invalidPath'));
-      }
-    } catch (err) {
-      setWorkspaceRootError(err.message);
-    }
-  };
-
-  const resetWorkspaceRoot = () => {
-    saveWorkspaceRoot(null);
   };
 
   const addAllowedTool = (tool) => {
@@ -1112,7 +936,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
 
   // MCP form handling functions
   const resetMcpForm = () => {
-    setMcpFormData({
+    const nextForm = {
       name: '',
       type: 'stdio',
       scope: 'user', // Default to user scope
@@ -1127,16 +951,19 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
       },
       jsonInput: '',
       importMode: 'form'
-    });
+    };
+    setMcpFormData(withMcpTextDrafts(nextForm));
+    setMcpDraftBaseline(JSON.stringify(withMcpTextDrafts(nextForm)));
     setEditingMcpServer(null);
     setShowMcpForm(false);
     setJsonValidationError('');
   };
 
   const openMcpForm = (server = null) => {
+    setMcpError('');
     if (server) {
       setEditingMcpServer(server);
-      setMcpFormData({
+      const nextForm = {
         name: server.name,
         type: server.type,
         scope: server.scope,
@@ -1145,7 +972,9 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
         raw: server.raw, // Store raw config for display
         importMode: 'form', // Always use form mode when editing
         jsonInput: ''
-      });
+      };
+      setMcpFormData(withMcpTextDrafts(nextForm));
+      setMcpDraftBaseline(JSON.stringify(withMcpTextDrafts(nextForm)));
     } else {
       resetMcpForm();
     }
@@ -1154,59 +983,20 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
 
   const handleMcpSubmit = async (e) => {
     e.preventDefault();
-    
-    setMcpLoading(true);
-    
+    if (mcpWriteLock.current) return;
+    mcpWriteLock.current = true;
+    setMcpLoading(true); setMcpError('');
     try {
       if (mcpFormData.importMode === 'json') {
-        // Use JSON import endpoint
-        const response = await authenticatedFetch('/api/mcp/cli/add-json', {
-          method: 'POST',
-          body: JSON.stringify({
-            name: mcpFormData.name,
-            jsonConfig: mcpFormData.jsonInput,
-            scope: mcpFormData.scope,
-            projectPath: mcpFormData.projectPath
-          })
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-          if (result.success) {
-            await fetchMcpServers(); // Refresh the list
-            resetMcpForm();
-            setSaveStatus('success');
-          } else {
-            throw new Error(result.error || 'Failed to add server via JSON');
-          }
-        } else {
-          const error = await response.json();
-          throw new Error(error.error || 'Failed to add server');
-        }
-      } else {
-        // Use regular form-based save
-        await saveMcpServer(mcpFormData);
-        resetMcpForm();
-        setSaveStatus('success');
-      }
-    } catch (error) {
-      alert(`Error: ${error.message}`);
-      setSaveStatus('error');
-    } finally {
-      setMcpLoading(false);
-    }
-  };
-
-  const handleMcpDelete = async (serverId, scope) => {
-    if (confirm('Are you sure you want to delete this MCP server?')) {
-      try {
-        await deleteMcpServer(serverId, scope);
-        setSaveStatus('success');
-      } catch (error) {
-        alert(`Error: ${error.message}`);
-        setSaveStatus('error');
-      }
-    }
+        JSON.parse(mcpFormData.jsonInput);
+        await settingsRequest('/api/mcp/cli/add-json', { method: 'POST', body: JSON.stringify({
+          name: mcpFormData.name, jsonConfig: mcpFormData.jsonInput, scope: mcpFormData.scope, projectPath: mcpFormData.projectPath
+        }) });
+        await fetchMcpServers();
+      } else await saveMcpServer(parseMcpTextDrafts(mcpFormData));
+      resetMcpForm();
+    } catch (error) { setMcpError(error.message); }
+    finally { mcpWriteLock.current = false; setMcpLoading(false); }
   };
 
   const handleMcpTest = async (serverId, scope) => {
@@ -1266,10 +1056,28 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
     }
   };
 
+  const savedPermissions = readSavedPermissions();
+  const permissions = { allowedTools, disallowedTools, skipPermissions, cursorAllowedCommands, cursorDisallowedCommands, cursorSkipPermissions, codexPermissionMode, geminiPermissionMode, geminiAllowedTools, geminiDisallowedTools };
+  const pendingToolInput = Boolean(newAllowedTool || newDisallowedTool || newCursorCommand || newCursorDisallowedCommand || newGeminiAllowedTool || newGeminiDisallowedTool);
+  useSettingsDraft(isOpen && settingsLoaded && activeTab === 'agents' && selectedCategory === 'permissions' && (pendingToolInput || JSON.stringify(permissions) !== JSON.stringify(savedPermissions)), { discard: () => {
+    setAllowedTools(savedPermissions.allowedTools); setDisallowedTools(savedPermissions.disallowedTools); setSkipPermissions(savedPermissions.skipPermissions);
+    setCursorAllowedCommands(savedPermissions.cursorAllowedCommands); setCursorDisallowedCommands(savedPermissions.cursorDisallowedCommands); setCursorSkipPermissions(savedPermissions.cursorSkipPermissions);
+    setCodexPermissionMode(savedPermissions.codexPermissionMode); setGeminiPermissionMode(savedPermissions.geminiPermissionMode); setGeminiAllowedTools(savedPermissions.geminiAllowedTools); setGeminiDisallowedTools(savedPermissions.geminiDisallowedTools);
+    setNewAllowedTool(''); setNewDisallowedTool(''); setNewCursorCommand(''); setNewCursorDisallowedCommand(''); setNewGeminiAllowedTool(''); setNewGeminiDisallowedTool('');
+  } });
+  const savedClaude = readStoredSettings('claude-settings');
+  const savedSortOrder = savedClaude ? savedClaude.projectSortOrder || 'date' : 'name';
+  const editableSnapshot = JSON.stringify({ language: i18n.resolvedLanguage, permissions, projectSortOrder, newAllowedTool, newDisallowedTool, newCursorCommand, newCursorDisallowedCommand, newGeminiAllowedTool, newGeminiDisallowedTool, isDarkMode, telemetryEnabled, codeEditorTheme, codeEditorWordWrap, codeEditorShowMinimap, codeEditorLineNumbers, codeEditorFontSize });
+  useEffect(() => { if (saveStatus === 'success' && savedSnapshot.current !== editableSnapshot) setSaveStatus(null); }, [editableSnapshot, saveStatus]);
+  useEffect(() => { setSaveStatus(null); }, [activeTab, selectedAgent, selectedCategory]);
+  useSettingsDraft(isOpen && activeTab === 'appearance' && settingsLoaded && projectSortOrder !== savedSortOrder, { discard: () => setProjectSortOrder(savedSortOrder) });
+  useSettingsDraft(isOpen && showMcpForm && mcpDraftBaseline !== null && JSON.stringify(mcpFormData) !== mcpDraftBaseline, { busy: isOpen && mcpLoading, discard: resetMcpForm });
+  useSettingsDraft(isOpen && showCodexMcpForm && codexMcpDraftBaseline !== null && JSON.stringify(codexMcpFormData) !== codexMcpDraftBaseline, { busy: isOpen && codexMcpLoading, discard: resetCodexMcpForm });
+
   if (!isOpen) return null;
 
   return (
-    <dialog ref={dialogRef} aria-labelledby={dialogTitleId} onCancel={event => { event.preventDefault(); onClose(); }} className="workbench-wizard m-0 h-dvh w-screen max-h-none max-w-none border-0 bg-transparent p-0 text-foreground open:flex items-center justify-center md:p-4">
+    <dialog ref={dialogRef} aria-labelledby={dialogTitleId} onCancel={event => { event.preventDefault(); requestNavigation(showMcpForm ? resetMcpForm : showCodexMcpForm ? resetCodexMcpForm : onClose); }} className="workbench-wizard m-0 h-dvh w-screen max-h-none max-w-none border-0 bg-transparent p-0 text-foreground open:flex items-center justify-center md:p-4">
       <div className="bg-background border border-border md:rounded-lg shadow-xl w-full md:max-w-4xl h-full md:h-[90vh] flex flex-col">
         <div className="flex items-center justify-between p-4 md:p-6 border-b border-border flex-shrink-0">
           <div className="flex items-center gap-3">
@@ -1281,7 +1089,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
           <Button
             variant="ghost"
             size="sm"
-            onClick={onClose}
+            onClick={requestClose}
             aria-label={t('common:buttons.close')}
             className="text-muted-foreground hover:text-foreground touch-manipulation"
           >
@@ -1301,10 +1109,10 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
             }}>
               <button
                 role="tab" aria-selected={activeTab === 'agents'}
-                onClick={() => setActiveTab('agents')}
+                onClick={() => { if (activeTab !== 'agents') requestNavigation(() => setActiveTab('agents')); }}
                 className={`shrink-0 whitespace-nowrap px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === 'agents'
-                    ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                    ? 'border-foreground text-foreground'
                     : 'border-transparent text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -1312,10 +1120,10 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
               </button>
               <button
                 role="tab" aria-selected={activeTab === 'email'}
-                onClick={() => setActiveTab('email')}
+                onClick={() => { if (activeTab !== 'email') requestNavigation(() => setActiveTab('email')); }}
                 className={`shrink-0 whitespace-nowrap px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === 'email'
-                    ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                    ? 'border-foreground text-foreground'
                     : 'border-transparent text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -1324,10 +1132,10 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
               </button>
               <button
                 role="tab" aria-selected={activeTab === 'appearance'}
-                onClick={() => setActiveTab('appearance')}
+                onClick={() => { if (activeTab !== 'appearance') requestNavigation(() => setActiveTab('appearance')); }}
                 className={`shrink-0 whitespace-nowrap px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === 'appearance'
-                    ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                    ? 'border-foreground text-foreground'
                     : 'border-transparent text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -1335,10 +1143,10 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
               </button>
               <button
                 role="tab" aria-selected={activeTab === 'git'}
-                onClick={() => setActiveTab('git')}
+                onClick={() => { if (activeTab !== 'git') requestNavigation(() => setActiveTab('git')); }}
                 className={`shrink-0 whitespace-nowrap px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === 'git'
-                    ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                    ? 'border-foreground text-foreground'
                     : 'border-transparent text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -1347,10 +1155,10 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
               </button>
               <button
                 role="tab" aria-selected={activeTab === 'api'}
-                onClick={() => setActiveTab('api')}
+                onClick={() => { if (activeTab !== 'api') requestNavigation(() => setActiveTab('api')); }}
                 className={`shrink-0 whitespace-nowrap px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === 'api'
-                    ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                    ? 'border-foreground text-foreground'
                     : 'border-transparent text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -1362,355 +1170,10 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
 
           <div className="p-4 md:p-6 space-y-6 md:space-y-8 pb-safe-area-inset-bottom">
             
-            {/* Appearance Tab */}
-            {activeTab === 'appearance' && (
-              <div className="space-y-6 md:space-y-8">
-    {/* Theme Settings */}
-    <div className="space-y-4">
-      <div className="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="font-medium text-foreground">
-              {t('appearanceSettings.darkMode.label')}
-            </div>
-            <div className="text-sm text-muted-foreground">
-              {t('appearanceSettings.darkMode.description')}
-            </div>
-          </div>
-          <button
-            onClick={toggleDarkMode}
-            className="relative inline-flex h-8 w-14 items-center rounded-full bg-gray-200 dark:bg-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
-            role="switch"
-            aria-checked={isDarkMode}
-            aria-label="Toggle dark mode"
-          >
-            <span className="sr-only">Toggle dark mode</span>
-            <span
-              className={`${
-                isDarkMode ? 'translate-x-7' : 'translate-x-1'
-              } inline-block h-6 w-6 transform rounded-full bg-white transition-transform duration-200 flex items-center justify-center`}
-            >
-              {isDarkMode ? (
-                <Moon className="w-3.5 h-3.5 text-gray-700" />
-              ) : (
-                <Sun className="w-3.5 h-3.5 text-yellow-500" />
-              )}
-            </span>
-          </button>
-        </div>
-      </div>
-    </div>
+            {activeTab === 'appearance' && <AppearanceContent values={{ dark: isDarkMode, telemetry: telemetryEnabled, sort: projectSortOrder, editorDark: codeEditorTheme === 'dark', wordWrap: codeEditorWordWrap, showMinimap: codeEditorShowMinimap, lineNumbers: codeEditorLineNumbers, fontSize: codeEditorFontSize }} actions={{ dark: toggleDarkMode, telemetry: setTelemetryEnabledState, sort: setProjectSortOrder, editorDark: value => setCodeEditorTheme(value ? 'dark' : 'light'), wordWrap: setCodeEditorWordWrap, showMinimap: setCodeEditorShowMinimap, lineNumbers: setCodeEditorLineNumbers, fontSize: setCodeEditorFontSize }} />}
 
-    {/* Telemetry Settings */}
-    <div className="space-y-4">
-      <div className="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="font-medium text-foreground">
-              {t('appearanceSettings.telemetry.label')}
-            </div>
-            <div className="text-sm text-muted-foreground">
-              {t('appearanceSettings.telemetry.description')}
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <span
-              className={`text-xs font-semibold px-2 py-1 rounded-md ${
-                telemetryEnabled
-                  ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
-                  : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
-              }`}
-            >
-              {telemetryEnabled ? 'ON' : 'OFF'}
-            </span>
-            <button
-              onClick={() => setTelemetryEnabledState(!telemetryEnabled)}
-              className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 ${
-                telemetryEnabled ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-700'
-              }`}
-              role="switch"
-              aria-checked={telemetryEnabled}
-              aria-label={t('appearanceSettings.telemetry.label')}
-            >
-              <span className="sr-only">{t('appearanceSettings.telemetry.label')}</span>
-              <span
-                className={`${
-                  telemetryEnabled ? 'translate-x-7' : 'translate-x-1'
-                } inline-block h-6 w-6 transform rounded-full bg-white transition-transform duration-200`}
-              />
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    {/* Language Selector */}
-    <div className="space-y-4">
-      <LanguageSelector />
-    </div>
-
-    {/* Project Sorting */}
-    <div className="space-y-4">
-      <div className="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="font-medium text-foreground">
-              {t('appearanceSettings.projectSorting.label')}
-            </div>
-            <div className="text-sm text-muted-foreground">
-              {t('appearanceSettings.projectSorting.description')}
-            </div>
-          </div>
-          <select
-            value={projectSortOrder}
-            onChange={(e) => setProjectSortOrder(e.target.value)}
-            className="text-sm bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 w-32"
-          >
-            <option value="name">{t('appearanceSettings.projectSorting.alphabetical')}</option>
-            <option value="date">{t('appearanceSettings.projectSorting.recentActivity')}</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    {/* Default Project Path */}
-    <div className="space-y-4">
-      <div className="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-        <div className="mb-2">
-          <div className="font-medium text-foreground">
-            {t('appearanceSettings.defaultProjectPath.label')}
-          </div>
-          <div className="text-sm text-muted-foreground">
-            {t('appearanceSettings.defaultProjectPath.description')}
-          </div>
-        </div>
-        <div className="flex items-center gap-2 mt-3">
-          <Input
-            value={workspaceRoot}
-            onChange={(e) => {
-              setWorkspaceRoot(e.target.value);
-              setWorkspaceRootSaved(false);
-              setWorkspaceRootError('');
-            }}
-            onBlur={() => {
-              if (workspaceRoot && workspaceRoot !== workspaceRootDefault) {
-                saveWorkspaceRoot(workspaceRoot);
-              }
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                saveWorkspaceRoot(workspaceRoot);
-              }
-            }}
-            placeholder={workspaceRootDefault}
-            className="flex-1 text-sm font-mono"
-          />
-          {isDesktop && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={async () => {
-                const selected = await selectDirectory({
-                  title: t('appearanceSettings.defaultProjectPath.browseTitle', 'Select Default Project Folder'),
-                  defaultPath: workspaceRoot || workspaceRootDefault || undefined,
-                });
-                if (selected) {
-                  setWorkspaceRoot(selected);
-                  setWorkspaceRootSaved(false);
-                  setWorkspaceRootError('');
-                  saveWorkspaceRoot(selected);
-                }
-              }}
-              className="whitespace-nowrap"
-              title={t('appearanceSettings.defaultProjectPath.browse', 'Browse')}
-            >
-              <FolderOpen className="w-4 h-4 mr-1" />
-              {t('appearanceSettings.defaultProjectPath.browse', 'Browse')}
-            </Button>
-          )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={resetWorkspaceRoot}
-            className="whitespace-nowrap"
-            title={t('appearanceSettings.defaultProjectPath.reset')}
-          >
-            {t('appearanceSettings.defaultProjectPath.reset')}
-          </Button>
-        </div>
-        {workspaceRootSaved && (
-          <div className="text-xs text-green-600 dark:text-green-400 mt-1 flex items-center gap-1">
-            <Check className="w-3 h-3" />
-            {t('appearanceSettings.defaultProjectPath.saved')}
-          </div>
-        )}
-        {workspaceRootError && (
-          <div className="text-xs text-red-600 dark:text-red-400 mt-1">
-            {workspaceRootError}
-          </div>
-        )}
-      </div>
-    </div>
-
-    {/* Code Editor Settings */}
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-foreground">{t('appearanceSettings.codeEditor.title')}</h3>
-
-      {/* Editor Theme */}
-      <div className="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="font-medium text-foreground">
-              {t('appearanceSettings.codeEditor.theme.label')}
-            </div>
-            <div className="text-sm text-muted-foreground">
-              {t('appearanceSettings.codeEditor.theme.description')}
-            </div>
-          </div>
-          <button
-            onClick={() => setCodeEditorTheme(codeEditorTheme === 'dark' ? 'light' : 'dark')}
-            className="relative inline-flex h-8 w-14 items-center rounded-full bg-gray-200 dark:bg-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
-            role="switch"
-            aria-checked={codeEditorTheme === 'dark'}
-            aria-label="Toggle editor theme"
-          >
-            <span className="sr-only">Toggle editor theme</span>
-            <span
-              className={`${
-                codeEditorTheme === 'dark' ? 'translate-x-7' : 'translate-x-1'
-              } inline-block h-6 w-6 transform rounded-full bg-white transition-transform duration-200 flex items-center justify-center`}
-            >
-              {codeEditorTheme === 'dark' ? (
-                <Moon className="w-3.5 h-3.5 text-gray-700" />
-              ) : (
-                <Sun className="w-3.5 h-3.5 text-yellow-500" />
-              )}
-            </span>
-          </button>
-        </div>
-      </div>
-
-      {/* Word Wrap */}
-      <div className="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="font-medium text-foreground">
-              {t('appearanceSettings.codeEditor.wordWrap.label')}
-            </div>
-            <div className="text-sm text-muted-foreground">
-              {t('appearanceSettings.codeEditor.wordWrap.description')}
-            </div>
-          </div>
-          <button
-            onClick={() => setCodeEditorWordWrap(!codeEditorWordWrap)}
-            className="relative inline-flex h-8 w-14 items-center rounded-full bg-gray-200 dark:bg-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
-            role="switch"
-            aria-checked={codeEditorWordWrap}
-            aria-label="Toggle word wrap"
-          >
-            <span className="sr-only">Toggle word wrap</span>
-            <span
-              className={`${
-                codeEditorWordWrap ? 'translate-x-7' : 'translate-x-1'
-              } inline-block h-6 w-6 transform rounded-full bg-white transition-transform duration-200`}
-            />
-          </button>
-        </div>
-      </div>
-
-      {/* Show Minimap */}
-      <div className="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="font-medium text-foreground">
-              {t('appearanceSettings.codeEditor.showMinimap.label')}
-            </div>
-            <div className="text-sm text-muted-foreground">
-              {t('appearanceSettings.codeEditor.showMinimap.description')}
-            </div>
-          </div>
-          <button
-            onClick={() => setCodeEditorShowMinimap(!codeEditorShowMinimap)}
-            className="relative inline-flex h-8 w-14 items-center rounded-full bg-gray-200 dark:bg-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
-            role="switch"
-            aria-checked={codeEditorShowMinimap}
-            aria-label="Toggle minimap"
-          >
-            <span className="sr-only">Toggle minimap</span>
-            <span
-              className={`${
-                codeEditorShowMinimap ? 'translate-x-7' : 'translate-x-1'
-              } inline-block h-6 w-6 transform rounded-full bg-white transition-transform duration-200`}
-            />
-          </button>
-        </div>
-      </div>
-
-      {/* Show Line Numbers */}
-      <div className="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="font-medium text-foreground">
-              {t('appearanceSettings.codeEditor.lineNumbers.label')}
-            </div>
-            <div className="text-sm text-muted-foreground">
-              {t('appearanceSettings.codeEditor.lineNumbers.description')}
-            </div>
-          </div>
-          <button
-            onClick={() => setCodeEditorLineNumbers(!codeEditorLineNumbers)}
-            className="relative inline-flex h-8 w-14 items-center rounded-full bg-gray-200 dark:bg-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
-            role="switch"
-            aria-checked={codeEditorLineNumbers}
-            aria-label="Toggle line numbers"
-          >
-            <span className="sr-only">Toggle line numbers</span>
-            <span
-              className={`${
-                codeEditorLineNumbers ? 'translate-x-7' : 'translate-x-1'
-              } inline-block h-6 w-6 transform rounded-full bg-white transition-transform duration-200`}
-            />
-          </button>
-        </div>
-      </div>
-
-      {/* Font Size */}
-      <div className="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="font-medium text-foreground">
-              {t('appearanceSettings.codeEditor.fontSize.label')}
-            </div>
-            <div className="text-sm text-muted-foreground">
-              {t('appearanceSettings.codeEditor.fontSize.description')}
-            </div>
-          </div>
-          <select
-            value={codeEditorFontSize}
-            onChange={(e) => setCodeEditorFontSize(e.target.value)}
-            className="text-sm bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 w-24"
-          >
-            <option value="10">10px</option>
-            <option value="11">11px</option>
-            <option value="12">12px</option>
-            <option value="13">13px</option>
-            <option value="14">14px</option>
-            <option value="15">15px</option>
-            <option value="16">16px</option>
-            <option value="18">18px</option>
-            <option value="20">20px</option>
-          </select>
-        </div>
-      </div>
-    </div>
-              </div>
-            )}
-
-            {/* Git Tab */}
-            {activeTab === 'git' && <GitSettings />}
-
-            {/* Email Tab */}
             {activeTab === 'email' && <EmailSettingsContent />}
+            {activeTab === 'git' && <GitSettings />}
 
             {/* Agents Tab */}
             {activeTab === 'agents' && (
@@ -1722,35 +1185,35 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
                       agentId="claude"
                       authStatus={claudeAuthStatus}
                       isSelected={selectedAgent === 'claude'}
-                      onClick={() => setSelectedAgent('claude')}
+                      onClick={() => { if (selectedAgent !== 'claude') requestNavigation(() => setSelectedAgent('claude')); }}
                       isMobile={true}
                     />
                     <AgentListItem
                       agentId="codex"
                       authStatus={codexAuthStatus}
                       isSelected={selectedAgent === 'codex'}
-                      onClick={() => setSelectedAgent('codex')}
+                      onClick={() => { if (selectedAgent !== 'codex') requestNavigation(() => setSelectedAgent('codex')); }}
                       isMobile={true}
                     />
                     <AgentListItem
                       agentId="gemini"
                       authStatus={geminiAuthStatus}
                       isSelected={selectedAgent === 'gemini'}
-                      onClick={() => setSelectedAgent('gemini')}
+                      onClick={() => { if (selectedAgent !== 'gemini') requestNavigation(() => setSelectedAgent('gemini')); }}
                       isMobile={true}
                     />
                     <AgentListItem
                       agentId="openrouter"
                       authStatus={openrouterAuthStatus}
                       isSelected={selectedAgent === 'openrouter'}
-                      onClick={() => setSelectedAgent('openrouter')}
+                      onClick={() => { if (selectedAgent !== 'openrouter') requestNavigation(() => setSelectedAgent('openrouter')); }}
                       isMobile={true}
                     />
                     <AgentListItem
                       agentId="local"
                       authStatus={localAuthStatus}
                       isSelected={selectedAgent === 'local'}
-                      onClick={() => setSelectedAgent('local')}
+                      onClick={() => { if (selectedAgent !== 'local') requestNavigation(() => setSelectedAgent('local')); }}
                       isMobile={true}
                     />
                   </div>
@@ -1763,31 +1226,31 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
                       agentId="claude"
                       authStatus={claudeAuthStatus}
                       isSelected={selectedAgent === 'claude'}
-                      onClick={() => setSelectedAgent('claude')}
+                      onClick={() => { if (selectedAgent !== 'claude') requestNavigation(() => setSelectedAgent('claude')); }}
                     />
                     <AgentListItem
                       agentId="codex"
                       authStatus={codexAuthStatus}
                       isSelected={selectedAgent === 'codex'}
-                      onClick={() => setSelectedAgent('codex')}
+                      onClick={() => { if (selectedAgent !== 'codex') requestNavigation(() => setSelectedAgent('codex')); }}
                     />
                     <AgentListItem
                       agentId="gemini"
                       authStatus={geminiAuthStatus}
                       isSelected={selectedAgent === 'gemini'}
-                      onClick={() => setSelectedAgent('gemini')}
+                      onClick={() => { if (selectedAgent !== 'gemini') requestNavigation(() => setSelectedAgent('gemini')); }}
                     />
                     <AgentListItem
                       agentId="openrouter"
                       authStatus={openrouterAuthStatus}
                       isSelected={selectedAgent === 'openrouter'}
-                      onClick={() => setSelectedAgent('openrouter')}
+                      onClick={() => { if (selectedAgent !== 'openrouter') requestNavigation(() => setSelectedAgent('openrouter')); }}
                     />
                     <AgentListItem
                       agentId="local"
                       authStatus={localAuthStatus}
                       isSelected={selectedAgent === 'local'}
-                      onClick={() => setSelectedAgent('local')}
+                      onClick={() => { if (selectedAgent !== 'local') requestNavigation(() => setSelectedAgent('local')); }}
                     />
                   </div>
                 </div>
@@ -1798,45 +1261,45 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
                   <div className="border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
                     <div className="flex px-2 md:px-4 overflow-x-auto">
                       <button
-                        onClick={() => setSelectedCategory('account')}
+                        onClick={() => { if (selectedCategory !== 'account') requestNavigation(() => setSelectedCategory('account')); }}
                         className={`px-3 md:px-4 py-2 md:py-3 text-xs md:text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                           selectedCategory === 'account'
-                            ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                            ? 'border-foreground text-foreground'
                             : 'border-transparent text-muted-foreground hover:text-foreground'
                         }`}
                       >
                         {t('tabs.account')}
                       </button>
                       <button
-                        onClick={() => setSelectedCategory('permissions')}
+                        onClick={() => { if (selectedCategory !== 'permissions') requestNavigation(() => setSelectedCategory('permissions')); }}
                         className={`px-3 md:px-4 py-2 md:py-3 text-xs md:text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                           selectedCategory === 'permissions'
-                            ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                            ? 'border-foreground text-foreground'
                             : 'border-transparent text-muted-foreground hover:text-foreground'
                         }`}
                       >
                         {t('tabs.permissions')}
                       </button>
                       <button
-                        onClick={() => setSelectedCategory('mcp')}
+                        onClick={() => { if (selectedCategory !== 'mcp') requestNavigation(() => setSelectedCategory('mcp')); }}
                         className={`px-3 md:px-4 py-2 md:py-3 text-xs md:text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                           selectedCategory === 'mcp'
-                            ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                            ? 'border-foreground text-foreground'
                             : 'border-transparent text-muted-foreground hover:text-foreground'
                         }`}
                       >
                         {t('tabs.mcpServers')}
                       </button>
                       <button
-                        onClick={() => setSelectedCategory('memory')}
+                        onClick={() => { if (selectedCategory !== 'memory') requestNavigation(() => setSelectedCategory('memory')); }}
                         className={`px-3 md:px-4 py-2 md:py-3 text-xs md:text-sm font-medium border-b-2 transition-colors whitespace-nowrap flex items-center gap-1.5 ${
                           selectedCategory === 'memory'
-                            ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                            ? 'border-foreground text-foreground'
                             : 'border-transparent text-muted-foreground hover:text-foreground'
                         }`}
                       >
                         <Brain className="w-4 h-4" />
-                        Memory
+                        {t('memorySettings.title')}
                       </button>
                     </div>
                   </div>
@@ -1846,6 +1309,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
                     {/* Account Category */}
                     {selectedCategory === 'account' && (
                       <AccountContent
+                        key={selectedAgent}
                         agent={selectedAgent}
                         authStatus={
                           selectedAgent === 'claude' ? claudeAuthStatus :
@@ -1855,6 +1319,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
                           selectedAgent === 'local' ? localAuthStatus :
                           codexAuthStatus
                         }
+                        onRefreshStatus={{ claude: checkClaudeAuthStatus, cursor: checkCursorAuthStatus, codex: checkCodexAuthStatus, gemini: checkGeminiAuthStatus, openrouter: checkOpenRouterAuthStatus, local: checkLocalAuthStatus }[selectedAgent]}
                         onLogin={
                           selectedAgent === 'claude' ? handleClaudeLogin :
                           selectedAgent === 'cursor' ? handleCursorLogin :
@@ -1927,10 +1392,12 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
                     {selectedCategory === 'mcp' && selectedAgent === 'claude' && (
                       <McpServersContent
                         agent="claude"
+                        loadState={mcpReads.claude}
+                        onRefresh={fetchMcpServers}
                         servers={mcpServers}
                         onAdd={() => openMcpForm()}
                         onEdit={(server) => openMcpForm(server)}
-                        onDelete={(serverId, scope) => handleMcpDelete(serverId, scope)}
+                        onDelete={(server) => deleteMcpServer(server.id, server.scope)}
                         onTest={(serverId, scope) => handleMcpTest(serverId, scope)}
                         onDiscoverTools={(serverId, scope) => handleMcpToolsDiscovery(serverId, scope)}
                         testResults={mcpTestResults}
@@ -1942,6 +1409,8 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
                     {selectedCategory === 'mcp' && selectedAgent === 'cursor' && (
                       <McpServersContent
                         agent="cursor"
+                        loadState={mcpReads.cursor}
+                        onRefresh={fetchCursorMcpServers}
                         servers={cursorMcpServers}
                         onAdd={() => {/* TODO: Add cursor MCP form */}}
                         onEdit={(server) => {/* TODO: Edit cursor MCP form */}}
@@ -1952,10 +1421,12 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
                     {selectedCategory === 'mcp' && selectedAgent === 'codex' && (
                       <McpServersContent
                         agent="codex"
+                        loadState={mcpReads.codex}
+                        onRefresh={fetchCodexMcpServers}
                         servers={codexMcpServers}
                         onAdd={() => openCodexMcpForm()}
                         onEdit={(server) => openCodexMcpForm(server)}
-                        onDelete={(serverId) => handleCodexMcpDelete(serverId)}
+                        onDelete={(server) => deleteCodexMcpServer(server.name)}
                       />
                     )}
 
@@ -1968,457 +1439,9 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
               </div>
             )}
 
-            {/* MCP Server Form Modal */}
-            {showMcpForm && (
-              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[110] p-4">
-                <div className="bg-background border border-border rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                  <div className="flex items-center justify-between p-4 border-b border-border">
-                    <h3 className="text-lg font-medium text-foreground">
-                      {editingMcpServer ? t('mcpForm.title.edit') : t('mcpForm.title.add')}
-                    </h3>
-                    <Button variant="ghost" size="sm" onClick={resetMcpForm}>
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  
-                  <form onSubmit={handleMcpSubmit} className="p-4 space-y-4">
+            {showMcpForm && <McpServerForm agent="claude" data={mcpFormData} setData={setMcpFormData} editing={editingMcpServer} projects={projects} pending={mcpLoading} error={mcpError} onSubmit={handleMcpSubmit} onClose={() => requestNavigation(resetMcpForm)} />}
+            {showCodexMcpForm && <McpServerForm agent="codex" data={codexMcpFormData} setData={setCodexMcpFormData} editing={editingCodexMcpServer} projects={projects} pending={codexMcpLoading} error={codexMcpError} onSubmit={handleCodexMcpSubmit} onClose={() => requestNavigation(resetCodexMcpForm)} />}
 
-                    {!editingMcpServer && (
-                    <div className="flex gap-2 mb-4">
-                      <button
-                        type="button"
-                        onClick={() => setMcpFormData(prev => ({...prev, importMode: 'form'}))}
-                        className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                          mcpFormData.importMode === 'form'
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                        }`}
-                      >
-                        {t('mcpForm.importMode.form')}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setMcpFormData(prev => ({...prev, importMode: 'json'}))}
-                        className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                          mcpFormData.importMode === 'json'
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                        }`}
-                      >
-                        {t('mcpForm.importMode.json')}
-                      </button>
-                    </div>
-                    )}
-
-                    {/* Show current scope when editing */}
-                    {mcpFormData.importMode === 'form' && editingMcpServer && (
-                      <div className="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg p-3">
-                        <label className="block text-sm font-medium text-foreground mb-2">
-                          {t('mcpForm.scope.label')}
-                        </label>
-                        <div className="flex items-center gap-2">
-                          {mcpFormData.scope === 'user' ? <Globe className="w-4 h-4" /> : <FolderOpen className="w-4 h-4" />}
-                          <span className="text-sm">
-                            {mcpFormData.scope === 'user' ? t('mcpForm.scope.userGlobal') : t('mcpForm.scope.projectLocal')}
-                          </span>
-                          {mcpFormData.scope === 'local' && mcpFormData.projectPath && (
-                            <span className="text-xs text-muted-foreground">
-                              - {mcpFormData.projectPath}
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-2">
-                          {t('mcpForm.scope.cannotChange')}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Scope Selection - Moved to top, disabled when editing */}
-                    {mcpFormData.importMode === 'form' && !editingMcpServer && (
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium text-foreground mb-2">
-                            {t('mcpForm.scope.label')} *
-                          </label>
-                          <div className="flex gap-2">
-                            <button
-                              type="button"
-                              onClick={() => setMcpFormData(prev => ({...prev, scope: 'user', projectPath: ''}))}
-                              className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
-                                mcpFormData.scope === 'user'
-                                  ? 'bg-blue-600 text-white'
-                                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                              }`}
-                            >
-                              <div className="flex items-center justify-center gap-2">
-                                <Globe className="w-4 h-4" />
-                                <span>{t('mcpForm.scope.userGlobal')}</span>
-                              </div>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setMcpFormData(prev => ({...prev, scope: 'local'}))}
-                              className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
-                                mcpFormData.scope === 'local'
-                                  ? 'bg-blue-600 text-white'
-                                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                              }`}
-                            >
-                              <div className="flex items-center justify-center gap-2">
-                                <FolderOpen className="w-4 h-4" />
-                                <span>{t('mcpForm.scope.projectLocal')}</span>
-                              </div>
-                            </button>
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-2">
-                            {mcpFormData.scope === 'user'
-                              ? t('mcpForm.scope.userDescription')
-                              : t('mcpForm.scope.projectDescription')
-                            }
-                          </p>
-                        </div>
-
-                        {/* Project Selection for Local Scope */}
-                        {mcpFormData.scope === 'local' && !editingMcpServer && (
-                          <div>
-                            <label className="block text-sm font-medium text-foreground mb-2">
-                              {t('mcpForm.fields.selectProject')} *
-                            </label>
-                            <select
-                              value={mcpFormData.projectPath}
-                              onChange={(e) => setMcpFormData(prev => ({...prev, projectPath: e.target.value}))}
-                              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                              required={mcpFormData.scope === 'local'}
-                            >
-                              <option value="">{t('mcpForm.fields.selectProject')}...</option>
-                              {projects.map(project => (
-                                <option key={project.name} value={project.path || project.fullPath}>
-                                  {project.displayName || project.name}
-                                </option>
-                              ))}
-                            </select>
-                            {mcpFormData.projectPath && (
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {t('mcpForm.projectPath', { path: mcpFormData.projectPath })}
-                              </p>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Basic Info */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className={mcpFormData.importMode === 'json' ? 'md:col-span-2' : ''}>
-                        <label className="block text-sm font-medium text-foreground mb-2">
-                          {t('mcpForm.fields.serverName')} *
-                        </label>
-                        <Input
-                          value={mcpFormData.name}
-                          onChange={(e) => {
-                            setMcpFormData(prev => ({...prev, name: e.target.value}));
-                          }}
-                          placeholder={t('mcpForm.placeholders.serverName')}
-                          required
-                        />
-                      </div>
-
-                      {mcpFormData.importMode === 'form' && (
-                        <div>
-                          <label className="block text-sm font-medium text-foreground mb-2">
-                            {t('mcpForm.fields.transportType')} *
-                          </label>
-                          <select
-                            value={mcpFormData.type}
-                            onChange={(e) => {
-                              setMcpFormData(prev => ({...prev, type: e.target.value}));
-                            }}
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                          >
-                            <option value="stdio">stdio</option>
-                            <option value="sse">SSE</option>
-                            <option value="http">HTTP</option>
-                          </select>
-                        </div>
-                      )}
-                    </div>
-
-
-                    {/* Show raw configuration details when editing */}
-                    {editingMcpServer && mcpFormData.raw && mcpFormData.importMode === 'form' && (
-                      <div className="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                        <h4 className="text-sm font-medium text-foreground mb-2">
-                          {t('mcpForm.configDetails', { configFile: editingMcpServer.scope === 'global' ? '~/.claude.json' : 'project config' })}
-                        </h4>
-                        <pre className="text-xs bg-gray-100 dark:bg-gray-800 p-3 rounded overflow-x-auto">
-                          {JSON.stringify(mcpFormData.raw, null, 2)}
-                        </pre>
-                      </div>
-                    )}
-
-                    {/* JSON Import Mode */}
-                    {mcpFormData.importMode === 'json' && (
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium text-foreground mb-2">
-                            {t('mcpForm.fields.jsonConfig')} *
-                          </label>
-                          <textarea
-                            value={mcpFormData.jsonInput}
-                            onChange={(e) => {
-                              setMcpFormData(prev => ({...prev, jsonInput: e.target.value}));
-                              // Validate JSON as user types
-                              try {
-                                if (e.target.value.trim()) {
-                                  const parsed = JSON.parse(e.target.value);
-                                  // Basic validation
-                                  if (!parsed.type) {
-                                    setJsonValidationError(t('mcpForm.validation.missingType'));
-                                  } else if (parsed.type === 'stdio' && !parsed.command) {
-                                    setJsonValidationError(t('mcpForm.validation.stdioRequiresCommand'));
-                                  } else if ((parsed.type === 'http' || parsed.type === 'sse') && !parsed.url) {
-                                    setJsonValidationError(t('mcpForm.validation.httpRequiresUrl', { type: parsed.type }));
-                                  } else {
-                                    setJsonValidationError('');
-                                  }
-                                }
-                              } catch (err) {
-                                if (e.target.value.trim()) {
-                                  setJsonValidationError(t('mcpForm.validation.invalidJson'));
-                                } else {
-                                  setJsonValidationError('');
-                                }
-                              }
-                            }}
-                            className={`w-full px-3 py-2 border ${jsonValidationError ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 font-mono text-sm`}
-                            rows="8"
-                            placeholder={'{\n  "type": "stdio",\n  "command": "/path/to/server",\n  "args": ["--api-key", "abc123"],\n  "env": {\n    "CACHE_DIR": "/tmp"\n  }\n}'}
-                            required
-                          />
-                          {jsonValidationError && (
-                            <p className="text-xs text-red-500 mt-1">{jsonValidationError}</p>
-                          )}
-                          <p className="text-xs text-muted-foreground mt-2">
-                            {t('mcpForm.validation.jsonHelp')}
-                            <br />• stdio: {`{"type":"stdio","command":"npx","args":["@upstash/context7-mcp"]}`}
-                            <br />• http/sse: {`{"type":"http","url":"https://api.example.com/mcp"}`} {/* taste-skill-ignore: literal MCP configuration example, not product data. */}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Transport-specific Config - Only show in form mode */}
-                    {mcpFormData.importMode === 'form' && mcpFormData.type === 'stdio' && (
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium text-foreground mb-2">
-                            {t('mcpForm.fields.command')} *
-                          </label>
-                          <Input
-                            value={mcpFormData.config.command}
-                            onChange={(e) => updateMcpConfig('command', e.target.value)}
-                            placeholder="/path/to/mcp-server"
-                            required
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-foreground mb-2">
-                            {t('mcpForm.fields.arguments')}
-                          </label>
-                          <textarea
-                            value={Array.isArray(mcpFormData.config.args) ? mcpFormData.config.args.join('\n') : ''}
-                            onChange={(e) => updateMcpConfig('args', e.target.value.split('\n').filter(arg => arg.trim()))}
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                            rows="3"
-                            placeholder="--api-key&#10;abc123"
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {mcpFormData.importMode === 'form' && (mcpFormData.type === 'sse' || mcpFormData.type === 'http') && (
-                      <div>
-                        <label className="block text-sm font-medium text-foreground mb-2">
-                          {t('mcpForm.fields.url')} *
-                        </label>
-                        <Input
-                          value={mcpFormData.config.url}
-                          onChange={(e) => updateMcpConfig('url', e.target.value)}
-                          placeholder={/* taste-skill-ignore: reserved example domain for a user-supplied endpoint. */ "https://api.example.com/mcp"}
-                          type="url"
-                          required
-                        />
-                      </div>
-                    )}
-
-                    {/* Environment Variables - Only show in form mode */}
-                    {mcpFormData.importMode === 'form' && (
-                      <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">
-                        {t('mcpForm.fields.envVars')}
-                      </label>
-                      <textarea
-                        value={Object.entries(mcpFormData.config.env || {}).map(([k, v]) => `${k}=${v}`).join('\n')}
-                        onChange={(e) => {
-                          const env = {};
-                          e.target.value.split('\n').forEach(line => {
-                            const [key, ...valueParts] = line.split('=');
-                            if (key && key.trim()) {
-                              env[key.trim()] = valueParts.join('=').trim();
-                            }
-                          });
-                          updateMcpConfig('env', env);
-                        }}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                        rows="3"
-                        placeholder="API_KEY=your-key&#10;DEBUG=true"
-                      />
-                    </div>
-                    )}
-
-                    {mcpFormData.importMode === 'form' && (mcpFormData.type === 'sse' || mcpFormData.type === 'http') && (
-                      <div>
-                        <label className="block text-sm font-medium text-foreground mb-2">
-                          {t('mcpForm.fields.headers')}
-                        </label>
-                        <textarea
-                          value={Object.entries(mcpFormData.config.headers || {}).map(([k, v]) => `${k}=${v}`).join('\n')}
-                          onChange={(e) => {
-                            const headers = {};
-                            e.target.value.split('\n').forEach(line => {
-                              const [key, ...valueParts] = line.split('=');
-                              if (key && key.trim()) {
-                                headers[key.trim()] = valueParts.join('=').trim();
-                              }
-                            });
-                            updateMcpConfig('headers', headers);
-                          }}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                          rows="3"
-                          placeholder="Authorization=Bearer token&#10;X-API-Key=your-key"
-                        />
-                      </div>
-                    )}
-
-
-                    <div className="flex justify-end gap-2 pt-4">
-                      <Button type="button" variant="outline" onClick={resetMcpForm}>
-                        {t('mcpForm.actions.cancel')}
-                      </Button>
-                      <Button
-                        type="submit"
-                        disabled={mcpLoading}
-                        className="disabled:opacity-50"
-                      >
-                        {mcpLoading ? t('mcpForm.actions.saving') : (editingMcpServer ? t('mcpForm.actions.updateServer') : t('mcpForm.actions.addServer'))}
-                      </Button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            )}
-
-            {/* Codex MCP Server Form Modal */}
-            {showCodexMcpForm && (
-              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[110] p-4">
-                <div className="bg-background border border-border rounded-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
-                  <div className="flex items-center justify-between p-4 border-b border-border">
-                    <h3 className="text-lg font-medium text-foreground">
-                      {editingCodexMcpServer ? t('mcpForm.title.edit') : t('mcpForm.title.add')}
-                    </h3>
-                    <Button variant="ghost" size="sm" onClick={resetCodexMcpForm}>
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-
-                  <form onSubmit={handleCodexMcpSubmit} className="p-4 space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">
-                        {t('mcpForm.fields.serverName')} *
-                      </label>
-                      <Input
-                        value={codexMcpFormData.name}
-                        onChange={(e) => setCodexMcpFormData(prev => ({...prev, name: e.target.value}))}
-                        placeholder={t('mcpForm.placeholders.serverName')}
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">
-                        {t('mcpForm.fields.command')} *
-                      </label>
-                      <Input
-                        value={codexMcpFormData.config?.command || ''}
-                        onChange={(e) => setCodexMcpFormData(prev => ({
-                          ...prev,
-                          config: { ...prev.config, command: e.target.value }
-                        }))}
-                        placeholder="npx @my-org/mcp-server"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">
-                        {t('mcpForm.fields.arguments')}
-                      </label>
-                      <textarea
-                        value={(codexMcpFormData.config?.args || []).join('\n')}
-                        onChange={(e) => setCodexMcpFormData(prev => ({
-                          ...prev,
-                          config: { ...prev.config, args: e.target.value.split('\n').filter(a => a.trim()) }
-                        }))}
-                        placeholder="--port&#10;3000"
-                        rows={3}
-                        className="w-full px-3 py-2 text-sm bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">
-                        {t('mcpForm.fields.envVars')}
-                      </label>
-                      <textarea
-                        value={Object.entries(codexMcpFormData.config?.env || {}).map(([k, v]) => `${k}=${v}`).join('\n')}
-                        onChange={(e) => {
-                          const env = {};
-                          e.target.value.split('\n').forEach(line => {
-                            const [key, ...valueParts] = line.split('=');
-                            if (key && valueParts.length > 0) {
-                              env[key.trim()] = valueParts.join('=').trim();
-                            }
-                          });
-                          setCodexMcpFormData(prev => ({
-                            ...prev,
-                            config: { ...prev.config, env }
-                          }));
-                        }}
-                        placeholder="API_KEY=xxx&#10;DEBUG=true"
-                        rows={3}
-                        className="w-full px-3 py-2 text-sm bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-                      />
-                    </div>
-
-                    <div className="flex justify-end gap-2 pt-4 border-t border-border">
-                      <Button type="button" variant="outline" onClick={resetCodexMcpForm}>
-                        {t('mcpForm.actions.cancel')}
-                      </Button>
-                      <Button
-                        type="submit"
-                        disabled={codexMcpLoading || !codexMcpFormData.name || !codexMcpFormData.config?.command}
-                        className="bg-green-600 hover:bg-green-700 text-white"
-                      >
-                        {codexMcpLoading ? t('mcpForm.actions.saving') : (editingCodexMcpServer ? t('mcpForm.actions.updateServer') : t('mcpForm.actions.addServer'))}
-                      </Button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            )}
-
-            {/* API & Tokens Tab */}
             {activeTab === 'api' && (
               <div className="space-y-6 md:space-y-8">
                 <CredentialsSettings />
@@ -2427,10 +1450,10 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 md:p-6 border-t border-border flex-shrink-0 gap-3 pb-safe-area-inset-bottom">
-          <div className="flex items-center justify-center sm:justify-start gap-2 order-2 sm:order-1">
+        <div data-settings-footer className="flex flex-col sm:flex-row sm:items-center sm:justify-end p-4 md:p-6 border-t border-border flex-shrink-0 gap-3 pb-safe-area-inset-bottom">
+          {!hasIndependentSave && <div className="flex items-center justify-center sm:justify-start gap-2 order-2 sm:order-1 sm:mr-auto">
             {saveStatus === 'success' && (
-              <div className="text-green-600 dark:text-green-400 text-sm flex items-center gap-1">
+              <div role="status" className="text-muted-foreground text-sm flex items-center gap-1">
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
@@ -2438,27 +1461,35 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
               </div>
             )}
             {saveStatus === 'error' && (
-              <div className="text-red-600 dark:text-red-400 text-sm flex items-center gap-1">
+              <div role="alert" className="text-destructive text-sm flex items-center gap-1">
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                 </svg>
                 {t('saveStatus.error')}
               </div>
             )}
-          </div>
+          </div>}
           <div className="flex items-center gap-3 order-1 sm:order-2">
+            {hasIndependentSave ? (
+              <Button
+                onClick={requestClose}
+                className="flex-1 sm:flex-none min-h-11 touch-manipulation"
+              >
+                {t('footerActions.done')}
+              </Button>
+            ) : <>
             <Button
               variant="outline"
-              onClick={onClose}
+              onClick={requestClose}
               disabled={isSaving}
-              className="flex-1 sm:flex-none h-10 touch-manipulation"
+              className="flex-1 sm:flex-none min-h-11 touch-manipulation"
             >
               {t('footerActions.cancel')}
             </Button>
             <Button
               onClick={saveSettings}
               disabled={isSaving}
-              className="flex-1 sm:flex-none h-10 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 touch-manipulation"
+              className="flex-1 sm:flex-none min-h-11 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 touch-manipulation"
             >
               {isSaving ? (
                 <div className="flex items-center gap-2">
@@ -2469,6 +1500,7 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
                 t('footerActions.save')
               )}
             </Button>
+            </>}
           </div>
         </div>
       </div>
@@ -2542,4 +1574,6 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }) {
   );
 }
 
-export default Settings;
+export default function Settings(props) {
+  return <SettingsDraftProvider><SettingsContent {...props} /></SettingsDraftProvider>;
+}

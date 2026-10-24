@@ -95,7 +95,8 @@
   "appearanceSettings": {
     "darkMode": {
       "label": "Dark Mode",
-      "description": "Toggle between light and dark themes"
+      "description": "Toggle between light and dark themes",
+      "action": "Toggle dark mode"
     },
     "telemetry": {
       "label": "Data Transfer",
@@ -113,13 +114,17 @@
       "browse": "Browse",
       "reset": "Reset",
       "saved": "Saved",
-      "invalidPath": "Invalid directory path"
+      "invalidPath": "Invalid directory path",
+      "save": "Save path",
+      "loadFailed": "Could not load the project path. Retry before editing.",
+      "browseTitle": "Choose the default project directory"
     },
     "codeEditor": {
       "title": "Code Editor",
       "theme": {
         "label": "Editor Theme",
-        "description": "Default theme for the code editor"
+        "description": "Default theme for the code editor",
+        "action": "Toggle editor theme"
       },
       "wordWrap": {
         "label": "Word Wrap",
@@ -137,7 +142,10 @@
         "label": "Font Size",
         "description": "Editor font size in pixels"
       }
-    }
+    },
+    "enabled": "On",
+    "disabled": "Off",
+    "saveBehavior": "Theme, language, data transfer and editor preferences apply immediately. Save project sorting with “Save Settings”; save the project path separately."
   },
   "mcpForm": {
     "title": {
@@ -146,7 +154,8 @@
     },
     "importMode": {
       "form": "Form Input",
-      "json": "JSON Import"
+      "json": "JSON Import",
+      "label": "Configuration format"
     },
     "scope": {
       "label": "Scope",
@@ -189,11 +198,12 @@
     }
   },
   "saveStatus": {
-    "success": "Settings saved successfully!",
+    "success": "Saved",
     "error": "Failed to save settings",
     "saving": "Saving..."
   },
   "footerActions": {
+    "done": "Done",
     "save": "Save Settings",
     "cancel": "Cancel"
   },
@@ -380,26 +390,30 @@
       "description": "Tools that are automatically allowed without prompting for permission",
       "placeholder": "e.g., \"Bash(git log:*)\" or \"Write\"",
       "quickAdd": "Quick add common tools:",
-      "empty": "No allowed tools configured"
+      "empty": "No allowed tools configured",
+      "inputLabel": "Tool to allow"
     },
     "blockedTools": {
       "title": "Blocked Tools",
       "description": "Tools that are automatically blocked without prompting for permission",
       "placeholder": "e.g., \"Bash(rm:*)\"",
-      "empty": "No blocked tools configured"
+      "empty": "No blocked tools configured",
+      "inputLabel": "Tool to block"
     },
     "allowedCommands": {
       "title": "Allowed Shell Commands",
       "description": "Shell commands that are automatically allowed without prompting",
       "placeholder": "e.g., \"Shell(ls)\" or \"Shell(git status)\"",
       "quickAdd": "Quick add common commands:",
-      "empty": "No allowed commands configured"
+      "empty": "No allowed commands configured",
+      "inputLabel": "Command to allow"
     },
     "blockedCommands": {
       "title": "Blocked Shell Commands",
       "description": "Shell commands that are automatically blocked",
       "placeholder": "e.g., \"Shell(rm -rf)\" or \"Shell(sudo)\"",
-      "empty": "No blocked commands configured"
+      "empty": "No blocked commands configured",
+      "inputLabel": "Command to block"
     },
     "toolExamples": {
       "title": "Tool Pattern Examples:",
@@ -465,7 +479,8 @@
       }
     },
     "actions": {
-      "add": "Add"
+      "add": "Add",
+      "remove": "Remove {{value}}"
     }
   },
   "mcpServers": {
@@ -501,6 +516,134 @@
     "help": {
       "title": "About Codex MCP",
       "description": "Codex supports stdio-based MCP servers. You can add servers that extend Codex's capabilities with additional tools and resources."
+    },
+    "refresh": "Refresh",
+    "loadFailed": "The server list could not be loaded. Retry to see the current configuration.",
+    "cursorReadOnly": "Manage these servers in Cursor. This page shows its saved configuration.",
+    "remoteReadOnly": "Edit this HTTP server in the Codex configuration file.",
+    "deleteConfirm": "Delete “{{name}}”? This removes its saved configuration."
+  },
+  "feedback": {
+    "working": "Working…",
+    "failed": "The request could not be completed. Your input has been kept.",
+    "details": "Error details",
+    "retry": "Retry",
+    "saved": "Saved.",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "copy": "Copy",
+    "copied": "Copied",
+    "showSecret": "Show secret",
+    "hideSecret": "Hide secret"
+  },
+  "emailSettings": {
+    "title": "Email Notifications",
+    "description": "Configure recipient, sender, and delivery settings for Auto Research email notifications.",
+    "configuredKey": "Configured key: {{key}}",
+    "recipient": {
+      "title": "Notification Email",
+      "label": "Recipient Email",
+      "help": "Auto Research requires a saved recipient email before execution can start.",
+      "save": "Save Notification Email"
+    },
+    "sender": {
+      "title": "Sender Email",
+      "label": "From Address",
+      "help": "This is the sender address used by Auto Research completion emails.",
+      "save": "Save Sender Email"
+    },
+    "delivery": {
+      "title": "Resend API Key",
+      "label": "Delivery Key",
+      "help": "Used to deliver Auto Research notifications through Resend.",
+      "save": "Save Delivery Key"
     }
+  },
+  "memorySettings": {
+    "title": "Memory",
+    "description": "Save preferences and context that AI agents will remember across conversations.",
+    "enabled": "Use saved memories",
+    "disabled": "Memory is disabled. AI agents will not use saved memories.",
+    "add": "Add memory",
+    "content": "Memory content",
+    "category": "Category",
+    "saved": "Saved memories ({{count}})",
+    "empty": "No memories saved yet.",
+    "edit": "Edit memory",
+    "save": "Save changes",
+    "deleteTitle": "Delete memory",
+    "deleteQuestion": "Delete this memory? This cannot be undone.",
+    "enableItem": "Use this memory",
+    "categories": {
+      "general": "General",
+      "preference": "Preference",
+      "context": "Context",
+      "workflow": "Workflow"
+    }
+  },
+  "credentialLabels": {
+    "name": "Name",
+    "optionalName": "Name (optional)",
+    "token": "GitHub token",
+    "key": "Gemini API key",
+    "description": "Description (optional)",
+    "enable": "Enable {{name}}",
+    "delete": "Delete {{name}}",
+    "deleteTitle": "Delete credential"
+  },
+  "localSettings": {
+    "gpuTitle": "GPU resources",
+    "detect": "Detect GPUs",
+    "noGpu": "No GPUs detected. Models will run on CPU.",
+    "utilization": "Utilization: {{value}}%",
+    "driver": "Driver: {{value}}",
+    "serverTitle": "Ollama server",
+    "serverDescription": "Connect to Ollama to run models locally. GPU and model selections apply immediately; save the server address separately.",
+    "serverUrl": "Server URL",
+    "test": "Test connection",
+    "save": "Save & refresh",
+    "connected_one": "Connected. {{count}} model available.",
+    "connected_other": "Connected. {{count}} models available.",
+    "modelsTitle": "Installed models",
+    "refresh": "Refresh",
+    "source": "Results from {{url}}",
+    "differentServer": "The address has changed. Refresh to load models from this server.",
+    "empty": "No models found. Download a model below to get started.",
+    "pullTitle": "Download a model",
+    "modelName": "Model name",
+    "pull": "Download",
+    "pulled": "Model downloaded.",
+    "examples": "Example model names — choose one to fill the field.",
+    "library": "Browse the Ollama model library"
+  },
+  "unsaved": {
+    "title": "Leave these changes?",
+    "description": "You have unsaved changes. Keep editing to save them, or discard them and leave.",
+    "keepEditing": "Keep editing",
+    "discard": "Discard changes",
+    "leave": "Leave page",
+    "busyTitle": "A request is still in progress",
+    "busyDescription": "Wait for the save or download to finish before leaving.",
+    "keyDescription": "The new API key is already created, but you have not confirmed that you saved it. If you leave, this key will no longer be shown."
+  },
+  "providerAccount": {
+    "customApi": "Custom API",
+    "keyTitle": "{{provider}} API key",
+    "customDescription": "Connect using an API token and an optional custom endpoint.",
+    "replaceKey": "Enter a new key to replace the saved key after verification.",
+    "enterKey": "Enter a key to verify and save this connection.",
+    "baseUrl": "API base URL",
+    "defaultUrl": "Leave empty to use the default endpoint.",
+    "token": "API token",
+    "apiKey": "API key",
+    "verifying": "Verifying…",
+    "verifySave": "Verify and save",
+    "getKey": "Get a {{provider}} API key",
+    "statusUnknown": "Status unavailable",
+    "refresh": "Refresh",
+    "statusFailed": "Could not check the connection status.",
+    "geminiBoth": "OAuth and API key are available.",
+    "geminiOAuth": "Connected with OAuth.",
+    "geminiApi": "Connected with an API key."
   }
 }

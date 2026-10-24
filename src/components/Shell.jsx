@@ -5,6 +5,7 @@ import { WebglAddon } from '@xterm/addon-webgl';
 import { WebLinksAddon } from '@xterm/addon-web-links';
 import '@xterm/xterm/css/xterm.css';
 import { useTranslation } from 'react-i18next';
+import { Button } from './ui/button';
 import { IS_PLATFORM } from '../constants/config';
 import { stripInternalContextPrefix } from '../utils/sessionFormatting';
 
@@ -95,6 +96,7 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
   const ws = useRef(null);
   const reconnectTimer = useRef(null);
   const unmountedRef = useRef(false);
+  const manuallyDisconnected = useRef(false);
   const [isConnected, setIsConnected] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isRestarting, setIsRestarting] = useState(false);
@@ -160,11 +162,12 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
   const connectingLock = useRef(false);
 
   const connectWebSocket = useCallback(async () => {
-    if (connectingLock.current) return;
+    if (unmountedRef.current || manuallyDisconnected.current || connectingLock.current) return;
     if (ws.current && (ws.current.readyState === WebSocket.CONNECTING || ws.current.readyState === WebSocket.OPEN)) return;
 
     // Close any lingering socket in CLOSING state before opening a new one
     if (ws.current && ws.current.readyState === WebSocket.CLOSING) {
+      ws.current.onopen = null;
       ws.current.onclose = null;
       ws.current.onerror = null;
       ws.current.onmessage = null;
@@ -177,6 +180,7 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
       const wsUrl = buildShellWebSocketUrl(wsPath);
 
       ws.current = new WebSocket(wsUrl);
+      const socket = ws.current;
 
       ws.current.onopen = () => {
         connectingLock.current = false;
@@ -188,7 +192,7 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
         setIsAuthPanelHidden(false);
 
         setTimeout(() => {
-          if (fitAddon.current && terminal.current && ws.current && ws.current.readyState === WebSocket.OPEN) {
+          if (ws.current === socket && fitAddon.current && terminal.current && socket.readyState === WebSocket.OPEN) {
             fitAddon.current.fit();
 
             ws.current.send(JSON.stringify({
@@ -259,9 +263,9 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
         setIsAuthPanelHidden(false);
 
         // Auto-reconnect after backend restarts (e.g. --watch mode)
-        if (!unmountedRef.current) {
+        if (!unmountedRef.current && !manuallyDisconnected.current) {
           reconnectTimer.current = setTimeout(() => {
-            if (!unmountedRef.current) {
+            if (!unmountedRef.current && !manuallyDisconnected.current) {
               connectWebSocket();
             }
           }, 3000);
@@ -282,23 +286,22 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
 
   const connectToShell = useCallback(() => {
     if (!isInitialized) return;
+    manuallyDisconnected.current = false;
+    clearTimeout(reconnectTimer.current);
     connectWebSocket();
   }, [isInitialized, connectWebSocket]);
 
   const disconnectFromShell = useCallback(() => {
+    manuallyDisconnected.current = true;
     clearTimeout(reconnectTimer.current);
     connectingLock.current = false;
     if (ws.current) {
+      ws.current.onopen = null;
       ws.current.onclose = null;
       ws.current.onmessage = null;
       ws.current.onerror = null;
       ws.current.close();
       ws.current = null;
-    }
-
-    if (terminal.current) {
-      terminal.current.clear();
-      terminal.current.write('\x1b[2J\x1b[H');
     }
 
     setIsConnected(false);
@@ -311,21 +314,9 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
 
   const sessionDisplayName = useMemo(() => {
     if (!selectedSession) return null;
-    const rawName = selectedSession.__provider === 'cursor'
-      ? (selectedSession.name || 'Untitled Session')
-      : (selectedSession.summary || 'New Session');
-    return stripInternalContextPrefix(rawName) || 'New Session';
-  }, [selectedSession]);
-
-  const sessionDisplayNameShort = useMemo(() => {
-    if (!sessionDisplayName) return null;
-    return sessionDisplayName.slice(0, 30);
-  }, [sessionDisplayName]);
-
-  const sessionDisplayNameLong = useMemo(() => {
-    if (!sessionDisplayName) return null;
-    return sessionDisplayName.slice(0, 50);
-  }, [sessionDisplayName]);
+    const rawName = selectedSession.summary || selectedSession.title || selectedSession.name || t('shell.status.newSession');
+    return stripInternalContextPrefix(rawName) || t('shell.status.newSession');
+  }, [selectedSession, t]);
 
   const restartShell = () => {
     setIsRestarting(true);
@@ -333,6 +324,7 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
     connectingLock.current = false;
 
     if (ws.current) {
+      ws.current.onopen = null;
       ws.current.onclose = null;
       ws.current.onmessage = null;
       ws.current.onerror = null;
@@ -374,8 +366,10 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
     }
 
 
+    unmountedRef.current = false;
+    manuallyDisconnected.current = false;
     terminal.current = new Terminal({
-      cursorBlink: true,
+      cursorBlink: !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
       fontSize: 14,
       fontFamily: 'Menlo, Monaco, "Courier New", monospace',
       allowProposedApi: true,
@@ -391,7 +385,7 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
         foreground: '#d4d4d4',
         cursor: '#ffffff',
         cursorAccent: '#1e1e1e',
-        selection: '#264f78',
+        selectionBackground: '#555555',
         selectionForeground: '#ffffff',
         black: '#000000',
         red: '#cd3131',
@@ -517,6 +511,7 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
     const resizeObserver = new ResizeObserver(() => {
       if (fitAddon.current && terminal.current) {
         setTimeout(() => {
+          if (!fitAddon.current || !terminal.current || unmountedRef.current) return;
           fitAddon.current.fit();
           if (ws.current && ws.current.readyState === WebSocket.OPEN) {
             ws.current.send(JSON.stringify({
@@ -540,7 +535,8 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
       resizeObserver.disconnect();
 
       if (ws.current) {
-        ws.current.onclose = null;
+        ws.current.onopen = null;
+      ws.current.onclose = null;
         ws.current.onmessage = null;
         ws.current.onerror = null;
         if (ws.current.readyState === WebSocket.OPEN || ws.current.readyState === WebSocket.CONNECTING) {
@@ -557,9 +553,9 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
   }, [selectedProject?.path || selectedProject?.fullPath, isRestarting, minimal, copyAuthUrlToClipboard]);
 
   useEffect(() => {
-    if (!autoConnect || !isInitialized || isConnecting || isConnected) return;
+    if (!autoConnect || !isInitialized) return;
     connectToShell();
-  }, [autoConnect, isInitialized, isConnecting, isConnected, connectToShell]);
+  }, [autoConnect, isInitialized, connectToShell]);
 
   if (!selectedProject) {
     return (
@@ -586,19 +582,19 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
     const showMobileAuthPanelToggle = hasAuthUrl && isAuthPanelHidden;
 
     return (
-      <div className="h-full w-full bg-gray-900 relative">
+      <div className="h-full w-full bg-[#1e1e1e] relative">
         <div ref={terminalRef} className="h-full w-full focus:outline-none" style={{ outline: 'none' }} />
         {showMobileAuthPanel && (
-          <div className="absolute inset-x-0 bottom-14 z-20 border-t border-gray-700/80 bg-gray-900/95 p-3 backdrop-blur-sm md:hidden">
+          <div className="absolute inset-x-0 bottom-14 z-20 border-t border-border bg-background p-3 text-foreground md:hidden">
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between gap-2">
-                <p className="text-xs text-gray-300">Open or copy the login URL:</p>
+                <p className="text-sm text-muted-foreground">{t('shell.auth.hint')}</p>
                 <button
                   type="button"
                   onClick={() => setIsAuthPanelHidden(true)}
-                  className="rounded bg-gray-700 px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-gray-100 hover:bg-gray-600"
+                  className="min-h-11 rounded-md px-3 text-sm hover:bg-accent focus-visible:ring-1 focus-visible:ring-ring"
                 >
-                  Hide
+                  {t('shell.auth.hide')}
                 </button>
               </div>
               <input
@@ -606,8 +602,8 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
                 value={displayAuthUrl}
                 readOnly
                 onClick={(event) => event.currentTarget.select()}
-                className="w-full rounded border border-gray-600 bg-gray-800 px-2 py-1 text-xs text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                aria-label="Authentication URL"
+                className="w-full min-h-11 rounded-md border border-input bg-background px-2 text-base text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                aria-label={t('shell.auth.url')}
               />
               <div className="flex items-center gap-2">
                 <button
@@ -615,9 +611,9 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
                   onClick={() => {
                     openAuthUrlInBrowser(displayAuthUrl);
                   }}
-                  className="flex-1 rounded bg-blue-600 px-3 py-2 text-xs font-medium text-white hover:bg-blue-700"
+                  className="min-h-11 flex-1 rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground focus-visible:ring-1 focus-visible:ring-ring"
                 >
-                  Open URL
+                  {t('shell.auth.open')}
                 </button>
                 <button
                   type="button"
@@ -625,11 +621,12 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
                     const copied = await copyAuthUrlToClipboard(displayAuthUrl);
                     setAuthUrlCopyStatus(copied ? 'copied' : 'failed');
                   }}
-                  className="flex-1 rounded bg-gray-700 px-3 py-2 text-xs font-medium text-white hover:bg-gray-600"
+                  className="min-h-11 flex-1 rounded-md border border-border px-3 py-2 text-sm hover:bg-accent focus-visible:ring-1 focus-visible:ring-ring"
                 >
-                  {authUrlCopyStatus === 'copied' ? 'Copied' : 'Copy URL'}
+                  {t(authUrlCopyStatus === 'copied' ? 'shell.auth.copied' : 'shell.auth.copy')}
                 </button>
               </div>
+              {authUrlCopyStatus === 'failed' && <p role="alert" className="text-sm text-destructive">{t('shell.auth.copyFailed')}</p>}
             </div>
           </div>
         )}
@@ -638,9 +635,9 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
             <button
               type="button"
               onClick={() => setIsAuthPanelHidden(false)}
-              className="rounded bg-gray-800/95 px-3 py-2 text-xs font-medium text-gray-100 shadow-lg backdrop-blur-sm hover:bg-gray-700"
+              className="min-h-11 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground hover:bg-accent focus-visible:ring-1 focus-visible:ring-ring"
             >
-              Show login URL
+              {t('shell.auth.show')}
             </button>
           </div>
         )}
@@ -649,109 +646,27 @@ function Shell({ selectedProject, selectedSession, initialCommand, isPlainShell 
   }
 
   return (
-    <div className="h-full flex flex-col bg-gray-900 w-full">
-      <div className="flex-shrink-0 bg-gray-800 border-b border-gray-700 px-4 py-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
-            {selectedSession && (
-              <span className="text-xs text-blue-300">
-                ({sessionDisplayNameShort}...)
-              </span>
-            )}
-            {!selectedSession && (
-              <span className="text-xs text-gray-400">{t('shell.status.newSession')}</span>
-            )}
-            {!isInitialized && (
-              <span className="text-xs text-yellow-400">{t('shell.status.initializing')}</span>
-            )}
-            {isRestarting && (
-              <span className="text-xs text-blue-400">{t('shell.status.restarting')}</span>
-            )}
-          </div>
-          <div className="flex items-center space-x-3">
-            {isConnected && (
-              <button
-                onClick={disconnectFromShell}
-                className="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 flex items-center space-x-1"
-                title={t('shell.actions.disconnectTitle')}
-              >
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                <span>{t('shell.actions.disconnect')}</span>
-              </button>
-            )}
-
-            <button
-              onClick={restartShell}
-              disabled={isRestarting || isConnected}
-              className="text-xs text-gray-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
-              title={t('shell.actions.restartTitle')}
-            >
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              <span>{t('shell.actions.restart')}</span>
-            </button>
-          </div>
+    <div className="flex h-full min-w-0 w-full flex-col bg-background text-foreground">
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-border px-3 py-1.5">
+        <div role="status" className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
+          <span aria-hidden="true" className={`h-1.5 w-1.5 shrink-0 rounded-full ${isConnected ? 'bg-green-600 dark:bg-green-400' : 'bg-muted-foreground'}`} />
+          <span>{!isInitialized ? t('shell.status.initializing') : isConnecting ? t('shell.connecting') : isConnected ? t('shell.status.connected') : t('shell.status.disconnected')}</span>
+        </div>
+        <div className="flex items-center gap-1">
+          {(isConnected || isConnecting) && <Button type="button" variant="ghost" size="sm" className="min-h-11 md:min-h-8" onClick={disconnectFromShell} title={t('shell.actions.disconnectTitle')}>{t('shell.actions.disconnect')}</Button>}
+          <Button type="button" variant="ghost" size="sm" className="min-h-11 md:min-h-8" onClick={restartShell} disabled={isRestarting || isConnected || isConnecting} title={t('shell.actions.restartTitle')}>{t('shell.actions.restart')}</Button>
         </div>
       </div>
-
-      <div className="flex-1 p-2 overflow-hidden relative">
-        <div ref={terminalRef} className="h-full w-full focus:outline-none" style={{ outline: 'none' }} />
-
-        {!isInitialized && (
-          <div className="absolute inset-0 flex items-center justify-center bg-gray-900 bg-opacity-90">
-            <div className="text-white">{t('shell.loading')}</div>
-          </div>
-        )}
-
-        {isInitialized && !isConnected && !isConnecting && (
-          <div className="absolute inset-0 flex items-center justify-center bg-gray-900 bg-opacity-90 p-4">
-            <div className="text-center max-w-sm w-full">
-              <button
-                onClick={connectToShell}
-                className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center space-x-2 text-base font-medium w-full sm:w-auto"
-                title={t('shell.actions.connectTitle')}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-                <span>{t('shell.actions.connect')}</span>
-              </button>
-              <p className="text-gray-400 text-sm mt-3 px-2">
-                {isPlainShell ?
-                  (initialCommand ?
-                    t('shell.runCommand', { command: initialCommand, projectName: selectedProject.displayName }) :
-                    t('shell.openTerminal', { projectName: selectedProject.displayName })) :
-                  selectedSession ?
-                    t('shell.resumeSession', { displayName: sessionDisplayNameLong }) :
-                    t('shell.startSession')
-                }
-              </p>
-            </div>
-          </div>
-        )}
-
-        {isConnecting && (
-          <div className="absolute inset-0 flex items-center justify-center bg-gray-900 bg-opacity-90 p-4">
-            <div className="text-center max-w-sm w-full">
-              <div className="flex items-center justify-center space-x-3 text-yellow-400">
-                <div className="w-6 h-6 animate-spin rounded-full border-2 border-yellow-400 border-t-transparent"></div>
-                <span className="text-base font-medium">{t('shell.connecting')}</span>
-              </div>
-              <p className="text-gray-400 text-sm mt-3 px-2">
-                {isPlainShell ?
-                  (initialCommand ?
-                    t('shell.runCommand', { command: initialCommand, projectName: selectedProject.displayName }) :
-                    t('shell.openTerminal', { projectName: selectedProject.displayName })) :
-                  t('shell.startCli', { projectName: selectedProject.displayName })
-                }
-              </p>
-            </div>
-          </div>
-        )}
+      <div className="relative min-h-0 flex-1 overflow-hidden bg-[#1e1e1e] p-2">
+        <div ref={terminalRef} className="h-full w-full focus:outline-none" />
+        {!isInitialized && <div className="absolute inset-0 z-10 flex items-center justify-center bg-background text-sm" role="status">{t('shell.loading')}</div>}
+        {isInitialized && !isConnected && !isConnecting && <div className="absolute inset-x-2 bottom-2 z-10 rounded-md border border-border bg-background p-3">
+          <Button type="button" onClick={connectToShell} className="min-h-11 w-full whitespace-normal" title={t('shell.actions.connectTitle')}>{t('shell.actions.connect')}</Button>
+          <p className="mt-2 break-words text-xs leading-relaxed text-muted-foreground">
+            {isPlainShell ? (initialCommand ? t('shell.runCommand', { command: initialCommand, projectName: selectedProject.displayName }) : t('shell.openTerminal', { projectName: selectedProject.displayName })) : selectedSession ? t('shell.resumeSession', { displayName: sessionDisplayName }) : t('shell.startSession')}
+          </p>
+        </div>}
+        {isConnecting && <div className="absolute inset-x-2 bottom-2 z-10 rounded-md border border-border bg-background p-3 text-sm text-muted-foreground" role="status">{t('shell.connecting')}</div>}
       </div>
     </div>
   );

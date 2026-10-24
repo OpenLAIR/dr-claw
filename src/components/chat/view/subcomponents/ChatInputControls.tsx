@@ -66,7 +66,7 @@ export default function ChatInputControls({
         type="button"
         onClick={onModeSwitch ?? undefined}
         disabled={!onModeSwitch}
-        className={`${compact ? 'w-[8.5rem] whitespace-nowrap truncate px-2 py-1 rounded-lg text-[11px] text-center justify-center' : 'px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg text-xs sm:text-sm'} font-medium border transition-all duration-200 ${!onModeSwitch ? 'cursor-not-allowed opacity-80' : ''} ${
+        className={`min-h-11 lg:min-h-8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${compact ? 'w-[8.5rem] whitespace-nowrap truncate px-2 py-1 rounded-lg text-[11px] text-center justify-center' : 'px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg text-xs sm:text-sm'} font-medium border transition-colors duration-150 ${!onModeSwitch ? 'cursor-not-allowed opacity-80' : ''} ${
           permissionMode === 'default'
             ? 'bg-muted/50 text-muted-foreground border-border/60 hover:bg-muted'
             : permissionMode === 'acceptEdits'

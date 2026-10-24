@@ -1,4 +1,28 @@
 {
+  "queue": {
+    "removeLabel": "Remove",
+    "title": "Message queue",
+    "add": "Add to queue",
+    "waiting": "Queued: {{count}}",
+    "paused": "Queue paused: {{count}}",
+    "resume": "Continue queue",
+    "remove": "Remove queued message {{number}}",
+    "files": "{{count}} file(s)",
+    "edit": "Edit queued message {{number}}",
+    "editLabel": "Edit",
+    "editHint": "Keeps its place in the queue. This message waits until you finish editing.",
+    "cancelEdit": "Cancel edit",
+    "saveEdit": "Save changes",
+    "restored": "Messages and attachments restored. Review them, then continue when ready.",
+    "saving": "Saving queue on this device…",
+    "saveFailed": "The queue could not be saved on this device. Keep this window open and retry.",
+    "restoreFailed": "The saved queue could not be read. Retry before sending a new message.",
+    "retryStorage": "Retry storage",
+    "checkDelivery": "Check the previous send",
+    "uncertain": "The app closed during a send. That message may already be in the conversation. Check the history before sending it again; you can cancel here and remove it from the queue.",
+    "sendAgain": "Send again and continue",
+    "waitForRestore": "Wait for queue recovery before sending"
+  },
   "status": {
     "thinking": "Thinking...",
     "runningCode": "Running code"
@@ -132,7 +156,20 @@
     },
     "technicalDetails": "Technical details"
   },
+  "voice": {
+    "title": "Voice input",
+    "start": "Start voice input",
+    "stop": "Stop recording",
+    "denied": "Microphone access was denied. Allow microphone access in your browser settings to try again.",
+    "network": "Speech recognition could not connect. Check your connection and try again.",
+    "noDevice": "No microphone was detected. Check your audio input device.",
+    "failed": "Voice input could not start. Try again or type your message.",
+    "unsupported": "Voice input is not available in this browser. You can continue by typing your message."
+  },
   "input": {
+    "preparing": "Preparing message",
+    "moreTools": "More tools",
+    "message": "Message",
     "placeholder": "Describe your research goal, ask a question, or start a workflow...",
     "placeholderDefault": "Type your message...",
     "disabled": "Input disabled",
@@ -144,10 +181,10 @@
     "send": "Send",
     "stop": "Stop",
     "hintText": {
-      "ctrlEnter": "Ctrl+Enter to send • Shift+Enter for new line • Tab to change modes • / for slash commands",
-      "enter": "Enter to send • Shift+Enter for new line • Tab to change modes • / for slash commands"
+      "ctrlEnter": "Ctrl/⌘+Enter to send · Enter for a new line · / for commands",
+      "enter": "Enter to send · Shift+Enter for a new line · / for commands"
     },
-    "clickToChangeMode": "Click to change permission mode (or press Tab in input)",
+    "clickToChangeMode": "Change permission mode",
     "showAllCommands": "Show all commands",
     "clearInput": "Clear input",
     "scrollToBottom": "Scroll to bottom",
@@ -346,7 +383,7 @@
     },
     "continue": {
       "title": "Continue your conversation",
-      "description": "Ask questions about your code, request changes, or get help with development tasks"
+      "description": "Ask a question, compare evidence, or plan your next step."
     },
     "loading": {
       "olderMessages": "Loading older messages...",
@@ -367,6 +404,8 @@
     "title": "Session Context",
     "description": "Files, tasks, and outputs actually observed in this session trace.",
     "codexNotice": "Codex visibility is partial and depends on the tool events currently exposed by the runtime.",
+    "reviewLoadError": "Could not load review status. Retry to restore it.",
+    "reviewSaveError": "Could not save review status. This output remains unread.",
     "traceError": "Failed to load the full session trace. Showing live in-memory messages only.",
     "fileTreeError": "Failed to load project files.",
     "stats": {
@@ -385,7 +424,8 @@
     "actions": {
       "collapse": "Collapse context sidebar",
       "expand": "Expand context sidebar",
-      "resize": "Drag to resize"
+      "resize": "Resize context sidebar",
+      "resizeHint": "Drag to resize · Double-click to reset"
     },
     "filters": {
       "all": "All",
@@ -402,6 +442,7 @@
       "injectedContext": "No file or directory context has been observed yet.",
       "taskContext": "No task or todo context captured yet.",
       "reviewQueue": "No generated files found for this session yet.",
+      "filteredReview": "No outputs match this filter.",
       "files": "No files found"
     },
     "sidebarTabs": {
@@ -411,6 +452,7 @@
       "shell": "Shell",
       "git": "Code History"
     },
+    "showMore": "Show {{count}} more",
     "showLess": "Show less",
     "preview": {
       "titleFallback": "Preview",
@@ -421,6 +463,7 @@
       "selectToReview": "Select a file to review",
       "unreadHint": "Outputs stay unread until you open them from the review queue.",
       "closePreview": "Close preview",
+      "openFile": "Open {{name}} in editor",
       "openInEditor": "Open in Editor"
     }
   },
@@ -432,7 +475,10 @@
     "status": {
       "newSession": "New Session",
       "initializing": "Initializing...",
-      "restarting": "Restarting..."
+      "restarting": "Restarting...",
+      "connected": "Connected",
+      "disconnected": "Disconnected",
+      "completed": "Completed"
     },
     "actions": {
       "disconnect": "Disconnect",
@@ -445,7 +491,7 @@
     "loading": "Loading terminal...",
     "connecting": "Connecting to shell...",
     "startSession": "Start a new Claude session",
-    "resumeSession": "Resume session: {{displayName}}...",
+    "resumeSession": "Resume session: {{displayName}}",
     "runCommand": "Run {{command}} in {{projectName}}",
     "openTerminal": "Open terminal in {{projectName}}",
     "startCli": "Starting Claude CLI in {{projectName}}",
@@ -462,7 +508,18 @@
       "currentSession": "Current Session",
       "newShell": "New shell",
       "tabTitle": "Shell {{index}}",
-      "closeShell": "Close {{title}}"
+      "closeShell": "Close {{title}}",
+      "tabs": "Terminals"
+    },
+    "auth": {
+      "hint": "Open or copy the login URL",
+      "hide": "Hide",
+      "url": "Authentication URL",
+      "open": "Open URL",
+      "copy": "Copy URL",
+      "copied": "Copied",
+      "show": "Show login URL",
+      "copyFailed": "Could not copy the URL. Select it and copy manually."
     }
   },
   "projectSelection": {

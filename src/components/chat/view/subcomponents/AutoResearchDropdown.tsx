@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import { ComposerToolsContext } from './ComposerMoreTools';
+import React, { useContext, useState, useMemo } from 'react';
 import { ChevronDown, ChevronRight, FlaskConical, Settings } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { AUTO_RESEARCH_PACKS, type LocaleKey } from '../../../../constants/autoResearchPacks';
@@ -28,6 +29,7 @@ export default function AutoResearchDropdown({
   const { t, i18n } = useTranslation('chat');
   const locale = useMemo(() => resolveLocaleKey(i18n.language || 'en'), [i18n.language]);
   const [open, setOpen] = useState(false);
+  const closeTools = useContext(ComposerToolsContext);
   const [expandedPack, setExpandedPack] = useState<string | null>(null);
   const select = (command: string, packName: string, wfName: string) => {
     if (setAttachedPrompt) {
@@ -42,12 +44,13 @@ export default function AutoResearchDropdown({
     }
     setTimeout(() => textareaRef.current?.focus(), 100);
     setOpen(false);
+    closeTools();
     setExpandedPack(null);
   };
 
   return (
     <div>
-      <Button type="button" variant="outline" size="sm" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)}>
+      <Button type="button" variant="outline" size="sm" className="min-h-11 px-2 lg:min-h-8" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)}>
         <FlaskConical className="h-4 w-4" />{t('autoResearchPicker.title')}<ChevronDown className="h-3 w-3" />
       </Button>
 

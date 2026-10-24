@@ -98,14 +98,14 @@ export default function MainContentTitle({
           </div>
         ) : activeTab === 'chat' && selectedSession && selectedProject ? (
           <div className="min-w-0">
-            <h2 className="text-[15px] font-bold text-foreground whitespace-nowrap overflow-x-auto scrollbar-hide leading-tight">
+            <h1 className="text-[15px] font-bold text-foreground whitespace-nowrap overflow-x-auto scrollbar-hide leading-tight">
               {getSessionTitle(selectedSession)}
-            </h2>
+            </h1>
             <div className="text-[12px] text-muted-foreground truncate leading-tight mt-0.5">{selectedProject.displayName}</div>
           </div>
         ) : showChatNewSession && selectedProject ? (
           <div className="min-w-0">
-            <h2 className="text-[15px] font-bold text-foreground leading-tight">{t('mainContent.newSession')}</h2>
+            <h1 className="text-[15px] font-bold text-foreground leading-tight">{t('mainContent.newSession')}</h1>
             <div className="text-[12px] text-muted-foreground truncate leading-tight mt-0.5">{selectedProject.displayName}</div>
           </div>
         ) : selectedProject ? (

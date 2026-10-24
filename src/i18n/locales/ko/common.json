@@ -306,7 +306,15 @@
     "askAboutFile": "이 파일에 대해 묻기",
     "askAboutDirectory": "이 폴더에 대해 묻기",
     "askAboutFilePrompt": "파일 `{{path}}`를 설명해 주세요. 이 파일은 무엇을 하고, 이 프로젝트에서 어떻게 사용되며, 수정하기 전에 무엇을 알아야 하나요?",
-    "askAboutDirectoryPrompt": "폴더 `{{path}}`를 설명해 주세요. 이 폴더의 목적은 무엇이고, 안에 중요한 파일이나 하위 모듈은 무엇이며, 이 프로젝트에서 어떤 역할을 하나요?"
+    "askAboutDirectoryPrompt": "폴더 `{{path}}`를 설명해 주세요. 이 폴더의 목적은 무엇이고, 안에 중요한 파일이나 하위 모듈은 무엇이며, 이 프로젝트에서 어떤 역할을 하나요?",
+    "loadFailed": "파일을 불러오지 못했습니다. 다시 시도해 주세요.",
+    "directoryLoadFailed": "이 폴더를 열지 못했습니다.",
+    "searchFailed": "모든 폴더를 검색하지 못했습니다. 아래에는 이미 불러온 파일만 표시됩니다.",
+    "searching": "폴더 검색 중…",
+    "emptyFolder": "빈 폴더입니다.",
+    "copyFailed": "경로를 복사하지 못했습니다. 다시 시도해 주세요.",
+    "deleteFailed": "삭제하지 못했습니다. 항목은 유지됩니다. 다시 시도해 주세요.",
+    "deleting": "삭제 중…"
   },
   "projectWizard": {
     "title": "새 프로젝트 생성",
@@ -482,7 +490,9 @@
     "checkingStatus": "상태 확인 중…",
     "statusUnavailable": "상태를 확인할 수 없습니다",
     "retryStatus": "연구 상태 다시 확인",
-    "openMenu": "메뉴 열기"
+    "openMenu": "메뉴 열기",
+    "closeMenu": "메뉴 닫기",
+    "resizeSidebar": "사이드바 너비 조절"
   },
   "onboarding": {
     "systemCheck": "시스템 확인",
@@ -891,7 +901,15 @@
     "noMcp": "MCP 설정 불필요",
     "workflowCount": "워크플로 {{count}}개",
     "includedWorkflows": "포함된 워크플로",
-    "gpuNote": "컴퓨팅 리소스에 연결된 서버에서 GPU 환경을 확인합니다."
+    "gpuNote": "컴퓨팅 리소스에 연결된 서버에서 GPU 환경을 확인합니다.",
+    "copyCommand": "{{label}} 명령 복사",
+    "copyFailed": "복사하지 못했습니다. 명령 텍스트를 선택하여 직접 복사하세요.",
+    "showKey": "{{name}} 표시",
+    "hideKey": "{{name}} 숨기기",
+    "otherPending": "{{name}} 구성이 완료될 때까지 기다리세요.",
+    "configFailed": "구성이 모두 완료되지 않았습니다. 일부 단계는 적용되었을 수 있으며 입력은 유지됩니다.",
+    "resultDetails": "구성 세부 정보",
+    "invalidResponse": "구성 응답을 읽지 못했습니다(HTTP {{status}})."
   },
   "computeGuide": {
     "guideTitle": "컴퓨팅 노드 사용 방법",
@@ -913,5 +931,85 @@
     "dismiss": "나중에",
     "confirm": "프로젝트 분석",
     "unavailable": "설치되지 않음"
+  },
+  "git": {
+    "title": "코드 기록",
+    "failed": "요청을 완료하지 못했습니다.",
+    "details": "오류 세부 정보",
+    "retry": "다시 시도",
+    "loading": "불러오는 중…",
+    "noDiff": "표시할 텍스트 차이가 없습니다.",
+    "selectProject": "코드 기록을 볼 프로젝트를 선택하세요.",
+    "branch": "현재 브랜치",
+    "newBranch": "브랜치 만들기",
+    "refresh": "코드 기록 새로고침",
+    "views": "코드 기록 보기",
+    "changes": "변경 사항",
+    "history": "기록",
+    "completed": "{{action}} 완료.",
+    "noRepo": "버전 관리가 활성화되지 않았습니다",
+    "enableDescription": "Git을 활성화하여 프로젝트의 변경 사항을 추적하세요.",
+    "initialDescription": "아직 커밋이 없습니다. 프로젝트의 초기 스냅샷을 만드세요.",
+    "commitSelected": "선택한 파일 커밋 ({{count}})",
+    "message": "커밋 메시지",
+    "generate": "메시지 생성",
+    "suggestion": "입력한 내용을 유지했습니다. 생성된 제안:",
+    "useSuggestion": "제안 사용",
+    "selected": "{{total}}개 중 {{count}}개 선택",
+    "all": "전체",
+    "none": "선택 해제",
+    "selectFile": "{{file}} 선택",
+    "openFile": "{{file}} 열기",
+    "diff": "차이",
+    "deleteFile": "{{file}} 삭제",
+    "discardFile": "{{file}} 변경 취소",
+    "noChanges": "변경 사항이 없습니다.",
+    "noCommits": "커밋이 없습니다.",
+    "wrap": "차이 줄 바꿈",
+    "branchName": "브랜치 이름",
+    "branchFrom": "{{branch}}에서 생성",
+    "cancel": "취소",
+    "confirm": "확인: {{action}}",
+    "actions": {
+      "fetch": "가져오기",
+      "pull": "풀",
+      "push": "푸시",
+      "publish": "브랜치 게시",
+      "init": "Git 활성화",
+      "initial-commit": "초기 스냅샷 생성",
+      "commit": "커밋",
+      "create-branch": "브랜치 생성",
+      "discard": "변경 취소",
+      "delete-untracked": "파일 삭제",
+      "checkout": "브랜치 전환",
+      "generate-commit-message": "메시지 생성"
+    },
+    "status": {
+      "modified": "수정됨",
+      "added": "추가됨",
+      "deleted": "삭제됨",
+      "untracked": "추적되지 않음"
+    },
+    "confirmations": {
+      "discard": "{{file}}의 모든 로컬 변경 사항을 취소할까요? 되돌릴 수 없습니다.",
+      "delete-untracked": "추적되지 않는 {{file}} 파일을 삭제할까요? 되돌릴 수 없습니다.",
+      "commit": "이 메시지로 선택한 파일 {{count}}개를 커밋할까요?",
+      "pull": "원격 변경 사항을 {{branch}}에 가져올까요?",
+      "push": "{{branch}}의 로컬 커밋을 원격에 푸시할까요?",
+      "publish": "{{branch}}를 원격에 게시할까요?"
+    }
+  },
+  "loginDialog": {
+    "title": "{{provider}} 로그인",
+    "missing": "필요한 CLI가 설치되지 않았습니다. 먼저 설치한 후 다시 로그인하세요.",
+    "install": "{{provider}} 설치",
+    "installing": "설치 중…",
+    "installed": "설치가 완료되었습니다. CLI 상태를 다시 확인합니다…",
+    "installFailed": "설치하지 못했습니다. 다시 시도하거나 공식 가이드를 여세요.",
+    "recheck": "다시 확인",
+    "guide": "공식 가이드 열기",
+    "loading": "로그인 터미널을 여는 중…",
+    "refreshFailed": "CLI 상태를 새로고침하지 못했습니다. 다시 시도하세요.",
+    "openFailed": "가이드를 열지 못했습니다. 다시 시도하세요."
   }
 }

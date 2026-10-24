@@ -7,7 +7,20 @@ import TOML from '@iarna/toml';
 import { getCodexSessions, getCodexSessionMessages, deleteCodexSession } from '../projects.js';
 import { getBundledCodexCliInvocation } from '../utils/codexCli.js';
 
+import { codexConfigPath, updateMcpConfigFile } from '../utils/mcpConfigEdit.js';
+
 const router = express.Router();
+
+router.put('/mcp/config/server', async (req, res) => {
+  try {
+    await updateMcpConfigFile(codexConfigPath(), 'codex', req.body);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('[ERROR] Updating codex MCP configuration:', error.message);
+    res.status(error.status || 500).json({ error: error.status ? error.message : 'Unable to save configuration. The original entry was not removed.' });
+  }
+});
+
 
 /**
  * `codex mcp ...` edits ~/.codex/config.toml, which the CLI behind Dr. Claw's
@@ -32,7 +45,7 @@ function createCliResponder(res) {
 
 router.get('/config', async (req, res) => {
   try {
-    const configPath = path.join(os.homedir(), '.codex', 'config.toml');
+    const configPath = codexConfigPath();
     const content = await fs.readFile(configPath, 'utf8');
     const config = TOML.parse(content);
 
@@ -261,7 +274,7 @@ router.get('/mcp/cli/get/:name', async (req, res) => {
 
 router.get('/mcp/config/read', async (req, res) => {
   try {
-    const configPath = path.join(os.homedir(), '.codex', 'config.toml');
+    const configPath = codexConfigPath();
 
     let configData = null;
 
@@ -269,7 +282,7 @@ router.get('/mcp/config/read', async (req, res) => {
       const fileContent = await fs.readFile(configPath, 'utf8');
       configData = TOML.parse(fileContent);
     } catch (error) {
-      // Config file doesn't exist
+      if (error.code !== 'ENOENT') throw error;
     }
 
     if (!configData) {
@@ -282,9 +295,10 @@ router.get('/mcp/config/read', async (req, res) => {
         servers.push({
           id: name,
           name: name,
-          type: 'stdio',
+          type: config.url ? 'http' : 'stdio',
           scope: 'user',
           config: {
+            url: config.url || '',
             command: config.command || '',
             args: config.args || [],
             env: config.env || {}

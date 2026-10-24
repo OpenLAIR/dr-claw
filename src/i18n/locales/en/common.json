@@ -306,7 +306,15 @@
     "askAboutFile": "Ask about this file",
     "askAboutDirectory": "Ask about this folder",
     "askAboutFilePrompt": "Please explain the file `{{path}}`. What does it do, how is it used in this project, and what should I know before editing it?",
-    "askAboutDirectoryPrompt": "Please explain the folder `{{path}}`. What is its purpose, what are the important files or submodules inside it, and how does it fit into this project?"
+    "askAboutDirectoryPrompt": "Please explain the folder `{{path}}`. What is its purpose, what are the important files or submodules inside it, and how does it fit into this project?",
+    "loadFailed": "Could not load files. Try again.",
+    "directoryLoadFailed": "Could not open this folder.",
+    "searchFailed": "Could not search all folders. Results below only include loaded files.",
+    "searching": "Searching folders…",
+    "emptyFolder": "This folder is empty.",
+    "copyFailed": "Could not copy the path. Try again.",
+    "deleteFailed": "Could not delete this item. It has been kept. Try again.",
+    "deleting": "Deleting…"
   },
   "projectWizard": {
     "title": "Create New Project",
@@ -487,7 +495,9 @@
     "checkingStatus": "Checking status…",
     "statusUnavailable": "Status unavailable",
     "retryStatus": "Retry research status",
-    "openMenu": "Open menu"
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "resizeSidebar": "Resize sidebar"
   },
   "onboarding": {
     "systemCheck": "System Check",
@@ -896,7 +906,15 @@
     "noMcp": "No MCP setup",
     "workflowCount": "{{count}} workflows",
     "includedWorkflows": "Included workflows",
-    "gpuNote": "GPU environment is detected from servers connected in Compute Resources."
+    "gpuNote": "GPU environment is detected from servers connected in Compute Resources.",
+    "copyCommand": "Copy {{label}} command",
+    "copyFailed": "Could not copy. Select the command text and copy it manually.",
+    "showKey": "Show {{name}}",
+    "hideKey": "Hide {{name}}",
+    "otherPending": "Wait for {{name}} to finish configuring.",
+    "configFailed": "Configuration did not fully complete. Some steps may have applied; your input has been kept.",
+    "resultDetails": "Configuration details",
+    "invalidResponse": "Could not read the configuration response (HTTP {{status}})."
   },
   "computeGuide": {
     "guideTitle": "How to use Compute Nodes",
@@ -918,5 +936,85 @@
     "dismiss": "Not Now",
     "confirm": "Analyze Project",
     "unavailable": "Not installed"
+  },
+  "git": {
+    "title": "Code history",
+    "failed": "The request could not be completed.",
+    "details": "Error details",
+    "retry": "Retry",
+    "loading": "Loading…",
+    "noDiff": "No text diff available.",
+    "selectProject": "Choose a project to view code history.",
+    "branch": "Current branch",
+    "newBranch": "Create branch",
+    "refresh": "Refresh code history",
+    "views": "Code history views",
+    "changes": "Changes",
+    "history": "History",
+    "completed": "{{action}} completed.",
+    "noRepo": "Version control is not enabled",
+    "enableDescription": "Enable Git to track changes in this project.",
+    "initialDescription": "This repository has no commits yet. Create an initial snapshot of the project.",
+    "commitSelected": "Commit selected files ({{count}})",
+    "message": "Commit message",
+    "generate": "Generate message",
+    "suggestion": "Your draft was preserved. Generated suggestion:",
+    "useSuggestion": "Use suggestion",
+    "selected": "{{count}} of {{total}} selected",
+    "all": "All",
+    "none": "None",
+    "selectFile": "Select {{file}}",
+    "openFile": "Open {{file}}",
+    "diff": "Diff",
+    "deleteFile": "Delete {{file}}",
+    "discardFile": "Discard changes to {{file}}",
+    "noChanges": "No changes detected.",
+    "noCommits": "No commits found.",
+    "wrap": "Wrap diff lines",
+    "branchName": "Branch name",
+    "branchFrom": "Create from {{branch}}",
+    "cancel": "Cancel",
+    "confirm": "Confirm: {{action}}",
+    "actions": {
+      "fetch": "Fetch",
+      "pull": "Pull",
+      "push": "Push",
+      "publish": "Publish branch",
+      "init": "Enable Git",
+      "initial-commit": "Create initial snapshot",
+      "commit": "Commit",
+      "create-branch": "Create branch",
+      "discard": "Discard",
+      "delete-untracked": "Delete",
+      "checkout": "Switch branch",
+      "generate-commit-message": "Generate message"
+    },
+    "status": {
+      "modified": "Modified",
+      "added": "Added",
+      "deleted": "Deleted",
+      "untracked": "Untracked"
+    },
+    "confirmations": {
+      "discard": "Discard all local changes to {{file}}? This cannot be undone.",
+      "delete-untracked": "Delete the untracked file {{file}}? This cannot be undone.",
+      "commit": "Commit {{count}} selected files with this message?",
+      "pull": "Pull remote changes into {{branch}}?",
+      "push": "Push local commits on {{branch}} to the remote?",
+      "publish": "Publish {{branch}} to the remote?"
+    }
+  },
+  "loginDialog": {
+    "title": "{{provider}} Login",
+    "missing": "Required CLI is not installed. Install it first, then retry login.",
+    "install": "Install {{provider}}",
+    "installing": "Installing…",
+    "installed": "Installation finished. Rechecking CLI status…",
+    "installFailed": "Installation failed. Retry or open the official guide.",
+    "recheck": "Recheck",
+    "guide": "Open official guide",
+    "loading": "Opening login terminal…",
+    "refreshFailed": "Could not refresh CLI status. Try again.",
+    "openFailed": "Could not open the guide. Try again."
   }
 }

@@ -1,3 +1,4 @@
+import ComposerMoreTools from './ComposerMoreTools';
 import CommandMenu from '../../../CommandMenu';
 import ClaudeStatus from '../../../ClaudeStatus';
 import { MicButton } from '../../../MicButton.jsx';
@@ -9,7 +10,7 @@ import ReferencePicker from '../../../references/view/ReferencePicker';
 import PromptBadgeDropdown from './PromptBadgeDropdown';
 import WorkbenchDialog from '../../../ui/WorkbenchDialog';
 import QuickSettingsPanel from '../../../QuickSettingsPanel';
-import { Plus, SlidersHorizontal } from 'lucide-react';
+import { Plus, SlidersHorizontal, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect, useRef } from 'react';
 import type {
@@ -99,6 +100,9 @@ interface ChatComposerProps {
   handleGrantToolPermission: (suggestion: { entry: string; toolName: string }) => { success: boolean };
   claudeStatus: { text: string; tokens: number; can_interrupt: boolean } | null;
   isLoading: boolean;
+  isPreparing?: boolean;
+  isQueueRestoring?: boolean;
+  queueContent?: ReactNode;
   onAbortSession: () => void;
   provider: Provider | string;
   permissionMode: PermissionMode | string;
@@ -188,6 +192,9 @@ export default function ChatComposer({
   handleGrantToolPermission,
   claudeStatus,
   isLoading,
+  isPreparing = false,
+  isQueueRestoring = false,
+  queueContent,
   onAbortSession,
   provider,
   permissionMode,
@@ -571,8 +578,9 @@ export default function ChatComposer({
 
         <div
           {...getRootProps()}
-          className={`relative bg-card rounded-lg border border-border focus-within:shadow-sm focus-within:border-primary/30 focus-within:ring-1 focus-within:ring-primary/15 transition-all duration-200 ${isTextareaExpanded ? 'chat-input-expanded' : ''}`}
+          className={`relative bg-card rounded-lg border border-border focus-within:border-ring focus-within:ring-1 focus-within:ring-ring transition-[border-color,box-shadow] duration-150 ${isTextareaExpanded ? 'chat-input-expanded' : ''}`}
         >
+          {queueContent}
           <input {...getInputProps()} />
           {attachedPrompt && (
             <PromptBadgeDropdown
@@ -581,16 +589,17 @@ export default function ChatComposer({
               onUpdate={onUpdateAttachedPrompt}
             />
           )}
-          <div aria-hidden="true" className="absolute inset-0 pointer-events-none overflow-hidden rounded-lg">
-            <div className={`chat-input-placeholder block w-full pl-5 ${centered ? 'pr-16 pt-4 pb-2 text-sm' : 'pr-20 sm:pr-40 py-1.5 sm:py-4 text-base'} text-transparent leading-6 whitespace-pre-wrap break-words`}>{/* taste-skill-ignore: transparent overlay aligns mention highlights with the visible textarea text. */}
-              {renderInputWithMentions(input)}
-            </div>
-          </div>
 
           <div className="relative z-10">
+            <div ref={inputHighlightRef} aria-hidden="true" className="absolute inset-0 pointer-events-none overflow-hidden rounded-lg">
+              <div className="chat-input-placeholder block w-full px-4 py-3 text-base lg:text-sm text-transparent leading-6 whitespace-pre-wrap break-words">{/* taste-skill-ignore: transparent overlay aligns mention highlights with the visible textarea text. */}
+                {renderInputWithMentions(input)}
+              </div>
+            </div>
             <textarea
               ref={textareaRef}
               value={input}
+              readOnly={isPreparing}
               onChange={onInputChange}
               onClick={onTextareaClick}
               onKeyDown={onTextareaKeyDown}
@@ -598,66 +607,28 @@ export default function ChatComposer({
               onScroll={(event) => onTextareaScrollSync(event.target as HTMLTextAreaElement)}
               onFocus={() => onInputFocusChange?.(true)}
               onInput={onTextareaInput}
+              aria-label={t('input.message')}
               placeholder={placeholder}
-              className={`chat-input-placeholder block w-full pl-5 ${centered ? 'pr-16 pt-4 pb-2 min-h-[72px] max-h-[200px] text-sm' : 'pr-20 sm:pr-40 py-1.5 sm:py-4 min-h-[50px] sm:min-h-[80px] max-h-[40vh] sm:max-h-[300px] text-base'} bg-transparent rounded-lg focus:outline-none text-foreground placeholder:text-muted-foreground resize-none overflow-y-auto leading-6 transition-all duration-200 ${isLoading && !input.trim().startsWith('/') ? 'opacity-50' : ''}`}
-              style={{ height: centered ? '72px' : '50px' }}
+              className="chat-input-placeholder block w-full px-4 py-3 min-h-[80px] max-h-[min(40dvh,300px)] text-base lg:text-sm bg-transparent rounded-lg focus:outline-none text-foreground placeholder:text-muted-foreground resize-none overflow-y-auto leading-6"
+              style={{ height: '80px' }}
             />
-            <div className={`absolute ${centered ? 'right-11' : 'right-14'} top-1/2 transform -translate-y-1/2`}>
-              <MicButton onTranscript={onTranscript} className={centered ? '!w-7 !h-7' : '!w-9 !h-9'} />
-            </div>
-
-            <button
-              type="submit"
-              disabled={
-                (!input.trim() && attachedFiles.length === 0 && !attachedPrompt) ||
-                (isLoading && !input.trim().startsWith('/btw '))
-              }
-              onMouseDown={(event) => {
-                event.preventDefault();
-                onSubmit(event);
-              }}
-              onTouchStart={(event) => {
-                event.preventDefault();
-                onSubmit(event);
-              }}
-              className={`absolute right-2 top-1/2 transform -translate-y-1/2 ${centered ? 'w-8 h-8 rounded-lg' : 'w-10 h-10 sm:w-11 sm:h-11 rounded-xl'} bg-primary hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed flex items-center justify-center transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-1 focus:ring-offset-background`}
-            >
-              <svg className={`${centered ? 'w-3.5 h-3.5' : 'w-4 h-4 sm:w-[18px] sm:h-[18px]'} text-primary-foreground transform rotate-90`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-              </svg>
-            </button>
-
           </div>
-
-          {!centered && (
-            <div
-              className={`relative px-5 pb-2 text-xs text-muted-foreground pointer-events-none hidden sm:block transition-opacity duration-200 ${
-                input.trim() ? 'opacity-0' : 'opacity-100'
-              }`}
-            >
-              {sendByCtrlEnter ? t('input.hintText.ctrlEnter') : t('input.hintText.enter')}
-            </div>
-          )}
-
-          {/* Bottom toolbar inside text box */}
-          {!hasQuestionPanel && (
-            <div className="relative z-10 border-t border-border/30">
-              {/* Controls row */}
-              <div className="flex flex-wrap items-center gap-2 px-4 py-2">
-                {/* Left side */}
-                <div className="flex max-w-full flex-wrap items-center gap-2.5 [&>*]:shrink-0">
-                  <button
-                    type="button"
-                    onClick={openFilePicker}
-                    className="p-1 hover:bg-accent/60 rounded-full transition-colors flex items-center justify-center text-muted-foreground"
-                    title={t('input.attachFiles')}
-                  >
-                    <Plus className="w-4 h-4" />
+          <div className="relative z-10 flex items-center gap-2 px-3 pb-2">
+            <button type="button" onClick={openFilePicker}
+              className="h-11 w-11 shrink-0 rounded-md text-muted-foreground hover:bg-muted transition-colors flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              title={t('input.attachFiles')} aria-label={t('input.attachFiles')}>
+              <Plus className="h-4 w-4" />
+            </button>
+                  <button type="button" onClick={() => setShowConfiguration(true)} aria-haspopup="dialog" aria-label={t('input.configuration')} className="flex h-11 min-w-0 max-w-[200px] max-sm:max-w-[140px] items-center gap-2 rounded-md border border-border px-2 text-xs text-foreground hover:bg-muted" title={t('input.configuration')}>
+                    <SlidersHorizontal className="h-4 w-4 shrink-0" /><span className="truncate">{currentModel || t('input.configuration')}</span>
                   </button>
-
-                  {/* Skill shortcuts — only in normal chat mode */}
-                  {!centered && (
-                    <>
+            <p className="hidden min-w-0 flex-1 text-xs text-muted-foreground xl:block">
+              {sendByCtrlEnter ? t('input.hintText.ctrlEnter') : t('input.hintText.enter')}
+            </p>
+            <div className="ml-auto flex shrink-0 items-center gap-1">
+              <ComposerMoreTools>
+                <MicButton onTranscript={onTranscript} showLabel className="min-h-11 w-full gap-3 px-3 text-sm" />
+                  <>
                       <AutoResearchDropdown
                         setInput={setInput}
                         textareaRef={textareaRef}
@@ -669,8 +640,7 @@ export default function ChatComposer({
                         setAttachedPrompt={setAttachedPrompt}
                         t={t}
                       />
-                    </>
-                  )}
+                  </>
 
                   {/* Session modes — only in empty state */}
                   {centered && onNewSessionModeChange && newSessionMode && (
@@ -681,13 +651,52 @@ export default function ChatComposer({
                       t={t}
                     />
                   )}
-                </div>
+                  {isAutoResearchScenario(attachedPrompt?.scenarioId) && (
+                    <span
+                      className="text-[10px] text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/30 px-1.5 py-0.5 rounded font-medium"
+                      title="Autoresearch mode: tool permissions are auto-approved"
+                    >
+                      Auto
+                    </span>
+                  )}
 
-                {/* Right side */}
-                <div className="ml-auto flex max-w-full flex-wrap items-center justify-end gap-1.5 [&>*]:shrink-0">
-                  <button type="button" onClick={() => setShowConfiguration(true)} aria-haspopup="dialog" className="flex min-h-8 max-w-[200px] items-center gap-2 rounded-md border border-border px-2 text-xs text-foreground hover:bg-muted" title={t('input.configuration')}>
-                    <SlidersHorizontal className="h-4 w-4 shrink-0" /><span className="truncate">{currentModel || t('input.configuration')}</span>
-                  </button>
+                  {centered && <div className="h-4 border-l border-border/40 mx-1" />}
+
+                  <ChatInputControls
+                    statusOnly
+                    permissionMode={isAutoResearchScenario(attachedPrompt?.scenarioId) ? 'bypassPermissions' : permissionMode}
+                    onModeSwitch={onModeSwitch}
+                    provider={provider}
+                    codexModel={codexModel}
+                    geminiModel={geminiModel}
+                    thinkingMode={thinkingMode}
+                    setThinkingMode={setThinkingMode}
+                    codexReasoningEffort={codexReasoningEffort}
+                    setCodexReasoningEffort={setCodexReasoningEffort}
+                    codexReasoningEfforts={codexReasoningEfforts}
+                    geminiThinkingMode={geminiThinkingMode}
+                    setGeminiThinkingMode={setGeminiThinkingMode}
+                    tokenBudget={tokenBudget}
+                    slashCommandsCount={slashCommandsCount}
+                    onToggleCommandMenu={onToggleCommandMenu}
+                    hasInput={hasInput}
+                    onClearInput={onClearInput}
+                    hideCommandMenu
+                    compact
+                  />
+              </ComposerMoreTools>
+              <button type="submit"
+                disabled={(!input.trim() && attachedFiles.length === 0 && !attachedPrompt) || isPreparing || isQueueRestoring}
+                aria-busy={isPreparing || undefined} aria-label={t(isPreparing ? 'input.preparing' : isQueueRestoring ? 'queue.waitForRestore' : isLoading ? 'queue.add' : 'input.send')} title={t(isPreparing ? 'input.preparing' : isQueueRestoring ? 'queue.waitForRestore' : isLoading ? 'queue.add' : 'input.send')}
+                onMouseDown={event => event.preventDefault()}
+                className="h-11 w-11 shrink-0 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
+                {isPreparing ? <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" /> : <svg aria-hidden="true" className="h-[18px] w-[18px] rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                </svg>}
+              </button>
+            </div>
+          </div>
+
                   {showConfiguration && <WorkbenchDialog title={t('input.configuration')} onClose={() => setShowConfiguration(false)}>
                     <p className="mb-4 text-sm text-muted-foreground">{t('input.configurationDescription')}</p>
                     <div className="flex flex-wrap items-center gap-3">
@@ -743,44 +752,6 @@ export default function ChatComposer({
                     </div>
                     <QuickSettingsPanel />
                   </WorkbenchDialog>}
-
-                  {isAutoResearchScenario(attachedPrompt?.scenarioId) && (
-                    <span
-                      className="text-[10px] text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/30 px-1.5 py-0.5 rounded font-medium"
-                      title="Autoresearch mode: tool permissions are auto-approved"
-                    >
-                      Auto
-                    </span>
-                  )}
-
-                  {centered && <div className="h-4 border-l border-border/40 mx-1" />}
-
-                  <ChatInputControls
-                    statusOnly
-                    permissionMode={isAutoResearchScenario(attachedPrompt?.scenarioId) ? 'bypassPermissions' : permissionMode}
-                    onModeSwitch={onModeSwitch}
-                    provider={provider}
-                    codexModel={codexModel}
-                    geminiModel={geminiModel}
-                    thinkingMode={thinkingMode}
-                    setThinkingMode={setThinkingMode}
-                    codexReasoningEffort={codexReasoningEffort}
-                    setCodexReasoningEffort={setCodexReasoningEffort}
-                    codexReasoningEfforts={codexReasoningEfforts}
-                    geminiThinkingMode={geminiThinkingMode}
-                    setGeminiThinkingMode={setGeminiThinkingMode}
-                    tokenBudget={tokenBudget}
-                    slashCommandsCount={slashCommandsCount}
-                    onToggleCommandMenu={onToggleCommandMenu}
-                    hasInput={hasInput}
-                    onClearInput={onClearInput}
-                    hideCommandMenu
-                    compact
-                  />
-                </div>
-              </div>
-            </div>
-          )}
 
         </div>
       </form>}

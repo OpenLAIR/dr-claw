@@ -14,7 +14,7 @@ export default function MobileMenuButton({ onMenuClick, compact = false }: Mobil
     <button
       onClick={handleMobileMenuClick}
       onTouchEnd={handleMobileMenuTouchEnd}
-      className={buttonClasses}
+      className={`inline-flex h-11 w-11 items-center justify-center ${buttonClasses}`}
       aria-label={t('workbench.openMenu')}
     >
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -1,6 +1,8 @@
+import { useLayoutEffect, useRef } from 'react';
+import SidebarRenameEditor from './SidebarRenameEditor';
 import { Badge } from '../../../ui/badge';
 import { Button } from '../../../ui/button';
-import { Check, Clock, Edit2, Trash2, X } from 'lucide-react';
+import { Clock, Edit2, Trash2 } from 'lucide-react';
 import type { TFunction } from 'i18next';
 import { cn } from '../../../../lib/utils';
 import { formatTimeAgo } from '../../../../utils/dateUtils';
@@ -9,14 +11,6 @@ import type { SessionWithProvider, TouchHandlerFactory } from '../../types/types
 import { createSessionViewModel } from '../../utils/utils';
 import SessionProviderLogo from '../../../SessionProviderLogo';
 
-const STAGE_TAG_TONE_BY_KEY: Record<string, string> = {
-  survey: 'border-sky-200/80 bg-sky-50 text-sky-700 dark:border-sky-900/70 dark:bg-sky-950/30 dark:text-sky-300',
-  ideation: 'border-amber-200/80 bg-amber-50 text-amber-700 dark:border-amber-900/70 dark:bg-amber-950/30 dark:text-amber-300',
-  experiment: 'border-cyan-200/80 bg-cyan-50 text-cyan-700 dark:border-cyan-900/70 dark:bg-cyan-950/30 dark:text-cyan-300',
-  publication: 'border-purple-200/80 bg-purple-50 text-purple-700 dark:border-purple-900/70 dark:bg-purple-950/30 dark:text-purple-300',
-  promotion: 'border-pink-200/80 bg-pink-50 text-pink-700 dark:border-pink-900/70 dark:bg-pink-950/30 dark:text-pink-300',
-};
-
 type SidebarSessionItemProps = {
   project: Project;
   session: SessionWithProvider;
@@ -24,6 +18,7 @@ type SidebarSessionItemProps = {
   currentTime: Date;
   editingSession: string | null;
   editingSessionName: string;
+  renameFeedback: { pending: boolean; error: string };
   onEditingSessionNameChange: (value: string) => void;
   onStartEditingSession: (sessionId: string, initialName: string) => void;
   onCancelEditingSession: () => void;
@@ -47,6 +42,7 @@ export default function SidebarSessionItem({
   currentTime,
   editingSession,
   editingSessionName,
+  renameFeedback,
   onEditingSessionNameChange,
   onStartEditingSession,
   onCancelEditingSession,
@@ -59,6 +55,15 @@ export default function SidebarSessionItem({
 }: SidebarSessionItemProps) {
   const sessionView = createSessionViewModel(session, currentTime, t);
   const isSelected = selectedSession?.id === session.id;
+  const isEditing = editingSession === session.id;
+  const renameTrigger = useRef<HTMLButtonElement | null>(null);
+  const restoreRenameFocus = useRef(false);
+  useLayoutEffect(() => {
+    if (!isEditing && restoreRenameFocus.current) {
+      renameTrigger.current?.focus({ preventScroll: true });
+      restoreRenameFocus.current = false;
+    }
+  }, [isEditing]);
 
   const selectMobileSession = () => {
     onProjectSelect(project);
@@ -87,36 +92,40 @@ export default function SidebarSessionItem({
         <span
           key={`${session.id}-${tag.id}`}
           className={cn(
-            'inline-flex items-center rounded-full border px-1.5 py-0 text-[10px] font-medium',
-            STAGE_TAG_TONE_BY_KEY[tag.tagKey || ''] || 'border-border/70 bg-background/70 text-foreground/75',
+            'inline-flex items-center rounded-full border px-1.5 py-0 text-[11px] font-medium',
+            'border-border bg-muted text-muted-foreground',
           )}
         >
           {tag.label}
         </span>
       ))}
       {hiddenStageCount > 0 ? (
-        <span className="inline-flex items-center rounded-full border border-border/70 bg-background/70 px-1.5 py-0 text-[10px] font-medium text-muted-foreground">
+        <span className="inline-flex items-center rounded-full border border-border/70 bg-background/70 px-1.5 py-0 text-[11px] font-medium text-muted-foreground">
           +{hiddenStageCount}
         </span>
       ) : null}
     </div>
   ) : null;
 
-  const metadataRowClassName = 'flex items-center gap-1 mt-0.5 min-w-0';
-  const rightMetaClassName = 'ml-auto flex items-center gap-1.5 flex-shrink-0';
+  const metadataRowClassName = 'flex flex-wrap items-center gap-x-2 gap-y-1 mt-1 min-w-0';
+  const rightMetaClassName = 'flex max-w-full flex-wrap items-center gap-1.5';
+
+  if (isEditing) return <SidebarRenameEditor label={t('sessions.renameSession')} value={editingSessionName}
+    onChange={onEditingSessionNameChange} onSave={saveEditedSession} onCancel={onCancelEditingSession}
+    feedback={renameFeedback} t={t} />;
 
   return (
     <div className="group relative">
       {sessionView.isActive && (
         <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1">
-          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+          <div className="w-2 h-2 bg-green-500 rounded-full" />
         </div>
       )}
 
       <div className="md:hidden">
         <div
           className={cn(
-            'p-2 mx-3 my-0.5 rounded-md bg-card border active:scale-[0.98] transition-all duration-150 relative',
+            'p-2 mx-3 my-0.5 rounded-md bg-card border active:scale-[0.98] transition-[transform,background-color,border-color,opacity] duration-150 relative',
             isSelected ? 'bg-primary/5 border-primary/20' : '',
             !isSelected && sessionView.isActive
               ? 'border-green-500/30 bg-green-50/5 dark:bg-green-900/5'
@@ -136,16 +145,16 @@ export default function SidebarSessionItem({
 
             <div className="min-w-0 flex-1">
               <div className="text-xs font-medium truncate text-foreground">{sessionView.sessionName}</div>
-              <div className={metadataRowClassName}>
+              <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-1 gap-y-1">
                 <Clock className="w-2.5 h-2.5 text-muted-foreground" />
                 <span className="text-xs text-muted-foreground">
                   {formatTimeAgo(sessionView.sessionTime, currentTime, t)}
                 </span>
-                <div className={rightMetaClassName}>
+                <div className="flex min-w-0 flex-wrap items-center gap-1">
                   <Badge variant="secondary" className="text-xs px-1 py-0 min-w-[1.5rem] justify-center">
                     {sessionView.messageCount}
                   </Badge>
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                  <Badge variant="outline" className="text-[11px] px-1.5 py-0">
                     {modeBadgeLabel}
                   </Badge>
                   <span className="opacity-70">
@@ -158,13 +167,15 @@ export default function SidebarSessionItem({
 
             {!sessionView.isCursorSession && (
               <button
-                className="w-5 h-5 rounded-md bg-red-50 dark:bg-red-900/20 flex items-center justify-center active:scale-95 transition-transform opacity-70 ml-1"
+                type="button"
+                aria-label={t('tooltips.deleteSession')}
+                className="w-11 h-11 shrink-0 rounded-md text-destructive hover:bg-accent flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ml-1"
                 onClick={(event) => {
                   event.stopPropagation();
                   requestDeleteSession();
                 }}
               >
-                <Trash2 className="w-2.5 h-2.5 text-red-600 dark:text-red-400" />
+                <Trash2 className="w-4 h-4" />
               </button>
             )}
           </div>
@@ -183,13 +194,15 @@ export default function SidebarSessionItem({
           <div className="flex items-start gap-2 min-w-0 w-full">
             <SessionProviderLogo provider={session.__provider} className="w-4 h-4 mt-0.5 flex-shrink-0" />
             <div className="min-w-0 flex-1">
-              <div className="text-[14px] font-normal truncate text-foreground/90">{sessionView.sessionName}</div>
-              <div className={metadataRowClassName}>
+              <div title={sessionView.sessionName} className="text-[14px] font-normal truncate text-foreground/90">{sessionView.sessionName}</div>
+              <div className={metadataRowClassName} data-session-metadata>
+                <span className="inline-flex items-center gap-1 whitespace-nowrap">
                 <Clock className="w-2.5 h-2.5 text-muted-foreground" />
                 <span className="text-xs text-muted-foreground">
                   {formatTimeAgo(sessionView.sessionTime, currentTime, t)}
                 </span>
-                <div className={`${rightMetaClassName} group-hover:opacity-0 transition-opacity`}>
+                </span>
+                <div className={`${rightMetaClassName} group-hover:opacity-0 group-focus-within:opacity-0 transition-opacity`}>
                   <Badge
                     variant="secondary"
                     className="text-xs px-1 py-0 min-w-[1.5rem] justify-center"
@@ -198,7 +211,7 @@ export default function SidebarSessionItem({
                   </Badge>
                   <Badge
                     variant="outline"
-                    className="text-[10px] px-1.5 py-0"
+                    className="text-[11px] px-1.5 py-0"
                   >
                     {modeBadgeLabel}
                   </Badge>
@@ -213,53 +226,15 @@ export default function SidebarSessionItem({
         </Button>
 
         {!sessionView.isCursorSession && (
-          <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
-            {editingSession === session.id && !sessionView.isCodexSession ? (
-              <>
-                <input
-                  type="text"
-                  value={editingSessionName}
-                  onChange={(event) => onEditingSessionNameChange(event.target.value)}
-                  onKeyDown={(event) => {
-                    event.stopPropagation();
-                    if (event.key === 'Enter') {
-                      saveEditedSession();
-                    } else if (event.key === 'Escape') {
-                      onCancelEditingSession();
-                    }
-                  }}
-                  onClick={(event) => event.stopPropagation()}
-                  className="w-32 px-2 py-1 text-xs border border-border rounded bg-background focus:outline-none focus:ring-1 focus:ring-primary"
-                  autoFocus
-                />
-                <button
-                  className="w-6 h-6 bg-green-50 hover:bg-green-100 dark:bg-green-900/20 dark:hover:bg-green-900/40 rounded flex items-center justify-center"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    saveEditedSession();
-                  }}
-                  title={t('tooltips.save')}
-                >
-                  <Check className="w-3 h-3 text-green-600 dark:text-green-400" />
-                </button>
-                <button
-                  className="w-6 h-6 bg-gray-50 hover:bg-gray-100 dark:bg-gray-900/20 dark:hover:bg-gray-900/40 rounded flex items-center justify-center"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    onCancelEditingSession();
-                  }}
-                  title={t('tooltips.cancel')}
-                >
-                  <X className="w-3 h-3 text-gray-600 dark:text-gray-400" />
-                </button>
-              </>
-            ) : (
-              <>
+          <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-[transform,background-color,border-color,opacity] duration-200">
                 {!sessionView.isCodexSession && (
                   <button
                     className="w-6 h-6 bg-gray-50 hover:bg-gray-100 dark:bg-gray-900/20 dark:hover:bg-gray-900/40 rounded flex items-center justify-center"
+                    ref={renameTrigger}
+                    disabled={renameFeedback.pending}
                     onClick={(event) => {
                       event.stopPropagation();
+                      restoreRenameFocus.current = true;
                       onStartEditingSession(session.id, session.summary || t('projects.newSession'));
                     }}
                     title={t('tooltips.editSessionName')}
@@ -277,8 +252,6 @@ export default function SidebarSessionItem({
                 >
                   <Trash2 className="w-3 h-3 text-red-600 dark:text-red-400" />
                 </button>
-              </>
-            )}
           </div>
         )}
       </div>
