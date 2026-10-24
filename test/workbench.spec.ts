@@ -10,11 +10,11 @@ const project = {
   sessions: [{ id: 'research-session', summary: 'Evaluate the baseline', updated_at: '2026-10-20T12:00:00Z' }],
 };
 
-async function fixture(page: Page, { empty = false, failed = false, theme = 'light', secondProject = false, survey = false, language = 'en', onboarding = false } = {}) {
-  await page.addInitScript(({ theme, language }) => {
+async function fixture(page: Page, { empty = false, failed = false, theme = 'light', secondProject = false, survey = false, language = 'en', onboarding = false, preserveTheme = false } = {}) {
+  await page.addInitScript(({ theme, language, preserveTheme }) => {
     localStorage.setItem('auth-token', 'workbench-test'); localStorage.setItem('userLanguage', language);
-    localStorage.setItem('theme', theme);
-  }, { theme, language });
+    if (!preserveTheme || !localStorage.getItem('theme')) localStorage.setItem('theme', theme);
+  }, { theme, language, preserveTheme });
   let createdProject: typeof project | null = null;
   let onboardingComplete = !onboarding;
   await page.route('**/api/**', async route => {
@@ -3597,5 +3597,44 @@ for (const [width, theme] of [[1440, 'light'], [390, 'dark']] as const) {
       expect(box!.height).toBeGreaterThanOrEqual(44);
     }
     await page.screenshot({ path: screenshotPath(`unified-selectors-${width}-${theme}.png`) });
+  });
+}
+
+for (const width of [1440, 390]) {
+  test(`quick settings dark mode switch stays compact and persists at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    const commands: unknown[] = [];
+    await page.routeWebSocket(/\/ws(?:\?|$)/, ws => ws.onMessage(message => commands.push(message)));
+    await fixture(page, { preserveTheme: true });
+    await page.locator('main article').getByRole('button', { name: 'Continue', exact: true }).click();
+    const openSettings = async () => {
+      await page.getByRole('button', { name: 'Model and execution settings', exact: true }).click();
+      await page.getByText('Quick Settings', { exact: true }).click();
+    };
+    await openSettings();
+    const toggle = page.getByRole('switch', { name: 'Toggle dark mode', exact: true });
+    const dialog = page.getByRole('dialog', { name: 'Model and execution settings', exact: true });
+    await expect(toggle).toHaveAttribute('type', 'button');
+    for (const dark of [true, false]) {
+      await toggle.click();
+      await expect(toggle).toHaveAttribute('aria-checked', String(dark));
+      await expect.poll(() => page.evaluate(() => document.documentElement.classList.contains('dark'))).toBe(dark);
+      expect(await page.evaluate(() => localStorage.getItem('theme'))).toBe(dark ? 'dark' : 'light');
+      const box = (await toggle.boundingBox())!;
+      expect(box.width).toBeCloseTo(56, 0);
+      const thumb = (await toggle.locator('span').last().boundingBox())!;
+      expect(thumb.x).toBeGreaterThanOrEqual(box.x);
+      expect(thumb.x + thumb.width).toBeLessThanOrEqual(box.x + box.width);
+      expect(await dialog.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+      await page.screenshot({ path: screenshotPath(`dark-mode-switch-${width}-${dark ? 'dark' : 'light'}.png`) });
+    }
+    await toggle.press('Space');
+    await expect(toggle).toHaveAttribute('aria-checked', 'true');
+    await page.keyboard.press('Escape');
+    await page.reload();
+    await openSettings();
+    await expect(toggle).toHaveAttribute('aria-checked', 'true');
+    await expect.poll(() => page.evaluate(() => document.documentElement.classList.contains('dark'))).toBe(true);
+    expect(commands.filter(message => String(message).includes('-command'))).toHaveLength(0);
   });
 }
