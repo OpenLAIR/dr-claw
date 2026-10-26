@@ -111,7 +111,11 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="ARIS anti-self-poisoning capture filter.")
     ap.add_argument("path", help="file to screen, or - for stdin")
     a = ap.parse_args()
-    text = sys.stdin.read() if a.path == "-" else open(a.path, encoding="utf-8").read()
+    if a.path == "-":
+        text = sys.stdin.read()
+    else:
+        with open(a.path, encoding="utf-8") as source:
+            text = source.read()
     reasons = screen(text)
     if reasons:
         print(f"DO-NOT-CAPTURE: {', '.join(reasons)}", file=sys.stderr)

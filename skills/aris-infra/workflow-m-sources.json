@@ -54,7 +54,7 @@
       "upstream": "tools/capture_filter.py",
       "bundled": "skills/aris-infra/tools/capture_filter.py",
       "upstreamSha256": "04cf93f079612fa1454e424101cef3069bb29c79dad11488e659b40bb1c118d0",
-      "adapted": false
+      "adapted": true
     },
     {
       "upstream": "tools/save_trace.sh",
@@ -66,7 +66,7 @@
       "upstream": "tools/copilot_native_evidence.py",
       "bundled": "skills/aris-infra/tools/copilot_native_evidence.py",
       "upstreamSha256": "f8137fccba9874b7d04e0ddbbee5755d2d036509415680da760910959d7aff02",
-      "adapted": false
+      "adapted": true
     },
     {
       "upstream": "templates/claude-hooks/meta_logging.json",

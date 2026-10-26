@@ -66,6 +66,7 @@ def debug_log(message: str) -> None:
         with open(DEBUG_LOG, "a", encoding="utf-8") as fh:
             fh.write(message + "\n")
     except OSError:
+        # Optional debug logging must not interrupt the MCP protocol.
         pass
 
 
@@ -124,6 +125,7 @@ def remember_thread(thread_id: str, opts: Dict[str, Any]) -> None:
             json.dump(opts, fh)
         tmp.replace(thread_file(thread_id))
     except OSError:
+        # Preserve the current result; recall_thread refuses missing/invalid state.
         pass
 
 
@@ -216,11 +218,13 @@ def run_codex(argv: List[str], prompt: str, request_id: Any, progress_token: Any
         try:
             proc.stdin.write(prompt.encode("utf-8"))
         except (BrokenPipeError, OSError):
+            # The reviewer may have exited or been cancelled before reading stdin.
             pass
         finally:
             try:
                 proc.stdin.close()
             except OSError:
+                # Closing can flush buffered input after the reviewer has exited.
                 pass
 
     stderr_thread = threading.Thread(target=drain_stderr, daemon=True)
@@ -242,6 +246,7 @@ def run_codex(argv: List[str], prompt: str, request_id: Any, progress_token: Any
             else:
                 proc.terminate()
         except ProcessLookupError:
+            # The reviewer process/group exited before the cancellation signal.
             pass
 
     def cancel_child() -> None:

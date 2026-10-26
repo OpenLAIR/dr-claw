@@ -53,6 +53,8 @@ No unrelated upstream skills or runtime-specific overlays were imported.
 - Trigger sample keeps only installed skills. Actual trigger probes remain opt-in
   and are never used by the offline tests. The trace helper's native-evidence
   dependency is included but no native reviewer route is enabled by this sync.
+- Capture-filter file reads use a context manager; native-evidence temporary-file
+  cleanup documents why an already-renamed file is safe to ignore.
 
 Registration is in the shared Auto Research pack constant and skills catalog.
 `stage-skill-map.json` uses its existing `skillOrigins` metadata for the maintenance

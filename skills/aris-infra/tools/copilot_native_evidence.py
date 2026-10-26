@@ -193,6 +193,7 @@ def _atomic_write(path: Path, payload: bytes, *, replace: bool = False) -> None:
         try:
             temp.unlink()
         except FileNotFoundError:
+            # Successful os.replace already consumed the temporary path.
             pass
 
 
