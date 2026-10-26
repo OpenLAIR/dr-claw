@@ -79,6 +79,20 @@
     "steps": "Agent steps",
     "streaming": "Streaming..."
   },
+  "revertAgent": {
+    "button": "Revert changes",
+    "tooltip": "Discard changes the agent made to {{count}} file(s)",
+    "confirmLabel_one": "Restore 1 file to its last committed state? Any manual edits to this file will also be lost.",
+    "confirmLabel_other": "Restore {{count}} files to their last committed state? Any manual edits to these files will also be lost.",
+    "confirm": "Revert",
+    "cancel": "Cancel",
+    "inProgress": "Reverting...",
+    "done_one": "Reverted 1 file",
+    "done_other": "Reverted {{count}} files",
+    "skipped_one": "1 unchanged",
+    "skipped_other": "{{count}} unchanged",
+    "error": "Revert failed"
+  },
   "skill": {
     "contentLoaded": "Skill Content Loaded"
   },
