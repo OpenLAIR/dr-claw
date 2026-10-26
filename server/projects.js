@@ -4185,7 +4185,7 @@ async function readCodexSessionIdFromHeader(filePath) {
   try {
     await readJsonlLinesFrom(filePath, 0, (line) => {
       if (sessionId || seen >= CODEX_HEADER_SCAN_LINES) {
-        return;
+        return false;
       }
       seen += 1;
       try {
@@ -4196,6 +4196,7 @@ async function readCodexSessionIdFromHeader(filePath) {
       } catch (_) {
         // Skip malformed lines
       }
+      return !sessionId && seen < CODEX_HEADER_SCAN_LINES;
     });
   } catch (_) {
     return null;
@@ -4232,11 +4233,10 @@ async function findCodexSessionFilePath(sessionId) {
     }
     // A filename can merely *contain* the id, and callers act destructively on
     // what we return (deleteCodexSession unlinks it). Confirm against the
-    // session_meta header, which costs a handful of lines. A transcript whose
-    // header cannot be read is still accepted, matching the long-standing
-    // filename-only behaviour; only a definite mismatch is rejected.
+    // session_meta header, which costs a handful of lines. Unreadable or
+    // malformed headers cannot authorize reading or deleting a transcript.
     const headerId = await readCodexSessionIdFromHeader(filePath);
-    if (headerId === null || headerId === sessionId) {
+    if (headerId === sessionId) {
       return filePath;
     }
   }
@@ -4244,7 +4244,7 @@ async function findCodexSessionFilePath(sessionId) {
   const sessionsByProject = await buildCodexSessionsIndex();
   for (const sessions of sessionsByProject.values()) {
     const match = sessions.find((session) => session.id === sessionId);
-    if (match?.filePath) {
+    if (match?.filePath && await readCodexSessionIdFromHeader(match.filePath) === sessionId) {
       return match.filePath;
     }
   }
@@ -4261,8 +4261,6 @@ async function findCodexSessionFilePath(sessionId) {
 // Get messages for a specific Codex session
 async function getCodexSessionMessages(sessionId, limit = null, offset = 0) {
   try {
-    const codexSessionsDir = path.join(os.homedir(), '.codex', 'sessions');
-
     const sessionFilePath = await findCodexSessionFilePath(sessionId);
 
     if (!sessionFilePath) {

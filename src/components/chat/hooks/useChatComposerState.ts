@@ -1288,9 +1288,9 @@ export function useChatComposerState({
       // This prevents interrupted chats from being treated as brand new sessions.
       const routedSessionId = getRouteSessionId();
       
-      // If we're on the root path with no routed session AND no selected session, 
+      // With no route, selection or pending current session,
       // treat it as an explicit new session start and clear any stale provider-specific session IDs.
-      const isExplicitNewSessionStart = window.location.pathname === '/' && !routedSessionId && !selectedSession?.id;
+      const isExplicitNewSessionStart = window.location.pathname === '/' && !routedSessionId && !selectedSession?.id && !currentSessionId;
       if (isExplicitNewSessionStart && typeof window !== 'undefined') {
         sessionStorage.removeItem('geminiSessionId');
         sessionStorage.removeItem('cursorSessionId');

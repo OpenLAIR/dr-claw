@@ -30,7 +30,8 @@ const DEFAULT_YIELD_EVERY = 2000;
  *
  * @param {string} filePath
  * @param {number} startOffset Absolute byte offset to resume from.
- * @param {(line: string) => void} onLine Called for each non-blank complete line.
+ * @param {(line: string) => void|boolean} onLine Called for each non-blank complete line.
+ *   Return false to stop after this line; unread bytes remain available on resume.
  * @param {object} [options]
  * @param {number} [options.yieldEvery=2000] Lines to process between event-loop yields.
  * @returns {Promise<{ consumedBytes: number, lineCount: number, trailingLine: string|null }>}
@@ -67,8 +68,12 @@ export async function readJsonlLinesFrom(filePath, startOffset, onLine, options 
 
         const line = rawLine.endsWith('\r') ? rawLine.slice(0, -1) : rawLine;
         if (line.trim()) {
-          onLine(line);
           lineCount += 1;
+          if (onLine(line) === false) {
+            // Buffered bytes after this record are not an EOF tail. A caller
+            // resuming from consumedBytes will read them normally.
+            return { consumedBytes, lineCount, trailingLine: null };
+          }
         }
 
         sinceYield += 1;

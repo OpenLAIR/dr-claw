@@ -263,6 +263,43 @@ describe('Codex session index caching', () => {
     expect(fsSync.existsSync(target)).toBe(false);
   });
 
+  it('stops reading after the header instead of streaming a large transcript', async () => {
+    const sessionFile = await writeRollout({ sessionId: 'large-header', cwd: projectRoot });
+    await appendFile(sessionFile, (JSON.stringify({ type: 'body', data: 'x'.repeat(100) }) + '\n').repeat(20_000));
+    const { deleteCodexSession } = await loadProjects();
+    const streams = [];
+    const original = fsSync.createReadStream;
+    vi.spyOn(fsSync, 'createReadStream').mockImplementation((...args) => {
+      const stream = original(...args);
+      streams.push(stream);
+      return stream;
+    });
+
+    await deleteCodexSession('large-header');
+
+    expect(streams).toHaveLength(1);
+    expect(streams[0].bytesRead).toBeLessThan(256 * 1024);
+    expect(streams[0].destroyed).toBe(true);
+  });
+
+  it.each(['malformed', 'unreadable'])('does not delete a filename match with a %s header', async (kind) => {
+    const sessionFile = await writeRollout({ sessionId: 'unverified', cwd: projectRoot });
+    if (kind === 'malformed') {
+      await writeFile(sessionFile, 'not a session header\n');
+    }
+    const { deleteCodexSession } = await loadProjects();
+    if (kind === 'unreadable') {
+      const original = fsSync.createReadStream;
+      vi.spyOn(fsSync, 'createReadStream').mockImplementation((file, ...args) => {
+        if (file === sessionFile) throw Object.assign(new Error('Permission denied'), { code: 'EACCES' });
+        return original(file, ...args);
+      });
+    }
+
+    await expect(deleteCodexSession('unverified')).rejects.toThrow('not found');
+    expect(fsSync.existsSync(sessionFile)).toBe(true);
+  });
+
   it('drops cache entries for deleted transcripts', async () => {
     const sessionFile = await writeRollout({ sessionId: 'sess-e', cwd: projectRoot });
     const { buildCodexSessionsIndex } = await loadProjects();

@@ -173,6 +173,8 @@ describe('session deletion fallbacks', () => {
 
     await mkdir(sessionDir, { recursive: true });
     await writeFile(sessionFile, [
+      // Real Codex transcripts start with a verifiable session identity.
+      JSON.stringify({ type: 'session_meta', payload: { id: sessionId, cwd: projectRoot } }),
       JSON.stringify({
         timestamp: '2026-03-30T05:18:20.000Z',
         type: 'response_item',

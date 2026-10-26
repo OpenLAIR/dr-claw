@@ -1,7 +1,6 @@
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import QuickSettingsPanel from '../../QuickSettingsPanel';
 import ChatTaskProgressPill from './subcomponents/ChatTaskProgressPill';
-import { useTasksSettings } from '../../../contexts/TasksSettingsContext';
 import { useTaskMaster } from '../../../contexts/TaskMasterContext';
 import { useTranslation } from 'react-i18next';
 import ChatMessagesPane from './subcomponents/ChatMessagesPane';
@@ -114,7 +113,6 @@ function ChatInterface({
   newSessionMode = 'research',
   onNewSessionModeChange,
 }: ChatInterfaceProps) {
-  const { tasksEnabled, isTaskMasterInstalled } = useTasksSettings();
   const { refreshTasks } = useTaskMaster();
   const { t } = useTranslation('chat');
   const { isMobile } = useDeviceSettings({ trackPWA: false });
@@ -148,6 +146,14 @@ function ChatInterface({
     if (typeof window === 'undefined') return false;
     return window.localStorage.getItem('chat-session-context-collapsed') === '1';
   });
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem('chat-session-context-collapsed', isSidebarCollapsed ? '1' : '0');
+    } catch {
+      // Storage may be disabled; opening the shell must still work.
+    }
+  }, [isSidebarCollapsed]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
