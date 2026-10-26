@@ -954,7 +954,7 @@ For setup help and troubleshooting, see [FAQ](docs/faq.md).
 
 Dr. Claw was previously known as **VibeLab**. For users migrating from VibeLab, we provide a compatibility layer during the transition phase:
 
-- **CLI Alias**: The `vibelab` command is still supported as an alias for `drclaw` but will issue a deprecation warning.
+- **CLI Alias**: The `vibelab` command is still supported as an alias for `drclaw` but will issue a deprecation warning. It remains available throughout the current major release; removal requires a major release and at least 90 days of advance notice in the release notes. No removal date has been announced.
 - **Python Package**: The `VibeLab` class in the `agent-harness` is deprecated; please use the `DrClaw` class instead.
 - **Session Files**: The CLI now defaults to `~/.drclaw_session.json` but will automatically check for and migrate `~/.vibelab_session.json` if found.
 - **Environment Variables**: `DRCLAW_URL` and `DRCLAW_TOKEN` are preferred, but `VIBELAB_URL` and `VIBELAB_TOKEN` are still supported as fallbacks.

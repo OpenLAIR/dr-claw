@@ -640,21 +640,18 @@ async function queryClaudeSDK(command, options = {}, ws) {
       return { behavior: 'deny', message: decision.message ?? 'User denied tool use' };
     };
 
-    // Set stream-close timeout for interactive tools (Query constructor reads it synchronously). Claude Agent SDK has a default of 5s and this overrides it
-    const prevStreamTimeout = process.env.CLAUDE_CODE_STREAM_CLOSE_TIMEOUT;
-    process.env.CLAUDE_CODE_STREAM_CLOSE_TIMEOUT = '300000';
+    // Keep interactive-tool settings local to this subprocess. Mutating the
+    // server environment lets concurrent main turns and /btw requests collide.
+    sdkOptions.env = {
+      ...process.env,
+      ...sdkOptions.env,
+      CLAUDE_CODE_STREAM_CLOSE_TIMEOUT: '300000',
+    };
 
     const queryInstance = query({
       prompt: finalCommand,
       options: sdkOptions
     });
-
-    // Restore immediately — Query constructor already captured the value
-    if (prevStreamTimeout !== undefined) {
-      process.env.CLAUDE_CODE_STREAM_CLOSE_TIMEOUT = prevStreamTimeout;
-    } else {
-      delete process.env.CLAUDE_CODE_STREAM_CLOSE_TIMEOUT;
-    }
 
     // Track the query instance for abort capability
     if (capturedSessionId) {
@@ -893,7 +890,11 @@ function getActiveClaudeSDKSessions() {
  * One-shot, tool-free side question (Claude Code /btw-style). Does not resume the main SDK session.
  */
 async function runClaudeBtw({ question, transcript, cwd, model, signal }) {
+  if (signal?.aborted) return { answer: '' };
   const userBlock = buildBtwUserMessage(question, transcript);
+  const abortController = new AbortController();
+  const abort = () => abortController.abort();
+  signal?.addEventListener('abort', abort, { once: true });
 
   const sdkOptions = {
     cwd: cwd || process.cwd(),
@@ -903,10 +904,9 @@ async function runClaudeBtw({ question, transcript, cwd, model, signal }) {
     settingSources: [],
     systemPrompt: BTW_SYSTEM_PROMPT,
     permissionMode: 'default',
+    abortController,
+    env: { ...process.env, CLAUDE_CODE_STREAM_CLOSE_TIMEOUT: '120000' },
   };
-
-  const prevStreamTimeout = process.env.CLAUDE_CODE_STREAM_CLOSE_TIMEOUT;
-  process.env.CLAUDE_CODE_STREAM_CLOSE_TIMEOUT = '120000';
 
   let answer = '';
   let lastError = null;
@@ -935,11 +935,7 @@ async function runClaudeBtw({ question, transcript, cwd, model, signal }) {
     }
     throw new Error(err?.message || String(err));
   } finally {
-    if (prevStreamTimeout !== undefined) {
-      process.env.CLAUDE_CODE_STREAM_CLOSE_TIMEOUT = prevStreamTimeout;
-    } else {
-      delete process.env.CLAUDE_CODE_STREAM_CLOSE_TIMEOUT;
-    }
+    signal?.removeEventListener('abort', abort);
   }
 
   if (signal?.aborted) {

@@ -22,6 +22,24 @@ async function collect(filePath, startOffset = 0) {
 }
 
 describe('readJsonlLinesFrom', () => {
+  it('stops on false and leaves unread records available for a later resume', async () => {
+    const file = path.join(tmpDir, 'header.jsonl');
+    const header = '{"id":"请问🦞"}\r\n';
+    await fs.writeFile(file, header + '{"body":1}\n{"partial":');
+
+    const lines = [];
+    const result = await readJsonlLinesFrom(file, 0, (line) => {
+      lines.push(line);
+      return false;
+    });
+
+    expect(lines).toEqual(['{"id":"请问🦞"}']);
+    expect(result).toEqual({ consumedBytes: Buffer.byteLength(header), lineCount: 1, trailingLine: null });
+    expect(await collect(file, result.consumedBytes)).toMatchObject({
+      lines: ['{"body":1}'], trailingLine: '{"partial":',
+    });
+  });
+
   it('reads every complete line and reports the end offset', async () => {
     const file = path.join(tmpDir, 'a.jsonl');
     const content = '{"a":1}\n{"a":2}\n{"a":3}\n';

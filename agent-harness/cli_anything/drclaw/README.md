@@ -27,7 +27,7 @@ From the repo root:
 pip install -e ./agent-harness
 ```
 
-The main entrypoint is `drclaw`. The legacy `vibelab` alias is still supported.
+The main entrypoint is `drclaw`. The legacy `vibelab` alias delegates to the same implementation and emits a deprecation warning. It will remain available throughout the current major release. Removal requires a major release and at least 90 days of advance notice in the release notes; no removal date has been announced. Update scripts to use `drclaw` now.
 
 Verify installation:
 

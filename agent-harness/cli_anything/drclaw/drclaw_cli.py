@@ -1290,11 +1290,9 @@ def vibelab_cli():
     warnings.warn(
         "The 'vibelab' command is deprecated and will be removed in a future version. "
         "Please use 'drclaw' instead.",
-        DeprecationWarning,
+        FutureWarning,
         stacklevel=1
     )
-    # Print warning to stderr as well since DeprecationWarning is often filtered
-    print("Warning: 'vibelab' command is deprecated; use 'drclaw' instead.", file=sys.stderr)
     cli()
 
 

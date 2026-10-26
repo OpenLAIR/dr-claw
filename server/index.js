@@ -91,6 +91,7 @@ import {
 } from './utils/runtimePorts.js';
 import { buildCodexTokenUsageFromJsonl } from './utils/sessionTokenUsage.js';
 import { getNanoDrClawSessionsRoot } from './nanoSessionPaths.js';
+import { reserveSessionTurn, providerForCommand } from './utils/sessionTurnLock.js';
 
 // File system watchers for provider project/session folders
 const PROVIDER_WATCH_PATHS = [
@@ -1540,8 +1541,17 @@ function handleChatConnection(ws, request) {
     const writer = new WebSocketWriter(ws, telemetryContext);
 
     ws.on('message', async (message) => {
+        let releaseTurn;
         try {
             const data = JSON.parse(message);
+            const commandProvider = providerForCommand(data.type);
+            if (commandProvider) {
+                releaseTurn = reserveSessionTurn(commandProvider, data.options?.sessionId || data.sessionId);
+                if (!releaseTurn) {
+                    console.log('[WARN] Ignoring concurrent turn for an already pending session.');
+                    return;
+                }
+            }
             console.log(`[DEBUG] Received WebSocket message: ${data.type}`);
             
             if (data.type === 'telemetry-settings') {
@@ -1576,7 +1586,7 @@ function handleChatConnection(ws, request) {
                     return;
                 }
                 
-                queryClaudeSDK(data.command, { ...data.options, env: sessionEnv }, writer).catch(error => {
+                await queryClaudeSDK(data.command, { ...data.options, env: sessionEnv }, writer).catch(error => {
                     console.error('[ERROR] Claude query error:', error);
                 });
             } else if (data.type === 'cursor-command') {
@@ -1605,7 +1615,7 @@ function handleChatConnection(ws, request) {
                 );
                 writer.telemetryContext = { ...telemetryContext, provider: 'cursor', telemetryEnabled: commandTelemetryEnabled };
                 writer.setProjectPath(data.options?.projectPath || data.options?.cwd || null);
-                spawnCursor(data.command, { ...data.options, env: sessionEnv }, writer).catch(error => {
+                await spawnCursor(data.command, { ...data.options, env: sessionEnv }, writer).catch(error => {
                     console.error('[ERROR] Cursor spawn error:', error);
                 });
             } else if (data.type === 'codex-command') {
@@ -1634,7 +1644,7 @@ function handleChatConnection(ws, request) {
                 );
                 writer.telemetryContext = { ...telemetryContext, provider: 'codex', telemetryEnabled: commandTelemetryEnabled };
                 writer.setProjectPath(data.options?.projectPath || data.options?.cwd || null);
-                queryCodex(data.command, { ...data.options, env: sessionEnv }, writer).catch(error => {
+                await queryCodex(data.command, { ...data.options, env: sessionEnv }, writer).catch(error => {
                     console.error('[ERROR] Codex query error:', error);
                 });
             } else if (data.type === 'gemini-command') {
@@ -1663,7 +1673,7 @@ function handleChatConnection(ws, request) {
                 );
                 writer.telemetryContext = { ...telemetryContext, provider: 'gemini', telemetryEnabled: commandTelemetryEnabled };
                 writer.setProjectPath(data.options?.projectPath || data.options?.cwd || null);
-                spawnGemini(data.command, { ...data.options, env: sessionEnv }, writer).catch(error => {
+                await spawnGemini(data.command, { ...data.options, env: sessionEnv }, writer).catch(error => {
                     console.error('[ERROR] Gemini spawn error:', error);
                 });
             } else if (data.type === 'openrouter-command') {
@@ -1692,7 +1702,7 @@ function handleChatConnection(ws, request) {
                 );
                 writer.telemetryContext = { ...telemetryContext, provider: 'openrouter', telemetryEnabled: commandTelemetryEnabled };
                 writer.setProjectPath(data.options?.projectPath || data.options?.cwd || null);
-                queryOpenRouter(data.command, { ...data.options, env: sessionEnv }, writer).catch(error => {
+                await queryOpenRouter(data.command, { ...data.options, env: sessionEnv }, writer).catch(error => {
                     console.error('[ERROR] OpenRouter query error:', error);
                 });
             } else if (data.type === 'local-command') {
@@ -1722,7 +1732,7 @@ function handleChatConnection(ws, request) {
                 );
                 writer.telemetryContext = { ...telemetryContext, provider: 'local', telemetryEnabled: commandTelemetryEnabled };
                 writer.setProjectPath(data.options?.projectPath || data.options?.cwd || null);
-                queryLocalGPU(data.command, { ...data.options, env: sessionEnv }, writer).catch(error => {
+                await queryLocalGPU(data.command, { ...data.options, env: sessionEnv }, writer).catch(error => {
                     console.error('[ERROR] Local GPU query error:', error);
                 });
             } else if (data.type === 'nano-command') {
@@ -1751,7 +1761,7 @@ function handleChatConnection(ws, request) {
                 );
                 writer.telemetryContext = { ...telemetryContext, provider: 'nano', telemetryEnabled: commandTelemetryEnabled };
                 writer.setProjectPath(data.options?.projectPath || data.options?.cwd || null);
-                spawnNanoClaudeCode(data.command, { ...data.options, env: sessionEnv }, writer).catch(error => {
+                await spawnNanoClaudeCode(data.command, { ...data.options, env: sessionEnv }, writer).catch(error => {
                     console.error('[ERROR] Nano Claude Code error:', error);
                 });
             } else if (data.type === 'cursor-resume') {
@@ -1764,7 +1774,7 @@ function handleChatConnection(ws, request) {
                     return;
                 }
                 
-                spawnCursor('', {
+                await spawnCursor('', {
                     sessionId: data.sessionId,
                     resume: true,
                     cwd: data.options?.cwd,
@@ -1881,6 +1891,8 @@ function handleChatConnection(ws, request) {
                 type: 'error',
                 error: error.message
             });
+        } finally {
+            releaseTurn?.();
         }
     });
 
