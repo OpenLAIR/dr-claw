@@ -357,6 +357,9 @@ For details on the desktop architecture, IPC bridge, and CI/CD release process, 
 
 If agent web search does not work later, see [Troubleshooting Web Search](#troubleshooting-web-search) below.
 
+For optional web search and page fetching in Claude sessions without a search API
+key, see [Parallel Search MCP setup](docs/parallel-search-mcp.md).
+
 ## OpenClaw Integration
 <details>
 <summary><span style="font-size: 1.17em; font-weight: 600;">Turn Dr. Claw into a mobile-ready, voice-friendly research secretary</span></summary>
