@@ -24,7 +24,7 @@ import { readCliAvailability, writeCliAvailability } from '../../../utils/cliAva
 import { Button } from '../../ui/button';
 import type { PendingAutoIntake } from '../../../types/app';
 import type { EditingFile, DiffInfo } from '../../main-content/types/types';
-import { CLAUDE_MODELS, CURSOR_MODELS, CODEX_MODELS, GEMINI_MODELS, LOCAL_MODELS, NANO_CLAUDE_CODE_MODELS, OPENROUTER_MODELS } from '../../../../shared/modelConstants';
+import { CLAUDE_MODELS, CURSOR_MODELS, CODEX_MODELS, GEMINI_MODELS, LOCAL_MODELS, NANO_CLAUDE_CODE_MODELS, OPENROUTER_MODELS, PI_MODELS } from '../../../../shared/modelConstants';
 import { getProviderDisplayName } from '../utils/chatFormatting';
 import { buildEditableMessageDraft, buildReplayMessageDraft, getChatMessageId, getMessageReplayContent } from '../utils/chatMessages';
 import { normalizePath, toRelativePath, isSafePath, fileNameFromPath } from '../../../utils/pathUtils';
@@ -42,6 +42,7 @@ const DEFAULT_PROVIDER_AVAILABILITY: Record<Provider, ProviderAvailability> = {
   openrouter: { cliAvailable: true, cliCommand: 'openrouter', installHint: null },
   local: { cliAvailable: true, cliCommand: null, installHint: null },
   nano: { cliAvailable: true, cliCommand: 'nano-claude-code', installHint: null },
+  pi: { cliAvailable: true, cliCommand: 'pi', installHint: null },
 };
 
 const INTAKE_GREETING = `Hello! I'm your Dr. Claw research assistant, here to help you set up your research pipeline.\n\nTo get started, could you tell me about your research field or topic?`;
@@ -75,6 +76,7 @@ const getProviderModelConfig = (provider: Provider) => {
   if (provider === 'openrouter') return OPENROUTER_MODELS;
   if (provider === 'local') return LOCAL_MODELS;
   if (provider === 'nano') return NANO_CLAUDE_CODE_MODELS;
+  if (provider === 'pi') return PI_MODELS;
   return CURSOR_MODELS;
 };
 
@@ -184,6 +186,8 @@ function ChatInterface({
     setLocalModel,
     nanoModel,
     setNanoModel,
+    piModel,
+    setPiModel,
     permissionMode,
     pendingPermissionRequests,
     setPendingPermissionRequests,
@@ -328,6 +332,7 @@ function ChatInterface({
     openrouterModel,
     localModel,
     nanoModel,
+    piModel,
     isLoading,
     canAbortSession,
     tokenBudget,
@@ -462,6 +467,7 @@ function ChatInterface({
       openrouter: cached.openrouter ?? DEFAULT_PROVIDER_AVAILABILITY.openrouter,
       local: cached.local ?? DEFAULT_PROVIDER_AVAILABILITY.local,
       nano: cached.nano ?? DEFAULT_PROVIDER_AVAILABILITY.nano,
+      pi: cached.pi ?? DEFAULT_PROVIDER_AVAILABILITY.pi,
     };
   });
 
@@ -495,6 +501,7 @@ function ChatInterface({
         { provider: 'gemini', endpoint: '/api/cli/gemini/status', fallbackCommand: 'gemini' },
         { provider: 'openrouter', endpoint: '/api/cli/openrouter/status', fallbackCommand: 'openrouter' },
         { provider: 'nano', endpoint: '/api/cli/nano/status', fallbackCommand: 'nano-claude-code' },
+        { provider: 'pi', endpoint: '/api/cli/pi/status', fallbackCommand: 'pi' },
       ];
 
       const results = await Promise.all(checks.map(async ({ provider: nextProvider, endpoint, fallbackCommand }) => {
@@ -540,7 +547,7 @@ function ChatInterface({
 
   useEffect(() => {
     if (providerAvailability[provider]?.cliAvailable === false) {
-      const fallbackProvider = (['claude', 'cursor', 'codex', 'gemini', 'openrouter', 'local', 'nano'] as const).find(
+      const fallbackProvider = (['claude', 'cursor', 'codex', 'gemini', 'openrouter', 'local', 'nano', 'pi'] as const).find(
         (candidate) => providerAvailability[candidate]?.cliAvailable !== false,
       );
 
@@ -1000,6 +1007,8 @@ function ChatInterface({
           localModel={localModel}
           setLocalModel={setLocalModel}
           nanoModel={nanoModel}
+          piModel={piModel}
+          setPiModel={setPiModel}
           setNanoModel={setNanoModel}
           providerAvailability={providerAvailability}
           newSessionMode={newSessionMode}
