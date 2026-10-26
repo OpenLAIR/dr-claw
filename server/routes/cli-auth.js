@@ -1208,7 +1208,7 @@ router.get('/local/status', async (req, res) => {
 
       return res.json(buildStatusPayload({
         authenticated: true,
-        email: `Ollama · ${status.models.length} model${status.models.length !== 1 ? 's' : ''}${hasGpu ? ' · GPU detected' : ''}`,
+        email: `${status.provider === 'ollama' ? 'Ollama' : 'OpenAI-compatible'} · ${status.models.length} model${status.models.length !== 1 ? 's' : ''}${hasGpu ? ' · GPU detected' : ''}`,
         cliAvailable: true,
         cliCommand: null,
       }, 'local'));
@@ -1220,10 +1220,19 @@ router.get('/local/status', async (req, res) => {
       error: status.error,
       cliAvailable: true,
       cliCommand: null,
-      installHint: 'Install Ollama from https://ollama.com and run: ollama serve',
+      installHint: 'Start Ollama, vLLM, or SGLang and configure its loopback server URL in Settings → Local GPU',
     }, 'local'));
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+// Non-secret defaults for a fresh browser; API keys remain server-side.
+router.get('/local/config', (req, res) => {
+  try {
+    return res.json({ serverUrl: normalizeLocalOllamaBaseUrl(process.env.LOCAL_GPU_SERVER_URL || DEFAULT_OLLAMA_URL) });
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
   }
 });
 
@@ -1239,7 +1248,7 @@ router.get('/local/models', async (req, res) => {
     }
     const status = await checkOllamaStatus(serverUrl);
     if (!status.running) {
-      return res.status(503).json({ error: 'Ollama is not running', models: [] });
+      return res.status(503).json({ error: status.error || 'Local model server is not running', models: [] });
     }
 
     const gpus = await detectGPUs().catch(() => ({ gpus: [] }));
@@ -1253,6 +1262,7 @@ router.get('/local/models', async (req, res) => {
 
     return res.json({
       models: status.models,
+      provider: status.provider,
       hasGpu,
       maxVramMb,
       gpuCount: gpus.gpus.length,
@@ -1311,7 +1321,7 @@ router.post('/local/save-config', async (req, res) => {
       process.env.LOCAL_GPU_SERVER_URL = normalizedUrl;
     }
 
-    return res.json({ success: true, message: 'Local GPU configuration saved.' });
+    return res.json({ success: true, serverUrl: process.env.LOCAL_GPU_SERVER_URL || DEFAULT_OLLAMA_URL, message: 'Local GPU configuration saved.' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

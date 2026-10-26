@@ -349,8 +349,8 @@
         "description": "로컬 GPU에서 오픈소스 모델 실행",
         "gpuDetectNetworkError": "GPU 감지를 위해 앱 서버에 연결할 수 없습니다. 연결을 확인한 뒤 다시 시도하세요.",
         "gpuDetectFailed": "GPU 감지에 실패했습니다. 다시 시도하거나 문제가 계속되면 서버 로그를 확인하세요.",
-        "ollamaModelsLoadFailed": "서버에서 Ollama 모델 목록을 불러오지 못했습니다.",
-        "ollamaModelsNetworkError": "Ollama 모델을 불러오는 중 네트워크 오류가 발생했습니다. 앱이 실행 중이고 Ollama에 연결 가능한지 확인하세요."
+        "ollamaModelsLoadFailed": "로컬 서버에서 모델 목록을 불러오지 못했습니다.",
+        "ollamaModelsNetworkError": "로컬 모델을 불러오는 중 네트워크 오류가 발생했습니다. 앱과 로컬 모델 서버가 실행 중인지 확인하세요."
       }
     },
     "connectionStatus": "연결 상태",

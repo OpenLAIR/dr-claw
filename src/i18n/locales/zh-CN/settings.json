@@ -349,8 +349,8 @@
         "description": "在本地 GPU 上运行开源模型",
         "gpuDetectNetworkError": "无法连接应用服务器以检测 GPU。请检查网络后重试。",
         "gpuDetectFailed": "GPU 检测失败。请重试；若持续出现请查看服务器日志。",
-        "ollamaModelsLoadFailed": "无法从服务器加载 Ollama 模型列表。",
-        "ollamaModelsNetworkError": "加载 Ollama 模型时出现网络错误。请确认应用已运行且 Ollama 可访问。"
+        "ollamaModelsLoadFailed": "无法从本地服务器加载模型列表。",
+        "ollamaModelsNetworkError": "加载本地模型时出现网络错误。请确认应用和本地模型服务已运行。"
       }
     },
     "connectionStatus": "连接状态",

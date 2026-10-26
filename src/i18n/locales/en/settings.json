@@ -349,8 +349,8 @@
         "description": "Run open-source models on your own GPU",
         "gpuDetectNetworkError": "Could not reach the app server to detect GPUs. Check your connection and try again.",
         "gpuDetectFailed": "GPU detection failed. Try again or check the server log if this persists.",
-        "ollamaModelsLoadFailed": "Could not load Ollama models from the server.",
-        "ollamaModelsNetworkError": "Network error while loading Ollama models. Check that the app is running and Ollama is reachable."
+        "ollamaModelsLoadFailed": "Could not load models from the local server.",
+        "ollamaModelsNetworkError": "Network error while loading local models. Check that the app and local model server are running."
       }
     },
     "connectionStatus": "Connection Status",

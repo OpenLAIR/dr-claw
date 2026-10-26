@@ -311,7 +311,7 @@
   },
   "localModels": {
     "loading": "모델 로딩 중...",
-    "notRunning": "Ollama 오프라인",
+    "notRunning": "로컬 모델 서버 오프라인",
     "loadFailed": "모델 로드 실패",
     "networkError": "모델 서버에 연결할 수 없음",
     "empty": "모델 없음"

@@ -313,7 +313,7 @@
   },
   "localModels": {
     "loading": "正在加载模型...",
-    "notRunning": "Ollama 未运行",
+    "notRunning": "本地模型服务未运行",
     "loadFailed": "加载模型失败",
     "networkError": "模型服务不可达",
     "empty": "没有模型"
