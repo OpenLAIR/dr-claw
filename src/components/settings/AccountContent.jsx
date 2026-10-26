@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Input } from '../ui/input';
@@ -128,6 +128,10 @@ export default function AccountContent({ agent, authStatus, onLogin }) {
     const saved = localStorage.getItem('local-gpu-server-url');
     return saved || 'http://localhost:11434';
   });
+  const [localConfigReady, setLocalConfigReady] = useState(() =>
+    Boolean(localStorage.getItem('local-gpu-server-url'))
+  );
+  const localModelsRequestRef = useRef(null);
   const [isDeploying, setIsDeploying] = useState(false);
   const [deployResult, setDeployResult] = useState(null);
   const [localServerType, setLocalServerType] = useState(null);
@@ -167,16 +171,34 @@ export default function AccountContent({ agent, authStatus, onLogin }) {
     }
   }, [selectedGpu, t]);
 
-  const handleLoadOllamaModels = useCallback(async () => {
+  // Automatic loads, refreshes and connection tests share one request owner.
+  // Abort saves work; the identity check also rejects responses already parsing.
+  const handleLoadOllamaModels = useCallback(async ({ testConnection = false } = {}) => {
+    localModelsRequestRef.current?.abort();
+    const controller = new AbortController();
+    localModelsRequestRef.current = controller;
+    const isCurrent = () => localModelsRequestRef.current === controller && !controller.signal.aborted;
     setIsLoadingModels(true);
+    setIsDeploying(testConnection);
     setOllamaModelsError(null);
     setLocalServerType(null);
+    setOllamaModels([]);
+    if (testConnection) setDeployResult(null);
     try {
-      const res = await authenticatedFetch(`/api/cli/local/models?serverUrl=${encodeURIComponent(localServerUrl)}`);
+      const res = await authenticatedFetch(`/api/cli/local/models?serverUrl=${encodeURIComponent(localServerUrl)}`, {
+        signal: controller.signal,
+      });
       const data = await res.json();
+      if (!isCurrent()) return false;
       if (res.ok && data.models) {
         setOllamaModels(data.models);
         setLocalServerType(data.provider);
+        if (testConnection) {
+          setDeployResult({
+            success: true,
+            message: `Connected! Local server has ${data.models.length} model${data.models.length !== 1 ? 's' : ''} available.${data.hasGpu ? ' GPU detected.' : ''}`,
+          });
+        }
         if (data.hasGpu && data.models.length > 0) {
           const smallModels = data.models.filter(m => m.sizeB && m.sizeB <= 14);
           if (smallModels.length > 0 && !localStorage.getItem('local-model')) {
@@ -184,23 +206,39 @@ export default function AccountContent({ agent, authStatus, onLogin }) {
           }
         }
       } else {
-        setOllamaModels([]);
-        setOllamaModelsError(data.error || t('agents.account.local.ollamaModelsLoadFailed'));
+        const message = data.error || t('agents.account.local.ollamaModelsLoadFailed');
+        setOllamaModelsError(message);
+        if (testConnection) setDeployResult({ success: false, message });
       }
     } catch (err) {
-      setOllamaModels([]);
-      setOllamaModelsError(t('agents.account.local.ollamaModelsNetworkError'));
+      if (!isCurrent()) return false;
+      const message = t('agents.account.local.ollamaModelsNetworkError');
+      setOllamaModelsError(message);
+      if (testConnection) setDeployResult({ success: false, message });
       console.warn('[AccountContent] Ollama models load failed', err);
+    } finally {
+      if (isCurrent()) {
+        setIsLoadingModels(false);
+        setIsDeploying(false);
+      }
     }
-    setIsLoadingModels(false);
+    return isCurrent();
   }, [localServerUrl, t]);
 
   useEffect(() => {
-    if (agent === 'local') {
-      handleDetectGpus();
+    if (agent === 'local') handleDetectGpus();
+  }, [agent, handleDetectGpus]);
+
+  useEffect(() => {
+    if (agent === 'local' && localConfigReady) {
+      setDeployResult(null);
       handleLoadOllamaModels();
     }
-  }, [agent, handleDetectGpus, handleLoadOllamaModels]);
+    return () => {
+      localModelsRequestRef.current?.abort();
+      localModelsRequestRef.current = null;
+    };
+  }, [agent, localConfigReady, handleLoadOllamaModels]);
 
   useEffect(() => {
     if (agent !== 'local' || localStorage.getItem('local-gpu-server-url')) return;
@@ -208,7 +246,8 @@ export default function AccountContent({ agent, authStatus, onLogin }) {
     authenticatedFetch('/api/cli/local/config')
       .then(res => res.ok ? res.json() : null)
       .then(data => { if (!cancelled && data?.serverUrl) setLocalServerUrl(current => current === 'http://localhost:11434' ? data.serverUrl : current); })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setLocalConfigReady(true); });
     return () => { cancelled = true; };
   }, [agent]);
 
@@ -242,30 +281,8 @@ export default function AccountContent({ agent, authStatus, onLogin }) {
   };
 
   const handleTestConnection = async () => {
-    setIsDeploying(true);
-    setDeployResult(null);
-    try {
-      const res = await authenticatedFetch(`/api/cli/local/models?serverUrl=${encodeURIComponent(localServerUrl)}`);
-      const data = await res.json();
-      if (res.ok && data.models) {
-        setOllamaModels(data.models);
-        setLocalServerType(data.provider);
-        setDeployResult({
-          success: true,
-          message: `Connected! Local server has ${data.models.length} model${data.models.length !== 1 ? 's' : ''} available.${data.hasGpu ? ' GPU detected.' : ''}`,
-        });
-      } else {
-        setDeployResult({ success: false, message: data.error || 'Could not connect' });
-      }
-    } catch (err) {
-      setDeployResult({
-        success: false,
-        message: `Cannot reach local model server at ${localServerUrl}. Check that it is running.`,
-      });
-    } finally {
-      setIsDeploying(false);
-      if (typeof onLogin === 'function') onLogin();
-    }
+    const current = await handleLoadOllamaModels({ testConnection: true });
+    if (current && typeof onLogin === 'function') onLogin();
   };
 
   const handlePullModel = async () => {
@@ -802,7 +819,7 @@ export default function AccountContent({ agent, authStatus, onLogin }) {
                   <div className="flex gap-2">
                     <Button
                       onClick={handleTestConnection}
-                      disabled={isDeploying || !localServerUrl.trim()}
+                      disabled={!localConfigReady || isDeploying || !localServerUrl.trim()}
                       size="sm"
                       variant="outline"
                       className="flex-1"
@@ -811,6 +828,7 @@ export default function AccountContent({ agent, authStatus, onLogin }) {
                     </Button>
                     <Button
                       onClick={handleSaveLocalConfig}
+                      disabled={!localConfigReady}
                       size="sm"
                       className={`${config.buttonClass} text-white flex-1`}
                     >
@@ -834,7 +852,7 @@ export default function AccountContent({ agent, authStatus, onLogin }) {
                   </div>
                   <Button
                     onClick={handleLoadOllamaModels}
-                    disabled={isLoadingModels}
+                    disabled={!localConfigReady || isLoadingModels}
                     size="sm"
                     variant="outline"
                     className="h-7 text-xs"

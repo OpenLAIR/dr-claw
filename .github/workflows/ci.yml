@@ -37,6 +37,9 @@ jobs:
       - name: Browser loading regressions
         run: node --test test/lazy-loading.test.mjs
 
+      - name: Local model settings regressions
+        run: npx playwright test --config playwright.local-model.config.ts
+
       - name: typecheck
         run: npm run typecheck
 

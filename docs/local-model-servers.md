@@ -5,7 +5,7 @@ The Local GPU provider supports Ollama, vLLM, SGLang, and other servers exposing
 
 1. Start your model server separately. For coding tools, enable the server's
    tool-call parser and choose a model that supports OpenAI function calling.
-2. In **Settings → Local GPU**, enter its URL and click **Test Connection**, then
+2. In **Settings → Agents → Local GPU → Account**, enter its URL and click **Test Connection**, then
    **Save & Refresh**. Examples: `http://localhost:11434` (Ollama),
    `http://localhost:8000/v1` (vLLM), `http://localhost:30000/v1` (SGLang).
 3. Select a discovered model and use the **Local GPU** chat provider.
