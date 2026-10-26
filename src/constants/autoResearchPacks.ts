@@ -88,7 +88,7 @@ export const AUTO_RESEARCH_PACKS: PackDef[] = [
       en: 'End-to-end autonomous research pipeline with cross-model adversarial review. Claude executes, GPT/Gemini reviews.',
       ko: 'Cross-model adversarial review pipeline. Claude executes, GPT/Gemini reviews.',
     },
-    skills: ['aris-research-pipeline', 'aris-idea-discovery', 'aris-experiment-bridge', 'aris-auto-review-loop', 'aris-paper-writing', 'aris-rebuttal'],
+    skills: ['aris-research-pipeline', 'aris-idea-discovery', 'aris-experiment-bridge', 'aris-auto-review-loop', 'aris-paper-writing', 'aris-rebuttal', 'aris-meta-optimize', 'aris-meta-apply'],
     workflows: [
       { name: 'Full Pipeline', command: '/aris-research-pipeline', description: { zh: 'Idea → 实验 → 审稿 → 论文', en: 'Idea → Experiment → Review → Paper', ko: 'Idea → Experiment → Review → Paper' } },
       { name: 'Idea Discovery', command: '/aris-idea-discovery', description: { zh: '文献调研 + 想法生成 + 新颖性验证', en: 'Literature + Idea gen + Novelty check', ko: 'Literature + Idea gen + Novelty check' } },
@@ -96,9 +96,10 @@ export const AUTO_RESEARCH_PACKS: PackDef[] = [
       { name: 'Paper Writing', command: '/aris-paper-writing', description: { zh: '提纲 → 图表 → LaTeX → 编译', en: 'Outline → Figures → LaTeX → Compile', ko: 'Outline → Figures → LaTeX → Compile' } },
       { name: 'Experiment', command: '/aris-experiment-bridge', description: { zh: '实现实验 + 部署到 GPU', en: 'Implement + Deploy to GPU', ko: 'Implement + Deploy to GPU' } },
       { name: 'Rebuttal', command: '/aris-rebuttal', description: { zh: '解析审稿意见 + 起草反驳信', en: 'Parse reviews + Draft rebuttal', ko: 'Parse reviews + Draft rebuttal' } },
+      { name: 'Meta Optimize', command: '/aris-meta-optimize', description: { zh: 'Workflow M：分析使用日志 → 建议优化（需单独人工应用）', en: 'Workflow M: usage logs → improvement proposals (separate human-gated apply)', ko: 'Workflow M: 사용 로그 분석 → 개선 제안 (별도 사용자 승인 적용)' } },
     ],
     mcp: [
-      { key: 'codex', label: 'Codex (GPT-5.4)', install: 'npm install -g @openai/codex', register: 'claude mcp add codex -s user -- codex mcp-server', envVars: [{ name: 'OPENAI_API_KEY', example: 'sk-proj-...' }] },
+      { key: 'codex', label: 'Codex (capability-gated)', install: 'npm install -g @openai/codex', register: 'claude mcp add codex -s user -- python3 "$(pwd)/skills/aris-infra/mcp-servers/codex-exec/server.py"', envVars: [{ name: 'OPENAI_API_KEY', example: 'sk-proj-...' }] },
       { key: 'llm-chat', label: 'Generic LLM', register: 'claude mcp add llm-chat -s user -- python3 skills/aris-infra/mcp-servers/llm-chat/server.py', envVars: [{ name: 'LLM_API_KEY', example: 'your-api-key' }, { name: 'LLM_BASE_URL', example: 'https://api.openai.com/v1' }, { name: 'LLM_MODEL', example: 'gpt-4o' }] },
       { key: 'gemini', label: 'Gemini', register: 'claude mcp add gemini-review -s user -- python3 skills/aris-infra/mcp-servers/gemini-review/server.py', envVars: [{ name: 'GEMINI_API_KEY', example: 'your-gemini-key' }] },
     ],

@@ -185,5 +185,9 @@
         "making-academic-presentations"
       ]
     }
+  },
+  "skillOrigins": {
+    "aris-meta-optimize": "imported",
+    "aris-meta-apply": "imported"
   }
 }
