@@ -337,12 +337,17 @@ def run_codex(argv: List[str], prompt: str, request_id: Any, progress_token: Any
             progress(etype)
             service_inbox()
     finally:
-        stop_ticker.set()
-        proc.wait()
-        ticker_thread.join()   # nothing may touch the inbox after we hand control back
-        stderr_thread.join()
-        if cancel_timer is not None:
-            cancel_timer.cancel()
+        try:
+            # stdout EOF does not imply process exit, and descendants may still
+            # hold stderr open. Keep servicing cancellation/disconnects until
+            # both waits finish so TERM/KILL can unblock either cleanup stage.
+            proc.wait()
+            stderr_thread.join()
+        finally:
+            stop_ticker.set()
+            ticker_thread.join()  # no inbox consumers after returning to main
+            if cancel_timer is not None:
+                cancel_timer.cancel()
 
     if outcome.cancelled:
         outcome.error = "cancelled by client"

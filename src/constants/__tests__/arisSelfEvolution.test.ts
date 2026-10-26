@@ -409,4 +409,80 @@ assert time.monotonic() - started < 3
     expect(result.status, result.stderr).toBe(0);
     expect(readdirSync(home)).toEqual([]);
   });
+
+  it.skipIf(process.platform === 'win32').each([
+    ['process', 'disconnect'], ['process', 'cancel'],
+    ['stderr descendant', 'disconnect'], ['stderr descendant', 'cancel'],
+  ])('bridge handles %s cleanup after stdout EOF on %s', (phase, cancellation) => {
+    const result = pythonCode(`
+import os, queue, signal, subprocess, threading, time
+spec = importlib.util.spec_from_file_location('bridge', ${JSON.stringify(join(infra, 'mcp-servers/codex-exec/server.py'))})
+b = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(b)
+b.PROGRESS_INTERVAL_SEC = 0.02
+b.CANCEL_GRACE_SEC = 0.1
+messages = []
+b.send_message = messages.append
+inbox, deferred = queue.Queue(), []
+waiting = threading.Event()
+children, outcomes, errors = [], [], []
+original_popen = subprocess.Popen
+descendant = ${JSON.stringify(phase)} == 'stderr descendant'
+
+def tracked_popen(*args, **kwargs):
+    proc = original_popen(*args, **kwargs)
+    children.append(proc)
+    original_wait = proc.wait
+    def wait(*args, **kwargs):
+        if not descendant:
+            waiting.set()  # stdout has closed; the reviewer is still running
+        code = original_wait(*args, **kwargs)
+        if descendant:
+            waiting.set()  # reviewer exited; its child still owns the stderr pipe
+        return code
+    proc.wait = wait
+    return proc
+b.subprocess.Popen = tracked_popen
+
+# Real subprocesses, but only Python fixtures: no model, network or user config.
+child_code = 'import os,signal,time,pathlib; signal.signal(signal.SIGTERM,signal.SIG_IGN); pathlib.Path("reviewer-ready").touch(); os.close(1); time.sleep(30)'
+code = child_code
+if descendant:
+    code = ('import subprocess,sys,time,pathlib\\n'
+            + 'subprocess.Popen([sys.executable, "-c", ' + repr(child_code) + '])\\n'
+            + 'while not pathlib.Path("reviewer-ready").exists(): time.sleep(0.01)\\n')
+def run():
+    try:
+        outcomes.append(b.run_codex([sys.executable, '-c', code], '', 1, None, inbox, deferred))
+    except BaseException as exc:
+        errors.append(exc)
+worker = threading.Thread(target=run, daemon=True)
+try:
+    worker.start()
+    assert waiting.wait(2), 'fixture did not reach cleanup'
+    inbox.put({'method':'ping', 'id':2})
+    # A cancellation for a different call must be deferred, not consumed.
+    unrelated = {'method':'notifications/cancelled', 'params':{'requestId':99}}
+    inbox.put(unrelated)
+    cancel = ({'__eof__':True} if ${JSON.stringify(cancellation)} == 'disconnect'
+              else {'method':'notifications/cancelled', 'params':{'requestId':1}})
+    inbox.put(cancel)
+    worker.join(2)
+    assert not worker.is_alive(), 'cleanup stopped servicing cancellation after stdout EOF'
+    assert not errors, errors
+    assert outcomes[0].cancelled and outcomes[0].error == 'cancelled by client'
+    assert {'jsonrpc':'2.0','id':2,'result':{}} in messages
+    assert deferred == [unrelated] + ([cancel] if '__eof__' in cancel else [])
+    assert all(proc.poll() is not None for proc in children)
+finally:
+    # Also clean up the broken implementation when running this regression red.
+    if worker.is_alive():
+        for proc in children:
+            try: os.killpg(proc.pid, signal.SIGKILL)
+            except ProcessLookupError: pass
+    worker.join(2)
+`);
+    expect(result.status, result.stderr).toBe(0);
+    expect(readdirSync(home)).toEqual([]);
+  });
 });

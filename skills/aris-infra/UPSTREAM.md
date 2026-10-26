@@ -43,6 +43,8 @@ No unrelated upstream skills or runtime-specific overlays were imported.
   defaults new reviews to read-only, and reapplies the explicit/stored sandbox
   after config overrides. Client disconnect cancels active reviewer subprocesses
   with bounded TERM/KILL cleanup (POSIX includes the process group).
+  Cancellation stays active after stdout closes, while waiting for process exit
+  and for descendants to release stderr; regression tests cover both waits.
   Hub's actual Configure route also registers the bundled
   bridge by installation-root path, while preserving existing registrations.
 - Landing trace calls explicitly require full traces and artifact readback;
