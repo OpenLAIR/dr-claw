@@ -13,7 +13,7 @@ each backend; these steps configure Claude sessions.
 
 ## Add the server
 
-1. Open **Settings → MCP Servers** and select the **Claude** provider.
+1. Open **Settings → Agents → Claude → MCP Servers**.
 2. Click **Add MCP Server**, choose **User (Global)** scope, and enter
    `parallel-search` as the server name. This makes it available across projects
    for the OS user running Dr. Claw.
@@ -77,7 +77,7 @@ follow its retry guidance or configure authenticated access as described in the
 
 ## Remove the server
 
-Delete `parallel-search` in **Settings → MCP Servers → Claude**, or run:
+Delete `parallel-search` in **Settings → Agents → Claude → MCP Servers**, or run:
 
 ```bash
 claude mcp remove --scope user parallel-search
