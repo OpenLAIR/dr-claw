@@ -360,6 +360,9 @@ If agent web search does not work later, see [Troubleshooting Web Search](#troub
 For optional web search and page fetching in Claude sessions without a search API
 key, see [Parallel Search MCP setup](docs/parallel-search-mcp.md).
 
+For local repository navigation and optional entity edits in Claude sessions,
+see [Sem and Weave MCP setup](docs/sem-weave-mcp.md).
+
 To publish research summaries or HTML reports from Claude sessions as shareable
 links without an API key, see [deed.page MCP setup](docs/deed-page-mcp.md).
 
