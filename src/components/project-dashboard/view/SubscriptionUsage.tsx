@@ -33,7 +33,8 @@ const PROVIDER_NAMES: Record<ProviderUsage['provider'], string> = {
 const OPEN_STATE_KEY = 'dr-claw:dashboard:subscription-usage-open';
 
 function readOpenState() {
-  try { return localStorage.getItem(OPEN_STATE_KEY) === '1'; } catch { return false; }
+  // Open by default; only a viewer who collapsed it keeps it collapsed.
+  try { return localStorage.getItem(OPEN_STATE_KEY) !== '0'; } catch { return true; }
 }
 
 function writeOpenState(open: boolean) {
@@ -85,7 +86,7 @@ export default function SubscriptionUsage() {
 
   return (
     <details
-      className="mt-6 text-xs text-muted-foreground"
+      className="mt-4 text-xs text-muted-foreground"
       open={open}
       onToggle={e => { const next = e.currentTarget.open; setOpen(next); writeOpenState(next); }}
     >
