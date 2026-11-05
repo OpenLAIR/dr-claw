@@ -23,6 +23,7 @@ import type { GeminiThinkingModeId } from '../../../../shared/geminiThinkingSupp
 import { getSupportedGeminiThinkingModes } from '../../../../shared/geminiThinkingSupport';
 
 import { grantToolPermission } from '../utils/chatPermissions';
+import { isSideQuestionCommand } from '../utils/composerSubmit';
 import { applyEditedMessageToHistory, createChatMessageId } from '../utils/chatMessages';
 import { clearSessionTimerStart, getProviderSettingsKey, persistSessionTimerStart, safeLocalStorage } from '../utils/chatStorage';
 import { hasUnsavedComposerDraft, normalizeProgrammaticDraft, resolveLineHeightPx } from '../utils/composerUtils';
@@ -134,7 +135,9 @@ const createFakeSubmitEvent = () => {
   return { preventDefault: () => undefined } as unknown as FormEvent<HTMLFormElement>;
 };
 
-const PROGRAMMATIC_SUBMIT_MAX_RETRIES = 12;
+// Programmatic sends wait for the composer and for the message queue to finish
+// restoring from IndexedDB; a submit during restore would be dropped. ~5s total.
+const PROGRAMMATIC_SUBMIT_MAX_RETRIES = 100;
 const PROGRAMMATIC_SUBMIT_RETRY_DELAY_MS = 50;
 const MAX_ATTACHMENTS = 5;
 const MAX_ATTACHMENT_SIZE_BYTES = 50 * 1024 * 1024;
@@ -353,6 +356,8 @@ export function useChatComposerState({
   const currentScopeRef = useRef(queueScope);
   currentScopeRef.current = queueScope;
   const messageQueue = useMessageQueue(queueScope, queueSessionId, isLoading, isConnected, (item, id, isCurrent) => restoredQueueRunner.current(item, id, isCurrent));
+  const queueRestoringRef = useRef(messageQueue.restoring);
+  queueRestoringRef.current = messageQueue.restoring;
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const inputHighlightRef = useRef<HTMLDivElement>(null);
@@ -816,7 +821,7 @@ export function useChatComposerState({
     }
 
     const attemptSubmit = (attempt = 0) => {
-      if (handleSubmitRef.current) {
+      if (handleSubmitRef.current && !queueRestoringRef.current) {
         handleSubmitRef.current(createFakeSubmitEvent());
         return;
       }
@@ -1616,6 +1621,10 @@ export function useChatComposerState({
       settings: { claudeModel, codexModel, cursorModel, geminiModel, openrouterModel, localModel, nanoModel, thinkingMode, codexReasoningEffort, geminiThinkingMode, permissionMode, newSessionMode },
     };
     if (!draft.input.trim() && !draft.files.length && !draft.prompt) return;
+    if (isLoading && isSideQuestionCommand(draft.input)) {
+      try { await submitDraft(event); } catch (error) { console.warn('Side question not sent:', error); }
+      return;
+    }
     if (isLoading || messageQueue.items.length > 0) {
       messageQueue.enqueue({ draft, id: createChatMessageId(), text: draft.input, promptTitle: draft.prompt?.scenarioTitle, hasPrompt: Boolean(draft.prompt), files: draft.files.map(file => file.name),
         run: (id, isCurrent, text) => submitDraft(createFakeSubmitEvent(), { ...draft, input: text }, id, isCurrent),

@@ -64,7 +64,9 @@ export function useMessageQueue(scope: string, sessionId: string | null, loading
     }
     if (previous.current !== scope) {
       const old = get(previous.current);
-      if (old.items.length) old.paused = true;
+      // bindSession re-keys the same queue from `…:new` to `…:<id>` while the
+      // scope prop can still trail by a render; that is not leaving the queue.
+      if (old.items.length && old !== get(scope)) old.paused = true;
       previous.current = scope;
       refresh();
     }
