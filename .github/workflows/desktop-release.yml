@@ -28,7 +28,9 @@ jobs:
             artifact_name: desktop-macos
             artifact_glob: release/*.dmg
             platform_label: macos
-          - os: windows-latest
+          # windows-latest moved to Windows Server 2025, where node-gyp (via
+          # @electron/rebuild) cannot find Visual Studio to rebuild node-pty.
+          - os: windows-2022
             platform_args: --win nsis
             artifact_name: desktop-windows
             artifact_glob: release/*.exe
