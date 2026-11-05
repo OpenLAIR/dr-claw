@@ -268,6 +268,7 @@ function MainContent({
         <div className="flex-1 min-h-0 overflow-hidden">
           <LazyContent resetKey="skills">
             <SkillsDashboard
+              projects={projects}
               onSendToChat={(command: string) => {
                 queueSkillCommandDraft(command);
                 // Select the most recent project if available, then switch to chat

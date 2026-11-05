@@ -6,6 +6,15 @@ import { fileURLToPath } from 'url';
 import { extractProjectDirectory, ensureProjectSkillLinks } from '../projects.js';
 import { FORBIDDEN_PATHS } from './projects.js';
 import { findSkillMdPath } from '../utils/skillExpander.js';
+import { collectSkillDirs } from '../utils/skillLinks.js';
+import {
+  SKILL_BASELINES,
+  applyOverrideChanges,
+  loadGlobalSkillPrefs,
+  resolveProjectSkillStates,
+  saveGlobalSkillPrefs,
+  saveProjectSkillOverrides,
+} from '../utils/skillDefaults.js';
 
 const GLOBAL_SKILLS_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'skills');
 
@@ -223,6 +232,129 @@ async function validateZipBuffer(buffer) {
     zip,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Default skills: which bundled skills are linked into projects. See
+// utils/skillDefaults.js for how project overrides, global overrides and the
+// global baseline combine.
+// ---------------------------------------------------------------------------
+
+async function listBundledSkillNames() {
+  try {
+    const dirs = await collectSkillDirs(GLOBAL_SKILLS_DIR);
+    return [...new Set(dirs.map((dir) => dir.name))];
+  } catch (err) {
+    if (err.code === 'ENOENT') return [];
+    throw err;
+  }
+}
+
+function findOwnedProject(projectDb, projectName, user) {
+  if (!projectName || typeof projectName !== 'string') return null;
+  const row = projectDb.getProjectById(projectName);
+  if (!row) return null;
+  if (row.user_id && user?.id && row.user_id !== user.id) return null;
+  return row;
+}
+
+async function buildSkillDefaultsState({ db, skillNames, project }) {
+  const { globalPrefs, projectOverrides, states } = await resolveProjectSkillStates({
+    skillNames,
+    skillsDir: GLOBAL_SKILLS_DIR,
+    projectId: project?.id ?? null,
+    db,
+  });
+  return {
+    baselines: SKILL_BASELINES,
+    baseline: globalPrefs.baseline,
+    globalOverrides: globalPrefs.overrides,
+    project: project
+      ? { name: project.id, displayName: project.display_name || null, overrides: projectOverrides }
+      : null,
+    skills: states,
+    newSkills: states.filter((state) => state.isNew).map((state) => state.name),
+  };
+}
+
+// GET /defaults?projectName= — enabled state of every bundled skill, for the
+// global defaults or (with projectName) for one project.
+router.get('/defaults', async (req, res) => {
+  try {
+    const db = await import('../database/db.js');
+    const { projectName } = req.query;
+    let project = null;
+    if (projectName) {
+      project = findOwnedProject(db.projectDb, projectName, req.user);
+      if (!project) return res.status(404).json({ error: 'Project not found.' });
+    }
+    const skillNames = await listBundledSkillNames();
+    res.json(await buildSkillDefaultsState({ db, skillNames, project }));
+  } catch (error) {
+    console.error('[skills] get defaults error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// PUT /defaults — { baseline?, overrides?: { name: true|false|null }, acknowledgeNew? }
+// Changes apply to each project on its next agent turn.
+router.put('/defaults', async (req, res) => {
+  try {
+    const { baseline, overrides, acknowledgeNew } = req.body || {};
+    if (baseline !== undefined && !SKILL_BASELINES.includes(baseline)) {
+      return res.status(400).json({ error: `baseline must be one of ${SKILL_BASELINES.join(', ')}` });
+    }
+    if (overrides !== undefined && (overrides === null || typeof overrides !== 'object' || Array.isArray(overrides))) {
+      return res.status(400).json({ error: 'overrides must be an object' });
+    }
+    const db = await import('../database/db.js');
+    const skillNames = await listBundledSkillNames();
+    const current = await loadGlobalSkillPrefs({ skillNames, db });
+    const next = {
+      baseline: baseline ?? current.baseline,
+      overrides: applyOverrideChanges(current.overrides, overrides, new Set(skillNames)),
+      knownSkills: acknowledgeNew ? [...new Set([...current.knownSkills, ...skillNames])] : current.knownSkills,
+    };
+    await saveGlobalSkillPrefs(next, { db });
+    res.json(await buildSkillDefaultsState({ db, skillNames, project: null }));
+  } catch (error) {
+    console.error('[skills] put defaults error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// PUT /project/:projectName/overrides — { overrides?: { name: true|false|null }, reset? }
+// null (or reset) makes a skill follow the global defaults again. The project's
+// skill links are updated right away.
+router.put('/project/:projectName/overrides', async (req, res) => {
+  try {
+    const { overrides, reset } = req.body || {};
+    if (!reset && (overrides === null || typeof overrides !== 'object' || Array.isArray(overrides))) {
+      return res.status(400).json({ error: 'overrides must be an object' });
+    }
+    const db = await import('../database/db.js');
+    const project = findOwnedProject(db.projectDb, req.params.projectName, req.user);
+    if (!project) return res.status(404).json({ error: 'Project not found.' });
+
+    const skillNames = await listBundledSkillNames();
+    const current = project.metadata?.skills?.overrides || {};
+    const nextOverrides = reset ? {} : applyOverrideChanges(current, overrides, new Set(skillNames));
+    await saveProjectSkillOverrides(project.id, nextOverrides, { db });
+
+    if (project.path) {
+      try {
+        await ensureProjectSkillLinks(project.path);
+      } catch (err) {
+        console.warn('[skills] Failed to update project skill links:', err.message);
+      }
+    }
+
+    const updated = db.projectDb.getProjectById(project.id);
+    res.json(await buildSkillDefaultsState({ db, skillNames, project: updated }));
+  } catch (error) {
+    console.error('[skills] put project overrides error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // GET /resolve — resolve a skill name to its SKILL.md path and content
 router.get('/resolve', async (req, res) => {

@@ -1,0 +1,71 @@
+// Client-side model for the skill defaults API (server/utils/skillDefaults.js).
+
+export type SkillBaseline = 'recommended' | 'all' | 'none';
+
+export type SkillDefaultSource = 'project' | 'global' | 'baseline';
+
+export type SkillDefaultState = {
+  name: string;
+  enabled: boolean;
+  source: SkillDefaultSource;
+  /** Value a project inherits from the global defaults. */
+  globalEnabled: boolean;
+  /** Value the global defaults have from the baseline alone. */
+  baselineEnabled: boolean;
+  core: boolean;
+  recommended: boolean;
+  isNew: boolean;
+};
+
+export type SkillDefaultsResponse = {
+  baselines: SkillBaseline[];
+  baseline: SkillBaseline;
+  globalOverrides: Record<string, boolean>;
+  project: { name: string; displayName: string | null; overrides: Record<string, boolean> } | null;
+  skills: SkillDefaultState[];
+  newSkills: string[];
+};
+
+export type SkillDefaultsScope = 'global' | 'project';
+
+/**
+ * The override to send when a skill is switched: null when the new value is
+ * what the scope would inherit anyway, so no redundant override is stored.
+ */
+export function buildToggleChange(state: SkillDefaultState, nextEnabled: boolean, scope: SkillDefaultsScope): boolean | null {
+  const inherited = scope === 'project' ? state.globalEnabled : state.baselineEnabled;
+  return nextEnabled === inherited ? null : nextEnabled;
+}
+
+/** Optimistic local update while the change is saved. */
+export function applyLocalToggle(
+  data: SkillDefaultsResponse,
+  name: string,
+  nextEnabled: boolean,
+  scope: SkillDefaultsScope,
+): SkillDefaultsResponse {
+  return {
+    ...data,
+    skills: data.skills.map((state) => {
+      if (state.name !== name) return state;
+      const change = buildToggleChange(state, nextEnabled, scope);
+      if (scope === 'project') {
+        return { ...state, enabled: nextEnabled, source: change === null ? (state.source === 'project' ? 'global' : state.source) : 'project' };
+      }
+      return {
+        ...state,
+        enabled: nextEnabled,
+        globalEnabled: nextEnabled,
+        source: change === null ? 'baseline' : 'global',
+      };
+    }),
+  };
+}
+
+export function countEnabled(skills: SkillDefaultState[]): number {
+  return skills.reduce((total, state) => total + (state.enabled ? 1 : 0), 0);
+}
+
+export function isSkillBaseline(value: unknown): value is SkillBaseline {
+  return value === 'recommended' || value === 'all' || value === 'none';
+}

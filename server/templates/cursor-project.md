@@ -87,6 +87,8 @@ When the user sends a task via "Use in Chat", the task prompt already includes s
 
 If no suggested skills appear in the prompt, or the user makes a freeform request outside the task list, list the `.cursor/skills/` directory to discover available skills and pick the best match.
 
+Only the skills enabled for this project are linked there. If a skill you need (or one a task suggests) is missing, look it up under "On-request Skills" in `.agents/skills/skills-index.md` and read the `SKILL.md` at the path given there.
+
 ## Key Files
 
 - `instance.json` — Project path mapping. It stores absolute directory paths for each pipeline area (`Survey.*`, `Ideation.*`, `Experiment.*`, `Publication.*`, `Promotion.*`) and related project metadata. Use these paths as the canonical locations for file I/O.

@@ -32,6 +32,8 @@ import translations from 'i18next';
 import { api } from '../utils/api';
 import WorkbenchDialog from './ui/WorkbenchDialog';
 import { useDeviceSettings } from '../hooks/useDeviceSettings';
+import { SkillDefaultBadges, SkillDefaultsBar, SkillEnableSwitch } from './skills/SkillDefaultsControls';
+import { useSkillDefaults } from './skills/useSkillDefaults';
 
 type SkillNode = {
   name: string;
@@ -75,6 +77,8 @@ type SkillSummary = {
   tags: SkillTag[];
   hasSkillMd: boolean;
   taxonomy: SkillTaxonomyRecord | null;
+  /** Shipped with Dr. Claw (listed in skills-catalog-v2.json); read-only in the UI. */
+  isBundled: boolean;
 };
 
 type FacetOption = {
@@ -1138,9 +1142,10 @@ function buildSkillCardTagSummary(skill: SkillExplorerItem): { tags: Array<{ lab
 
 type SkillsDashboardProps = {
   onSendToChat?: (command: string) => void;
+  projects?: Array<{ name: string; displayName?: string | null }>;
 };
 
-export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps = {}) {
+export default function SkillsDashboard({ onSendToChat, projects = [] }: SkillsDashboardProps = {}) {
   const { i18n, t } = useTranslation();
   const { isMobile: isCompact } = useDeviceSettings({ mobileBreakpoint: 1279, trackPWA: false });
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -1186,6 +1191,14 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
   const [editLoading, setEditLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [modalMessage, setModalMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [defaultsProject, setDefaultsProject] = useState<string | null>(null);
+  const [onlyEnabled, setOnlyEnabled] = useState(false);
+  const skillDefaults = useSkillDefaults(defaultsProject);
+  const skillDefaultsByName = useMemo(
+    () => new Map((skillDefaults.data?.skills ?? []).map((state) => [state.name, state])),
+    [skillDefaults.data],
+  );
+  const skillDefaultsScope = defaultsProject ? 'project' : 'global';
 
   const loadSkills = useCallback(async () => {
     setLoading(true);
@@ -1313,6 +1326,7 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
             tags,
             hasSkillMd,
             taxonomy,
+            isBundled: catalogRecordMap.has(dirPath),
           };
         })
       );
@@ -1589,9 +1603,10 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
       if (activeCapability !== 'all' && !skill.capabilityKeys.includes(activeCapability)) return false;
       if (activeDomain !== 'all' && !skill.domainKeys.includes(activeDomain)) return false;
       if (activeStatus !== 'all' && skill.statusKey !== activeStatus) return false;
+      if (onlyEnabled && !skillDefaultsByName.get(skill.name)?.enabled) return false;
       return true;
     });
-  }, [activeCapability, activeDomain, activeIntent, activeSource, activeStatus, searchFilteredSkills]);
+  }, [activeCapability, activeDomain, activeIntent, activeSource, activeStatus, onlyEnabled, searchFilteredSkills, skillDefaultsByName]);
 
   const verifiedCount = useMemo(
     () => explorerSkills.filter((skill) => skill.statusKey === 'verified').length,
@@ -1848,7 +1863,18 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
                           </div>
                         </div>
                         <div className="flex flex-wrap justify-end gap-2">
-                          {!isEditing && (
+                          {!isEditing && skillDefaultsByName.has(focusedSkill.name) && (
+                            <label className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground">
+                              <SkillEnableSwitch
+                                checked={Boolean(skillDefaultsByName.get(focusedSkill.name)?.enabled)}
+                                label={t(skillDefaultsByName.get(focusedSkill.name)?.enabled ? 'common:skillDefaults.toggleOff' : 'common:skillDefaults.toggleOn', { name: focusedSkill.name })}
+                                disabled={skillDefaults.loading}
+                                onChange={(next) => { void skillDefaults.toggleSkill(focusedSkill.name, next); }}
+                              />
+                              {skillDefaultsByName.get(focusedSkill.name)?.enabled ? t('common:skillDefaults.enabledHere') : t('common:skillDefaults.disabledHere')}
+                            </label>
+                          )}
+                          {!isEditing && !focusedSkill.isBundled && (
                             <>
                               <button
                                 type="button"
@@ -1870,6 +1896,9 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
                                 {text.deleteSkill}
                               </button>
                             </>
+                          )}
+                          {!isEditing && focusedSkill.isBundled && (
+                            <p className="w-full text-right text-xs text-muted-foreground">{t('common:skillDefaults.builtInReadOnly')}</p>
                           )}
                           {isEditing && (
                             <>
@@ -2480,6 +2509,23 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
         )}
 
         {/* ── Platform Skills View (existing) ── */}
+        {viewMode === 'platform' && (
+          <SkillDefaultsBar
+            data={skillDefaults.data}
+            loading={skillDefaults.loading}
+            saving={skillDefaults.saving}
+            error={skillDefaults.error}
+            projectName={defaultsProject}
+            projects={projects}
+            onlyEnabled={onlyEnabled}
+            onScopeChange={setDefaultsProject}
+            onBaselineChange={(baseline) => { void skillDefaults.setBaseline(baseline); }}
+            onResetProject={() => { void skillDefaults.resetProject(); }}
+            onAcknowledgeNew={() => { void skillDefaults.acknowledgeNew(); }}
+            onOnlyEnabledChange={setOnlyEnabled}
+          />
+        )}
+
         {viewMode === 'platform' && error && (
           <div className="mb-4 rounded-md border border-red-300/60 bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-300">
             {error}
@@ -2768,19 +2814,23 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
                       const isFocused = focusedSkill?.dirPath === skill.dirPath;
                       const { tags: cardTags, hiddenCount } = buildSkillCardTagSummary(skill);
                       return (
-                        <button
+                        <div
                           key={skill.dirPath}
-                          type="button"
-                          onClick={() => handleSelectSkill(skill)}
-                          className={`flex w-full items-start justify-between gap-4 px-4 py-4 text-left transition ${
+                          className={`flex w-full items-start gap-3 px-4 py-4 transition ${
                             isFocused
                               ? 'bg-muted'
                               : 'hover:bg-slate-50 dark:hover:bg-slate-900/40'
                           }`}
                         >
+                        <button
+                          type="button"
+                          onClick={() => handleSelectSkill(skill)}
+                          className="flex min-w-0 flex-1 items-start justify-between gap-4 text-left"
+                        >
                           <div className="min-w-0 flex-1">
                             <div className="flex flex-wrap items-center gap-2">
                               <h4 className="break-all text-sm font-semibold text-foreground">{skill.name}</h4>
+                              <SkillDefaultBadges state={skillDefaultsByName.get(skill.name)} scope={skillDefaultsScope} />
                               {cardTags.map((tag) => (
                                 <span
                                   key={`${skill.dirPath}-${tag.type}-${tag.label}`}
@@ -2810,6 +2860,17 @@ export default function SkillsDashboard({ onSendToChat }: SkillsDashboardProps =
                           </div>
                           <ChevronRight className={`mt-1 h-4 w-4 shrink-0 ${isFocused ? 'text-sky-600 dark:text-sky-300' : 'text-muted-foreground'}`} />
                         </button>
+                        {skillDefaultsByName.has(skill.name) && (
+                          <div className="pt-0.5">
+                            <SkillEnableSwitch
+                              checked={Boolean(skillDefaultsByName.get(skill.name)?.enabled)}
+                              label={t(skillDefaultsByName.get(skill.name)?.enabled ? 'common:skillDefaults.toggleOff' : 'common:skillDefaults.toggleOn', { name: skill.name })}
+                              disabled={skillDefaults.loading}
+                              onChange={(next) => { void skillDefaults.toggleSkill(skill.name, next); }}
+                            />
+                          </div>
+                        )}
+                        </div>
                       );
                     })}
                   </div>

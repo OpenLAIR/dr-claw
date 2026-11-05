@@ -1638,6 +1638,14 @@
     "inno-rebuttal",
     "inno-reference-audit"
   ],
+  "recommendedSkills": [
+    "academic-researcher",
+    "making-academic-presentations",
+    "paper-analyzer",
+    "paper-finder",
+    "research-news",
+    "scientific-writing"
+  ],
   "domainCsAiExceptions": [
     "bioinformatics-init-analysis",
     "biorxiv-database"
