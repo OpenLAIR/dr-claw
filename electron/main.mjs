@@ -848,7 +848,9 @@ function createWindow(baseUrl) {
   mainWindow.loadURL(baseUrl);
   setTimeout(() => revealWindow('timeout'), 4000);
 
-  if (isDev) {
+  // Set DR_CLAW_NO_DEVTOOLS=1 to run the dev build without the detached
+  // DevTools window.
+  if (isDev && process.env.DR_CLAW_NO_DEVTOOLS !== '1') {
     mainWindow.webContents.openDevTools({ mode: 'detach' });
   }
 }
@@ -857,7 +859,22 @@ function createWindow(baseUrl) {
 // Boot
 // ---------------------------------------------------------------------------
 
-async function boot() {
+let ipcHandlersRegistered = false;
+let bootInFlight = null;
+
+// On macOS the app keeps running after its last window closes, and clicking
+// the Dock icon fires `activate`, which calls boot() again. IPC handlers must
+// only be registered once, and the already-running server must be reused.
+function boot() {
+  if (!bootInFlight) {
+    bootInFlight = bootOnce().finally(() => {
+      bootInFlight = null;
+    });
+  }
+  return bootInFlight;
+}
+
+async function bootOnce() {
   try {
     if (isMac) {
       // In packaged builds the bundled .icns gets the macOS squircle mask
@@ -874,9 +891,12 @@ async function boot() {
       }
     }
 
-    registerIpcHandlers();
+    if (!ipcHandlersRegistered) {
+      registerIpcHandlers();
+      ipcHandlersRegistered = true;
+    }
 
-    const baseUrl = await startServer();
+    const baseUrl = serverProcess && serverOrigin ? serverOrigin : await startServer();
     serverOrigin = baseUrl;
     createWindow(baseUrl);
   } catch (error) {
