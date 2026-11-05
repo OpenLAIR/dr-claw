@@ -281,6 +281,16 @@ const userDb = {
     }
   },
 
+  // Active user who logged in most recently; never-logged-in users sort last,
+  // ties go to the oldest account. Used by desktop auto-login.
+  getMostRecentUser: () => {
+    const row = db.prepare(
+      'SELECT id, username, notification_email, created_at, last_login FROM users '
+      + 'WHERE is_active = 1 ORDER BY last_login IS NULL, last_login DESC, id ASC LIMIT 1'
+    ).get();
+    return row;
+  },
+
   updateGitConfig: (userId, gitName, gitEmail) => {
     try {
       const stmt = db.prepare('UPDATE users SET git_name = ?, git_email = ? WHERE id = ?');

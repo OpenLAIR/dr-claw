@@ -34,7 +34,7 @@ type SidebarContentProps = {
   latestVersion: string | null;
   onShowVersionModal: () => void;
   onShowSettings: () => void;
-  onLogout: () => void;
+  onLogout?: () => void;
   projectListProps: SidebarProjectListProps;
   t: TFunction;
 };

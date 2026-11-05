@@ -1,7 +1,7 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import { userDb, db } from '../database/db.js';
-import { generateToken, authenticateToken } from '../middleware/auth.js';
+import { generateToken, authenticateToken, authenticateDesktopSession } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -106,6 +106,19 @@ router.post('/login', async (req, res) => {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
+});
+
+// Desktop auto-login: the Electron renderer trades the per-launch desktop
+// secret (header only) for a regular JWT, so it never shows login/register.
+router.post('/desktop-session', authenticateDesktopSession, (req, res) => {
+  const user = req.user;
+  const token = generateToken(user);
+  userDb.updateLastLogin(user.id);
+  res.json({
+    success: true,
+    user: { id: user.id, username: user.username, notificationEmail: user.notification_email || null },
+    token
+  });
 });
 
 // Get current user (protected route)

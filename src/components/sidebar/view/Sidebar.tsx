@@ -63,7 +63,7 @@ function Sidebar({
   const { sidebarVisible } = preferences;
   const { setCurrentProject, mcpServerStatus } = useTaskMaster() as TaskMasterSidebarContext;
   const { tasksEnabled } = useTasksSettings();
-  const { logout } = useAuth();
+  const { logout, isDesktopSession } = useAuth();
   const [lastAutoPromptedVersion, setLastAutoPromptedVersion] = useState<string | null>(null);
 
   const {
@@ -346,7 +346,7 @@ function Sidebar({
             latestVersion={latestVersion}
             onShowVersionModal={() => setShowVersionModal(true)}
             onShowSettings={onShowSettings}
-            onLogout={logout}
+            onLogout={isDesktopSession ? undefined : logout}
             projectListProps={projectListProps}
             t={t}
           />
