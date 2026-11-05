@@ -46,6 +46,16 @@ describe('isBundledSkillRead', () => {
     expect(isBundledSkillRead('Glob', { pattern: '**/*.md' }, { skillsDir, cwd: projectDir })).toBe(false);
   });
 
+  it('rejects Glob patterns that could reach outside the library', () => {
+    const base = { path: skillsDir };
+    expect(isBundledSkillRead('Glob', { ...base, pattern: '**/references/*.md' }, { skillsDir })).toBe(true);
+    expect(isBundledSkillRead('Glob', { ...base, pattern: `${root}/**` }, { skillsDir })).toBe(false);
+    expect(isBundledSkillRead('Glob', { ...base, pattern: '../**/*.txt' }, { skillsDir })).toBe(false);
+    expect(isBundledSkillRead('Glob', { ...base, pattern: 'planner/../../**' }, { skillsDir })).toBe(false);
+    expect(isBundledSkillRead('Glob', { ...base, pattern: '~/**' }, { skillsDir })).toBe(false);
+    expect(isBundledSkillRead('Glob', { ...base }, { skillsDir })).toBe(false);
+  });
+
   it('never allows writes or shell commands, even inside the library', () => {
     expect(isBundledSkillRead('Write', { file_path: refFile }, { skillsDir })).toBe(false);
     expect(isBundledSkillRead('Edit', { file_path: refFile }, { skillsDir })).toBe(false);

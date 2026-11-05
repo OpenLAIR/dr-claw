@@ -20,6 +20,11 @@ function realpathOrNull(target) {
   }
 }
 
+function isContainedPattern(pattern) {
+  if (!pattern || path.isAbsolute(pattern) || /^[a-zA-Z]:|^~/.test(pattern)) return false;
+  return !pattern.split(/[\\/]+/).includes('..');
+}
+
 function targetPathFor(toolName, input) {
   if (!input || typeof input !== 'object') return null;
   if (toolName === 'Read') return input.file_path || null;
@@ -38,6 +43,13 @@ export function isBundledSkillRead(toolName, input, { skillsDir = BUNDLED_SKILLS
 
   const rawTarget = targetPathFor(toolName, input);
   if (!rawTarget || typeof rawTarget !== 'string') return false;
+
+  // A Glob pattern is matched from `path`, but an absolute or `..` pattern
+  // could reach outside it; only relative patterns stay inside the library.
+  if (toolName === 'Glob') {
+    const pattern = input.pattern;
+    if (typeof pattern !== 'string' || !isContainedPattern(pattern)) return false;
+  }
 
   const absoluteTarget = path.isAbsolute(rawTarget)
     ? rawTarget
