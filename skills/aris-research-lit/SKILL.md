@@ -244,3 +244,10 @@ else:
 - Note if a paper directly competes with or supports our approach
 - **Never fail because a MCP server is not configured** — always fall back gracefully to the next data source
 - Zotero/Obsidian tools may have different names depending on how the user configured the MCP server (e.g., `mcp__zotero__search` or `mcp__zotero-mcp__search_items`). Try the most common patterns and adapt.
+
+## Communications and wireless research
+
+For communications, networking, and signal-processing topics, also follow
+[references/communications-lit-review.md](references/communications-lit-review.md)
+(formerly the `aris-comm-lit-review` skill): it lists the IEEE/ACM venues,
+databases, and search patterns specific to that field.

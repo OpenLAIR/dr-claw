@@ -63,9 +63,9 @@ const DEFAULT_STAGE_SKILL_MAP = {
         },
     },
     publication: {
-        base: ['inno-paper-writing', 'inno-reference-audit', 'inno-rclone-to-overleaf'],
+        base: ['ml-paper-writing', 'inno-reference-audit', 'inno-rclone-to-overleaf'],
         byTaskType: {
-            writing: ['inno-paper-writing'],
+            writing: ['ml-paper-writing'],
             analysis: ['inno-reference-audit'],
         },
     },

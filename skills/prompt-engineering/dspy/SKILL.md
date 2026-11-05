@@ -1,6 +1,6 @@
 ---
 name: dspy
-description: Build complex AI systems with declarative programming, optimize prompts automatically, create modular RAG systems and agents with DSPy - Stanford NLP's framework for systematic LM programming
+description: Build complex AI systems with declarative programming, optimize prompts automatically, create modular RAG systems and agents with DSPy - Stanford NLP's framework for systematic LM programming Also covers Outlines (guides in references/).
 version: 1.0.0
 author: Orchestra Research
 license: MIT
@@ -587,4 +587,11 @@ for call in dspy.settings.trace:
 - `references/optimizers.md` - Optimization algorithms (BootstrapFewShot, MIPRO, BootstrapFinetune)
 - `references/examples.md` - Real-world examples (RAG, agents, classifiers)
 
+## Related tools (merged into this skill)
 
+These were separate skills. Their full guides now live under `references/`;
+read the one you need when the user asks for that tool or it fits the task better.
+
+| Tool | Guide | What it covers |
+|---|---|---|
+| Outlines | [references/outlines/overview.md](references/outlines/overview.md) | Guarantee valid JSON/XML/code structure during generation, use Pydantic models for type-safe outputs, support local models (Transformers, vLLM), and maximize inference speed with Outlines - dottxt.ai's structured generation library |

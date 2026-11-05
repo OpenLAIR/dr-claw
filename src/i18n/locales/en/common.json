@@ -849,7 +849,7 @@
     "loadingResearch": "Loading research data...",
     "noData": "No research data found in this project.",
     "missingPaper": "No main.pdf found.",
-    "paperHint": "Run inno-paper-writing and save the paper to Publication/paper/ to view it here.",
+    "paperHint": "Run ml-paper-writing and save the paper to Publication/paper/ to view it here.",
     "paperError": "Failed to load the paper. Check Publication/paper/main.pdf and try again.",
     "initHint": "Use inno-pipeline-planner in Chat to initialize the 5-stage research pipeline and its artifacts.",
     "selectArtifact": "Choose a file from Artifacts Explorer to inspect or edit it here.",

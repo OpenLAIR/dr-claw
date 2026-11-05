@@ -24,7 +24,6 @@
         "biorxiv-database",
         "academic-researcher",
         "aris-research-lit",
-        "aris-comm-lit-review",
         "aris-arxiv",
         "aris-semantic-scholar",
         "ds-scout"
@@ -97,7 +96,6 @@
       "analysis": [
         "inno-experiment-analysis",
         "bioinformatics-init-analysis",
-        "aris-analyze-results",
         "aris-result-to-claim",
         "ds-analysis-campaign",
         "ds-optimize"
@@ -112,7 +110,7 @@
   },
   "publication": {
     "base": [
-      "inno-paper-writing",
+      "ml-paper-writing",
       "inno-figure-gen",
       "inno-paper-reviewer",
       "inno-rebuttal",
@@ -121,7 +119,6 @@
       "inno-reference-audit",
       "inno-rclone-to-overleaf",
       "scientific-writing",
-      "ml-paper-writing",
       "inno-grant-proposal",
       "aris-paper-writing",
       "aris-auto-review-loop",
@@ -132,13 +129,12 @@
     ],
     "byTaskType": {
       "writing": [
-        "inno-paper-writing",
+        "ml-paper-writing",
         "inno-figure-gen",
         "inno-rebuttal",
         "inno-humanizer",
         "writing-style",
         "scientific-writing",
-        "ml-paper-writing",
         "inno-grant-proposal",
         "aris-paper-writing",
         "aris-paper-write",

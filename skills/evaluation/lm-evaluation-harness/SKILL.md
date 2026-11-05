@@ -1,6 +1,6 @@
 ---
 name: evaluating-llms-harness
-description: Evaluates LLMs across 60+ academic benchmarks (MMLU, HumanEval, GSM8K, TruthfulQA, HellaSwag). Use when benchmarking model quality, comparing models, reporting academic results, or tracking training progress. Industry standard used by EleutherAI, HuggingFace, and major labs. Supports HuggingFace, vLLM, APIs.
+description: Evaluates LLMs across 60+ academic benchmarks (MMLU, HumanEval, GSM8K, TruthfulQA, HellaSwag). Use when benchmarking model quality, comparing models, reporting academic results, or tracking training progress. Industry standard used by EleutherAI, HuggingFace, and major labs. Supports HuggingFace, vLLM, APIs. Also covers NeMo Evaluator (guides in references/).
 version: 1.0.0
 author: Orchestra Research
 license: MIT
@@ -486,5 +486,11 @@ lm_eval --model hf \
 - Task library: 60+ tasks including MMLU, GSM8K, HumanEval, TruthfulQA, HellaSwag, ARC, WinoGrande, etc.
 - Leaderboard: https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard (uses this harness)
 
+## Related tools (merged into this skill)
 
+These were separate skills. Their full guides now live under `references/`;
+read the one you need when the user asks for that tool or it fits the task better.
 
+| Tool | Guide | What it covers |
+|---|---|---|
+| NeMo Evaluator | [references/nemo-evaluator/overview.md](references/nemo-evaluator/overview.md) | Evaluates LLMs across 100+ benchmarks from 18+ harnesses (MMLU, HumanEval, GSM8K, safety, VLM) with multi-backend execution. |

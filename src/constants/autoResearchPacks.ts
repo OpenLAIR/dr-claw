@@ -37,9 +37,9 @@ export const AUTO_RESEARCH_PACKS: PackDef[] = [
   {
     name: 'Dr. Claw',
     description: {
-      zh: '自研全流程研究工具包，覆盖完整研究生命周期的 16 个技能：从课题规划、文献调研、实验开发到论文撰写与投稿。',
-      en: '16 in-house skills covering the full research lifecycle: from project planning, literature survey, experiment development to paper writing and submission.',
-      ko: '16 in-house skills covering the full research lifecycle: planning, survey, experiments, paper writing.',
+      zh: '全流程研究工具包，覆盖完整研究生命周期的 16 个技能：从课题规划、文献调研、实验开发到论文撰写与投稿。',
+      en: '16 skills covering the full research lifecycle: from project planning, literature survey, experiment development to paper writing and submission.',
+      ko: '16 skills covering the full research lifecycle: planning, survey, experiments, paper writing.',
     },
     skills: [
       'inno-pipeline-planner',
@@ -50,7 +50,7 @@ export const AUTO_RESEARCH_PACKS: PackDef[] = [
       'inno-code-survey',
       'inno-experiment-dev',
       'inno-experiment-analysis',
-      'inno-paper-writing',
+      'ml-paper-writing',
       'inno-paper-reviewer',
       'inno-humanizer',
       'inno-reference-audit',
@@ -64,7 +64,7 @@ export const AUTO_RESEARCH_PACKS: PackDef[] = [
       { name: 'Deep Research', command: '/inno-deep-research', description: { zh: '综合多源文献调研', en: 'Comprehensive multi-source literature survey', ko: 'Comprehensive multi-source literature survey' } },
       { name: 'Idea Generation', command: '/inno-idea-generation', description: { zh: '基于文献生成候选研究想法并择优', en: 'Literature-grounded research ideas, then pick the best', ko: 'Literature-grounded research ideas, then pick the best' } },
       { name: 'Experiment Dev', command: '/inno-experiment-dev', description: { zh: '实现 + Judge 反馈循环', en: 'Implementation + judge feedback loop', ko: 'Implementation + judge feedback loop' } },
-      { name: 'Paper Writing', command: '/inno-paper-writing', description: { zh: 'IEEE/ACM 学术论文撰写', en: 'IEEE/ACM academic paper writing', ko: 'IEEE/ACM academic paper writing' } },
+      { name: 'Paper Writing', command: '/ml-paper-writing', description: { zh: 'ML 顶会论文撰写（含 IEEE/ACM 格式说明）', en: 'ML conference paper writing (with IEEE/ACM notes)', ko: 'ML conference paper writing (with IEEE/ACM notes)' } },
       { name: 'Paper Review', command: '/inno-paper-reviewer', description: { zh: '清单式论文审阅', en: 'Checklist-based paper review', ko: 'Checklist-based paper review' } },
       { name: 'Rebuttal', command: '/inno-rebuttal', description: { zh: '学术反驳信撰写', en: 'Academic rebuttal drafting', ko: 'Academic rebuttal drafting' } },
       { name: 'Figure Gen', command: '/inno-figure-gen', description: { zh: 'Gemini 图像生成/编辑', en: 'Gemini image generation/editing', ko: 'Gemini image generation/editing' } },
@@ -136,11 +136,11 @@ export const AUTO_RESEARCH_PACKS: PackDef[] = [
     name: 'DeepScientist',
     repoUrl: 'https://github.com/ResearAI/DeepScientist',
     description: {
-      zh: 'ICLR 2026 发布的自主研究操作系统。13 个阶段技能覆盖完整研究生命周期，含 50+ 参考模板。每个研究项目是一个 Git 仓库。',
-      en: 'Autonomous research OS from ICLR 2026. 13 stage skills covering the full research lifecycle with 50+ reference templates. Each project is a Git repo.',
-      ko: 'Autonomous research OS. 13 stage skills, 50+ reference templates.',
+      zh: 'ICLR 2026 发布的自主研究操作系统。12 个阶段技能覆盖完整研究生命周期，含 50+ 参考模板。每个研究项目是一个 Git 仓库。',
+      en: 'Autonomous research OS from ICLR 2026. 12 stage skills covering the full research lifecycle with 50+ reference templates. Each project is a Git repo.',
+      ko: 'Autonomous research OS. 12 stage skills, 50+ reference templates.',
     },
-    skills: ['ds-full-pipeline', 'ds-scout', 'ds-baseline', 'ds-idea', 'ds-experiment', 'ds-analysis-campaign', 'ds-optimize', 'ds-write', 'ds-review', 'ds-rebuttal', 'ds-figure-polish', 'ds-finalize', 'ds-decision', 'ds-intake-audit'],
+    skills: ['ds-full-pipeline', 'ds-scout', 'ds-baseline', 'ds-idea', 'ds-experiment', 'ds-analysis-campaign', 'ds-optimize', 'ds-write', 'ds-review', 'ds-rebuttal', 'ds-figure-polish', 'ds-finalize', 'ds-intake-audit'],
     workflows: [
       { name: 'Full Pipeline', command: '/ds-full-pipeline', description: { zh: '调研 → Baseline → Idea → 实验 → 分析 → 论文', en: 'Scout → Baseline → Idea → Experiment → Analysis → Paper', ko: 'Scout → Baseline → Idea → Experiment → Paper' } },
       { name: 'Scout', command: '/ds-scout', description: { zh: '文献调研 + 问题定义 + Baseline 发现', en: 'Literature + problem framing + baseline discovery', ko: 'Literature + problem framing' } },

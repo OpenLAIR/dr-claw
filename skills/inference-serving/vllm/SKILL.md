@@ -1,6 +1,6 @@
 ---
 name: serving-llms-vllm
-description: Serves LLMs with high throughput using vLLM's PagedAttention and continuous batching. Use when deploying production LLM APIs, optimizing inference latency/throughput, or serving models with limited GPU memory. Supports OpenAI-compatible endpoints, quantization (GPTQ/AWQ/FP8), and tensor parallelism.
+description: Serves LLMs with high throughput using vLLM's PagedAttention and continuous batching. Use when deploying production LLM APIs, optimizing inference latency/throughput, or serving models with limited GPU memory. Supports OpenAI-compatible endpoints, quantization (GPTQ/AWQ/FP8), and tensor parallelism. Also covers llama.cpp and SGLang (guides in references/).
 version: 1.0.0
 author: Orchestra Research
 license: MIT
@@ -360,5 +360,12 @@ Supported platforms: NVIDIA (primary), AMD ROCm, Intel GPUs, TPUs
 - Paper: "Efficient Memory Management for Large Language Model Serving with PagedAttention" (SOSP 2023)
 - Community: https://discuss.vllm.ai
 
+## Related tools (merged into this skill)
 
+These were separate skills. Their full guides now live under `references/`;
+read the one you need when the user asks for that tool or it fits the task better.
 
+| Tool | Guide | What it covers |
+|---|---|---|
+| llama.cpp | [references/llama-cpp/overview.md](references/llama-cpp/overview.md) | Runs LLM inference on CPU, Apple Silicon, and consumer GPUs without NVIDIA hardware. |
+| SGLang | [references/sglang/overview.md](references/sglang/overview.md) | Fast structured generation and serving for LLMs with RadixAttention prefix caching. |
