@@ -13,6 +13,20 @@ const router = express.Router();
 
 // Data directory for news config & results
 const DATA_DIR = path.join(__dirname, '..', 'data');
+export const NEWS_DATA_DIR = DATA_DIR;
+
+/**
+ * Tell agent sessions where the news feed results live. Every provider
+ * session inherits process.env, and the news-idea-briefing skill reads
+ * news-results-*.json from $DRCLAW_NEWS_DATA_DIR. A value set by the user
+ * is kept.
+ */
+export function exposeNewsDataDirToAgents(env = process.env) {
+  if (!env.DRCLAW_NEWS_DATA_DIR) {
+    env.DRCLAW_NEWS_DATA_DIR = DATA_DIR;
+  }
+  return env.DRCLAW_NEWS_DATA_DIR;
+}
 const SCRIPTS_DIR = path.join(__dirname, '..', 'scripts');
 
 // ---------------------------------------------------------------------------
