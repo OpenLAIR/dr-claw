@@ -5,17 +5,17 @@ description: Creates implementation plan, writes project code with judge feedbac
 
 # Inno Experiment Dev (Planning, Implementation, and Submission)
 
-Merges the former `inno-implementation-plan`, `inno-ml-dev-iteration`, and the submit step of `inno-experiment-submit-refine`. Mirrors `_create_implementation_plan` (830-858), `_implement_and_iterate` (861-920), and the submit portion of `_submit_and_refine_experiments` (922-945) in `run_infer_idea_ours.py`.
+Three parts in one skill: an implementation plan, implementation with a judge feedback loop, and submission of the final experiment run.
 
 ## Inputs
 
 | Variable | Source | Description |
 |----------|--------|-------------|
-| `survey_res` | inno-idea-generation or user | The finalized selected idea (or `refined_for_downstream`) |
-| `references` | pipeline config | Pre-formatted string of source papers |
+| `survey_res` | `Ideation/ideas/selected_idea.txt` (inno-idea-generation, possibly refined by inno-idea-eval) or user | The finalized selected idea (or `refined_for_downstream`) |
+| `references` | `Ideation/references/logs/load_instance.json` | Source papers (from inno-prepare-resources) |
 | `updated_prepare_res` | inno-prepare-resources | JSON with `reference_codebases` and `reference_paths` |
 | `code_survey_res` | inno-code-survey | Comprehensive implementation report / model survey notes |
-| `dataset_description` | from prepare step / context | Description of available datasets (not in instance.json) |
+| `dataset_description` | `Ideation/references/dataset_description.md` | Description of available datasets (from inno-prepare-resources; not in instance.json) |
 | `core_code` | instance.json `Experiment.core_code` | Absolute path when created by Dr. Claw (e.g. `<project_path>/Experiment/core_code`); use as-is or resolve with `path.join(project_path, value)` if relative |
 | `code_references` | instance.json `Experiment.code_references` | Absolute path when created by Dr. Claw (e.g. `<project_path>/Experiment/code_references`); use as-is or resolve if relative |
 | `max_iter_times` | pipeline config | Max judge-iteration rounds (default 2) |
@@ -128,6 +128,5 @@ All custom Python tools map to Claude Code built-in capabilities:
 
 ## References
 
-- `run_infer_idea_ours.py`: `_create_implementation_plan` (830-858), `_implement_and_iterate` (861-920), `_submit_and_refine_experiments` submit step (922-945)
-- `prompt_templates.py`: `build_plan_query` (203-233), `build_ml_dev_query` (236-381), `build_judge_query` (384-417), `build_iteration_query` (420-468), `build_judge_simple_query` (471-494), `build_submit_query` (497-527)
-- Agent definitions: `plan_agent.py`, `ml_agent.py`, `judge_agent.py` in `inno/agents/inno_agent/`
+- Prompt templates: [prompts/build_iteration_query.md](prompts/build_iteration_query.md), [prompts/build_judge_query.md](prompts/build_judge_query.md), [prompts/build_judge_simple_query.md](prompts/build_judge_simple_query.md), [prompts/build_ml_dev_query.md](prompts/build_ml_dev_query.md), [prompts/build_plan_query.md](prompts/build_plan_query.md), [prompts/build_submit_query.md](prompts/build_submit_query.md)
+- Agent instructions: [references/coding_plan_agent.md](references/coding_plan_agent.md), [references/judge_agent_instructions.md](references/judge_agent_instructions.md), [references/ml_agent_instructions.md](references/ml_agent_instructions.md)

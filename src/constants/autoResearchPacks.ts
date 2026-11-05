@@ -62,7 +62,7 @@ export const AUTO_RESEARCH_PACKS: PackDef[] = [
     workflows: [
       { name: 'Pipeline Planner', command: '/inno-pipeline-planner', description: { zh: '交互式项目定义 → research_brief.json + tasks.json', en: 'Interactive project definition → research_brief.json + tasks.json', ko: 'Interactive project definition → research_brief.json + tasks.json' } },
       { name: 'Deep Research', command: '/inno-deep-research', description: { zh: '综合多源文献调研', en: 'Comprehensive multi-source literature survey', ko: 'Comprehensive multi-source literature survey' } },
-      { name: 'Idea Generation', command: '/inno-idea-generation', description: { zh: 'SCAMPER/SWOT 结构化头脑风暴', en: 'Structured brainstorming with SCAMPER/SWOT frameworks', ko: 'Structured brainstorming with SCAMPER/SWOT' } },
+      { name: 'Idea Generation', command: '/inno-idea-generation', description: { zh: '基于文献生成候选研究想法并择优', en: 'Literature-grounded research ideas, then pick the best', ko: 'Literature-grounded research ideas, then pick the best' } },
       { name: 'Experiment Dev', command: '/inno-experiment-dev', description: { zh: '实现 + Judge 反馈循环', en: 'Implementation + judge feedback loop', ko: 'Implementation + judge feedback loop' } },
       { name: 'Paper Writing', command: '/inno-paper-writing', description: { zh: 'IEEE/ACM 学术论文撰写', en: 'IEEE/ACM academic paper writing', ko: 'IEEE/ACM academic paper writing' } },
       { name: 'Paper Review', command: '/inno-paper-reviewer', description: { zh: '清单式论文审阅', en: 'Checklist-based paper review', ko: 'Checklist-based paper review' } },

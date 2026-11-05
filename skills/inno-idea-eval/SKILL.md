@@ -41,10 +41,10 @@ Paths for `Ideation/ideas` and `Ideation/references` come from **`instance.json`
 | Parameter            | Required | Description |
 |----------------------|----------|-------------|
 | `selected_idea`      | Yes      | The idea to evaluate, read from `Ideation/ideas/selected_idea.txt` |
-| `references`         | No\*     | Pre-formatted string listing all source papers (from inno-prepare-resources) |
-| `prepare_res`        | No\*     | Full text response from the Prepare Agent (selected repositories and reasoning) |
-| `download_res`       | No\*     | Result log from downloading arXiv paper sources |
-| `data_module`        | No\*     | The imported metaprompt module (provides `TASK` field describing the ML task) |
+| `references`         | No\*     | Pre-formatted list of the source papers (`source_papers` in `Ideation/references/logs/load_instance.json`, from inno-prepare-resources) |
+| `prepare_res`        | No\*     | Selected repositories and reasoning (`prepare_result` in `Ideation/references/logs/prepare_agent.json`, from inno-prepare-resources) |
+| `download_res`       | No\*     | arXiv download results (`Ideation/references/logs/download_arxiv_source_by_title.json`) |
+| `data_module`        | No\*     | Task description, exposed below as `data_module.TASK`: `task_instructions` in `load_instance.json`, or the task contract in `Ideation/ideas/idea_context.md`, or `sections.ideation` of the research brief |
 | `context_variables`  | Yes      | Shared context dictionary (must contain `final_selected_idea_data`) |
 
 \*Standalone mode: only `selected_idea` required; evaluation proceeds ungrounded with a noted limitation.
