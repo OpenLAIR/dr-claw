@@ -105,6 +105,7 @@ Dr. Claw is a general-purpose AI research assistant designed to help researchers
 
 ## What's New
 
+- 🧭 **v1.2.0: Redesigned Research Workbench** `2026-11-05` — A project-centered workspace with a cleaner chat composer and unified controls. The desktop app signs you in automatically, and local models can now run on vLLM and SGLang as well as Ollama. Download it from [GitHub Releases](https://github.com/OpenLAIR/dr-claw/releases/latest).
 - 🎉 **Accepted to EMNLP 2026** `2026-08-22` — Our paper [*Dr. Claw: An AI Scientist Workspace for Vibe Research*](https://arxiv.org/abs/2609.00365) has been accepted to the **[EMNLP 2026](https://2026.emnlp.org/) System Demonstrations** track! Catch the live demo in Budapest, Hungary, October 24–29, 2026.
 - 🧪 **Auto Research Hub** `2026-04-08` — One click to launch fully autonomous research! Pick a tool pack (ARIS, Autoresearch, DeepScientist), hit configure, choose a workflow in Chat — and watch the agent run your entire research pipeline from idea to paper while you sleep.
 - 🖥️ **Desktop App & npx** `2026-04-06` — Dr. Claw now runs as a native desktop app! Grab the `.dmg` / `.exe` from [GitHub Releases](https://github.com/OpenLAIR/dr-claw/releases), or run `npx dr-claw` for zero-setup instant start.
@@ -188,7 +189,22 @@ Dr. Claw is a general-purpose AI research assistant designed to help researchers
 
 ## Quick Start
 
-> **Desktop App (Beta):** Want to skip the setup below? Download the latest `.dmg` (macOS) or `.exe` (Windows) installer from [GitHub Releases](https://github.com/OpenLAIR/dr-claw/releases) and run it directly. The desktop app is currently in beta — for a more stable experience, follow the full installation steps below.
+### Recommended: Desktop App
+
+The easiest way to use Dr. Claw is the desktop app. It runs the server for you, so there is no terminal or browser setup, and it signs you in automatically.
+
+1. Download the installer for your platform from the [latest release](https://github.com/OpenLAIR/dr-claw/releases/latest):
+   - **macOS (Apple Silicon):** `Dr.Claw-<version>-mac-arm64.dmg`
+   - **Windows (x64):** `Dr.Claw-<version>-win-x64.exe`
+2. Install and open it.
+   - **macOS:** drag Dr. Claw into Applications. The app is not yet notarized by Apple, so the first launch may be blocked with a message that the app "is damaged" or "cannot be verified". Run this once in Terminal, then open the app again:
+     ```bash
+     xattr -dr com.apple.quarantine "/Applications/Dr. Claw.app"
+     ```
+   - **Windows:** if SmartScreen shows "Windows protected your PC", click **More info** → **Run anyway**.
+3. Follow the first-run setup to connect at least one agent (Claude Code, Codex or Gemini). You can change this later under **Settings → Agents**.
+
+Intel Macs and Linux are not covered by the installers yet; use `npx` or a source install below.
 
 ### Prerequisites
 
@@ -201,7 +217,7 @@ Dr. Claw is a general-purpose AI research assistant designed to help researchers
 
 Cursor agent support is in progress and coming soon.
 
-### Option 1: Run with npx (Recommended)
+### Option 1: Run with npx
 
 No cloning or manual setup required — just run:
 

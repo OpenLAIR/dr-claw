@@ -1,5 +1,7 @@
 # Visual review, checkpoint 1
 
+> The screenshots referenced below were review artifacts and are not stored in the repository.
+
 Direction: Achromatic ledger, seed 1106065559; labeled sidebar and list home replace dealt patterns because the user explicitly requested project hierarchy and compact rows. Local fonts preserved.
 
 The current implementation answers "which project and where next" in the home list, and "goal / current task / conversations / outputs" in overview. New screenshot views have been checked at 1440, 768 and 390 pixels, in both themes. The sidebar folds on narrow viewports and the overview action drops below a long title on phones. Chrome is neutral; blue progress corresponds to actual completed tasks. Missing values and missing plans do not receive a made-up percentage. In test fixtures, 1 of 3 tasks is 33.33%; loaded real projects retain their own API values.
