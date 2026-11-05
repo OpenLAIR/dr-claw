@@ -38,6 +38,11 @@ function checkNodeModules() {
   for (const moduleName of nativeModules) {
     require(moduleName);
   }
+  // better-sqlite3 loads its .node binary lazily, so a bare require() passes
+  // even when the binary was built for a different Node ABI. Open a database
+  // to force the binding to load.
+  const Database = require('better-sqlite3');
+  new Database(':memory:').close();
 }
 
 function run(bin, args, extraEnv = {}) {
@@ -70,7 +75,9 @@ function run(bin, args, extraEnv = {}) {
 async function ensureNodeRuntime() {
   const state = readState();
 
-  if (state?.target === 'node') {
+  if (state?.target === 'node' && state?.modules !== process.versions.modules) {
+    console.log(`[native-runtime] Node ABI changed (${state?.modules} -> ${process.versions.modules}); rebuilding`);
+  } else if (state?.target === 'node') {
     try {
       checkNodeModules();
       console.log('[native-runtime] Node native modules already ready');
