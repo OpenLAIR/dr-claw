@@ -90,6 +90,7 @@ import {
     setRuntimePortSync,
 } from './utils/runtimePorts.js';
 import { buildCodexTokenUsageFromJsonl } from './utils/sessionTokenUsage.js';
+import { getFileTree } from './utils/fileTree.js';
 import { getNanoDrClawSessionsRoot } from './nanoSessionPaths.js';
 
 // File system watchers for provider project/session folders
@@ -3009,13 +3010,6 @@ app.use((err, req, res, next) => {
 });
 
 // Helper function to convert permissions to rwx format
-function permToRwx(perm) {
-    const r = perm & 4 ? 'r' : '-';
-    const w = perm & 2 ? 'w' : '-';
-    const x = perm & 1 ? 'x' : '-';
-    return r + w + x;
-}
-
 async function findAllFilesInProject(projectRoot, fileName, maxDepth = 10) {
     const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'build']);
     const results = [];
@@ -3118,96 +3112,6 @@ async function resolveProjectFilePath(projectRoot, inputPath) {
 
     // 4. No match — fall back to direct path (will 404)
     return { resolved: direct };
-}
-
-async function getFileTree(dirPath, maxDepth = 3, currentDepth = 0, showHidden = true, isBrowsing = false) {
-    // Using fsPromises from import
-    const items = [];
-
-    try {
-        const entries = await fsPromises.readdir(dirPath, { withFileTypes: true });
-
-        for (const entry of entries) {
-            // Debug: log all entries including hidden files
-            if (!showHidden && entry.name.startsWith('.')) continue;
-
-            // Skip heavy build directories and VCS directories unless we are browsing
-            if (!isBrowsing && (
-                entry.name === 'node_modules' ||
-                entry.name === 'dist' ||
-                entry.name === 'build' ||
-                entry.name === '.git' ||
-                entry.name === '.svn' ||
-                entry.name === '.hg'
-            )) continue;
-
-            const itemPath = path.join(dirPath, entry.name);
-            let isDirectory = entry.isDirectory();
-
-            // Resolve symlinked directories (e.g. .claude/skills/*) as directories.
-            if (!isDirectory && entry.isSymbolicLink()) {
-                try {
-                    const targetStats = await fsPromises.stat(itemPath);
-                    isDirectory = targetStats.isDirectory();
-                } catch (_) {
-                    // Broken symlink or inaccessible target; keep as file.
-                }
-            }
-
-            const item = {
-                name: entry.name,
-                path: itemPath,
-                type: isDirectory ? 'directory' : 'file'
-            };
-
-            // Get file stats for additional metadata
-            try {
-                const stats = await fsPromises.stat(itemPath);
-                item.size = stats.size;
-                item.modified = stats.mtime.toISOString();
-
-                // Convert permissions to rwx format
-                const mode = stats.mode;
-                const ownerPerm = (mode >> 6) & 7;
-                const groupPerm = (mode >> 3) & 7;
-                const otherPerm = mode & 7;
-                item.permissions = ((mode >> 6) & 7).toString() + ((mode >> 3) & 7).toString() + (mode & 7).toString();
-                item.permissionsRwx = permToRwx(ownerPerm) + permToRwx(groupPerm) + permToRwx(otherPerm);
-            } catch (statError) {
-                // If stat fails, provide default values
-                item.size = 0;
-                item.modified = null;
-                item.permissions = '000';
-                item.permissionsRwx = '---------';
-            }
-
-            if (isDirectory && currentDepth < maxDepth) {
-                // Recursively get subdirectories but limit depth
-                try {
-                    // Check if we can access the directory before trying to read it
-                    await fsPromises.access(item.path, fs.constants.R_OK);
-                    item.children = await getFileTree(item.path, maxDepth, currentDepth + 1, showHidden);
-                } catch (e) {
-                    // Silently skip directories we can't access (permission denied, etc.)
-                    item.children = [];
-                }
-            }
-
-            items.push(item);
-        }
-    } catch (error) {
-        // Only log non-permission errors to avoid spam
-        if (error.code !== 'EACCES' && error.code !== 'EPERM') {
-            console.error('Error reading directory:', error);
-        }
-    }
-
-    return items.sort((a, b) => {
-        if (a.type !== b.type) {
-            return a.type === 'directory' ? -1 : 1;
-        }
-        return a.name.localeCompare(b.name);
-    });
 }
 
 const REQUESTED_PORT = parsePortNumber(process.env.PORT, DEFAULT_BACKEND_PORT);
