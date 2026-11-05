@@ -1,578 +1,113 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Key, Plus, Trash2, Eye, EyeOff, Copy, Check, Github, ExternalLink, Sparkles } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Key, Plus, Trash2, Eye, EyeOff, Copy, Check, Github, ExternalLink, Sparkles } from 'lucide-react';
+import WorkbenchDialog from './ui/WorkbenchDialog';
+import { useSettingsDraft } from './settings/SettingsDraftGuard';
+import SettingsFeedback from './settings/SettingsFeedback';
+import { settingsRequest, useSettingsRequest } from './settings/useSettingsRequest';
 import { useVersionCheck } from '../hooks/useVersionCheck';
 import { version } from '../../package.json';
-import { authenticatedFetch } from '../utils/api';
-import { useTranslation } from 'react-i18next';
 
-function CredentialsSettings() {
-  const { t } = useTranslation('settings');
-  const [apiKeys, setApiKeys] = useState([]);
-  const [githubCredentials, setGithubCredentials] = useState([]);
-  const [geminiCredentials, setGeminiCredentials] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showNewKeyForm, setShowNewKeyForm] = useState(false);
-  const [showNewGithubForm, setShowNewGithubForm] = useState(false);
-  const [showNewGeminiForm, setShowNewGeminiForm] = useState(false);
-  const [newKeyName, setNewKeyName] = useState('');
-  const [newGithubName, setNewGithubName] = useState('');
-  const [newGithubToken, setNewGithubToken] = useState('');
-  const [newGithubDescription, setNewGithubDescription] = useState('');
-  const [newGeminiKey, setNewGeminiKey] = useState('');
-  const [newGeminiName, setNewGeminiName] = useState('');
-  const [showToken, setShowToken] = useState({});
-  const [copiedKey, setCopiedKey] = useState(null);
-  const [newlyCreatedKey, setNewlyCreatedKey] = useState(null);
+const groups = {
+  api: { prefix: 'apiKeys', path: '/api/settings/api-keys', list: 'apiKeys', icon: Key, add: 'newButton', description: 'description' },
+  github: { prefix: 'apiKeys.github', path: '/api/settings/credentials', type: 'github_token', list: 'credentials', icon: Github, add: 'addButton', description: 'descriptionAlt' },
+  gemini: { prefix: 'apiKeys.gemini', path: '/api/settings/credentials', type: 'gemini_api_key', list: 'credentials', icon: Sparkles, add: 'addButton', description: 'description' },
+};
+const actionClass = 'min-h-11 md:min-h-8 max-w-full whitespace-normal';
 
-  // Version check hook
-  const { updateAvailable, latestVersion, releaseInfo } = useVersionCheck('OpenLAIR', 'dr-claw');
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-
-      // Fetch API keys
-      const apiKeysRes = await authenticatedFetch('/api/settings/api-keys');
-      const apiKeysData = await apiKeysRes.json();
-      setApiKeys(apiKeysData.apiKeys || []);
-
-      // Fetch GitHub credentials only
-      const credentialsRes = await authenticatedFetch('/api/settings/credentials?type=github_token');
-      const credentialsData = await credentialsRes.json();
-      setGithubCredentials(credentialsData.credentials || []);
-
-      // Fetch Gemini API key credentials
-      const geminiRes = await authenticatedFetch('/api/settings/credentials?type=gemini_api_key');
-      const geminiData = await geminiRes.json();
-      setGeminiCredentials(geminiData.credentials || []);
-    } catch (error) {
-      console.error('Error fetching settings:', error);
-    } finally {
-      setLoading(false);
-    }
+function CredentialGroup({ kind, onCreatedKey, hasUnsavedKey }) {
+  const { t, i18n } = useTranslation('settings');
+  const config = groups[kind];
+  const Icon = config.icon;
+  const [items, setItems] = useState([]);
+  const [loaded, setLoaded] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState('');
+  const [secret, setSecret] = useState('');
+  const [description, setDescription] = useState('');
+  const [visible, setVisible] = useState(false);
+  const [deleting, setDeleting] = useState(null);
+  const trigger = useRef(null);
+  const nameInput = useRef(null);
+  const { states, run, clear } = useSettingsRequest();
+  const load = useCallback(() => run('load', () => settingsRequest(config.path + (config.type ? `?type=${config.type}` : '')), data => {
+    setItems(data[config.list] || []); setLoaded(true);
+  }), [run, config]);
+  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { if (open) nameInput.current?.focus(); }, [open]);
+  const busy = states.mutate?.pending || states.remove?.pending || states.load?.pending;
+  useSettingsDraft(open && Boolean(name || secret || description), { busy: states.mutate?.pending || states.remove?.pending });
+  const resetForm = () => { setName(''); setSecret(''); setDescription(''); setVisible(false); setOpen(false); };
+  const returnFocus = () => requestAnimationFrame(() => trigger.current?.focus());
+  const create = async event => {
+    event.preventDefault();
+    if ((kind !== 'gemini' && !name.trim()) || (kind !== 'api' && !secret.trim())) return;
+    const success = await run('mutate', () => settingsRequest(config.path, {
+      method: 'POST', body: JSON.stringify(kind === 'api' ? { keyName: name.trim() } : {
+        credentialName: name.trim() || 'Gemini API Key', credentialType: config.type, credentialValue: secret.trim(), description: description.trim(),
+      }),
+    }), data => { resetForm(); if (kind === 'api') onCreatedKey(data.apiKey); });
+    if (success) { await load(); if (kind !== 'api') returnFocus(); }
   };
-
-  const createApiKey = async () => {
-    if (!newKeyName.trim()) return;
-
-    try {
-      const res = await authenticatedFetch('/api/settings/api-keys', {
-        method: 'POST',
-        body: JSON.stringify({ keyName: newKeyName })
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        setNewlyCreatedKey(data.apiKey);
-        setNewKeyName('');
-        setShowNewKeyForm(false);
-        fetchData();
-      }
-    } catch (error) {
-      console.error('Error creating API key:', error);
-    }
+  const toggle = item => run('mutate', () => settingsRequest(`${config.path}/${item.id}/toggle`, {
+    method: 'PATCH', body: JSON.stringify({ isActive: !item.is_active }),
+  }), () => setItems(previous => previous.map(entry => entry.id === item.id ? { ...entry, is_active: !item.is_active } : entry)));
+  const remove = async () => {
+    const success = await run('remove', () => settingsRequest(`${config.path}/${deleting.id}`, { method: 'DELETE' }), () => {
+      setItems(previous => previous.filter(item => item.id !== deleting.id)); setDeleting(null);
+    });
+    if (success) returnFocus();
   };
-
-  const deleteApiKey = async (keyId) => {
-    if (!confirm(t('apiKeys.confirmDelete'))) return;
-
-    try {
-      await authenticatedFetch(`/api/settings/api-keys/${keyId}`, {
-        method: 'DELETE'
-      });
-      fetchData();
-    } catch (error) {
-      console.error('Error deleting API key:', error);
-    }
-  };
-
-  const toggleApiKey = async (keyId, isActive) => {
-    try {
-      await authenticatedFetch(`/api/settings/api-keys/${keyId}/toggle`, {
-        method: 'PATCH',
-        body: JSON.stringify({ isActive: !isActive })
-      });
-      fetchData();
-    } catch (error) {
-      console.error('Error toggling API key:', error);
-    }
-  };
-
-  const createGithubCredential = async () => {
-    if (!newGithubName.trim() || !newGithubToken.trim()) return;
-
-    try {
-      const res = await authenticatedFetch('/api/settings/credentials', {
-        method: 'POST',
-        body: JSON.stringify({
-          credentialName: newGithubName,
-          credentialType: 'github_token',
-          credentialValue: newGithubToken,
-          description: newGithubDescription
-        })
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        setNewGithubName('');
-        setNewGithubToken('');
-        setNewGithubDescription('');
-        setShowNewGithubForm(false);
-        fetchData();
-      }
-    } catch (error) {
-      console.error('Error creating GitHub credential:', error);
-    }
-  };
-
-  const deleteGithubCredential = async (credentialId) => {
-    if (!confirm(t('apiKeys.github.confirmDelete'))) return;
-
-    try {
-      await authenticatedFetch(`/api/settings/credentials/${credentialId}`, {
-        method: 'DELETE'
-      });
-      fetchData();
-    } catch (error) {
-      console.error('Error deleting GitHub credential:', error);
-    }
-  };
-
-  const toggleGithubCredential = async (credentialId, isActive) => {
-    try {
-      await authenticatedFetch(`/api/settings/credentials/${credentialId}/toggle`, {
-        method: 'PATCH',
-        body: JSON.stringify({ isActive: !isActive })
-      });
-      fetchData();
-    } catch (error) {
-      console.error('Error toggling GitHub credential:', error);
-    }
-  };
-
-  const createGeminiCredential = async () => {
-    if (!newGeminiKey.trim()) return;
-
-    try {
-      const res = await authenticatedFetch('/api/settings/credentials', {
-        method: 'POST',
-        body: JSON.stringify({
-          credentialName: newGeminiName.trim() || 'Gemini API Key',
-          credentialType: 'gemini_api_key',
-          credentialValue: newGeminiKey,
-          description: ''
-        })
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        setNewGeminiKey('');
-        setNewGeminiName('');
-        setShowNewGeminiForm(false);
-        fetchData();
-      }
-    } catch (error) {
-      console.error('Error creating Gemini credential:', error);
-    }
-  };
-
-  const deleteGeminiCredential = async (credentialId) => {
-    if (!confirm(t('apiKeys.gemini.confirmDelete'))) return;
-
-    try {
-      await authenticatedFetch(`/api/settings/credentials/${credentialId}`, {
-        method: 'DELETE'
-      });
-      fetchData();
-    } catch (error) {
-      console.error('Error deleting Gemini credential:', error);
-    }
-  };
-
-  const toggleGeminiCredential = async (credentialId, isActive) => {
-    if (typeof isActive !== 'boolean') return;
-
-    try {
-      await authenticatedFetch(`/api/settings/credentials/${credentialId}/toggle`, {
-        method: 'PATCH',
-        body: JSON.stringify({ isActive: !isActive })
-      });
-      fetchData();
-    } catch (error) {
-      console.error('Error toggling Gemini credential:', error);
-    }
-  };
-
-  const copyToClipboard = (text, id) => {
-    navigator.clipboard.writeText(text);
-    setCopiedKey(id);
-    setTimeout(() => setCopiedKey(null), 2000);
-  };
-
-  if (loading) {
-    return <div className="text-muted-foreground">{t('apiKeys.loading')}</div>;
-  }
-
-  return (
-    <div className="space-y-8">
-      {/* New API Key Alert */}
-      {newlyCreatedKey && (
-        <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-          <h4 className="font-semibold text-yellow-500 mb-2">{t('apiKeys.newKey.alertTitle')}</h4>
-          <p className="text-sm text-muted-foreground mb-3">
-            {t('apiKeys.newKey.alertMessage')}
-          </p>
-          <div className="flex items-center gap-2">
-            <code className="flex-1 px-3 py-2 bg-background/50 rounded font-mono text-sm break-all">
-              {newlyCreatedKey.apiKey}
-            </code>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => copyToClipboard(newlyCreatedKey.apiKey, 'new')}
-            >
-              {copiedKey === 'new' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-            </Button>
-          </div>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="mt-3"
-            onClick={() => setNewlyCreatedKey(null)}
-          >
-            {t('apiKeys.newKey.iveSavedIt')}
-          </Button>
-        </div>
-      )}
-
-      {/* API Keys Section */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Key className="h-5 w-5" />
-            <h3 className="text-lg font-semibold">{t('apiKeys.title')}</h3>
-          </div>
-          <Button
-            size="sm"
-            onClick={() => setShowNewKeyForm(!showNewKeyForm)}
-          >
-            <Plus className="h-4 w-4 mr-1" />
-            {t('apiKeys.newButton')}
-          </Button>
-        </div>
-
-        <div className="mb-4">
-          <p className="text-sm text-muted-foreground mb-2">
-            {t('apiKeys.description')}
-          </p>
-          <a
-            href="/api-docs.html"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-primary hover:underline inline-flex items-center gap-1"
-          >
-            {t('apiKeys.apiDocsLink')}
-            <ExternalLink className="h-3 w-3" />
-          </a>
-        </div>
-
-        {showNewKeyForm && (
-          <div className="mb-4 p-4 border rounded-lg bg-card">
-            <Input
-              placeholder={t('apiKeys.form.placeholder')}
-              value={newKeyName}
-              onChange={(e) => setNewKeyName(e.target.value)}
-              className="mb-2"
-            />
-            <div className="flex gap-2">
-              <Button onClick={createApiKey}>{t('apiKeys.form.createButton')}</Button>
-              <Button variant="outline" onClick={() => setShowNewKeyForm(false)}>
-                {t('apiKeys.form.cancelButton')}
-              </Button>
-            </div>
-          </div>
-        )}
-
-        <div className="space-y-2">
-          {apiKeys.length === 0 ? (
-            <p className="text-sm text-muted-foreground italic">{t('apiKeys.empty')}</p>
-          ) : (
-            apiKeys.map((key) => (
-              <div
-                key={key.id}
-                className="flex items-center justify-between p-3 border rounded-lg"
-              >
-                <div className="flex-1">
-                  <div className="font-medium">{key.key_name}</div>
-                  <code className="text-xs text-muted-foreground">{key.api_key}</code>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    {t('apiKeys.list.created')} {new Date(key.created_at).toLocaleDateString()}
-                    {key.last_used && ` • ${t('apiKeys.list.lastUsed')} ${new Date(key.last_used).toLocaleDateString()}`}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant={key.is_active ? 'outline' : 'secondary'}
-                    onClick={() => toggleApiKey(key.id, key.is_active)}
-                  >
-                    {key.is_active ? t('apiKeys.status.active') : t('apiKeys.status.inactive')}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => deleteApiKey(key.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-
-      {/* GitHub Credentials Section */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Github className="h-5 w-5" />
-            <h3 className="text-lg font-semibold">{t('apiKeys.github.title')}</h3>
-          </div>
-          <Button
-            size="sm"
-            onClick={() => setShowNewGithubForm(!showNewGithubForm)}
-          >
-            <Plus className="h-4 w-4 mr-1" />
-            {t('apiKeys.github.addButton')}
-          </Button>
-        </div>
-
-        <p className="text-sm text-muted-foreground mb-4">
-          {t('apiKeys.github.descriptionAlt')}
-        </p>
-
-        {showNewGithubForm && (
-          <div className="mb-4 p-4 border rounded-lg bg-card space-y-3">
-            <Input
-              placeholder={t('apiKeys.github.form.namePlaceholder')}
-              value={newGithubName}
-              onChange={(e) => setNewGithubName(e.target.value)}
-            />
-
-            <div className="relative">
-              <Input
-                type={showToken['new'] ? 'text' : 'password'}
-                placeholder={t('apiKeys.github.form.tokenPlaceholder')}
-                value={newGithubToken}
-                onChange={(e) => setNewGithubToken(e.target.value)}
-                className="pr-10"
-              />
-              <button
-                type="button"
-                onClick={() => setShowToken({ ...showToken, new: !showToken['new'] })}
-                className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground"
-              >
-                {showToken['new'] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-
-            <Input
-              placeholder={t('apiKeys.github.form.descriptionPlaceholder')}
-              value={newGithubDescription}
-              onChange={(e) => setNewGithubDescription(e.target.value)}
-            />
-
-            <div className="flex gap-2">
-              <Button onClick={createGithubCredential}>{t('apiKeys.github.form.addButton')}</Button>
-              <Button variant="outline" onClick={() => {
-                setShowNewGithubForm(false);
-                setNewGithubName('');
-                setNewGithubToken('');
-                setNewGithubDescription('');
-              }}>
-                {t('apiKeys.github.form.cancelButton')}
-              </Button>
-            </div>
-
-            <a
-              href="https://github.com/settings/tokens"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-primary hover:underline block"
-            >
-              {t('apiKeys.github.form.howToCreate')}
-            </a>
-          </div>
-        )}
-
-        <div className="space-y-2">
-          {githubCredentials.length === 0 ? (
-            <p className="text-sm text-muted-foreground italic">{t('apiKeys.github.empty')}</p>
-          ) : (
-            githubCredentials.map((credential) => (
-              <div
-                key={credential.id}
-                className="flex items-center justify-between p-3 border rounded-lg"
-              >
-                <div className="flex-1">
-                  <div className="font-medium">{credential.credential_name}</div>
-                  {credential.description && (
-                    <div className="text-xs text-muted-foreground">{credential.description}</div>
-                  )}
-                  <div className="text-xs text-muted-foreground mt-1">
-                    {t('apiKeys.github.added')} {new Date(credential.created_at).toLocaleDateString()}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant={credential.is_active ? 'outline' : 'secondary'}
-                    onClick={() => toggleGithubCredential(credential.id, credential.is_active)}
-                  >
-                    {credential.is_active ? t('apiKeys.status.active') : t('apiKeys.status.inactive')}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => deleteGithubCredential(credential.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-
-      {/* Gemini API Key Section */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5" />
-            <h3 className="text-lg font-semibold">{t('apiKeys.gemini.title')}</h3>
-          </div>
-          <Button
-            size="sm"
-            onClick={() => setShowNewGeminiForm(!showNewGeminiForm)}
-          >
-            <Plus className="h-4 w-4 mr-1" />
-            {t('apiKeys.gemini.addButton')}
-          </Button>
-        </div>
-
-        <p className="text-sm text-muted-foreground mb-4">
-          {t('apiKeys.gemini.description')}
-        </p>
-
-        {showNewGeminiForm && (
-          <div className="mb-4 p-4 border rounded-lg bg-card space-y-3">
-            <Input
-              placeholder={t('apiKeys.gemini.form.namePlaceholder')}
-              value={newGeminiName}
-              onChange={(e) => setNewGeminiName(e.target.value)}
-            />
-
-            <div className="relative">
-              <Input
-                type={showToken['gemini-new'] ? 'text' : 'password'}
-                placeholder={t('apiKeys.gemini.form.keyPlaceholder')}
-                value={newGeminiKey}
-                onChange={(e) => setNewGeminiKey(e.target.value)}
-                className="pr-10"
-              />
-              <button
-                type="button"
-                onClick={() => setShowToken({ ...showToken, 'gemini-new': !showToken['gemini-new'] })}
-                className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground"
-              >
-                {showToken['gemini-new'] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-
-            <div className="flex gap-2">
-              <Button onClick={createGeminiCredential}>{t('apiKeys.gemini.form.addButton')}</Button>
-              <Button variant="outline" onClick={() => {
-                setShowNewGeminiForm(false);
-                setNewGeminiKey('');
-                setNewGeminiName('');
-              }}>
-                {t('apiKeys.gemini.form.cancelButton')}
-              </Button>
-            </div>
-          </div>
-        )}
-
-        <div className="space-y-2">
-          {geminiCredentials.length === 0 ? (
-            <p className="text-sm text-muted-foreground italic">{t('apiKeys.gemini.empty')}</p>
-          ) : (
-            geminiCredentials.map((credential) => (
-              <div
-                key={credential.id}
-                className="flex items-center justify-between p-3 border rounded-lg"
-              >
-                <div className="flex-1">
-                  <div className="font-medium">{credential.credential_name}</div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    {t('apiKeys.gemini.added')} {new Date(credential.created_at).toLocaleDateString()}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant={credential.is_active ? 'outline' : 'secondary'}
-                    onClick={() => toggleGeminiCredential(credential.id, credential.is_active)}
-                  >
-                    {credential.is_active ? t('apiKeys.status.active') : t('apiKeys.status.inactive')}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => deleteGeminiCredential(credential.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-
-      {/* Version Information */}
-      <div className="pt-6 border-t border-border/50">
-        <div className="flex items-center justify-between text-xs italic text-muted-foreground/60">
-          <a
-            href={releaseInfo?.htmlUrl || 'https://github.com/OpenLAIR/dr-claw/releases'}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-muted-foreground transition-colors"
-          >
-            v{version}
-          </a>
-          {updateAvailable && latestVersion && (
-            <a
-              href={releaseInfo?.htmlUrl || 'https://github.com/OpenLAIR/dr-claw/releases'}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-2 py-0.5 bg-green-500/10 text-green-600 dark:text-green-400 rounded-full hover:bg-green-500/20 transition-colors not-italic font-medium"
-            >
-              <span className="text-[10px]">{t('apiKeys.version.updateAvailable', { version: latestVersion })}</span>
-              <ExternalLink className="h-2.5 w-2.5" />
-            </a>
-          )}
-        </div>
-      </div>
+  return <section className="space-y-4" data-credential-group={kind}>
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <h3 className="flex items-center gap-2 text-lg font-medium"><Icon className="h-5 w-5 shrink-0" />{t(`${config.prefix}.title`)}</h3>
+      <Button ref={trigger} type="button" size="sm" className={actionClass} disabled={!loaded || busy || open || (kind === 'api' && hasUnsavedKey)} onClick={() => { clear('mutate'); setOpen(true); }}><Plus className="mr-1 h-4 w-4" />{t(`${config.prefix}.${config.add}`)}</Button>
     </div>
-  );
+    <p className="text-sm text-muted-foreground">{t(`${config.prefix}.${config.description}`)}</p>
+    {kind === 'api' && <a href="/api-docs.html" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-8 items-center gap-1 text-sm underline underline-offset-4">{t('apiKeys.apiDocsLink')}<ExternalLink className="h-3 w-3" /></a>}
+    <SettingsFeedback state={states.load} onRetry={load} saved={false} />
+    {open && <form onSubmit={create} className="rounded-lg border border-border p-4">
+      <fieldset disabled={busy} className="min-w-0 space-y-3">
+        <div><label htmlFor={`${kind}-credential-name`} className="mb-1 block text-sm">{t(`credentialLabels.${kind === 'gemini' ? 'optionalName' : 'name'}`)}</label><Input ref={nameInput} id={`${kind}-credential-name`} required={kind !== 'gemini'} value={name} onChange={event => { setName(event.target.value); clear('mutate'); }} className="min-h-11 text-base md:text-sm" /></div>
+        {kind !== 'api' && <div><label htmlFor={`${kind}-credential-secret`} className="mb-1 block text-sm">{t(`credentialLabels.${kind === 'github' ? 'token' : 'key'}`)}</label>
+          <div className="relative"><Input id={`${kind}-credential-secret`} required type={visible ? 'text' : 'password'} autoComplete="new-password" spellCheck={false} value={secret} onChange={event => { setSecret(event.target.value); clear('mutate'); }} className="min-h-11 pr-12 text-base md:text-sm" /><button type="button" aria-label={t(visible ? 'feedback.hideSecret' : 'feedback.showSecret')} aria-pressed={visible} onClick={() => setVisible(value => !value)} className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-md text-muted-foreground hover:text-foreground">{visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button></div>
+        </div>}
+        {kind === 'github' && <div><label htmlFor="github-credential-description" className="mb-1 block text-sm">{t('credentialLabels.description')}</label><Input id="github-credential-description" value={description} onChange={event => { setDescription(event.target.value); clear('mutate'); }} className="min-h-11 text-base md:text-sm" /></div>}
+        <div className="flex flex-wrap gap-2"><Button type="submit" className={actionClass} disabled={(kind !== 'gemini' && !name.trim()) || (kind !== 'api' && !secret.trim())}>{t(`${config.prefix}.form.${kind === 'api' ? 'createButton' : 'addButton'}`)}</Button><Button type="button" variant="outline" className={actionClass} onClick={() => { resetForm(); clear('mutate'); returnFocus(); }}>{t('feedback.cancel')}</Button></div>
+        {kind === 'github' && <a href="https://github.com/settings/tokens" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-8 items-center text-sm underline underline-offset-4">{t('apiKeys.github.form.howToCreate')}</a>}
+      </fieldset>
+    </form>}
+    <SettingsFeedback state={states.mutate} />
+    {loaded && <div className="space-y-2">{items.length === 0 ? <p className="text-sm text-muted-foreground">{t(`${config.prefix}.empty`)}</p> : items.map(item => {
+      const itemName = item.key_name || item.credential_name;
+      return <div key={item.id} className="space-y-3 rounded-lg border border-border p-3" data-credential-row>
+        <div className="min-w-0 space-y-1"><p className="break-words font-medium [overflow-wrap:anywhere]">{itemName}</p>{kind === 'api' && <code className="block break-all text-xs text-muted-foreground">{item.api_key}</code>}{item.description && <p className="break-words text-sm text-muted-foreground">{item.description}</p>}<p className="text-xs text-muted-foreground">{t(kind === 'api' ? 'apiKeys.list.created' : `${config.prefix}.added`)} {new Date(item.created_at).toLocaleDateString(i18n.language)}{item.last_used && ` · ${t('apiKeys.list.lastUsed')} ${new Date(item.last_used).toLocaleDateString(i18n.language)}`}</p></div>
+        <div className="flex flex-wrap items-center gap-2"><Button type="button" size="sm" variant="outline" role="switch" aria-checked={Boolean(item.is_active)} aria-label={t('credentialLabels.enable', { name: itemName })} disabled={busy} className={actionClass} onClick={() => toggle(item)}>{t(item.is_active ? 'apiKeys.status.active' : 'apiKeys.status.inactive')}</Button><Button type="button" size="sm" variant="ghost" disabled={busy} className={actionClass} aria-label={t('credentialLabels.delete', { name: itemName })} onClick={() => { clear('remove'); setDeleting(item); }}><Trash2 className="mr-1 h-4 w-4" />{t('feedback.delete')}</Button></div>
+      </div>;
+    })}</div>}
+    {deleting && <WorkbenchDialog title={t('credentialLabels.deleteTitle')} onClose={() => setDeleting(null)} busy={Boolean(states.remove?.pending)}>
+      <div className="space-y-4"><p className="break-words font-medium">{deleting.key_name || deleting.credential_name}</p><p className="text-sm text-muted-foreground">{t(`${config.prefix}.confirmDelete`)}</p><SettingsFeedback state={states.remove} saved={false} /><div className="flex flex-wrap justify-end gap-2"><Button variant="outline" disabled={states.remove?.pending} onClick={() => setDeleting(null)}>{t('feedback.cancel')}</Button><Button variant="destructive" disabled={states.remove?.pending} onClick={remove}>{t('feedback.delete')}</Button></div></div>
+    </WorkbenchDialog>}
+  </section>;
 }
 
-export default CredentialsSettings;
+export default function CredentialsSettings() {
+  const { t } = useTranslation('settings');
+  const [newKey, setNewKey] = useState(null);
+  const keyNotice = useRef(null);
+  const { states, run, clear } = useSettingsRequest();
+  const { updateAvailable, latestVersion, releaseInfo } = useVersionCheck('OpenLAIR', 'dr-claw');
+  useSettingsDraft(Boolean(newKey), { warning: 'key', busy: states.copy?.pending });
+  useEffect(() => { if (newKey) keyNotice.current?.focus(); }, [newKey]);
+  return <div className="space-y-8" data-credentials-settings>
+    {newKey && <section ref={keyNotice} tabIndex={-1} aria-label={t('apiKeys.newKey.alertTitle')} className="space-y-3 rounded-lg border border-border bg-muted/40 p-4">
+      <h4 className="font-medium">{t('apiKeys.newKey.alertTitle')}</h4><p className="text-sm text-muted-foreground">{t('apiKeys.newKey.alertMessage')}</p><code className="block break-all rounded border border-border bg-background p-3 text-sm">{newKey.apiKey}</code>
+      <div className="flex flex-wrap gap-2"><Button variant="outline" className={actionClass} disabled={states.copy?.pending} onClick={() => run('copy', () => navigator.clipboard.writeText(newKey.apiKey))}>{states.copy?.success ? <Check className="mr-1 h-4 w-4" /> : <Copy className="mr-1 h-4 w-4" />}{t(states.copy?.success ? 'feedback.copied' : 'feedback.copy')}</Button><Button variant="ghost" className={actionClass} onClick={() => { setNewKey(null); clear('copy'); requestAnimationFrame(() => document.querySelector('[data-credential-group="api"] button')?.focus()); }}>{t('apiKeys.newKey.iveSavedIt')}</Button></div>
+      <SettingsFeedback state={states.copy} saved={false} />{states.copy?.success && <p role="status" className="sr-only">{t('feedback.copied')}</p>}
+    </section>}
+    {Object.keys(groups).map(kind => <CredentialGroup key={kind} kind={kind} onCreatedKey={setNewKey} hasUnsavedKey={Boolean(newKey)} />)}
+    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5 text-xs text-muted-foreground"><a href={releaseInfo?.htmlUrl || 'https://github.com/OpenLAIR/dr-claw/releases'} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-8 items-center hover:underline">v{version}</a>{updateAvailable && latestVersion && <a href={releaseInfo?.htmlUrl || 'https://github.com/OpenLAIR/dr-claw/releases'} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-8 items-center gap-1 hover:underline">{t('apiKeys.version.updateAvailable', { version: latestVersion })}<ExternalLink className="h-3 w-3" /></a>}</div>
+  </div>;
+}

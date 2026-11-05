@@ -8,6 +8,8 @@ export interface HarnessModelOption {
   description?: string;
   /** From the compiled-in table rather than the harness; folded away in the picker by default. */
   builtIn?: boolean;
+  /** Built-in entry the picker shows even when folded (models newer than the bundled CLI's list). */
+  alwaysShow?: boolean;
   /** Present in the built-in list but not reported by the harness itself. */
   deprecated?: boolean;
   isDefault?: boolean;

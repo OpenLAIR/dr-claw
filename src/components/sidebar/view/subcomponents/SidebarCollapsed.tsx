@@ -1,9 +1,11 @@
 import { Settings, Sparkles, PanelLeftOpen } from 'lucide-react';
 import type { TFunction } from 'i18next';
+import type { Ref } from 'react';
 import { isMacElectron } from '../../../../hooks/useDesktop';
 
 type SidebarCollapsedProps = {
   onExpand: () => void;
+  toggleButtonRef: Ref<HTMLButtonElement>;
   onShowSettings: () => void;
   currentVersion: string;
   updateAvailable: boolean;
@@ -13,6 +15,7 @@ type SidebarCollapsedProps = {
 
 export default function SidebarCollapsed({
   onExpand,
+  toggleButtonRef,
   onShowSettings,
   currentVersion,
   updateAvailable,
@@ -21,11 +24,13 @@ export default function SidebarCollapsed({
 }: SidebarCollapsedProps) {
   return (
     <div
-      className="h-full flex flex-col items-center pb-3 gap-1 bg-background/80 backdrop-blur-sm w-12 electron-drag"
+      className="h-full flex flex-col items-center pb-3 gap-1 bg-background w-12 electron-drag"
       style={{ paddingTop: isMacElectron ? '32px' : '12px' }}
     >
       {/* Expand button with brand logo */}
       <button
+        ref={toggleButtonRef}
+        aria-expanded={false}
         onClick={onExpand}
         className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-accent/80 transition-colors group electron-no-drag"
         aria-label={t('common:versionUpdate.ariaLabels.showSidebar')}
@@ -55,12 +60,12 @@ export default function SidebarCollapsed({
           title={t('common:versionUpdate.ariaLabels.updateAvailable')}
         >
           <Sparkles className="w-4 h-4 text-blue-500" />
-          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
+          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-blue-500 rounded-full" />
         </button>
       )}
 
       <div
-        className="mt-auto w-8 px-0.5 pb-1 text-center text-[8px] leading-tight font-mono text-muted-foreground/60 break-all select-none"
+        className="mt-auto w-full pb-1 text-center text-xs leading-tight tabular-nums text-muted-foreground whitespace-nowrap select-none"
         title={`${t('common:common.version')} v${currentVersion}`}
       >
         v{currentVersion}

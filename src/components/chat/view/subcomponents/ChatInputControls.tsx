@@ -31,6 +31,8 @@ interface ChatInputControlsProps {
   onClearInput: () => void;
   hideCommandMenu?: boolean;
   compact?: boolean;
+  configurationOnly?: boolean;
+  statusOnly?: boolean;
 }
 
 export default function ChatInputControls({
@@ -53,16 +55,18 @@ export default function ChatInputControls({
   onClearInput,
   hideCommandMenu,
   compact,
+  configurationOnly = false,
+  statusOnly = false,
 }: ChatInputControlsProps) {
   const { t } = useTranslation('chat');
 
   return (
     <>
-      <button
+      {!configurationOnly && <button
         type="button"
         onClick={onModeSwitch ?? undefined}
         disabled={!onModeSwitch}
-        className={`${compact ? 'w-[8.5rem] whitespace-nowrap truncate px-2 py-1 rounded-lg text-[11px] text-center justify-center' : 'px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg text-xs sm:text-sm'} font-medium border transition-all duration-200 ${!onModeSwitch ? 'cursor-not-allowed opacity-80' : ''} ${
+        className={`min-h-11 lg:min-h-8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${compact ? 'w-[8.5rem] whitespace-nowrap truncate px-2 py-1 rounded-lg text-[11px] text-center justify-center' : 'px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg text-xs sm:text-sm'} font-medium border transition-colors duration-150 ${!onModeSwitch ? 'cursor-not-allowed opacity-80' : ''} ${
           permissionMode === 'default'
             ? 'bg-muted/50 text-muted-foreground border-border/60 hover:bg-muted'
             : permissionMode === 'acceptEdits'
@@ -92,13 +96,13 @@ export default function ChatInputControls({
             {permissionMode === 'plan' && (provider === 'gemini' ? 'Plan' : t('codex.modes.plan'))}
           </span>
         </div>
-      </button>
+      </button>}
 
-      {provider === 'claude' && (
+      {!statusOnly && provider === 'claude' && (
         <ThinkingModeSelector selectedMode={thinkingMode} onModeChange={setThinkingMode} onClose={() => {}} className="" compact={compact} />
       )}
 
-      {provider === 'codex' && supportsExplicitCodexReasoningEffort(codexModel, codexReasoningEfforts) && (
+      {!statusOnly && provider === 'codex' && supportsExplicitCodexReasoningEffort(codexModel, codexReasoningEfforts) && (
         <CodexReasoningEffortSelector
           model={codexModel}
           supportedEfforts={codexReasoningEfforts}
@@ -110,7 +114,7 @@ export default function ChatInputControls({
         />
       )}
 
-      {provider === 'gemini' && supportsExplicitGeminiThinkingMode(geminiModel) && (
+      {!statusOnly && provider === 'gemini' && supportsExplicitGeminiThinkingMode(geminiModel) && (
         <GeminiThinkingSelector
           model={geminiModel}
           selectedMode={geminiThinkingMode}
@@ -121,14 +125,14 @@ export default function ChatInputControls({
         />
       )}
 
-      <TokenUsagePie
+      {!configurationOnly && <TokenUsagePie
         used={tokenBudget?.used}
         total={tokenBudget?.total || parseInt(import.meta.env.VITE_CONTEXT_WINDOW) || 200000}
         unsupportedContext={tokenBudget?.unsupportedContext}
         message={tokenBudget?.message}
-      />
+      />}
 
-      {!hideCommandMenu && (
+      {!configurationOnly && !hideCommandMenu && (
         <button
           type="button"
           onClick={onToggleCommandMenu}
@@ -153,11 +157,11 @@ export default function ChatInputControls({
         </button>
       )}
 
-      {hasInput && !compact && (
+      {!configurationOnly && hasInput && !compact && (
         <button
           type="button"
           onClick={onClearInput}
-          className="w-7 h-7 sm:w-8 sm:h-8 bg-card hover:bg-accent/60 border border-border/50 rounded-lg flex items-center justify-center transition-all duration-200 group shadow-sm"
+          className="w-7 h-7 sm:w-8 sm:h-8 bg-card hover:bg-accent/60 border border-border/50 rounded-lg flex items-center justify-center transition-all duration-200 group"
           title={t('input.clearInput', { defaultValue: 'Clear input' })}
         >
           <svg

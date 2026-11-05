@@ -43,6 +43,7 @@ export type SidebarProps = {
   settingsInitialTab: string;
   onCloseSettings: () => void;
   isMobile: boolean;
+  onCloseMobile?: () => void;
   activeTab: AppTab;
   onOpenDashboard: () => void;
   onOpenTrash: () => void;

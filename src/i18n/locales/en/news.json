@@ -26,7 +26,8 @@
     "startSearch": "Start Search",
     "openSettings": "Open Settings",
     "save": "Save Changes",
-    "close": "Close"
+    "close": "Close",
+    "retry": "Retry"
   },
   "status": {
     "loading": "Loading research feed...",
@@ -191,5 +192,10 @@
     "addPlaceholder": "Add...",
     "arxivCategories": "arXiv Categories",
     "credentialRequired": "Credential required"
+  },
+  "errors": {
+    "load": "Could not load the research feed. Try again.",
+    "save": "Could not save settings. Your changes are still here.",
+    "search": "Search failed. Try again."
   }
 }

@@ -11,9 +11,9 @@ import {
   Sparkles, Copy, Check, PenTool, Target, Clock3, ListChecks, MessageSquare,
   Plus, Trash2, AlertTriangle, Maximize2, X
 } from 'lucide-react';
-import ReactDOM from 'react-dom';
 import { ScrollArea } from './ui/scroll-area';
 import { Button } from './ui/button';
+import WorkbenchDialog from './ui/WorkbenchDialog';
 import { api } from '../utils/api';
 import useLocalStorage from '../hooks/useLocalStorage';
 import { useTaskMaster } from '../contexts/TaskMasterContext';
@@ -176,19 +176,19 @@ function classifyArtifact(name, relativePath) {
 }
 
 const BADGE_COLORS = {
-  sky: 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300',
-  blue: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300',
-  amber: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
-  rose: 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300',
-  indigo: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300',
-  green: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300',
-  cyan: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-300',
-  purple: 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300',
-  orange: 'bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-300',
-  yellow: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300',
-  teal: 'bg-teal-100 text-teal-800 dark:bg-teal-900/40 dark:text-teal-300',
-  gray: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
-  pink: 'bg-pink-100 text-pink-800 dark:bg-pink-900/40 dark:text-pink-300',
+  sky: 'bg-muted text-muted-foreground',
+  blue: 'bg-muted text-muted-foreground',
+  amber: 'bg-muted text-muted-foreground',
+  rose: 'bg-muted text-muted-foreground',
+  indigo: 'bg-muted text-muted-foreground',
+  green: 'bg-muted text-muted-foreground',
+  cyan: 'bg-muted text-muted-foreground',
+  purple: 'bg-muted text-muted-foreground',
+  orange: 'bg-muted text-muted-foreground',
+  yellow: 'bg-muted text-muted-foreground',
+  teal: 'bg-muted text-muted-foreground',
+  gray: 'bg-muted text-muted-foreground',
+  pink: 'bg-muted text-muted-foreground',
 };
 
 const IDEATION_STAGES = new Set([
@@ -216,12 +216,12 @@ const DEFAULT_RESEARCH_BRIEF_PATH = '.pipeline/docs/research_brief.json';
 const DEFAULT_TASKS_FILENAME = 'tasks.json';
 const TASK_STAGE_ORDER = ['survey', 'ideation', 'experiment', 'publication', 'promotion', 'unassigned'];
 const TASK_STAGE_META = {
-  survey: { label: 'Survey', className: 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300' },
-  ideation: { label: 'Ideation', className: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300' },
-  experiment: { label: 'Experiment', className: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-300' },
-  publication: { label: 'Publication', className: 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300' },
-  promotion: { label: 'Promotion', className: 'bg-pink-100 text-pink-800 dark:bg-pink-900/40 dark:text-pink-300' },
-  unassigned: { label: 'Unassigned', className: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' },
+  survey: { label: 'Survey', className: 'bg-muted text-muted-foreground' },
+  ideation: { label: 'Ideation', className: 'bg-muted text-muted-foreground' },
+  experiment: { label: 'Experiment', className: 'bg-muted text-muted-foreground' },
+  publication: { label: 'Publication', className: 'bg-muted text-muted-foreground' },
+  promotion: { label: 'Promotion', className: 'bg-muted text-muted-foreground' },
+  unassigned: { label: 'Unassigned', className: 'bg-muted text-muted-foreground' },
 };
 const TASK_STATUS_META = {
   pending: { label: 'Pending', className: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' },
@@ -443,88 +443,49 @@ function getSourcePapers(instance, researchBrief) {
     .filter(Boolean);
 }
 
-function ResearchMetricCard({
-  icon: Icon,
-  label,
-  value,
-  detail,
-  accentClass,
-  compact = false,
-}) {
-  if (compact) {
-    return (
-      <div className="rounded-xl border border-white/70 bg-white/78 px-3 py-2 shadow-sm backdrop-blur dark:border-white/10 dark:bg-slate-950/50">
-        <div className="flex items-center gap-2">
-          <div className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg border ${accentClass}`}>
-            <Icon className="h-3.5 w-3.5" />
-          </div>
-          <div className="min-w-0">
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-lg font-semibold tracking-tight text-foreground">{value}</span>
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</span>
-            </div>
-            {detail ? <div className="truncate text-[10px] text-muted-foreground">{detail}</div> : null}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="rounded-[26px] border border-white/70 bg-white/78 p-4 shadow-[0_16px_45px_rgba(15,23,42,0.08)] backdrop-blur dark:border-white/10 dark:bg-slate-950/50 dark:shadow-[0_20px_55px_rgba(2,6,23,0.45)]">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="text-[11px] uppercase tracking-[0.26em] text-muted-foreground">{label}</div>
-          <div className="mt-3 text-3xl font-semibold tracking-tight text-foreground">{value}</div>
-          {detail ? <div className="mt-2 text-xs text-muted-foreground">{detail}</div> : null}
-        </div>
-        <div className={`flex h-11 w-11 items-center justify-center rounded-2xl border ${accentClass}`}>
-          <Icon className="h-5 w-5" />
-        </div>
-      </div>
-    </div>
-  );
+function ResearchMetricCard({ icon: Icon, label, value, detail, compact = false }) {
+  const { t } = useTranslation('common');
+  return <div className="min-w-0 py-2">
+    <div className="flex items-center gap-2 text-xs text-muted-foreground"><Icon className="h-4 w-4 shrink-0" />{label}</div>
+    <div className={compact ? 'mt-1 text-lg font-semibold' : 'mt-2 text-xl font-semibold'}>{value}</div>
+    {detail && <p className="mt-1 text-xs leading-5 text-muted-foreground">{detail}</p>}
+  </div>;
 }
 
 function PipelineStageChip({ stage, compact = false }) {
-  const tone = {
-    survey: 'border-sky-200/70 bg-sky-50/80 dark:border-sky-900/70 dark:bg-sky-950/20',
-    ideation: 'border-amber-200/70 bg-amber-50/80 dark:border-amber-900/70 dark:bg-amber-950/20',
-    experiment: 'border-cyan-200/70 bg-cyan-50/80 dark:border-cyan-900/70 dark:bg-cyan-950/20',
-    publication: 'border-purple-200/70 bg-purple-50/80 dark:border-purple-900/70 dark:bg-purple-950/20',
-    promotion: 'border-pink-200/70 bg-pink-50/80 dark:border-pink-900/70 dark:bg-pink-950/20',
-  }[stage.key] || 'border-border/60 bg-background/60';
+  const { t } = useTranslation('common');
+  const tone = 'border-border bg-background';
 
   const summaryLabel = stage.total > 0
     ? `${stage.done}/${stage.total}`
     : stage.artifacts > 0
-      ? 'Artifacts only'
-      : 'Waiting';
+      ? t('researchLabUI.artifactsOnly')
+      : t('researchLabUI.waiting');
 
   if (compact) {
     return (
-      <div className={`rounded-lg border px-2 py-1.5 shadow-sm ${tone}`}>
+      <div className={`rounded-lg border px-2 py-1.5  ${tone}`}>
         <div className="flex items-center justify-between gap-1">
-          <span className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-medium ${stage.meta.className}`}>
-            {stage.meta.label}
+          <span className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-xs font-medium ${stage.meta.className}`}>
+            {t(`researchLabLabels.${stage.meta.label}`, { defaultValue: stage.meta.label })}
           </span>
-          <span className="text-[9px] text-muted-foreground">{summaryLabel}</span>
+          <span className="text-xs text-muted-foreground">{summaryLabel}</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`rounded-2xl border px-3 py-3 shadow-sm ${tone}`}>
+    <div className={`rounded-lg border px-3 py-3  ${tone}`}>
       <div className="flex items-center justify-between gap-3">
-        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${stage.meta.className}`}>
-          {stage.meta.label}
+        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${stage.meta.className}`}>
+          {t(`researchLabLabels.${stage.meta.label}`, { defaultValue: stage.meta.label })}
         </span>
-        <span className="text-[11px] text-muted-foreground">{summaryLabel}</span>
+        <span className="text-xs text-muted-foreground">{summaryLabel}</span>
       </div>
       <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
-        <span>{stage.total} tasks</span>
-        <span>{stage.artifacts} artifacts</span>
+        <span>{stage.total} {t('researchLabUI.tasks')}</span>
+        <span>{stage.artifacts} {t('researchLabUI.artifacts')}</span>
       </div>
     </div>
   );
@@ -574,6 +535,7 @@ function getArtifactPreviewKind(file) {
 
 /** Overview card: title, brief summary, and instance metadata */
 function OverviewCard({ instance, config, researchBrief, compact = false }) {
+  const { t } = useTranslation('common');
   const [showOverviewModal, setShowOverviewModal] = useState(false);
   const [collapsed, setCollapsed] = useState(compact);
   const overviewSections = useMemo(
@@ -595,8 +557,8 @@ function OverviewCard({ instance, config, researchBrief, compact = false }) {
   const hasDetailedContent = overviewSections.length > 0;
   const overviewSummary = hasDetailedContent
     ? overviewSections.length === 1
-      ? '1 research brief section available'
-      : `${overviewSections.length} research brief sections available`
+      ? t('researchLabUI.briefCount', { count: 1 })
+      : t('researchLabUI.briefCount', { count: overviewSections.length })
     : '';
   const showTargetPaper = targetPaper && targetPaper !== overviewTitle;
   const hasOverviewContent = Boolean(
@@ -608,49 +570,49 @@ function OverviewCard({ instance, config, researchBrief, compact = false }) {
 
   return (
     <>
-      <div className={`flex h-full flex-col border border-border/60 bg-card/78 shadow-sm backdrop-blur ${compact ? 'gap-2 rounded-xl p-3 border-l-2 border-l-blue-400 dark:border-l-blue-600' : 'gap-4 rounded-[28px] p-5'}`}>
+      <div className={`flex h-full flex-col border border-border/60 bg-card   ${compact ? 'gap-2 rounded-lg p-3 border-l-2 border-l-border dark:border-l-border' : 'gap-4 rounded-lg p-5'}`}>
         <button type="button" onClick={() => setCollapsed(v => !v)} aria-expanded={!collapsed} className="flex w-full items-center justify-between gap-2 text-left">
           <div className="flex items-center gap-2.5">
             {compact ? (
-              <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400">
+              <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground">
                 <FlaskConical className="w-3.5 h-3.5" />
               </div>
             ) : (
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-blue-200/70 bg-blue-50/90 text-blue-700 dark:border-blue-900/70 dark:bg-blue-950/30 dark:text-blue-300">
+              <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-border bg-muted text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
                 <FlaskConical className="w-5 h-5" />
               </div>
             )}
             <h3 className={`font-semibold tracking-tight text-foreground ${compact ? 'text-sm' : 'text-base'}`}>
-              Research Overview
+              {t('researchLabUI.overview')}
             </h3>
-            {!compact && <p className="text-xs text-muted-foreground">Brief, scope, and instance metadata for this workspace</p>}
+            {!compact && <p className="hidden text-xs text-muted-foreground sm:block">{t('researchLabUI.overviewHint')}</p>}
           </div>
           <div className="flex items-center gap-2">
             {compact && metadata.length > 0 && (
-              <span className="rounded-full border border-blue-200/60 bg-blue-50/80 px-2 py-0.5 text-[10px] font-medium text-blue-700 dark:border-blue-900/50 dark:bg-blue-950/40 dark:text-blue-300">{metadata.length}</span>
+              <span className="rounded-full border border-border bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">{metadata.length}</span>
             )}
             {collapsed ? <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 flex-shrink-0 text-muted-foreground" />}
           </div>
         </button>
         {!collapsed && overviewTitle && (
-          <div className="rounded-2xl border border-border/60 bg-background/70 p-4 shadow-sm">
-            <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Research Title</p>
+          <div className="rounded-lg border border-border/60 bg-background p-4">
+            <p className="text-xs  text-muted-foreground">{t('researchLabUI.title')}</p>
             <p className="mt-2 text-sm font-medium text-foreground">{overviewTitle}</p>
             {instance?.url && !showTargetPaper ? (
               <a href={instance.url} target="_blank" rel="noreferrer"
-                className="mt-2 inline-flex items-center gap-1 text-xs text-blue-600 hover:underline dark:text-blue-400">
+                className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground hover:underline dark:text-muted-foreground">
                 {instance.url} <ExternalLink className="w-3 h-3" />
               </a>
             ) : null}
           </div>
         )}
         {!collapsed && showTargetPaper && (
-          <div className={`rounded-2xl border border-border/60 bg-background/70 shadow-sm ${compact ? 'p-2.5' : 'p-4'}`}>
-            <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Target Paper</p>
+          <div className={`rounded-lg border border-border/60 bg-background  ${compact ? 'p-2.5' : 'p-4'}`}>
+            <p className="text-xs  text-muted-foreground">{t('researchLabUI.targetPaper')}</p>
             <p className="mt-1 text-sm font-medium text-foreground">{targetPaper}</p>
             {instance?.url && (
               <a href={instance.url} target="_blank" rel="noreferrer"
-                className="mt-1 inline-flex items-center gap-1 text-xs text-blue-600 hover:underline dark:text-blue-400">
+                className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground hover:underline dark:text-muted-foreground">
                 {instance.url} <ExternalLink className="w-3 h-3" />
               </a>
             )}
@@ -659,16 +621,16 @@ function OverviewCard({ instance, config, researchBrief, compact = false }) {
         {!collapsed && metadata.length > 0 && (
           <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
             {metadata.map((item) => (
-              <span key={item.label} className="rounded-full border border-border/60 bg-background/70 px-2 py-0.5 shadow-sm">
-                {item.label}: <code className="bg-muted px-1 rounded">{item.value}</code>
+              <span key={t(`researchLabLabels.${item.label}`, { defaultValue: item.label })} className="rounded-full border border-border/60 bg-background px-2 py-0.5">
+                {t(`researchLabLabels.${item.label}`, { defaultValue: item.label })}: <code className="bg-muted px-1 rounded">{item.value}</code>
               </span>
             ))}
           </div>
         )}
         {!collapsed && hasDetailedContent && (
-          <div className={`flex items-center justify-between gap-3 rounded-2xl border border-border/60 bg-background/70 shadow-sm ${compact ? 'p-2.5' : 'p-4'}`}>
+          <div className={`flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-background  ${compact ? 'p-2.5' : 'p-4'}`}>
             <div className="min-w-0">
-              <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Research Brief</p>
+              <p className="text-xs  text-muted-foreground">{t('researchLabUI.brief')}</p>
               <p className="mt-1 text-sm text-foreground/80">
                 {overviewSummary}
               </p>
@@ -679,56 +641,35 @@ function OverviewCard({ instance, config, researchBrief, compact = false }) {
               onClick={() => setShowOverviewModal(true)}
             >
               <Maximize2 className="mr-1.5 h-4 w-4" />
-              Read Brief
+              {t('researchLabUI.readBrief')}
             </Button>
           </div>
         )}
         {!collapsed && !hasOverviewContent && (
-          <div className={`rounded-2xl border border-dashed border-border/60 bg-background/60 text-sm text-muted-foreground ${compact ? 'px-3 py-3' : 'px-4 py-5'}`}>
-            Start the pipeline in Chat to populate the research brief, target paper, and working plan here.
+          <div className={`rounded-lg border border-dashed border-border/60 bg-background text-sm text-muted-foreground ${compact ? 'px-3 py-3' : 'px-4 py-5'}`}>
+            {t('researchLabUI.startHint')}
           </div>
         )}
       </div>
 
-      {showOverviewModal && ReactDOM.createPortal(
-        <div
-          className="fixed inset-0 z-[120] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm md:p-6"
-          onClick={() => setShowOverviewModal(false)}
-        >
-          <div
-            className="flex h-full w-full max-w-5xl flex-col overflow-hidden rounded-[34px] border border-border/70 bg-background shadow-2xl"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="flex flex-shrink-0 items-start justify-between gap-4 border-b border-border/60 bg-gradient-to-r from-slate-50 via-white to-cyan-50 px-5 py-4 dark:from-slate-950 dark:via-slate-900 dark:to-cyan-950/20">
-              <div className="min-w-0">
-                <div className="text-sm font-semibold text-foreground">
-                  Research Overview
-                </div>
-                <div className="mt-1 text-xs text-muted-foreground">
-                  {overviewTitle || targetPaper || 'Research brief'}
-                </div>
-              </div>
-              <Button size="sm" variant="ghost" onClick={() => setShowOverviewModal(false)}>
-                Close
-              </Button>
-            </div>
+      {showOverviewModal && <WorkbenchDialog title={t('researchLabUI.overview')} onClose={() => setShowOverviewModal(false)} size="wide">
             <ScrollArea className="min-h-0 flex-1">
-              <div className="space-y-4 p-5">
+              <div className="space-y-2">
                 {(overviewTitle || showTargetPaper) && (
-                  <div className="grid gap-3 md:grid-cols-2">
+                  <div className="grid gap-4 md:grid-cols-2">
                     {overviewTitle ? (
-                      <div className="rounded-2xl border border-border/60 bg-card/70 p-4 shadow-sm">
-                        <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Research Title</p>
+                      <div className="border-b border-border py-4">
+                        <p className="text-xs  text-muted-foreground">{t('researchLabUI.title')}</p>
                         <p className="mt-2 text-sm font-medium text-foreground">{overviewTitle}</p>
                       </div>
                     ) : null}
                     {showTargetPaper ? (
-                      <div className="rounded-2xl border border-border/60 bg-card/70 p-4 shadow-sm">
-                        <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Target Paper</p>
+                      <div className="border-b border-border py-4">
+                        <p className="text-xs  text-muted-foreground">{t('researchLabUI.targetPaper')}</p>
                         <p className="mt-2 text-sm font-medium text-foreground">{targetPaper}</p>
                         {instance?.url ? (
                           <a href={instance.url} target="_blank" rel="noreferrer"
-                            className="mt-2 inline-flex items-center gap-1 text-xs text-blue-600 hover:underline dark:text-blue-400">
+                            className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground hover:underline dark:text-muted-foreground">
                             {instance.url} <ExternalLink className="w-3 h-3" />
                           </a>
                         ) : null}
@@ -739,16 +680,16 @@ function OverviewCard({ instance, config, researchBrief, compact = false }) {
                 {metadata.length > 0 ? (
                   <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                     {metadata.map((item) => (
-                      <span key={item.label} className="rounded-full border border-border/60 bg-card/70 px-3 py-1 shadow-sm">
-                        {item.label}: <code className="bg-muted px-1 rounded">{item.value}</code>
+                      <span key={t(`researchLabLabels.${item.label}`, { defaultValue: item.label })} className="rounded-full border border-border/60 bg-card px-3 py-1">
+                        {t(`researchLabLabels.${item.label}`, { defaultValue: item.label })}: <code className="bg-muted px-1 rounded">{item.value}</code>
                       </span>
                     ))}
                   </div>
                 ) : null}
-                <div className="grid gap-3 md:grid-cols-2">
+                <div className="grid gap-4 md:grid-cols-2">
                   {overviewSections.map((section) => (
-                    <div key={section.label} className="rounded-2xl border border-border/60 bg-card/70 p-4 shadow-sm">
-                      <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">{section.label}</p>
+                    <div key={t(`researchLabLabels.${section.label}`, { defaultValue: section.label })} className="border-b border-border py-4">
+                      <p className="text-xs  text-muted-foreground">{t(`researchLabLabels.${section.label}`, { defaultValue: section.label })}</p>
                       <div className="mt-2 text-sm text-foreground/80 leading-relaxed markdown-body">
                         <ReactMarkdown
                           remarkPlugins={[remarkGfm, remarkMath]}
@@ -763,49 +704,47 @@ function OverviewCard({ instance, config, researchBrief, compact = false }) {
                 </div>
               </div>
             </ScrollArea>
-          </div>
-        </div>,
-        document.body,
-      )}
+      </WorkbenchDialog>}
     </>
   );
 }
 
 /** Source papers list */
 function PapersCard({ papers, compact = false }) {
+  const { t } = useTranslation('common');
   const [expanded, setExpanded] = useState(false);
   const [collapsed, setCollapsed] = useState(compact);
   if (!papers || papers.length === 0) return null;
   const shown = expanded ? papers : papers.slice(0, compact ? 3 : 5);
 
   return (
-    <div className={`flex h-full flex-col border border-border/60 bg-card/78 shadow-sm backdrop-blur ${compact ? 'rounded-xl p-3 border-l-2 border-l-emerald-400 dark:border-l-emerald-600' : 'rounded-[28px] p-5'}`}>
+    <div className={`flex h-full flex-col border border-border/60 bg-card   ${compact ? 'rounded-lg p-3 border-l-2 border-l-border dark:border-l-border' : 'rounded-lg p-5'}`}>
       <button type="button" onClick={() => setCollapsed(v => !v)} aria-expanded={!collapsed} className="flex w-full items-center justify-between gap-2 text-left">
         <div className="flex items-center gap-2.5">
           {compact ? (
-            <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400">
+            <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground">
               <BookOpen className="w-3.5 h-3.5" />
             </div>
           ) : (
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-emerald-200/70 bg-emerald-50/90 text-emerald-700 dark:border-emerald-900/70 dark:bg-emerald-950/30 dark:text-emerald-300">
+            <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-border bg-muted text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
               <BookOpen className="w-5 h-5" />
             </div>
           )}
           <h3 className={`font-semibold tracking-tight text-foreground ${compact ? 'text-sm' : 'text-base'}`}>
-            Source Papers
+            {t('researchLabUI.papers')}
           </h3>
-          {!compact && <p className="text-xs text-muted-foreground">Related work and references supplied to the pipeline ({papers.length})</p>}
+          {!compact && <p className="text-xs text-muted-foreground">{t('researchLabUI.papersHint', { count: papers.length })}</p>}
         </div>
         <div className="flex items-center gap-2">
           {compact && (
-            <span className="rounded-full border border-emerald-200/60 bg-emerald-50/80 px-2 py-0.5 text-[10px] font-medium text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300">{papers.length}</span>
+            <span className="rounded-full border border-border bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">{papers.length}</span>
           )}
           {collapsed ? <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 flex-shrink-0 text-muted-foreground" />}
         </div>
       </button>
       {!collapsed && <ul className={`flex-1 space-y-1.5 ${compact ? 'mt-2' : 'mt-4'}`}>
         {shown.map((p, i) => (
-          <li key={i} className={`flex items-start gap-2 rounded-2xl border border-border/60 bg-background/70 text-sm shadow-sm ${compact ? 'px-3 py-2' : 'px-4 py-3'}`}>
+          <li key={i} className={`flex items-start gap-2 rounded-lg border border-border/60 bg-background text-sm  ${compact ? 'px-3 py-2' : 'px-4 py-3'}`}>
             <span className="mt-0.5 w-6 flex-shrink-0 text-right text-xs text-muted-foreground">{p.rank || i + 1}.</span>
             <div className="min-w-0 flex-1">
               {p.url ? (
@@ -813,7 +752,7 @@ function PapersCard({ papers, compact = false }) {
                   href={p.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1 text-foreground hover:text-blue-600 dark:hover:text-blue-400"
+                  className="inline-flex items-center gap-1 text-foreground hover:text-muted-foreground dark:hover:text-muted-foreground"
                 >
                   <span>{p.reference}</span>
                   <ExternalLink className="h-3.5 w-3.5" />
@@ -824,7 +763,7 @@ function PapersCard({ papers, compact = false }) {
               {p.type && (() => {
                 const types = Array.isArray(p.type) ? p.type : [p.type];
                 const label = types.join(', ');
-                const cls = label.includes('methodolog') ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' :
+                const cls = label.includes('methodolog') ? 'bg-muted text-muted-foreground dark:bg-blue-900/30 dark:text-muted-foreground' :
                   label.includes('component') ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' :
                   'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400';
                 return <span className={`ml-2 text-xs px-1.5 py-0 rounded ${cls}`}>{label}</span>;
@@ -835,8 +774,8 @@ function PapersCard({ papers, compact = false }) {
       </ul>}
       {!collapsed && papers.length > (compact ? 3 : 5) && (
         <button onClick={() => setExpanded(!expanded)}
-          className="mt-2 flex items-center gap-1 text-xs text-blue-600 hover:underline dark:text-blue-400">
-          {expanded ? 'Show less' : `Show all ${papers.length} papers`}
+          className="mt-2 flex items-center gap-1 text-xs text-muted-foreground hover:underline dark:text-muted-foreground">
+          {expanded ? t('researchLabUI.showLess') : t('researchLabUI.showPapers', { count: papers.length })}
           <ChevronDown className={`w-3 h-3 transition-transform ${expanded ? 'rotate-180' : ''}`} />
         </button>
       )}
@@ -845,6 +784,7 @@ function PapersCard({ papers, compact = false }) {
 }
 
 function StageSection({ title, icon: Icon, badgeClass, expanded, onToggle, children }) {
+  const { t } = useTranslation('common');
   return (
     <div className="rounded-lg border border-border bg-card p-4 space-y-3">
       <button
@@ -855,14 +795,14 @@ function StageSection({ title, icon: Icon, badgeClass, expanded, onToggle, child
         {expanded ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
         <Icon className="w-4 h-4" />
         <h2 className="text-sm font-semibold text-foreground">{title}</h2>
-        <span className={`text-[10px] px-2 py-0.5 rounded-full ${badgeClass}`}>Stage</span>
+        <span className={`text-xs px-2 py-0.5 rounded-full ${badgeClass}`}>{t('researchLabUI.stage')}</span>
       </button>
       {expanded && <div className="space-y-3">{children}</div>}
     </div>
   );
 }
 
-function TaskPipelineBoard({ tasks, isLoading, onNavigateToChat, projectName, onTaskUpdated, compact = false }) {
+function TaskPipelineBoard({ tasks, isLoading, onNavigateToChat, projectName, onTaskUpdated, loadError = false, compact = false }) {
   const { t } = useTranslation('common');
   const [boardCollapsed, setBoardCollapsed] = useState(compact);
   const [openStages, setOpenStages] = useState({});
@@ -874,9 +814,11 @@ function TaskPipelineBoard({ tasks, isLoading, onNavigateToChat, projectName, on
   const [addingTask, setAddingTask] = useState(false);
   const [deleteConfirmTask, setDeleteConfirmTask] = useState(null);
   const [deletingTask, setDeletingTask] = useState(false);
+  const [taskError, setTaskError] = useState(null);
 
   // Clear all interaction state when project changes
   useEffect(() => {
+    setTaskError(null);
     setEditingTaskId(null);
     setEditForm({ title: '', description: '' });
     setAddingToStage(null);
@@ -897,27 +839,31 @@ function TaskPipelineBoard({ tasks, isLoading, onNavigateToChat, projectName, on
   const handleSave = useCallback(async () => {
     if (!editingTaskId || !projectName) return;
     setSaving(true);
+    setTaskError(null);
     try {
-      await api.taskmaster.updateTask(
+      const response = await api.taskmaster.updateTask(
         encodeURIComponent(projectName),
         editingTaskId,
         { title: editForm.title, description: editForm.description },
       );
+      if (!response.ok) throw new Error('task');
+      setEditingTaskId(null);
+      setEditForm({ title: '', description: '' });
       if (onTaskUpdated) onTaskUpdated();
     } catch (e) {
       console.error('Failed to update task:', e);
+      setTaskError(t('messages.operationFailed'));
     } finally {
       setSaving(false);
-      setEditingTaskId(null);
-      setEditForm({ title: '', description: '' });
     }
-  }, [editingTaskId, editForm, projectName, onTaskUpdated]);
+  }, [editingTaskId, editForm, projectName, onTaskUpdated, t]);
 
   const handleAddTask = useCallback(async () => {
     if (!addForm.title.trim() || !projectName || !addingToStage) return;
     setAddingTask(true);
+    setTaskError(null);
     try {
-      await api.taskmaster.addTask(
+      const response = await api.taskmaster.addTask(
         encodeURIComponent(projectName),
         {
           title: addForm.title.trim(),
@@ -927,15 +873,17 @@ function TaskPipelineBoard({ tasks, isLoading, onNavigateToChat, projectName, on
           insertAfterId: addingToStage.insertAfterId,
         },
       );
+      if (!response.ok) throw new Error('task');
+      setAddingToStage(null);
+      setAddForm({ title: '', description: '' });
       if (onTaskUpdated) onTaskUpdated();
     } catch (e) {
       console.error('Failed to add task:', e);
+      setTaskError(t('messages.operationFailed'));
     } finally {
       setAddingTask(false);
-      setAddingToStage(null);
-      setAddForm({ title: '', description: '' });
     }
-  }, [addForm, addingToStage, projectName, onTaskUpdated]);
+  }, [addForm, addingToStage, projectName, onTaskUpdated, t]);
 
   const handleCancelAdd = useCallback(() => {
     setAddingToStage(null);
@@ -945,19 +893,22 @@ function TaskPipelineBoard({ tasks, isLoading, onNavigateToChat, projectName, on
   const handleDeleteTask = useCallback(async () => {
     if (!deleteConfirmTask || !projectName) return;
     setDeletingTask(true);
+    setTaskError(null);
     try {
-      await api.taskmaster.deleteTask(
+      const response = await api.taskmaster.deleteTask(
         encodeURIComponent(projectName),
         String(deleteConfirmTask.id),
       );
+      if (!response.ok) throw new Error('task');
+      setDeleteConfirmTask(null);
       if (onTaskUpdated) onTaskUpdated();
     } catch (e) {
       console.error('Failed to delete task:', e);
+      setTaskError(t('messages.operationFailed'));
     } finally {
       setDeletingTask(false);
-      setDeleteConfirmTask(null);
     }
-  }, [deleteConfirmTask, projectName, onTaskUpdated]);
+  }, [deleteConfirmTask, projectName, onTaskUpdated, t]);
 
   useEffect(() => {
     setOpenStages((prev) => {
@@ -998,80 +949,71 @@ function TaskPipelineBoard({ tasks, isLoading, onNavigateToChat, projectName, on
   }, []);
 
   return (
-    <div className={`overflow-hidden border border-border/60 bg-card/78 shadow-sm backdrop-blur ${compact ? 'rounded-xl border-l-2 border-l-cyan-400 dark:border-l-cyan-600' : 'rounded-[30px]'}`}>
-      <button type="button" onClick={() => setBoardCollapsed(v => !v)} aria-expanded={!boardCollapsed} className={`flex w-full items-center justify-between text-left ${compact ? 'px-3 py-2.5' : 'border-b border-border/60 bg-gradient-to-r from-sky-50 via-cyan-50 to-emerald-50 px-5 py-4 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950'}`}>
-        <div className="flex items-center gap-2">
+    <div className={`overflow-hidden border border-border/60 bg-card   ${compact ? 'rounded-lg border-l-2 border-l-cyan-400 dark:border-l-cyan-600' : 'rounded-lg'}`}>
+      <button type="button" onClick={() => setBoardCollapsed(v => !v)} aria-expanded={!boardCollapsed} className={`flex w-full items-center justify-between text-left ${compact ? 'px-3 py-2.5' : 'border-b border-border/60 bg-muted px-5 py-4   '}`}>
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           {compact ? (
-            <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-cyan-100 text-cyan-600 dark:bg-cyan-950/50 dark:text-cyan-400">
+            <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground">
               <ListChecks className="w-3.5 h-3.5" />
             </div>
           ) : (
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/70 bg-white/85 shadow-sm dark:border-white/10 dark:bg-slate-800/80">
-              <ListChecks className="w-4 h-4 text-cyan-700 dark:text-cyan-300" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/70 bg-white/85  dark:border-white/10 dark:bg-slate-800/80">
+              <ListChecks className="w-4 h-4 text-muted-foreground dark:text-muted-foreground" />
             </div>
           )}
           <h3 className={`font-semibold tracking-tight text-foreground ${compact ? 'text-sm' : 'text-base'}`}>
-            Pipeline Task List
+            {t('researchLabTaskBoard.title')}
           </h3>
-          {!compact && <p className="text-xs text-muted-foreground sm:text-sm">Stage-oriented task board for your research pipeline</p>}
+          {!compact && <p className="hidden text-sm text-muted-foreground sm:block">{t('researchLabTaskBoard.description')}</p>}
         </div>
         <div className="flex items-center gap-2">
           {compact && summary.total > 0 && (
-            <span className="rounded-full border border-cyan-200/60 bg-cyan-50/80 px-2 py-0.5 text-[10px] font-medium text-cyan-700 dark:border-cyan-900/50 dark:bg-cyan-950/40 dark:text-cyan-300">{summary.total}</span>
+            <span className="rounded-full border border-border bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">{summary.total}</span>
           )}
           {boardCollapsed ? <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 flex-shrink-0 text-muted-foreground" />}
         </div>
       </button>
 
-      {!boardCollapsed && <div className={`space-y-4 ${compact ? 'p-3' : 'p-5'}`}>
+      {taskError && !deleteConfirmTask && <p role="alert" className="px-4 py-3 text-sm text-red-700 dark:text-red-300">{taskError}</p>}
+      {!boardCollapsed && <div className={`space-y-4 ${compact ? 'p-3' : 'p-3 sm:p-5'}`}>
         {isLoading ? (
-          <div className="text-sm text-muted-foreground">Loading pipeline tasks...</div>
+          <div className="text-sm text-muted-foreground">{t('status.loading')}</div>
         ) : summary.total === 0 ? (
           <div className="flex flex-col items-center gap-3 py-6 text-center">
             <MessageSquare className="w-8 h-8 text-muted-foreground/50" />
             <p className="text-sm text-muted-foreground">
-              No tasks found yet. Start a conversation in Chat to generate your research pipeline and tasks.
+              {t(loadError ? 'workbench.loadError' : 'researchLabTaskBoard.empty')}
             </p>
             {onNavigateToChat && (
               <Button
                 size="sm"
-                className="text-white bg-gradient-to-r from-cyan-500 via-sky-500 to-emerald-500 hover:from-cyan-400 hover:via-sky-400 hover:to-emerald-400"
+                className="text-primary-foreground bg-primary"
                 onClick={() => onNavigateToChat()}
               >
                 <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-                Go to Chat
+                {t('researchLabTaskBoard.goToChat')}
               </Button>
             )}
           </div>
         ) : (
           <>
-            <div className={`grid grid-cols-4 ${compact ? 'gap-1.5' : 'gap-3'}`}>
-              <div className={`rounded-xl border border-border/60 bg-background/80 shadow-sm ${compact ? 'px-2 py-1.5' : 'px-4 py-3'}`}>
-                <p className={`uppercase tracking-[0.18em] text-muted-foreground ${compact ? 'text-[9px]' : 'text-[11px]'}`}>Total</p>
-                <p className={`font-semibold text-foreground ${compact ? 'text-xs' : 'text-sm'}`}>{summary.total}</p>
-              </div>
-              <div className={`rounded-xl border border-emerald-200/70 bg-emerald-50/70 shadow-sm dark:border-emerald-900/70 dark:bg-emerald-950/20 ${compact ? 'px-2 py-1.5' : 'px-4 py-3'}`}>
-                <p className={`uppercase tracking-[0.18em] text-emerald-700/80 dark:text-emerald-300/80 ${compact ? 'text-[9px]' : 'text-[11px]'}`}>Done</p>
-                <p className={`font-semibold text-green-600 dark:text-green-400 ${compact ? 'text-xs' : 'text-sm'}`}>{summary.done}</p>
-              </div>
-              <div className={`rounded-xl border border-blue-200/70 bg-blue-50/70 shadow-sm dark:border-blue-900/70 dark:bg-blue-950/20 ${compact ? 'px-2 py-1.5' : 'px-4 py-3'}`}>
-                <p className={`uppercase tracking-[0.18em] text-blue-700/80 dark:text-blue-300/80 ${compact ? 'text-[9px]' : 'text-[11px]'}`}>In Prog</p>
-                <p className={`font-semibold text-blue-600 dark:text-blue-400 ${compact ? 'text-xs' : 'text-sm'}`}>{summary.inProgress}</p>
-              </div>
-              <div className={`rounded-xl border border-slate-200/70 bg-slate-50/70 shadow-sm dark:border-slate-800 dark:bg-slate-950/30 ${compact ? 'px-2 py-1.5' : 'px-4 py-3'}`}>
-                <p className={`uppercase tracking-[0.18em] text-muted-foreground ${compact ? 'text-[9px]' : 'text-[11px]'}`}>Pending</p>
-                <p className={`font-semibold text-slate-700 dark:text-slate-300 ${compact ? 'text-xs' : 'text-sm'}`}>{summary.pending}</p>
-              </div>
+            <div className="grid grid-cols-2 gap-3 border-b border-border pb-3 sm:grid-cols-4">
+              {[["total", summary.total], ["done", summary.done], ["inProgress", summary.inProgress], ["pending", summary.pending]].map(([key, value]) => (
+                <div key={key} className="min-w-0">
+                  <p className="text-xs text-muted-foreground">{t(`researchLabUI.${key}`)}</p>
+                  <p className="mt-1 text-sm font-semibold tabular-nums">{value}</p>
+                </div>
+              ))}
             </div>
 
-            <div className="rounded-2xl border border-border/60 bg-background/80 p-3 shadow-sm">
+            <div className="py-1">
               <div className="mb-1.5 flex items-center justify-between text-xs text-muted-foreground">
-                <span className="flex items-center gap-1"><Target className="w-3.5 h-3.5" /> Progress</span>
+                <span className="flex items-center gap-1"><Target className="w-3.5 h-3.5" /> {t('researchLabUI.progress')}</span>
                 <span>{summary.progress}%</span>
               </div>
               <div className="h-2 rounded-full bg-muted overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-emerald-500 transition-all duration-300"
+                  className="h-full rounded-full bg-blue-500 transition-colors duration-300"
                   style={{ width: `${summary.progress}%` }}
                 />
               </div>
@@ -1098,32 +1040,32 @@ function TaskPipelineBoard({ tasks, isLoading, onNavigateToChat, projectName, on
                           value={addForm.title}
                           onChange={(e) => setAddForm((prev) => ({ ...prev, title: e.target.value }))}
                           onKeyDown={(e) => {
-                            if (e.key === 'Enter') { e.preventDefault(); handleAddTask(); }
+                            if (!e.nativeEvent.isComposing && e.key === 'Enter') { e.preventDefault(); handleAddTask(); }
                             if (e.key === 'Escape') handleCancelAdd();
                           }}
                           disabled={addingTask}
                           autoFocus
-                          placeholder="Task title"
+                          aria-label={t('researchLabTaskBoard.taskTitlePlaceholder')} placeholder={t('researchLabTaskBoard.taskTitlePlaceholder')}
                         />
                         <textarea
                           className="w-full text-xs text-muted-foreground bg-background border border-border rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-cyan-500 resize-y min-h-[2.5rem]"
                           value={addForm.description}
                           onChange={(e) => setAddForm((prev) => ({ ...prev, description: e.target.value }))}
                           onKeyDown={(e) => {
-                            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleAddTask(); }
+                            if (!e.nativeEvent.isComposing && e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleAddTask(); }
                             if (e.key === 'Escape') handleCancelAdd();
                           }}
                           disabled={addingTask}
                           rows={2}
-                          placeholder="Task description (optional)"
+                          aria-label={t('researchLabTaskBoard.taskDescriptionPlaceholder')} placeholder={t('researchLabTaskBoard.taskDescriptionPlaceholder')}
                         />
                         <div className="flex items-center gap-1.5">
-                          <Button size="sm" className="h-6 px-2 text-[10px]" onClick={handleAddTask} disabled={addingTask || !addForm.title.trim()}>
+                          <Button size="sm" className="h-6 px-2 text-xs" onClick={handleAddTask} disabled={addingTask || !addForm.title.trim()}>
                             <Plus className="w-3 h-3 mr-1" />
-                            {addingTask ? 'Adding...' : 'Add'}
+                            {addingTask ? t('status.loading') : t('researchLabTaskBoard.addTask')}
                           </Button>
-                          <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px]" onClick={handleCancelAdd} disabled={addingTask}>
-                            Cancel
+                          <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={handleCancelAdd} disabled={addingTask}>
+                            {t('buttons.cancel')}
                           </Button>
                         </div>
                       </div>
@@ -1135,16 +1077,16 @@ function TaskPipelineBoard({ tasks, isLoading, onNavigateToChat, projectName, on
                         onClick={() => setAddingToStage({ stage, insertAfterId: afterId })}
                         className="absolute inset-x-0 -top-2 -bottom-2 z-10 flex items-center justify-center opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity"
                       >
-                        <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-600 dark:text-cyan-400">
+                        <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted border border-border text-muted-foreground dark:text-muted-foreground">
                           <Plus className="w-3 h-3" />
-                          <span className="text-[10px]">Insert</span>
+                          <span className="text-xs">{t('researchLabUI.insert')}</span>
                         </div>
                       </button>
                     </div>
                   );
 
                 return (
-                  <div key={stage} className="overflow-hidden rounded-2xl border border-border/60 bg-background/65 pb-2 shadow-sm">
+                  <div key={stage} className="border-t border-border bg-background pb-2">
                     <div className="flex items-center hover:bg-muted/30">
                       <button
                         type="button"
@@ -1152,42 +1094,35 @@ function TaskPipelineBoard({ tasks, isLoading, onNavigateToChat, projectName, on
                         className="flex-1 px-3 py-2 flex items-center gap-2 text-left"
                       >
                         {isOpen ? <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" /> : <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />}
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded ${meta.className}`}>{meta.label}</span>
+                        <span className={`text-xs px-1.5 py-0.5 rounded ${meta.className}`}>{t(`workbench.stages.${stage}`, { defaultValue: meta.label })}</span>
                         <span className="ml-auto text-xs text-muted-foreground">{stageTasks.length}</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => { setAddingToStage({ stage, insertAfterId: null }); if (!isOpen) toggleStage(stage); }}
                         className="p-1.5 mr-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                        title="Add task at beginning"
+                        title={t('researchLabTaskBoard.addTask')}
                       >
                         <Plus className="w-3.5 h-3.5" />
                       </button>
                     </div>
                     {isOpen && (
-                      <div className="border-t border-border/60 bg-background/60">
+                      <div className="border-t border-border/60 bg-background">
                         {/* Insertion point before first task */}
                         {renderInsertionPoint(null, `${stage}-insert-top`)}
                         {stageTasks.map((task) => {
                           const statusMeta = TASK_STATUS_META[task.status] || TASK_STATUS_META.pending;
                           const isFirstPendingTask = task.status === 'pending' && String(task.id) === firstPendingTaskId;
                           const isEditing = editingTaskId === String(task.id);
-                          const cardTone = task.status === 'done'
-                            ? 'border-emerald-200/80 bg-emerald-50/40 dark:border-emerald-900/70 dark:bg-emerald-950/20'
-                            : task.status === 'in-progress'
-                              ? 'border-blue-200/80 bg-blue-50/40 dark:border-blue-900/70 dark:bg-blue-950/20'
-                              : 'border-slate-200/80 bg-slate-50/40 dark:border-slate-800 dark:bg-slate-950/20';
                           return (
                             <React.Fragment key={`${stage}-${task.id}`}>
                             <div
-                              className={`group mx-2 my-2 rounded-xl border px-3 py-2.5 transition-all ${
-                                isFirstPendingTask && !isEditing ? 'ring-1 ring-emerald-300/60 dark:ring-emerald-700/60' : ''
-                              } ${cardTone} ${!isEditing ? 'cursor-pointer hover:shadow-sm hover:border-cyan-300/70 dark:hover:border-cyan-800/70' : 'border-cyan-400/70 dark:border-cyan-700/70 bg-cyan-50/40 dark:bg-cyan-950/20'}`}
+                              className={`group border-b border-border px-2 py-3 ${isEditing ? 'bg-muted/30' : 'hover:bg-muted/20'}`}
                               onDoubleClick={!isEditing ? () => handleDoubleClick(task) : undefined}
                               title={!isEditing ? t('researchLabTaskBoard.doubleClickToEdit') : undefined}
                             >
-                              <div className="flex items-start gap-2">
-                                <span className="text-[11px] px-1.5 py-0.5 rounded-md bg-background/90 border border-border text-muted-foreground mt-0.5">#{task.id}</span>
+                              <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-2 lg:grid-cols-[auto_minmax(0,1fr)_auto]">
+                                <span className="text-xs px-1.5 py-0.5 rounded-md bg-background border border-border text-muted-foreground mt-0.5">#{task.id}</span>
                                 <div className="min-w-0 flex-1">
                                   {isEditing ? (
                                     <div className="space-y-1.5">
@@ -1197,19 +1132,19 @@ function TaskPipelineBoard({ tasks, isLoading, onNavigateToChat, projectName, on
                                         value={editForm.title}
                                         onChange={(e) => setEditForm((prev) => ({ ...prev, title: e.target.value }))}
                                         onKeyDown={(e) => {
-                                          if (e.key === 'Enter') { e.preventDefault(); handleSave(); }
+                                          if (!e.nativeEvent.isComposing && e.key === 'Enter') { e.preventDefault(); handleSave(); }
                                           if (e.key === 'Escape') handleCancel();
                                         }}
                                         disabled={saving}
                                         autoFocus
-                                        placeholder={t('researchLabTaskBoard.taskTitlePlaceholder')}
+                                        aria-label={t('researchLabTaskBoard.taskTitlePlaceholder')} placeholder={t('researchLabTaskBoard.taskTitlePlaceholder')}
                                       />
                                       <textarea
                                         className="w-full text-xs text-muted-foreground bg-background border border-border rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-cyan-500 resize-y min-h-[2.5rem]"
                                         value={editForm.description}
                                         onChange={(e) => setEditForm((prev) => ({ ...prev, description: e.target.value }))}
                                         onKeyDown={(e) => {
-                                          if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSave(); }
+                                          if (!e.nativeEvent.isComposing && e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSave(); }
                                           if (e.key === 'Escape') handleCancel();
                                         }}
                                         disabled={saving}
@@ -1219,7 +1154,7 @@ function TaskPipelineBoard({ tasks, isLoading, onNavigateToChat, projectName, on
                                       <div className="flex items-center gap-1.5">
                                         <Button
                                           size="sm"
-                                          className="h-6 px-2 text-[10px]"
+                                          className="h-6 px-2 text-xs"
                                           onClick={handleSave}
                                           disabled={saving}
                                         >
@@ -1229,7 +1164,7 @@ function TaskPipelineBoard({ tasks, isLoading, onNavigateToChat, projectName, on
                                         <Button
                                           variant="ghost"
                                           size="sm"
-                                          className="h-6 px-2 text-[10px]"
+                                          className="h-6 px-2 text-xs"
                                           onClick={handleCancel}
                                           disabled={saving}
                                         >
@@ -1239,11 +1174,11 @@ function TaskPipelineBoard({ tasks, isLoading, onNavigateToChat, projectName, on
                                     </div>
                                   ) : (
                                     <>
-                                      <p className="text-sm font-semibold text-foreground line-clamp-2">{task.title || t('researchLabTaskBoard.untitledTask')}</p>
+                                      <p className="break-words text-sm font-semibold text-foreground line-clamp-2">{task.title || t('researchLabTaskBoard.untitledTask')}</p>
                                       {task.description && (
                                         <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{task.description}</p>
                                       )}
-                                      <p className="text-[10px] text-muted-foreground/80 mt-1 inline-flex items-center gap-1">
+                                      <p className="hidden text-xs text-muted-foreground mt-1 sm:inline-flex items-center gap-1">
                                         <PenTool className="w-3 h-3" />
                                         {t('researchLabTaskBoard.editHint')}
                                       </p>
@@ -1252,7 +1187,7 @@ function TaskPipelineBoard({ tasks, isLoading, onNavigateToChat, projectName, on
                                   {!isEditing && Array.isArray(task.suggestedSkills) && task.suggestedSkills.length > 0 && (
                                     <div className="flex flex-wrap gap-1 mt-1.5">
                                       {task.suggestedSkills.slice(0, 3).map((skill) => (
-                                        <span key={`${task.id}-${skill}`} className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-300">
+                                        <span key={`${task.id}-${skill}`} className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground">
                                           {skill}
                                         </span>
                                       ))}
@@ -1260,13 +1195,13 @@ function TaskPipelineBoard({ tasks, isLoading, onNavigateToChat, projectName, on
                                   )}
                                 </div>
                                 {!isEditing && (
-                                  <div className="flex flex-col items-end gap-1">
+                                  <div className="col-start-2 flex flex-wrap items-start gap-2 lg:col-start-3 lg:flex-col lg:items-end">
                                     <div className="flex items-center gap-1">
-                                      <span className={`text-[10px] px-1.5 py-0.5 rounded ${statusMeta.className}`}>{statusMeta.label}</span>
+                                      <span className={`text-xs px-1.5 py-0.5 rounded ${statusMeta.className}`}>{t(`researchLabTaskBoard.states.${task.status}`, { defaultValue: statusMeta.label })}</span>
                                       <Button
                                         variant="ghost"
                                         size="sm"
-                                        className="h-6 px-2 text-[10px] border border-border/70 hover:border-cyan-400/70"
+                                        className="h-6 px-2 text-xs border border-border/70 hover:border-border"
                                         onClick={() => handleDoubleClick(task)}
                                       >
                                         <PenTool className="w-3 h-3 mr-1" />
@@ -1275,32 +1210,32 @@ function TaskPipelineBoard({ tasks, isLoading, onNavigateToChat, projectName, on
                                       <button
                                         type="button"
                                         onClick={(e) => { e.stopPropagation(); setDeleteConfirmTask(task); }}
-                                        className="p-0.5 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-muted-foreground hover:text-red-600 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                                        title="Delete task"
+                                        className="p-0.5 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-muted-foreground hover:text-red-600 dark:hover:text-red-400 opacity-100 transition-opacity"
+                                        title={t('researchLabTaskBoard.deleteTitle')}
                                       >
                                         <Trash2 className="w-3 h-3" />
                                       </button>
                                     </div>
                                     {isFirstPendingTask && onNavigateToChat && (
-                                      <div className="mt-0.5 inline-flex flex-col items-end gap-1">
-                                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 animate-pulse">
-                                          Next
+                                      <div className="mt-0.5 inline-flex flex-wrap items-center gap-2">
+                                        <span className="text-xs px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 ">
+                                          {t('researchLabTaskBoard.next')}
                                         </span>
                                         <Button
                                           size="sm"
-                                          className="h-7 px-2.5 text-[11px] font-semibold text-white bg-gradient-to-r from-cyan-500 via-sky-500 to-emerald-500 hover:from-cyan-400 hover:via-sky-400 hover:to-emerald-400 shadow-[0_0_0_1px_rgba(255,255,255,0.2),0_8px_18px_rgba(16,185,129,0.35)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_8px_20px_rgba(34,211,238,0.35)] transition-all"
+                                          className="h-7 px-2.5 text-xs font-semibold text-primary-foreground bg-primary         transition-colors"
                                           onClick={() => onNavigateToChat()}
                                         >
                                           <Sparkles className="w-3 h-3 mr-1.5" />
                                           <MessageSquare className="w-3 h-3 mr-1" />
-                                          Go to Chat
+                                          {t('researchLabTaskBoard.goToChat')}
                                         </Button>
                                       </div>
                                     )}
                                     {task.status === 'in-progress' && (
-                                      <span className="text-[10px] text-blue-600 dark:text-blue-300 inline-flex items-center gap-1">
+                                      <span className="text-xs text-blue-600 dark:text-blue-300 inline-flex items-center gap-1">
                                         <Clock3 className="w-3 h-3" />
-                                        Active
+                                        {t('workbench.running')}
                                       </span>
                                     )}
                                   </div>
@@ -1322,37 +1257,15 @@ function TaskPipelineBoard({ tasks, isLoading, onNavigateToChat, projectName, on
         )}
       </div>}
 
-      {deleteConfirmTask && ReactDOM.createPortal(
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-card border border-border rounded-xl shadow-2xl max-w-sm w-full overflow-hidden">
-            <div className="p-5">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
-                  <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-base font-semibold text-foreground mb-1">Delete Task</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Are you sure you want to delete{' '}
-                    <span className="font-medium text-foreground">#{deleteConfirmTask.id} {deleteConfirmTask.title}</span>?
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-2">This action cannot be undone.</p>
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-3 p-4 bg-muted/30 border-t border-border">
-              <Button variant="outline" className="flex-1" onClick={() => setDeleteConfirmTask(null)} disabled={deletingTask}>
-                Cancel
-              </Button>
-              <Button variant="destructive" className="flex-1" onClick={handleDeleteTask} disabled={deletingTask}>
-                <Trash2 className="w-4 h-4 mr-1.5" />
-                {deletingTask ? 'Deleting...' : 'Delete'}
-              </Button>
-            </div>
-          </div>
-        </div>,
-        document.body,
-      )}
+      {deleteConfirmTask && <WorkbenchDialog title={t('researchLabTaskBoard.deleteTitle')} onClose={() => { if (!deletingTask) setDeleteConfirmTask(null); }}>
+        <p className="break-words text-sm">{t('researchLabTaskBoard.deleteConfirm', { title: `#${deleteConfirmTask.id} ${deleteConfirmTask.title}` })}</p>
+        {taskError && <p role="alert" className="mt-3 text-sm text-red-700 dark:text-red-300">{taskError}</p>}
+        <div className="mt-5 flex justify-end gap-3">
+          <Button variant="outline" onClick={() => setDeleteConfirmTask(null)} disabled={deletingTask}>{t('buttons.cancel')}</Button>
+          <Button variant="destructive" onClick={handleDeleteTask} disabled={deletingTask}>{t(deletingTask ? 'status.loading' : 'buttons.delete')}</Button>
+        </div>
+      </WorkbenchDialog>}
+
     </div>
   );
 }
@@ -1395,6 +1308,7 @@ function SessionStageBoard({
   onToggleStageTag,
   compact = false,
 }) {
+  const { t } = useTranslation('common');
   const [sessionBoardCollapsed, setSessionBoardCollapsed] = useState(compact);
   const stageTags = useMemo(() => {
     const tags = (Array.isArray(projectTags) ? projectTags : []).filter(
@@ -1425,25 +1339,25 @@ function SessionStageBoard({
 
   if (sessions.length === 0) {
     return (
-      <div className={`border border-border/60 bg-card/78 shadow-sm backdrop-blur ${compact ? 'rounded-xl p-3 border-l-2 border-l-violet-400 dark:border-l-violet-600' : 'rounded-[30px] p-5'}`}>
+      <div className={`border border-border/60 bg-card   ${compact ? 'rounded-lg p-3 border-l-2 border-l-border dark:border-l-border' : 'rounded-lg p-5'}`}>
         <button type="button" onClick={() => setSessionBoardCollapsed(v => !v)} aria-expanded={!sessionBoardCollapsed} className="flex w-full items-center justify-between gap-2 text-left">
           <div className="flex items-center gap-2.5">
             {compact ? (
-              <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400">
+              <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground">
                 <GitBranch className="w-3.5 h-3.5" />
               </div>
             ) : (
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-violet-200/70 bg-violet-50/90 text-violet-700 dark:border-violet-900/70 dark:bg-violet-950/30 dark:text-violet-300">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-muted text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
                 <GitBranch className="w-5 h-5" />
               </div>
             )}
-            <h3 className={`font-semibold tracking-tight text-foreground ${compact ? 'text-sm' : 'text-base'}`}>Session Stage Links</h3>
+            <h3 className={`font-semibold tracking-tight text-foreground ${compact ? 'text-sm' : 'text-base'}`}>{t('researchLabUI.sessionStages')}</h3>
           </div>
           {sessionBoardCollapsed ? <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 flex-shrink-0 text-muted-foreground" />}
         </button>
         {!sessionBoardCollapsed && (
-          <div className={`rounded-2xl border border-dashed border-border/60 bg-background/60 text-sm text-muted-foreground ${compact ? 'mt-2 px-3 py-3' : 'mt-4 px-4 py-5'}`}>
-            No indexed sessions yet. Start a conversation in Chat, then come back to assign stages.
+          <div className={`rounded-lg border border-dashed border-border/60 bg-background text-sm text-muted-foreground ${compact ? 'mt-2 px-3 py-3' : 'mt-4 px-4 py-5'}`}>
+            {t('researchLabUI.noSessions')}
           </div>
         )}
       </div>
@@ -1451,23 +1365,23 @@ function SessionStageBoard({
   }
 
   return (
-    <div className={`border border-border/60 bg-card/78 shadow-sm backdrop-blur ${compact ? 'rounded-xl p-3 border-l-2 border-l-violet-400 dark:border-l-violet-600' : 'rounded-[30px] p-5'}`}>
+    <div className={`border border-border/60 bg-card   ${compact ? 'rounded-lg p-3 border-l-2 border-l-border dark:border-l-border' : 'rounded-lg p-5'}`}>
       <button type="button" onClick={() => setSessionBoardCollapsed(v => !v)} aria-expanded={!sessionBoardCollapsed} className="flex w-full items-center justify-between gap-2 text-left">
         <div className="flex items-center gap-2.5">
           {compact ? (
-            <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400">
+            <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground">
               <GitBranch className="w-3.5 h-3.5" />
             </div>
           ) : (
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-violet-200/70 bg-violet-50/90 text-violet-700 dark:border-violet-900/70 dark:bg-violet-950/30 dark:text-violet-300">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-muted text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
               <GitBranch className="w-5 h-5" />
             </div>
           )}
-          <h3 className={`font-semibold tracking-tight text-foreground ${compact ? 'text-sm' : 'text-base'}`}>Session Stage Links</h3>
+          <h3 className={`font-semibold tracking-tight text-foreground ${compact ? 'text-sm' : 'text-base'}`}>{t('researchLabUI.sessionStages')}</h3>
         </div>
         <div className="flex items-center gap-2">
           {compact && sessions.length > 0 && (
-            <span className="rounded-full border border-violet-200/60 bg-violet-50/80 px-2 py-0.5 text-[10px] font-medium text-violet-700 dark:border-violet-900/50 dark:bg-violet-950/40 dark:text-violet-300">{sessions.length}</span>
+            <span className="rounded-full border border-border bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">{sessions.length}</span>
           )}
           {sessionBoardCollapsed ? <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 flex-shrink-0 text-muted-foreground" />}
         </div>
@@ -1478,12 +1392,12 @@ function SessionStageBoard({
           const stageKey = tag.tagKey;
           const meta = TASK_STAGE_META[stageKey] || TASK_STAGE_META.unassigned;
           return (
-            <div key={tag.id} className="rounded-2xl border border-border/60 bg-background/70 px-3 py-3 shadow-sm">
-              <div className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${meta.className}`}>
-                {tag.label}
+            <div key={tag.id} className="rounded-lg border border-border/60 bg-background px-3 py-3">
+              <div className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${meta.className}`}>
+                {t(`workbench.stages.${tag.tagKey}`, { defaultValue: tag.label })}
               </div>
               <div className="mt-2 text-sm font-semibold text-foreground">{stageCounts[stageKey] || 0}</div>
-              <div className="text-xs text-muted-foreground">linked sessions</div>
+              <div className="text-xs text-muted-foreground">{t('researchLabUI.linkedSessions')}</div>
             </div>
           );
         })}
@@ -1498,22 +1412,22 @@ function SessionStageBoard({
           const isSaving = savingSessionId === session.id;
 
           return (
-            <div key={`${session.__provider}-${session.id}`} className="rounded-2xl border border-border/60 bg-background/75 p-4 shadow-sm">
+            <div key={`${session.__provider}-${session.id}`} className="rounded-lg border border-border/60 bg-background p-4">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-sm font-semibold text-foreground">{sessionName}</span>
-                    <span className="rounded-full border border-border/60 bg-background/80 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                    <span className="rounded-full border border-border/60 bg-background px-2 py-0.5 text-xs font-medium text-muted-foreground">
                       {session.__provider || 'claude'}
                     </span>
                     {session.mode ? (
-                      <span className="rounded-full border border-border/60 bg-background/80 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                        {session.mode === 'workspace_qa' ? 'Workspace Q&A' : 'Research'}
+                      <span className="rounded-full border border-border/60 bg-background px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                        {session.mode === 'workspace_qa' ? t('researchLabUI.workspaceQA') : t('researchLabUI.research')}
                       </span>
                     ) : null}
                   </div>
                   <div className="mt-1 text-xs text-muted-foreground">
-                    {getResearchLabSessionTime(session) || 'No activity timestamp'}
+                    {getResearchLabSessionTime(session) || t('researchLabUI.noTimestamp')}
                   </div>
                 </div>
 
@@ -1528,13 +1442,14 @@ function SessionStageBoard({
                         type="button"
                         onClick={() => onToggleStageTag(session, tag)}
                         disabled={isSaving}
-                        className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors ${
+                        aria-pressed={isSelected}
+                        className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
                           isSelected
                             ? meta.className
-                            : 'border-border/70 bg-background/80 text-muted-foreground hover:border-foreground/20 hover:text-foreground'
+                            : 'border-border/70 bg-background text-muted-foreground hover:border-foreground/20 hover:text-foreground'
                         } ${isSaving ? 'cursor-wait opacity-70' : ''}`}
                       >
-                        {tag.label}
+                        {t(`workbench.stages.${tag.tagKey}`, { defaultValue: tag.label })}
                       </button>
                     );
                   })}
@@ -1549,19 +1464,19 @@ function SessionStageBoard({
                   return (
                     <div
                       key={`selected-${session.id}-${tag.id}`}
-                      className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background/80 px-1.5 py-1"
+                      className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background px-1.5 py-1"
                     >
-                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${stageMeta.className}`}>
-                        {tag.label}
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${stageMeta.className}`}>
+                        {t(`workbench.stages.${tag.tagKey}`, { defaultValue: tag.label })}
                       </span>
-                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${sourceMeta.className}`}>
-                        {sourceMeta.label}
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${sourceMeta.className}`}>
+                        {t(`researchLabLabels.${sourceMeta.label}`, { defaultValue: sourceMeta.label })}
                       </span>
                     </div>
                   );
                 }) : (
                   <div className="text-xs text-muted-foreground">
-                    No stage tags yet.
+                    {t('researchLabUI.noTags')}
                   </div>
                 )}
               </div>
@@ -1575,6 +1490,7 @@ function SessionStageBoard({
 
 /** Research artifacts grouped by pipeline stage */
 function ArtifactsCard({ artifacts, onSelect, selectedPath, compact = false }) {
+  const { t } = useTranslation('common');
   const [openStages, setOpenStages] = useState({});
   const [cardCollapsed, setCardCollapsed] = useState(compact);
 
@@ -1596,32 +1512,32 @@ function ArtifactsCard({ artifacts, onSelect, selectedPath, compact = false }) {
   const toggle = (stage, defaultOpen) => setOpenStages(prev => ({ ...prev, [stage]: !(prev[stage] ?? defaultOpen) }));
 
   return (
-    <div className={`border border-border/60 bg-card/78 shadow-sm backdrop-blur ${compact ? 'rounded-xl p-3 border-l-2 border-l-teal-400 dark:border-l-teal-600' : 'rounded-[30px] p-5'}`}>
+    <div className={`border border-border/60 bg-card   ${compact ? 'rounded-lg p-3 border-l-2 border-l-border dark:border-l-border' : 'rounded-lg p-5'}`}>
       <button type="button" onClick={() => setCardCollapsed(v => !v)} aria-expanded={!cardCollapsed} className="flex w-full items-center justify-between gap-2 text-left">
         <div className="flex items-center gap-2.5">
           {compact ? (
-            <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-teal-100 text-teal-600 dark:bg-teal-950/50 dark:text-teal-400">
+            <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground">
               <Beaker className="w-3.5 h-3.5" />
             </div>
           ) : (
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-cyan-200/70 bg-cyan-50/90 text-cyan-700 dark:border-cyan-900/70 dark:bg-cyan-950/30 dark:text-cyan-300">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-muted text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
               <Beaker className="w-5 h-5" />
             </div>
           )}
           <h3 className={`font-semibold tracking-tight text-foreground ${compact ? 'text-sm' : 'text-base'}`}>
-            Artifacts Explorer
+            {t('researchLabUI.artifactsExplorer')}
           </h3>
         </div>
         <div className="flex items-center gap-2">
-          <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium shadow-sm ${compact ? 'border border-teal-200/60 bg-teal-50/80 text-teal-700 dark:border-teal-900/50 dark:bg-teal-950/40 dark:text-teal-300' : 'border border-border/60 bg-background/75 text-xs text-muted-foreground'}`}>
+          <span className={`rounded-full px-2 py-0.5 text-xs font-medium  ${compact ? 'border border-border bg-muted text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground' : 'border border-border/60 bg-background text-xs text-muted-foreground'}`}>
             {artifacts.length}
           </span>
           {cardCollapsed ? <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 flex-shrink-0 text-muted-foreground" />}
         </div>
       </button>
       {cardCollapsed ? null : artifacts.length === 0 ? (
-        <div className={`rounded-2xl border border-dashed border-border/60 bg-background/65 text-xs text-muted-foreground ${compact ? 'mt-2 px-3 py-3' : 'px-4 py-5'}`}>
-          No stage artifacts found yet.
+        <div className={`rounded-lg border border-dashed border-border/60 bg-background text-xs text-muted-foreground ${compact ? 'mt-2 px-3 py-3' : 'px-4 py-5'}`}>
+          {t('researchLabUI.noArtifacts')}
         </div>
       ) : (
         <div className={`space-y-2 overflow-y-auto pr-1 ${compact ? 'mt-2 max-h-[200px]' : 'max-h-[360px]'}`}>
@@ -1631,14 +1547,14 @@ function ArtifactsCard({ artifacts, onSelect, selectedPath, compact = false }) {
             const defaultOpen = isStageSelected || (!selectedPath && sorted[0]?.stage === g.stage);
             const isOpen = openStages[g.stage] ?? defaultOpen;
             return (
-              <div key={g.stage} className="overflow-hidden rounded-2xl border border-border/60 bg-background/65 shadow-sm">
+              <div key={t(`researchLabLabels.${g.stage}`, { defaultValue: g.stage })} className="overflow-hidden rounded-lg border border-border/60 bg-background">
                 <button onClick={() => toggle(g.stage, defaultOpen)}
                   className="flex w-full items-center gap-2 px-3 py-2.5 text-sm hover:bg-muted/30">
                   {isOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-                  <div className="flex h-7 w-7 items-center justify-center rounded-xl border border-border/60 bg-background/90">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-border/60 bg-background">
                     <Icon className="w-4 h-4" />
                   </div>
-                  <span className="font-medium text-foreground">{g.stage}</span>
+                  <span className="font-medium text-foreground">{t(`researchLabLabels.${g.stage}`, { defaultValue: g.stage })}</span>
                   <span className={`ml-auto text-xs px-1.5 py-0 rounded ${BADGE_COLORS[g.color]}`}>
                     {g.files.length}
                   </span>
@@ -1648,9 +1564,9 @@ function ArtifactsCard({ artifacts, onSelect, selectedPath, compact = false }) {
                     {g.files.map(f => (
                       <li key={f.relativePath}>
                         <button onClick={() => onSelect(f)}
-                          className={`flex w-full items-center gap-1.5 truncate rounded-xl px-3 py-2 text-left text-xs ${
+                          className={`flex w-full items-center gap-1.5 truncate rounded-lg px-3 py-2 text-left text-xs ${
                             selectedPath === f.relativePath
-                              ? 'bg-blue-100 text-blue-800 shadow-sm dark:bg-blue-900/40 dark:text-blue-200'
+                              ? 'bg-muted text-blue-800  dark:bg-blue-900/40 dark:text-blue-200'
                               : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground'
                           }`}>
                           <FileText className="w-3.5 h-3.5 flex-shrink-0" />
@@ -1685,7 +1601,7 @@ const ideaMarkdownComponents = {
     <blockquote className="border-l-4 border-blue-300 dark:border-blue-600 pl-3 italic text-foreground/70 my-2 text-sm">{children}</blockquote>
   ),
   a: ({ href, children }) => (
-    <a href={href} className="text-blue-600 dark:text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">{children}</a>
+    <a href={href} className="text-muted-foreground dark:text-muted-foreground hover:underline" target="_blank" rel="noopener noreferrer">{children}</a>
   ),
   code: ({ inline, className, children, ...props }) => {
     if (inline) {
@@ -1711,7 +1627,7 @@ const markdownComponents = {
     <blockquote className="border-l-4 border-blue-300 dark:border-blue-600 pl-3 italic text-foreground/70 my-2 text-sm">{children}</blockquote>
   ),
   a: ({ href, children }) => (
-    <a href={href} className="text-blue-600 dark:text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">{children}</a>
+    <a href={href} className="text-muted-foreground dark:text-muted-foreground hover:underline" target="_blank" rel="noopener noreferrer">{children}</a>
   ),
   code: ({ inline, className, children, ...props }) => {
     if (inline) {
@@ -1761,6 +1677,7 @@ function hasFile(fileSet, relativePath) {
 
 /** Final Idea card — shows the selected idea rendered as markdown */
 function IdeaCard({ projectName, config, projectFileSet, compact = false }) {
+  const { t } = useTranslation('common');
   const [ideaText, setIdeaText] = useState(null);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(!compact);
@@ -1874,12 +1791,12 @@ function IdeaCard({ projectName, config, projectFileSet, compact = false }) {
   if (!ideaText) return null;
 
   return (
-    <div className={`overflow-hidden border border-border/60 bg-card/78 shadow-sm backdrop-blur ${compact ? 'rounded-xl border-l-2 border-l-amber-400 dark:border-l-amber-600' : 'rounded-[30px]'}`}>
+    <div className={`overflow-hidden border border-border/60 bg-card   ${compact ? 'rounded-lg border-l-2 border-l-border dark:border-l-border' : 'rounded-lg'}`}>
       {/* Header */}
       <button
         type="button"
         aria-expanded={expanded}
-        className={`flex w-full items-center justify-between text-left transition-colors hover:bg-muted/30 ${compact ? 'px-3 py-2.5' : 'border-b border-border/60 bg-gradient-to-r from-amber-50 via-orange-50 to-white px-5 py-4 dark:from-slate-950 dark:via-amber-950/20 dark:to-slate-950'}`}
+        className={`flex w-full items-center justify-between text-left transition-colors hover:bg-muted/30 ${compact ? 'px-3 py-2.5' : 'border-b border-border/60 bg-muted px-5 py-4   '}`}
         onClick={() => setExpanded(!expanded)}
       >
         <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
@@ -1890,14 +1807,14 @@ function IdeaCard({ projectName, config, projectFileSet, compact = false }) {
           ) : (
             <Sparkles className="w-4 h-4 text-amber-500 dark:text-amber-400" />
           )}
-          Final Selected Idea
+          {t('researchLabUI.idea')}
         </h3>
         <div className="flex items-center gap-1.5">
           <Button
             variant="ghost" size="sm"
             className="h-7 w-7 p-0"
             onClick={(e) => { e.stopPropagation(); handleCopy(); }}
-            title="Copy to clipboard"
+            title={t('researchLabUI.copy')}
           >
             {copied
               ? <Check className="w-3.5 h-3.5 text-green-600" />
@@ -1925,6 +1842,7 @@ function IdeaCard({ projectName, config, projectFileSet, compact = false }) {
 
 /** Paper (main.pdf) viewer — shows Publication/paper/main.pdf when present */
 function PaperCard({ projectName, projectRoot, compact = false }) {
+  const { t } = useTranslation('common');
   const [pdfUrl, setPdfUrl] = useState(null);
   const [status, setStatus] = useState('loading'); // 'loading' | 'loaded' | 'not_found' | 'error'
   const [expanded, setExpanded] = useState(!compact);
@@ -1957,22 +1875,22 @@ function PaperCard({ projectName, projectRoot, compact = false }) {
   }, [projectName, projectRoot]);
 
   return (
-    <div className={`overflow-hidden border border-border/60 bg-card/78 shadow-sm backdrop-blur ${compact ? 'rounded-xl border-l-2 border-l-purple-400 dark:border-l-purple-600' : 'rounded-[30px]'}`}>
+    <div className={`overflow-hidden border border-border/60 bg-card   ${compact ? 'rounded-lg border-l-2 border-l-border dark:border-l-border' : 'rounded-lg'}`}>
       <button
         type="button"
         aria-expanded={expanded}
-        className={`flex w-full items-center justify-between text-left transition-colors hover:bg-muted/30 ${compact ? 'px-3 py-2.5' : 'border-b border-border/60 bg-gradient-to-r from-purple-50 via-fuchsia-50 to-white px-5 py-4 dark:from-slate-950 dark:via-purple-950/20 dark:to-slate-950'}`}
+        className={`flex w-full items-center justify-between text-left transition-colors hover:bg-muted/30 ${compact ? 'px-3 py-2.5' : 'border-b border-border/60 bg-muted px-5 py-4   '}`}
         onClick={() => setExpanded(!expanded)}
       >
         <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
           {compact ? (
-            <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-purple-100 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400">
+            <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground">
               <PenTool className="w-3.5 h-3.5" />
             </div>
           ) : (
-            <PenTool className="w-4 h-4 text-purple-500 dark:text-purple-400" />
+            <PenTool className="w-4 h-4 text-muted-foreground dark:text-muted-foreground" />
           )}
-          Paper (main.pdf)
+          {t('researchLabUI.paper')}
         </h3>
         {status === 'loaded' && (
           <Button
@@ -1985,7 +1903,7 @@ function PaperCard({ projectName, projectRoot, compact = false }) {
             }}
           >
             <ExternalLink className="w-3.5 h-3.5 mr-1" />
-            Open in new tab
+            {t('researchLabUI.openTab')}
           </Button>
         )}
         <ChevronDown className={`w-4 h-4 text-muted-foreground flex-shrink-0 ml-2 transition-transform ${expanded ? '' : '-rotate-90'}`} />
@@ -1993,12 +1911,12 @@ function PaperCard({ projectName, projectRoot, compact = false }) {
       {expanded && (
         <div className="border-t border-border">
           {status === 'loading' && (
-            <div className="p-6 text-center text-sm text-muted-foreground">Loading paper…</div>
+            <div className="p-6 text-center text-sm text-muted-foreground">{t('researchLabUI.loadingPaper')}</div>
           )}
           {status === 'loaded' && pdfUrl && (
             <div className="relative w-full" style={{ minHeight: '60vh' }}>
               <iframe
-                title="Paper (main.pdf)"
+                title={t('researchLabUI.paper')}
                 src={pdfUrl}
                 className="w-full border-0 rounded-b-lg"
                 style={{ height: '70vh' }}
@@ -2007,13 +1925,13 @@ function PaperCard({ projectName, projectRoot, compact = false }) {
           )}
           {status === 'not_found' && (
             <div className="p-6 text-center text-sm text-muted-foreground">
-              <p>No <code className="bg-muted px-1 rounded">main.pdf</code> found.</p>
-              <p className="mt-1">Run the <strong>inno-paper-writing</strong> skill and output the paper to <code className="bg-muted px-1 rounded">Publication/paper/</code> to view it here.</p>
+              <p>{t('researchLabUI.missingPaper')}</p>
+              <p className="mt-1">{t('researchLabUI.paperHint')}</p>
             </div>
           )}
           {status === 'error' && (
             <div className="p-6 text-center text-sm text-destructive">
-              Failed to load the paper. Check that <code className="bg-muted px-1 rounded">Publication/paper/main.pdf</code> exists and try again.
+              {t('researchLabUI.paperError')}
             </div>
           )}
         </div>
@@ -2024,6 +1942,7 @@ function PaperCard({ projectName, projectRoot, compact = false }) {
 
 /** File viewer / editor panel */
 function FileViewer({ projectName, file, onClose }) {
+  const { t } = useTranslation('common');
   const [content, setContent] = useState('');
   const [blobUrl, setBlobUrl] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -2125,7 +2044,7 @@ function FileViewer({ projectName, file, onClose }) {
         }
       } catch (error) {
         if (!cancelled) {
-          setLoadError(error?.message || 'Failed to load preview.');
+          setLoadError(error?.message || t('researchLabUI.previewFailed'));
         }
       } finally {
         if (!cancelled) {
@@ -2146,25 +2065,26 @@ function FileViewer({ projectName, file, onClose }) {
     if (!file || !isTextEditable) return;
     setSaveStatus('saving');
     try {
-      await api.saveFile(projectName, file.relativePath, content);
+      const response = await api.saveFile(projectName, file.relativePath, content);
+      if (!response.ok) throw new Error('Save failed');
       setDirty(false);
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus(null), 2000);
     } catch {
       setSaveStatus('error');
-      setTimeout(() => setSaveStatus(null), 3000);
+
     }
   };
 
   const renderPreviewContent = (expanded = false) => {
     if (loading) {
-      return <div className="flex-1 min-h-0 p-4 text-sm text-muted-foreground">Loading...</div>;
+      return <div className="flex-1 min-h-0 p-4 text-sm text-muted-foreground">{t('researchLabUI.loading')}</div>;
     }
 
     if (loadError) {
       return (
         <div className="flex-1 min-h-0 p-4 text-sm text-destructive">
-          Failed to load preview. {loadError}
+          {t('researchLabUI.previewFailed')} {loadError}
         </div>
       );
     }
@@ -2216,7 +2136,7 @@ function FileViewer({ projectName, file, onClose }) {
             title={file.name}
             srcDoc={content}
             sandbox="allow-scripts allow-same-origin"
-            className={`w-full rounded-2xl border border-border/60 bg-white shadow-sm ${expanded ? 'h-full min-h-[78vh]' : 'h-full min-h-[40rem]'}`}
+            className={`w-full rounded-lg border border-border/60 bg-white  ${expanded ? 'h-full min-h-[78vh]' : 'h-full min-h-[40rem]'}`}
           />
         </div>
       );
@@ -2238,7 +2158,7 @@ function FileViewer({ projectName, file, onClose }) {
     if (previewKind === 'markdown' && viewMode === 'preview') {
       return (
         <div className="flex-1 min-h-0 overflow-auto bg-muted/10 p-4">
-          <div className={`prose max-w-none rounded-2xl border border-border/60 bg-background/80 shadow-sm dark:prose-invert ${expanded ? 'prose-base p-8' : 'prose-sm p-6'}`}>
+          <div className={`prose max-w-none rounded-lg border border-border/60 bg-background  dark:prose-invert ${expanded ? 'prose-base p-8' : 'prose-sm p-6'}`}>
             <ReactMarkdown
               remarkPlugins={[remarkGfm, remarkMath]}
               rehypePlugins={[rehypeKatex]}
@@ -2254,7 +2174,7 @@ function FileViewer({ projectName, file, onClose }) {
     if (previewKind === 'unsupported') {
       return (
         <div className="flex-1 min-h-0 p-4 text-sm text-muted-foreground">
-          This file type cannot be previewed inline here yet.
+          {t('researchLabUI.unsupported')}
         </div>
       );
     }
@@ -2262,6 +2182,7 @@ function FileViewer({ projectName, file, onClose }) {
     return (
       <textarea
         className={`flex-1 min-h-0 h-full w-full border-0 bg-background font-mono text-foreground resize-none focus:outline-none focus:ring-0 ${expanded ? 'p-5 text-sm' : 'p-3 text-xs'}`}
+        aria-label={t('researchLabUI.edit')}
         value={content}
         onChange={e => { setContent(e.target.value); setDirty(true); }}
         spellCheck={false}
@@ -2271,38 +2192,38 @@ function FileViewer({ projectName, file, onClose }) {
 
   const renderToolbarActions = () => (
     <>
-      {saveStatus === 'saved' && <span className="text-xs text-green-600">Saved</span>}
-      {saveStatus === 'error' && <span className="text-xs text-red-600">Failed</span>}
+      {saveStatus === 'saved' && <span role="status" className="text-xs text-green-600">{t('researchLabUI.saved')}</span>}
+      {saveStatus === 'error' && <span role="alert" className="text-xs text-red-600">{t('researchLabUI.failed')}</span>}
       {isPreviewRenderable && (
-        <div className="flex items-center rounded-full border border-border/60 bg-background/75 p-0.5 shadow-sm">
+        <div className="flex items-center rounded-full border border-border/60 bg-background p-0.5">
           <button
             type="button"
-            className={`rounded-full px-2.5 py-1 text-[11px] font-medium transition-colors ${
+            className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
               viewMode === 'preview'
                 ? 'bg-foreground text-background'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
             onClick={() => setViewMode('preview')}
           >
-            Preview
+            {t('researchLabUI.preview')}
           </button>
           <button
             type="button"
-            className={`rounded-full px-2.5 py-1 text-[11px] font-medium transition-colors ${
+            className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
               viewMode === 'edit'
                 ? 'bg-foreground text-background'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
             onClick={() => setViewMode('edit')}
           >
-            Edit
+            {t('researchLabUI.edit')}
           </button>
         </div>
       )}
       {canExpandPreview && !showExpandedPreview && (
         <Button size="sm" variant="ghost" onClick={() => setShowExpandedPreview(true)} disabled={loading}>
           <Maximize2 className="w-3.5 h-3.5 mr-1" />
-          Expand
+          {t('researchLabUI.expand')}
         </Button>
       )}
       {blobUrl && supportsBlobPreview && (
@@ -2311,12 +2232,12 @@ function FileViewer({ projectName, file, onClose }) {
           variant="ghost"
           onClick={() => window.open(blobUrl, '_blank', 'noopener')}
         >
-          <ExternalLink className="w-3.5 h-3.5 mr-1" /> Open
+          <ExternalLink className="w-3.5 h-3.5 mr-1" /> {t('researchLabUI.open')}
         </Button>
       )}
       {isTextEditable && (
-        <Button size="sm" variant="ghost" onClick={handleSave} disabled={!dirty || loading}>
-          <Save className="w-3.5 h-3.5 mr-1" /> Save
+        <Button size="sm" variant="ghost" onClick={handleSave} disabled={!dirty || loading || saveStatus === 'saving'}>
+          <Save className="w-3.5 h-3.5 mr-1" /> {t('researchLabUI.save')}
         </Button>
       )}
     </>
@@ -2327,62 +2248,39 @@ function FileViewer({ projectName, file, onClose }) {
   return (
     <>
       <div
-        className="flex min-h-[360px] max-h-[88vh] flex-col overflow-hidden rounded-[30px] border border-border/60 bg-card/80 shadow-sm backdrop-blur resize-y"
+        className="flex min-h-[360px] max-h-[88vh] flex-col overflow-hidden rounded-lg border border-border/60 bg-card   resize-y"
         style={{ height: viewerHeight }}
       >
-        <div className="flex flex-shrink-0 items-center justify-between border-b border-border/60 bg-gradient-to-r from-slate-50 via-white to-cyan-50 px-4 py-3 dark:from-slate-950 dark:via-slate-900 dark:to-cyan-950/20">
+        <div className="flex flex-shrink-0 flex-wrap items-center justify-between gap-2 border-b border-border/60 bg-muted px-4 py-3">
           <span className="text-xs font-medium text-foreground truncate flex-1 mr-2">{file.relativePath}</span>
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex flex-wrap items-center gap-2">
             {renderToolbarActions()}
-            <Button size="sm" variant="ghost" onClick={onClose}>✕</Button>
+            <Button size="sm" variant="ghost" onClick={onClose} aria-label={t('buttons.close')}><X className="h-4 w-4" /></Button>
           </div>
         </div>
         {renderPreviewContent(false)}
       </div>
 
-      {showExpandedPreview && ReactDOM.createPortal(
-        <div
-          className="fixed inset-0 z-[120] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm md:p-6"
-          onClick={() => setShowExpandedPreview(false)}
-        >
-          <div
-            className="flex h-full w-full max-w-7xl flex-col overflow-hidden rounded-[34px] border border-border/70 bg-background shadow-2xl"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="flex flex-shrink-0 items-center justify-between border-b border-border/60 bg-gradient-to-r from-slate-50 via-white to-cyan-50 px-5 py-4 dark:from-slate-950 dark:via-slate-900 dark:to-cyan-950/20">
-              <div className="min-w-0 pr-4">
-                <div className="truncate text-sm font-semibold text-foreground">{file.name}</div>
-                <div className="truncate text-xs text-muted-foreground">{file.relativePath}</div>
-              </div>
-              <div className="flex items-center gap-2">
-                {renderToolbarActions()}
-                <Button size="sm" variant="ghost" onClick={() => setShowExpandedPreview(false)}>
-                  Close
-                </Button>
-              </div>
-            </div>
-            <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-              {renderPreviewContent(true)}
-            </div>
-          </div>
-        </div>,
-        document.body,
-      )}
+      {showExpandedPreview && <WorkbenchDialog title={file.name} onClose={() => setShowExpandedPreview(false)} size="wide">
+        <div className="mb-3 flex flex-wrap items-center gap-2">{renderToolbarActions()}</div>
+        <div className="flex h-[60dvh] min-h-0 flex-col overflow-hidden">{renderPreviewContent(true)}</div>
+      </WorkbenchDialog>}
     </>
   );
 }
 
 function ArtifactPreviewEmptyState({ hasArtifacts }) {
+  const { t } = useTranslation('common');
   return (
-    <div className="rounded-[28px] border border-dashed border-border/60 bg-card/65 px-5 py-10 text-center shadow-sm backdrop-blur">
-      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-border/60 bg-background/85 shadow-sm">
+    <div className="rounded-lg border border-dashed border-border/60 bg-card px-5 py-10 text-center">
+      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-lg border border-border/60 bg-background">
         <FileText className="h-6 w-6 text-muted-foreground/70" />
       </div>
-      <h3 className="mt-4 text-sm font-semibold text-foreground">Artifact Preview</h3>
+      <h3 className="mt-4 text-sm font-semibold text-foreground">{t('researchLabUI.artifactPreview')}</h3>
       <p className="mx-auto mt-2 max-w-xs text-xs text-muted-foreground">
         {hasArtifacts
-          ? 'Choose a file from Artifacts Explorer to inspect or edit it here.'
-          : 'Run the pipeline first, then preview generated artifacts here.'}
+          ? t('researchLabUI.selectArtifact')
+          : t('researchLabUI.runFirst')}
       </p>
     </div>
   );
@@ -2398,11 +2296,11 @@ function UsageGuideNotice({
   const guideSteps = ['step1', 'step2', 'step3', 'step4', 'step5'];
 
   return (
-    <div className="relative overflow-hidden rounded-[28px] border border-sky-200/70 bg-[radial-gradient(circle_at_top_left,rgba(125,211,252,0.24),transparent_38%),linear-gradient(180deg,rgba(248,250,252,0.96),rgba(239,246,255,0.94))] p-5 shadow-sm dark:border-sky-900/70 dark:bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.18),transparent_38%),linear-gradient(180deg,rgba(15,23,42,0.96),rgba(2,6,23,0.94))]">
-      <div className="absolute -right-10 -top-8 h-28 w-28 rounded-full bg-sky-200/40 blur-3xl dark:bg-sky-500/10" />
+    <div className="rounded-lg border border-border p-4">
+
       <div className="relative flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex min-w-0 items-start gap-3">
-          <div className="relative flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl border border-sky-200/80 bg-white/80 text-sky-700 shadow-sm dark:border-sky-900/70 dark:bg-slate-950/50 dark:text-sky-300">
+          <div className="flex shrink-0 items-center justify-center py-1 text-muted-foreground">
             <AlertCircle className="w-5 h-5" />
           </div>
           <div className="min-w-0">
@@ -2415,7 +2313,7 @@ function UsageGuideNotice({
               </p>
             ) : (
               <p className="mt-1 text-xs text-slate-600 dark:text-sky-100/70">
-                Guide hidden. Expand to view setup steps.
+                {t('researchLabUI.guideHidden')}
               </p>
             )}
           </div>
@@ -2428,7 +2326,7 @@ function UsageGuideNotice({
             onClick={onToggleCollapsed}
           >
             {collapsed ? <ChevronRight className="mr-1.5 h-4 w-4" /> : <ChevronDown className="mr-1.5 h-4 w-4" />}
-            {collapsed ? 'Expand' : 'Collapse'}
+            {collapsed ? t('researchLabUI.expand') : t('researchLabUI.collapse')}
           </Button>
           <Button
             size="sm"
@@ -2437,28 +2335,28 @@ function UsageGuideNotice({
             onClick={onDismiss}
           >
             <X className="mr-1.5 h-4 w-4" />
-            Remove forever
+            {t('researchLabUI.dismissGuide')}
           </Button>
         </div>
       </div>
       {!collapsed ? (
-        <div className="relative mt-4 space-y-3 pl-14">
+        <div className="relative mt-4 space-y-3 sm:pl-8">
           <ol className="list-decimal pl-4 space-y-1.5 text-sm text-slate-700 dark:text-sky-100/85">
             {guideSteps.map((key) => (
               <li key={key}>{t(`researchLabGuide.${key}`)}</li>
             ))}
           </ol>
-          <p className="text-xs font-medium uppercase tracking-[0.22em] text-slate-600 dark:text-sky-100/75">
+          <p className="text-xs font-medium text-slate-600 dark:text-sky-100/75">
             {t('researchLabGuide.interfaceMap')}
           </p>
           {onNavigateToChat && (
             <Button
               size="sm"
-              className="mt-1 text-white bg-gradient-to-r from-cyan-500 via-sky-500 to-emerald-500 hover:from-cyan-400 hover:via-sky-400 hover:to-emerald-400"
+              className="mt-1 text-primary-foreground bg-primary"
               onClick={onNavigateToChat}
             >
               <MessageSquare className="w-3.5 h-3.5 mr-1.5" />
-              Go to Chat
+              {t('researchLabUI.goChat')}
             </Button>
           )}
         </div>
@@ -2475,6 +2373,8 @@ function ResearchLab({ selectedProject, onNavigateToChat, compact = false, onFil
   const { t } = useTranslation('common');
   const { currentProject, nextTask: guidedNextTask } = useTaskMaster();
   const [loading, setLoading] = useState(false);
+  const [loadErrors, setLoadErrors] = useState([]);
+  const loadSequence = useRef(0);
   const [instance, setInstance] = useState(null);
   const [researchBrief, setResearchBrief] = useState(null);
   const [config, setConfig] = useState(null);
@@ -2483,10 +2383,11 @@ function ResearchLab({ selectedProject, onNavigateToChat, compact = false, onFil
   const [projectTags, setProjectTags] = useState([]);
   const [sessionTagsById, setSessionTagsById] = useState({});
   const [savingSessionId, setSavingSessionId] = useState(null);
+  const [tagSaveError, setTagSaveError] = useState(false);
   const [tasksLoading, setTasksLoading] = useState(false);
   const [projectFileSet, setProjectFileSet] = useState(null);
   const [selectedFile, setSelectedFileRaw] = useState(null);
-  const [guideCollapsed, setGuideCollapsed] = useLocalStorage('research-lab-guide-collapsed', false);
+  const [guideCollapsed, setGuideCollapsed] = useLocalStorage('research-lab-guide-collapsed', true);
   const [guideDismissed, setGuideDismissed] = useLocalStorage('research-lab-guide-dismissed', false);
   const HIDDEN_FILENAMES = useMemo(() => new Set([DEFAULT_RESEARCH_BRIEF_FILENAME, DEFAULT_TASKS_FILENAME]), []);
   const setSelectedFile = useCallback((file) => {
@@ -2500,6 +2401,7 @@ function ResearchLab({ selectedProject, onNavigateToChat, compact = false, onFil
 
   useEffect(() => {
     setSelectedFileRaw(null);
+    setTagSaveError(false);
   }, [projectIdentity]);
 
   const projectSessions = useMemo(() => {
@@ -2552,6 +2454,8 @@ function ResearchLab({ selectedProject, onNavigateToChat, compact = false, onFil
   }, [projectIdentity, projectSessions]);
 
   const loadData = useCallback(async () => {
+    const sequence = ++loadSequence.current;
+    setLoadErrors([]);
     if (!projectName) {
       setInstance(null);
       setResearchBrief(null);
@@ -2570,13 +2474,19 @@ function ResearchLab({ selectedProject, onNavigateToChat, compact = false, onFil
     try {
       const [tasksResponse, filesResponse, tagsResponse] = await Promise.all([
         api.get(`/taskmaster/tasks/${encodeURIComponent(projectName)}`).catch(() => null),
-        api.getFiles(projectName, { maxDepth: 10 }),
+        api.getFiles(projectName, { maxDepth: 10 }).catch(() => null),
         api.projectTags(projectName, 'stage').catch(() => null),
       ]);
-      const taskData = tasksResponse && tasksResponse.ok ? await tasksResponse.json() : null;
-      setTasks(Array.isArray(taskData?.tasks) ? taskData.tasks : []);
-      const tagsData = tagsResponse && tagsResponse.ok ? await tagsResponse.json() : null;
-      setProjectTags(Array.isArray(tagsData?.tags) ? tagsData.tags : []);
+      const taskData = tasksResponse?.ok ? await tasksResponse.json().catch(() => null) : null;
+      const tagsData = tagsResponse?.ok ? await tagsResponse.json().catch(() => null) : null;
+      if (sequence !== loadSequence.current) return;
+      const errors = [];
+      if (Array.isArray(taskData?.tasks)) setTasks(taskData.tasks);
+      else errors.push('tasks');
+      if (Array.isArray(tagsData?.tags)) setProjectTags(tagsData.tags);
+      if (!filesResponse?.ok) errors.push('files');
+      setLoadErrors(errors);
+      if (!filesResponse?.ok) return;
 
       // Load file tree and collect log artifacts from new layout + legacy cache
       const filesRawText = filesResponse?.ok ? await filesResponse.text() : '[]';
@@ -2584,9 +2494,11 @@ function ResearchLab({ selectedProject, onNavigateToChat, compact = false, onFil
       try {
         data = filesRawText ? JSON.parse(filesRawText) : [];
       } catch {
-        data = [];
+        data = null;
       }
-      const tree = Array.isArray(data) ? data : [];
+      if (sequence !== loadSequence.current) return;
+      if (!Array.isArray(data)) { setLoadErrors(previous => [...previous, 'files']); return; }
+      const tree = data;
       const fileSet = collectAllRelativePaths(tree, projectRoot);
       setProjectFileSet(fileSet);
 
@@ -2601,6 +2513,7 @@ function ResearchLab({ selectedProject, onNavigateToChat, compact = false, onFil
           hasPipelineConfig ? readProjectJson(projectName, 'pipeline_config.json') : Promise.resolve(null),
           hasResearchBrief ? readProjectJson(projectName, DEFAULT_RESEARCH_BRIEF_PATH) : Promise.resolve(null),
         ]);
+        if (sequence !== loadSequence.current) return;
         setResearchBrief(brief);
 
         // Prefer instance.json; merge in pipeline_config for old projects or missing keys
@@ -2657,13 +2570,17 @@ function ResearchLab({ selectedProject, onNavigateToChat, compact = false, onFil
       ));
     } catch (e) {
       console.error('ResearchLab load:', e);
+      if (sequence === loadSequence.current) setLoadErrors(['tasks', 'files']);
     } finally {
-      setLoading(false);
-      setTasksLoading(false);
+      if (sequence === loadSequence.current) { setLoading(false); setTasksLoading(false); }
     }
   }, [projectName, projectRoot, HIDDEN_FILENAMES]);
 
-  useEffect(() => { loadData(); }, [loadData]);
+  useEffect(() => {
+    setTasks([]); setArtifacts([]); setProjectFileSet(null); setProjectTags([]);
+    void loadData();
+    return () => { loadSequence.current++; };
+  }, [loadData]);
 
   useEffect(() => {
     if (!projectName || artifacts.length === 0) {
@@ -2714,6 +2631,7 @@ function ResearchLab({ selectedProject, onNavigateToChat, compact = false, onFil
       ? currentTags.filter((currentTag) => currentTag.id !== tag.id).map((currentTag) => currentTag.id)
       : [...currentTags.map((currentTag) => currentTag.id), tag.id];
 
+    setTagSaveError(false);
     setSavingSessionId(session.id);
     try {
       const response = await api.updateSessionTags(projectName, session.id, nextTagIds);
@@ -2739,6 +2657,7 @@ function ResearchLab({ selectedProject, onNavigateToChat, compact = false, onFil
         }));
       }
     } catch (error) {
+      setTagSaveError(true);
       console.error('Failed to update session stage tags:', error);
     } finally {
       setSavingSessionId(null);
@@ -2783,11 +2702,11 @@ function ResearchLab({ selectedProject, onNavigateToChat, compact = false, onFil
   }
 
   return (
-    <div className="flex h-full flex-col bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.12),transparent_24%),radial-gradient(circle_at_top_right,rgba(16,185,129,0.10),transparent_20%),linear-gradient(180deg,rgba(248,250,252,0.96),rgba(255,255,255,0.94))] dark:bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.12),transparent_24%),radial-gradient(circle_at_top_right,rgba(16,185,129,0.10),transparent_20%),linear-gradient(180deg,rgba(2,6,23,0.98),rgba(15,23,42,0.98))]">
-      <div className={`flex flex-shrink-0 items-center justify-between border-b border-border/60 bg-background/75 backdrop-blur-xl ${compact ? 'px-3 py-2' : 'px-4 py-3'}`}>
+    <div className="flex h-full flex-col bg-background dark:bg-background">
+      <div className={`flex flex-shrink-0 items-center justify-between border-b border-border/60 bg-background  ${compact ? 'px-3 py-2' : 'px-4 py-3'}`}>
         <div className="flex min-w-0 items-center gap-3">
           {!compact && (
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-blue-200/70 bg-blue-50/85 text-blue-700 shadow-sm dark:border-blue-900/70 dark:bg-blue-950/30 dark:text-blue-300">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-blue-200/70 bg-blue-50/85 text-blue-700  dark:border-blue-900/70 dark:bg-blue-950/30 dark:text-blue-300">
               <FlaskConical className="h-5 w-5" />
             </div>
           )}
@@ -2806,21 +2725,25 @@ function ResearchLab({ selectedProject, onNavigateToChat, compact = false, onFil
           {nextTask && onNavigateToChat && !compact && (
             <Button
               size="sm"
-              className="hidden rounded-full text-white shadow-[0_10px_24px_rgba(14,165,233,0.28)] sm:inline-flex bg-gradient-to-r from-cyan-500 via-sky-500 to-emerald-500 hover:from-cyan-400 hover:via-sky-400 hover:to-emerald-400"
+              className="hidden rounded-full text-primary-foreground  sm:inline-flex bg-primary"
               onClick={() => onNavigateToChat()}
             >
               <MessageSquare className="mr-1.5 h-4 w-4" />
-              Continue in Chat
+              {t('researchLabUI.continueChat')}
             </Button>
           )}
-          <Button variant="ghost" size="sm" onClick={loadData} disabled={loading} className="rounded-full">
+          <Button aria-label={t('buttons.refresh')} variant="ghost" size="sm" onClick={loadData} disabled={loading} className="rounded-full">
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </Button>
         </div>
       </div>
 
+      {loadErrors.length > 0 && <div role="alert" className="flex flex-wrap items-center gap-3 border-b border-border px-4 py-3 text-sm text-red-700 dark:text-red-300">
+        <span>{t('workbench.loadError')} {loadErrors.map(key => t(key === 'tasks' ? 'tabs.tasks' : 'tabs.files')).join(', ')}</span>
+        <Button variant="outline" size="sm" onClick={loadData} disabled={loading}>{t('buttons.retry')}</Button>
+      </div>}
       <ScrollArea className="flex-1">
-        <div className={compact ? "p-3" : "mx-auto max-w-[1480px] p-4 sm:p-6"}>
+        <div className={compact ?"p-3" :"workbench-page"}>
           {!compact && !guideDismissed ? (
             <div className="mb-6">
               <UsageGuideNotice
@@ -2833,27 +2756,16 @@ function ResearchLab({ selectedProject, onNavigateToChat, compact = false, onFil
             </div>
           ) : null}
 
-          <section className={`relative overflow-hidden border border-border/60 bg-[radial-gradient(circle_at_top_left,rgba(125,211,252,0.28),transparent_34%),linear-gradient(135deg,rgba(248,250,252,0.96),rgba(240,249,255,0.90))] shadow-[0_24px_60px_rgba(15,23,42,0.08)] dark:bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.18),transparent_34%),linear-gradient(135deg,rgba(2,6,23,0.96),rgba(15,23,42,0.92))] dark:shadow-[0_28px_70px_rgba(2,6,23,0.45)] ${compact ? 'rounded-2xl p-3' : 'rounded-[36px] p-6 sm:p-7'}`}>
-            <div className="absolute -right-10 -top-10 h-44 w-44 rounded-full bg-sky-200/50 blur-3xl dark:bg-sky-500/15" />
-            <div className="absolute bottom-0 right-24 h-28 w-28 rounded-full bg-emerald-200/40 blur-2xl dark:bg-emerald-500/10" />
+          <section className={`${compact ? 'py-3' : 'pb-6'}`}>
+
+
             <div className={`relative grid ${compact ? 'gap-3' : 'gap-6'} ${compact ? '' : 'xl:grid-cols-[minmax(0,1.3fr)_minmax(320px,0.9fr)]'}`}>
               <div className="min-w-0">
-                {!compact && (
-                  <div className="inline-flex items-center gap-2 rounded-full border border-sky-200/70 bg-white/80 px-3 py-1 text-xs font-medium uppercase tracking-[0.24em] text-sky-700 shadow-sm dark:border-sky-900/70 dark:bg-slate-950/50 dark:text-sky-200">
-                    <Sparkles className="h-3.5 w-3.5" />
-                    Live Research Workspace
-                  </div>
-                )}
-                <h2 className={`font-semibold tracking-tight text-foreground ${compact ? 'text-base' : 'mt-4 text-3xl sm:text-4xl'}`}>
+                <h2 className={`font-semibold tracking-tight text-foreground ${compact ? 'text-base' : 'mt-4 text-2xl'}`}>
                   {projectTitle}
                 </h2>
-                {!compact && (
-                  <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground sm:text-base">
-                    Track every stage of the research pipeline, review generated artifacts, and jump back into execution without leaving the lab view.
-                  </p>
-                )}
 
-                <div className={`grid ${compact ? 'mt-3 grid-cols-2 gap-2' : 'mt-6 gap-3 sm:grid-cols-2 xl:grid-cols-4'}`}>
+                <div className={`grid ${compact ? 'mt-3 grid-cols-2 gap-2' : 'mt-4 grid-cols-2 gap-4 border-y border-border py-2 xl:grid-cols-4'}`}>
                   <ResearchMetricCard
                     icon={ListChecks}
                     label="Tasks"
@@ -2894,7 +2806,7 @@ function ResearchLab({ selectedProject, onNavigateToChat, compact = false, onFil
                   />
                 </div>
 
-                <div className={`grid ${compact ? 'mt-3 grid-cols-3 gap-1.5' : 'mt-6 gap-3 md:grid-cols-2 xl:grid-cols-5'}`}>
+                <div className={`grid ${compact ? 'mt-3 grid-cols-3 gap-1.5' : 'mt-4 gap-2 sm:grid-cols-2 xl:grid-cols-3'}`}>
                   {pipelineStageOverview.map((stage) => (
                     <PipelineStageChip key={stage.key} stage={stage} compact={compact} />
                   ))}
@@ -2903,21 +2815,21 @@ function ResearchLab({ selectedProject, onNavigateToChat, compact = false, onFil
 
               <div className={`grid ${compact ? 'gap-2' : 'gap-4'}`}>
                 {nextTask ? (
-                  <div className={`group relative overflow-hidden border shadow-sm backdrop-blur ${compact ? 'rounded-xl p-3 border-cyan-300/50 dark:border-cyan-800/50' : 'rounded-[28px] p-5 border-cyan-200/60 dark:border-cyan-900/50'} bg-gradient-to-br from-cyan-50/80 via-card/90 to-sky-50/60 dark:from-cyan-950/30 dark:via-card/90 dark:to-sky-950/20`}>
+                  <div className={`border-l-2 border-blue-500 bg-muted/30 ${compact ? 'p-3' : 'p-4'}`}>
                     {/* Animated glow accent */}
-                    <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 animate-pulse rounded-full bg-cyan-400/20 blur-2xl dark:bg-cyan-500/10" />
-                    <div className="pointer-events-none absolute -bottom-6 -left-6 h-24 w-24 animate-pulse rounded-full bg-sky-400/15 blur-2xl delay-700 dark:bg-sky-500/10" />
+
+
 
                     <div className="relative">
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-                          <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500 to-sky-600 shadow-sm">
-                            <Sparkles className="h-3.5 w-3.5 text-white" />
+                          <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-primary">
+                            <Sparkles className="h-3.5 w-3.5 text-primary-foreground" />
                           </div>
-                          Next Action
+                          {t('researchLabUI.nextAction')}
                         </div>
-                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${TASK_STAGE_META[nextTask.stage]?.className || TASK_STAGE_META.unassigned.className}`}>
-                          {TASK_STAGE_META[nextTask.stage]?.label || TASK_STAGE_META.unassigned.label}
+                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${TASK_STAGE_META[nextTask.stage]?.className || TASK_STAGE_META.unassigned.className}`}>
+                          {t(`workbench.stages.${nextTask.stage || 'unassigned'}`)}
                         </span>
                       </div>
 
@@ -2942,24 +2854,24 @@ function ResearchLab({ selectedProject, onNavigateToChat, compact = false, onFil
                               onNavigateToChat();
                             }
                           }}
-                          className={`relative inline-flex items-center gap-2 overflow-hidden rounded-full font-semibold text-white shadow-[0_0_20px_rgba(14,165,233,0.35)] transition-all duration-300 hover:shadow-[0_0_30px_rgba(14,165,233,0.5)] hover:scale-[1.03] active:scale-[0.98] bg-gradient-to-r from-cyan-500 via-sky-500 to-emerald-500 hover:from-cyan-400 hover:via-sky-400 hover:to-emerald-400 ${compact ? 'mt-3 px-4 py-2 text-xs' : 'mt-4 px-5 py-2.5 text-sm'}`}
+                          className={`relative inline-flex items-center gap-2 overflow-hidden rounded-full font-semibold text-primary-foreground  transition-colors duration-300   bg-primary       ${compact ? 'mt-3 px-4 py-2 text-xs' : 'mt-4 px-5 py-2.5 text-sm'}`}
                         >
                           {/* Shine sweep animation */}
-                          <span className="pointer-events-none absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+
                           <Sparkles className={`relative ${compact ? 'h-3.5 w-3.5' : 'h-4 w-4'}`} />
-                          <span className="relative">Run Next Task</span>
+                          <span className="relative">{t('workbench.prepareTask')}</span>
                         </button>
                       )}
                     </div>
                   </div>
                 ) : (
-                  <div className={`border border-border/60 bg-card/78 shadow-sm backdrop-blur ${compact ? 'rounded-xl p-3' : 'rounded-[28px] p-5'}`}>
+                  <div className={`border border-border/60 bg-card   ${compact ? 'rounded-lg p-3' : 'rounded-lg p-5'}`}>
                     <div className="flex items-center gap-2 text-sm font-medium text-foreground">
                       <MessageSquare className="h-4 w-4 text-primary" />
-                      Next Action
+                      {t('researchLabUI.nextAction')}
                     </div>
-                    <div className={`border border-dashed border-border/60 bg-background/60 text-sm text-muted-foreground ${compact ? 'mt-2 rounded-xl px-3 py-3' : 'mt-4 rounded-2xl px-4 py-5'}`}>
-                      Generate or sync the task pipeline in Chat, then return here to continue execution.
+                    <div className={`border border-dashed border-border/60 bg-background text-sm text-muted-foreground ${compact ? 'mt-2 rounded-lg px-3 py-3' : 'mt-4 rounded-lg px-4 py-5'}`}>
+                      {t('researchLabUI.syncHint')}
                     </div>
                   </div>
                 )}
@@ -2977,6 +2889,7 @@ function ResearchLab({ selectedProject, onNavigateToChat, compact = false, onFil
               <TaskPipelineBoard
                 tasks={tasks}
                 isLoading={tasksLoading}
+                loadError={loadErrors.includes('tasks')}
                 onNavigateToChat={onNavigateToChat}
                 projectName={projectName}
                 onTaskUpdated={loadData}
@@ -2987,6 +2900,7 @@ function ResearchLab({ selectedProject, onNavigateToChat, compact = false, onFil
                 {sidebar}
               </div>
 
+              {tagSaveError && <div role="alert" className="rounded-lg border border-destructive/30 p-3 text-sm text-destructive">{t('researchLabUI.tagError')}</div>}
               <SessionStageBoard
                 projectTags={projectTags}
                 sessions={projectSessions}
@@ -3012,15 +2926,15 @@ function ResearchLab({ selectedProject, onNavigateToChat, compact = false, onFil
               ) : null}
 
               {loading && !hasContent ? (
-                <div className="flex h-40 items-center justify-center rounded-[28px] border border-border/60 bg-card/65 text-sm text-muted-foreground shadow-sm backdrop-blur">
-                  Loading research data...
+                <div className="flex h-40 items-center justify-center rounded-lg border border-border/60 bg-card text-sm text-muted-foreground">
+                  {t('researchLabUI.loadingResearch')}
                 </div>
               ) : !hasContent ? (
-                <div className="flex h-60 flex-col items-center justify-center gap-3 rounded-[30px] border border-dashed border-border/60 bg-card/65 text-sm text-muted-foreground shadow-sm backdrop-blur">
+                <div className="flex h-60 flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border/60 bg-card text-sm text-muted-foreground">
                   <FolderOpen className="w-14 h-14 opacity-40" />
-                  <p>No research data found in this project.</p>
+                  <p>{t('researchLabUI.noData')}</p>
                   <p className="max-w-md text-center text-xs">
-                    Use the <code className="bg-muted px-1 rounded">inno-pipeline-planner</code> skill in Chat to initialize the 5-stage research pipeline and its artifacts.
+                    {t('researchLabUI.initHint')}
                   </p>
                 </div>
               ) : (

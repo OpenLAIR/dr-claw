@@ -8,7 +8,8 @@
     "showAllRefs": "전체 참고문헌 보기 ({{count}})",
     "hideAllRefs": "전체 참고문헌 숨기기",
     "addFromLibrary": "라이브러리에서 추가 ({{count}})",
-    "hideLibrary": "라이브러리 숨기기"
+    "hideLibrary": "라이브러리 숨기기",
+    "loadFailed": "참고 문헌을 불러오지 못했습니다. 새로고침하여 다시 시도하세요."
   },
   "search": {
     "placeholder": "제목, 저자, 저널로 검색..."
@@ -78,6 +79,8 @@
     "deleteAll": "전체 삭제",
     "deleteAllTitle": "모든 참고문헌 삭제",
     "deleteAllConfirm": "{{count}}개의 참고문헌을 모두 삭제하시겠습니까?",
-    "deleteAllWarning": "VibeLab에서만 삭제됩니다. Zotero에서는 삭제되지 않습니다."
+    "deleteAllWarning": "VibeLab에서만 삭제됩니다. Zotero에서는 삭제되지 않습니다.",
+    "refresh": "참고 문헌 새로고침",
+    "deleteFailed": "참고 문헌을 삭제하지 못했습니다. 선택한 항목은 유지됩니다. 다시 시도하세요."
   }
 }

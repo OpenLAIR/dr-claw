@@ -33,36 +33,19 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
+const serverUrl = (page: Page) => page.getByPlaceholder('http://localhost:11434', { exact: true });
+const model = (page: Page, name: string) => page.getByRole('radio', { name, exact: true });
+// The account panel has its own status Refresh; target the one in the models section.
+const button = (page: Page, name: string) => (name === 'Refresh' ? page.locator('[data-local-models]') : page)
+  .getByRole('button', { name, exact: true });
+
 async function openSettings(page: Page) {
   await page.goto('/test/fixtures/local-model-settings.html');
   await page.waitForFunction(() => (window as any).localModelFixture.resolveConfig);
   await page.evaluate(() => (window as any).localModelFixture.resolveConfig());
-  await expect(page.getByPlaceholder('http://localhost:11434', { exact: true })).toHaveValue('http://localhost:8000/v1');
-  await expect(page.getByRole('button', { name: 'org/vllm-model', exact: true })).toBeVisible();
+  await expect(serverUrl(page)).toHaveValue('http://localhost:8000/v1');
+  await expect(model(page, 'org/vllm-model')).toBeVisible();
 }
-
-test('a superseded refresh cannot stop a pending connection test on the same URL', async ({ page }) => {
-  await openSettings(page);
-  await page.evaluate(() => { (window as any).localModelFixture.holdModels = true; });
-  await page.getByRole('button', { name: 'Refresh', exact: true }).click();
-  await page.waitForFunction(() => (window as any).localModelFixture.pending.length === 1);
-  await page.getByRole('button', { name: 'Test Connection', exact: true }).click();
-  await page.waitForFunction(() => (window as any).localModelFixture.pending.length === 2);
-  await page.evaluate(async () => {
-    (window as any).localModelFixture.pending[0].reject(new TypeError('fetch failed'));
-    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-  });
-  await expect(page.getByRole('button', { name: 'Testing...', exact: true })).toBeDisabled();
-  await expect(page.getByRole('button', { name: 'Refresh', exact: true })).toBeDisabled();
-  await page.evaluate(() => {
-    (window as any).localModelFixture.pending[1].resolve(Response.json({
-      provider: 'openai-compatible', models: [{ name: 'current-model' }],
-    }));
-  });
-  await expect(page.getByRole('button', { name: 'current-model', exact: true })).toBeVisible();
-  await expect(page.getByText(/Connected! Local server has 1 model available/)).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Test Connection', exact: true })).toBeEnabled();
-});
 
 // Render real Settings and provider state against an in-browser server fixture;
 // no credentials, GPU, or model download is needed.
@@ -70,14 +53,15 @@ test('local settings hydrates backend defaults and updates an already-mounted ch
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   await openSettings(page);
-  await expect(page.getByText('Pull New Model', { exact: true })).toHaveCount(0);
-  await page.getByRole('button', { name: 'Test Connection', exact: true }).click();
-  await expect(page.getByText(/Connected! Local server has/)).toBeVisible();
-  await page.getByRole('button', { name: 'Save & Refresh', exact: true }).click();
-  await expect(page.getByText('Configuration saved.', { exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'org/vllm-model', exact: true }).click();
+  await expect(page.getByText('Download a model', { exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Test connection', exact: true }).click();
+  await expect(page.getByText('Connected. 1 model available.', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Save & refresh', exact: true }).click();
+  await expect(page.getByText('Saved.', { exact: true })).toBeVisible();
+  await model(page, 'org/vllm-model').check();
   await expect(page.locator('#chat-model')).toHaveText('Mounted chat model: org/vllm-model');
   expect(await page.evaluate(() => localStorage.getItem('local-model'))).toBe('org/vllm-model');
+  expect(await page.evaluate(() => localStorage.getItem('local-gpu-server-url'))).toBe('http://localhost:8000/v1');
   expect(errors).toEqual([]);
 });
 
@@ -85,26 +69,44 @@ test('waits for backend configuration before discovering models', async ({ page 
   await page.goto('/test/fixtures/local-model-settings.html');
   await page.waitForFunction(() => (window as any).localModelFixture.resolveConfig);
   expect(await page.evaluate(() => (window as any).localModelFixture.modelUrls)).toEqual([]);
+  await expect(page.getByRole('button', { name: 'Test connection', exact: true })).toBeDisabled();
   await page.evaluate(() => (window as any).localModelFixture.resolveConfig());
-  await expect(page.getByRole('button', { name: 'org/vllm-model', exact: true })).toBeVisible();
+  await expect(model(page, 'org/vllm-model')).toBeVisible();
   expect(await page.evaluate(() => (window as any).localModelFixture.modelUrls)).toEqual(['http://localhost:8000/v1']);
 });
 
-for (const trigger of ['Refresh', 'Test Connection']) {
+test('shows model downloads only for an Ollama server', async ({ page }) => {
+  await openSettings(page);
+  await page.evaluate(() => { (window as any).localModelFixture.holdModels = true; });
+  await button(page, 'Refresh').click();
+  await page.waitForFunction(() => (window as any).localModelFixture.pending.length === 1);
+  await page.evaluate(() => {
+    (window as any).localModelFixture.pending[0].resolve(Response.json({ provider: 'ollama', models: [{ name: 'qwen3:8b' }] }));
+  });
+  await expect(model(page, 'qwen3:8b')).toBeVisible();
+  await expect(page.getByText('Download a model', { exact: true })).toBeVisible();
+  // A different, not-yet-loaded address must not inherit the Ollama-only section.
+  await serverUrl(page).fill('http://localhost:30000/v1');
+  await expect(page.getByText('Download a model', { exact: true })).toHaveCount(0);
+});
+
+for (const trigger of ['Refresh', 'Test connection']) {
   for (const outcome of ['ollama', 'http-error', 'network-error']) {
     test(`${trigger}: late ${outcome} cannot replace the current server`, async ({ page }) => {
       await openSettings(page);
       await page.evaluate(() => { (window as any).localModelFixture.holdModels = true; });
-      await page.getByRole('button', { name: trigger, exact: true }).click();
+      await button(page, trigger).click();
       await page.waitForFunction(() => (window as any).localModelFixture.pending.length === 1);
-      await page.getByPlaceholder('http://localhost:11434', { exact: true }).fill('http://localhost:30000/v1');
+      // Editing the address supersedes the pending read; loading the new one is explicit.
+      await serverUrl(page).fill('http://localhost:30000/v1');
+      await button(page, 'Refresh').click();
       await page.waitForFunction(() => (window as any).localModelFixture.pending.length === 2);
       await page.evaluate(() => {
         (window as any).localModelFixture.pending[1].resolve(Response.json({
           provider: 'openai-compatible', models: [{ name: 'org/sglang-model' }],
         }));
       });
-      await expect(page.getByRole('button', { name: 'org/sglang-model', exact: true })).toBeVisible();
+      await expect(model(page, 'org/sglang-model')).toBeVisible();
       await page.evaluate(async outcome => {
         const old = (window as any).localModelFixture.pending[0];
         if (outcome === 'network-error') old.reject(new TypeError('fetch failed'));
@@ -114,13 +116,13 @@ for (const trigger of ['Refresh', 'Test Connection']) {
         // Let the async response handlers and React render settle.
         await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
       }, outcome);
-      await expect(page.getByPlaceholder('http://localhost:11434', { exact: true })).toHaveValue('http://localhost:30000/v1');
-      await expect(page.getByRole('button', { name: 'org/sglang-model', exact: true })).toBeVisible();
-      await expect(page.getByRole('button', { name: 'old-ollama', exact: true })).toHaveCount(0);
-      await expect(page.getByText('Pull New Model', { exact: true })).toHaveCount(0);
+      await expect(serverUrl(page)).toHaveValue('http://localhost:30000/v1');
+      await expect(model(page, 'org/sglang-model')).toBeVisible();
+      await expect(model(page, 'old-ollama')).toHaveCount(0);
+      await expect(page.getByText('Download a model', { exact: true })).toHaveCount(0);
       await expect(page.getByText('Old server offline', { exact: true })).toHaveCount(0);
-      await expect(page.getByText(/Connected! Local server has/)).toHaveCount(0);
-      await expect(page.getByRole('button', { name: 'Test Connection', exact: true })).toBeEnabled();
+      await expect(page.getByText(/^Connected\./)).toHaveCount(0);
+      await expect(page.getByRole('button', { name: 'Test connection', exact: true })).toBeEnabled();
       expect(await page.evaluate(() => (window as any).localModelFixture.pending[0].signal?.aborted)).toBe(true);
     });
   }

@@ -118,28 +118,26 @@ export default function FileThumbnail({ projectName, absolutePath, fileName, cla
     );
   }
 
-  if (isImage) {
+  if (isImage && !failed) {
     return <div ref={containerRef} className={`${base} animate-pulse`} />;
   }
 
-  const iconClass = 'h-3.5 w-3.5 text-muted-foreground';
+  const iconClass = 'h-4 w-4 text-muted-foreground';
 
   let icon;
-  let label: string | undefined;
 
-  if (ext === 'pdf') { icon = <FileText className={iconClass} />; label = 'PDF'; }
-  else if (MARKDOWN_EXTENSIONS.has(ext) || ext === 'txt') { icon = <FileText className={iconClass} />; label = 'MD'; }
+  if (ext === 'pdf') { icon = <FileText className={iconClass} />; }
+  else if (MARKDOWN_EXTENSIONS.has(ext) || ext === 'txt') { icon = <FileText className={iconClass} />; }
   else if (ext === 'json') { icon = <Braces className={iconClass} />; }
   else if (HTML_EXTENSIONS.has(ext)) { icon = <Globe className={iconClass} />; }
   else if (AUDIO_EXTENSIONS.has(ext)) { icon = <Music className={iconClass} />; }
   else if (VIDEO_EXTENSIONS.has(ext)) { icon = <Film className={iconClass} />; }
-  else if (CODE_EXTENSIONS.has(ext)) { icon = <FileCode2 className={iconClass} />; label = ext.toUpperCase().slice(0, 4); }
+  else if (CODE_EXTENSIONS.has(ext)) { icon = <FileCode2 className={iconClass} />; }
   else { icon = <File className={iconClass} />; }
 
   return (
-    <div className={`${base} flex-col gap-0`}>
+    <div className={`flex h-8 w-6 shrink-0 items-start justify-center pt-0.5 ${className}`}>
       {icon}
-      {label && <span className="mt-px text-[7px] font-semibold leading-none text-muted-foreground">{label}</span>}
     </div>
   );
 }

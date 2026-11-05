@@ -14,225 +14,226 @@ import {
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import ImageViewer from './ImageViewer';
+import WorkbenchDialog from './ui/WorkbenchDialog';
 import { api } from '../utils/api';
 
 // ─── File Icon Registry ──────────────────────────────────────────────
-// Maps file extensions (and special filenames) to { icon, colorClass } pairs.
+// Maps file extensions and special filenames to one neutral icon family.
 // Uses lucide-react icons mapped semantically to file types.
 
 const ICON_SIZE = 'w-4 h-4 flex-shrink-0';
 
 const FILE_ICON_MAP = {
   // ── JavaScript / TypeScript ──
-  js:   { icon: FileCode,   color: 'text-yellow-500' },
-  jsx:  { icon: FileCode,   color: 'text-yellow-500' },
-  mjs:  { icon: FileCode,   color: 'text-yellow-500' },
-  cjs:  { icon: FileCode,   color: 'text-yellow-500' },
-  ts:   { icon: FileCode2,  color: 'text-blue-500' },
-  tsx:  { icon: FileCode2,  color: 'text-blue-500' },
-  mts:  { icon: FileCode2,  color: 'text-blue-500' },
+  js:   { icon: FileCode },
+  jsx:  { icon: FileCode },
+  mjs:  { icon: FileCode },
+  cjs:  { icon: FileCode },
+  ts:   { icon: FileCode2 },
+  tsx:  { icon: FileCode2 },
+  mts:  { icon: FileCode2 },
 
   // ── Python ──
-  py:   { icon: Code2,      color: 'text-emerald-500' },
-  pyw:  { icon: Code2,      color: 'text-emerald-500' },
-  pyi:  { icon: Code2,      color: 'text-emerald-400' },
-  ipynb:{ icon: NotebookPen, color: 'text-orange-500' },
+  py:   { icon: Code2 },
+  pyw:  { icon: Code2 },
+  pyi:  { icon: Code2 },
+  ipynb:{ icon: NotebookPen },
 
   // ── Rust ──
-  rs:   { icon: Cog,        color: 'text-orange-600' },
-  toml: { icon: Settings,   color: 'text-gray-500' },
+  rs:   { icon: Cog },
+  toml: { icon: Settings },
 
   // ── Go ──
-  go:   { icon: Hexagon,    color: 'text-cyan-500' },
+  go:   { icon: Hexagon },
 
   // ── Ruby ──
-  rb:   { icon: Gem,        color: 'text-red-500' },
-  erb:  { icon: Gem,        color: 'text-red-400' },
+  rb:   { icon: Gem },
+  erb:  { icon: Gem },
 
   // ── PHP ──
-  php:  { icon: Blocks,     color: 'text-violet-500' },
+  php:  { icon: Blocks },
 
   // ── Java / Kotlin ──
-  java: { icon: Coffee,     color: 'text-red-600' },
-  jar:  { icon: Coffee,     color: 'text-red-500' },
-  kt:   { icon: Hexagon,    color: 'text-violet-500' },
-  kts:  { icon: Hexagon,    color: 'text-violet-400' },
+  java: { icon: Coffee },
+  jar:  { icon: Coffee },
+  kt:   { icon: Hexagon },
+  kts:  { icon: Hexagon },
 
   // ── C / C++ ──
-  c:    { icon: Cpu,        color: 'text-blue-600' },
-  h:    { icon: Cpu,        color: 'text-blue-400' },
-  cpp:  { icon: Cpu,        color: 'text-blue-700' },
-  hpp:  { icon: Cpu,        color: 'text-blue-500' },
-  cc:   { icon: Cpu,        color: 'text-blue-700' },
+  c:    { icon: Cpu },
+  h:    { icon: Cpu },
+  cpp:  { icon: Cpu },
+  hpp:  { icon: Cpu },
+  cc:   { icon: Cpu },
 
   // ── C# ──
-  cs:   { icon: Hexagon,    color: 'text-purple-600' },
+  cs:   { icon: Hexagon },
 
   // ── Swift ──
-  swift:{ icon: Flame,      color: 'text-orange-500' },
+  swift:{ icon: Flame },
 
   // ── Lua ──
-  lua:  { icon: SquareFunction, color: 'text-blue-500' },
+  lua:  { icon: SquareFunction },
 
   // ── R ──
-  r:    { icon: FlaskConical, color: 'text-blue-600' },
+  r:    { icon: FlaskConical },
 
   // ── Web ──
-  html: { icon: Globe,      color: 'text-orange-600' },
-  htm:  { icon: Globe,      color: 'text-orange-600' },
-  css:  { icon: Hash,       color: 'text-blue-500' },
-  scss: { icon: Hash,       color: 'text-pink-500' },
-  sass: { icon: Hash,       color: 'text-pink-400' },
-  less: { icon: Hash,       color: 'text-indigo-500' },
-  vue:  { icon: FileCode2,  color: 'text-emerald-500' },
-  svelte:{ icon: FileCode2, color: 'text-orange-500' },
+  html: { icon: Globe },
+  htm:  { icon: Globe },
+  css:  { icon: Hash },
+  scss: { icon: Hash },
+  sass: { icon: Hash },
+  less: { icon: Hash },
+  vue:  { icon: FileCode2 },
+  svelte:{ icon: FileCode2 },
 
   // ── Data / Config ──
-  json: { icon: Braces,     color: 'text-yellow-600' },
-  jsonc:{ icon: Braces,     color: 'text-yellow-500' },
-  json5:{ icon: Braces,     color: 'text-yellow-500' },
-  yaml: { icon: Settings,   color: 'text-purple-400' },
-  yml:  { icon: Settings,   color: 'text-purple-400' },
-  xml:  { icon: FileCode,   color: 'text-orange-500' },
-  csv:  { icon: FileSpreadsheet, color: 'text-green-600' },
-  tsv:  { icon: FileSpreadsheet, color: 'text-green-500' },
-  sql:  { icon: Database,   color: 'text-blue-500' },
-  graphql:{ icon: Workflow,  color: 'text-pink-500' },
-  gql:  { icon: Workflow,   color: 'text-pink-500' },
-  proto:{ icon: Box,        color: 'text-green-500' },
-  env:  { icon: Shield,     color: 'text-yellow-600' },
+  json: { icon: Braces },
+  jsonc:{ icon: Braces },
+  json5:{ icon: Braces },
+  yaml: { icon: Settings },
+  yml:  { icon: Settings },
+  xml:  { icon: FileCode },
+  csv:  { icon: FileSpreadsheet },
+  tsv:  { icon: FileSpreadsheet },
+  sql:  { icon: Database },
+  graphql:{ icon: Workflow },
+  gql:  { icon: Workflow },
+  proto:{ icon: Box },
+  env:  { icon: Shield },
 
   // ── Documents ──
-  md:   { icon: BookOpen,   color: 'text-blue-500' },
-  mdx:  { icon: BookOpen,   color: 'text-blue-400' },
-  txt:  { icon: FileText,   color: 'text-gray-500' },
-  doc:  { icon: FileText,   color: 'text-blue-600' },
-  docx: { icon: FileText,   color: 'text-blue-600' },
-  pdf:  { icon: FileCheck,  color: 'text-red-600' },
-  rtf:  { icon: FileText,   color: 'text-gray-500' },
-  tex:  { icon: Scroll,     color: 'text-teal-600' },
-  rst:  { icon: FileText,   color: 'text-gray-400' },
+  md:   { icon: BookOpen },
+  mdx:  { icon: BookOpen },
+  txt:  { icon: FileText },
+  doc:  { icon: FileText },
+  docx: { icon: FileText },
+  pdf:  { icon: FileCheck },
+  rtf:  { icon: FileText },
+  tex:  { icon: Scroll },
+  rst:  { icon: FileText },
 
   // ── Shell / Scripts ──
-  sh:   { icon: Terminal,   color: 'text-green-500' },
-  bash: { icon: Terminal,   color: 'text-green-500' },
-  zsh:  { icon: Terminal,   color: 'text-green-400' },
-  fish: { icon: Terminal,   color: 'text-green-400' },
-  ps1:  { icon: Terminal,   color: 'text-blue-400' },
-  bat:  { icon: Terminal,   color: 'text-gray-500' },
-  cmd:  { icon: Terminal,   color: 'text-gray-500' },
+  sh:   { icon: Terminal },
+  bash: { icon: Terminal },
+  zsh:  { icon: Terminal },
+  fish: { icon: Terminal },
+  ps1:  { icon: Terminal },
+  bat:  { icon: Terminal },
+  cmd:  { icon: Terminal },
 
   // ── Images ──
-  png:  { icon: Image,      color: 'text-purple-500' },
-  jpg:  { icon: Image,      color: 'text-purple-500' },
-  jpeg: { icon: Image,      color: 'text-purple-500' },
-  gif:  { icon: Image,      color: 'text-purple-400' },
-  webp: { icon: Image,      color: 'text-purple-400' },
-  ico:  { icon: Image,      color: 'text-purple-400' },
-  bmp:  { icon: Image,      color: 'text-purple-400' },
-  tiff: { icon: Image,      color: 'text-purple-400' },
-  svg:  { icon: Palette,    color: 'text-amber-500' },
+  png:  { icon: Image },
+  jpg:  { icon: Image },
+  jpeg: { icon: Image },
+  gif:  { icon: Image },
+  webp: { icon: Image },
+  ico:  { icon: Image },
+  bmp:  { icon: Image },
+  tiff: { icon: Image },
+  svg:  { icon: Palette },
 
   // ── Audio ──
-  mp3:  { icon: Music2,     color: 'text-pink-500' },
-  wav:  { icon: Music2,     color: 'text-pink-500' },
-  ogg:  { icon: Music2,     color: 'text-pink-400' },
-  flac: { icon: Music2,     color: 'text-pink-400' },
-  aac:  { icon: Music2,     color: 'text-pink-400' },
-  m4a:  { icon: Music2,     color: 'text-pink-400' },
+  mp3:  { icon: Music2 },
+  wav:  { icon: Music2 },
+  ogg:  { icon: Music2 },
+  flac: { icon: Music2 },
+  aac:  { icon: Music2 },
+  m4a:  { icon: Music2 },
 
   // ── Video ──
-  mp4:  { icon: Video,      color: 'text-rose-500' },
-  mov:  { icon: Video,      color: 'text-rose-500' },
-  avi:  { icon: Video,      color: 'text-rose-500' },
-  webm: { icon: Video,      color: 'text-rose-400' },
-  mkv:  { icon: Video,      color: 'text-rose-400' },
+  mp4:  { icon: Video },
+  mov:  { icon: Video },
+  avi:  { icon: Video },
+  webm: { icon: Video },
+  mkv:  { icon: Video },
 
   // ── Fonts ──
-  ttf:  { icon: FileType,   color: 'text-red-500' },
-  otf:  { icon: FileType,   color: 'text-red-500' },
-  woff: { icon: FileType,   color: 'text-red-400' },
-  woff2:{ icon: FileType,   color: 'text-red-400' },
-  eot:  { icon: FileType,   color: 'text-red-400' },
+  ttf:  { icon: FileType },
+  otf:  { icon: FileType },
+  woff: { icon: FileType },
+  woff2:{ icon: FileType },
+  eot:  { icon: FileType },
 
   // ── Archives ──
-  zip:  { icon: Archive,    color: 'text-amber-600' },
-  tar:  { icon: Archive,    color: 'text-amber-600' },
-  gz:   { icon: Archive,    color: 'text-amber-600' },
-  bz2:  { icon: Archive,    color: 'text-amber-600' },
-  rar:  { icon: Archive,    color: 'text-amber-500' },
-  '7z': { icon: Archive,    color: 'text-amber-500' },
+  zip:  { icon: Archive },
+  tar:  { icon: Archive },
+  gz:   { icon: Archive },
+  bz2:  { icon: Archive },
+  rar:  { icon: Archive },
+  '7z': { icon: Archive },
 
   // ── Lock files ──
-  lock: { icon: Lock,       color: 'text-gray-500' },
+  lock: { icon: Lock },
 
   // ── Binary / Executable ──
-  exe:  { icon: Binary,     color: 'text-gray-500' },
-  bin:  { icon: Binary,     color: 'text-gray-500' },
-  dll:  { icon: Binary,     color: 'text-gray-400' },
-  so:   { icon: Binary,     color: 'text-gray-400' },
-  dylib:{ icon: Binary,     color: 'text-gray-400' },
-  wasm: { icon: Binary,     color: 'text-purple-500' },
+  exe:  { icon: Binary },
+  bin:  { icon: Binary },
+  dll:  { icon: Binary },
+  so:   { icon: Binary },
+  dylib:{ icon: Binary },
+  wasm: { icon: Binary },
 
   // ── Misc config ──
-  ini:  { icon: Settings,   color: 'text-gray-500' },
-  cfg:  { icon: Settings,   color: 'text-gray-500' },
-  conf: { icon: Settings,   color: 'text-gray-500' },
-  log:  { icon: Scroll,     color: 'text-gray-400' },
-  map:  { icon: File,       color: 'text-gray-400' },
+  ini:  { icon: Settings },
+  cfg:  { icon: Settings },
+  conf: { icon: Settings },
+  log:  { icon: Scroll },
+  map:  { icon: File },
 };
 
 // Special full-filename matches (highest priority)
 const FILENAME_ICON_MAP = {
-  'Dockerfile':       { icon: Box,       color: 'text-blue-500' },
-  'docker-compose.yml': { icon: Box,     color: 'text-blue-500' },
-  'docker-compose.yaml': { icon: Box,    color: 'text-blue-500' },
-  '.dockerignore':    { icon: Box,       color: 'text-gray-500' },
-  '.gitignore':       { icon: Settings,  color: 'text-gray-500' },
-  '.gitmodules':      { icon: Settings,  color: 'text-gray-500' },
-  '.gitattributes':   { icon: Settings,  color: 'text-gray-500' },
-  '.editorconfig':    { icon: Settings,  color: 'text-gray-500' },
-  '.prettierrc':      { icon: Settings,  color: 'text-pink-400' },
-  '.prettierignore':  { icon: Settings,  color: 'text-gray-500' },
-  '.eslintrc':        { icon: Settings,  color: 'text-violet-500' },
-  '.eslintrc.js':     { icon: Settings,  color: 'text-violet-500' },
-  '.eslintrc.json':   { icon: Settings,  color: 'text-violet-500' },
-  '.eslintrc.cjs':    { icon: Settings,  color: 'text-violet-500' },
-  'eslint.config.js': { icon: Settings,  color: 'text-violet-500' },
-  'eslint.config.mjs':{ icon: Settings,  color: 'text-violet-500' },
-  '.env':             { icon: Shield,    color: 'text-yellow-600' },
-  '.env.local':       { icon: Shield,    color: 'text-yellow-600' },
-  '.env.development': { icon: Shield,    color: 'text-yellow-500' },
-  '.env.production':  { icon: Shield,    color: 'text-yellow-600' },
-  '.env.example':     { icon: Shield,    color: 'text-yellow-400' },
-  'package.json':     { icon: Braces,    color: 'text-green-500' },
-  'package-lock.json':{ icon: Lock,      color: 'text-gray-500' },
-  'yarn.lock':        { icon: Lock,      color: 'text-blue-400' },
-  'pnpm-lock.yaml':   { icon: Lock,      color: 'text-orange-400' },
-  'bun.lockb':        { icon: Lock,      color: 'text-gray-400' },
-  'Cargo.toml':       { icon: Cog,       color: 'text-orange-600' },
-  'Cargo.lock':       { icon: Lock,      color: 'text-orange-400' },
-  'Gemfile':          { icon: Gem,       color: 'text-red-500' },
-  'Gemfile.lock':     { icon: Lock,      color: 'text-red-400' },
-  'Makefile':         { icon: Terminal,   color: 'text-gray-500' },
-  'CMakeLists.txt':   { icon: Cog,       color: 'text-blue-500' },
-  'tsconfig.json':    { icon: Braces,    color: 'text-blue-500' },
-  'jsconfig.json':    { icon: Braces,    color: 'text-yellow-500' },
-  'vite.config.ts':   { icon: Flame,     color: 'text-purple-500' },
-  'vite.config.js':   { icon: Flame,     color: 'text-purple-500' },
-  'webpack.config.js':{ icon: Cog,       color: 'text-blue-500' },
-  'tailwind.config.js':{ icon: Hash,     color: 'text-cyan-500' },
-  'tailwind.config.ts':{ icon: Hash,     color: 'text-cyan-500' },
-  'postcss.config.js':{ icon: Cog,       color: 'text-red-400' },
-  'babel.config.js':  { icon: Settings,  color: 'text-yellow-500' },
-  '.babelrc':         { icon: Settings,  color: 'text-yellow-500' },
-  'README.md':        { icon: BookOpen,  color: 'text-blue-500' },
-  'LICENSE':          { icon: FileCheck,  color: 'text-gray-500' },
-  'LICENSE.md':       { icon: FileCheck,  color: 'text-gray-500' },
-  'CHANGELOG.md':     { icon: Scroll,    color: 'text-blue-400' },
-  'requirements.txt': { icon: FileText,  color: 'text-emerald-400' },
-  'go.mod':           { icon: Hexagon,   color: 'text-cyan-500' },
-  'go.sum':           { icon: Lock,      color: 'text-cyan-400' },
+  'Dockerfile':       { icon: Box },
+  'docker-compose.yml': { icon: Box },
+  'docker-compose.yaml': { icon: Box },
+  '.dockerignore':    { icon: Box },
+  '.gitignore':       { icon: Settings },
+  '.gitmodules':      { icon: Settings },
+  '.gitattributes':   { icon: Settings },
+  '.editorconfig':    { icon: Settings },
+  '.prettierrc':      { icon: Settings },
+  '.prettierignore':  { icon: Settings },
+  '.eslintrc':        { icon: Settings },
+  '.eslintrc.js':     { icon: Settings },
+  '.eslintrc.json':   { icon: Settings },
+  '.eslintrc.cjs':    { icon: Settings },
+  'eslint.config.js': { icon: Settings },
+  'eslint.config.mjs':{ icon: Settings },
+  '.env':             { icon: Shield },
+  '.env.local':       { icon: Shield },
+  '.env.development': { icon: Shield },
+  '.env.production':  { icon: Shield },
+  '.env.example':     { icon: Shield },
+  'package.json':     { icon: Braces },
+  'package-lock.json':{ icon: Lock },
+  'yarn.lock':        { icon: Lock },
+  'pnpm-lock.yaml':   { icon: Lock },
+  'bun.lockb':        { icon: Lock },
+  'Cargo.toml':       { icon: Cog },
+  'Cargo.lock':       { icon: Lock },
+  'Gemfile':          { icon: Gem },
+  'Gemfile.lock':     { icon: Lock },
+  'Makefile':         { icon: Terminal },
+  'CMakeLists.txt':   { icon: Cog },
+  'tsconfig.json':    { icon: Braces },
+  'jsconfig.json':    { icon: Braces },
+  'vite.config.ts':   { icon: Flame },
+  'vite.config.js':   { icon: Flame },
+  'webpack.config.js':{ icon: Cog },
+  'tailwind.config.js':{ icon: Hash },
+  'tailwind.config.ts':{ icon: Hash },
+  'postcss.config.js':{ icon: Cog },
+  'babel.config.js':  { icon: Settings },
+  '.babelrc':         { icon: Settings },
+  'README.md':        { icon: BookOpen },
+  'LICENSE':          { icon: FileCheck },
+  'LICENSE.md':       { icon: FileCheck },
+  'CHANGELOG.md':     { icon: Scroll },
+  'requirements.txt': { icon: FileText },
+  'go.mod':           { icon: Hexagon },
+  'go.sum':           { icon: Lock },
 };
 
 function getFileIconData(filename) {
@@ -243,7 +244,7 @@ function getFileIconData(filename) {
 
   // 2. Check for .env prefix pattern
   if (filename.startsWith('.env')) {
-    return { icon: Shield, color: 'text-yellow-600' };
+    return { icon: Shield };
   }
 
   // 3. Extension-based lookup
@@ -253,7 +254,7 @@ function getFileIconData(filename) {
   }
 
   // 4. Fallback
-  return { icon: File, color: 'text-muted-foreground' };
+  return { icon: File };
 }
 
 
@@ -263,6 +264,18 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
   const { t } = useTranslation();
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+  const [directoryErrors, setDirectoryErrors] = useState(new Set());
+  const [searchError, setSearchError] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchRevision, setSearchRevision] = useState(0);
+  const [pendingDelete, setPendingDelete] = useState(null);
+  const [deleteError, setDeleteError] = useState(false);
+  const [copyError, setCopyError] = useState(false);
+  const projectScopeRef = useRef(selectedProject?.name);
+  const fileRequestRef = useRef(0);
+  const searchInputRef = useRef(null);
+  projectScopeRef.current = selectedProject?.name;
   const [expandedDirs, setExpandedDirs] = useState(new Set());
   const [selectedImage, setSelectedImage] = useState(null);
   const [viewMode, setViewMode] = useState('detailed');
@@ -282,7 +295,8 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
   const fileInputRef = useRef(null);
 
   const handleUpload = useCallback(async (fileList, targetDir = '') => {
-    if (!fileList.length || !selectedProject) return;
+    if (!fileList.length || !selectedProject || uploading) return;
+    const scope = selectedProject.name;
     setUploading(true);
     setUploadError(null);
     setUploadSuccess(null);
@@ -296,16 +310,16 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
         throw new Error(data.error || `Upload failed (${res.status})`);
       }
       const data = await res.json();
-      setUploadSuccess(t('fileTree.uploadSuccess', { count: data.files.length }));
+      if (projectScopeRef.current !== scope) return;
+      setUploadSuccess(t('fileTree.uploadSuccess', { count: data.files?.length ?? fileList.length }));
       setTimeout(() => setUploadSuccess(null), 3000);
       fetchFiles();
     } catch (err) {
-      setUploadError(err.message);
-      setTimeout(() => setUploadError(null), 5000);
+      if (projectScopeRef.current === scope) setUploadError(t('fileTree.uploadError'));
     } finally {
-      setUploading(false);
+      if (projectScopeRef.current === scope) setUploading(false);
     }
-  }, [selectedProject]);
+  }, [selectedProject, uploading, t]);
 
   const handleFileInputChange = useCallback((e) => {
     const files = Array.from(e.target.files || []);
@@ -323,10 +337,11 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
 
   const handleCopyPath = (e, item) => {
     e.stopPropagation();
+    setCopyError(false);
     navigator.clipboard.writeText(item.path).then(() => {
       setCopiedPath(item.path);
       setTimeout(() => setCopiedPath(null), 2000);
-    });
+    }).catch(() => setCopyError(true));
   };
 
   const buildWorkspaceQaPrompt = useCallback((item) => {
@@ -352,11 +367,11 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
     onStartWorkspaceQa(selectedProject, buildWorkspaceQaPrompt(item));
   }, [buildWorkspaceQaPrompt, onStartWorkspaceQa, selectedProject]);
 
-  const renderRowActions = (item, className = 'flex items-center gap-0.5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity') => (
+  const renderRowActions = (item, className = 'file-row-actions flex items-center gap-0.5 shrink-0') => (
     <span className={className}>
       {item.type === 'directory' && (
         <button
-          className="p-0.5 rounded hover:bg-accent"
+          className="inline-flex h-11 w-11 items-center justify-center rounded hover:bg-accent"
           title={t('fileTree.uploadToFolder')}
           onClick={(e) => { e.stopPropagation(); uploadTargetDirRef.current = item.path; fileInputRef.current?.click(); }}
         >
@@ -364,14 +379,15 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
         </button>
       )}
       <button
-        className="p-0.5 rounded hover:bg-accent"
+        className="inline-flex h-11 w-11 items-center justify-center rounded hover:bg-accent"
+        disabled={!onStartWorkspaceQa}
         title={t(item.type === 'directory' ? 'fileTree.askAboutDirectory' : 'fileTree.askAboutFile')}
         onClick={(e) => handleAskAboutItem(e, item)}
       >
         <MessageSquarePlus className="w-3.5 h-3.5 text-muted-foreground hover:text-foreground" />
       </button>
       <button
-        className="p-0.5 rounded hover:bg-accent"
+        className="inline-flex h-11 w-11 items-center justify-center rounded hover:bg-accent"
         title={t('fileTree.copyPath')}
         onClick={(e) => handleCopyPath(e, item)}
       >
@@ -380,40 +396,52 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
           : <Copy className="w-3.5 h-3.5 text-muted-foreground" />}
       </button>
       <button
-        className="p-0.5 rounded hover:bg-destructive/20"
+        className="inline-flex h-11 w-11 items-center justify-center rounded hover:bg-destructive/20"
         title={t('fileTree.deleteFile')}
-        onClick={(e) => { e.stopPropagation(); handleDelete(item); }}
+        onClick={(e) => { e.stopPropagation(); setDeleteError(false); setPendingDelete(item); }}
       >
         <Trash2 className="w-3.5 h-3.5 text-muted-foreground hover:text-destructive" />
       </button>
     </span>
   );
 
-  const handleDelete = useCallback(async (item) => {
-    if (!selectedProject) return;
-    const confirmed = window.confirm(t('fileTree.confirmDelete', { name: item.name }));
-    if (!confirmed) return;
+  const handleDelete = async () => {
+    if (!selectedProject || !pendingDelete || deleting) return;
+    const scope = selectedProject.name;
     setDeleting(true);
+    setDeleteError(false);
     try {
-      const res = await api.deleteFile(selectedProject.name, item.path);
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || `Delete failed (${res.status})`);
-      }
-      fetchFiles();
-    } catch (err) {
-      alert(err.message);
+      const res = await api.deleteFile(scope, pendingDelete.path);
+      if (!res.ok) throw new Error('Delete failed');
+      if (projectScopeRef.current !== scope) return;
+      setPendingDelete(null);
+      void fetchFiles();
+      requestAnimationFrame(() => searchInputRef.current?.focus());
+    } catch {
+      if (projectScopeRef.current === scope) setDeleteError(true);
     } finally {
-      setDeleting(false);
+      if (projectScopeRef.current === scope) setDeleting(false);
     }
-  }, [selectedProject, t]);
+  };
 
   useEffect(() => {
-    if (selectedProject) {
-      setFullTreeForSearch(null);
-      fetchFiles();
-    }
-  }, [selectedProject]);
+    setFiles([]);
+    setFilteredFiles([]);
+    setExpandedDirs(new Set());
+    setLoadingDirs(new Set());
+    setDirectoryErrors(new Set());
+    setFullTreeForSearch(null);
+    setSearchQuery('');
+    setDebouncedSearchQuery('');
+    setPendingDelete(null);
+    setDeleting(false);
+    setCopyError(false);
+    setUploading(false);
+    setUploadError(null);
+    setUploadSuccess(null);
+    if (selectedProject) void fetchFiles();
+    return () => { fileRequestRef.current++; };
+  }, [selectedProject?.name]);
 
   useEffect(() => {
     const savedViewMode = localStorage.getItem('file-tree-view-mode');
@@ -434,12 +462,16 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
   // When search is active, fetch full tree to ensure deep files are searchable
   useEffect(() => {
     if (!debouncedSearchQuery.trim()) {
+      setSearchError(false);
+      setSearchLoading(false);
       setFullTreeForSearch(null);
       setFilteredFiles(files);
       return;
     }
 
     let cancelled = false;
+    setSearchError(false);
+    setSearchLoading(true);
     const fetchAndFilter = async () => {
       let sourceTree = fullTreeForSearch || files;
 
@@ -447,17 +479,20 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
       if (!fullTreeForSearch && selectedProject) {
         try {
           const response = await api.getFiles(selectedProject.name, { maxDepth: 10 });
-          if (!cancelled && response.ok) {
-            const data = await response.json();
+          if (!response.ok) throw new Error('Search failed');
+          const data = await response.json();
+          if (!Array.isArray(data)) throw new Error('Invalid file list');
+          if (!cancelled) {
             setFullTreeForSearch(data);
             sourceTree = data;
           }
         } catch (error) {
-          console.error('Error fetching full tree for search:', error);
+          if (!cancelled) setSearchError(true);
         }
       }
 
       if (cancelled) return;
+      setSearchLoading(false);
 
       const filtered = filterFiles(sourceTree, debouncedSearchQuery.toLowerCase());
       setFilteredFiles(filtered);
@@ -482,7 +517,7 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
 
     fetchAndFilter();
     return () => { cancelled = true; };
-  }, [files, debouncedSearchQuery, selectedProject]);
+  }, [files, debouncedSearchQuery, selectedProject?.name, searchRevision]);
 
   const filterFiles = (items, query) => {
     return items.reduce((filtered, item) => {
@@ -505,24 +540,25 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
   };
 
   const fetchFiles = async () => {
+    if (!selectedProject || projectScopeRef.current !== selectedProject.name) return;
+    const scope = selectedProject.name;
+    const request = ++fileRequestRef.current;
+    const isCurrent = () => projectScopeRef.current === scope && request === fileRequestRef.current;
     setLoading(true);
+    setLoadError(false);
     try {
-      const response = await api.getFiles(selectedProject.name);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ File fetch failed:', response.status, errorText);
-        setFiles([]);
-        return;
-      }
-
+      const response = await api.getFiles(scope);
+      if (!response.ok) throw new Error('File load failed');
       const data = await response.json();
-      setFiles(data);
-    } catch (error) {
-      console.error('❌ Error fetching files:', error);
-      setFiles([]);
+      if (!Array.isArray(data)) throw new Error('Invalid file list');
+      if (isCurrent()) {
+        setFiles(data);
+        setFullTreeForSearch(null);
+      }
+    } catch {
+      if (isCurrent()) setLoadError(true);
     } finally {
-      setLoading(false);
+      if (isCurrent()) setLoading(false);
     }
   };
 
@@ -539,36 +575,36 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
     });
   };
 
-  const toggleDirectory = async (dirPath, item) => {
+  const loadDirectory = async (dirPath) => {
+    if (!selectedProject || loadingDirs.has(dirPath)) return;
+    const scope = selectedProject.name;
+    const request = fileRequestRef.current;
+    const isCurrent = () => projectScopeRef.current === scope && fileRequestRef.current === request;
+    setLoadingDirs(prev => new Set(prev).add(dirPath));
+    setDirectoryErrors(prev => { const next = new Set(prev); next.delete(dirPath); return next; });
+    try {
+      const response = await api.getFiles(scope, { path: dirPath, maxDepth: 2 });
+      if (!response.ok) throw new Error('Directory load failed');
+      const children = await response.json();
+      if (!Array.isArray(children)) throw new Error('Invalid directory');
+      if (isCurrent()) setFiles(prev => mergeSubtree(prev, dirPath, children));
+    } catch {
+      if (isCurrent()) setDirectoryErrors(prev => new Set(prev).add(dirPath));
+    } finally {
+      // Always release the loading flag for this project: a newer tree request
+      // (after an upload or delete) makes the result stale, not the request
+      // unfinished, and a stuck flag would block re-expanding the folder.
+      if (projectScopeRef.current === scope) setLoadingDirs(prev => { const next = new Set(prev); next.delete(dirPath); return next; });
+    }
+  };
+
+  const toggleDirectory = (dirPath, item) => {
     if (expandedDirs.has(dirPath)) {
-      const newExpanded = new Set(expandedDirs);
-      newExpanded.delete(dirPath);
-      setExpandedDirs(newExpanded);
+      setExpandedDirs(prev => { const next = new Set(prev); next.delete(dirPath); return next; });
       return;
     }
-
-    // Expand immediately
     setExpandedDirs(prev => new Set(prev).add(dirPath));
-
-    // Lazy-load children if not yet loaded (children === null)
-    if (item && item.children === null && selectedProject) {
-      setLoadingDirs(prev => new Set(prev).add(dirPath));
-      try {
-        const response = await api.getFiles(selectedProject.name, { path: dirPath, maxDepth: 2 });
-        if (response.ok) {
-          const loadedChildren = await response.json();
-          setFiles(prev => mergeSubtree(prev, dirPath, loadedChildren));
-        }
-      } catch (error) {
-        console.error('Error lazy-loading directory:', error);
-      } finally {
-        setLoadingDirs(prev => {
-          const next = new Set(prev);
-          next.delete(dirPath);
-          return next;
-        });
-      }
-    }
+    if (item?.children === null) void loadDirectory(dirPath);
   };
 
   const changeViewMode = (mode) => {
@@ -577,7 +613,8 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
   };
 
   const formatFileSize = (bytes) => {
-    if (!bytes || bytes === 0) return '0 B';
+    if (bytes == null) return '—';
+    if (bytes === 0) return '0 B';
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -604,8 +641,8 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
   };
 
   const getFileIcon = (filename) => {
-    const { icon: Icon, color } = getFileIconData(filename);
-    return <Icon className={cn(ICON_SIZE, color)} />;
+    const { icon: Icon } = getFileIconData(filename);
+    return <Icon className={cn(ICON_SIZE, 'text-muted-foreground')} aria-hidden="true" />;
   };
 
   // ── Click handler shared across all view modes ──
@@ -624,21 +661,6 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
     }
   };
 
-  // ── Indent guide + folder/file icon rendering ──
-  const renderIndentGuides = (level) => {
-    if (level === 0) return null;
-    return (
-      <span className="flex items-center flex-shrink-0" aria-hidden="true">
-        {Array.from({ length: level }).map((_, i) => (
-          <span
-            key={i}
-            className="inline-block w-4 h-full border-l border-border/50"
-          />
-        ))}
-      </span>
-    );
-  };
-
   const renderItemIcons = (item) => {
     const isDir = item.type === 'directory';
     const isOpen = expandedDirs.has(item.path);
@@ -653,7 +675,7 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
             )}
           />
           {isOpen ? (
-            <FolderOpen className="w-4 h-4 text-blue-500 flex-shrink-0" />
+            <FolderOpen className="w-4 h-4 text-muted-foreground flex-shrink-0" />
           ) : (
             <Folder className="w-4 h-4 text-muted-foreground flex-shrink-0" />
           )}
@@ -668,216 +690,59 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
     );
   };
 
-  // ─── Directory children renderer (shared across view modes) ────────
-  const renderDirChildren = (item, level, renderFn) => {
-    if (loadingDirs.has(item.path)) {
-      return (
-        <div className="flex items-center gap-1.5 py-1" style={{ paddingLeft: `${(level + 1) * 16 + 4}px` }}>
-          <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
-          <span className="text-xs text-muted-foreground">{t('fileTree.loading')}</span>
-        </div>
-      );
-    }
-    if (item.children && item.children.length > 0) {
-      return renderFn(item.children, level + 1);
-    }
-    return null;
-  };
-
-  // ─── Simple (Tree) View ────────────────────────────────────────────
-  const renderFileTree = (items, level = 0) => {
-    return items.map((item) => {
-      const isDir = item.type === 'directory';
-      const isOpen = isDir && expandedDirs.has(item.path);
-
-      return (
-        <div key={item.path} className="select-none">
-          <div
-            className={cn(
-              'group flex items-center gap-1.5 py-[3px] pr-2 cursor-pointer rounded-sm',
-              'hover:bg-accent/60 transition-colors duration-100',
-              isDir && isOpen && 'border-l-2 border-primary/30',
-              isDir && !isOpen && 'border-l-2 border-transparent',
-              !isDir && 'border-l-2 border-transparent',
-              isDir && dragOverDir === item.path && 'bg-primary/10 ring-1 ring-primary/40',
-            )}
-            style={{ paddingLeft: `${level * 16 + 4}px` }}
-            onClick={() => handleItemClick(item)}
-            {...(isDir ? {
-              onDragOver: (e) => { e.preventDefault(); e.stopPropagation(); setDragOverDir(item.path); },
-              onDragLeave: (e) => { e.stopPropagation(); setDragOverDir(null); },
-              onDrop: (e) => handleFileDrop(e, item.path),
-            } : {})}
-          >
-            {renderItemIcons(item)}
-            <span className={cn(
-              'text-[13px] leading-tight truncate flex-1',
-              isDir ? 'font-medium text-foreground' : 'text-foreground/90'
-            )}>
-              {item.name}
-            </span>
-            {renderRowActions(item)}
-          </div>
-
-          {isDir && isOpen && (
-            <div className="relative">
-              <span
-                className="absolute top-0 bottom-0 border-l border-border/40"
-                style={{ left: `${level * 16 + 14}px` }}
-                aria-hidden="true"
-              />
-              {renderDirChildren(item, level, renderFileTree)}
-            </div>
-          )}
-        </div>
-      );
-    });
-  };
-
-  // ─── Detailed View ────────────────────────────────────────────────
-  const renderDetailedView = (items, level = 0) => {
-    return items.map((item) => {
-      const isDir = item.type === 'directory';
-      const isOpen = isDir && expandedDirs.has(item.path);
-
-      return (
-        <div key={item.path} className="select-none">
-          <div
-            className={cn(
-              'group grid grid-cols-12 gap-2 py-[3px] pr-2 hover:bg-accent/60 cursor-pointer items-center rounded-sm transition-colors duration-100',
-              isDir && isOpen && 'border-l-2 border-primary/30',
-              isDir && !isOpen && 'border-l-2 border-transparent',
-              !isDir && 'border-l-2 border-transparent',
-              isDir && dragOverDir === item.path && 'bg-primary/10 ring-1 ring-primary/40',
-            )}
-            style={{ paddingLeft: `${level * 16 + 4}px` }}
-            onClick={() => handleItemClick(item)}
-            {...(isDir ? {
-              onDragOver: (e) => { e.preventDefault(); e.stopPropagation(); setDragOverDir(item.path); },
-              onDragLeave: (e) => { e.stopPropagation(); setDragOverDir(null); },
-              onDrop: (e) => handleFileDrop(e, item.path),
-            } : {})}
-          >
-            <div className="col-span-5 flex items-center gap-1.5 min-w-0">
-              {renderItemIcons(item)}
-              <span className={cn(
-                'text-[13px] leading-tight truncate flex-1',
-                isDir ? 'font-medium text-foreground' : 'text-foreground/90'
-              )}>
-                {item.name}
-              </span>
-              {renderRowActions(item)}
-            </div>
-            <div className="col-span-2 text-xs text-muted-foreground tabular-nums">
-              {item.type === 'file' ? formatFileSize(item.size) : ''}
-            </div>
-            <div className="col-span-3 text-xs text-muted-foreground">
-              {formatRelativeTime(item.modified)}
-            </div>
-            <div className="col-span-2 text-xs text-muted-foreground font-mono">
-              {item.permissionsRwx || ''}
-            </div>
-          </div>
-
-          {isDir && isOpen && (
-            <div className="relative">
-              <span
-                className="absolute top-0 bottom-0 border-l border-border/40"
-                style={{ left: `${level * 16 + 14}px` }}
-                aria-hidden="true"
-              />
-              {renderDirChildren(item, level, renderDetailedView)}
-            </div>
-          )}
-        </div>
-      );
-    });
-  };
-
-  // ─── Compact View ──────────────────────────────────────────────────
-  const renderCompactView = (items, level = 0) => {
-    return items.map((item) => {
-      const isDir = item.type === 'directory';
-      const isOpen = isDir && expandedDirs.has(item.path);
-
-      return (
-        <div key={item.path} className="select-none">
-          <div
-            className={cn(
-              'group flex items-center justify-between py-[3px] pr-2 hover:bg-accent/60 cursor-pointer rounded-sm transition-colors duration-100',
-              isDir && isOpen && 'border-l-2 border-primary/30',
-              isDir && !isOpen && 'border-l-2 border-transparent',
-              !isDir && 'border-l-2 border-transparent',
-              isDir && dragOverDir === item.path && 'bg-primary/10 ring-1 ring-primary/40',
-            )}
-            style={{ paddingLeft: `${level * 16 + 4}px` }}
-            onClick={() => handleItemClick(item)}
-            {...(isDir ? {
-              onDragOver: (e) => { e.preventDefault(); e.stopPropagation(); setDragOverDir(item.path); },
-              onDragLeave: (e) => { e.stopPropagation(); setDragOverDir(null); },
-              onDrop: (e) => handleFileDrop(e, item.path),
-            } : {})}
-          >
-            <div className="flex items-center gap-1.5 min-w-0 flex-1">
-              {renderItemIcons(item)}
-              <span className={cn(
-                'text-[13px] leading-tight truncate',
-                isDir ? 'font-medium text-foreground' : 'text-foreground/90'
-              )}>
-                {item.name}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground flex-shrink-0 ml-2">
-              {item.type === 'file' && (
-                <>
-                  <span className="tabular-nums">{formatFileSize(item.size)}</span>
-                  <span className="font-mono">{item.permissionsRwx}</span>
-                </>
-              )}
-              {renderRowActions(item, 'flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity')}
-            </div>
-          </div>
-
-          {isDir && isOpen && (
-            <div className="relative">
-              <span
-                className="absolute top-0 bottom-0 border-l border-border/40"
-                style={{ left: `${level * 16 + 14}px` }}
-                aria-hidden="true"
-              />
-              {renderDirChildren(item, level, renderCompactView)}
-            </div>
-          )}
-        </div>
-      );
-    });
-  };
-
-  // ─── Loading state ─────────────────────────────────────────────────
-  if (loading) {
+  // A native primary button and sibling actions keep every view keyboard operable.
+  // Narrow panels stack metadata instead of squeezing four columns into a phone.
+  const renderFiles = (items, level = 0) => items.map(item => {
+    const isDir = item.type === 'directory';
+    const isOpen = isDir && expandedDirs.has(item.path);
     return (
-      <div className="h-full flex items-center justify-center">
-        <div className="text-muted-foreground text-sm">
-          {t('fileTree.loading')}
+      <div key={item.path} className="file-tree-entry" style={{ marginLeft: level ? 12 : 0 }}>
+        <div className={cn('file-tree-row rounded-md hover:bg-accent/60', isDir && dragOverDir === item.path && 'bg-muted ring-1 ring-ring')}
+          {...(isDir ? {
+            onDragOver: e => { e.preventDefault(); e.stopPropagation(); setDragOverDir(item.path); },
+            onDragLeave: e => { e.stopPropagation(); setDragOverDir(null); },
+            onDrop: e => handleFileDrop(e, item.path),
+          } : {})}>
+          <button type="button" className="file-row-open flex min-h-11 w-full min-w-0 items-center gap-2 rounded-md px-1 py-2 text-left text-sm"
+            onClick={() => handleItemClick(item)} aria-expanded={isDir ? isOpen : undefined} title={item.path}>
+            {renderItemIcons(item)}
+            <span className={cn('min-w-0 flex-1 break-words', isDir && 'font-medium')}>{item.name}</span>
+          </button>
+          {!isDir && viewMode !== 'simple' && (
+            <div className="file-row-metadata flex flex-wrap items-center gap-x-3 gap-y-1 px-1 pb-1 text-xs text-muted-foreground">
+              <span className="tabular-nums">{t('fileTree.size')}: {formatFileSize(item.size)}</span>
+              {viewMode === 'detailed' && <span>{t('fileTree.modified')}: {formatRelativeTime(item.modified)}</span>}
+              {item.permissionsRwx && <span className="font-mono" title={t('fileTree.permissions')}>{item.permissionsRwx}</span>}
+            </div>
+          )}
+          {renderRowActions(item)}
         </div>
+        {isOpen && (
+          <div className="ml-2 border-l border-border pl-1">
+            {loadingDirs.has(item.path) ? <div role="status" className="px-3 py-2 text-xs text-muted-foreground">{t('fileTree.loading')}</div>
+              : directoryErrors.has(item.path) ? <div role="alert" className="px-3 py-2 text-sm"><p>{t('fileTree.directoryLoadFailed')}</p><Button variant="ghost" onClick={() => loadDirectory(item.path)}>{t('buttons.retry')}</Button></div>
+              : item.children?.length ? renderFiles(item.children, level + 1)
+              : item.children && <p className="px-3 py-2 text-xs text-muted-foreground">{t('fileTree.emptyFolder')}</p>}
+          </div>
+        )}
       </div>
     );
-  }
+  });
 
   // ─── Main render ───────────────────────────────────────────────────
   return (
-    <div className="h-full flex flex-col bg-background">
+    <div className="file-workspace h-full min-w-0 flex flex-col bg-background">
       {/* Header */}
-      <div className="px-3 pt-3 pb-2 border-b border-border space-y-2">
+      <div className="px-4 pt-3 pb-2 border-b border-border space-y-2">
         <div className="flex items-center justify-between">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <h3 className="text-sm font-semibold text-foreground">
             {t('fileTree.files')}
           </h3>
           <div className="flex gap-0.5">
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 w-7 p-0"
+              className="h-11 w-11 p-0"
               onClick={() => { uploadTargetDirRef.current = ''; fileInputRef.current?.click(); }}
               title={t('fileTree.uploadFiles')}
               disabled={uploading}
@@ -885,27 +750,27 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
               <UploadCloud className="w-3.5 h-3.5" />
             </Button>
             <Button
-              variant={viewMode === 'simple' ? 'default' : 'ghost'}
+              aria-pressed={viewMode === 'simple'} variant={viewMode === 'simple' ? 'secondary' : 'ghost'}
               size="sm"
-              className="h-7 w-7 p-0"
+              className="h-11 w-11 p-0"
               onClick={() => changeViewMode('simple')}
               title={t('fileTree.simpleView')}
             >
               <List className="w-3.5 h-3.5" />
             </Button>
             <Button
-              variant={viewMode === 'compact' ? 'default' : 'ghost'}
+              aria-pressed={viewMode === 'compact'} variant={viewMode === 'compact' ? 'secondary' : 'ghost'}
               size="sm"
-              className="h-7 w-7 p-0"
+              className="h-11 w-11 p-0"
               onClick={() => changeViewMode('compact')}
               title={t('fileTree.compactView')}
             >
               <Eye className="w-3.5 h-3.5" />
             </Button>
             <Button
-              variant={viewMode === 'detailed' ? 'default' : 'ghost'}
+              aria-pressed={viewMode === 'detailed'} variant={viewMode === 'detailed' ? 'secondary' : 'ghost'}
               size="sm"
-              className="h-7 w-7 p-0"
+              className="h-11 w-11 p-0"
               onClick={() => changeViewMode('detailed')}
               title={t('fileTree.detailedView')}
             >
@@ -918,17 +783,19 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
         <div className="relative">
           <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
           <Input
+            ref={searchInputRef}
             type="text"
+            aria-label={t('fileTree.searchPlaceholder')}
             placeholder={t('fileTree.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-7 pr-7 h-7 text-xs"
+            className="pl-7 pr-11 h-11 text-sm"
           />
           {searchQuery && (
             <Button
               variant="ghost"
               size="sm"
-              className="absolute right-0.5 top-1/2 transform -translate-y-1/2 h-5 w-5 p-0 hover:bg-accent"
+              className="absolute right-0.5 top-1/2 transform -translate-y-1/2 h-11 w-11 p-0 hover:bg-accent"
               onClick={() => setSearchQuery('')}
               title={t('fileTree.clearSearch')}
             >
@@ -938,17 +805,11 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
         </div>
       </div>
 
-      {/* Column Headers for Detailed View */}
-      {viewMode === 'detailed' && filteredFiles.length > 0 && (
-        <div className="px-3 pt-1.5 pb-1 border-b border-border">
-          <div className="grid grid-cols-12 gap-2 px-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-            <div className="col-span-5">{t('fileTree.name')}</div>
-            <div className="col-span-2">{t('fileTree.size')}</div>
-            <div className="col-span-3">{t('fileTree.modified')}</div>
-            <div className="col-span-2">{t('fileTree.permissions')}</div>
-          </div>
-        </div>
-      )}
+      {loading && <div role="status" className="px-3 py-2 text-sm text-muted-foreground">{t('fileTree.loading')}</div>}
+      {loadError && <div role="alert" className="border-b border-border px-3 py-2 text-sm"><p>{t('fileTree.loadFailed')}</p><Button variant="ghost" onClick={fetchFiles}>{t('buttons.retry')}</Button></div>}
+      {searchLoading && <div role="status" className="px-3 py-2 text-sm text-muted-foreground">{t('fileTree.searching')}</div>}
+      {searchError && <div role="alert" className="border-b border-border px-3 py-2 text-sm"><p>{t('fileTree.searchFailed')}</p><Button variant="ghost" onClick={() => setSearchRevision(value => value + 1)}>{t('buttons.retry')}</Button></div>}
+      {copyError && <div role="alert" className="px-3 py-2 text-sm">{t('fileTree.copyFailed')}</div>}
 
       {/* Upload status bar */}
       {uploading && (
@@ -958,12 +819,12 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
         </div>
       )}
       {uploadError && (
-        <div className="px-3 py-1.5 border-b border-border text-xs text-red-500">
+        <div role="alert" className="px-3 py-2 border-b border-border text-sm text-destructive">
           {uploadError}
         </div>
       )}
       {uploadSuccess && (
-        <div className="px-3 py-1.5 border-b border-border text-xs text-green-500">
+        <div role="status" className="px-3 py-2 border-b border-border text-sm text-foreground">
           {uploadSuccess}
         </div>
       )}
@@ -981,7 +842,7 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
         onDrop={(e) => handleFileDrop(e, '')}
       >
         <ScrollArea className="h-full px-2 py-1">
-          {files.length === 0 ? (
+          {files.length === 0 && (loading || loadError) ? null : files.length === 0 ? (
             <div className="text-center py-8">
               <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center mx-auto mb-3">
                 <Folder className="w-6 h-6 text-muted-foreground" />
@@ -991,7 +852,7 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
                 {t('fileTree.checkProjectPath')}
               </p>
             </div>
-          ) : filteredFiles.length === 0 && searchQuery ? (
+          ) : filteredFiles.length === 0 && searchQuery && !searchLoading && !searchError ? (
             <div className="text-center py-8">
               <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center mx-auto mb-3">
                 <Search className="w-6 h-6 text-muted-foreground" />
@@ -1003,13 +864,20 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
             </div>
           ) : (
             <div>
-              {viewMode === 'simple' && renderFileTree(filteredFiles)}
-              {viewMode === 'compact' && renderCompactView(filteredFiles)}
-              {viewMode === 'detailed' && renderDetailedView(filteredFiles)}
+              {renderFiles(filteredFiles)}
             </div>
           )}
         </ScrollArea>
       </div>
+
+      {pendingDelete && <WorkbenchDialog busy={deleting} onClose={() => { if (!deleting) setPendingDelete(null); }} title={t('fileTree.deleteFile')}>
+        <p className="break-words text-sm">{t('fileTree.confirmDelete', { name: pendingDelete?.name })}</p>
+        {deleteError && <p role="alert" className="mt-3 text-sm text-destructive">{t('fileTree.deleteFailed')}</p>}
+        <div className="mt-4 flex justify-end gap-2">
+          <Button variant="outline" disabled={deleting} onClick={() => setPendingDelete(null)}>{t('buttons.cancel')}</Button>
+          <Button variant="destructive" disabled={deleting} onClick={handleDelete}>{t(deleting ? 'fileTree.deleting' : 'fileTree.deleteFile')}</Button>
+        </div>
+      </WorkbenchDialog>}
 
       {/* Image Viewer Modal */}
       {selectedImage && (

@@ -18,6 +18,7 @@ const ALLOWED_CHANNELS_INVOKE = new Set([
   'notification:show',
   'clipboard:writeText',
   'clipboard:readText',
+  'desktop:getSessionToken',
 ]);
 
 const ALLOWED_CHANNELS_ON = new Set([
@@ -75,6 +76,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   writeClipboard: (text) => safeInvoke('clipboard:writeText', text),
   readClipboard: () => safeInvoke('clipboard:readText'),
+
+  getDesktopSessionToken: () => safeInvoke('desktop:getSessionToken'),
 
   on: safeOn,
 });

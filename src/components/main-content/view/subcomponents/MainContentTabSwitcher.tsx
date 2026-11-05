@@ -1,4 +1,4 @@
-import { MessageSquare, ClipboardCheck, Library, type LucideIcon } from 'lucide-react';
+import { LayoutDashboard, MessageSquare, ClipboardCheck, Library, type LucideIcon } from 'lucide-react';
 import Tooltip from '../../../Tooltip';
 import type { AppTab } from '../../../../types/app';
 import type { Dispatch, SetStateAction } from 'react';
@@ -17,6 +17,7 @@ type TabDefinition = {
 };
 
 const BASE_TABS: TabDefinition[] = [
+  { id: 'overview', labelKey: 'tabs.overview', icon: LayoutDashboard },
   { id: 'chat', labelKey: 'tabs.chat', icon: MessageSquare },
   { id: 'survey', labelKey: 'tabs.survey', icon: Library },
 ];
@@ -46,14 +47,15 @@ export default function MainContentTabSwitcher({
           <Tooltip key={tab.id} content={t(tab.labelKey)} position="bottom">
             <button
               onClick={() => setActiveTab(tab.id)}
+              aria-current={isActive ? 'page' : undefined}
               className={`relative flex items-center gap-1.5 px-2.5 py-[5px] text-xs font-medium rounded-md transition-all duration-150 ${
                 isActive
-                  ? 'bg-background text-foreground shadow-sm'
+                  ? 'bg-background text-foreground'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               <Icon className="w-3.5 h-3.5" strokeWidth={isActive ? 2.2 : 1.8} />
-              <span className="hidden lg:inline">{t(tab.labelKey)}</span>
+              <span className="hidden md:inline">{t(tab.labelKey)}</span>
             </button>
           </Tooltip>
         );

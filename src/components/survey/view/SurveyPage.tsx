@@ -21,6 +21,7 @@ import { Badge } from '../../ui/badge';
 import { Input } from '../../ui/input';
 import { cn } from '../../../lib/utils';
 import { api } from '../../../utils/api';
+import { useDeviceSettings } from '../../../hooks/useDeviceSettings';
 import type { Project } from '../../../types/app';
 import { useSurveyData, type SurveyFile, type SurveyTask } from '../hooks/useSurveyData';
 import MermaidDiagramViewer from './MermaidDiagramViewer';
@@ -50,7 +51,7 @@ type PreviewState = {
 const SECTION_META = {
   papers: { icon: BookOpen, tone: 'text-sky-600 dark:text-sky-400' },
   reports: { icon: FileText, tone: 'text-emerald-600 dark:text-emerald-400' },
-  graphs: { icon: Network, tone: 'text-indigo-600 dark:text-indigo-400' },
+  graphs: { icon: Network, tone: 'text-muted-foreground dark:text-muted-foreground' },
   notes: { icon: NotebookText, tone: 'text-amber-600 dark:text-amber-400' },
 } as const;
 
@@ -66,13 +67,13 @@ function SummaryCard({
   tone: string;
 }) {
   return (
-    <div className="rounded-xl border border-border/50 bg-[linear-gradient(180deg,rgba(255,255,255,0.88),rgba(248,250,252,0.78))] p-3 shadow-sm dark:bg-[linear-gradient(180deg,rgba(20,23,29,0.92),rgba(17,24,39,0.82))]">
+    <div className="py-2">
       <div className="flex items-center justify-between gap-2">
         <div>
-          <div className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{label}</div>
+          <div className="text-xs  text-muted-foreground">{label}</div>
           <div className="mt-1 text-lg font-semibold text-foreground">{value}</div>
         </div>
-        <div className={cn('rounded-lg border border-border/40 bg-background/80 p-1.5 shadow-sm', tone)}>
+        <div className={cn('p-1.5 text-muted-foreground')}>
           <Icon className="h-4 w-4" />
         </div>
       </div>
@@ -98,18 +99,18 @@ function CollapsiblePanel({
   const { t } = useTranslation('common');
 
   return (
-    <div className="rounded-xl border border-border/50 bg-card/75 shadow-sm backdrop-blur-sm">
+    <div className="rounded-lg border border-border/50 bg-card">
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left hover:bg-muted/30"
+        className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left hover:bg-muted/30"
       >
         <div className="flex min-w-0 items-center gap-2">
           <div className={cn('h-2 w-2 rounded-full bg-primary/60', accentClassName)} />
           <h3 className="truncate text-xs font-semibold text-foreground">{title}</h3>
-          {badge !== undefined ? <Badge variant="outline" className="text-[10px] px-1.5 py-0">{badge}</Badge> : null}
+          {badge !== undefined ? <Badge variant="outline" className="text-xs px-1.5 py-0">{badge}</Badge> : null}
         </div>
-        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+        <div className="flex items-center gap-1 text-xs text-muted-foreground">
           <span>{collapsed ? t('surveyPage.actions.expand') : t('surveyPage.actions.collapse')}</span>
           {collapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
         </div>
@@ -153,20 +154,20 @@ function SurveySection({
   const Icon = SECTION_META[sectionKey].icon;
 
   return (
-    <div className="rounded-lg border border-border/50 bg-background/55 shadow-sm">
+    <div className="border-b border-border">
       <button
         type="button"
         onClick={onToggle}
         className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left hover:bg-muted/30"
       >
         <div className="flex min-w-0 items-center gap-2">
-          <div className={cn('rounded-md border border-border/40 bg-background/80 p-1', SECTION_META[sectionKey].tone)}>
+          <div className={cn('rounded-md border border-border/40 bg-background p-1', SECTION_META[sectionKey].tone)}>
             <Icon className="h-3 w-3" />
           </div>
           <h3 className="truncate text-xs font-semibold text-foreground">{title}</h3>
-          <Badge variant="outline" className="text-[10px] px-1.5 py-0">{filteredFiles.length}</Badge>
+          <Badge variant="outline" className="text-xs px-1.5 py-0">{filteredFiles.length}</Badge>
         </div>
-        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+        <div className="flex items-center gap-1 text-xs text-muted-foreground">
           <span>{collapsed ? t('surveyPage.actions.expand') : t('surveyPage.actions.collapse')}</span>
           {collapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
         </div>
@@ -194,9 +195,9 @@ function SurveySection({
               >
                 <div className="min-w-0">
                   <div className="truncate text-xs font-medium text-foreground">{file.name}</div>
-                  <div className="truncate text-[10px] text-muted-foreground">{file.relativePath}</div>
+                  <div className="truncate text-xs text-muted-foreground">{file.relativePath}</div>
                 </div>
-                <Badge variant="secondary" className="ml-2 shrink-0 text-[10px] uppercase px-1.5 py-0">
+                <Badge variant="secondary" className="ml-2 shrink-0 text-xs uppercase px-1.5 py-0">
                   {file.extension.replace('.', '') || 'file'}
                 </Badge>
               </button>
@@ -227,7 +228,7 @@ function PreviewContent({
           <iframe
             title={file.name}
             src={preview.pdfUrl}
-            className="h-full w-full rounded-xl border border-border/50 bg-background shadow-sm"
+            className="h-full w-full rounded-lg border border-border/50 bg-background"
           />
         </div>
       ) : null}
@@ -242,13 +243,13 @@ function PreviewContent({
             title={file.name}
             srcDoc={preview.content}
             sandbox="allow-scripts allow-same-origin"
-            className="h-full w-full rounded-xl border border-border/50 bg-white shadow-sm"
+            className="h-full w-full rounded-lg border border-border/50 bg-white"
           />
         </div>
       ) : null}
 
       {file.previewKind === 'markdown' && preview.content ? (
-        <div className="min-h-[42rem] overflow-auto rounded-xl border border-border/50 bg-background/60 p-6 shadow-sm">
+        <div className="min-h-[42rem] overflow-auto rounded-lg border border-border/50 bg-background p-6">
           <div className="prose prose-sm max-w-none dark:prose-invert">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{preview.content}</ReactMarkdown>
           </div>
@@ -264,14 +265,14 @@ function PreviewContent({
             invalidFallbackClassName="min-h-[42rem]"
           />
         ) : (
-          <pre className="min-h-[42rem] overflow-x-auto whitespace-pre-wrap rounded-xl border border-border/50 bg-background/80 p-5 text-sm text-foreground shadow-sm">
+          <pre className="min-h-[42rem] overflow-x-auto whitespace-pre-wrap rounded-lg border border-border/50 bg-background p-5 text-sm text-foreground">
             {preview.content}
           </pre>
         )
       ) : null}
 
       {file.previewKind === 'unsupported' ? (
-        <div className="rounded-xl border border-dashed border-border/60 px-4 py-8 text-center text-sm text-muted-foreground">
+        <div className="rounded-lg border border-dashed border-border/60 px-4 py-8 text-center text-sm text-muted-foreground">
           {t('surveyPage.preview.unsupported')}
         </div>
       ) : null}
@@ -283,10 +284,10 @@ function TaskPreview({ task }: { task: SurveyTask }) {
   const { t } = useTranslation('common');
 
   return (
-    <div className="rounded-xl border border-border/50 bg-background/40">
+    <div className="border-b border-border">
       <div className="border-b border-border/40 px-5 py-4">
         <div className="flex items-center gap-2">
-          <ClipboardList className="h-4 w-4 text-violet-500" />
+          <ClipboardList className="h-4 w-4 text-muted-foreground" />
           <h3 className="text-sm font-semibold text-foreground">{task.title}</h3>
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
@@ -296,7 +297,7 @@ function TaskPreview({ task }: { task: SurveyTask }) {
       </div>
       <div className="space-y-4 p-5">
         <div>
-          <div className="mb-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
+          <div className="mb-2 text-xs  text-muted-foreground">
             {t('surveyPage.preview.taskDescription')}
           </div>
           <div className="whitespace-pre-wrap text-sm leading-6 text-foreground">
@@ -320,9 +321,11 @@ export default function SurveyPage({ selectedProject, onChatFromReference }: Sur
     error: null,
   });
   const [filter, setFilter] = useState('');
+  const { isMobile } = useDeviceSettings({ trackPWA: false });
+  const [showLibrary, setShowLibrary] = useState(true);
   const [collapsedPanels, setCollapsedPanels] = useState({
     tasks: true,
-    library: true,
+    library: false,
     references: true,
   });
   const [sidebarWidth, setSidebarWidth] = useState(320);
@@ -366,6 +369,7 @@ export default function SurveyPage({ selectedProject, onChatFromReference }: Sur
 
   const handleSelectItem = (item: SelectedItem) => {
     setSelectedItem(item);
+    setShowLibrary(false);
   };
 
   const handleOpenMermaidWindow = () => {
@@ -449,6 +453,7 @@ export default function SurveyPage({ selectedProject, onChatFromReference }: Sur
         }
 
         const payload = await response.json();
+        if (isCancelled) return;
         const rawContent = String(payload?.content ?? '');
         const mermaidSource = extractMermaidSource(rawContent);
 
@@ -518,55 +523,59 @@ export default function SurveyPage({ selectedProject, onChatFromReference }: Sur
   ] as const;
 
   return (
-    <div className="h-full flex flex-col bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.10),transparent_24%),radial-gradient(circle_at_top_right,rgba(168,85,247,0.08),transparent_22%),linear-gradient(180deg,rgba(248,250,252,0.95),rgba(255,255,255,0.92))] dark:bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.10),transparent_24%),radial-gradient(circle_at_top_right,rgba(99,102,241,0.10),transparent_22%),linear-gradient(180deg,rgba(10,15,24,0.98),rgba(15,23,42,0.98))]">
+    <div className="h-full min-w-0 flex flex-col bg-background">
       {/* Header */}
-      <div className="border-b border-border/50 bg-background/55 px-4 py-3 backdrop-blur-sm">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <Library className="h-5 w-5 text-primary" />
+      <div className="border-b border-border/50 bg-background px-4 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <Library className="h-5 w-5 shrink-0 text-muted-foreground" />
             <div>
               <h2 className="text-base font-semibold tracking-tight text-foreground">{t('surveyPage.title')}</h2>
               <p className="text-xs text-muted-foreground">{t('surveyPage.description')}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={refresh}>
+            <Button variant="outline" size="sm" onClick={refresh} aria-label={t('buttons.refresh')}>
               <RefreshCw className="h-3.5 w-3.5" />
             </Button>
           </div>
         </div>
       </div>
 
-      {/* Main content: left-right split */}
+      {isMobile && <div className="flex gap-2 border-b border-border px-4 py-2">
+        <Button variant={showLibrary ? 'secondary' : 'ghost'} size="sm" aria-pressed={showLibrary} onClick={() => setShowLibrary(true)}>{t('surveyPage.labels.library')}</Button>
+        <Button variant={!showLibrary ? 'secondary' : 'ghost'} size="sm" aria-pressed={!showLibrary} onClick={() => setShowLibrary(false)}>{t('workbench.preview')}</Button>
+      </div>}
+      {/* Main content: viewer and resource list; one pane at a time on mobile. */}
       <div className="flex-1 flex min-h-0 overflow-hidden">
         {/* Left: File Content Viewer */}
-        <div className="flex-1 min-w-0 overflow-auto p-4">
+        <div className={`flex-1 min-w-0 overflow-auto p-4 ${isMobile && showLibrary ? 'hidden' : ''}`}>
           {loading ? (
             <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               {t('surveyPage.loading')}
             </div>
           ) : error ? (
-            <div className="flex h-full items-center justify-center rounded-xl border border-destructive/30 bg-card/60 text-sm text-destructive">
+            <div className="flex h-full items-center justify-center rounded-lg border border-destructive/30 bg-card text-sm text-destructive">
               <AlertCircle className="mr-2 h-4 w-4" />
               {t('surveyPage.errors.loadFailed')}
             </div>
           ) : !selectedItem ? (
-            <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-border/60 bg-background/40 px-6 text-center text-sm text-muted-foreground">
+            <div className="flex h-full items-center justify-center rounded-lg border border-dashed border-border/60 bg-background px-6 text-center text-sm text-muted-foreground">
               {t('surveyPage.empty.noSelection')}
             </div>
           ) : selectedItem.type === 'task' ? (
             <TaskPreview task={selectedItem.value} />
           ) : preview.loading ? (
-            <div className="flex h-full items-center justify-center rounded-xl border border-border/60 bg-background/40 text-sm text-muted-foreground">
+            <div className="flex h-full items-center justify-center rounded-lg border border-border/60 bg-background text-sm text-muted-foreground">
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               {t('surveyPage.preview.loading')}
             </div>
           ) : preview.error ? (
-            <div className={`flex h-full items-center justify-center rounded-xl border px-6 text-center text-sm ${
+            <div className={`flex h-full items-center justify-center rounded-lg border px-6 text-center text-sm ${
               preview.error === 'not-found' || preview.error === 'forbidden'
-                ? 'border-muted-foreground/20 bg-background/40 text-muted-foreground'
-                : 'border-destructive/30 bg-background/40 text-destructive'
+                ? 'border-muted-foreground/20 bg-background text-muted-foreground'
+                : 'border-destructive/30 bg-background text-destructive'
             }`}>
               <AlertCircle className="mr-2 h-4 w-4" />
               {preview.error === 'not-found'
@@ -587,28 +596,37 @@ export default function SurveyPage({ selectedProject, onChatFromReference }: Sur
         </div>
 
         {/* Resize handle */}
-        <div
+        {!isMobile && <div
+          role="separator" aria-orientation="vertical" aria-label={t('workbench.resizeLibrary')}
+          aria-valuemin={240} aria-valuemax={600} aria-valuenow={sidebarWidth} tabIndex={0}
+          onKeyDown={event => {
+            if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+              event.preventDefault();
+              setSidebarWidth(width => Math.max(240, Math.min(600, width + (event.key === 'ArrowLeft' ? 16 : -16))));
+            }
+          }}
           onMouseDown={handleResizeStart}
-          className="w-1 shrink-0 cursor-col-resize bg-border/30 hover:bg-primary/30 transition-colors"
-        />
+          className="w-1 shrink-0 cursor-col-resize bg-border hover:bg-primary/30"
+        />}
 
         {/* Right: Sidebar with directory, stats, tasks, references */}
-        <div style={{ width: sidebarWidth }} className="shrink-0 flex flex-col overflow-hidden bg-background/30">
+        <div style={{ width: isMobile ? '100%' : sidebarWidth }} className={`min-w-0 shrink-0 flex-col overflow-hidden bg-background ${isMobile && !showLibrary ? 'hidden' : 'flex'}`}>
           <div className="overflow-y-auto flex-1 p-3 space-y-3">
             {/* Filter */}
             <Input
               value={filter}
               onChange={(event) => setFilter(event.target.value)}
+              aria-label={t('surveyPage.filterPlaceholder')}
               placeholder={t('surveyPage.filterPlaceholder')}
               className="bg-background text-xs h-8"
             />
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-x-4 border-b border-border pb-2">
               <SummaryCard label={t('surveyPage.summary.papers')} value={papers.length} icon={BookOpen} tone={SECTION_META.papers.tone} />
               <SummaryCard label={t('surveyPage.summary.reports')} value={reports.length} icon={FileText} tone={SECTION_META.reports.tone} />
               <SummaryCard label={t('surveyPage.summary.graphs')} value={graphs.length} icon={Network} tone={SECTION_META.graphs.tone} />
-              <SummaryCard label={t('surveyPage.summary.tasks')} value={tasks.length} icon={ClipboardList} tone="text-violet-600 dark:text-violet-400" />
+              <SummaryCard label={t('surveyPage.summary.tasks')} value={tasks.length} icon={ClipboardList} tone="text-muted-foreground dark:text-muted-foreground" />
             </div>
 
             {/* Tasks Panel */}
@@ -617,7 +635,7 @@ export default function SurveyPage({ selectedProject, onChatFromReference }: Sur
               badge={tasks.length}
               collapsed={collapsedPanels.tasks}
               onToggle={() => togglePanel('tasks')}
-              accentClassName="bg-violet-500/70"
+              accentClassName="bg-muted"
             >
               <div className="p-1.5">
                 {tasks.length === 0 ? (
@@ -635,15 +653,15 @@ export default function SurveyPage({ selectedProject, onChatFromReference }: Sur
                         className={cn(
                           'mb-1 w-full rounded-lg border px-2 py-2 text-left transition-colors last:mb-0',
                           isSelected
-                            ? 'border-primary/60 bg-primary/8 shadow-sm'
-                            : 'border-transparent bg-background/55 hover:border-border/60 hover:bg-background/80',
+                            ? 'border-primary/60 bg-primary/8 '
+                            : 'border-transparent bg-background hover:border-border/60 hover:bg-background',
                         )}
                       >
                         <div className="text-xs font-medium text-foreground">{task.title}</div>
-                        <div className="mt-0.5 line-clamp-2 text-[10px] leading-4 text-muted-foreground">
+                        <div className="mt-0.5 line-clamp-2 text-xs leading-4 text-muted-foreground">
                           {task.description || t('surveyPage.empty.noTaskDescription')}
                         </div>
-                        <Badge variant="secondary" className="mt-1.5 text-[10px] px-1.5 py-0">
+                        <Badge variant="secondary" className="mt-1.5 text-xs px-1.5 py-0">
                           {task.status || 'pending'}
                         </Badge>
                       </button>
@@ -689,7 +707,7 @@ export default function SurveyPage({ selectedProject, onChatFromReference }: Sur
               title={t('surveyPage.sections.references')}
               collapsed={collapsedPanels.references}
               onToggle={() => togglePanel('references')}
-              accentClassName="bg-purple-500/70"
+              accentClassName="bg-muted"
             >
               <div className="p-2">
                 <ReferencesPanel projectName={selectedProject.name} onChatFromReference={onChatFromReference} />

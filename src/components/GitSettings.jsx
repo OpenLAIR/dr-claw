@@ -1,131 +1,41 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { GitBranch, Check } from 'lucide-react';
-import { authenticatedFetch } from '../utils/api';
-import { useTranslation } from 'react-i18next';
+import { useSettingsDraft } from './settings/SettingsDraftGuard';
+import SettingsFeedback from './settings/SettingsFeedback';
+import { settingsRequest, useSettingsRequest } from './settings/useSettingsRequest';
 
-function GitSettings() {
+export default function GitSettings() {
   const { t } = useTranslation('settings');
   const [gitName, setGitName] = useState('');
   const [gitEmail, setGitEmail] = useState('');
-  const [gitConfigLoading, setGitConfigLoading] = useState(false);
-  const [gitConfigSaving, setGitConfigSaving] = useState(false);
-  const [saveStatus, setSaveStatus] = useState(null);
-
-  useEffect(() => {
-    loadGitConfig();
-  }, []);
-
-  const loadGitConfig = async () => {
-    try {
-      setGitConfigLoading(true);
-      const response = await authenticatedFetch('/api/user/git-config');
-      if (response.ok) {
-        const data = await response.json();
-        setGitName(data.gitName || '');
-        setGitEmail(data.gitEmail || '');
-      }
-    } catch (error) {
-      console.error('Error loading git config:', error);
-    } finally {
-      setGitConfigLoading(false);
-    }
+  const [saved, setSaved] = useState({ name: '', email: '' });
+  const [loaded, setLoaded] = useState(false);
+  const { states, run, clear } = useSettingsRequest();
+  const load = useCallback(() => run('load', () => settingsRequest('/api/user/git-config'), data => {
+    setSaved({ name: data.gitName || '', email: data.gitEmail || '' });
+    setGitName(data.gitName || ''); setGitEmail(data.gitEmail || ''); setLoaded(true);
+  }), [run]);
+  useEffect(() => { void load(); }, [load]);
+  useSettingsDraft(loaded && (gitName !== saved.name || gitEmail !== saved.email), { busy: states.save?.pending });
+  const save = event => {
+    event.preventDefault();
+    if (!gitName.trim() || !gitEmail.trim()) return;
+    void run('save', () => settingsRequest('/api/user/git-config', {
+      method: 'POST', body: JSON.stringify({ gitName: gitName.trim(), gitEmail: gitEmail.trim() }),
+    }), () => setSaved({ name: gitName, email: gitEmail }));
   };
-
-  const saveGitConfig = async () => {
-    try {
-      setGitConfigSaving(true);
-      const response = await authenticatedFetch('/api/user/git-config', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ gitName, gitEmail })
-      });
-
-      if (response.ok) {
-        setSaveStatus('success');
-        setTimeout(() => setSaveStatus(null), 3000);
-      } else {
-        const data = await response.json();
-        setSaveStatus('error');
-        console.error('Failed to save git config:', data.error);
-      }
-    } catch (error) {
-      console.error('Error saving git config:', error);
-      setSaveStatus('error');
-    } finally {
-      setGitConfigSaving(false);
-    }
-  };
-
-  return (
-    <div className="space-y-8">
-      <div>
-        <div className="flex items-center gap-2 mb-4">
-          <GitBranch className="h-5 w-5" />
-          <h3 className="text-lg font-semibold">{t('git.title')}</h3>
-        </div>
-
-        <p className="text-sm text-muted-foreground mb-4">
-          {t('git.description')}
-        </p>
-
-        <div className="p-4 border rounded-lg bg-card space-y-3">
-          <div>
-            <label htmlFor="settings-git-name" className="block text-sm font-medium text-foreground mb-2">
-              {t('git.name.label')}
-            </label>
-            <Input
-              id="settings-git-name"
-              type="text"
-              value={gitName}
-              onChange={(e) => setGitName(e.target.value)}
-              placeholder="John Doe"
-              disabled={gitConfigLoading}
-              className="w-full"
-            />
-            <p className="mt-1 text-xs text-muted-foreground">
-              {t('git.name.help')}
-            </p>
-          </div>
-
-          <div>
-            <label htmlFor="settings-git-email" className="block text-sm font-medium text-foreground mb-2">
-              {t('git.email.label')}
-            </label>
-            <Input
-              id="settings-git-email"
-              type="email"
-              value={gitEmail}
-              onChange={(e) => setGitEmail(e.target.value)}
-              placeholder="john@example.com"
-              disabled={gitConfigLoading}
-              className="w-full"
-            />
-            <p className="mt-1 text-xs text-muted-foreground">
-              {t('git.email.help')}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={saveGitConfig}
-              disabled={gitConfigSaving || !gitName || !gitEmail}
-            >
-              {gitConfigSaving ? t('git.actions.saving') : t('git.actions.save')}
-            </Button>
-
-            {saveStatus === 'success' && (
-              <div className="text-sm text-green-600 dark:text-green-400 flex items-center gap-2">
-                <Check className="w-4 h-4" />
-                {t('git.status.success')}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  return <section className="space-y-4" data-git-settings>
+    <div><h3 className="text-lg font-medium">{t('git.title')}</h3><p className="mt-1 text-sm text-muted-foreground">{t('git.description')}</p></div>
+    <SettingsFeedback state={states.load} onRetry={load} saved={false} />
+    <form onSubmit={save}>
+      <fieldset disabled={!loaded || states.load?.pending || states.save?.pending} className="min-w-0 space-y-4 rounded-lg border border-border p-4">
+        <div><label htmlFor="settings-git-name" className="mb-2 block text-sm font-medium">{t('git.name.label')}</label><Input id="settings-git-name" required value={gitName} onChange={event => { setGitName(event.target.value); clear('save'); }} autoComplete="name" className="min-h-11 text-base md:text-sm" /><p className="mt-1 text-xs text-muted-foreground">{t('git.name.help')}</p></div>
+        <div><label htmlFor="settings-git-email" className="mb-2 block text-sm font-medium">{t('git.email.label')}</label><Input id="settings-git-email" type="email" required value={gitEmail} onChange={event => { setGitEmail(event.target.value); clear('save'); }} autoComplete="email" className="min-h-11 text-base md:text-sm" /><p className="mt-1 text-xs text-muted-foreground">{t('git.email.help')}</p></div>
+        <Button type="submit" disabled={!gitName.trim() || !gitEmail.trim()} className="min-h-11 max-w-full whitespace-normal">{states.save?.pending ? t('git.actions.saving') : t('git.actions.save')}</Button>
+      </fieldset>
+    </form>
+    <SettingsFeedback state={states.save} />
+  </section>;
 }
-
-export default GitSettings;

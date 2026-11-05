@@ -1,5 +1,8 @@
-import { Suspense, useMemo, useState } from 'react';
-import { ExternalLink, Loader2, RefreshCw, Wrench, X } from 'lucide-react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import WorkbenchDialog from './ui/WorkbenchDialog';
+import { Button } from './ui/button';
+import { ExternalLink, Loader2, RefreshCw, Wrench } from 'lucide-react';
 import LazyLoadBoundary from './LazyLoadBoundary';
 import lazyWithRetry from '../utils/lazyWithRetry';
 import { authenticatedFetch } from '../utils/api';
@@ -27,7 +30,12 @@ function LoginModal({
   docsUrl = null,
   downloadUrl = null,
 }) {
+  const { t } = useTranslation('common');
   const { openExternal: desktopOpenExternal } = useDesktop();
+  const closeTimer = useRef(null);
+  const requestLock = useRef(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  useEffect(() => () => clearTimeout(closeTimer.current), [isOpen, provider]);
   const [isInstalling, setIsInstalling] = useState(false);
   const [installMessage, setInstallMessage] = useState('');
   const [installOutput, setInstallOutput] = useState('');
@@ -48,21 +56,6 @@ function LoginModal({
   }, [provider]);
 
   if (!isOpen) return null;
-
-  const getTitle = () => {
-    switch (provider) {
-      case 'claude':
-        return 'Claude CLI Login';
-      case 'cursor':
-        return 'Cursor CLI Login';
-      case 'codex':
-        return 'Codex CLI Login';
-      case 'gemini':
-        return 'Gemini CLI Login';
-      default:
-        return 'CLI Login';
-    }
-  };
 
   const getCommand = () => {
     if (customCommand) return customCommand;
@@ -95,7 +88,8 @@ function LoginModal({
     }
 
     if (exitCode === 0) {
-      setTimeout(() => {
+      clearTimeout(closeTimer.current);
+      closeTimer.current = setTimeout(() => {
         onClose();
       }, 1000);
     }
@@ -106,18 +100,26 @@ function LoginModal({
       return;
     }
 
-    desktopOpenExternal(url);
+    try { await desktopOpenExternal(url); }
+    catch { setInstallMessage(t('loginDialog.openFailed')); }
   };
 
   const handleRefresh = async () => {
+    if (requestLock.current) return;
+    requestLock.current = true;
+    setIsRefreshing(true);
     setInstallMessage('');
     setInstallOutput('');
-    await onStatusRefresh?.();
+    try { await onStatusRefresh?.(); }
+    catch { setInstallMessage(t('loginDialog.refreshFailed')); }
+    finally { requestLock.current = false; setIsRefreshing(false); }
   };
 
   const handleInstall = async () => {
+    if (requestLock.current) return;
+    requestLock.current = true;
     setIsInstalling(true);
-    setInstallMessage('Installing CLI...');
+    setInstallMessage(t('loginDialog.installing'));
     setInstallOutput('');
 
     try {
@@ -129,130 +131,59 @@ function LoginModal({
       setInstallOutput([data.stdout, data.stderr].filter(Boolean).join('\n\n'));
 
       if (response.ok && data?.status?.cliAvailable !== false) {
-        setInstallMessage('Installation finished. Rechecking CLI status...');
+        setInstallMessage(t('loginDialog.installed'));
       } else {
-        setInstallMessage(data.error || 'Installation failed. You can retry or open the official download page.');
+        setInstallMessage(data.error || t('loginDialog.installFailed'));
       }
 
       await onStatusRefresh?.();
     } catch (error) {
-      setInstallMessage(error.message || 'Installation failed.');
+      setInstallMessage(error.message || t('loginDialog.installFailed'));
     } finally {
+      requestLock.current = false;
       setIsInstalling(false);
     }
   };
 
-  if (!cliAvailable) {
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] max-md:items-stretch max-md:justify-stretch">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-lg flex flex-col md:rounded-lg md:m-4 max-md:max-w-none max-md:h-full max-md:rounded-none max-md:m-0">
-          <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              {getTitle()}
-            </h3>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-              aria-label="Close login modal"
-            >
-              <X className="w-6 h-6" />
-            </button>
-          </div>
-          <div className="p-6 space-y-4">
-            <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
-              {installHint || 'Required CLI is not installed. Install it first, then retry login.'}
-            </div>
-
-            {installMessage && (
-              <div className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-foreground whitespace-pre-wrap">
-                {installMessage}
-              </div>
-            )}
-
-            {installOutput && (
-              <pre className="max-h-52 overflow-auto rounded-lg border border-border bg-slate-950 px-4 py-3 text-xs text-slate-100 whitespace-pre-wrap">
-                {installOutput}
-              </pre>
-            )}
-
-            <div className="flex flex-wrap gap-3">
-              {installable && installerAvailable && (
-                <button
-                  onClick={handleInstall}
-                  disabled={isInstalling}
-                  className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
-                >
-                  {isInstalling ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wrench className="w-4 h-4" />}
-                  {isInstalling ? 'Installing...' : `Install ${providerLabel}`}
-                </button>
-              )}
-
-              <button
-                onClick={handleRefresh}
-                disabled={isInstalling}
-                className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted disabled:opacity-60"
-              >
-                <RefreshCw className="w-4 h-4" />
-                Recheck
-              </button>
-
-              {(downloadUrl || docsUrl) && (
-                <button
-                  onClick={() => handleOpenExternal(downloadUrl || docsUrl)}
-                  className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                  Open Official Guide
-                </button>
-              )}
-            </div>
-
-            {installerHint && (
-              <div className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-xs text-muted-foreground whitespace-pre-wrap">
-                {installerHint}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
+  const busy = isInstalling || isRefreshing;
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] max-md:items-stretch max-md:justify-stretch">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl h-3/4 flex flex-col md:max-w-4xl md:h-3/4 md:rounded-lg md:m-4 max-md:max-w-none max-md:h-full max-md:rounded-none max-md:m-0">
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            {getTitle()}
-          </h3>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-            aria-label="Close login modal"
-          >
-            <X className="w-6 h-6" />
-          </button>
+    <WorkbenchDialog title={t('loginDialog.title', { provider: providerLabel })} onClose={onClose} size={cliAvailable ? 'wide' : 'default'} busy={busy}>
+      {!cliAvailable ? (
+        <div className="space-y-4">
+          <p className="rounded-md border border-border bg-muted/40 p-3 text-sm break-words">
+            {installHint || t('loginDialog.missing')}
+          </p>
+          {installMessage && <p role="status" className="text-sm whitespace-pre-wrap break-words">{installMessage}</p>}
+          {installOutput && <pre className="max-h-52 overflow-auto rounded-md border border-border bg-muted p-3 text-xs whitespace-pre-wrap break-words">{installOutput}</pre>}
+          <div className="flex flex-wrap gap-2">
+            {installable && installerAvailable && (
+              <Button type="button" className="min-h-11" disabled={busy} onClick={handleInstall}>
+                {isInstalling ? <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" /> : <Wrench className="h-4 w-4" />}
+                {isInstalling ? t('loginDialog.installing') : t('loginDialog.install', { provider: providerLabel })}
+              </Button>
+            )}
+            <Button type="button" variant="outline" className="min-h-11" disabled={busy} onClick={handleRefresh}>
+              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin motion-reduce:animate-none' : ''}`} />
+              {t('loginDialog.recheck')}
+            </Button>
+            {(downloadUrl || docsUrl) && (
+              <Button type="button" variant="outline" className="min-h-11" onClick={() => handleOpenExternal(downloadUrl || docsUrl)}>
+                <ExternalLink className="h-4 w-4" />{t('loginDialog.guide')}
+              </Button>
+            )}
+          </div>
+          {installerHint && <p className="text-xs text-muted-foreground whitespace-pre-wrap break-words">{installerHint}</p>}
         </div>
-        <div className="flex-1 overflow-hidden">
+      ) : (
+        <div className="h-[min(60dvh,600px)] min-h-0 overflow-hidden rounded-md border border-border">
           <LazyLoadBoundary onClose={onClose}>
-            <Suspense
-              fallback={(
-                <div className="flex h-full items-center justify-center text-gray-400">
-                  <Loader2 className="w-6 h-6 animate-spin" />
-                </div>
-              )}
-            >
-              <StandaloneShell
-                project={project}
-                command={getCommand()}
-                onComplete={handleComplete}
-                minimal={true}
-              />
+            <Suspense fallback={<div role="status" className="flex h-full items-center justify-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin motion-reduce:animate-none" />{t('loginDialog.loading')}</div>}>
+              <StandaloneShell project={project} command={getCommand()} onComplete={handleComplete} minimal={true} />
             </Suspense>
           </LazyLoadBoundary>
         </div>
-      </div>
-    </div>
+      )}
+    </WorkbenchDialog>
   );
 }
 

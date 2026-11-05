@@ -23,30 +23,30 @@ const SOURCE_LABEL_KEYS: Record<NewsSourceKey, string> = {
 };
 
 const SOURCE_BORDER_COLORS: Record<NewsSourceKey, string> = {
-  arxiv: 'border-rose-200/60 dark:border-rose-800/40',
-  huggingface: 'border-yellow-200/60 dark:border-yellow-800/40',
-  github: 'border-violet-200/60 dark:border-violet-800/40',
-  wechat: 'border-emerald-200/60 dark:border-emerald-800/40',
-  x: 'border-gray-300/60 dark:border-gray-700/40',
-  xiaohongshu: 'border-red-200/60 dark:border-red-800/40',
+  arxiv: 'border-border',
+  huggingface: 'border-border',
+  github: 'border-border',
+  wechat: 'border-border',
+  x: 'border-border',
+  xiaohongshu: 'border-border',
 };
 
 const SOURCE_HEADER_COLORS: Record<NewsSourceKey, string> = {
-  arxiv: 'text-rose-700 dark:text-rose-300',
-  huggingface: 'text-yellow-700 dark:text-yellow-300',
-  github: 'text-violet-700 dark:text-violet-300',
-  wechat: 'text-emerald-700 dark:text-emerald-300',
-  x: 'text-gray-700 dark:text-gray-300',
-  xiaohongshu: 'text-red-600 dark:text-red-300',
+  arxiv: 'text-foreground',
+  huggingface: 'text-foreground',
+  github: 'text-foreground',
+  wechat: 'text-foreground',
+  x: 'text-foreground',
+  xiaohongshu: 'text-foreground',
 };
 
 const SOURCE_BADGE_COLORS: Record<NewsSourceKey, string> = {
-  arxiv: 'bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300',
-  huggingface: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950/40 dark:text-yellow-300',
-  github: 'bg-violet-100 text-violet-700 dark:bg-violet-950/40 dark:text-violet-300',
-  wechat: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300',
-  x: 'bg-gray-200 text-gray-700 dark:bg-gray-800/50 dark:text-gray-300',
-  xiaohongshu: 'bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-300',
+  arxiv: 'text-muted-foreground',
+  huggingface: 'text-muted-foreground',
+  github: 'text-muted-foreground',
+  wechat: 'text-muted-foreground',
+  x: 'text-muted-foreground',
+  xiaohongshu: 'text-muted-foreground',
 };
 
 function SetupGuide({ sourceKey, onOpenSettings }: { sourceKey: NewsSourceKey; onOpenSettings: (key: NewsSourceKey) => void }) {
@@ -55,7 +55,7 @@ function SetupGuide({ sourceKey, onOpenSettings }: { sourceKey: NewsSourceKey; o
   const note = t(`setup.${sourceKey}.note`, { defaultValue: '' });
 
   return (
-    <div className="rounded-2xl border border-sky-200/60 bg-sky-50/50 p-4 dark:border-sky-800/30 dark:bg-sky-950/20">
+    <div className="rounded-lg border border-sky-200/60 bg-sky-50/50 p-4 dark:border-sky-800/30 dark:bg-sky-950/20">
       <div className="flex items-start gap-2.5">
         <Info className="h-4 w-4 flex-shrink-0 mt-0.5 text-sky-500" />
         <div className="space-y-2.5 min-w-0">
@@ -66,7 +66,7 @@ function SetupGuide({ sourceKey, onOpenSettings }: { sourceKey: NewsSourceKey; o
             ))}
           </ol>
           {note && (
-            <p className="text-[11px] text-sky-600/60 dark:text-sky-400/50 border-t border-sky-200/40 dark:border-sky-800/20 pt-2 font-mono">
+            <p className="text-xs text-sky-600/60 dark:text-sky-400/50 border-t border-sky-200/40 dark:border-sky-800/20 pt-2 font-mono">
               {note}
             </p>
           )}
@@ -96,7 +96,7 @@ function LogPanel({ logs }: { logs: string[] }) {
     <div className="mx-5 mb-3">
       <div
         ref={scrollRef}
-        className="max-h-32 overflow-y-auto rounded-xl border border-border/40 bg-slate-950/90 p-3 font-mono text-[11px] leading-5 text-emerald-400 dark:border-border/30"
+        className="max-h-32 overflow-y-auto rounded-lg border border-border/40 bg-slate-950/90 p-3 font-mono text-xs leading-5 text-emerald-400 dark:border-border/30"
       >
         {logs.map((line, i) => (
           <div key={i} className="flex gap-2">
@@ -142,17 +142,17 @@ export default function UnifiedFeed({
   return (
     <div className="flex flex-col gap-6">
       <section
-        className={`rounded-[28px] border ${SOURCE_BORDER_COLORS[key]} bg-card/80 shadow-sm backdrop-blur overflow-hidden`}
+        className={`border-t ${SOURCE_BORDER_COLORS[key]} overflow-hidden`}
       >
         {/* Source header */}
         <div className="flex w-full items-center justify-between gap-3 px-5 py-4">
           <div className="flex items-center gap-3 min-w-0">
-            <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${SOURCE_BADGE_COLORS[key]}`}>
+            <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${SOURCE_BADGE_COLORS[key]}`}>
               <SourceIcon sourceKey={key} className="h-4.5 w-4.5" />
             </div>
             <div className="min-w-0">
               <h3 className={`text-sm font-semibold ${SOURCE_HEADER_COLORS[key]}`}>{label}</h3>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 {papers.length > 0
                   ? (totalFound > 0
                       ? t('status.resultsWithTotal', { count: papers.length, total: totalFound })
@@ -170,6 +170,7 @@ export default function UnifiedFeed({
             )}
             <button
               onClick={() => onOpenSettings(key)}
+              aria-label={t('actions.settings')}
               className="flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
             >
               <Settings2 className="h-3.5 w-3.5" />
@@ -177,6 +178,7 @@ export default function UnifiedFeed({
             </button>
             <button
               onClick={() => onSearchSource(key)}
+              aria-label={t('actions.refresh')}
               disabled={searching}
               className="flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors disabled:opacity-40"
             >
@@ -186,6 +188,7 @@ export default function UnifiedFeed({
             {papers.length > 0 && (
               <button
                 onClick={() => onClearSource(key)}
+                aria-label={t('actions.clear')}
                 disabled={searching}
                 className="flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors disabled:opacity-40"
               >
@@ -201,7 +204,7 @@ export default function UnifiedFeed({
 
         {/* Error */}
         {error && (
-          <div className="mx-5 mb-4 flex items-center gap-3 rounded-xl border border-red-200/80 bg-red-50/80 p-3 text-xs text-red-700 dark:border-red-800/50 dark:bg-red-950/30 dark:text-red-300">
+          <div role="alert" className="mx-5 mb-4 flex items-center gap-3 rounded-lg border border-red-200/80 bg-red-50/80 p-3 text-xs text-red-700 dark:border-red-800/50 dark:bg-red-950/30 dark:text-red-300">
             <span>{error}</span>
           </div>
         )}
@@ -228,7 +231,8 @@ export default function UnifiedFeed({
               </div>
               <button
                 onClick={() => onSearchSource(key)}
-                className="flex items-center gap-1.5 rounded-xl border border-border/50 bg-background/80 px-4 py-2 text-sm font-medium text-foreground hover:bg-muted/40 transition-colors"
+              aria-label={t('actions.refresh')}
+                className="flex items-center gap-1.5 rounded-lg border border-border/50 bg-background/80 px-4 py-2 text-sm font-medium text-foreground hover:bg-muted/40 transition-colors"
               >
                 <RefreshCw className="h-3.5 w-3.5" /> {t('actions.startSearch')}
               </button>

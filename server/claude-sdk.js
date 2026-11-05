@@ -26,6 +26,7 @@ import { buildTempAttachmentFilename } from './utils/imageAttachmentFiles.js';
 
 import { createRequestId, waitForToolApproval, resolveToolApproval as resolvePermApproval, matchesToolPermission } from './utils/permissions.js';
 import { buildMemoryBlock } from './utils/memoryPrompt.js';
+import { isBundledSkillRead } from './utils/bundledSkillAccess.js';
 import { BTW_SYSTEM_PROMPT, buildBtwUserMessage } from './utils/btw.js';
 import { COMPUTE_GUARD_BLOCK } from './utils/computeGuardPrompt.js';
 import { debugLog } from './utils/logger.js';
@@ -592,6 +593,12 @@ async function queryClaudeSDK(command, options = {}, ws) {
           matchesToolPermission(entry, toolName, input)
         );
         if (isAllowed) {
+          return { behavior: 'allow', updatedInput: input };
+        }
+
+        // Reading Dr. Claw's own skill files (reached through project symlinks)
+        // is always safe and should not interrupt the user.
+        if (isBundledSkillRead(toolName, input, { cwd: sdkOptions.cwd })) {
           return { behavior: 'allow', updatedInput: input };
         }
       }

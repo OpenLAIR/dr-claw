@@ -65,10 +65,10 @@ export default function IdeaBriefingCard() {
     : '';
 
   return (
-    <section className="rounded-3xl border border-amber-200/60 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.10),transparent_55%),linear-gradient(135deg,rgba(255,250,240,0.96),rgba(255,247,232,0.92))] p-5 shadow-sm dark:border-amber-900/40 dark:bg-[radial-gradient(circle_at_top_right,rgba(245,158,11,0.10),transparent_55%),linear-gradient(135deg,rgba(28,22,15,0.94),rgba(36,26,18,0.92))] sm:p-6">
+    <section className="rounded-lg border border-amber-200/60 bg-background p-5  dark:border-amber-900/40 dark:bg-background sm:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1">
-          <div className="inline-flex items-center gap-2 rounded-full border border-amber-300/60 bg-white/85 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.22em] text-amber-700 dark:border-amber-800/60 dark:bg-slate-950/60 dark:text-amber-200">
+          <div className="inline-flex items-center gap-2 rounded-full border border-amber-300/60 bg-white/85 px-2.5 py-1 text-xs font-medium uppercase tracking-[0.22em] text-amber-700 dark:border-amber-800/60 dark:bg-slate-950/60 dark:text-amber-200">
             <Sparkles className="h-3 w-3" />
             {t('briefing.skillBadge')}
           </div>
@@ -86,7 +86,7 @@ export default function IdeaBriefingCard() {
             type="button"
             onClick={runBriefing}
             disabled={loading}
-            className="inline-flex items-center justify-center gap-2 rounded-full border border-amber-400/60 bg-amber-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-amber-400/60 bg-amber-500 px-4 py-2 text-sm font-medium text-white  transition hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? (
               <>
@@ -101,7 +101,7 @@ export default function IdeaBriefingCard() {
             )}
           </button>
           {data?.generatedAt && (
-            <span className="text-[11px] text-muted-foreground/70">
+            <span className="text-xs text-muted-foreground/70">
               {t('briefing.lastRun', { at: formattedTime })}
             </span>
           )}
@@ -109,7 +109,7 @@ export default function IdeaBriefingCard() {
       </div>
 
       {error && (
-        <div className="mt-4 flex items-start gap-2 rounded-xl border border-rose-200/70 bg-rose-50/70 px-3 py-2 text-xs text-rose-700 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-300">
+        <div className="mt-4 flex items-start gap-2 rounded-lg border border-rose-200/70 bg-rose-50/70 px-3 py-2 text-xs text-rose-700 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-300">
           <AlertCircle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
           <div>
             <div className="font-medium">{t('briefing.errorTitle')}</div>
@@ -119,7 +119,7 @@ export default function IdeaBriefingCard() {
       )}
 
       {data?.summary && (
-        <div className="mt-4 rounded-2xl border border-white/70 bg-white/65 p-4 backdrop-blur dark:border-white/10 dark:bg-slate-950/40">
+        <div className="mt-4 rounded-lg border border-white/70 bg-white/65 p-4  dark:border-white/10 dark:bg-slate-950/40">
           <div className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
             {t('briefing.summaryStats', {
               clusters: data.summary.clusterCount,
@@ -130,17 +130,17 @@ export default function IdeaBriefingCard() {
 
           {data.summary.clusters.length > 0 && (
             <>
-              <div className="mt-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/70">
+              <div className="mt-3 text-xs uppercase tracking-[0.2em] text-muted-foreground/70">
                 {t('briefing.topClusters')}
               </div>
               <ul className="mt-2 space-y-1.5">
                 {data.summary.clusters.slice(0, 5).map((cluster) => (
                   <li
                     key={cluster.label}
-                    className="flex items-center justify-between gap-3 rounded-xl bg-amber-50/60 px-3 py-1.5 text-sm dark:bg-amber-950/20"
+                    className="flex items-center justify-between gap-3 rounded-lg bg-amber-50/60 px-3 py-1.5 text-sm dark:bg-amber-950/20"
                   >
                     <span className="truncate text-foreground/85">{cluster.label}</span>
-                    <span className="flex-shrink-0 text-[11px] text-muted-foreground/80">
+                    <span className="flex-shrink-0 text-xs text-muted-foreground/80">
                       {cluster.size} · {cluster.topScore.toFixed(1)}
                     </span>
                   </li>
@@ -159,7 +159,7 @@ export default function IdeaBriefingCard() {
               <Sparkles className="h-3 w-3" />
               {t('briefing.openInChat')} · {BRIEFING_PROMPT}
             </button>
-            <span className="text-[11px] text-muted-foreground/70">
+            <span className="text-xs text-muted-foreground/70">
               {t('briefing.openInChatHint')}
             </span>
           </div>

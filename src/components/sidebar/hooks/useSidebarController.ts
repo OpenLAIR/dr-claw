@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type React from 'react';
 import type { TFunction } from 'i18next';
 import { api } from '../../../utils/api';
@@ -57,6 +57,8 @@ export function useSidebarController({
   const [editingProject, setEditingProject] = useState<string | null>(null);
   const [showNewProject, setShowNewProject] = useState(false);
   const [editingName, setEditingName] = useState('');
+  const [renameFeedback, setRenameFeedback] = useState({ pending: false, error: '' });
+  const renameLock = useRef(false);
   const [loadingSessions, setLoadingSessions] = useState<LoadingSessionsByProject>({});
   const [additionalSessions, setAdditionalSessions] = useState<AdditionalSessionsByProject>({});
   const [initialSessionsLoaded, setInitialSessionsLoaded] = useState<Set<string>>(new Set());
@@ -70,6 +72,10 @@ export function useSidebarController({
   const [deletingProjects, setDeletingProjects] = useState<Set<string>>(new Set());
   const [deleteConfirmation, setDeleteConfirmation] = useState<DeleteProjectConfirmation | null>(null);
   const [sessionDeleteConfirmation, setSessionDeleteConfirmation] = useState<SessionDeleteConfirmation | null>(null);
+  const [deletionPending, setDeletionPending] = useState<'project' | 'session' | null>(null);
+  const deletionLock = useRef(false);
+  const [projectDeleteError, setProjectDeleteError] = useState('');
+  const [sessionDeleteError, setSessionDeleteError] = useState('');
   const [showVersionModal, setShowVersionModal] = useState(false);
   const [starredProjects, setStarredProjects] = useState<Set<string>>(() => loadStarredProjects());
 
@@ -224,37 +230,67 @@ export function useSidebarController({
   );
 
   const startEditing = useCallback((project: Project) => {
+    if (renameLock.current) return;
+    setEditingSession(null);
+    setRenameFeedback({ pending: false, error: '' });
     setEditingProject(project.name);
     setEditingName(project.displayName);
   }, []);
 
-  const cancelEditing = useCallback(() => {
+  const startEditingSession = useCallback((sessionId: string, initialName: string) => {
+    if (renameLock.current) return;
     setEditingProject(null);
-    setEditingName('');
+    setRenameFeedback({ pending: false, error: '' });
+    setEditingSession(sessionId);
+    setEditingSessionName(initialName);
   }, []);
 
-  const saveProjectName = useCallback(
-    async (projectName: string) => {
+  const cancelEditing = useCallback(() => {
+    if (renameLock.current) return;
+    setEditingProject(null);
+    setEditingName('');
+    setRenameFeedback({ pending: false, error: '' });
+  }, []);
+
+  const cancelEditingSession = useCallback(() => {
+    if (renameLock.current) return;
+    setEditingSession(null);
+    setEditingSessionName('');
+    setRenameFeedback({ pending: false, error: '' });
+  }, []);
+
+  const saveRename = useCallback(async (name: string, request: () => Promise<Response>, close: () => void) => {
+    if (renameLock.current) return;
+    if (!name.trim()) {
+      setRenameFeedback({ pending: false, error: t('messages.nameRequired') });
+      return;
+    }
+    renameLock.current = true;
+    setRenameFeedback({ pending: true, error: '' });
+    try {
+      const response = await request();
+      if (!response.ok) throw new Error(`Rename failed: ${response.status}`);
+      // Refresh failure must not offer a second write after a successful rename.
       try {
-        const response = await api.renameProject(projectName, editingName);
-        if (response.ok) {
-          if (window.refreshProjects) {
-            await window.refreshProjects();
-          } else {
-            window.location.reload();
-          }
-        } else {
-          console.error('Failed to rename project');
-        }
-      } catch (error) {
-        console.error('Error renaming project:', error);
-      } finally {
-        setEditingProject(null);
-        setEditingName('');
-      }
-    },
-    [editingName],
-  );
+        // Sidebar refresh reconciles the selected project/session as well as
+        // the list, so the chat header receives its new name too.
+        await onRefresh();
+      } catch (error) { console.error('Error refreshing after rename:', error); }
+      close();
+    } catch (error) {
+      console.error('Error renaming:', error);
+      setRenameFeedback({ pending: false, error: t('messages.renameFailed') });
+    } finally {
+      renameLock.current = false;
+      setRenameFeedback(previous => ({ ...previous, pending: false }));
+    }
+  }, [onRefresh, t]);
+
+  const saveProjectName = useCallback((projectName: string) => saveRename(
+    editingName,
+    () => api.renameProject(projectName, editingName.trim()),
+    () => { setEditingProject(null); setEditingName(''); },
+  ), [editingName, saveRename]);
 
   const showDeleteSessionConfirmation = useCallback(
     (
@@ -263,18 +299,21 @@ export function useSidebarController({
       sessionTitle: string,
       provider: SessionDeleteConfirmation['provider'] = 'claude',
     ) => {
+      setSessionDeleteError('');
       setSessionDeleteConfirmation({ projectName, sessionId, sessionTitle, provider });
     },
     [],
   );
 
   const confirmDeleteSession = useCallback(async () => {
-    if (!sessionDeleteConfirmation) {
+    if (!sessionDeleteConfirmation || deletionLock.current) {
       return;
     }
 
     const { projectName, sessionId, provider } = sessionDeleteConfirmation;
-    setSessionDeleteConfirmation(null);
+    deletionLock.current = true;
+    setDeletionPending('session');
+    setSessionDeleteError('');
 
     try {
       const response =
@@ -283,23 +322,23 @@ export function useSidebarController({
           : await api.deleteSession(projectName, sessionId, provider);
 
       if (response.ok) {
+        setSessionDeleteConfirmation(null);
         onSessionDelete?.(sessionId);
       } else {
-        const errorText = await response.text();
-        console.error('[Sidebar] Failed to delete session:', {
-          status: response.status,
-          error: errorText,
-        });
-        alert(t('messages.deleteSessionFailed'));
+        setSessionDeleteError(t('messages.deleteSessionFailed'));
       }
     } catch (error) {
       console.error('[Sidebar] Error deleting session:', error);
-      alert(t('messages.deleteSessionError'));
+      setSessionDeleteError(t('messages.deleteSessionError'));
+    } finally {
+      deletionLock.current = false;
+      setDeletionPending(null);
     }
   }, [onSessionDelete, sessionDeleteConfirmation, t]);
 
   const requestProjectDelete = useCallback(
     (project: Project) => {
+      setProjectDeleteError('');
       setDeleteConfirmation({
         project,
         sessionCount: getProjectSessions(project).length,
@@ -309,44 +348,41 @@ export function useSidebarController({
   );
 
   const confirmDeleteProject = useCallback(async () => {
-    if (!deleteConfirmation) {
+    if (!deleteConfirmation || deletionLock.current) {
       return;
     }
 
     const { project, sessionCount } = deleteConfirmation;
     const isEmpty = sessionCount === 0;
 
-    // Optimistically remove from UI immediately to avoid flash
-    setDeleteConfirmation(null);
-    onProjectDelete?.(project.name);
+    deletionLock.current = true;
+    setDeletionPending('project');
+    setProjectDeleteError('');
 
     try {
       const response = await api.deleteProject(project.name, !isEmpty);
 
       if (!response.ok) {
-        const error = (await response.json()) as { error?: string };
-        if (window.refreshTrashProjects) {
-          await window.refreshTrashProjects();
-        } else {
-          await onRefresh();
-        }
-        alert(error.error || t('messages.deleteProjectFailed'));
+        setProjectDeleteError(t('messages.deleteProjectFailed'));
         return;
       }
 
-      if (window.refreshTrashProjects) {
-        await window.refreshTrashProjects();
-      } else {
-        await onRefresh();
+      setDeleteConfirmation(null);
+      onProjectDelete?.(project.name);
+      // A failed follow-up refresh must not make a successful deletion look
+      // retryable. The selected project is only cleared after the DELETE succeeds.
+      try {
+        if (window.refreshTrashProjects) await window.refreshTrashProjects();
+        else await onRefresh();
+      } catch (error) {
+        console.error('Error refreshing after project deletion:', error);
       }
     } catch (error) {
       console.error('Error deleting project:', error);
-      if (window.refreshTrashProjects) {
-        await window.refreshTrashProjects();
-      } else {
-        await onRefresh();
-      }
-      alert(t('messages.deleteProjectError'));
+      setProjectDeleteError(t('messages.deleteProjectError'));
+    } finally {
+      deletionLock.current = false;
+      setDeletionPending(null);
     }
   }, [deleteConfirmation, onProjectDelete, onRefresh, t]);
 
@@ -411,26 +447,11 @@ export function useSidebarController({
   }, [onRefresh]);
 
   const updateSessionSummary = useCallback(
-    async (projectName: string, sessionId: string, summary: string, provider: SessionProvider = 'claude') => {
-      try {
-        const response = await api.renameSession(projectName, sessionId, summary, provider);
-        if (response.ok) {
-          if (window.refreshProjects) {
-            await window.refreshProjects();
-          } else {
-            window.location.reload();
-          }
-        } else {
-          console.error('Failed to rename session');
-        }
-      } catch (error) {
-        console.error('Error renaming session:', error);
-      } finally {
-        setEditingSession(null);
-        setEditingSessionName('');
-      }
-    },
-    [],
+    (projectName: string, sessionId: string, summary: string, provider: SessionProvider = 'claude') => saveRename(
+      summary,
+      () => api.renameSession(projectName, sessionId, summary.trim(), provider),
+      () => { setEditingSession(null); setEditingSessionName(''); },
+    ), [saveRename],
   );
 
   const collapseSidebar = useCallback(() => {
@@ -459,6 +480,9 @@ export function useSidebarController({
     deletingProjects,
     deleteConfirmation,
     sessionDeleteConfirmation,
+    deletionPending,
+    projectDeleteError,
+    sessionDeleteError,
     showVersionModal,
     starredProjects,
     filteredProjects,
@@ -469,6 +493,9 @@ export function useSidebarController({
     isProjectStarred,
     getProjectSessions,
     startEditing,
+    startEditingSession,
+    cancelEditingSession,
+    renameFeedback,
     cancelEditing,
     saveProjectName,
     showDeleteSessionConfirmation,

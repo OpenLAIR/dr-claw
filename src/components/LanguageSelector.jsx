@@ -23,12 +23,13 @@ function LanguageSelector({ compact = false }) {
   // Compact style for QuickSettingsPanel
   if (compact) {
     return (
-      <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border border-transparent hover:border-gray-300 dark:hover:border-gray-600">
+      <div className="flex items-center justify-between gap-3 py-3">
         <span className="flex items-center gap-2 text-sm text-gray-900 dark:text-white">
           <Languages className="h-4 w-4 text-gray-600 dark:text-gray-400" />
           {t('account.language')}
         </span>
         <select
+          aria-label={t('account.language')}
           value={i18n.language}
           onChange={handleLanguageChange}
           className="w-[100px] text-sm bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
@@ -45,20 +46,21 @@ function LanguageSelector({ compact = false }) {
 
   // Full style for Settings page
   return (
-    <div className="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="font-medium text-gray-900 dark:text-gray-100 mb-1">
+    <div className="border-b border-border py-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0 flex-1 basis-48">
+          <div className="font-medium mb-1">
             {t('account.languageLabel')}
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
+          <div className="text-sm text-muted-foreground">
             {t('account.languageDescription')}
           </div>
         </div>
         <select
+          aria-label={t('account.language')}
           value={i18n.language}
           onChange={handleLanguageChange}
-          className="text-sm bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 w-36"
+          className="min-h-11 max-w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           {languages.map((lang) => (
             <option key={lang.value} value={lang.value}>

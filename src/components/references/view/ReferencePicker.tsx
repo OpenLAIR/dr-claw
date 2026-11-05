@@ -71,14 +71,14 @@ export default function ReferencePicker({ projectName, onSelect, onClose }: Refe
 
   return (
     <div
-      className="absolute bottom-full left-0 right-0 z-50 mb-2 max-h-[420px] overflow-hidden rounded-2xl border border-border/50 bg-card/95 shadow-xl backdrop-blur-md"
+      className="absolute bottom-full left-0 right-0 z-50 mb-2 max-h-[420px] overflow-hidden rounded-lg border border-border/50 bg-popover shadow-xl"
       onClick={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
     >
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border/40 px-4 py-3">
         <div className="flex items-center gap-2">
-          <FileText className="h-4 w-4 text-sky-500" />
+          <FileText className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm font-medium">{t('picker.title')}</span>
           {selected.size > 0 && (
             <Badge variant="secondary">{selected.size}</Badge>

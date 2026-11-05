@@ -8,7 +8,8 @@
     "showAllRefs": "Browse all references ({{count}})",
     "hideAllRefs": "Hide all references",
     "addFromLibrary": "Add from library ({{count}})",
-    "hideLibrary": "Hide library"
+    "hideLibrary": "Hide library",
+    "loadFailed": "Could not load references. Refresh to try again."
   },
   "search": {
     "placeholder": "Search by title, author, journal..."
@@ -78,6 +79,8 @@
     "deleteAll": "Delete All",
     "deleteAllTitle": "Delete All References",
     "deleteAllConfirm": "Are you sure you want to delete all {{count}} references?",
-    "deleteAllWarning": "This removes them from VibeLab only. They will not be deleted from Zotero."
+    "deleteAllWarning": "This removes them from VibeLab only. They will not be deleted from Zotero.",
+    "refresh": "Refresh references",
+    "deleteFailed": "Could not delete references. Your selection is kept. Try again."
   }
 }

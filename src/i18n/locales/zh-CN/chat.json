@@ -1,4 +1,28 @@
 {
+  "queue": {
+    "removeLabel": "移除",
+    "title": "消息队列",
+    "add": "加入队列",
+    "waiting": "等待发送：{{count}} 条",
+    "paused": "队列已暂停：{{count}} 条",
+    "resume": "继续队列",
+    "remove": "移除第 {{number}} 条排队消息",
+    "files": "{{count}} 个附件",
+    "edit": "编辑第 {{number}} 条排队消息",
+    "editLabel": "编辑",
+    "editHint": "保留原排队位置，此消息将在结束编辑后继续等待处理。",
+    "cancelEdit": "取消编辑",
+    "saveEdit": "保存修改",
+    "restored": "已恢复消息和附件。检查后，点击“继续队列”即可发送。",
+    "saving": "正在将队列保存到本机…",
+    "saveFailed": "队列未能保存到本机。请保持窗口打开并重试。",
+    "restoreFailed": "无法读取已保存的队列，请重试后再发送新消息。",
+    "retryStorage": "重试保存或恢复",
+    "checkDelivery": "核对上次发送状态",
+    "uncertain": "应用在发送过程中关闭，这条消息可能已经出现在会话中。请先核对历史记录再重发；也可以取消并从队列中移除它。",
+    "sendAgain": "重新发送并继续",
+    "waitForRestore": "队列恢复后即可发送"
+  },
   "status": {
     "thinking": "思考中...",
     "runningCode": "运行代码中"
@@ -91,7 +115,15 @@
     "addTo": "将 {{entry}} 添加到允许的工具。",
     "retry": "权限已保存。重试请求以使用该工具。",
     "error": "无法更新权限。请重试。",
-    "openSettings": "打开设置"
+    "openSettings": "打开设置",
+    "required": "需要授权",
+    "tool": "工具",
+    "rule": "授权规则",
+    "viewInput": "查看工具输入",
+    "allowOnce": "允许一次",
+    "allowSaved": "允许（已保存）",
+    "allowRemember": "允许并记住",
+    "deny": "拒绝"
   },
   "todo": {
     "updated": "待办列表已成功更新",
@@ -124,7 +156,20 @@
     },
     "technicalDetails": "技术细节"
   },
+  "voice": {
+    "title": "语音输入",
+    "start": "开始语音输入",
+    "stop": "停止录音",
+    "denied": "麦克风访问被拒绝。请在浏览器设置中允许麦克风访问后重试。",
+    "network": "语音识别连接失败，请检查网络后重试。",
+    "noDevice": "未检测到麦克风，请检查音频输入设备。",
+    "failed": "无法启动语音输入，请重试或直接输入文字。",
+    "unsupported": "当前浏览器不支持语音输入，你可以继续输入文字。"
+  },
   "input": {
+    "preparing": "正在准备消息",
+    "moreTools": "更多工具",
+    "message": "消息",
     "placeholder": "输入 / 调用命令，@ 选择文件，或向 {{provider}} 提问...",
     "placeholderDefault": "输入您的消息...",
     "disabled": "输入已禁用",
@@ -136,13 +181,15 @@
     "send": "发送",
     "stop": "停止",
     "hintText": {
-      "ctrlEnter": "Ctrl+Enter 发送 • Shift+Enter 换行 • Tab 切换模式 • / 斜杠命令",
-      "enter": "Enter 发送 • Shift+Enter 换行 • Tab 切换模式 • / 斜杠命令"
+      "ctrlEnter": "Ctrl/⌘+Enter 发送 · Enter 换行 · / 打开命令",
+      "enter": "Enter 发送 · Shift+Enter 换行 · / 打开命令"
     },
-    "clickToChangeMode": "点击更改权限模式（或在输入框中按 Tab）",
+    "clickToChangeMode": "切换权限模式",
     "showAllCommands": "显示所有命令",
     "clearInput": "清空输入",
-    "scrollToBottom": "滚动到底部"
+    "scrollToBottom": "滚动到底部",
+    "configuration": "模型与执行设置",
+    "configurationDescription": "选择此会话使用的模型和推理强度。"
   },
   "thinkingMode": {
     "selector": {
@@ -336,7 +383,7 @@
     },
     "continue": {
       "title": "继续您的对话",
-      "description": "询问有关代码的问题、请求更改或获取开发任务的帮助"
+      "description": "提出问题、比较研究证据，或规划下一步工作。"
     },
     "loading": {
       "olderMessages": "正在加载更早的消息...",
@@ -357,6 +404,8 @@
     "title": "会话上下文",
     "description": "这里展示本次会话轨迹中实际出现过的文件、任务和输出。",
     "codexNotice": "Codex 的可见性目前并不完整，取决于运行时当前暴露的工具事件。",
+    "reviewLoadError": "无法加载查阅状态，请重试。",
+    "reviewSaveError": "查阅状态保存失败，此输出仍标记为未读。",
     "traceError": "完整会话轨迹加载失败，当前仅显示内存中的实时消息。",
     "fileTreeError": "加载项目文件失败。",
     "stats": {
@@ -375,7 +424,8 @@
     "actions": {
       "collapse": "折叠上下文侧栏",
       "expand": "展开上下文侧栏",
-      "resize": "拖动以调整宽度"
+      "resize": "调整右侧栏宽度",
+      "resizeHint": "拖动调整宽度 · 双击恢复默认"
     },
     "filters": {
       "all": "全部",
@@ -392,6 +442,7 @@
       "injectedContext": "当前还没有观察到文件或目录上下文。",
       "taskContext": "当前还没有捕获到任务或待办上下文。",
       "reviewQueue": "当前会话还没有发现生成文件。",
+      "filteredReview": "没有符合此筛选条件的输出。",
       "files": "未找到文件"
     },
     "sidebarTabs": {
@@ -401,6 +452,7 @@
       "shell": "终端",
       "git": "代码历史"
     },
+    "showMore": "再显示 {{count}} 项",
     "showLess": "收起",
     "preview": {
       "titleFallback": "预览",
@@ -411,6 +463,7 @@
       "selectToReview": "选择一个文件进行审阅",
       "unreadHint": "输出文件会保持未读状态，直到你从审阅队列中打开它。",
       "closePreview": "关闭预览",
+      "openFile": "在编辑器中打开 {{name}}",
       "openInEditor": "在编辑器中打开"
     }
   },
@@ -422,7 +475,10 @@
     "status": {
       "newSession": "新会话",
       "initializing": "初始化中...",
-      "restarting": "重启中..."
+      "restarting": "重启中...",
+      "connected": "已连接",
+      "disconnected": "已断开",
+      "completed": "已完成"
     },
     "actions": {
       "disconnect": "断开连接",
@@ -435,7 +491,7 @@
     "loading": "正在加载终端...",
     "connecting": "正在连接到 Shell...",
     "startSession": "启动新的 Claude 会话",
-    "resumeSession": "恢复会话：{{displayName}}...",
+    "resumeSession": "恢复会话：{{displayName}}",
     "runCommand": "在 {{projectName}} 中运行 {{command}}",
     "openTerminal": "在 {{projectName}} 中打开终端",
     "startCli": "在 {{projectName}} 中启动 Claude CLI",
@@ -452,7 +508,18 @@
       "currentSession": "当前会话",
       "newShell": "新建 Shell",
       "tabTitle": "Shell {{index}}",
-      "closeShell": "关闭 {{title}}"
+      "closeShell": "关闭 {{title}}",
+      "tabs": "终端标签"
+    },
+    "auth": {
+      "hint": "打开或复制登录链接",
+      "hide": "隐藏",
+      "url": "身份验证链接",
+      "open": "打开链接",
+      "copy": "复制链接",
+      "copied": "已复制",
+      "show": "显示登录链接",
+      "copyFailed": "无法复制链接，请选中后手动复制。"
     }
   },
   "projectSelection": {
@@ -597,6 +664,27 @@
     }
   },
   "modelSelector": {
-    "notInCliList": "CLI 未列出"
+    "notInCliList": "CLI 未列出",
+    "label": "模型",
+    "unavailable": "不可用",
+    "search": "搜索模型…",
+    "loading": "加载中…",
+    "empty": "未找到模型",
+    "removeCustom": "移除 {{model}}",
+    "customId": "自定义模型 ID",
+    "add": "添加",
+    "addCustom": "添加自定义模型"
+  },
+  "attachments": {
+    "pdfUploaded": "PDF 已上传到工作区",
+    "imageUploaded": "图片已上传到工作区",
+    "fileUploaded": "文件已上传到工作区"
+  },
+  "autoResearchPicker": {
+    "title": "自动研究",
+    "description": "选择工具包和工作流，再输入研究主题。",
+    "setup": "需要配置",
+    "ready": "无需配置 MCP",
+    "configure": "在研究中心配置"
   }
 }

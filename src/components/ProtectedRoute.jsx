@@ -1,13 +1,16 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import LoginForm from './LoginForm';
 import Onboarding from './Onboarding';
 
-const LoadingScreen = () => (
+const LoadingScreen = () => {
+ const { t } = useTranslation('common');
+ return (
   <div className="min-h-screen bg-background flex items-center justify-center p-4">
     <div className="text-center">
       <div className="flex justify-center mb-4">
-        <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-sm ring-1 ring-border/40 bg-background">
+        <div className="w-16 h-16 rounded-lg overflow-hidden bg-background">
           <img
             src="/dr-claw.png"
             alt="Dr. Claw"
@@ -16,16 +19,12 @@ const LoadingScreen = () => (
           />
         </div>
       </div>
-      <h1 className="text-2xl font-bold text-foreground mb-2">Dr. Claw</h1>
-      <div className="flex items-center justify-center space-x-2">
-        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
-        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-      </div>
-      <p className="text-muted-foreground mt-2">Loading...</p>
+      <h1 className="text-2xl font-semibold text-foreground mb-2">Dr. Claw</h1>
+      <p role="status" className="text-muted-foreground mt-2">{t('status.loading')}</p>
     </div>
   </div>
 );
+};
 
 const ProtectedRoute = ({ children }) => {
   const { isLoading, needsSetup, user, hasCompletedOnboarding, refreshOnboardingStatus } = useAuth();

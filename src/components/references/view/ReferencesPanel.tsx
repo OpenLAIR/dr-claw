@@ -1,7 +1,8 @@
+import WorkbenchDialog from '../../ui/WorkbenchDialog';
 import { useState, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { Library, RefreshCw, Upload, Loader2, AlertTriangle, Trash2 } from 'lucide-react';
+import { Library, RefreshCw, Upload, Loader2, Trash2 } from 'lucide-react';
 import { Button } from '../../ui/button';
 import { Badge } from '../../ui/badge';
 import { useReferencesData } from '../hooks/useReferencesData';
@@ -25,11 +26,14 @@ export default function ReferencesPanel({ projectName, onChatFromReference }: Re
     projectReferences,
     zoteroStatus,
     loading,
+    projectError,
     deleteReference,
     bulkDeleteReferences,
     refresh,
   } = useReferencesData({ projectName });
 
+  const [deleteError, setDeleteError] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [selectedRef, setSelectedRef] = useState<Reference | null>(null);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [deleteMode, setDeleteMode] = useState<DeleteMode | null>(null);
@@ -53,6 +57,8 @@ export default function ReferencesPanel({ projectName, onChatFromReference }: Re
 
   const handleConfirmDelete = useCallback(async () => {
     if (!deleteMode) return;
+    setDeleteError(false);
+    setDeleting(true);
     try {
       if (deleteMode.type === 'single') {
         await deleteReference(deleteMode.ref.id);
@@ -60,7 +66,10 @@ export default function ReferencesPanel({ projectName, onChatFromReference }: Re
         await bulkDeleteReferences(deleteMode.refs.map(r => r.id));
       }
     } catch {
-      // error logged in hook
+      setDeleteError(true);
+      return;
+    } finally {
+      setDeleting(false);
     }
     if (deleteMode.type === 'bulk') setCheckedIds(new Set());
     setDeleteMode(null);
@@ -80,13 +89,13 @@ export default function ReferencesPanel({ projectName, onChatFromReference }: Re
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Library className="h-4 w-4 text-purple-500" />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <Library className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm font-medium text-foreground">{t('panel.title')}</span>
           <Badge variant="outline">{projectReferences.length}</Badge>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {checkedIds.size > 0 ? (
             <Button
               size="sm"
@@ -94,7 +103,7 @@ export default function ReferencesPanel({ projectName, onChatFromReference }: Re
               className="text-muted-foreground hover:text-destructive hover:border-destructive/40"
               onClick={() => {
                 const refs = projectReferences.filter((r) => checkedIds.has(r.id));
-                setDeleteMode({ type: 'bulk', refs, label: 'selected' });
+                setDeleteError(false); setDeleteMode({ type: 'bulk', refs, label: 'selected' });
               }}
             >
               <Trash2 className="mr-1 h-3.5 w-3.5" />
@@ -105,7 +114,7 @@ export default function ReferencesPanel({ projectName, onChatFromReference }: Re
               size="sm"
               variant="outline"
               className="text-muted-foreground hover:text-destructive hover:border-destructive/40"
-              onClick={() => setDeleteMode({ type: 'bulk', refs: projectReferences, label: 'project' })}
+              onClick={() => { setDeleteError(false); setDeleteMode({ type: 'bulk', refs: projectReferences, label: 'project' }); }}
             >
               <Trash2 className="mr-1 h-3.5 w-3.5" />
               {t('actions.deleteAll')}
@@ -115,7 +124,7 @@ export default function ReferencesPanel({ projectName, onChatFromReference }: Re
             <Upload className="mr-1 h-3.5 w-3.5" />
             {t('panel.import')}
           </Button>
-          <Button size="sm" variant="outline" onClick={refresh} disabled={loading}>
+          <Button aria-label={t('actions.refresh')} size="sm" variant="outline" onClick={refresh} disabled={loading}>
             {loading ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
             ) : (
@@ -125,6 +134,7 @@ export default function ReferencesPanel({ projectName, onChatFromReference }: Re
         </div>
       </div>
 
+      {projectError && <div role="alert" className="text-sm text-destructive">{t('panel.loadFailed')}</div>}
       {/* Project references */}
       {projectReferences.length > 0 ? (
         <div className="space-y-2">
@@ -138,13 +148,13 @@ export default function ReferencesPanel({ projectName, onChatFromReference }: Re
               onSelect={setSelectedRef}
               onToggleCheck={toggleCheck}
               onChat={onChatFromReference ? handleChatAbout : undefined}
-              onDelete={(r) => setDeleteMode({ type: 'single', ref: r })}
+              onDelete={(r) => { setDeleteError(false); setDeleteMode({ type: 'single', ref: r }); }}
             />
           ))}
         </div>
       ) : (
         <div className="rounded-lg border border-dashed border-border/60 px-4 py-6 text-center text-sm text-muted-foreground">
-          {t('panel.noProjectRefs')}
+          {projectError ? t('panel.loadFailed') : t('panel.noProjectRefs')}
         </div>
       )}
 
@@ -170,35 +180,15 @@ export default function ReferencesPanel({ projectName, onChatFromReference }: Re
       )}
 
       {/* Delete confirmation dialog (single + bulk) */}
-      {deleteMode && ReactDOM.createPortal(
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-          onClick={() => setDeleteMode(null)}
-        >
-          <div
-            className="mx-4 w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-destructive/10">
-                <AlertTriangle className="h-5 w-5 text-destructive" />
-              </div>
-              <h3 className="text-base font-semibold text-foreground">{deleteDialogTitle}</h3>
-            </div>
-            <p className="mt-3 text-sm text-foreground">{deleteDialogMessage}</p>
-            <p className="mt-2 text-xs text-muted-foreground">{deleteDialogWarning}</p>
-            <div className="mt-5 flex justify-end gap-2">
-              <Button variant="ghost" size="sm" onClick={() => setDeleteMode(null)}>
-                {t('actions.cancel')}
-              </Button>
-              <Button variant="destructive" size="sm" onClick={handleConfirmDelete}>
-                {t('actions.deleteButton')}
-              </Button>
-            </div>
-          </div>
-        </div>,
-        document.body,
-      )}
+      {deleteMode && <WorkbenchDialog title={deleteDialogTitle} onClose={() => { if (!deleting) setDeleteMode(null); }}>
+        <p className="text-sm">{deleteDialogMessage}</p>
+        <p className="mt-2 text-xs text-muted-foreground">{deleteDialogWarning}</p>
+        {deleteError && <p role="alert" className="mt-3 text-sm text-destructive">{t('actions.deleteFailed')}</p>}
+        <div className="mt-5 flex justify-end gap-2">
+          <Button variant="ghost" size="sm" disabled={deleting} onClick={() => setDeleteMode(null)}>{t('actions.cancel')}</Button>
+          <Button variant="destructive" size="sm" disabled={deleting} onClick={handleConfirmDelete}>{t('actions.deleteButton')}</Button>
+        </div>
+      </WorkbenchDialog>}
     </div>
   );
 }

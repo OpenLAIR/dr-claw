@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { api } from '../utils/api';
-import { IS_PLATFORM } from '../constants/config';
+import { getDesktopSessionSecret } from '../hooks/useDesktop';
 
 const AuthContext = createContext({
   user: null,
@@ -12,8 +12,32 @@ const AuthContext = createContext({
   needsSetup: false,
   hasCompletedOnboarding: true,
   refreshOnboardingStatus: () => {},
+  isDesktopSession: false,
   error: null
 });
+
+// Desktop app only: trade the per-launch secret from the Electron preload for a
+// regular JWT. Resolves to { token, user } or null (web/npx mode, an older
+// desktop shell, or a server that does not accept it), in which case the
+// normal login flow runs.
+const signInWithDesktopSession = async () => {
+  const secret = await getDesktopSessionSecret();
+  if (!secret) {
+    return null;
+  }
+  try {
+    const response = await api.auth.desktopSession(secret);
+    if (!response.ok) {
+      console.warn('[AuthContext] Desktop sign-in was rejected:', response.status);
+      return null;
+    }
+    const data = await response.json();
+    return data?.token && data?.user ? { token: data.token, user: data.user } : null;
+  } catch (error) {
+    console.warn('[AuthContext] Desktop sign-in failed:', error);
+    return null;
+  }
+};
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -30,6 +54,10 @@ export const AuthProvider = ({ children }) => {
   const [needsSetup, setNeedsSetup] = useState(false);
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(true);
   const [error, setError] = useState(null);
+  const [isDesktopSession, setIsDesktopSession] = useState(false);
+  // One exchange per page load, shared by every checkAuthStatus run (StrictMode
+  // runs the effect twice), so concurrent runs cannot race each other.
+  const desktopSignInRef = useRef(null);
 
   useEffect(() => {
     checkAuthStatus();
@@ -62,6 +90,20 @@ export const AuthProvider = ({ children }) => {
     try {
       setIsLoading(true);
       setError(null);
+
+      if (!desktopSignInRef.current) {
+        desktopSignInRef.current = signInWithDesktopSession();
+      }
+      const desktopSession = await desktopSignInRef.current;
+      if (desktopSession) {
+        localStorage.setItem('auth-token', desktopSession.token);
+        setToken(desktopSession.token);
+        setUser(desktopSession.user);
+        setNeedsSetup(false);
+        setIsDesktopSession(true);
+        await checkOnboardingStatus();
+        return;
+      }
 
       // Check if system needs setup
       const statusResponse = await api.auth.status();
@@ -162,6 +204,10 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    // The desktop app has no account to leave; it would sign straight back in.
+    if (isDesktopSession) {
+      return;
+    }
     setToken(null);
     setUser(null);
     localStorage.removeItem('auth-token');
@@ -184,6 +230,7 @@ export const AuthProvider = ({ children }) => {
     needsSetup,
     hasCompletedOnboarding,
     refreshOnboardingStatus,
+    isDesktopSession,
     error
   };
 

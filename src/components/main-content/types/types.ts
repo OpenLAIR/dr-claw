@@ -71,6 +71,8 @@ export interface MainContentProps {
   onMenuClick: () => void;
   isLoading: boolean;
   isTrashLoading?: boolean;
+  projectsError?: boolean;
+  onRetryProjects?: () => void;
   onInputFocusChange: (focused: boolean) => void;
   onSessionActive: SessionLifecycleHandler;
   onSessionInactive: SessionLifecycleHandler;

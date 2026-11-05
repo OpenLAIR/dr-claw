@@ -8,7 +8,8 @@
     "showAllRefs": "浏览全部文献 ({{count}})",
     "hideAllRefs": "收起全部文献",
     "addFromLibrary": "从库中添加 ({{count}})",
-    "hideLibrary": "收起库"
+    "hideLibrary": "收起库",
+    "loadFailed": "文献加载失败，请刷新重试。"
   },
   "search": {
     "placeholder": "按标题、作者、期刊搜索..."
@@ -78,6 +79,8 @@
     "deleteAll": "全部删除",
     "deleteAllTitle": "删除全部文献",
     "deleteAllConfirm": "确定要删除全部 {{count}} 篇文献吗？",
-    "deleteAllWarning": "仅从 VibeLab 中删除，不会从 Zotero 中删除。"
+    "deleteAllWarning": "仅从 VibeLab 中删除，不会从 Zotero 中删除。",
+    "refresh": "刷新文献",
+    "deleteFailed": "文献删除失败，已保留选择。请重试。"
   }
 }

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { api } from '../utils/api';
 import { isTemporarySessionId } from '../constants/session';
+import { isRecentlyActiveSession, updateSessionActivity } from '../utils/sessionRetention';
 import { queueWorkspaceQaDraft } from '../utils/workspaceQa';
 import { queueReferenceChatDraft } from '../utils/referenceChatDraft';
 import type { Reference } from '../components/references/types';
@@ -90,6 +91,7 @@ const projectsHaveChanges = (
       nextProject.displayName !== prevProject.displayName ||
       nextProject.fullPath !== prevProject.fullPath ||
       serialize(nextProject.sessionMeta) !== serialize(prevProject.sessionMeta) ||
+      serialize(nextProject.taskmaster) !== serialize(prevProject.taskmaster) ||
       serialize(nextProject.sessions) !== serialize(prevProject.sessions);
 
     if (baseChanged) {
@@ -274,10 +276,15 @@ export function useProjectsState({
   const [trashProjects, setTrashProjects] = useState<TrashProject[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [selectedSession, setSelectedSession] = useState<ProjectSession | null>(null);
+  const sessionActivityRef = useRef(new Map<string, number>());
+  useEffect(() => {
+    updateSessionActivity(sessionActivityRef.current, activeSessions, Date.now());
+  }, [activeSessions]);
   const [sessionNavigationSource, setSessionNavigationSource] = useState<SessionNavigationSource>('user');
   const [activeTab, setActiveTab] = useState<AppTab>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isLoadingProjects, setIsLoadingProjects] = useState(true);
+  const [projectsError, setProjectsError] = useState(false);
   const [isLoadingTrashProjects, setIsLoadingTrashProjects] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState<LoadingProgress | null>(null);
   const [isInputFocused, setIsInputFocused] = useState(false);
@@ -296,7 +303,10 @@ export function useProjectsState({
     try {
       setIsLoadingProjects(true);
       const projectsResponse = await api.projects();
+      if (!projectsResponse.ok) throw new Error(`Projects request failed: ${projectsResponse.status}`);
       const projectData = (await projectsResponse.json()) as Project[];
+      if (!Array.isArray(projectData)) throw new Error('Invalid projects response');
+      setProjectsError(false);
 
       setProjects((prevProjects) => {
         if (prevProjects.length === 0) {
@@ -308,6 +318,7 @@ export function useProjectsState({
           : prevProjects;
       });
     } catch (error) {
+      setProjectsError(true);
       console.error('Error fetching projects:', error);
     } finally {
       setIsLoadingProjects(false);
@@ -603,7 +614,9 @@ export function useProjectsState({
         (session) => session.id === selectedSession.id,
       );
 
-      if (!updatedSelectedSession) {
+      // A session that just ran may not be indexed yet (new Codex threads);
+      // clearing the selection then would blank the chat mid-conversation.
+      if (!updatedSelectedSession && !isRecentlyActiveSession(sessionActivityRef.current, selectedSession.id, Date.now())) {
         setSelectedSession(null);
       }
     }, 250);
@@ -708,7 +721,7 @@ export function useProjectsState({
       setSelectedSession(sessionToSelect);
     }
 
-    if (shouldSwitchTab) {
+    if (shouldSwitchTab || options?.source !== 'system') {
       setActiveTab('chat');
     }
 
@@ -728,19 +741,15 @@ export function useProjectsState({
   const handleProjectSelect = useCallback(
     (project: Project) => {
       setSelectedProject(project);
-      setSelectedSession(null);
-      setActiveTab((currentTab) =>
-        currentTab === 'dashboard' || currentTab === 'trash' || currentTab === 'news' || currentTab === 'skills'
-          ? 'chat'
-          : currentTab,
-      );
+      if (selectedProject?.name !== project.name) setSelectedSession(null);
+      setActiveTab('overview');
       navigate('/');
 
       if (isMobile) {
         setSidebarOpen(false);
       }
     },
-    [isMobile, navigate],
+    [isMobile, navigate, selectedProject?.name],
   );
 
   const handleSessionSelect = useCallback(
@@ -834,7 +843,7 @@ export function useProjectsState({
     (project: Project, options?: ProjectCreationOptions) => {
       setSelectedProject(project);
       setSelectedSession(null);
-      setActiveTab('chat');
+      setActiveTab(options?.autoIntake || options?.importedProjectAnalysisPrompt ? 'chat' : 'overview');
       setPendingAutoIntake(options?.autoIntake ?? null);
       setImportedProjectAnalysisPrompt(options?.importedProjectAnalysisPrompt ?? null);
       navigate('/');
@@ -847,8 +856,6 @@ export function useProjectsState({
   const clearImportedProjectAnalysisPrompt = useCallback(() => setImportedProjectAnalysisPrompt(null), []);
 
   const handleOpenDashboard = useCallback(() => {
-    setSelectedProject(null);
-    setSelectedSession(null);
     setActiveTab('dashboard');
     navigate('/');
 
@@ -858,8 +865,6 @@ export function useProjectsState({
   }, [isMobile, navigate]);
 
   const handleOpenTrash = useCallback(() => {
-    setSelectedProject(null);
-    setSelectedSession(null);
     setActiveTab('trash');
     void fetchTrashProjects();
     navigate('/');
@@ -870,8 +875,6 @@ export function useProjectsState({
   }, [fetchTrashProjects, isMobile, navigate]);
 
   const handleOpenSkills = useCallback(() => {
-    setSelectedProject(null);
-    setSelectedSession(null);
     setActiveTab('skills');
     navigate('/');
 
@@ -881,8 +884,6 @@ export function useProjectsState({
   }, [isMobile, navigate]);
 
   const handleOpenNews = useCallback(() => {
-    setSelectedProject(null);
-    setSelectedSession(null);
     setActiveTab('news');
     navigate('/');
 
@@ -892,8 +893,6 @@ export function useProjectsState({
   }, [isMobile, navigate]);
 
   const handleOpenAutoResearch = useCallback(() => {
-    setSelectedProject(null);
-    setSelectedSession(null);
     setActiveTab('autoresearch');
     navigate('/');
 
@@ -903,8 +902,6 @@ export function useProjectsState({
   }, [isMobile, navigate]);
 
   const handleOpenCompute = useCallback(() => {
-    setSelectedProject(null);
-    setSelectedSession(null);
     setActiveTab('compute');
     navigate('/');
 
@@ -1076,6 +1073,7 @@ export function useProjectsState({
     activeTab,
     sidebarOpen,
     isLoadingProjects,
+    projectsError,
     isLoadingTrashProjects,
     loadingProgress,
     isInputFocused,

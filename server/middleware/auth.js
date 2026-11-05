@@ -2,6 +2,12 @@ import jwt from 'jsonwebtoken';
 import { userDb } from '../database/db.js';
 import { IS_PLATFORM } from '../constants/config.js';
 import { resolveJwtSecret } from '../utils/jwtSecret.js';
+import {
+  DESKTOP_TOKEN_HEADER,
+  desktopTokenMatches,
+  readDesktopToken,
+  resolveDesktopUser,
+} from '../utils/desktopAuth.js';
 
 // Resolve the JWT signing secret: JWT_SECRET, else JWT_SECRET_FILE, else a
 // random secret generated once and stored next to the database. There is no
@@ -19,6 +25,30 @@ try {
     + 'Use formats like "1h", "7d", "30d", or a number of seconds.'
   );
 }
+
+// Per-launch desktop secret (set by electron/main.mjs). Read once, then removed
+// from process.env so shells and agent CLIs spawned by the server never inherit it.
+const DESKTOP_TOKEN = readDesktopToken();
+delete process.env.DR_CLAW_DESKTOP_TOKEN;
+
+// Desktop auto-login: accepts only the X-Dr-Claw-Desktop-Token header (never a
+// query string) and maps the request to the local desktop user. Used solely by
+// POST /api/auth/desktop-session, which trades it for a normal JWT.
+const authenticateDesktopSession = (req, res, next) => {
+  if (!DESKTOP_TOKEN) {
+    return res.status(404).json({ error: 'Desktop sign-in is not available' });
+  }
+  if (!desktopTokenMatches(DESKTOP_TOKEN, req.headers[DESKTOP_TOKEN_HEADER])) {
+    return res.status(401).json({ error: 'Invalid desktop session token' });
+  }
+  try {
+    req.user = resolveDesktopUser(userDb);
+    return next();
+  } catch (error) {
+    console.error('Desktop auth error:', error);
+    return res.status(500).json({ error: 'Could not prepare the local desktop user' });
+  }
+};
 
 // Optional API key middleware
 const validateApiKey = (req, res, next) => {
@@ -111,5 +141,6 @@ export {
   authenticateToken,
   generateToken,
   authenticateWebSocket,
+  authenticateDesktopSession,
   JWT_SECRET
 };

@@ -64,7 +64,7 @@ function highlightJsonLine(line: string): (string | JSX.Element)[] {
     } else if (nul !== undefined) {
       parts.push(<span key={match.index} className="text-rose-500 dark:text-rose-400">{nul}</span>);
     } else if (num !== undefined) {
-      parts.push(<span key={match.index} className="text-violet-600 dark:text-violet-400">{num}</span>);
+      parts.push(<span key={match.index} className="text-blue-600 dark:text-blue-400">{num}</span>);
     } else {
       parts.push(full);
     }
@@ -93,6 +93,7 @@ interface ChatContextFilePreviewProps {
   onOpenInEditor?: (filePath: string) => void;
   onClose?: () => void;
   compact?: boolean;
+  embedded?: boolean;
   preloadedContent?: string | null;
 }
 
@@ -102,6 +103,7 @@ export default function ChatContextFilePreview({
   onOpenInEditor,
   onClose,
   compact = false,
+  embedded = false,
   preloadedContent,
 }: ChatContextFilePreviewProps) {
   const { t } = useTranslation('chat');
@@ -210,27 +212,27 @@ export default function ChatContextFilePreview({
   const previewHeightClass = compact ? 'min-h-[220px]' : 'min-h-[320px]';
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border/60 bg-background/80">
+    <div className={`flex min-h-0 flex-1 flex-col overflow-hidden bg-background ${embedded ? '' : 'rounded-lg border border-border'}`}>
       <div className={`flex items-center justify-between gap-2 border-b border-border/60 ${compact ? 'px-2.5 py-2' : 'px-3 py-2'}`}>
         <div className="min-w-0">
-          <div className={`${compact ? 'text-[13px]' : 'text-sm'} truncate font-medium text-foreground`}>
+          {!embedded && <div className="truncate text-sm font-medium text-foreground">
             {file?.name || t('sessionContext.preview.titleFallback')}
-          </div>
-          <div className="truncate text-[11px] text-muted-foreground">
+          </div>}
+          <div className="truncate text-xs text-muted-foreground">
             {file?.relativePath || t('sessionContext.preview.selectFile')}
           </div>
         </div>
         <div className="flex items-center gap-1 shrink-0">
-          {file && (
+          {file && onOpenInEditor && (
             <Button
               type="button"
               size="sm"
               variant="ghost"
               onClick={() => onOpenInEditor?.(openPath)}
-              className={compact ? 'h-7 px-2 text-[11px]' : undefined}
+              className={compact ? 'h-7 px-2 text-xs' : undefined}
             >
               <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
-              {t('sessionContext.preview.open')}
+              {t('sessionContext.preview.openInEditor')}
             </Button>
           )}
           {onClose && (
@@ -298,14 +300,14 @@ export default function ChatContextFilePreview({
             title={file?.name || 'HTML preview'}
             srcDoc={content}
             sandbox=""
-            className={`h-full ${previewHeightClass} w-full rounded-xl border border-border/60 bg-white`}
+            className={`h-full ${previewHeightClass} w-full rounded-lg border border-border/60 bg-white`}
           />
         </div>
       )}
 
       {!loading && !loadError && previewKind === 'markdown' && (
-        <div className={`${previewHeightClass} flex-1 overflow-auto bg-muted/10 ${compact ? 'p-3' : 'p-4'}`}>
-          <div className={`prose prose-sm max-w-none rounded-2xl border border-border/60 bg-background/90 shadow-sm dark:prose-invert ${compact ? 'p-4' : 'p-5'}`}>
+        <div className={`${previewHeightClass} flex-1 overflow-auto bg-background ${compact ? 'p-3' : 'p-4'}`}>
+          <div className="prose prose-sm max-w-none break-words dark:prose-invert">
             <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
               {content}
             </ReactMarkdown>
@@ -314,13 +316,13 @@ export default function ChatContextFilePreview({
       )}
 
       {!loading && !loadError && previewKind === 'json' && (
-        <div className={`${previewHeightClass} flex-1 overflow-auto whitespace-pre-wrap break-words bg-background ${compact ? 'p-3 text-[11px]' : 'p-4 text-xs'} font-mono leading-6 text-muted-foreground`}>
+        <div className={`${previewHeightClass} flex-1 overflow-auto whitespace-pre-wrap break-words bg-background ${compact ? 'p-3 text-xs' : 'p-4 text-xs'} font-mono leading-6 text-muted-foreground`}>
           <JsonHighlight content={content} />
         </div>
       )}
 
       {!loading && !loadError && previewKind === 'text' && (
-        <pre className={`${previewHeightClass} flex-1 overflow-auto whitespace-pre-wrap break-words bg-background ${compact ? 'p-3 text-[11px]' : 'p-4 text-xs'} leading-6 text-foreground`}>
+        <pre className={`${previewHeightClass} flex-1 overflow-auto whitespace-pre-wrap break-words bg-background ${compact ? 'p-3 text-xs' : 'p-4 text-xs'} leading-6 text-foreground`}>
           {content}
         </pre>
       )}

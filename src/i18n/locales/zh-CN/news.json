@@ -26,7 +26,8 @@
     "startSearch": "开始搜索",
     "openSettings": "打开设置",
     "save": "保存更改",
-    "close": "关闭"
+    "close": "关闭",
+    "retry": "重试"
   },
   "status": {
     "loading": "正在加载研究动态...",
@@ -191,5 +192,10 @@
     "addPlaceholder": "添加...",
     "arxivCategories": "arXiv 分类",
     "credentialRequired": "需要凭证"
+  },
+  "errors": {
+    "load": "无法加载研究资讯，请重试。",
+    "save": "无法保存设置，修改仍已保留。",
+    "search": "搜索失败，请重试。"
   }
 }

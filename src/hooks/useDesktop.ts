@@ -18,6 +18,8 @@ interface ElectronAPI {
   showNotification: (title: string, body: string) => Promise<boolean>;
   writeClipboard: (text: string) => Promise<void>;
   readClipboard: () => Promise<string>;
+  /** Missing on desktop shells older than desktop auto-login. */
+  getDesktopSessionToken?: () => Promise<string | null>;
   on: (channel: string, callback: (...args: any[]) => void) => () => void;
 }
 
@@ -95,6 +97,23 @@ function getAPI(): ElectronAPI | null {
     return window.electronAPI;
   }
   return null;
+}
+
+/**
+ * The per-launch desktop sign-in secret from the Electron preload, or null in
+ * a browser, on an older desktop shell, or if the main process refuses.
+ */
+export async function getDesktopSessionSecret(): Promise<string | null> {
+  const getter = getAPI()?.getDesktopSessionToken;
+  if (typeof getter !== 'function') {
+    return null;
+  }
+  try {
+    const secret = await getter();
+    return typeof secret === 'string' && secret.length > 0 ? secret : null;
+  } catch {
+    return null;
+  }
 }
 
 /**

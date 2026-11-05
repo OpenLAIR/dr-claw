@@ -1,299 +1,89 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Plus, Trash2, Edit3 } from 'lucide-react';
 import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
-import { Plus, Trash2, Edit3, Check, X, ToggleLeft, ToggleRight } from 'lucide-react';
-import { authenticatedFetch } from '../../utils/api';
+import WorkbenchDialog from '../ui/WorkbenchDialog';
+import { useSettingsDraft } from './SettingsDraftGuard';
+import SettingsFeedback from './SettingsFeedback';
+import { settingsRequest, useSettingsRequest } from './useSettingsRequest';
 
-const CATEGORIES = [
-  { value: 'general', label: 'General', color: 'bg-gray-500' },
-  { value: 'preference', label: 'Preference', color: 'bg-blue-500' },
-  { value: 'context', label: 'Context', color: 'bg-green-500' },
-  { value: 'workflow', label: 'Workflow', color: 'bg-purple-500' },
-];
-
-function MemoryContent() {
+const categories = ['general', 'preference', 'context', 'workflow'];
+const actionClass = 'min-h-11 md:min-h-8 max-w-full whitespace-normal';
+function MemoryFields({ id, content, category, onContent, onCategory, inputRef }) {
+  const { t } = useTranslation('settings');
+  return <>
+    <div><label htmlFor={`${id}-content`} className="mb-2 block text-sm">{t('memorySettings.content')}</label><textarea ref={inputRef} id={`${id}-content`} required value={content} onChange={event => onContent(event.target.value)} maxLength={500} className="min-h-24 w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-base text-foreground focus:outline-none focus:ring-2 focus:ring-ring md:text-sm" /></div>
+    <div><label htmlFor={`${id}-category`} className="mb-2 block text-sm">{t('memorySettings.category')}</label><select id={`${id}-category`} value={category} onChange={event => onCategory(event.target.value)} className="min-h-11 max-w-full rounded-md border border-input bg-background px-3 text-base text-foreground md:text-sm">{categories.map(value => <option key={value} value={value}>{t(`memorySettings.categories.${value}`)}</option>)}</select></div>
+  </>;
+}
+export default function MemoryContent() {
+  const { t, i18n } = useTranslation('settings');
   const [memories, setMemories] = useState([]);
-  const [globalEnabled, setGlobalEnabled] = useState(true);
-  const [loading, setLoading] = useState(true);
+  const [globalEnabled, setGlobalEnabled] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const [newContent, setNewContent] = useState('');
   const [newCategory, setNewCategory] = useState('general');
   const [editingId, setEditingId] = useState(null);
   const [editContent, setEditContent] = useState('');
   const [editCategory, setEditCategory] = useState('general');
-
-  const fetchMemories = useCallback(async () => {
-    try {
-      const [memoriesRes, settingsRes] = await Promise.all([
-        authenticatedFetch('/api/memory'),
-        authenticatedFetch('/api/memory/settings'),
-      ]);
-      if (memoriesRes.ok) {
-        const data = await memoriesRes.json();
-        setMemories(data.memories || []);
-      }
-      if (settingsRes.ok) {
-        const data = await settingsRes.json();
-        setGlobalEnabled(data.enabled);
-      }
-    } catch (err) {
-      console.error('Failed to fetch memories:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchMemories();
-  }, [fetchMemories]);
-
-  const handleCreate = async () => {
+  const [deleting, setDeleting] = useState(null);
+  const newInput = useRef(null);
+  const editInput = useRef(null);
+  const editButtons = useRef(new Map());
+  const { states, run, clear } = useSettingsRequest();
+  const load = useCallback(() => run('load', () => Promise.all([settingsRequest('/api/memory'), settingsRequest('/api/memory/settings')]), ([data, settings]) => {
+    setMemories(data.memories || []); setGlobalEnabled(Boolean(settings.enabled)); setLoaded(true);
+  }), [run]);
+  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { if (editingId !== null) editInput.current?.focus(); }, [editingId]);
+  const busy = states.change?.pending || states.remove?.pending || states.load?.pending;
+  const editing = memories.find(item => item.id === editingId);
+  const editDirty = editing && (editContent !== editing.content || editCategory !== (categories.includes(editing.category) ? editing.category : 'general'));
+  useSettingsDraft(Boolean(newContent || newCategory !== 'general' || editDirty), { busy: states.change?.pending || states.remove?.pending });
+  const focusEditorButton = id => requestAnimationFrame(() => editButtons.current.get(id)?.focus());
+  const create = async event => {
+    event.preventDefault();
     if (!newContent.trim()) return;
-    try {
-      const res = await authenticatedFetch('/api/memory', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: newContent.trim(), category: newCategory }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setMemories(prev => [data.memory, ...prev]);
-        setNewContent('');
-        setNewCategory('general');
-      }
-    } catch (err) {
-      console.error('Failed to create memory:', err);
-    }
+    const success = await run('change', () => settingsRequest('/api/memory', { method: 'POST', body: JSON.stringify({ content: newContent.trim(), category: newCategory }) }), data => {
+      setMemories(previous => [data.memory, ...previous]); setNewContent(''); setNewCategory('general');
+    });
+    if (success) requestAnimationFrame(() => newInput.current?.focus());
   };
-
-  const handleUpdate = async (id) => {
-    try {
-      const res = await authenticatedFetch(`/api/memory/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: editContent.trim(), category: editCategory }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setMemories(prev => prev.map(m => m.id === id ? data.memory : m));
-        setEditingId(null);
-      }
-    } catch (err) {
-      console.error('Failed to update memory:', err);
-    }
+  const update = async event => {
+    event.preventDefault();
+    if (!editContent.trim()) return;
+    const id = editingId;
+    const success = await run('change', () => settingsRequest(`/api/memory/${id}`, { method: 'PUT', body: JSON.stringify({ content: editContent.trim(), category: editCategory }) }), data => {
+      setMemories(previous => previous.map(memory => memory.id === id ? data.memory : memory)); setEditingId(null);
+    });
+    if (success) focusEditorButton(id);
   };
-
-  const handleToggle = async (id) => {
-    try {
-      const res = await authenticatedFetch(`/api/memory/${id}/toggle`, { method: 'PATCH' });
-      if (res.ok) {
-        const data = await res.json();
-        setMemories(prev => prev.map(m => m.id === id ? data.memory : m));
-      }
-    } catch (err) {
-      console.error('Failed to toggle memory:', err);
-    }
+  const toggle = memory => run('change', () => settingsRequest(`/api/memory/${memory.id}/toggle`, { method: 'PATCH' }), data => setMemories(previous => previous.map(item => item.id === memory.id ? data.memory : item)));
+  const remove = async () => {
+    const success = await run('remove', () => settingsRequest(`/api/memory/${deleting.id}`, { method: 'DELETE' }), () => {
+      setMemories(previous => previous.filter(memory => memory.id !== deleting.id)); setDeleting(null);
+    });
+    if (success) requestAnimationFrame(() => newInput.current?.focus());
   };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this memory?')) return;
-    try {
-      const res = await authenticatedFetch(`/api/memory/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        setMemories(prev => prev.filter(m => m.id !== id));
-      }
-    } catch (err) {
-      console.error('Failed to delete memory:', err);
-    }
-  };
-
-  const handleGlobalToggle = async () => {
-    try {
-      const res = await authenticatedFetch('/api/memory/settings', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ enabled: !globalEnabled }),
-      });
-      if (res.ok) {
-        setGlobalEnabled(!globalEnabled);
-      }
-    } catch (err) {
-      console.error('Failed to toggle global memory:', err);
-    }
-  };
-
-  const startEdit = (memory) => {
-    setEditingId(memory.id);
-    setEditContent(memory.content);
-    setEditCategory(memory.category || 'general');
-  };
-
-  const getCategoryConfig = (cat) => CATEGORIES.find(c => c.value === cat) || CATEGORIES[0];
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-8 text-muted-foreground">
-        Loading memories...
+  const changed = setter => value => { setter(value); clear('change'); };
+  return <div className="space-y-5" data-memory-settings>
+    <div><h3 className="text-lg font-medium">{t('memorySettings.title')}</h3><p className="mt-1 text-sm text-muted-foreground">{t('memorySettings.description')}</p></div>
+    <SettingsFeedback state={states.load} saved={false} onRetry={load} />
+    {loaded && <>
+      <Button type="button" role="switch" aria-checked={globalEnabled} variant="outline" disabled={busy} className={actionClass} onClick={() => run('change', () => settingsRequest('/api/memory/settings', { method: 'PATCH', body: JSON.stringify({ enabled: !globalEnabled }) }), () => setGlobalEnabled(value => !value))}><span className={`mr-2 h-2 w-2 shrink-0 rounded-full ${globalEnabled ? 'bg-foreground' : 'border border-muted-foreground'}`} aria-hidden="true" />{t('memorySettings.enabled')}</Button>
+      {!globalEnabled && <p className="rounded-md border border-border bg-muted/40 p-3 text-sm text-muted-foreground">{t('memorySettings.disabled')}</p>}
+      <form onSubmit={create} className="rounded-lg border border-border p-4"><fieldset disabled={busy} className="min-w-0 space-y-3"><h4 className="text-sm font-medium">{t('memorySettings.add')}</h4><MemoryFields id="new-memory" content={newContent} category={newCategory} onContent={changed(setNewContent)} onCategory={changed(setNewCategory)} inputRef={newInput} /><Button type="submit" disabled={!newContent.trim()} className={actionClass}><Plus className="mr-1 h-4 w-4" />{t('memorySettings.add')}</Button></fieldset></form>
+      <SettingsFeedback state={states.change} />
+      <div className="space-y-3"><h4 className="text-sm font-medium text-muted-foreground">{t('memorySettings.saved', { count: memories.length })}</h4>
+        {memories.length === 0 ? <p className="text-sm text-muted-foreground">{t('memorySettings.empty')}</p> : memories.map(memory => <div key={memory.id} className="rounded-lg border border-border p-3" data-memory-row>
+          {editingId === memory.id ? <form onSubmit={update}><fieldset disabled={busy} className="min-w-0 space-y-3"><MemoryFields id={`edit-memory-${memory.id}`} content={editContent} category={editCategory} onContent={changed(setEditContent)} onCategory={changed(setEditCategory)} inputRef={editInput} /><div className="flex flex-wrap gap-2"><Button type="submit" disabled={!editContent.trim()} className={actionClass}>{t('memorySettings.save')}</Button><Button type="button" variant="outline" className={actionClass} onClick={() => { setEditingId(null); clear('change'); focusEditorButton(memory.id); }}>{t('feedback.cancel')}</Button></div></fieldset></form> : <div className="space-y-3">
+            <p className={`whitespace-pre-wrap break-words text-sm [overflow-wrap:anywhere] ${memory.is_enabled ? '' : 'text-muted-foreground'}`}>{memory.content}</p>
+            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground"><span className="rounded border border-border px-2 py-1">{t(`memorySettings.categories.${categories.includes(memory.category) ? memory.category : 'general'}`)}</span><span>{new Date(memory.created_at).toLocaleDateString(i18n.language)}</span></div>
+            <div className="flex flex-wrap items-center gap-1"><Button type="button" size="sm" variant="outline" role="switch" aria-checked={Boolean(memory.is_enabled)} aria-label={t('memorySettings.enableItem')} disabled={busy} className={actionClass} onClick={() => toggle(memory)}>{t(memory.is_enabled ? 'apiKeys.status.active' : 'apiKeys.status.inactive')}</Button><Button ref={node => { if (node) editButtons.current.set(memory.id, node); else editButtons.current.delete(memory.id); }} type="button" size="sm" variant="ghost" className={actionClass} disabled={busy} onClick={() => { clear('change'); setEditingId(memory.id); setEditContent(memory.content); setEditCategory(categories.includes(memory.category) ? memory.category : 'general'); }}><Edit3 className="mr-1 h-4 w-4" />{t('memorySettings.edit')}</Button><Button type="button" size="sm" variant="ghost" className={actionClass} disabled={busy} onClick={() => { clear('remove'); setDeleting(memory); }}><Trash2 className="mr-1 h-4 w-4" />{t('feedback.delete')}</Button></div>
+          </div>}
+        </div>)}
       </div>
-    );
-  }
-
-  return (
-    <div className="space-y-6">
-      {/* Header with global toggle */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-medium text-foreground">Memory</h3>
-          <p className="text-sm text-muted-foreground mt-1">
-            Save preferences and context that AI agents will remember across conversations.
-          </p>
-        </div>
-        <button
-          onClick={handleGlobalToggle}
-          className="flex items-center gap-2 text-sm font-medium"
-          title={globalEnabled ? 'Disable memory' : 'Enable memory'}
-        >
-          {globalEnabled ? (
-            <ToggleRight className="w-8 h-8 text-blue-600" />
-          ) : (
-            <ToggleLeft className="w-8 h-8 text-gray-400" />
-          )}
-        </button>
-      </div>
-
-      {!globalEnabled && (
-        <div className="rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 p-3 text-sm text-yellow-800 dark:text-yellow-200">
-          Memory is currently disabled. AI agents will not use saved memories.
-        </div>
-      )}
-
-      {/* Add new memory */}
-      <div className="border border-border rounded-lg p-4 space-y-3">
-        <h4 className="text-sm font-medium text-foreground">Add Memory</h4>
-        <textarea
-          value={newContent}
-          onChange={(e) => setNewContent(e.target.value)}
-          maxLength={500}
-          placeholder="e.g., I prefer Python for data analysis, My name is Henry, I'm working on NLP research..."
-          className="w-full min-h-[80px] px-3 py-2 text-sm rounded-md border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-y"
-        />
-        <div className="flex items-center gap-3">
-          <select
-            value={newCategory}
-            onChange={(e) => setNewCategory(e.target.value)}
-            className="px-3 py-1.5 text-sm rounded-md border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          >
-            {CATEGORIES.map(cat => (
-              <option key={cat.value} value={cat.value}>{cat.label}</option>
-            ))}
-          </select>
-          <Button
-            size="sm"
-            onClick={handleCreate}
-            disabled={!newContent.trim()}
-            className="gap-1"
-          >
-            <Plus className="w-4 h-4" />
-            Add
-          </Button>
-        </div>
-      </div>
-
-      {/* Memory list */}
-      <div className="space-y-2">
-        <h4 className="text-sm font-medium text-muted-foreground">
-          Saved Memories ({memories.length})
-        </h4>
-        {memories.length === 0 ? (
-          <p className="text-sm text-muted-foreground py-4 text-center">
-            No memories saved yet. Add one above to get started.
-          </p>
-        ) : (
-          <div className="space-y-2">
-            {memories.map(memory => (
-              <div
-                key={memory.id}
-                className={`border border-border rounded-lg p-3 transition-colors ${
-                  !memory.is_enabled ? 'opacity-50' : ''
-                }`}
-              >
-                {editingId === memory.id ? (
-                  /* Edit mode */
-                  <div className="space-y-2">
-                    <textarea
-                      value={editContent}
-                      onChange={(e) => setEditContent(e.target.value)}
-                      maxLength={500}
-                      className="w-full min-h-[60px] px-3 py-2 text-sm rounded-md border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-y"
-                    />
-                    <div className="flex items-center gap-2">
-                      <select
-                        value={editCategory}
-                        onChange={(e) => setEditCategory(e.target.value)}
-                        className="px-2 py-1 text-xs rounded-md border border-input bg-background text-foreground"
-                      >
-                        {CATEGORIES.map(cat => (
-                          <option key={cat.value} value={cat.value}>{cat.label}</option>
-                        ))}
-                      </select>
-                      <Button size="sm" variant="ghost" onClick={() => handleUpdate(memory.id)}>
-                        <Check className="w-4 h-4 text-green-600" />
-                      </Button>
-                      <Button size="sm" variant="ghost" onClick={() => setEditingId(null)}>
-                        <X className="w-4 h-4 text-red-500" />
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  /* Display mode */
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-foreground">{memory.content}</p>
-                      <div className="flex items-center gap-2 mt-1.5">
-                        <Badge variant="secondary" className="text-xs">
-                          <span className={`w-2 h-2 rounded-full ${getCategoryConfig(memory.category).color} inline-block mr-1`} />
-                          {getCategoryConfig(memory.category).label}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(memory.created_at).toLocaleDateString()}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <button
-                        onClick={() => handleToggle(memory.id)}
-                        className="p-1 rounded hover:bg-accent"
-                        title={memory.is_enabled ? 'Disable' : 'Enable'}
-                      >
-                        {memory.is_enabled ? (
-                          <ToggleRight className="w-5 h-5 text-blue-600" />
-                        ) : (
-                          <ToggleLeft className="w-5 h-5 text-gray-400" />
-                        )}
-                      </button>
-                      <button
-                        onClick={() => startEdit(memory)}
-                        className="p-1 rounded hover:bg-accent"
-                        title="Edit"
-                      >
-                        <Edit3 className="w-4 h-4 text-muted-foreground" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(memory.id)}
-                        className="p-1 rounded hover:bg-accent"
-                        title="Delete"
-                      >
-                        <Trash2 className="w-4 h-4 text-red-500" />
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
+    </>}
+    {deleting && <WorkbenchDialog title={t('memorySettings.deleteTitle')} onClose={() => setDeleting(null)} busy={Boolean(states.remove?.pending)}><div className="space-y-4"><p className="break-words text-sm">{deleting.content}</p><p className="text-sm text-muted-foreground">{t('memorySettings.deleteQuestion')}</p><SettingsFeedback state={states.remove} saved={false} /><div className="flex flex-wrap justify-end gap-2"><Button variant="outline" disabled={states.remove?.pending} onClick={() => setDeleting(null)}>{t('feedback.cancel')}</Button><Button variant="destructive" disabled={states.remove?.pending} onClick={remove}>{t('feedback.delete')}</Button></div></div></WorkbenchDialog>}
+  </div>;
 }
-
-export default MemoryContent;

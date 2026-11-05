@@ -95,7 +95,8 @@
   "appearanceSettings": {
     "darkMode": {
       "label": "深色模式",
-      "description": "切换浅色和深色主题"
+      "description": "切换浅色和深色主题",
+      "action": "切换深色模式"
     },
     "telemetry": {
       "label": "数据传输",
@@ -113,13 +114,17 @@
       "browse": "浏览",
       "reset": "重置",
       "saved": "已保存",
-      "invalidPath": "无效的目录路径"
+      "invalidPath": "无效的目录路径",
+      "save": "保存路径",
+      "loadFailed": "无法读取项目路径，请重试后再编辑。",
+      "browseTitle": "选择默认项目目录"
     },
     "codeEditor": {
       "title": "代码编辑器",
       "theme": {
         "label": "编辑器主题",
-        "description": "代码编辑器的默认主题"
+        "description": "代码编辑器的默认主题",
+        "action": "切换编辑器主题"
       },
       "wordWrap": {
         "label": "自动换行",
@@ -137,7 +142,10 @@
         "label": "字体大小",
         "description": "编辑器字体大小（px）"
       }
-    }
+    },
+    "enabled": "开启",
+    "disabled": "关闭",
+    "saveBehavior": "主题、语言、数据传输和编辑器偏好立即生效。项目排序请点击“保存设置”；项目路径单独保存。"
   },
   "mcpForm": {
     "title": {
@@ -146,7 +154,8 @@
     },
     "importMode": {
       "form": "表单输入",
-      "json": "JSON 导入"
+      "json": "JSON 导入",
+      "label": "配置格式"
     },
     "scope": {
       "label": "范围",
@@ -189,11 +198,12 @@
     }
   },
   "saveStatus": {
-    "success": "设置保存成功！",
+    "success": "已保存",
     "error": "保存设置失败",
     "saving": "保存中..."
   },
   "footerActions": {
+    "done": "完成",
     "save": "保存设置",
     "cancel": "取消"
   },
@@ -380,26 +390,30 @@
       "description": "无需权限提示即可自动使用的工具",
       "placeholder": "例如：\"Bash(git log:*)\" 或 \"Write\"",
       "quickAdd": "快速添加常用工具：",
-      "empty": "未配置允许的工具"
+      "empty": "未配置允许的工具",
+      "inputLabel": "允许的工具规则"
     },
     "blockedTools": {
       "title": "禁用的工具",
       "description": "无需权限提示即可自动禁用的工具",
       "placeholder": "例如：\"Bash(rm:*)\"",
-      "empty": "未配置禁用的工具"
+      "empty": "未配置禁用的工具",
+      "inputLabel": "阻止的工具规则"
     },
     "allowedCommands": {
       "title": "允许的 Shell 命令",
       "description": "无需权限提示即可自动执行的 Shell 命令",
       "placeholder": "例如：\"Shell(ls)\" 或 \"Shell(git status)\"",
       "quickAdd": "快速添加常用命令：",
-      "empty": "未配置允许的命令"
+      "empty": "未配置允许的命令",
+      "inputLabel": "允许的命令规则"
     },
     "blockedCommands": {
       "title": "阻止的 Shell 命令",
       "description": "自动阻止的 Shell 命令",
       "placeholder": "例如：\"Shell(rm -rf)\" 或 \"Shell(sudo)\"",
-      "empty": "未配置阻止的命令"
+      "empty": "未配置阻止的命令",
+      "inputLabel": "阻止的命令规则"
     },
     "toolExamples": {
       "title": "工具模式示例：",
@@ -465,7 +479,8 @@
       }
     },
     "actions": {
-      "add": "添加"
+      "add": "添加",
+      "remove": "移除 {{value}}"
     }
   },
   "mcpServers": {
@@ -475,8 +490,7 @@
       "cursor": "Model Context Protocol 服务器为 Cursor 提供额外的工具和数据源",
       "codex": "Model Context Protocol 服务器为 Codex 提供额外的工具和数据源",
       "gemini": "Model Context Protocol 服务器为 Gemini 提供额外的工具和数据源"
-      },
-
+    },
     "addButton": "添加 MCP 服务器",
     "empty": "未配置 MCP 服务器",
     "serverType": "类型",
@@ -502,6 +516,133 @@
     "help": {
       "title": "关于 Codex MCP",
       "description": "Codex 支持基于 stdio 的 MCP 服务器。您可以添加服务器，通过额外的工具和资源来扩展 Codex 的功能。"
+    },
+    "refresh": "刷新",
+    "loadFailed": "服务器列表加载失败，请重试以查看当前配置。",
+    "cursorReadOnly": "请在 Cursor 中管理这些服务器，此处显示已保存的配置。",
+    "remoteReadOnly": "请在 Codex 配置文件中编辑此 HTTP 服务器。",
+    "deleteConfirm": "删除“{{name}}”？这会移除它的已保存配置。"
+  },
+  "feedback": {
+    "working": "正在处理…",
+    "failed": "请求未能完成，已保留你的输入。",
+    "details": "错误详情",
+    "retry": "重试",
+    "saved": "已保存。",
+    "delete": "删除",
+    "cancel": "取消",
+    "copy": "复制",
+    "copied": "已复制",
+    "showSecret": "显示密钥",
+    "hideSecret": "隐藏密钥"
+  },
+  "emailSettings": {
+    "title": "邮件通知",
+    "description": "设置自动科研邮件通知的收件人、发件人和发送服务。",
+    "configuredKey": "已配置的密钥：{{key}}",
+    "recipient": {
+      "title": "通知邮箱",
+      "label": "收件邮箱",
+      "help": "启动自动科研前，需要先保存收件邮箱。",
+      "save": "保存通知邮箱"
+    },
+    "sender": {
+      "title": "发件邮箱",
+      "label": "发件地址",
+      "help": "自动科研完成通知将使用此发件地址。",
+      "save": "保存发件邮箱"
+    },
+    "delivery": {
+      "title": "Resend API 密钥",
+      "label": "发送服务密钥",
+      "help": "通过 Resend 发送自动科研通知。",
+      "save": "保存发送密钥"
     }
+  },
+  "memorySettings": {
+    "title": "记忆",
+    "description": "保存偏好和背景信息，供 AI 在不同会话中使用。",
+    "enabled": "使用已保存的记忆",
+    "disabled": "记忆功能已关闭，AI 不会使用已保存的记忆。",
+    "add": "添加记忆",
+    "content": "记忆内容",
+    "category": "分类",
+    "saved": "已保存的记忆（{{count}}）",
+    "empty": "尚未保存记忆。",
+    "edit": "编辑记忆",
+    "save": "保存修改",
+    "deleteTitle": "删除记忆",
+    "deleteQuestion": "删除此记忆？此操作无法撤销。",
+    "enableItem": "使用此记忆",
+    "categories": {
+      "general": "通用",
+      "preference": "偏好",
+      "context": "背景",
+      "workflow": "工作流程"
+    }
+  },
+  "credentialLabels": {
+    "name": "名称",
+    "optionalName": "名称（选填）",
+    "token": "GitHub 令牌",
+    "key": "Gemini API 密钥",
+    "description": "说明（选填）",
+    "enable": "启用 {{name}}",
+    "delete": "删除 {{name}}",
+    "deleteTitle": "删除凭证"
+  },
+  "localSettings": {
+    "gpuTitle": "GPU 资源",
+    "detect": "检测 GPU",
+    "noGpu": "未检测到 GPU，模型将使用 CPU 运行。",
+    "utilization": "使用率：{{value}}%",
+    "driver": "驱动：{{value}}",
+    "serverTitle": "本地模型服务",
+    "serverDescription": "连接 Ollama、vLLM、SGLang 或其他兼容 OpenAI 的本地服务，请使用本机地址，例如 http://localhost:8000/v1。GPU 和模型选择立即生效，服务地址需单独保存。",
+    "serverUrl": "服务地址",
+    "test": "测试连接",
+    "save": "保存并刷新",
+    "connected_other": "连接成功，可用模型：{{count}} 个。",
+    "modelsTitle": "已安装模型",
+    "refresh": "刷新",
+    "source": "结果来自 {{url}}",
+    "differentServer": "地址已更改，请刷新以加载此服务的模型。",
+    "empty": "未找到模型，请在本地服务中启动或加载模型。",
+    "pullTitle": "下载模型",
+    "modelName": "模型名称",
+    "pull": "下载",
+    "pulled": "模型下载完成。",
+    "examples": "模型名称示例，点击可填入输入框。",
+    "library": "浏览 Ollama 模型库"
+  },
+  "unsaved": {
+    "title": "放弃未保存的内容？",
+    "description": "当前内容尚未保存。你可以继续编辑并保存，也可以放弃修改后离开。",
+    "keepEditing": "继续编辑",
+    "discard": "放弃修改",
+    "leave": "离开此页",
+    "busyTitle": "请求仍在进行中",
+    "busyDescription": "请等待保存或下载结束后再离开。",
+    "keyDescription": "新的 API 密钥已创建，但你尚未确认已保存密钥。离开后将无法再次查看此密钥。"
+  },
+  "providerAccount": {
+    "customApi": "自定义 API",
+    "keyTitle": "{{provider}} API 密钥",
+    "customDescription": "使用 API 令牌连接，也可指定自定义服务地址。",
+    "replaceKey": "输入新密钥，验证成功后替换已保存的密钥。",
+    "enterKey": "输入密钥，验证并保存此连接。",
+    "baseUrl": "API 基础地址",
+    "defaultUrl": "留空使用默认服务地址。",
+    "token": "API 令牌",
+    "apiKey": "API 密钥",
+    "verifying": "正在验证…",
+    "verifySave": "验证并保存",
+    "getKey": "获取 {{provider}} API 密钥",
+    "statusUnknown": "状态暂不可用",
+    "refresh": "刷新",
+    "statusFailed": "无法检查连接状态。",
+    "geminiBoth": "OAuth 和 API 密钥均可用。",
+    "geminiOAuth": "已通过 OAuth 连接。",
+    "geminiApi": "已通过 API 密钥连接。"
   }
 }

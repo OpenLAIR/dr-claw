@@ -1,221 +1,61 @@
-import { useEffect, useState } from 'react';
-import { Key, Mail } from 'lucide-react';
-
+import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
-import { api, authenticatedFetch } from '../../utils/api';
+import { useSettingsDraft } from './SettingsDraftGuard';
+import SettingsFeedback from './SettingsFeedback';
+import { settingsRequest, useSettingsRequest } from './useSettingsRequest';
 
+const fields = {
+  recipient: { path: '/api/user/profile', method: 'PUT', payload: value => ({ notificationEmail: value }), read: data => data.profile?.notificationEmail || '' },
+  sender: { path: '/api/settings/auto-research-email', method: 'PUT', payload: value => ({ senderEmail: value }), read: data => data.senderEmail || '' },
+  delivery: { path: '/api/settings/auto-research-resend-key', method: 'PUT', payload: value => ({ apiKey: value }), read: data => data.maskedKey || '' },
+};
+function EmailField({ kind }) {
+  const { t } = useTranslation('settings');
+  const config = fields[kind];
+  const secret = kind === 'delivery';
+  const [value, setValue] = useState('');
+  const [masked, setMasked] = useState('');
+  const [saved, setSaved] = useState('');
+  const [loaded, setLoaded] = useState(false);
+  const { states, run, clear } = useSettingsRequest();
+  const load = useCallback(() => run('load', () => settingsRequest(config.path), data => {
+    if (secret) setMasked(config.read(data)); else setValue(config.read(data));
+    setSaved(secret ? '' : config.read(data));
+    setLoaded(true);
+  }), [run, config, secret]);
+  useEffect(() => { void load(); }, [load]);
+  useSettingsDraft(loaded && value !== saved, { busy: states.save?.pending });
+  const save = event => {
+    event.preventDefault();
+    if (!value.trim()) return;
+    void run('save', () => settingsRequest(config.path, { method: config.method, body: JSON.stringify(config.payload(value.trim())) }), data => {
+      if (secret) { setMasked(config.read(data)); setValue(''); }
+      else setValue(config.read(data) || value.trim());
+      setSaved(secret ? '' : config.read(data) || value.trim());
+    });
+  };
+  return <section className="space-y-3 border-t border-border pt-4" data-email-field={kind}>
+    <h4 className="text-sm font-medium">{t(`emailSettings.${kind}.title`)}</h4>
+    <SettingsFeedback state={states.load} onRetry={load} saved={false} />
+    <form onSubmit={save}>
+      <fieldset disabled={!loaded || states.load?.pending || states.save?.pending} className="min-w-0 space-y-3">
+        <div><label htmlFor={`email-${kind}`} className="mb-2 block text-sm">{t(`emailSettings.${kind}.label`)}</label>
+          <Input id={`email-${kind}`} type={secret ? 'password' : 'email'} required value={value} onChange={event => { setValue(event.target.value); clear('save'); }} autoComplete={secret ? 'new-password' : 'email'} className="min-h-11 text-base md:text-sm" aria-describedby={`email-${kind}-help`} />
+          <p id={`email-${kind}-help`} className="mt-2 text-xs leading-relaxed text-muted-foreground">{t(`emailSettings.${kind}.help`)}</p>
+          {secret && masked && <p className="mt-2 break-all text-xs text-muted-foreground">{t('emailSettings.configuredKey', { key: masked })}</p>}
+        </div>
+        <Button type="submit" variant="outline" disabled={!value.trim()} className="min-h-11 max-w-full whitespace-normal">{t(`emailSettings.${kind}.save`)}</Button>
+      </fieldset>
+    </form>
+    <SettingsFeedback state={states.save} />
+  </section>;
+}
 export default function EmailSettingsContent() {
-  const [notificationEmail, setNotificationEmail] = useState('');
-  const [senderEmail, setSenderEmail] = useState('');
-  const [resendApiKey, setResendApiKey] = useState('');
-  const [maskedResendKey, setMaskedResendKey] = useState('');
-  const [profileStatus, setProfileStatus] = useState(null);
-  const [senderStatus, setSenderStatus] = useState(null);
-  const [resendStatus, setResendStatus] = useState(null);
-  const [isSavingProfile, setIsSavingProfile] = useState(false);
-  const [isSavingSender, setIsSavingSender] = useState(false);
-  const [isSavingResendKey, setIsSavingResendKey] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const loadSettings = async () => {
-      try {
-        const [profileRes, senderRes, resendRes] = await Promise.all([
-          authenticatedFetch('/api/user/profile'),
-          api.settings.autoResearchEmail(),
-          api.settings.autoResearchResendKey(),
-        ]);
-
-        const profileData = await profileRes.json();
-        const senderData = await senderRes.json();
-        const resendData = await resendRes.json();
-
-        if (!cancelled && profileRes.ok) {
-          setNotificationEmail(profileData?.profile?.notificationEmail || '');
-        }
-        if (!cancelled && senderRes.ok) {
-          setSenderEmail(senderData?.senderEmail || '');
-        }
-        if (!cancelled && resendRes.ok) {
-          setMaskedResendKey(resendData?.maskedKey || '');
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setProfileStatus({ success: false, message: err.message || 'Failed to load email settings' });
-        }
-      }
-    };
-
-    void loadSettings();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const handleSaveProfile = async () => {
-    setIsSavingProfile(true);
-    setProfileStatus(null);
-    try {
-      const res = await authenticatedFetch('/api/user/profile', {
-        method: 'PUT',
-        body: JSON.stringify({ notificationEmail: notificationEmail.trim() }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setNotificationEmail(data?.profile?.notificationEmail || notificationEmail.trim());
-        setProfileStatus({ success: true, message: 'Notification email saved.' });
-      } else {
-        setProfileStatus({ success: false, message: data.error || 'Failed to save notification email' });
-      }
-    } catch (err) {
-      setProfileStatus({ success: false, message: err.message || 'Failed to save notification email' });
-    } finally {
-      setIsSavingProfile(false);
-    }
-  };
-
-  const handleSaveSenderEmail = async () => {
-    setIsSavingSender(true);
-    setSenderStatus(null);
-    try {
-      const res = await api.settings.updateAutoResearchEmail(senderEmail.trim());
-      const data = await res.json();
-      if (res.ok) {
-        setSenderEmail(data?.senderEmail || senderEmail.trim());
-        setSenderStatus({ success: true, message: 'Sender email saved.' });
-      } else {
-        setSenderStatus({ success: false, message: data.error || 'Failed to save sender email' });
-      }
-    } catch (err) {
-      setSenderStatus({ success: false, message: err.message || 'Failed to save sender email' });
-    } finally {
-      setIsSavingSender(false);
-    }
-  };
-
-  const handleSaveResendKey = async () => {
-    setIsSavingResendKey(true);
-    setResendStatus(null);
-    try {
-      const res = await api.settings.updateAutoResearchResendKey(resendApiKey.trim());
-      const data = await res.json();
-      if (res.ok) {
-        setMaskedResendKey(data?.maskedKey || '');
-        setResendApiKey('');
-        setResendStatus({ success: true, message: 'Resend API key saved.' });
-      } else {
-        setResendStatus({ success: false, message: data.error || 'Failed to save Resend API key' });
-      }
-    } catch (err) {
-      setResendStatus({ success: false, message: err.message || 'Failed to save Resend API key' });
-    } finally {
-      setIsSavingResendKey(false);
-    }
-  };
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-medium text-foreground">Email Notifications</h3>
-        <p className="text-sm text-muted-foreground">
-          Configure recipient, sender, and delivery settings for Auto Research email notifications.
-        </p>
-      </div>
-
-      <div className="rounded-lg border border-border bg-card p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <Mail className="w-4 h-4 text-gray-500" />
-          <div className="font-medium text-foreground">Notification Email</div>
-        </div>
-        <div className="space-y-3">
-          <div>
-            <label className="text-sm text-muted-foreground block mb-1">Recipient Email</label>
-            <Input
-              type="email"
-              placeholder="you@example.com"
-              value={notificationEmail}
-              onChange={(e) => setNotificationEmail(e.target.value)}
-            />
-            <div className="mt-1 text-xs text-muted-foreground">
-              Auto Research requires a saved recipient email before execution can start.
-            </div>
-          </div>
-          <Button onClick={handleSaveProfile} disabled={isSavingProfile || !notificationEmail.trim()} size="sm" variant="outline">
-            {isSavingProfile ? 'Saving...' : 'Save Notification Email'}
-          </Button>
-          {profileStatus && (
-            <div className={`text-sm ${profileStatus.success ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-              {profileStatus.message}
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="rounded-lg border border-border bg-card p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <Mail className="w-4 h-4 text-gray-500" />
-          <div className="font-medium text-foreground">Sender Email</div>
-        </div>
-        <div className="space-y-3">
-          <div>
-            <label className="text-sm text-muted-foreground block mb-1">From Address</label>
-            <Input
-              type="email"
-              placeholder="noreply@example.com"
-              value={senderEmail}
-              onChange={(e) => setSenderEmail(e.target.value)}
-            />
-            <div className="mt-1 text-xs text-muted-foreground">
-              This is the sender address used by Auto Research completion emails.
-            </div>
-          </div>
-          <Button onClick={handleSaveSenderEmail} disabled={isSavingSender || !senderEmail.trim()} size="sm" variant="outline">
-            {isSavingSender ? 'Saving...' : 'Save Sender Email'}
-          </Button>
-          {senderStatus && (
-            <div className={`text-sm ${senderStatus.success ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-              {senderStatus.message}
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="rounded-lg border border-border bg-card p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <Key className="w-4 h-4 text-gray-500" />
-          <div className="font-medium text-foreground">Resend API Key</div>
-        </div>
-        <div className="space-y-3">
-          <div>
-            <label className="text-sm text-muted-foreground block mb-1">Delivery Key</label>
-            <Input
-              type="password"
-              placeholder="re_..."
-              value={resendApiKey}
-              onChange={(e) => setResendApiKey(e.target.value)}
-            />
-            <div className="mt-1 text-xs text-muted-foreground">
-              This key is used by the app to send Auto Research completion emails through Resend.
-            </div>
-            {maskedResendKey ? (
-              <div className="mt-1 text-xs text-muted-foreground">
-                Current key: {maskedResendKey}
-              </div>
-            ) : null}
-          </div>
-          <Button onClick={handleSaveResendKey} disabled={isSavingResendKey || !resendApiKey.trim()} size="sm" variant="outline">
-            {isSavingResendKey ? 'Saving...' : 'Save Resend API Key'}
-          </Button>
-          {resendStatus && (
-            <div className={`text-sm ${resendStatus.success ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-              {resendStatus.message}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+  const { t } = useTranslation('settings');
+  return <div className="space-y-5" data-email-settings>
+    <div><h3 className="text-lg font-medium">{t('emailSettings.title')}</h3><p className="mt-1 text-sm text-muted-foreground">{t('emailSettings.description')}</p></div>
+    {Object.keys(fields).map(kind => <EmailField key={kind} kind={kind} />)}
+  </div>;
 }

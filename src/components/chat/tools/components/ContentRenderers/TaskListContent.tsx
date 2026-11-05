@@ -113,7 +113,7 @@ export const TaskListContent: React.FC<TaskListContentProps> = ({ content }) => 
               <span className={`text-xs truncate flex-1 ${config.textClass}`}>
                 {task.subject}
               </span>
-              <span className={`text-[10px] px-1 py-px rounded border flex-shrink-0 ${config.badgeClass}`}>
+              <span className={`text-[11px] px-1 py-px rounded border flex-shrink-0 ${config.badgeClass}`}>
                 {task.status.replace('_', ' ')}
               </span>
             </div>

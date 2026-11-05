@@ -27,6 +27,12 @@ export default function AppContent() {
   const { isMobile } = useDeviceSettings({ trackPWA: false });
   const { isDesktop, on: onDesktopEvent } = useDesktop();
   const { ws, sendMessage, latestMessage, isConnected } = useWebSocket();
+  const [connectionLost, setConnectionLost] = useState(false);
+  useEffect(() => {
+    if (isConnected) { setConnectionLost(false); return; }
+    const timer = window.setTimeout(() => setConnectionLost(true), 3000);
+    return () => window.clearTimeout(timer);
+  }, [isConnected]);
   const { preferences } = useUiPreferences();
   const { sidebarVisible } = preferences;
 
@@ -48,6 +54,7 @@ export default function AppContent() {
     activeTab,
     sidebarOpen,
     isLoadingProjects,
+    projectsError,
     isLoadingTrashProjects,
     isInputFocused,
     externalMessageUpdate,
@@ -87,6 +94,27 @@ export default function AppContent() {
     activeTab: activeTab || null,
     routePath: location.pathname || null,
   });
+
+  const drawerRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!isMobile || !sidebarOpen) return;
+    const trigger = document.activeElement as HTMLElement | null;
+    const drawer = drawerRef.current;
+    const focusable = () => Array.from(drawer?.querySelectorAll<HTMLElement>('button, input, a[href], [tabindex="0"]') ?? []).filter(el => !el.hasAttribute('disabled') && el.getClientRects().length > 0);
+    focusable()[0]?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      // Native child dialogs own their keyboard handling while open.
+      if (document.querySelector('dialog[open]')) return;
+      if (event.key === 'Escape') { event.preventDefault(); setSidebarOpen(false); }
+      if (event.key !== 'Tab') return;
+      const elements = focusable();
+      const first = elements[0]; const last = elements[elements.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => { document.removeEventListener('keydown', onKeyDown); trigger?.focus(); };
+  }, [isMobile, sidebarOpen, setSidebarOpen]);
 
   useEffect(() => {
     ensureTelemetryDefaultEnabled();
@@ -197,6 +225,22 @@ export default function AppContent() {
   const pendingWidthRef = useRef(sidebarWidth);
   const resizeCleanupRef = useRef<(() => void) | null>(null);
 
+  const handleResizeKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    let width = sidebarWidth;
+    const step = event.shiftKey ? 40 : 10;
+    if (event.key === 'ArrowLeft') width -= step;
+    else if (event.key === 'ArrowRight') width += step;
+    else if (event.key === 'Home') width = SIDEBAR_MIN;
+    else if (event.key === 'End') width = SIDEBAR_MAX;
+    else return;
+    event.preventDefault();
+    width = Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, width));
+    pendingWidthRef.current = width;
+    setSidebarWidth(width);
+    localStorage.setItem(STORAGE_KEY, String(width));
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
+  };
+
   useEffect(() => () => {
     resizeCleanupRef.current?.();
     if (resizeFrameRef.current !== null) {
@@ -206,9 +250,10 @@ export default function AppContent() {
     document.body.style.userSelect = '';
   }, []);
 
-  const handleResizeStart = useCallback((e: React.MouseEvent) => {
+  const handleResizeStart = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
     resizeCleanupRef.current?.();
+    e.currentTarget.focus();
     isResizing.current = true;
     sidebarContainerRef.current?.style.setProperty('transition', 'none');
     document.body.style.cursor = 'col-resize';
@@ -270,18 +315,30 @@ export default function AppContent() {
           </div>
           {sidebarVisible && (
             <div
-              className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/20 active:bg-primary/30 z-10"
+              role="separator"
+              tabIndex={0}
+              aria-label={t('workbench.resizeSidebar')}
+              aria-orientation="vertical"
+              aria-valuemin={SIDEBAR_MIN}
+              aria-valuemax={SIDEBAR_MAX}
+              aria-valuenow={sidebarWidth}
+              className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/20 active:bg-primary/30 focus-visible:bg-primary/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring focus-visible:-outline-offset-2 z-10 electron-no-drag"
               onMouseDown={handleResizeStart}
+              onKeyDown={handleResizeKeyDown}
             />
           )}
         </div>
       ) : (
         <div
-          className={`fixed inset-0 z-50 flex transition-all duration-150 ease-out ${sidebarOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
+          ref={drawerRef}
+          role={sidebarOpen ? 'dialog' : undefined}
+          aria-modal={sidebarOpen ? true : undefined}
+          aria-label={t('workbench.projects')}
+          className={`fixed inset-0 z-[70] flex transition-[opacity,visibility] duration-150 ease-out ${sidebarOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
             }`}
         >
           <button
-            className="fixed inset-0 bg-background/60 backdrop-blur-sm transition-opacity duration-150 ease-out"
+            className="fixed inset-0 bg-black/40 transition-opacity duration-150 ease-out"
             onClick={(event) => {
               event.stopPropagation();
               setSidebarOpen(false);
@@ -299,12 +356,14 @@ export default function AppContent() {
             onClick={(event) => event.stopPropagation()}
             onTouchStart={(event) => event.stopPropagation()}
           >
-            <Sidebar {...sidebarSharedProps} />
+            <Sidebar {...sidebarSharedProps} onCloseMobile={() => setSidebarOpen(false)} />
           </div>
         </div>
       )}
 
-      <div className={`flex-1 flex flex-col min-w-0 ${isMobile ? 'pb-mobile-nav' : ''}`}>
+      <div {...(isMobile && sidebarOpen ? { inert: '' } : {})} className={`flex-1 flex flex-col min-w-0 ${isMobile ? 'pb-mobile-nav' : ''}`}>
+        {connectionLost && <div role="status" className="shrink-0 border-b border-border bg-muted px-4 py-2 text-sm text-foreground">{t('workbench.disconnected')}</div>}
+        <div className="min-h-0 flex-1">
         <MainContent
           projects={projects}
           trashProjects={trashProjects}
@@ -318,6 +377,8 @@ export default function AppContent() {
           isMobile={isMobile}
           onMenuClick={() => setSidebarOpen(true)}
           isLoading={isLoadingProjects}
+          projectsError={projectsError}
+          onRetryProjects={fetchProjects}
           isTrashLoading={isLoadingTrashProjects}
           onInputFocusChange={setIsInputFocused}
           onSessionActive={markSessionAsActive}
@@ -343,10 +404,12 @@ export default function AppContent() {
           onResetNavigationSource={resetSessionNavigationSource}
           onNewSession={handleNewSession}
         />
+        </div>
       </div>
 
-      {isMobile && (
+      {isMobile && !sidebarOpen && (
         <MobileNav
+            selectedProject={selectedProject}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           isInputFocused={isInputFocused}

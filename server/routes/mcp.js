@@ -7,7 +7,20 @@ import { dirname } from 'path';
 import { spawn } from 'child_process';
 import { resolveAvailableCliCommand } from '../utils/cliResolution.js';
 
+import { claudeConfigPath, updateMcpConfigFile } from '../utils/mcpConfigEdit.js';
+
 const router = express.Router();
+
+router.put('/config/server', async (req, res) => {
+  try {
+    await updateMcpConfigFile(await claudeConfigPath(), 'claude', req.body);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('[ERROR] Updating claude MCP configuration:', error.message);
+    res.status(error.status || 500).json({ error: error.status ? error.message : 'Unable to save configuration. The original entry was not removed.' });
+  }
+});
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -289,10 +302,8 @@ router.delete('/cli/remove/:name', async (req, res) => {
     let actualScope = scope;
     
     // If the name includes a scope prefix like "local:test", extract it
-    if (name.includes(':')) {
-      const [prefix, serverName] = name.split(':');
-      actualName = serverName;
-      actualScope = actualScope || prefix; // Use prefix as scope if not provided in query
+    if (name.startsWith('local:') && scope === 'local') {
+      actualName = name.slice('local:'.length);
     }
     
     console.log('🗑️ Removing MCP server using Claude CLI');
@@ -428,14 +439,14 @@ router.get('/config/read', async (req, res) => {
         console.log(`✅ Found Claude config at: ${filepath}`);
         break;
       } catch (error) {
-        // File doesn't exist or is not valid JSON, try next
+        if (error.code !== 'ENOENT') throw error;
         console.log(`ℹ️ Config not found or invalid at: ${filepath}`);
       }
     }
     
     if (!configData) {
       return res.json({ 
-        success: false, 
+        success: true,
         message: 'No Claude configuration file found',
         servers: [] 
       });
@@ -464,7 +475,7 @@ router.get('/config/read', async (req, res) => {
           server.config.args = config.args || [];
           server.config.env = config.env || {};
         } else if (config.url) {
-          server.type = config.transport || 'http';
+          server.type = config.type || config.transport || 'http';
           server.config.url = config.url;
           server.config.headers = config.headers || {};
         }
@@ -499,7 +510,7 @@ router.get('/config/read', async (req, res) => {
             server.config.args = config.args || [];
             server.config.env = config.env || {};
           } else if (config.url) {
-            server.type = config.transport || 'http';
+            server.type = config.type || config.transport || 'http';
             server.config.url = config.url;
             server.config.headers = config.headers || {};
           }

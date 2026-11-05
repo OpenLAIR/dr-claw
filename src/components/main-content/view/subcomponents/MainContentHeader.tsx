@@ -43,7 +43,7 @@ export default function MainContentHeader({
           />
         </div>
 
-        <div className="hidden sm:flex justify-center flex-1 electron-no-drag">
+        <div className="flex justify-end sm:justify-center sm:flex-1 electron-no-drag">
           {selectedProject && activeTab !== 'dashboard' && activeTab !== 'trash' && (
             <MainContentTabSwitcher
               activeTab={activeTab}

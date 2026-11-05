@@ -39,6 +39,11 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password, notificationEmail, resetExisting }),
     }),
+    // Desktop app: the per-launch secret goes in a header, never in the URL.
+    desktopSession: (secret) => fetch('/api/auth/desktop-session', {
+      method: 'POST',
+      headers: { 'X-Dr-Claw-Desktop-Token': secret },
+    }),
     user: () => authenticatedFetch('/api/auth/user'),
     logout: () => authenticatedFetch('/api/auth/logout', { method: 'POST' }),
   },

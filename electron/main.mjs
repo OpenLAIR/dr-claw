@@ -11,6 +11,7 @@ import {
   shell,
 } from 'electron';
 import { execFile } from 'node:child_process';
+import crypto from 'node:crypto';
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import net from 'node:net';
@@ -37,6 +38,12 @@ let mainWindow = null;
 let serverProcess = null;
 let serverOrigin = null;
 let quitting = false;
+
+// Per-launch secret shared only with the spawned server (env) and this app's
+// renderer (IPC). The renderer trades it for a normal JWT, so the desktop app
+// never shows the login screen while other local processes and web pages
+// still need a real login. Never put it in a URL or log it.
+const desktopSessionToken = crypto.randomBytes(32).toString('hex');
 
 const singleInstanceLock = app.requestSingleInstanceLock();
 if (!singleInstanceLock) {
@@ -276,6 +283,7 @@ function buildServerEnv(appRoot) {
     ...process.env,
     ELECTRON_RUN_AS_NODE: '1',
     DR_CLAW_DESKTOP: '1',
+    DR_CLAW_DESKTOP_TOKEN: desktopSessionToken,
     DATABASE_PATH: process.env.DATABASE_PATH || databasePath,
     DR_CLAW_RUNTIME_DIR: process.env.DR_CLAW_RUNTIME_DIR || runtimeDir,
     WORKSPACES_ROOT: process.env.WORKSPACES_ROOT || workspacesRoot,
@@ -551,7 +559,27 @@ function buildAppMenu() {
 // IPC handlers
 // ---------------------------------------------------------------------------
 
+function isTrustedRendererFrame(frame) {
+  if (!frame || !serverOrigin) {
+    return false;
+  }
+  try {
+    return new URL(frame.url).origin === new URL(serverOrigin).origin;
+  } catch {
+    return false;
+  }
+}
+
 function registerIpcHandlers() {
+  // Only the top-level page served by our own local server gets the secret.
+  ipcMain.handle('desktop:getSessionToken', (event) => {
+    if (!isTrustedRendererFrame(event.senderFrame) || event.senderFrame.parent) {
+      logDesktop('desktop:getSessionToken refused', { url: event.senderFrame?.url ?? null });
+      return null;
+    }
+    return desktopSessionToken;
+  });
+
   ipcMain.handle('app:getInfo', () => {
     let pkg = {};
     try {
@@ -848,7 +876,9 @@ function createWindow(baseUrl) {
   mainWindow.loadURL(baseUrl);
   setTimeout(() => revealWindow('timeout'), 4000);
 
-  if (isDev) {
+  // Set DR_CLAW_NO_DEVTOOLS=1 to run the dev build without the detached
+  // DevTools window.
+  if (isDev && process.env.DR_CLAW_NO_DEVTOOLS !== '1') {
     mainWindow.webContents.openDevTools({ mode: 'detach' });
   }
 }
@@ -857,7 +887,22 @@ function createWindow(baseUrl) {
 // Boot
 // ---------------------------------------------------------------------------
 
-async function boot() {
+let ipcHandlersRegistered = false;
+let bootInFlight = null;
+
+// On macOS the app keeps running after its last window closes, and clicking
+// the Dock icon fires `activate`, which calls boot() again. IPC handlers must
+// only be registered once, and the already-running server must be reused.
+function boot() {
+  if (!bootInFlight) {
+    bootInFlight = bootOnce().finally(() => {
+      bootInFlight = null;
+    });
+  }
+  return bootInFlight;
+}
+
+async function bootOnce() {
   try {
     if (isMac) {
       // In packaged builds the bundled .icns gets the macOS squircle mask
@@ -874,9 +919,12 @@ async function boot() {
       }
     }
 
-    registerIpcHandlers();
+    if (!ipcHandlersRegistered) {
+      registerIpcHandlers();
+      ipcHandlersRegistered = true;
+    }
 
-    const baseUrl = await startServer();
+    const baseUrl = serverProcess && serverOrigin ? serverOrigin : await startServer();
     serverOrigin = baseUrl;
     createWindow(baseUrl);
   } catch (error) {

@@ -42,6 +42,8 @@ type LatestChatMessage = {
 };
 
 interface UseChatRealtimeHandlersArgs {
+  onTurnFinished?: (success: boolean) => void;
+  onQueueSessionBound?: (id: string) => void;
   latestMessage: LatestChatMessage | null;
   provider: SessionProvider;
   selectedProject: Project | null;
@@ -171,6 +173,8 @@ const isLegacyTaskMasterInstallError = (value: unknown): boolean => {
 };
 
 export function useChatRealtimeHandlers({
+  onTurnFinished,
+  onQueueSessionBound,
   latestMessage,
   provider,
   selectedProject,
@@ -513,7 +517,8 @@ export function useChatRealtimeHandlers({
       }));
     };
 
-    const clearLoadingIndicators = () => {
+    const clearLoadingIndicators = (queueResult?: boolean) => {
+      if (queueResult !== undefined) onTurnFinished?.(queueResult);
       setIsLoading(false);
       setCanAbortSession(false);
       setClaudeStatus(null);
@@ -565,6 +570,7 @@ export function useChatRealtimeHandlers({
     switch (latestMessage.type) {
       case 'session-created':
         if (latestMessage.sessionId && (!currentSessionId || isTemporarySessionId(currentSessionId))) {
+          onQueueSessionBound?.(latestMessage.sessionId);
           const createdSessionProvider =
             (latestMessage.provider as SessionProvider | undefined) || provider;
           const pendingStartTime = pendingViewSessionRef.current?.startedAt;
@@ -821,9 +827,10 @@ export function useChatRealtimeHandlers({
         const pendingSessionId = sessionStorage.getItem('pendingSessionId');
         const completedSessionId = latestMessage.sessionId || currentSessionId || pendingSessionId;
         flushAndFinalizePendingStream();
-        clearLoadingIndicators();
+        clearLoadingIndicators(latestMessage.exitCode == null || latestMessage.exitCode === 0);
         markSessionsAsCompleted(completedSessionId, currentSessionId, selectedSession?.id, pendingSessionId);
         if (pendingSessionId && !currentSessionId && latestMessage.exitCode === 0) {
+          onQueueSessionBound?.(pendingSessionId);
           setCurrentSessionId(pendingSessionId);
           sessionStorage.removeItem('pendingSessionId');
         }
@@ -848,7 +855,7 @@ export function useChatRealtimeHandlers({
           selectedSession?.id ||
           null;
         flushAndFinalizePendingStream();
-        clearLoadingIndicators();
+        clearLoadingIndicators(false);
         markSessionsAsCompleted(erroredSessionId, currentSessionId, selectedSession?.id);
         // Clear pendingSessionId for the errored session (not all sessions — other tabs may be active)
         if (typeof window !== 'undefined') {
@@ -913,7 +920,7 @@ export function useChatRealtimeHandlers({
       case 'cursor-error':
         if (isLegacyTaskMasterInstallError(latestMessage.error)) break;
         flushAndFinalizePendingStream();
-        clearLoadingIndicators();
+        clearLoadingIndicators(false);
         markSessionsAsCompleted(latestMessage.sessionId, currentSessionId, selectedSession?.id);
         setPendingPermissionRequests([]);
         setChatMessages((previous) => [
@@ -931,7 +938,7 @@ export function useChatRealtimeHandlers({
           syncClaudeStatusStartTime(latestMessage.startTime);
         }
 
-        clearLoadingIndicators();
+        clearLoadingIndicators(!latestMessage.data?.is_error);
         markSessionsAsCompleted(cursorCompletedSessionId, currentSessionId, selectedSession?.id, pendingCursorSessionId);
         try {
           const resultData = latestMessage.data || {};
@@ -958,6 +965,7 @@ export function useChatRealtimeHandlers({
           console.warn('Error handling cursor-result message:', error);
         }
         if (cursorCompletedSessionId && !currentSessionId && cursorCompletedSessionId === pendingCursorSessionId) {
+          onQueueSessionBound?.(cursorCompletedSessionId);
           setCurrentSessionId(cursorCompletedSessionId);
           sessionStorage.removeItem('pendingSessionId');
           if (window.refreshProjects) setTimeout(() => window.refreshProjects?.(), 500);
@@ -1302,7 +1310,7 @@ export function useChatRealtimeHandlers({
         }
 
         if (codexData.type === 'turn_complete' || codexData.type === 'turn_failed') {
-          clearLoadingIndicators();
+          clearLoadingIndicators(codexData.type === 'turn_failed' ? false : undefined);
           markSessionsAsCompleted(latestMessage.sessionId, currentSessionId, selectedSession?.id);
           if (codexData.type === 'turn_failed') {
             setChatMessages((previous) => [...previous, { type: 'error', content: codexData.error?.message || 'Turn failed', timestamp: new Date() }]);
@@ -1315,9 +1323,10 @@ export function useChatRealtimeHandlers({
         const codexPendingSessionId = sessionStorage.getItem('pendingSessionId');
         const codexActualSessionId = latestMessage.actualSessionId || codexPendingSessionId;
         const codexCompletedSessionId = latestMessage.sessionId || currentSessionId || codexPendingSessionId;
-        clearLoadingIndicators();
+        clearLoadingIndicators(latestMessage.exitCode == null || latestMessage.exitCode === 0);
         markSessionsAsCompleted(codexCompletedSessionId, codexActualSessionId, currentSessionId, selectedSession?.id, codexPendingSessionId);
         if (codexPendingSessionId && !currentSessionId) {
+          if (codexActualSessionId) onQueueSessionBound?.(codexActualSessionId);
           setCurrentSessionId(codexActualSessionId);
           setIsSystemSessionChange(true);
           if (codexActualSessionId) {
@@ -1332,7 +1341,7 @@ export function useChatRealtimeHandlers({
       case 'codex-error':
         if (isLegacyTaskMasterInstallError(latestMessage.error)) break;
         flushAndFinalizePendingStream();
-        clearLoadingIndicators();
+        clearLoadingIndicators(false);
         markSessionsAsCompleted(latestMessage.sessionId, currentSessionId, selectedSession?.id);
         setPendingPermissionRequests([]);
         setChatMessages((previous) => [...previous, { type: 'error', content: latestMessage.error || 'An error occurred with Codex', timestamp: new Date(), errorType: latestMessage.errorType, isRetryable: latestMessage.isRetryable === true }]);
@@ -1342,13 +1351,13 @@ export function useChatRealtimeHandlers({
         const pendingSessionId = typeof window !== 'undefined' ? sessionStorage.getItem('pendingSessionId') : null;
         const abortedSessionId = latestMessage.sessionId || currentSessionId;
         if (latestMessage.success !== false) {
-          clearLoadingIndicators();
+          clearLoadingIndicators(false);
           markSessionsAsCompleted(abortedSessionId, currentSessionId, selectedSession?.id, pendingSessionId);
           if (pendingSessionId && (!abortedSessionId || pendingSessionId === abortedSessionId)) sessionStorage.removeItem('pendingSessionId');
           setPendingPermissionRequests([]);
           setChatMessages((previous) => [...previous, { type: 'assistant', content: 'Session interrupted by user.', timestamp: new Date() }]);
         } else {
-          clearLoadingIndicators();
+          clearLoadingIndicators(false);
           setPendingPermissionRequests([]);
           setChatMessages((previous) => [...previous, { type: 'error', content: 'Session has already finished.', timestamp: new Date() }]);
         }
@@ -1380,7 +1389,7 @@ export function useChatRealtimeHandlers({
           }
         } else if (isCurrentSession && latestMessage.isProcessing === false) {
           clearSessionTimerStart(statusSessionId);
-          clearLoadingIndicators();
+          clearLoadingIndicators(false);
           onSessionNotProcessing?.(statusSessionId);
           onSessionStatusResolved?.(statusSessionId, false);
         }
@@ -1445,6 +1454,8 @@ export function useChatRealtimeHandlers({
         break;
     }
   }, [
+    onTurnFinished,
+    onQueueSessionBound,
     latestMessage, provider, selectedProject, selectedSession, currentSessionId, setCurrentSessionId,
     setChatMessages, setIsLoading, setCanAbortSession, setClaudeStatus, setStatusTextOverride, setTokenBudget,
     setIsSystemSessionChange, setPendingPermissionRequests, onSessionInactive, onSessionProcessing,

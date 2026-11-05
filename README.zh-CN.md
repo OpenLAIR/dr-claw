@@ -106,6 +106,7 @@ Dr. Claw 是一个面向不同研究方向的通用 AI 研究助手，帮助研�
 
 ## 最新动态
 
+- 🧭 **v1.2.0：研究工作台全新设计** `2026-11-05` — 以项目为中心的工作区，更简洁的对话输入框和统一的控件。桌面应用自动登录，本地模型除 Ollama 外还支持 vLLM 和 SGLang。从 [GitHub Releases](https://github.com/OpenLAIR/dr-claw/releases/latest) 下载。
 - 🎉 **论文被 EMNLP 2026 接收** `2026-08-22` — 我们的论文 [*Dr. Claw: An AI Scientist Workspace for Vibe Research*](https://arxiv.org/abs/2609.00365) 被 **[EMNLP 2026](https://2026.emnlp.org/) System Demonstrations** 接收！欢迎在匈牙利布达佩斯（2026 年 10 月 24–29 日）现场看我们的 Demo。
 - 🧪 **Auto Research Hub** `2026-04-08` — 一键启动全自动科研！选工具包、点配置、选工作流——然后去睡觉，醒来收论文。支持 ARIS、Autoresearch、DeepScientist 三大工具包，从 idea 到 paper 全程无人值守。
 - 🖥️ **桌面应用 & npx** `2026-04-06` — Dr. Claw 现已支持原生桌面应用！从 [GitHub Releases](https://github.com/OpenLAIR/dr-claw/releases) 下载 `.dmg` / `.exe`，或运行 `npx dr-claw` 零配置一键启动。
@@ -189,7 +190,22 @@ Dr. Claw 是一个面向不同研究方向的通用 AI 研究助手，帮助研�
 
 ## 快速开始
 
-> **桌面应用（Beta）：** 想跳过以下安装步骤？可以直接从 [GitHub Releases](https://github.com/OpenLAIR/dr-claw/releases) 下载最新的 `.dmg`（macOS）或 `.exe`（Windows）安装包运行。桌面应用目前为 Beta 版本 — 如需更稳定的体验，请按照下方完整安装步骤操作。
+### 推荐：桌面应用
+
+使用 Dr. Claw 最简单的方式是桌面应用：应用会自己启动服务，不需要在终端或浏览器里配置，打开后自动登录。
+
+1. 从[最新版本](https://github.com/OpenLAIR/dr-claw/releases/latest)下载对应平台的安装包：
+   - **macOS（Apple Silicon）：** `Dr.Claw-<版本号>-mac-arm64.dmg`
+   - **Windows（x64）：** `Dr.Claw-<版本号>-win-x64.exe`
+2. 安装并打开。
+   - **macOS：** 把 Dr. Claw 拖进"应用程序"。应用暂未经过 Apple 公证，第一次打开可能提示"已损坏"或"无法验证开发者"。在终端运行一次下面的命令，再重新打开即可：
+     ```bash
+     xattr -dr com.apple.quarantine "/Applications/Dr. Claw.app"
+     ```
+   - **Windows：** 如果 SmartScreen 提示"Windows 已保护你的电脑"，点击 **更多信息** → **仍要运行**。
+3. 按首次启动向导连接至少一个智能体（Claude Code、Codex 或 Gemini），之后可在 **设置 → 智能体** 中修改。
+
+Intel Mac 和 Linux 暂无安装包，请使用下方的 npx 或源码安装。
 
 ### 前置要求
 
@@ -203,7 +219,7 @@ Dr. Claw 是一个面向不同研究方向的通用 AI 研究助手，帮助研�
 
 Cursor Agent 支持正在开发中，即将推出。
 
-### 方式一：npx 一键启动（推荐）
+### 方式一：npx 一键启动
 
 无需克隆仓库或手动配置，直接运行：
 

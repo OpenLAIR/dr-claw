@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../../../utils/api';
 import type { Reference, ReferenceTag, ZoteroStatus } from '../types';
 
@@ -13,6 +13,8 @@ export function useReferencesData({ projectName, autoFetch = true }: UseReferenc
   const [tags, setTags] = useState<ReferenceTag[]>([]);
   const [zoteroStatus, setZoteroStatus] = useState<ZoteroStatus | null>(null);
   const [loading, setLoading] = useState(false);
+  const projectRequest = useRef(0);
+  const [projectError, setProjectError] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchReferences = useCallback(async (search?: string, filterTags?: string[]) => {
@@ -35,12 +37,15 @@ export function useReferencesData({ projectName, autoFetch = true }: UseReferenc
 
   const fetchProjectReferences = useCallback(async () => {
     if (!projectName) return;
+    const request = ++projectRequest.current;
+    setProjectError(false);
     try {
       const res = await api.references.projectRefs(projectName);
       if (!res.ok) throw new Error('Failed to fetch project references');
       const data = await res.json();
-      setProjectReferences(data.references || []);
+      if (request === projectRequest.current) setProjectReferences(data.references || []);
     } catch (err) {
+      if (request === projectRequest.current) setProjectError(true);
       console.error('Error fetching project references:', err);
     }
   }, [projectName]);
@@ -130,6 +135,11 @@ export function useReferencesData({ projectName, autoFetch = true }: UseReferenc
   }, [fetchReferences, fetchProjectReferences, fetchTags, checkZoteroStatus]);
 
   useEffect(() => {
+    setProjectReferences([]);
+    return () => { projectRequest.current++; };
+  }, [projectName]);
+
+  useEffect(() => {
     if (autoFetch) {
       void refresh();
     }
@@ -138,6 +148,7 @@ export function useReferencesData({ projectName, autoFetch = true }: UseReferenc
   return {
     references,
     projectReferences,
+    projectError,
     tags,
     zoteroStatus,
     loading,

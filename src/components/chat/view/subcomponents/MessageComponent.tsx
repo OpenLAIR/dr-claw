@@ -1,5 +1,5 @@
 import React, { memo, useMemo } from 'react';
-import { Check, Copy, FileImage, FileText, Pencil, RefreshCw, User } from 'lucide-react';
+import { Check, ChevronRight, Wrench, Copy, FileImage, FileText, Pencil, RefreshCw, User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import SessionProviderLogo from '../../../SessionProviderLogo';
 import type {
@@ -152,7 +152,7 @@ const MessageComponent = memo(({ message, index, prevMessage, createDiff, onFile
         defaultValue: 'Resend and edit are unavailable for messages with attachments right now.',
       })
     : null;
-  const actionButtonClass = 'inline-flex items-center gap-1 rounded-full border border-blue-200/80 bg-white/90 px-2.5 py-1 text-[11px] font-medium text-blue-700 transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-blue-800/60 dark:bg-slate-900/80 dark:text-blue-300 dark:hover:bg-blue-950/40';
+  const actionButtonClass = 'inline-flex items-center gap-1 rounded-md border border-border bg-background px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50';
 
   return (
     <div
@@ -162,31 +162,31 @@ const MessageComponent = memo(({ message, index, prevMessage, createDiff, onFile
       {message.isSkillContent ? (
         /* Collapsible skill content */
         <div className="w-full mb-4">
-          <div className="border border-purple-200/50 dark:border-purple-800/30 rounded-lg bg-purple-50/30 dark:bg-purple-900/10 shadow-sm overflow-hidden">
+          <div className="border border-border rounded-lg bg-muted/30 overflow-hidden">
             <details className="group">
-              <summary className="flex list-none items-center gap-2 px-3 py-2 cursor-pointer text-[13px] select-none hover:bg-purple-50/50 dark:hover:bg-purple-900/20 transition-colors [&::-webkit-details-marker]:hidden">
+              <summary className="flex list-none items-center gap-2 px-3 py-2 cursor-pointer text-[13px] select-none hover:bg-muted dark:hover:bg-muted transition-colors [&::-webkit-details-marker]:hidden">
                 <svg
-                  className="w-3.5 h-3.5 text-purple-400 dark:text-purple-500 transition-transform duration-150 group-open:rotate-90 flex-shrink-0"
+                  className="w-3.5 h-3.5 text-muted-foreground dark:text-muted-foreground transition-transform duration-150 group-open:rotate-90 flex-shrink-0"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
-                <span className="font-bold text-purple-600 dark:text-purple-400 text-xs flex-shrink-0">Skill</span>
+                <span className="font-bold text-muted-foreground dark:text-muted-foreground text-xs flex-shrink-0">Skill</span>
                 <span className="text-gray-300 dark:text-gray-700 text-[10px] flex-shrink-0 mx-0.5">|</span>
                 <span className="text-gray-500 dark:text-gray-400 truncate flex-1 font-medium text-xs">
                   {extractSkillContentTitle(message.content || '', t('skill.contentLoaded'))}
                 </span>
               </summary>
-              <div className="px-4 py-3 border-t border-purple-100 dark:border-purple-800/30 max-h-96 overflow-y-auto">
+              <div className="px-4 py-3 border-t border-border dark:border-border max-h-96 overflow-y-auto">
                 <Markdown className="prose prose-sm max-w-none dark:prose-invert">
                   {(message.content || '')
                     .replace(/<command-name>[^<]*<\/command-name>/g, '')
                     .replace(/<\/?command-message>/g, '')
                     .replace(/<command-args>[^<]*<\/command-args>/g, '')
                     .replace(/<\/?local-command-stdout>/g, '')
-                    .replace(/^[❯>]\s*Base directory for this skill:\s*\S+\s*/m, '')
+                    .replace(/^[❯>]\s*Base directory for this skill:\s*\S+\s*/m, '') // taste-skill-ignore: literal CLI prompt syntax, not a decorative UI icon.
                     .trim()}
                 </Markdown>
               </div>
@@ -198,7 +198,7 @@ const MessageComponent = memo(({ message, index, prevMessage, createDiff, onFile
         <div className="flex flex-col items-end w-full mb-4">
           <div className="flex items-center space-x-2 mb-1.5">
             {!isGrouped && (
-              <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white flex-shrink-0">
+              <div className="w-6 h-6 bg-muted rounded-full flex items-center justify-center text-foreground flex-shrink-0">
                 <User className="w-3.5 h-3.5" />
               </div>
             )}
@@ -208,7 +208,7 @@ const MessageComponent = memo(({ message, index, prevMessage, createDiff, onFile
               <button
                 type="button"
                 onClick={onSuggestShellEdit}
-                className="text-[11px] font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
                 title={t('shell.historyEdit.action')}
                 aria-label={t('shell.historyEdit.action')}
               >
@@ -216,16 +216,16 @@ const MessageComponent = memo(({ message, index, prevMessage, createDiff, onFile
               </button>
             </div>
           )}
-          <div className="bg-blue-600 text-white rounded-2xl rounded-tr-none px-4 py-2.5 shadow-sm max-w-[90%] sm:max-w-[85%]">
+          <div className="bg-muted text-foreground rounded-lg rounded-tr-none px-4 py-2.5 max-w-[90%] sm:max-w-[85%]">
             {(message.editedFromMessageId || message.isSuperseded) && (
               <div className="mb-1.5 flex flex-wrap gap-1.5">
                 {message.editedFromMessageId && (
-                  <span className="inline-flex items-center rounded-full bg-blue-500/20 px-2.5 py-1 text-[11px] font-medium text-blue-100">
+                  <span className="inline-flex items-center rounded-full bg-background/60 px-2.5 py-1 text-xs font-medium text-muted-foreground">
                     {t('messageActions.editedVersion', { defaultValue: 'Edited message' })}
                   </span>
                 )}
                 {message.isSuperseded && (
-                  <span className="inline-flex items-center rounded-full bg-slate-900/20 px-2.5 py-1 text-[11px] font-medium text-blue-100">
+                  <span className="inline-flex items-center rounded-full bg-background/60 px-2.5 py-1 text-xs font-medium text-muted-foreground">
                     {t('messageActions.superseded', { defaultValue: 'Superseded by later edit' })}
                   </span>
                 )}
@@ -233,7 +233,7 @@ const MessageComponent = memo(({ message, index, prevMessage, createDiff, onFile
             )}
             {message.attachedPrompt && (
               <div className={message.content?.trim() ? 'mb-1.5' : ''}>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-100 text-xs font-medium">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-background/60 text-muted-foreground text-xs font-medium">
                   <span>{message.attachedPrompt.scenarioIcon}</span>
                   {message.attachedPrompt.scenarioTitle}
                 </span>
@@ -260,7 +260,7 @@ const MessageComponent = memo(({ message, index, prevMessage, createDiff, onFile
                     );
                   }
                   return (
-                    <div key={img.name || idx} className="flex items-center gap-2 bg-white/10 rounded-lg px-3 py-2">
+                    <div key={img.name || idx} className="flex items-center gap-2 bg-background/60 rounded-lg px-3 py-2">
                       <svg className="w-4 h-4 flex-shrink-0 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                       </svg>
@@ -276,14 +276,14 @@ const MessageComponent = memo(({ message, index, prevMessage, createDiff, onFile
                   const Icon = attachment.kind === 'image' ? FileImage : FileText;
                   const attachmentDescription =
                     attachment.kind === 'pdf'
-                      ? 'PDF uploaded to workspace'
+                      ? t('attachments.pdfUploaded')
                       : attachment.kind === 'image'
-                      ? 'Image uploaded to workspace'
-                      : 'File uploaded to workspace';
+                      ? t('attachments.imageUploaded')
+                      : t('attachments.fileUploaded');
                   return (
                     <div
                       key={`${attachment.name}:${attachment.path || idx}`}
-                      className="flex items-start gap-2 rounded-lg bg-white/10 px-3 py-2"
+                      className="flex items-start gap-2 rounded-lg bg-background/60 px-3 py-2"
                     >
                       <Icon className="mt-0.5 h-4 w-4 flex-shrink-0 opacity-80" />
                       <div className="min-w-0 flex-1">
@@ -355,7 +355,7 @@ const MessageComponent = memo(({ message, index, prevMessage, createDiff, onFile
             </div>
           )}
           {!isGrouped && (
-            <div className="text-[10px] text-gray-400 mt-1 mr-1">
+            <div className="text-xs text-muted-foreground mt-1 mr-1">
               {formattedTime}
             </div>
           )}
@@ -379,7 +379,7 @@ const MessageComponent = memo(({ message, index, prevMessage, createDiff, onFile
                 </div>
               ) : message.type === 'tool' ? (
                 <div className="w-6 h-6 bg-gray-600 dark:bg-gray-700 rounded-full flex items-center justify-center text-white text-[10px] flex-shrink-0">
-                  🔧
+                  <Wrench className="h-4 w-4" aria-hidden />
                 </div>
               ) : (
                 <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-sm flex-shrink-0">
@@ -531,9 +531,9 @@ const MessageComponent = memo(({ message, index, prevMessage, createDiff, onFile
                       // Parse the menu options
                       lines.forEach((line) => {
                         // Match lines like "❯ 1. Yes" or "  2. No"
-                        const optionMatch = line.match(/[❯\s]*(\d+)\.\s+(.+)/);
+                        const optionMatch = line.match(/[❯\s]*(\d+)\.\s+(.+)/); // taste-skill-ignore: literal CLI prompt syntax, not a decorative UI icon.
                         if (optionMatch) {
-                          const isSelected = line.includes('❯');
+                          const isSelected = line.includes('❯'); // taste-skill-ignore: literal CLI prompt syntax, not a decorative UI icon.
                           options.push({
                             number: optionMatch[1],
                             text: optionMatch[2].trim(),
@@ -555,7 +555,7 @@ const MessageComponent = memo(({ message, index, prevMessage, createDiff, onFile
                                 key={option.number}
                                 className={`w-full text-left px-4 py-3 rounded-lg border-2 transition-all ${
                                   option.isSelected
-                                    ? 'bg-amber-600 dark:bg-amber-700 text-white border-amber-600 dark:border-amber-700 shadow-md'
+                                    ? 'bg-amber-600 dark:bg-amber-700 text-white border-amber-600 dark:border-amber-700'
                                     : 'bg-white dark:bg-gray-800 text-amber-900 dark:text-amber-100 border-amber-300 dark:border-amber-700'
                                 } cursor-not-allowed opacity-75`}
                                 disabled
@@ -572,7 +572,7 @@ const MessageComponent = memo(({ message, index, prevMessage, createDiff, onFile
                                     {option.text}
                                   </span>
                                   {option.isSelected && (
-                                    <span className="text-lg">❯</span>
+                                    <ChevronRight className="h-4 w-4" aria-hidden />
                                   )}
                                 </div>
                               </button>
@@ -700,7 +700,7 @@ const MessageComponent = memo(({ message, index, prevMessage, createDiff, onFile
             )}
 
             {!isGrouped && (
-              <div className="text-[10px] text-gray-400 dark:text-gray-500 mt-2">
+              <div className="text-xs text-muted-foreground mt-2">
                 {formattedTime}
               </div>
             )}

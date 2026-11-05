@@ -53,7 +53,7 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
             {filePath}
           </span>
         )}
-        <span className={`text-[10px] font-medium px-1.5 py-px rounded ${badgeClasses} flex-shrink-0 ml-2`}>
+        <span className={`text-[11px] font-medium px-1.5 py-px rounded ${badgeClasses} flex-shrink-0 ml-2`}>
           {badge}
         </span>
       </div>

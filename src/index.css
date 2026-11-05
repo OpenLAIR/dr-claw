@@ -23,25 +23,25 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 0 0% 99%;
+    --foreground: 0 0% 9%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 0 0% 9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 195 80% 45%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 213 45% 15%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 213 45% 15%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 195 80% 45%;
+    --popover-foreground: 0 0% 9%;
+    --primary: 0 0% 12%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 94%;
+    --secondary-foreground: 0 0% 12%;
+    --muted: 0 0% 95%;
+    --muted-foreground: 0 0% 40%;
+    --accent: 0 0% 93%;
+    --accent-foreground: 0 0% 12%;
+    --destructive: 0 72% 42%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 90%;
+    --input: 0 0% 78%;
+    --ring: 213 72% 42%;
     --radius: 0.5rem;
 
     /* Nav design tokens */
@@ -85,27 +85,26 @@
   }
 
   .dark {
-    --background: 213 45% 8%;
-    --foreground: 210 40% 98%;
-    --card: 213 45% 11%;
-    --card-foreground: 210 40% 98%;
-    --popover: 213 45% 11%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 195 85% 55%;
-    --primary-foreground: 213 45% 10%;
-    --secondary: 213 35% 17%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 213 35% 17%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 213 35% 17%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 213 35% 17%;
-    --input: 213 25% 35%;
-    --ring: 195 85% 55%;
+    --background: 0 0% 7%;
+    --foreground: 0 0% 95%;
+    --card: 0 0% 9%;
+    --card-foreground: 0 0% 95%;
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 0 0% 94%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 16%;
+    --secondary-foreground: 0 0% 95%;
+    --muted: 0 0% 14%;
+    --muted-foreground: 0 0% 69%;
+    --accent: 0 0% 18%;
+    --accent-foreground: 0 0% 95%;
+    --destructive: 0 68% 62%;
+    --destructive-foreground: 0 0% 9%;
+    --border: 0 0% 19%;
+    --input: 0 0% 32%;
+    --ring: 213 88% 70%;
 
-    /* Nav design tokens — dark overrides */
     --nav-glass-bg: 213 45% 11% / 0.55;
     --nav-glass-blur: 24px;
     --nav-glass-saturate: 1.6;
@@ -185,17 +184,8 @@
     transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
   }
   
-  /* Color transitions for theme switching - exclude interactive elements */
-  body, div, section, article, aside, header, footer, nav, main,
-  h1, h2, h3, h4, h5, h6, p, span, blockquote,
-  ul, ol, li, dl, dt, dd,
-  table, thead, tbody, tfoot, tr, td, th,
-  form, fieldset, legend, label {
-    transition: background-color 200ms ease-in-out, 
-                border-color 200ms ease-in-out,
-                color 200ms ease-in-out;
-  }
-  
+  /* Theme tokens change atomically so inherited text never lags behind its surface. */
+
   /* Transform transitions */
   .transition-transform {
     transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -259,30 +249,11 @@
                 opacity 300ms ease-in-out;
   }
 
-  /* Nav glass surface — uses theme tokens */
-  .nav-glass {
-    background: hsl(var(--nav-glass-bg));
-    backdrop-filter: blur(var(--nav-glass-blur)) saturate(var(--nav-glass-saturate));
-    -webkit-backdrop-filter: blur(var(--nav-glass-blur)) saturate(var(--nav-glass-saturate));
-  }
-
-  /* Nav tab active pill glow — uses theme tokens */
-  .nav-tab-active {
-    box-shadow: 0 1px 8px hsl(var(--nav-tab-glow)),
-                0 0 0 1px hsl(var(--nav-tab-ring));
-  }
-
-  /* Floating mobile nav bar — uses theme tokens */
-  .mobile-nav-float {
-    box-shadow: 0 -1px 20px hsl(var(--nav-float-shadow)),
-                0 0 0 1px hsl(var(--nav-float-ring));
-  }
-
-  /* Subtle sidebar divider — uses theme tokens */
-  .nav-divider {
-    height: 1px;
-    background: linear-gradient(90deg, transparent, hsl(var(--nav-divider-color)) 20%, hsl(var(--nav-divider-color)) 80%, transparent);
-  }
+  /* Navigation stays opaque in both themes. */
+  .nav-glass { background: hsl(var(--background)); }
+  .nav-tab-active { background: hsl(var(--muted)); }
+  .mobile-nav-float { border-top: 1px solid hsl(var(--border)); }
+  .nav-divider { height: 1px; background: hsl(var(--border)); }
 
   /* Nav search input surface — uses theme tokens */
   .nav-search-input {
@@ -919,4 +890,206 @@
 .electron-no-drag {
   -webkit-app-region: no-drag;
   app-region: no-drag;
+}
+
+@layer components {
+  .workbench-page { @apply mx-auto w-full max-w-[1320px] p-4 sm:p-6; }
+  .project-row {
+    @apply grid items-center gap-x-4 gap-y-3 border-b border-border py-4 last:border-b-0;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  @media (min-width: 1024px) {
+    .project-row { grid-template-columns: minmax(0, 2fr) minmax(100px, 1fr) minmax(140px, 1fr) auto; }
+  }
+}
+button:focus-visible, summary:focus-visible, a:focus-visible {
+  outline: 2px solid hsl(var(--ring)); outline-offset: 2px;
+}
+@media (pointer: coarse) {
+  button { min-height: 40px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+
+.workbench-dialog::backdrop { background: rgb(0 0 0 / 0.4); }
+
+/* Menus inside the configuration modal expand within its scrollable surface. */
+.workbench-dialog .bottom-full {
+  position: relative; bottom: auto; right: auto; left: auto;
+  width: 100%; max-width: 100%; max-height: 240px; margin: 8px 0 0;
+}
+.composer-select { min-width: 0; width: 100%; }
+.composer-select-label { display: block; margin-bottom: 8px; font-size: 12px; font-weight: 500; color: hsl(var(--muted-foreground)); }
+.composer-select-trigger {
+  display: flex; align-items: center; gap: 10px; min-height: 44px; width: 100%;
+  padding: 10px 12px; border: 1px solid hsl(var(--border)); border-radius: 10px;
+  background: hsl(var(--popover)); color: hsl(var(--foreground)); font-size: 14px; line-height: 20px; text-align: left;
+}
+.composer-select-trigger:hover, .composer-select-trigger[aria-expanded='true'] { background: hsl(var(--muted)); }
+.composer-select-menu {
+  margin-top: 8px; padding: 4px; max-height: 240px; overflow-y: auto; overscroll-behavior: contain;
+  border: 1px solid hsl(var(--border)); border-radius: 12px; background: hsl(var(--popover)); color: hsl(var(--foreground));
+}
+.composer-select-option {
+  display: flex; align-items: center; gap: 10px; min-height: 44px; width: 100%; padding: 10px 12px;
+  border-radius: 8px; font-size: 14px; line-height: 20px; text-align: left; color: hsl(var(--foreground));
+}
+.composer-select-option:hover:not(:disabled), .composer-select-option[aria-selected='true'], .composer-select-option[aria-pressed='true'] { background: hsl(var(--muted)); }
+.composer-select-option:disabled { color: hsl(var(--muted-foreground)); opacity: 0.55; cursor: not-allowed; }
+.composer-select-description { display: block; margin-top: 2px; font-size: 12px; line-height: 18px; color: hsl(var(--muted-foreground)); overflow-wrap: anywhere; }
+.composer-select-icon { display: flex; align-items: center; justify-content: center; width: 16px; flex-shrink: 0; color: hsl(var(--muted-foreground)); }
+.composer-select-trigger:focus-visible, .composer-select-option:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: -2px; }
+.chat-input-placeholder::placeholder,
+.dark .chat-input-placeholder::placeholder,
+.dark textarea.bg-transparent::placeholder {
+  color: hsl(var(--muted-foreground)) !important;
+  -webkit-text-fill-color: hsl(var(--muted-foreground)) !important;
+  opacity: 1 !important;
+}
+
+.workbench-wizard::backdrop { background: rgb(0 0 0 / 0.4); }
+
+/* A quiet pane boundary with a forgiving hit area, including in Electron. */
+.context-sidebar-resizer {
+  position: absolute;
+  inset: 0 auto 0 -5px;
+  width: 10px;
+  z-index: 30;
+  cursor: col-resize;
+  touch-action: none;
+  outline: none;
+}
+.context-sidebar-resizer::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 4px;
+  width: 2px;
+  background: hsl(var(--muted-foreground));
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+.context-sidebar-resizer:hover::after { opacity: 0.5; }
+.context-sidebar-resizer:focus-visible::after,
+.context-sidebar-resizer[data-resizing='true']::after { opacity: 1; }
+
+/* A single writing surface, with a quiet utility row below the draft. */
+.chat-composer-surface {
+  position: relative;
+  min-width: 0;
+  border: 1px solid hsl(var(--border));
+  border-radius: 22px;
+  background: hsl(var(--card));
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.035);
+  transition: border-color 150ms ease;
+}
+.chat-composer-surface:focus-within { border-color: hsl(var(--muted-foreground) / 0.55); }
+.chat-composer-text {
+  padding: 16px 18px 10px;
+  font-size: 16px;
+  line-height: 24px;
+}
+.chat-composer-toolbar {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 10px 10px;
+}
+.chat-composer-action,
+.chat-composer-model,
+.chat-composer-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  border-radius: 999px;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+.chat-composer-action {
+  width: 36px;
+  flex-shrink: 0;
+  color: hsl(var(--muted-foreground));
+}
+.chat-composer-model {
+  min-width: 0;
+  max-width: 260px;
+  gap: 6px;
+  padding-inline: 10px;
+  color: hsl(var(--foreground));
+  font-size: 13px;
+  font-weight: 500;
+}
+.chat-composer-action:hover,
+.chat-composer-model:hover,
+.chat-composer-action[aria-expanded='true'] { background: hsl(var(--muted)); }
+.chat-composer-submit {
+  width: 36px;
+  flex-shrink: 0;
+  margin-left: auto;
+  color: hsl(var(--background));
+  background: hsl(var(--foreground));
+}
+.chat-composer-submit:hover:not(:disabled) { background: hsl(var(--foreground) / 0.8); }
+.chat-composer-submit:disabled {
+  background: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+  cursor: not-allowed;
+}
+.chat-composer-action:focus-visible,
+.chat-composer-model:focus-visible,
+.chat-composer-submit:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+@media (max-width: 768px) {
+  .chat-composer-toolbar { gap: 2px; padding: 0 8px 8px; }
+  .chat-composer-action, .chat-composer-model, .chat-composer-submit { height: 44px; }
+  .chat-composer-action, .chat-composer-submit { width: 44px; }
+  .chat-composer-model { padding-inline: 6px; }
+  .chat-composer-text { padding-inline: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chat-composer-surface, .chat-composer-action, .chat-composer-model, .chat-composer-submit { transition: none; }
+}
+
+.composer-more-tools::backdrop { background: rgb(0 0 0 / 0.25); }
+.composer-more-tools .composer-tool-list > div > button {
+  min-height: 44px;
+  width: 100%;
+  justify-content: flex-start;
+  gap: 12px;
+  border: 0;
+  background: transparent;
+  font-size: 14px;
+  padding-inline: 12px;
+}
+.composer-more-tools .composer-tool-list > div > button:hover { background: hsl(var(--muted)); }
+.composer-more-tools .composer-tool-list > div > button > svg:last-child:not(:first-child) { margin-left: auto; }
+
+/* Theme changes update the entire palette atomically, including utility transitions. */
+html[data-theme-changing] *,
+html[data-theme-changing] *::before,
+html[data-theme-changing] *::after {
+  transition: none !important;
+}
+
+/* File identity uses the full panel width; actions never steal its text column. */
+.file-workspace { container-type: inline-size; }
+.file-tree-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  padding-block: 4px;
+  border-bottom: 1px solid hsl(var(--border));
+}
+.file-row-open { grid-column: 1 / -1; }
+.file-row-actions { grid-column: 2; justify-self: end; }
+.file-row-metadata { grid-column: 1; }
+@container (max-width: 420px) {
+  .file-row-metadata { grid-column: 1 / -1; }
+}
+@media (pointer: fine) and (min-width: 769px) {
+  .file-row-actions button { width: 32px; height: 32px; }
 }

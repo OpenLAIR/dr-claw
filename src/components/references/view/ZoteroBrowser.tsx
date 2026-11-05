@@ -178,7 +178,7 @@ export default function ZoteroBrowser({ projectName, onClose, onImportComplete }
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <Library className="h-4 w-4 text-purple-500" />
+          <Library className="h-4 w-4 text-muted-foreground" />
           <h3 className="text-sm font-semibold text-foreground">{t('browser.title')}</h3>
         </div>
 
@@ -197,7 +197,7 @@ export default function ZoteroBrowser({ projectName, onClose, onImportComplete }
               className="flex w-full items-center gap-2 rounded-t-lg px-3 py-2.5 text-left text-sm font-medium hover:bg-muted/50 transition-colors border-b border-border/30"
               onClick={() => handleSelectCollection(undefined)}
             >
-              <Library className="h-4 w-4 shrink-0 text-purple-500" />
+              <Library className="h-4 w-4 shrink-0 text-muted-foreground" />
               {t('browser.myLibrary')}
             </button>
             {tree.length > 0 ? (
