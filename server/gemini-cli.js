@@ -16,6 +16,7 @@ import { buildGeminiSystemSettingsOverride } from './utils/geminiSystemSettings.
 import { buildMemoryBlock } from './utils/memoryPrompt.js';
 import { COMPUTE_GUARD_BLOCK } from './utils/computeGuardPrompt.js';
 import { expandSkillCommand } from './utils/skillExpander.js';
+import { BUNDLED_SKILLS_DIR, getUserSkillsDir } from './utils/skillRoots.js';
 
 // Use cross-spawn on Windows for better command execution
 const spawnFunction = process.platform === 'win32' ? crossSpawn : spawn;
@@ -624,7 +625,8 @@ export async function spawnGemini(command, options = {}, ws) {
       args.push('--approval-mode', 'yolo');
 
       const includeDirectories = [
-        path.join(process.cwd(), 'skills'),
+        BUNDLED_SKILLS_DIR,
+        getUserSkillsDir(),
         path.join(workingDir, '.agents', 'skills'),
         path.join(workingDir, '.claude', 'skills'),
         path.join(workingDir, '.gemini', 'skills')

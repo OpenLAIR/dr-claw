@@ -147,3 +147,9 @@ Orchestration ──► Research & Discovery ──► Ideation ──► Experi
 - **Phase 2**: Add remaining skills for full pipeline (code survey Phase B → experiment-dev → experiment-analysis).
 - **Phase 3**: Paper writing, review, and polish (`ml-paper-writing` + `inno-paper-reviewer` + `inno-humanizer`) for publication-ready deliverables.
 - **Phase 4**: Promotion assets (`making-academic-presentations`) for homepage, slide deck, audio, and demo-video outputs.
+
+## Built-in and user skills
+
+The skills in this folder ship with Dr. Claw and are read-only at runtime (in the desktop app this folder is inside the app bundle). `bundled-skills.json` lists them. After adding, moving or removing a skill here, run `npm run skills:manifest`; a test fails when the list is out of date.
+
+Skills a user imports, uploads or copies from a built-in skill are stored in `~/.dr-claw/skills` (or `DR_CLAW_USER_SKILLS_DIR`). On startup the server moves any skill found here that is not in `bundled-skills.json` to that folder.

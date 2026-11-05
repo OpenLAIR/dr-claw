@@ -376,6 +376,11 @@ export const api = {
       method: 'DELETE',
       body: JSON.stringify({ dirPath }),
     }),
+  copySkillToUser: (dirPath) =>
+    authenticatedFetch('/api/skills/copy-to-user', {
+      method: 'POST',
+      body: JSON.stringify({ dirPath }),
+    }),
 
   // News dashboard endpoints
   news: {

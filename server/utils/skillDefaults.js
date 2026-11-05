@@ -2,18 +2,19 @@ import fs from 'fs';
 import path from 'path';
 
 /**
- * Which bundled skills are linked into a project's agent folders.
+ * Which skills (bundled and user skills, see skillRoots.js) are linked into a
+ * project's agent folders.
  *
  * A skill is enabled for a project when, in order:
  *   1. the project overrides it (projects.metadata.skills.overrides), else
  *   2. the global defaults override it (app_settings 'skills.defaults'), else
  *   3. the global baseline decides: 'all', 'none', or 'recommended'
- *      (skill-tag-mapping.json `recommendedSkills`; the core pipeline skills
- *      when that list is missing).
+ *      (skill-tag-mapping.json `recommendedSkills`, or the core pipeline
+ *      skills when that list is missing, plus skills the user added).
  *
  * Disabled skills are not linked, so harnesses do not load them on their own,
  * but they stay listed in .agents/skills/skills-index.md and `/name` still
- * resolves them from the bundled library.
+ * resolves them from the skill libraries.
  */
 
 export const SKILL_DEFAULTS_SETTING_KEY = 'skills.defaults';
@@ -80,23 +81,30 @@ export function applyOverrideChanges(current, changes, allowedNames) {
   return next;
 }
 
-export function isEnabledByBaseline(name, baseline, manifest) {
+/**
+ * Skills the user added themselves (`userNames`) count as recommended: the
+ * user chose them, so they are on unless the baseline is 'none'.
+ */
+export function isEnabledByBaseline(name, baseline, manifest, userNames = EMPTY_SET) {
   if (baseline === 'all') return true;
   if (baseline === 'none') return false;
-  return manifest.recommendedNames.has(name);
+  return manifest.recommendedNames.has(name) || userNames.has(name);
 }
 
+const EMPTY_SET = new Set();
+
 /**
- * @returns {Array<{ name, enabled, source, globalEnabled, baselineEnabled, core, recommended, isNew }>}
+ * @returns {Array<{ name, enabled, source, globalEnabled, baselineEnabled, core, recommended, userSkill, isNew }>}
  *   source is 'project' | 'global' | 'baseline'; globalEnabled is the value a
  *   project inherits without its own override, baselineEnabled the value the
  *   global defaults have without their own override.
  */
-export function resolveSkillStates({ skillNames, manifest, globalPrefs, projectOverrides = {} }) {
+export function resolveSkillStates({ skillNames, manifest, globalPrefs, projectOverrides = {}, userSkillNames = [] }) {
   const prefs = normalizeGlobalPrefs(globalPrefs);
   const known = new Set(prefs.knownSkills);
+  const userNames = new Set(userSkillNames);
   return skillNames.map((name) => {
-    const baselineEnabled = isEnabledByBaseline(name, prefs.baseline, manifest);
+    const baselineEnabled = isEnabledByBaseline(name, prefs.baseline, manifest, userNames);
     const globalHasOverride = Object.hasOwn(prefs.overrides, name);
     const globalEnabled = globalHasOverride ? prefs.overrides[name] : baselineEnabled;
     const projectHasOverride = Object.hasOwn(projectOverrides, name);
@@ -111,7 +119,8 @@ export function resolveSkillStates({ skillNames, manifest, globalPrefs, projectO
       baselineEnabled,
       core: manifest.coreNames.has(name),
       recommended: manifest.recommendedNames.has(name),
-      isNew: known.size > 0 && !known.has(name),
+      userSkill: userNames.has(name),
+      isNew: known.size > 0 && !known.has(name) && !userNames.has(name),
     };
   });
 }
@@ -193,7 +202,7 @@ function findProjectRowByPath(projectDb, projectPath) {
  * Resolve skill states for a project, looked up by id or by path. With neither
  * (or an unknown project) the global defaults apply.
  */
-export async function resolveProjectSkillStates({ skillNames, skillsDir, projectId = null, projectPath = null, db } = {}) {
+export async function resolveProjectSkillStates({ skillNames, skillsDir, userSkillNames = [], projectId = null, projectPath = null, db } = {}) {
   const database = db || await loadDb();
   const manifest = readSkillManifest(skillsDir);
   const globalPrefs = await loadGlobalSkillPrefs({ skillNames, db: database });
@@ -205,6 +214,6 @@ export async function resolveProjectSkillStates({ skillNames, skillsDir, project
     globalPrefs,
     projectRow: projectRow || null,
     projectOverrides,
-    states: resolveSkillStates({ skillNames, manifest, globalPrefs, projectOverrides }),
+    states: resolveSkillStates({ skillNames, manifest, globalPrefs, projectOverrides, userSkillNames }),
   };
 }
