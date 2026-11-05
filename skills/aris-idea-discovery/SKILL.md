@@ -56,7 +56,7 @@ Before starting any other phase, check for a detailed research brief in the proj
 
 If no brief exists, proceed normally with `$ARGUMENTS` as the research direction.
 
-> 💡 Create a brief from the template: `cp templates/RESEARCH_BRIEF_TEMPLATE.md RESEARCH_BRIEF.md`
+> 💡 Create a brief from the template: copy [`RESEARCH_BRIEF_TEMPLATE.md`](../aris-infra/templates/RESEARCH_BRIEF_TEMPLATE.md) (in the `aris-infra` folder beside this skill) to `RESEARCH_BRIEF.md` in the project root.
 
 ### Phase 0.5: Reference Paper Summary (when REF_PAPER is set)
 

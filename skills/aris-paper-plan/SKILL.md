@@ -35,8 +35,8 @@ If none exist, ask the user to describe the paper's contribution in 3-5 sentence
 
 Keep the existing `insleep` workflow and outputs, but use the shared references below to improve the quality of the story and outline.
 
-- Read `../shared-references/writing-principles.md` when framing the one-sentence contribution, Abstract, Introduction, Related Work, or hero figure.
-- Read `../shared-references/venue-checklists.md` before freezing the outline for a specific venue.
+- Read `../ml-paper-writing/references/writing-guide.md` when framing the one-sentence contribution, Abstract, Introduction, Related Work, or hero figure.
+- Read `../ml-paper-writing/references/checklists.md` before freezing the outline for a specific venue.
 - Only load these references when needed; do not paste their full contents into the working draft.
 
 ## Workflow
@@ -68,7 +68,7 @@ Build a **Claims-Evidence Matrix**:
 
 Based on TARGET_VENUE and paper content, classify and select structure.
 
-Before committing to a structure, apply the narrative principle from `../shared-references/writing-principles.md`:
+Before committing to a structure, apply the narrative principle from `../ml-paper-writing/references/writing-guide.md`:
 
 - The paper should tell one coherent technical story.
 - By the end of the Introduction, the outline should make the **What**, **Why**, and **So What** explicit.

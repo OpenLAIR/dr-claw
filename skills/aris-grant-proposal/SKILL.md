@@ -429,7 +429,7 @@ Invoke `/aris-research-review` on the complete draft for grant-type-specific eva
 - Provides ranked action items for improvement
 - All feedback saved to `grant-proposal/GRANT_REVIEW.md`
 
-> ⚠️ **Codex MCP fallback**: If `mcp__codex__codex` is not available (no OpenAI API key), skip external review. Note "External review skipped — no Codex MCP available. Consider running `/aris-auto-review-loop-llm` separately." in GRANT_REVIEW.md. The proposal is still usable without external review.
+> ⚠️ **Codex MCP fallback**: If `mcp__codex__codex` is not available (no OpenAI API key), skip external review. Note "External review skipped — no Codex MCP available. Set up Codex MCP with `aris-infra` and rerun this phase, or run `inno-paper-reviewer` for a same-model review." in GRANT_REVIEW.md. The proposal is still usable without external review.
 
 If `/aris-research-review` is invoked (preferred), it handles the Codex call internally. If calling Codex directly (e.g., to maintain thread context from Phase 2):
 

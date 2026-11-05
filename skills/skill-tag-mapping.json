@@ -1656,7 +1656,9 @@
     "inno-paper-reviewer",
     "inno-rebuttal",
     "inno-grant-proposal",
-    "making-academic-presentations"
+    "making-academic-presentations",
+    "aris-novelty-check",
+    "ds-figure-polish"
   ],
   "domainCsAiExceptions": [
     "bioinformatics-init-analysis",
