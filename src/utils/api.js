@@ -15,7 +15,7 @@ export const authenticatedFetch = (url, options = {}) => {
     defaultHeaders['Authorization'] = `Bearer ${token}`;
   }
 
-  return fetch(url, {
+  return fetchWithNetworkRetry(url, {
     ...options,
     headers: {
       ...defaultHeaders,
@@ -23,6 +23,43 @@ export const authenticatedFetch = (url, options = {}) => {
     },
   });
 };
+
+// Delays before each retry of a GET that failed at the network level.
+export const NETWORK_RETRY_DELAYS_MS = [500, 1500, 3000];
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * fetch() that retries idempotent requests (GET/HEAD) when they fail before
+ * any HTTP response arrives ("TypeError: Failed to fetch"). Right after the
+ * desktop app starts, its local server can drop or refuse a connection while
+ * it is still starting; without a retry the UI kept showing empty panels and
+ * "could not load" errors until the app was restarted. HTTP error statuses and
+ * aborted requests are returned/rethrown as is.
+ */
+export async function fetchWithNetworkRetry(url, init = {}, {
+  delays = NETWORK_RETRY_DELAYS_MS,
+  fetchImpl = (...args) => fetch(...args),
+  wait = sleep,
+} = {}) {
+  const method = String(init.method || 'GET').toUpperCase();
+  const retryable = method === 'GET' || method === 'HEAD';
+
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      return await fetchImpl(url, init);
+    } catch (error) {
+      const isNetworkError = error instanceof TypeError;
+      if (!retryable || !isNetworkError || init.signal?.aborted || attempt >= delays.length) {
+        throw error;
+      }
+      await wait(delays[attempt]);
+      if (init.signal?.aborted) {
+        throw error;
+      }
+    }
+  }
+}
 
 // API endpoints
 export const api = {

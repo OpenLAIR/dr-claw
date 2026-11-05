@@ -42,7 +42,7 @@ import pty from 'node-pty';
 import fetch from 'node-fetch';
 import mime from 'mime-types';
 
-import { getProjects, getTrashedProjects, getSessions, getSessionMessages, renameProject, renameSession, deleteSession, deleteProject, restoreProject, deleteTrashedProject, addProjectManually, extractProjectDirectory, resolveClaudeProjectDirs, clearProjectDirectoryCache, projectsEvents } from './projects.js';
+import { getProjects, getTrashedProjects, getSessions, getSessionMessages, renameProject, renameSession, deleteSession, deleteProject, restoreProject, deleteTrashedProject, addProjectManually, extractProjectDirectory, resolveClaudeProjectDirs, clearProjectDirectoryCache, projectsEvents, warmClaudeProjectIndex, flushClaudeCwdCache } from './projects.js';
 import { getProjectTokenUsageSummary } from './project-token-usage.js';
 import { queryClaudeSDK, abortClaudeSDKSession, isClaudeSDKSessionActive, getClaudeSDKSessionStartTime, getActiveClaudeSDKSessions, resolveToolApproval } from './claude-sdk.js';
 import { spawnCursor, abortCursorSession, isCursorSessionActive, getCursorSessionStartTime, getActiveCursorSessions } from './cursor-cli.js';
@@ -2849,7 +2849,7 @@ app.get('/api/projects/:projectName/sessions/:sessionId/token-usage', authentica
     }
 
     // Locate the session JSONL among the CLI session directories for this project
-    const projectDirs = await resolveClaudeProjectDirs(projectName, projectPath);
+    const projectDirs = await resolveClaudeProjectDirs(projectName, projectPath, { sessionId: safeSessionId });
 
     let fileContent = null;
     for (const projectDir of projectDirs) {
@@ -3280,6 +3280,10 @@ async function startServer() {
         projectsEvents.on('projects-changed', (detail) => {
             scheduleProjectsBroadcast?.('discovery', null, detail?.reason || 'discovery', null);
         });
+
+        // Index Claude transcript directories now, off the request path, so the
+        // first session the UI opens after a launch does not wait for it.
+        void warmClaudeProjectIndex();
     } catch (error) {
         console.error('[ERROR] Failed to start server:', error);
         process.exit(1);
@@ -3313,7 +3317,11 @@ function gracefulShutdown(signal) {
         wss.close();
     } catch {}
 
-    server.close(() => process.exit(0));
+    // Save the Claude transcript statistics gathered so far, so the next
+    // launch resumes them instead of re-reading the history.
+    server.close(() => {
+        flushClaudeCwdCache().catch(() => {}).finally(() => process.exit(0));
+    });
 }
 
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));

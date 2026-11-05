@@ -1,5 +1,5 @@
 // Service Worker for Dr. Claw PWA
-const CACHE_NAME = 'dr-claw-ui-v3';
+const CACHE_NAME = 'dr-claw-ui-v4';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -17,36 +17,39 @@ self.addEventListener('install', event => {
   self.skipWaiting();
 });
 
-// Fetch event — network-first for HTML so builds are picked up immediately
+// Fetch event — only HTML is handled here: network-first so builds are picked
+// up immediately, with the last good copy as an offline fallback.
+//
+// Every other request (API calls, icons, hashed assets) goes straight to the
+// network without a respondWith(). Routing them through the worker added a
+// cache lookup per request, could serve a stale precached file after an
+// upgrade, and turned any worker-side failure into "TypeError: Failed to fetch"
+// for the page while the server was still busy starting up.
 self.addEventListener('fetch', event => {
+  if (event.request.method && event.request.method !== 'GET') return;
+
   const url = new URL(event.request.url);
   const isNavigation = event.request.mode === 'navigate';
   const isHTML = url.pathname === '/' || url.pathname.endsWith('.html');
 
-  if (isNavigation || isHTML) {
-    const networkResponse = fetch(event.request);
+  if (!isNavigation && !isHTML) return;
 
-    // Keep the last good HTML on HTTP errors. Cache writes must outlive the
-    // response, but a quota/storage failure must not break a successful load.
-    event.waitUntil(
-      networkResponse
-        .then(response => {
-          if (!response.ok) return;
-          const clone = response.clone();
-          return caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-        })
-        .catch(() => {})
-    );
+  const networkResponse = fetch(event.request);
 
-    event.respondWith(
-      networkResponse.catch(() => caches.match(event.request))
-    );
-    return;
-  }
+  // Keep the last good HTML on HTTP errors. Cache writes must outlive the
+  // response, but a quota/storage failure must not break a successful load.
+  event.waitUntil(
+    networkResponse
+      .then(response => {
+        if (!response.ok) return;
+        const clone = response.clone();
+        return caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+      })
+      .catch(() => {})
+  );
 
   event.respondWith(
-    caches.match(event.request)
-      .then(response => response || fetch(event.request))
+    networkResponse.catch(() => caches.match(event.request))
   );
 });
 

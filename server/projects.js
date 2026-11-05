@@ -86,6 +86,7 @@ import {
 } from './utils/sessionMode.js';
 import { resolveNanoSessionAbsPath, safeNanoSessionFilename } from './nanoSessionPaths.js';
 import { readJsonlLinesFrom } from './utils/jsonlTailReader.js';
+import { createClaudeCwdFoldCache } from './utils/claudeCwdFoldCache.js';
 import { EventEmitter } from 'events';
 
 /**
@@ -255,6 +256,77 @@ async function bootstrapProjectsIndexFromLegacySources(config, projectDb, userId
   }
 
   return seededCount;
+}
+
+const _bootstrapInFlightByUser = new Map(); // userKey -> Promise
+
+function getIndexedProjectsSignature(projectDb, userId) {
+  return JSON.stringify(projectDb.getAllProjects(userId || null).map((project) => [
+    project.id,
+    project.path,
+    project.display_name,
+    project.metadata ?? null,
+  ]));
+}
+
+// Run the legacy-source bootstrap at most once at a time per user. Resolves
+// when it has finished (never rejects) and emits 'projects-changed' when it
+// changed the indexed projects, so a caller that did not wait still sees them.
+function scheduleLegacyBootstrap(config, projectDb, userId = null, visibleWorkspaceRoots = []) {
+  const userKey = userId || '__anonymous__';
+  const inFlight = _bootstrapInFlightByUser.get(userKey);
+  if (inFlight) {
+    return inFlight;
+  }
+
+  let before = null;
+  try {
+    before = getIndexedProjectsSignature(projectDb, userId);
+  } catch (_) {}
+
+  const pending = bootstrapProjectsIndexFromLegacySources(config, projectDb, userId, visibleWorkspaceRoots)
+    .then(() => {
+      _lastBootstrapByUser.set(userKey, Date.now());
+      let after = null;
+      try {
+        after = getIndexedProjectsSignature(projectDb, userId);
+      } catch (_) {}
+      if (before !== after) {
+        projectsEvents.emit('projects-changed', { reason: 'legacy-bootstrap' });
+      }
+    })
+    .catch((error) => {
+      console.warn('[projects] Legacy project bootstrap failed:', error.message);
+    })
+    .finally(() => {
+      _bootstrapInFlightByUser.delete(userKey);
+    });
+
+  _bootstrapInFlightByUser.set(userKey, pending);
+  return pending;
+}
+
+/**
+ * Build the Claude transcript directory index in the background right after
+ * the server starts, so the first session-message request after a launch does
+ * not have to wait for it.
+ */
+function warmClaudeProjectIndex() {
+  if (claudeDirIndexPromise) {
+    return claudeDirIndexPromise.then(() => {}, () => {});
+  }
+  const startedAt = Date.now();
+  return ensureClaudeDirIndex().then((index) => {
+    const { reused, resumed, rescanned } = getClaudeCwdFoldCache().stats;
+    console.log(`[projects] Indexed Claude transcript directories for ${index.size} paths in ${Date.now() - startedAt} ms (files reused ${reused}, resumed ${resumed}, read in full ${rescanned})`);
+  }, (error) => {
+    console.warn('[projects] Could not index Claude transcript directories:', error.message);
+  });
+}
+
+/** Persist pending Claude cwd statistics; called on shutdown. */
+function flushClaudeCwdCache() {
+  return claudeCwdFoldCache ? claudeCwdFoldCache.flush() : Promise.resolve();
 }
 
 function collectCodexProjectCandidates(sessionsByProject = new Map()) {
@@ -610,12 +682,37 @@ async function detectTaskMasterFolder(projectPath) {
 // Cache for extracted project directories
 const projectDirectoryCache = new Map();
 
+let claudeCwdFoldCache = null;
+
+function getClaudeCwdFoldCache() {
+  if (!claudeCwdFoldCache) {
+    claudeCwdFoldCache = createClaudeCwdFoldCache({
+      cacheFile: path.join(os.homedir(), '.dr-claw', 'cache', 'claude-project-cwds.json'),
+    });
+  }
+  return claudeCwdFoldCache;
+}
+
 // Reverse index of Claude CLI session directories: real project path -> dir names
 // under ~/.claude/projects. Built lazily, invalidated together with the directory cache.
 let claudeDirIndexPromise = null;
+let claudeDirIndexReady = false;
+
+function ensureClaudeDirIndex() {
+  if (!claudeDirIndexPromise) {
+    const pending = buildClaudeDirIndex();
+    claudeDirIndexPromise = pending;
+    claudeDirIndexReady = false;
+    pending.then(() => {
+      if (claudeDirIndexPromise === pending) claudeDirIndexReady = true;
+    }, () => {});
+  }
+  return claudeDirIndexPromise;
+}
 
 function invalidateClaudeDirIndex() {
   claudeDirIndexPromise = null;
+  claudeDirIndexReady = false;
 }
 
 // Clear cache when needed (called when project files change)
@@ -906,11 +1003,26 @@ async function generateDisplayName(projectName, actualProjectDir = null) {
 }
 
 // Extract the actual project directory from JSONL sessions (with caching)
+// Concurrent callers for the same project share one scan instead of each
+// reading the project's transcripts (startup fires several such requests).
+const projectDirectoryInFlight = new Map();
+
 async function extractProjectDirectory(projectName) {
-  // Check cache first
   if (projectDirectoryCache.has(projectName)) {
     return projectDirectoryCache.get(projectName);
   }
+  const inFlight = projectDirectoryInFlight.get(projectName);
+  if (inFlight) {
+    return inFlight;
+  }
+  const pending = computeProjectDirectory(projectName).finally(() => {
+    projectDirectoryInFlight.delete(projectName);
+  });
+  projectDirectoryInFlight.set(projectName, pending);
+  return pending;
+}
+
+async function computeProjectDirectory(projectName) {
 
   // Check project config for originalPath (manually added projects via UI or platform)
   // This handles projects with dashes in their directory names correctly
@@ -922,7 +1034,7 @@ async function extractProjectDirectory(projectName) {
   }
 
   const projectDir = path.join(os.homedir(), '.claude', 'projects', projectName);
-  const cwdCounts = new Map();
+  let cwdCounts = new Map();
   let latestTimestamp = 0;
   let latestCwd = null;
   let extractedPath;
@@ -939,37 +1051,13 @@ async function extractProjectDirectory(projectName) {
       const decoded = projectName.replace(/-/g, '/');
       extractedPath = decoded === '/' ? os.homedir() : decoded;
     } else {
-      // Process all JSONL files to collect cwd values
-      for (const file of jsonlFiles) {
-        const jsonlFile = path.join(projectDir, file);
-        const fileStream = fsSync.createReadStream(jsonlFile);
-        const rl = readline.createInterface({
-          input: fileStream,
-          crlfDelay: Infinity
-        });
-
-        for await (const line of rl) {
-          if (line.trim()) {
-            try {
-              const entry = JSON.parse(line);
-
-              if (entry.cwd) {
-                // Count occurrences of each cwd
-                cwdCounts.set(entry.cwd, (cwdCounts.get(entry.cwd) || 0) + 1);
-
-                // Track the most recent cwd
-                const timestamp = new Date(entry.timestamp || 0).getTime();
-                if (timestamp > latestTimestamp) {
-                  latestTimestamp = timestamp;
-                  latestCwd = entry.cwd;
-                }
-              }
-            } catch (parseError) {
-              // Skip malformed lines
-            }
-          }
-        }
-      }
+      // Collect cwd values from all JSONL files. The per-file statistics are
+      // cached on disk and resumed incrementally (transcripts are append-only),
+      // so a cold server start no longer re-reads the whole Claude history.
+      const merged = await getClaudeCwdFoldCache().foldDirectory(projectDir, jsonlFiles);
+      cwdCounts = merged.counts;
+      latestTimestamp = merged.latestTimestamp;
+      latestCwd = merged.latestCwd;
 
       // Determine the best cwd to use
       if (cwdCounts.size === 0) {
@@ -1040,11 +1128,14 @@ async function buildClaudeDirIndex() {
     return index;
   }
 
-  for (const entry of entries) {
-    if (!entry.isDirectory()) {
-      continue;
-    }
-    const resolvedPath = await extractProjectDirectory(entry.name).catch(() => null);
+  const directories = entries.filter((entry) => entry.isDirectory());
+  // Resolve a few directories at a time (I/O bound); results are applied in
+  // listing order so the index stays deterministic.
+  const resolvedPaths = await mapWithConcurrency(directories, 4, (entry) =>
+    extractProjectDirectory(entry.name).catch(() => null));
+
+  for (const [i, entry] of directories.entries()) {
+    const resolvedPath = resolvedPaths[i];
     if (!resolvedPath) {
       continue;
     }
@@ -1063,7 +1154,12 @@ async function buildClaudeDirIndex() {
 // we discover directories by the cwd recorded inside their jsonl files. Returns
 // absolute paths; may be empty (no sessions yet) or contain several directories
 // (historic encodings of the same path).
-async function resolveClaudeProjectDirs(projectName, projectPath = null) {
+//
+// `options.sessionId`: callers that read a single session pass its id. While the
+// index is still being built (the first launch after an upgrade reads the whole
+// Claude history once), such a read does not wait for it when the session's
+// transcript is in the project's own same-name directory.
+async function resolveClaudeProjectDirs(projectName, projectPath = null, options = {}) {
   const claudeProjectsRoot = path.join(os.homedir(), '.claude', 'projects');
   const dirNames = new Set();
 
@@ -1073,13 +1169,16 @@ async function resolveClaudeProjectDirs(projectName, projectPath = null) {
     dirNames.add(projectName);
   }
 
+  if (options.sessionId && /^[A-Za-z0-9_-]+$/.test(options.sessionId) && dirNames.size > 0 && !claudeDirIndexReady
+    && await pathExists(path.join(claudeProjectsRoot, projectName, `${options.sessionId}.jsonl`))) {
+    ensureClaudeDirIndex();
+    return [path.join(claudeProjectsRoot, projectName)];
+  }
+
   const resolvedPath = projectPath
     || (projectName ? await extractProjectDirectory(projectName).catch(() => null) : null);
   if (resolvedPath) {
-    if (!claudeDirIndexPromise) {
-      claudeDirIndexPromise = buildClaudeDirIndex();
-    }
-    const index = await claudeDirIndexPromise;
+    const index = await ensureClaudeDirIndex();
     for (const dirName of index.get(path.resolve(resolvedPath)) || []) {
       dirNames.add(dirName);
     }
@@ -1461,13 +1560,15 @@ async function getProjects(userId, progressCallback = null) {
   const now = Date.now();
   const userKey = userId || '__anonymous__';
   if (now - (_lastBootstrapByUser.get(userKey) || 0) > BOOTSTRAP_STALENESS_MS) {
-    await bootstrapProjectsIndexFromLegacySources(
-      config,
-      projectDb,
-      userId || null,
-      visibleWorkspaceRoots,
-    );
-    _lastBootstrapByUser.set(userKey, now);
+    if (projectDb.getAllProjects(userId || null).length > 0) {
+      // The project database already has this user's projects (every launch
+      // after the first), so answer from it now and let the scan publish what
+      // it adds through 'projects-changed'. On a fresh database there is
+      // nothing to show yet, so that first call still waits for the scan.
+      scheduleLegacyBootstrap(config, projectDb, userId || null, visibleWorkspaceRoots);
+    } else {
+      await scheduleLegacyBootstrap(config, projectDb, userId || null, visibleWorkspaceRoots);
+    }
   }
   // Fire-and-forget: the response is built from the project database, so it must
   // not wait on a filesystem walk of ~/.codex/sessions.
@@ -2439,7 +2540,7 @@ async function getSessionMessages(projectName, sessionId, limit = null, offset =
     }
   }
 
-  const projectDirs = await resolveClaudeProjectDirs(projectName);
+  const projectDirs = await resolveClaudeProjectDirs(projectName, null, { sessionId });
 
   try {
     const jsonlFilePaths = [];
@@ -4757,6 +4858,8 @@ export {
   extractProjectDirectory,
   resolveClaudeProjectDirs,
   clearProjectDirectoryCache,
+  warmClaudeProjectIndex,
+  flushClaudeCwdCache,
   projectsEvents,
   buildCodexSessionsIndex,
   resetCodexSessionFileCache,
