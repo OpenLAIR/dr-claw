@@ -39,17 +39,17 @@ ARIS uses **cross-model adversarial review** — Claude Code executes research t
 
 ## Step 1: Register MCP Servers
 
-ARIS provides 5 MCP servers. Register the ones you need:
+ARIS provides the following MCP servers. Register the ones you need:
 
-### Core: Codex (GPT-5.4 Reviewer) — Recommended
+### Core: Codex reviewer (capability-gated) — Recommended
 ```bash
 npm install -g @openai/codex
-claude mcp add codex -s user -- codex mcp-server
+claude mcp add codex -s user -- python3 "$(pwd)/skills/aris-infra/mcp-servers/codex-exec/server.py"
 ```
-Configure in `~/.codex/config.toml`:
-```toml
-model = "gpt-5.4"
-```
+Inspect any existing registration before replacing it. Authenticate Codex separately.
+Workflow M pins the requested model/effort and read-only sandbox per call; see
+[reviewer capability gates](shared-references/reviewer-routing.md). Do not assume
+that registration proves a model is available.
 
 ### Alternative: Generic LLM Chat (Any OpenAI-compatible API)
 ```bash
@@ -124,6 +124,7 @@ After setup, use these one-click workflow skills:
 ## Bundled Resources
 
 ### MCP Servers (`mcp-servers/`)
+- `codex-exec/server.py` — Codex MCP bridge over current `codex exec`
 - `llm-chat/server.py` — Generic OpenAI-compatible bridge
 - `gemini-review/server.py` — Gemini review with async jobs
 - `claude-review/server.py` — Claude Code CLI review bridge
@@ -152,3 +153,18 @@ After setup, use these one-click workflow skills:
 - **API key errors**: Set environment variables in your shell profile (~/.zshrc or ~/.bashrc)
 - **Python import errors**: Run `pip install httpx arxiv requests`
 - **Codex not installed**: Run `npm install -g @openai/codex`
+
+## Workflow M: opt-in self-evolution
+
+See [setup and safety](../../docs/aris-self-evolution.md) before enabling logging.
+`/aris-meta-optimize` analyzes evidence and stages proposals; `/aris-meta-apply`
+is a separate human-only landing gate. Neither setup nor the workflows auto-enable
+hooks. Preview/merge with `tools/meta_opt/configure.py --project <root> --logging`;
+only an explicit `--apply` writes backed-up merged settings. Never overwrite
+`.claude/settings.json`. Global event logging and the corpus-write guard are
+separate opt-ins. Keep the three skills together for helper/reference resolution.
+
+Helpers: `tools/meta_opt/{log_event.sh,check_ready.sh,trigger_eval.py}`, plus
+`tools/{capture_filter.py,provenance.py,save_trace.sh}`. Trigger evaluation requires
+explicit approval: it starts real Claude sessions, not an offline smoke check.
+See [upstream provenance and adaptations](UPSTREAM.md).

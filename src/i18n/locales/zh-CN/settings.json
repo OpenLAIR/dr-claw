@@ -359,8 +359,8 @@
         "description": "在本地 GPU 上运行开源模型",
         "gpuDetectNetworkError": "无法连接应用服务器以检测 GPU。请检查网络后重试。",
         "gpuDetectFailed": "GPU 检测失败。请重试；若持续出现请查看服务器日志。",
-        "ollamaModelsLoadFailed": "无法从服务器加载 Ollama 模型列表。",
-        "ollamaModelsNetworkError": "加载 Ollama 模型时出现网络错误。请确认应用已运行且 Ollama 可访问。"
+        "ollamaModelsLoadFailed": "无法从本地服务器加载模型列表。",
+        "ollamaModelsNetworkError": "加载本地模型时出现网络错误。请确认应用和本地模型服务已运行。"
       }
     },
     "connectionStatus": "连接状态",
@@ -597,8 +597,8 @@
     "noGpu": "未检测到 GPU，模型将使用 CPU 运行。",
     "utilization": "使用率：{{value}}%",
     "driver": "驱动：{{value}}",
-    "serverTitle": "Ollama 服务",
-    "serverDescription": "连接 Ollama，在本地运行模型。GPU 和模型选择立即生效，服务地址需单独保存。",
+    "serverTitle": "本地模型服务",
+    "serverDescription": "连接 Ollama、vLLM、SGLang 或其他兼容 OpenAI 的本地服务，请使用本机地址，例如 http://localhost:8000/v1。GPU 和模型选择立即生效，服务地址需单独保存。",
     "serverUrl": "服务地址",
     "test": "测试连接",
     "save": "保存并刷新",
@@ -607,7 +607,7 @@
     "refresh": "刷新",
     "source": "结果来自 {{url}}",
     "differentServer": "地址已更改，请刷新以加载此服务的模型。",
-    "empty": "未找到模型，请在下方下载模型。",
+    "empty": "未找到模型，请在本地服务中启动或加载模型。",
     "pullTitle": "下载模型",
     "modelName": "模型名称",
     "pull": "下载",

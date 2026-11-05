@@ -1,0 +1,14 @@
+<!doctype html><html><head><meta charset="UTF-8"></head><body><div id="root"></div><script type="module">
+import React from 'react';
+import {createRoot} from 'react-dom/client';
+import {ThemeProvider} from '/src/contexts/ThemeContext.jsx';
+import AccountContent from '/src/components/settings/AccountContent.jsx';
+import {useChatProviderState} from '/src/components/chat/hooks/useChatProviderState.ts';
+import '/src/i18n/config.js';
+import '/src/index.css';
+localStorage.removeItem('local-gpu-server-url');
+localStorage.setItem('local-model', 'qwen3:8b');
+localStorage.setItem('selected-provider', 'local');
+function Harness(){const state=useChatProviderState({selectedSession:null});return React.createElement('main',{style:{maxWidth:800,margin:'24px auto'}},React.createElement('p',{id:'chat-model'},'Mounted chat model: '+state.localModel),React.createElement(AccountContent,{agent:'local',authStatus:{authenticated:true}}));}
+createRoot(document.getElementById('root')).render(React.createElement(ThemeProvider,null,React.createElement(Harness)));
+</script></body></html>

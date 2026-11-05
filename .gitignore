@@ -165,3 +165,6 @@ __pycache__/
 
 .pytest_cache
 *.egg-info/
+
+# UI audit screenshots written by test/workbench.spec.ts
+.taste-skill/

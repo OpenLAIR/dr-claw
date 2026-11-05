@@ -1,5 +1,5 @@
 /**
- * Local GPU Provider — Run open-source models via Ollama
+ * Local GPU Provider — Ollama / vLLM / SGLang / OpenAI-compatible servers
  * =======================================================
  *
  * Connects to a local Ollama server to run models on the user's own GPU.
@@ -8,6 +8,7 @@
  */
 
 import crypto from 'crypto';
+import { normalizeLocalServerUrl, checkLocalModelServer, requestLocalChat } from './utils/localModelServer.js';
 import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
@@ -100,92 +101,24 @@ export async function detectGPUs() {
 // Ollama helpers
 // ---------------------------------------------------------------------------
 
-function isLoopbackHostname(hostname) {
-  if (!hostname) return false;
-  const h = hostname.toLowerCase();
-  if (h === 'localhost' || h === '::1' || h === '[::1]') return true;
-  if (h === '127.0.0.1') return true;
-  const m = /^127\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(h);
-  if (!m) return false;
-  return [m[1], m[2], m[3]].every((oct) => {
-    const n = parseInt(oct, 10);
-    return n >= 0 && n <= 255;
-  });
-}
-
-/**
- * Normalize and validate Ollama base URL. Only http(s) loopback hosts are allowed (SSRF hardening).
- */
-export function normalizeLocalOllamaBaseUrl(input) {
-  let raw = String(input ?? '').trim().replace(/\/+$/, '');
-  if (!raw) raw = DEFAULT_OLLAMA_URL;
-  if (!/^https?:\/\//i.test(raw)) {
-    raw = `http://${raw}`;
-  }
-  let u;
-  try {
-    u = new URL(raw);
-  } catch {
-    throw new Error('Invalid Ollama server URL');
-  }
-  if (u.protocol !== 'http:' && u.protocol !== 'https:') {
-    throw new Error('Ollama URL must use http or https');
-  }
-  if (u.username || u.password) {
-    throw new Error('Ollama URL must not include credentials');
-  }
-  if (!isLoopbackHostname(u.hostname)) {
-    throw new Error('Ollama URL must use localhost or 127.0.0.1 (loopback only)');
-  }
-  return u.origin;
-}
+// Retain the exported names for existing route/CLI callers.
+export const normalizeLocalOllamaBaseUrl = normalizeLocalServerUrl;
+export const checkOllamaStatus = checkLocalModelServer;
 
 function getOllamaUrl(options) {
-  const raw = options?.serverUrl || process.env.LOCAL_GPU_SERVER_URL || DEFAULT_OLLAMA_URL;
-  return normalizeLocalOllamaBaseUrl(raw);
-}
-
-export async function checkOllamaStatus(serverUrl) {
-  let url;
-  try {
-    url = normalizeLocalOllamaBaseUrl(serverUrl || DEFAULT_OLLAMA_URL);
-  } catch (e) {
-    return { running: false, error: e.message };
-  }
-  try {
-    const res = await fetch(`${url}/api/tags`, { signal: AbortSignal.timeout(5000) });
-    if (!res.ok) return { running: false, error: `Server returned ${res.status}` };
-    const data = await res.json();
-    return { running: true, models: (data.models || []).map(formatOllamaModel) };
-  } catch (err) {
-    return { running: false, error: err.message };
-  }
-}
-
-function formatOllamaModel(m) {
-  const sizeMatch = m.details?.parameter_size?.match(/([\d.]+)([BM])/i);
-  let sizeB = null;
-  if (sizeMatch) {
-    sizeB = sizeMatch[2].toUpperCase() === 'B'
-      ? parseFloat(sizeMatch[1])
-      : parseFloat(sizeMatch[1]) / 1000;
-  }
-  return {
-    name: m.name,
-    displayName: m.name.split(':')[0],
-    size: m.details?.parameter_size || null,
-    sizeB,
-    family: m.details?.family || null,
-    quantization: m.details?.quantization_level || null,
-    modifiedAt: m.modified_at,
-  };
+  return normalizeLocalServerUrl(options?.serverUrl || process.env.LOCAL_GPU_SERVER_URL || DEFAULT_OLLAMA_URL);
 }
 
 export async function pullOllamaModel(serverUrl, modelName) {
   const url = normalizeLocalOllamaBaseUrl(serverUrl || DEFAULT_OLLAMA_URL);
+  const status = await checkLocalModelServer(url);
+  if (!status.running || status.provider !== 'ollama') {
+    throw new Error('Model pulling is only supported by Ollama. Load models in your vLLM/SGLang server instead.');
+  }
   const res = await fetch(`${url}/api/pull`, {
+    redirect: 'error',
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(process.env.LOCAL_GPU_API_KEY ? { Authorization: `Bearer ${process.env.LOCAL_GPU_API_KEY}` } : {}) },
     body: JSON.stringify({ name: modelName, stream: false }),
     signal: AbortSignal.timeout(600_000),
   });
@@ -575,12 +508,7 @@ async function streamApiCall(baseUrl, model, messages, tools, signal) {
     body.tools = tools;
     body.tool_choice = 'auto';
   }
-  return fetch(`${baseUrl}/v1/chat/completions`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-    signal,
-  });
+  return requestLocalChat(baseUrl, body, signal);
 }
 
 async function consumeStream(response, { onText, onAbortCheck }) {
@@ -700,17 +628,12 @@ export async function queryLocalGPU(command, options = {}, ws) {
     return;
   }
 
-  // Verify Ollama is reachable
-  try {
-    const check = await fetch(`${ollamaUrl}/api/tags`, { signal: AbortSignal.timeout(5000) });
-    if (!check.ok) throw new Error(`Ollama returned ${check.status}`);
-  } catch (err) {
+  const serverStatus = await checkLocalModelServer(ollamaUrl);
+  if (!serverStatus.running) {
     sendMessage(ws, {
       type: 'localgpu-error',
-      error: `Cannot reach Ollama at ${ollamaUrl}. Make sure Ollama is running (ollama serve). Error: ${err.message}`,
-      errorType: 'auth',
-      isRetryable: false,
-      sessionId,
+      error: `Cannot reach local model server at ${ollamaUrl}: ${serverStatus.error}`,
+      errorType: 'auth', isRetryable: false, sessionId,
     });
     return;
   }

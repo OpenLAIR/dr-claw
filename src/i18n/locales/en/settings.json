@@ -359,8 +359,8 @@
         "description": "Run open-source models on your own GPU",
         "gpuDetectNetworkError": "Could not reach the app server to detect GPUs. Check your connection and try again.",
         "gpuDetectFailed": "GPU detection failed. Try again or check the server log if this persists.",
-        "ollamaModelsLoadFailed": "Could not load Ollama models from the server.",
-        "ollamaModelsNetworkError": "Network error while loading Ollama models. Check that the app is running and Ollama is reachable."
+        "ollamaModelsLoadFailed": "Could not load models from the local server.",
+        "ollamaModelsNetworkError": "Network error while loading local models. Check that the app and local model server are running."
       }
     },
     "connectionStatus": "Connection Status",
@@ -597,8 +597,8 @@
     "noGpu": "No GPUs detected. Models will run on CPU.",
     "utilization": "Utilization: {{value}}%",
     "driver": "Driver: {{value}}",
-    "serverTitle": "Ollama server",
-    "serverDescription": "Connect to Ollama to run models locally. GPU and model selections apply immediately; save the server address separately.",
+    "serverTitle": "Local model server",
+    "serverDescription": "Connect to Ollama, vLLM, SGLang, or another OpenAI-compatible local server. Use a loopback URL, e.g. http://localhost:8000/v1. GPU and model selections apply immediately; save the server address separately.",
     "serverUrl": "Server URL",
     "test": "Test connection",
     "save": "Save & refresh",
@@ -608,7 +608,7 @@
     "refresh": "Refresh",
     "source": "Results from {{url}}",
     "differentServer": "The address has changed. Refresh to load models from this server.",
-    "empty": "No models found. Download a model below to get started.",
+    "empty": "No models found. Start or load a model in your local server.",
     "pullTitle": "Download a model",
     "modelName": "Model name",
     "pull": "Download",

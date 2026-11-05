@@ -243,9 +243,12 @@ function mapPermissionModeToCodexOptions(permissionMode) {
       };
     case 'default':
     default:
+      // codex-cli >= 0.164 rejects `untrusted` ("no longer supported");
+      // `on-request` is its successor and is accepted by older CLIs too.
+      // The workspace-write sandbox still confines what runs without approval.
       return {
         sandboxMode: 'workspace-write',
-        approvalPolicy: 'untrusted'
+        approvalPolicy: 'on-request'
       };
   }
 }
@@ -395,7 +398,15 @@ export async function queryCodex(command, options = {}, ws) {
     }
 
     // Initialize Codex SDK
-    codex = new Codex(env ? { env } : undefined);
+    // CODEX_CLI_PATH points every Codex call at one explicit binary (see
+    // server/utils/codexCli.js); model discovery already honours it, so the
+    // chat turn must too, or the picker can offer models this binary rejects.
+    const codexPathOverride = String(env?.CODEX_CLI_PATH || process.env.CODEX_CLI_PATH || '').trim();
+    const codexOptions = {
+      ...(env ? { env } : {}),
+      ...(codexPathOverride ? { codexPathOverride } : {}),
+    };
+    codex = new Codex(Object.keys(codexOptions).length > 0 ? codexOptions : undefined);
 
     // Thread options with sandbox and approval settings
     const threadOptions = {

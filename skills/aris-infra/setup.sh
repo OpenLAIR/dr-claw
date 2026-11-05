@@ -60,7 +60,7 @@ echo ""
 echo "  ARIS needs an external LLM for cross-model review."
 echo "  Choose a reviewer backend:"
 echo ""
-echo "    1) Codex (GPT-5.4)     — Recommended, requires OPENAI_API_KEY"
+echo "    1) Codex (capability-gated)     — Recommended, requires OPENAI_API_KEY"
 echo "    2) Generic LLM Chat    — Any OpenAI-compatible API"
 echo "    3) Gemini               — Google Gemini API"
 echo "    4) Skip                 — Configure later via /aris-infra"
@@ -76,7 +76,7 @@ case "$choice" in
     if claude mcp list 2>/dev/null | grep -q "codex"; then
       echo -e "  ${GREEN}✓ Codex MCP already registered${NC}"
     else
-      claude mcp add codex -s user -- codex mcp-server
+      claude mcp add codex -s user -- python3 "$SCRIPT_DIR/mcp-servers/codex-exec/server.py"
       echo -e "  ${GREEN}✓ Codex MCP registered${NC}"
     fi
     if [ -z "$OPENAI_API_KEY" ]; then
@@ -142,3 +142,7 @@ echo -e "    ${BLUE}/aris-paper-writing${NC}                   — Write paper"
 echo ""
 echo "  Note: Restart Claude Code session after setup for MCP to take effect."
 echo ""
+
+echo "  Workflow M: /aris-meta-optimize proposes; /aris-meta-apply is separately human-invoked."
+echo "  Logging and corpus-write guard are OFF by default; this script does not enable them."
+echo "  For explicit project-only preview/merge, see docs/aris-self-evolution.md."

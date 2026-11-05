@@ -329,13 +329,20 @@ export default function ChatComposer({
   const [isLoadingOllamaModels, setIsLoadingOllamaModels] = useState(false);
   const [ollamaModelsError, setOllamaModelsError] = useState<string | null>(null);
 
+  const [localConfigRevision, setLocalConfigRevision] = useState(0);
+  useEffect(() => {
+    const refresh = () => setLocalConfigRevision(value => value + 1);
+    window.addEventListener('local-model-config-changed', refresh);
+    return () => window.removeEventListener('local-model-config-changed', refresh);
+  }, []);
+
   useEffect(() => {
     if (sessionProvider !== 'local') return;
     let cancelled = false;
     setIsLoadingOllamaModels(true);
     setOllamaModelsError(null);
-    const serverUrl = localStorage.getItem('local-gpu-server-url') || 'http://localhost:11434';
-    authenticatedFetch(`/api/cli/local/models?serverUrl=${encodeURIComponent(serverUrl)}`)
+    const serverUrl = localStorage.getItem('local-gpu-server-url');
+    authenticatedFetch(`/api/cli/local/models${serverUrl ? `?serverUrl=${encodeURIComponent(serverUrl)}` : ''}`)
       .then(async (res) => ({ ok: res.ok, status: res.status, data: await res.json().catch(() => ({})) }))
       .then((data) => {
         if (cancelled) return;
@@ -346,7 +353,7 @@ export default function ChatComposer({
           }));
           setOllamaModels(opts);
           setOllamaModelsError(null);
-          if (!localModelProp && opts.length > 0) {
+          if (!opts.some((option: { value: string }) => option.value === localModelProp) && opts.length > 0) {
             const small = data.data.models.find((m: any) => m.sizeB && m.sizeB <= 14);
             const pick = small ? small.name : opts[0].value;
             setLocalModel?.(pick);
@@ -372,7 +379,7 @@ export default function ChatComposer({
     return () => {
       cancelled = true;
     };
-  }, [sessionProvider, localModelProp, setLocalModel, t]);
+  }, [sessionProvider, localModelProp, setLocalModel, t, localConfigRevision]);
 
   // Prefer the list the harness reports over the compiled-in one, so a CLI that
   // ships new models is picked up without a dr-claw release. Falls back to the
@@ -387,10 +394,11 @@ export default function ChatComposer({
   // compiled-in table is only a fallback for when it has not. Showing both at
   // once lists the same model under two names (`claude-fable-5` next to the
   // CLI's `claude-fable-5[1m]`, the retired `gpt-5.6` next to `gpt-5.6-sol`).
-  // The one exception is the currently selected value: a saved preference
-  // the harness did not list must stay visible rather than vanish.
+  // Exceptions: the currently selected value (a saved preference the harness
+  // did not list must stay visible rather than vanish), and built-in entries
+  // marked alwaysShow (models newer than the bundled CLI's own list).
   const pickerModels = discoveredModels?.filter(
-    (option) => !option.builtIn || option.value === currentModel,
+    (option) => !option.builtIn || option.alwaysShow || option.value === currentModel,
   );
   const modelConfig = sessionProvider === 'local' && ollamaModels.length > 0
     ? { ...rawModelConfig, OPTIONS: ollamaModels }

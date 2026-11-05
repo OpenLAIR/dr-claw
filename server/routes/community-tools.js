@@ -3,9 +3,12 @@ import { spawn } from 'child_process';
 import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
+import { fileURLToPath } from 'url';
 import { loadAllNodes, loadNodeConfig, ComputeNode } from '../compute-node.js';
 
 const router = express.Router();
+const INSTALL_ROOT = fileURLToPath(new URL('../../', import.meta.url));
+const CODEX_REVIEWER_BRIDGE = path.join(INSTALL_ROOT, 'skills/aris-infra/mcp-servers/codex-exec/server.py');
 
 // Ensure ~/.local/bin and common paths are on PATH for spawned processes
 const EXTENDED_ENV = {
@@ -72,7 +75,7 @@ router.post('/configure', async (req, res) => {
     } else {
       // Use __dirname parent (VibeLab root) as default
       // community-tools.js is in server/routes/ — go up 2 levels to VibeLab root
-      resolvedPath = path.resolve(path.join(path.dirname(new URL(import.meta.url).pathname), '..', '..'));
+      resolvedPath = INSTALL_ROOT;
     }
 
     const results = { steps: [], errors: [] };
@@ -122,7 +125,7 @@ router.post('/configure', async (req, res) => {
     if (mcpBackend) {
       try {
         const mcpCommands = {
-          codex: ['mcp', 'add', 'codex', '-s', 'user', '--', 'codex', 'mcp-server'],
+          codex: ['mcp', 'add', 'codex', '-s', 'user', '--', 'python3', CODEX_REVIEWER_BRIDGE],
           'llm-chat': ['mcp', 'add', 'llm-chat', '-s', 'user', '--', 'python3', path.join(resolvedPath, 'skills/aris-infra/mcp-servers/llm-chat/server.py')],
           gemini: ['mcp', 'add', 'gemini-review', '-s', 'user', '--', 'python3', path.join(resolvedPath, 'skills/aris-infra/mcp-servers/gemini-review/server.py')],
         };
@@ -148,6 +151,9 @@ router.post('/configure', async (req, res) => {
           if (alreadyRegistered) {
             results.steps.push({ step: 'mcp', status: 'skipped', message: `${mcpBackend} MCP already registered` });
           } else {
+            // Resolve bundled code from the installation, never the research project.
+            // Fail before registering a dead entry if the bundle is incomplete.
+            if (mcpBackend === 'codex') await fs.access(CODEX_REVIEWER_BRIDGE);
             await spawnAsync('claude', args, { env: EXTENDED_ENV });
             results.steps.push({ step: 'mcp', status: 'ok', message: `Registered ${mcpBackend} MCP server` });
           }

@@ -1476,7 +1476,7 @@ export function useChatComposerState({
               sessionId: effectiveSessionId,
               resume: Boolean(effectiveSessionId),
               model: draft?.settings?.localModel ?? localModel,
-              serverUrl: localStorage.getItem('local-gpu-server-url') || 'http://localhost:11434',
+              serverUrl: localStorage.getItem('local-gpu-server-url') || undefined,
               gpuId: localStorage.getItem('local-gpu-selected') || undefined,
               permissionMode: effectivePermissionMode,
               toolsSettings,

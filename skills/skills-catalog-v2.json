@@ -1,7 +1,7 @@
 {
   "generatedAt": "2026-03-24T17:51:17.721Z",
   "schema": "skills-taxonomy-v2",
-  "totalSkills": 171,
+  "totalSkills": 173,
   "skills": [
     {
       "name": "academic-researcher",
@@ -6421,7 +6421,7 @@
       ],
       "source": "imported",
       "status": "candidate",
-      "summary": "Outer-loop harness optimization: analyzes usage logs, proposes SKILL.md patches via cross-model review.",
+      "summary": "Workflow M: corpus-read-only usage analysis, bottleneck succession and advisory patch proposals; landing requires separate human-invoked aris-meta-apply.",
       "legacy": {
         "dirPath": "aris-meta-optimize",
         "skillFile": "skills/aris-meta-optimize/SKILL.md",
@@ -6430,8 +6430,45 @@
       },
       "owner": "wanshuiyin/ARIS",
       "relatedSkills": [
+        "aris-meta-apply",
         "aris-auto-review-loop",
         "aris-research-pipeline",
+        "aris-infra"
+      ]
+    },
+    {
+      "name": "aris-meta-apply",
+      "primaryIntent": "evaluation",
+      "intents": [
+        "evaluation"
+      ],
+      "capabilities": [
+        "agent-workflow"
+      ],
+      "domains": [
+        "cs-ai"
+      ],
+      "keywords": [
+        "aris",
+        "meta",
+        "apply",
+        "human-gated",
+        "provenance",
+        "cross-model",
+        "patches"
+      ],
+      "source": "imported",
+      "status": "candidate",
+      "summary": "Human-invoked Workflow M landing gate: selected patches, fresh cross-family jury, backups and provenance receipts.",
+      "legacy": {
+        "dirPath": "aris-meta-apply",
+        "skillFile": "skills/aris-meta-apply/SKILL.md",
+        "topLevelGroup": "ARIS",
+        "collection": "ARIS Research Pipeline"
+      },
+      "owner": "wanshuiyin/ARIS",
+      "relatedSkills": [
+        "aris-meta-optimize",
         "aris-infra"
       ]
     },
