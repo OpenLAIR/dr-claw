@@ -591,7 +591,10 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
     } catch {
       if (isCurrent()) setDirectoryErrors(prev => new Set(prev).add(dirPath));
     } finally {
-      if (isCurrent()) setLoadingDirs(prev => { const next = new Set(prev); next.delete(dirPath); return next; });
+      // Always release the loading flag for this project: a newer tree request
+      // (after an upload or delete) makes the result stale, not the request
+      // unfinished, and a stuck flag would block re-expanding the folder.
+      if (projectScopeRef.current === scope) setLoadingDirs(prev => { const next = new Set(prev); next.delete(dirPath); return next; });
     }
   };
 

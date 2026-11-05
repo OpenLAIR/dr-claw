@@ -85,6 +85,9 @@ test('shows model downloads only for an Ollama server', async ({ page }) => {
   });
   await expect(model(page, 'qwen3:8b')).toBeVisible();
   await expect(page.getByText('Download a model', { exact: true })).toBeVisible();
+  // A different, not-yet-loaded address must not inherit the Ollama-only section.
+  await serverUrl(page).fill('http://localhost:30000/v1');
+  await expect(page.getByText('Download a model', { exact: true })).toHaveCount(0);
 });
 
 for (const trigger of ['Refresh', 'Test connection']) {

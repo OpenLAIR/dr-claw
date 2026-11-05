@@ -20,6 +20,9 @@ export default function LocalAccountSettings({ onRefreshStatus }) {
   const [gpuInfo, setGpuInfo] = useState(null);
   const [gpu, setGpu] = useState(() => localStorage.getItem('local-gpu-selected') || '');
   const [savedAddress, setSavedAddress] = useState(savedUrl);
+  // The address the app actually uses: the saved one, or the server's
+  // configured URL when nothing is saved. Read by loadModels without a rerender.
+  const effectiveAddressRef = useRef(savedUrl());
   const [url, setUrl] = useState(savedUrl);
   const urlRef = useRef(url);
   const [selectedModel, setSelectedModel] = useState(() => localStorage.getItem('local-model') || '');
@@ -60,7 +63,7 @@ export default function LocalAccountSettings({ onRefreshStatus }) {
       if (!Array.isArray(data.models)) throw new Error('Invalid model response');
       if (id !== modelRequest.current.id) return;
       setModels({ pending: false, items: data.models, source: address, provider: data.provider || null, error: null, tested });
-      if (data.hasGpu && address === savedUrl() && !localStorage.getItem('local-model')) {
+      if (data.hasGpu && address === effectiveAddressRef.current && !localStorage.getItem('local-model')) {
         const small = data.models.find(item => item.sizeB && item.sizeB <= 14);
         if (small) { localStorage.setItem('local-model', small.name); setSelectedModel(small.name); }
       }
@@ -76,7 +79,9 @@ export default function LocalAccountSettings({ onRefreshStatus }) {
     let cancelled = false;
     settingsRequest('/api/cli/local/config')
       .then(data => {
-        if (cancelled || !data?.serverUrl || urlRef.current !== DEFAULT_URL) return;
+        if (cancelled || !data?.serverUrl) return;
+        effectiveAddressRef.current = data.serverUrl;
+        if (urlRef.current !== DEFAULT_URL) return;
         urlRef.current = data.serverUrl;
         setUrl(data.serverUrl);
         setSavedAddress(data.serverUrl);
@@ -106,9 +111,10 @@ export default function LocalAccountSettings({ onRefreshStatus }) {
     const address = url.trim();
     setWriteKind('save');
     void run('write', () => settingsRequest('/api/cli/local/save-config', { method: 'POST', body: JSON.stringify({ serverUrl: address }) }), data => {
-      // The server normalizes the address (e.g. strips a trailing /v1); keep its form.
+      // The server normalizes the address (e.g. trailing slashes); keep its form.
       const stored = data?.serverUrl || address;
       localStorage.setItem('local-gpu-server-url', stored);
+      effectiveAddressRef.current = stored;
       announceConfigChange();
       setSavedAddress(stored);
       if (urlRef.current.trim() === address) {
@@ -189,7 +195,7 @@ export default function LocalAccountSettings({ onRefreshStatus }) {
       </fieldset>}
     </section>
     {/* Downloading models is Ollama-specific; vLLM and SGLang load models at launch. */}
-    {models.provider === 'ollama' && <section className="space-y-3">
+    {currentResults && !models.error && models.provider === 'ollama' && <section className="space-y-3">
       <h4 className="text-sm font-medium">{label('pullTitle')}</h4>
       <form onSubmit={pull} className="space-y-3">
         <label htmlFor="local-model-name" className="block text-sm">{label('modelName')}</label>
