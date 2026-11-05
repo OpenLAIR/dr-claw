@@ -10,6 +10,26 @@
         "summary": "辅助文献综述、论文分析与学术写作。"
       }
     },
+    "aris-compute-guard": {
+      "zh": {
+        "name": "算力预检",
+        "summary": "跑实验前确认 GPU 等算力可用，不可用就停下，避免编造结果。"
+      },
+      "en": {
+        "name": "Compute pre-check",
+        "summary": "Check that GPUs or other compute are available before experiments; stop instead of faking results."
+      }
+    },
+    "brainstorming-research-ideas": {
+      "zh": {
+        "name": "科研选题构思",
+        "summary": "用结构化框架发掘有影响力的研究方向和新切入点。"
+      },
+      "en": {
+        "name": "Research ideation",
+        "summary": "Find high-impact research directions and fresh angles with structured ideation frameworks."
+      }
+    },
     "dataset-discovery": {
       "en": {
         "name": "Dataset discovery",
@@ -132,11 +152,11 @@
     },
     "inno-paper-writing": {
       "en": {
-        "name": "Paper writing",
+        "name": "Paper writing (IEEE/ACM)",
         "summary": "Draft a full academic paper in IEEE/ACM conference format."
       },
       "zh": {
-        "name": "论文写作",
+        "name": "论文写作（IEEE/ACM）",
         "summary": "按 IEEE/ACM 会议格式起草完整的学术论文。"
       }
     },
@@ -198,6 +218,16 @@
       "zh": {
         "name": "学术报告幻灯片",
         "summary": "根据论文制作学术报告幻灯片，可选生成演示视频。"
+      }
+    },
+    "ml-paper-writing": {
+      "zh": {
+        "name": "ML 顶会论文写作",
+        "summary": "按 NeurIPS、ICML、ICLR 等会议要求写论文，含 LaTeX 模板和引用核验。"
+      },
+      "en": {
+        "name": "ML paper writing",
+        "summary": "Write NeurIPS/ICML/ICLR-style papers with LaTeX templates and citation checks."
       }
     },
     "paper-analyzer": {
