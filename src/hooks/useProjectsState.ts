@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { api } from '../utils/api';
 import { isTemporarySessionId } from '../constants/session';
+import { isRecentlyActiveSession, updateSessionActivity } from '../utils/sessionRetention';
 import { queueWorkspaceQaDraft } from '../utils/workspaceQa';
 import { queueReferenceChatDraft } from '../utils/referenceChatDraft';
 import type { Reference } from '../components/references/types';
@@ -275,6 +276,10 @@ export function useProjectsState({
   const [trashProjects, setTrashProjects] = useState<TrashProject[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [selectedSession, setSelectedSession] = useState<ProjectSession | null>(null);
+  const sessionActivityRef = useRef(new Map<string, number>());
+  useEffect(() => {
+    updateSessionActivity(sessionActivityRef.current, activeSessions, Date.now());
+  }, [activeSessions]);
   const [sessionNavigationSource, setSessionNavigationSource] = useState<SessionNavigationSource>('user');
   const [activeTab, setActiveTab] = useState<AppTab>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -609,7 +614,9 @@ export function useProjectsState({
         (session) => session.id === selectedSession.id,
       );
 
-      if (!updatedSelectedSession) {
+      // A session that just ran may not be indexed yet (new Codex threads);
+      // clearing the selection then would blank the chat mid-conversation.
+      if (!updatedSelectedSession && !isRecentlyActiveSession(sessionActivityRef.current, selectedSession.id, Date.now())) {
         setSelectedSession(null);
       }
     }, 250);
