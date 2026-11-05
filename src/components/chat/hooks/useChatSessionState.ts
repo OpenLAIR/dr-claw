@@ -199,6 +199,10 @@ export function useChatSessionState({
     setPendingStatusValidationSessionId((previous) => (previous === sessionId ? null : previous));
   }, []);
 
+  // The session the view currently wants messages for. Responses for any other
+  // session (a slow load that finished after the user switched) are dropped.
+  const activeSessionLoadRef = useRef<string | null>(selectedSession?.id ?? null);
+
   const loadSessionMessages = useCallback(
     async (projectName: string, sessionId: string, loadMore = false, provider: Provider | string = 'claude') => {
       if (!projectName || !sessionId) {
@@ -236,6 +240,9 @@ export function useChatSessionState({
         }
 
         const data = await response.json();
+        if (isInitialLoad && activeSessionLoadRef.current !== sessionId) {
+          return [] as ChatMessage[];
+        }
         console.log('[DEBUG] Received session messages data:', data);
         if (isInitialLoad && data.tokenUsage) {
           setTokenBudget(data.tokenUsage);
@@ -442,6 +449,11 @@ export function useChatSessionState({
   }, [chatMessages.length, isLoadingSessionMessages, scrollToBottom]);
 
   useEffect(() => {
+    // Set when the selected session changes again (or the view unmounts) before
+    // an async load finishes, so a slow response for the previous session can't
+    // paint its messages into the newly selected (e.g. brand-new) session.
+    let cancelled = false;
+    activeSessionLoadRef.current = selectedSession?.id ?? null;
     const loadMessages = async () => {
       if (selectedSession && selectedProject) {
         const currentProvider = resolveSessionProviderForLoad(selectedSession, selectedProject) as Provider | string;
@@ -498,6 +510,7 @@ export function useChatSessionState({
           if (!isSystemSessionChange) {
             const projectPath = selectedProject.fullPath || selectedProject.path || '';
             const converted = await loadCursorSessionMessages(projectPath, selectedSession.id);
+            if (cancelled) return;
             setSessionMessages([]);
             setChatMessages(converted);
           } else {
@@ -513,6 +526,7 @@ export function useChatSessionState({
               false,
               currentProvider,
             );
+            if (cancelled) return;
             setSessionMessages(messages);
           } else {
             setIsSystemSessionChange(false);
@@ -543,6 +557,9 @@ export function useChatSessionState({
     };
 
     loadMessages();
+    return () => {
+      cancelled = true;
+    };
   }, [
     // Intentionally exclude currentSessionId: this effect sets it and should not retrigger another full load.
     isSystemSessionChange,
