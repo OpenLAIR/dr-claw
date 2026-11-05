@@ -271,7 +271,27 @@
     "notTrackedShort": "N/A",
     "lastActivity": "Last activity {{time}}",
     "pipelineUpdated": "Pipeline updated {{time}}",
-    "noRecentActivity": "No recent activity"
+    "noRecentActivity": "No recent activity",
+    "subscriptionUsage": {
+      "title": "Subscription usage left",
+      "description": "Plan limits reported by each signed-in agent CLI.",
+      "loading": "Checking accounts…",
+      "loadError": "Could not read subscription usage.",
+      "remaining": "{{percent}}% left",
+      "resets": "resets {{when}}",
+      "resetSinceObserved": "Window has reset since the last reading",
+      "fromSessionLog": "From the latest Codex session, recorded {{when}}",
+      "notAvailable": "Not available",
+      "reasons": {
+        "not_signed_in": "not signed in.",
+        "api_key_no_plan_limits": "signed in with an API key, which has no subscription plan limits.",
+        "no_codex_snapshot": "Codex has not recorded rate limits yet. Run one Codex conversation to get a reading.",
+        "gemini_no_quota_source": "Gemini CLI and Gemini API keys don't report remaining quota anywhere Dr. Claw can read.",
+        "no_windows_reported": "Claude reported a plan but no usage windows.",
+        "probe_unsupported": "this Claude Code SDK version doesn't provide usage data.",
+        "probe_failed": "Claude Code didn't return usage data. Try refreshing."
+      }
+    }
   },
   "fileTree": {
     "loading": "Loading files...",

@@ -1328,7 +1328,9 @@ router.post('/local/save-config', async (req, res) => {
 });
 
 export {
+  checkClaudeCredentials,
   checkCodexCredentials,
+  checkGeminiCredentials,
 };
 
 export default router;

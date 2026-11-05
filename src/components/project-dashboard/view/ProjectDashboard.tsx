@@ -10,6 +10,7 @@ import { projectSummary, sortProjects } from '../utils/projectSummary';
 
 import { useResearchStatus } from '../utils/useResearchStatus';
 import ResearchStatusLabel from './ResearchStatusLabel';
+import SubscriptionUsage from './SubscriptionUsage';
 
 type Props = {
   projects: Project[];
@@ -95,6 +96,7 @@ export default function ProjectDashboard({ projects, processingSessions, onProje
             <span>{t('projectDashboard.summary.weekTokens')}: {formatUsage(usage?.weekTokens)}</span>
           </div>
         </details>
+        <SubscriptionUsage />
       </main>
     </div>
   );
