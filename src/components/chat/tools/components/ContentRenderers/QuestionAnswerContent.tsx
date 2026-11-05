@@ -4,6 +4,8 @@ import type { Question } from '../../../types/types';
 interface QuestionAnswerContentProps {
   questions: Question[];
   answers: Record<string, string>;
+  /** True while the question is still waiting for the user (no tool result yet). */
+  isPending?: boolean;
   className?: string;
 }
 
@@ -11,6 +13,7 @@ interface QuestionAnswerContentProps {
 export const QuestionAnswerContent: React.FC<QuestionAnswerContentProps> = ({
   questions,
   answers,
+  isPending = false,
   className = '',
 }) => {
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
@@ -179,7 +182,7 @@ export const QuestionAnswerContent: React.FC<QuestionAnswerContentProps> = ({
 
       {!hasAnyAnswer && total === 1 && (
         <div className="text-[11px] text-gray-400 dark:text-gray-500 italic">
-          Skipped
+          {isPending ? 'Waiting for your answer' : 'Skipped'}
         </div>
       )}
     </div>
