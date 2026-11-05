@@ -18,6 +18,9 @@ export const CLAUDE_MODELS = {
     { value: 'claude-opus-5', label: 'Opus 5' },
     { value: 'claude-fable-5', label: 'Fable 5' },
     { value: 'claude-fable-5[1m]', label: 'Fable 5 [1M]' },
+    // Newer than the CLI bundled with the Agent SDK, so the harness does not
+    // list it yet even though it runs it; alwaysShow keeps it in the picker.
+    { value: 'claude-sonnet-5-5', label: 'Sonnet 5.5', alwaysShow: true },
     { value: 'sonnet', label: 'Sonnet' },
     { value: 'opus', label: 'Opus' },
     { value: 'haiku', label: 'Haiku' },

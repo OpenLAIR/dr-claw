@@ -378,10 +378,11 @@ export default function ChatComposer({
   // compiled-in table is only a fallback for when it has not. Showing both at
   // once lists the same model under two names (`claude-fable-5` next to the
   // CLI's `claude-fable-5[1m]`, the retired `gpt-5.6` next to `gpt-5.6-sol`).
-  // The one exception is the currently selected value: a saved preference
-  // the harness did not list must stay visible rather than vanish.
+  // Exceptions: the currently selected value (a saved preference the harness
+  // did not list must stay visible rather than vanish), and built-in entries
+  // marked alwaysShow (models newer than the bundled CLI's own list).
   const pickerModels = discoveredModels?.filter(
-    (option) => !option.builtIn || option.value === currentModel,
+    (option) => !option.builtIn || option.alwaysShow || option.value === currentModel,
   );
   const modelConfig = sessionProvider === 'local' && ollamaModels.length > 0
     ? { ...rawModelConfig, OPTIONS: ollamaModels }
