@@ -334,6 +334,14 @@ describe('skill defaults routes', () => {
     expect(updated.body.globalOverrides).toEqual({ [offByDefault.name]: true });
     expect(updated.body.skills.find((s) => s.name === offByDefault.name)).toMatchObject({ enabled: true, source: 'global' });
 
+    const preset = await call('PUT', '/defaults', { baseline: 'all', resetOverrides: true });
+    expect(preset.body.baseline).toBe('all');
+    expect(preset.body.globalOverrides).toEqual({});
+    expect(preset.body.skills.every((s) => s.enabled && s.source === 'baseline')).toBe(true);
+
+    const bulk = await call('PUT', '/defaults', { overrides: { [offByDefault.name]: false, 'inno-pipeline-planner': false } });
+    expect(Object.keys(bulk.body.globalOverrides).sort()).toEqual([offByDefault.name, 'inno-pipeline-planner'].sort());
+
     const bad = await call('PUT', '/defaults', { baseline: 'everything' });
     expect(bad.status).toBe(400);
   });

@@ -62,6 +62,20 @@ export function applyLocalToggle(
   };
 }
 
+/** Overrides to send when switching several skills at once (e.g. a whole group). */
+export function buildBulkChanges(
+  states: SkillDefaultState[],
+  nextEnabled: boolean,
+  scope: SkillDefaultsScope,
+): Record<string, boolean | null> {
+  const changes: Record<string, boolean | null> = {};
+  for (const state of states) {
+    if (state.enabled === nextEnabled) continue;
+    changes[state.name] = buildToggleChange(state, nextEnabled, scope);
+  }
+  return changes;
+}
+
 export function countEnabled(skills: SkillDefaultState[]): number {
   return skills.reduce((total, state) => total + (state.enabled ? 1 : 0), 0);
 }

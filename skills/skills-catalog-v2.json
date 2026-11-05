@@ -1,7 +1,7 @@
 {
   "generatedAt": "2026-03-24T17:51:17.721Z",
   "schema": "skills-taxonomy-v2",
-  "totalSkills": 173,
+  "totalSkills": 174,
   "skills": [
     {
       "name": "academic-researcher",
@@ -7581,6 +7581,50 @@
         "scientific-writing",
         "inno-figure-gen",
         "inno-humanizer"
+      ]
+    },
+    {
+      "name": "news-idea-briefing",
+      "primaryIntent": "research",
+      "intents": [
+        "research"
+      ],
+      "capabilities": [
+        "research-planning",
+        "data-processing"
+      ],
+      "domains": [
+        "general"
+      ],
+      "keywords": [
+        "news-idea-briefing",
+        "research-planning",
+        "data-processing",
+        "news",
+        "idea",
+        "briefing",
+        "read",
+        "latest",
+        "feed",
+        "results",
+        "server",
+        "data"
+      ],
+      "source": "imported",
+      "status": "verified",
+      "summary": "Read the latest news feed results (server/data/news-results-*.json), cluster items by topic, and generate grounded research idea seeds with citations. Use when the user wants to turn their daily news into actionable ideation proposals, or...",
+      "legacy": {
+        "dirPath": "news-idea-briefing",
+        "skillFile": "skills/news-idea-briefing/SKILL.md",
+        "topLevelGroup": "Standalone",
+        "collection": "Standalone",
+        "domain": "General"
+      },
+      "relatedSkills": [
+        "autoresearch",
+        "ds-full-pipeline",
+        "inno-pipeline-planner",
+        "inno-prepare-resources"
       ]
     }
   ]

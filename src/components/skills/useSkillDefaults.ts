@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '../../utils/api';
 import {
   applyLocalToggle,
+  buildBulkChanges,
   buildToggleChange,
   type SkillBaseline,
   type SkillDefaultsResponse,
@@ -89,8 +90,27 @@ export function useSkillDefaults(projectName: string | null) {
     );
   }, [data, projectName, save, scope]);
 
+  const setSkillsEnabled = useCallback((names: string[], nextEnabled: boolean) => {
+    if (!data) return Promise.resolve(false);
+    const wanted = new Set(names);
+    const states = data.skills.filter((skill) => wanted.has(skill.name));
+    const changes = buildBulkChanges(states, nextEnabled, scope);
+    if (Object.keys(changes).length === 0) return Promise.resolve(true);
+    const optimistic = Object.keys(changes).reduce(
+      (current, name) => applyLocalToggle(current, name, nextEnabled, scope),
+      data,
+    );
+    return save(
+      () => (projectName
+        ? api.updateProjectSkillOverrides(projectName, { overrides: changes })
+        : api.updateSkillDefaults({ overrides: changes })),
+      optimistic,
+    );
+  }, [data, projectName, save, scope]);
+
+  // Choosing a preset gives exactly that preset: per-skill global changes are dropped.
   const setBaseline = useCallback(
-    (baseline: SkillBaseline) => save(() => api.updateSkillDefaults({ baseline })),
+    (baseline: SkillBaseline) => save(() => api.updateSkillDefaults({ baseline, resetOverrides: true })),
     [save],
   );
 
@@ -109,5 +129,5 @@ export function useSkillDefaults(projectName: string | null) {
     }, optimistic);
   }, [data, projectName, save]);
 
-  return { data, loading, saving, error, scope, reload: load, toggleSkill, setBaseline, resetProject, acknowledgeNew } as const;
+  return { data, loading, saving, error, scope, reload: load, toggleSkill, setSkillsEnabled, setBaseline, resetProject, acknowledgeNew } as const;
 }
