@@ -69,3 +69,33 @@ export function countEnabled(skills: SkillDefaultState[]): number {
 export function isSkillBaseline(value: unknown): value is SkillBaseline {
   return value === 'recommended' || value === 'all' || value === 'none';
 }
+
+export const SKILL_BASELINES: SkillBaseline[] = ['recommended', 'all', 'none'];
+
+/**
+ * How many skills each starting set enables, before any per-skill overrides:
+ * 'recommended' is the core pipeline skills plus the recommended list, 'none'
+ * enables nothing (core skills included).
+ */
+export function countBaselineSkills(skills: SkillDefaultState[]): Record<SkillBaseline, number> {
+  return {
+    recommended: skills.reduce((total, state) => total + (state.core || state.recommended ? 1 : 0), 0),
+    all: skills.length,
+    none: 0,
+  };
+}
+
+/**
+ * The starting set to save when the user leaves the onboarding step, or null
+ * when nothing should be written. Only an explicit choice that differs from
+ * the stored value is saved, so passing through the step never changes an
+ * existing setting (e.g. 'all' kept for installs upgraded from older versions).
+ */
+export function baselineToSave(
+  selected: SkillBaseline,
+  current: SkillBaseline | null,
+  chosenByUser: boolean,
+): SkillBaseline | null {
+  if (!chosenByUser) return null;
+  return selected === current ? null : selected;
+}

@@ -681,7 +681,17 @@
     "saveFailed": "Could not save the change.",
     "builtInReadOnly": "Built-in skills are read-only. Turn it off instead of deleting it.",
     "enabledHere": "Enabled",
-    "disabledHere": "Off"
+    "disabledHere": "Off",
+    "onboardingStep": "Skills",
+    "onboardingStepDescription": "Choose default skills",
+    "onboardingTitle": "Choose your default skills",
+    "onboardingDescription": "Agents load enabled skills on their own. Skills that are off can still be called with /name.",
+    "onboardingHint_recommended": "Core research pipeline skills plus common ones. A good start for most people.",
+    "onboardingHint_all": "Every skill in the library. Agents see more choices, and each message carries more skill descriptions.",
+    "onboardingHint_none": "Start empty, even without the pipeline skills, and turn on what you need in the Skills Library.",
+    "onboardingCount_one": "{{count}} skill enabled",
+    "onboardingCount_other": "{{count}} skills enabled",
+    "onboardingLater": "You can change this, or switch single skills, in the Skills Library at any time."
   },
   "computeForm": {
     "hostRequired": "Host is required",
