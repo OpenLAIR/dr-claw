@@ -1639,12 +1639,25 @@
     "inno-reference-audit"
   ],
   "recommendedSkills": [
+    "inno-pipeline-planner",
+    "inno-prepare-resources",
+    "dataset-discovery",
+    "inno-deep-research",
+    "inno-code-survey",
+    "inno-idea-generation",
+    "inno-idea-eval",
+    "inno-experiment-dev",
+    "inno-experiment-analysis",
+    "inno-paper-writing",
+    "inno-reference-audit",
+    "inno-humanizer",
+    "inno-paper-reviewer",
+    "inno-rebuttal",
+    "inno-figure-gen",
+    "inno-grant-proposal",
     "academic-researcher",
     "making-academic-presentations",
-    "paper-analyzer",
-    "paper-finder",
-    "research-news",
-    "scientific-writing"
+    "paper-analyzer"
   ],
   "domainCsAiExceptions": [
     "bioinformatics-init-analysis",

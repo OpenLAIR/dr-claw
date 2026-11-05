@@ -15,17 +15,17 @@ import { collectSkillDirs, syncProjectSkillLinks } from '../utils/skillLinks.js'
 import { rewriteUnlinkedSkillCommand } from '../utils/skillExpander.js';
 
 const manifest = {
-  coreNames: new Set(['core-a']),
-  recommendedNames: new Set(['rec-b']),
+  coreNames: new Set(['core-a', 'core-niche']),
+  recommendedNames: new Set(['core-a', 'rec-b']),
 };
-const names = ['core-a', 'rec-b', 'other-c', 'brand-new'];
+const names = ['core-a', 'rec-b', 'other-c', 'brand-new', 'core-niche'];
 
 function stateOf(states, name) {
   return states.find((state) => state.name === name);
 }
 
 describe('resolveSkillStates', () => {
-  it('recommended baseline enables core and recommended skills only', () => {
+  it('recommended baseline enables exactly the recommended list, not every core skill', () => {
     const states = resolveSkillStates({
       skillNames: names,
       manifest,
@@ -33,6 +33,7 @@ describe('resolveSkillStates', () => {
     });
     expect(states.filter((s) => s.enabled).map((s) => s.name)).toEqual(['core-a', 'rec-b']);
     expect(states.every((s) => s.source === 'baseline')).toBe(true);
+    expect(stateOf(states, 'core-niche')).toMatchObject({ enabled: false, core: true });
   });
 
   it('all and none baselines', () => {
@@ -91,8 +92,21 @@ describe('override helpers', () => {
   it('reads recommendedSkills and core skills from the bundled manifest', () => {
     const real = readSkillManifest(path.resolve(__dirname, '..', '..', 'skills'));
     expect(real.coreNames.has('inno-pipeline-planner')).toBe(true);
-    expect(real.coreNames.has('inno-idea-generation')).toBe(true);
-    expect(real.recommendedNames.size).toBeGreaterThan(0);
+    expect(real.coreNames.has('init-analysis')).toBe(true);
+    expect(real.recommendedNames.has('inno-pipeline-planner')).toBe(true);
+    expect(real.recommendedNames.has('init-analysis')).toBe(false);
+    expect(real.recommendedNames.has('inno-rclone-to-overleaf')).toBe(false);
+  });
+
+  it('falls back to the core skills when the manifest has no recommendedSkills', async () => {
+    const dir = await mkdtemp(path.join(os.tmpdir(), 'skill-manifest-'));
+    try {
+      await writeFile(path.join(dir, 'skill-tag-mapping.json'), JSON.stringify({ platformNativeSkills: ['x'] }));
+      const fallback = readSkillManifest(dir);
+      expect([...fallback.recommendedNames].sort()).toEqual([...fallback.coreNames].sort());
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
   });
 });
 

@@ -661,7 +661,7 @@
     "baseline_recommended": "Recommended",
     "baseline_all": "All skills",
     "baseline_none": "None",
-    "baselineHint_recommended": "Core research pipeline skills plus a few common ones.",
+    "baselineHint_recommended": "The main research workflow plus a few common skills.",
     "baselineHint_all": "Every skill in the library.",
     "baselineHint_none": "Only the skills you turn on.",
     "enabledCount": "{{enabled}} of {{total}} enabled",

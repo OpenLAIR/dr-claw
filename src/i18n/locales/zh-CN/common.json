@@ -656,7 +656,7 @@
     "baseline_recommended": "推荐",
     "baseline_all": "全部",
     "baseline_none": "不预装",
-    "baselineHint_recommended": "核心科研流程 skills，加少量常用的。",
+    "baselineHint_recommended": "科研主流程和几个常用 skill。",
     "baselineHint_all": "技能库里的所有 skills。",
     "baselineHint_none": "只装你手动打开的。",
     "enabledCount": "已启用 {{enabled}} / {{total}}",

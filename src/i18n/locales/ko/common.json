@@ -656,7 +656,7 @@
     "baseline_recommended": "추천",
     "baseline_all": "전체",
     "baseline_none": "없음",
-    "baselineHint_recommended": "핵심 연구 파이프라인 스킬과 자주 쓰는 몇 가지.",
+    "baselineHint_recommended": "주요 연구 워크플로와 자주 쓰는 스킬 몇 가지.",
     "baselineHint_all": "라이브러리의 모든 스킬.",
     "baselineHint_none": "직접 켠 스킬만.",
     "enabledCount": "{{total}}개 중 {{enabled}}개 사용",
