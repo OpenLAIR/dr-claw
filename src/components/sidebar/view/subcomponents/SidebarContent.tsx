@@ -1,4 +1,3 @@
-import { Blocks, FlaskConical, Monitor, Newspaper, Trash2 } from 'lucide-react';
 import type { AppTab, Project } from '../../../../types/app';
 import { ScrollArea } from '../../../ui/scroll-area';
 import type { TFunction } from 'i18next';
@@ -96,23 +95,19 @@ export default function SidebarContent({
         t={t}
       />
 
-      {/* Phones scroll the whole drawer; growing keeps the tools and account
-          links at the bottom when the project list is short. */}
+      {/* Phones scroll the whole drawer; growing keeps the footer at the
+          bottom when the project list is short. */}
       <ScrollArea className={isMobile ? 'shrink-0 grow' : 'min-h-0 flex-1 px-1.5 py-2 overflow-y-auto overscroll-contain'}>
         <SidebarProjectList {...projectListProps} />
       </ScrollArea>
 
-      <nav aria-label={t('common:workbench.tools')} className="shrink-0 border-t border-border px-3 py-2">
-        <p className="px-2 py-2 text-xs text-muted-foreground">{t('common:workbench.tools')}</p>
-        {[
-          { id: 'news', label: 'tabs.news', Icon: Newspaper, action: onOpenNews },
-          { id: 'skills', label: 'tabs.skills', Icon: Blocks, action: onOpenSkills },
-          { id: 'autoresearch', label: 'tabs.autoResearch', Icon: FlaskConical, action: onOpenAutoResearch },
-          { id: 'compute', label: 'tabs.compute', Icon: Monitor, action: onOpenCompute },
-        ].map(({ id, label, Icon, action }) => <button key={id} onClick={action} aria-current={activeTab === id ? 'page' : undefined} className={`flex min-h-9 w-full items-center gap-2 rounded-md px-2 text-left text-sm hover:bg-muted ${activeTab === id ? 'bg-muted text-foreground' : 'text-muted-foreground'}`}><Icon className="h-4 w-4" />{t(`common:${label}`)}</button>)}
-      </nav>
-      <button onClick={onOpenTrash} aria-current={activeTab === 'trash' ? 'page' : undefined} className="mx-3 flex min-h-9 shrink-0 items-center gap-2 rounded-md px-2 text-sm text-muted-foreground hover:bg-muted"><Trash2 className="h-4 w-4" />{t('common:tabs.trash')}</button>
       <SidebarFooter
+        activeTab={activeTab}
+        onOpenNews={onOpenNews}
+        onOpenSkills={onOpenSkills}
+        onOpenAutoResearch={onOpenAutoResearch}
+        onOpenCompute={onOpenCompute}
+        onOpenTrash={onOpenTrash}
         currentVersion={currentVersion}
         updateAvailable={updateAvailable}
         releaseInfo={releaseInfo}

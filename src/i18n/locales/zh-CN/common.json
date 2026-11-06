@@ -476,7 +476,8 @@
       "moveToTrash": "移到回收站",
       "pinned": "已置顶",
       "pin": "置顶",
-      "unpin": "取消置顶"
+      "unpin": "取消置顶",
+      "toolsAndSettings": "工具与设置"
     },
     "stages": {
       "survey": "文献调研",

@@ -477,7 +477,8 @@
       "moveToTrash": "Move to trash",
       "pinned": "Pinned",
       "pin": "Pin",
-      "unpin": "Unpin"
+      "unpin": "Unpin",
+      "toolsAndSettings": "Tools & settings"
     },
     "stages": {
       "survey": "Survey",
