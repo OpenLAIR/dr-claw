@@ -103,9 +103,9 @@ function MainContent({
 
   const handleActivateBlankTab = useCallback(() => {
     if (selectedProject && onNewSession) {
-      onNewSession(selectedProject, newSessionMode);
+      onNewSession(selectedProject);
     }
-  }, [selectedProject, onNewSession, newSessionMode]);
+  }, [selectedProject, onNewSession]);
 
   const chatTabs = useChatTabs(
     selectedProject,
@@ -436,10 +436,10 @@ function MainContent({
                   if (session) onNavigateToSession(session.id, session.__provider, selectedProject.name);
                   else setActiveTab('chat');
                 }}
-                onNewSession={() => onNewSession?.(selectedProject, 'research')}
+                onNewSession={() => onNewSession?.(selectedProject)}
                 onPrepareTask={(prompt, stage) => {
                   setResearchTaskDraft({ projectName: selectedProject.name, prompt, stage });
-                  onNewSession?.(selectedProject, 'research');
+                  onNewSession?.(selectedProject);
                 }}
               />
             </LazyContent>

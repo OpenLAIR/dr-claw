@@ -50,7 +50,6 @@ function Sidebar({
   onOpenNews,
   onOpenCompute,
   onImportedProjectCreated,
-  newSessionMode,
   processingSessions,
 }: SidebarProps) {
   const versionReminderStorageKey = 'dr-claw.versionReminder';
@@ -255,7 +254,6 @@ function Sidebar({
       void loadMoreSessions(project);
     },
     onNewSession,
-    newSessionMode,
     renameFeedback,
     onEditingSessionNameChange: setEditingSessionName,
     onStartEditingSession: startEditingSession,

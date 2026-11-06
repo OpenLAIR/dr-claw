@@ -99,7 +99,7 @@ export interface MainContentProps {
   onNewSessionModeChange?: (mode: SessionMode) => void;
   sessionNavigationSource: SessionNavigationSource;
   onResetNavigationSource: () => void;
-  onNewSession?: (project: Project, mode?: SessionMode) => void;
+  onNewSession?: (project: Project) => void;
 }
 
 export interface MainContentHeaderProps {
