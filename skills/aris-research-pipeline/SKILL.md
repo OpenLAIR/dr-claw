@@ -37,7 +37,7 @@ It orchestrates two major workflows plus the implementation bridge between them.
 
 ### Stage 1: Idea Discovery (Workflow 1)
 
-If `RESEARCH_BRIEF.md` exists in the project root, it will be automatically loaded as detailed context (replaces one-line prompt). See `templates/RESEARCH_BRIEF_TEMPLATE.md`.
+If `RESEARCH_BRIEF.md` exists in the project root, it will be automatically loaded as detailed context (replaces one-line prompt). See [`RESEARCH_BRIEF_TEMPLATE.md`](../aris-infra/templates/RESEARCH_BRIEF_TEMPLATE.md) in the `aris-infra` folder beside this skill.
 
 Invoke the idea discovery pipeline:
 

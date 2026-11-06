@@ -28,8 +28,8 @@ This skill composes two existing workflows:
 
 For stage-specific detail, read these sibling skills only when needed:
 
-- `../research-refine/SKILL.md`
-- `../experiment-plan/SKILL.md`
+- [`../aris-research-refine/SKILL.md`](../aris-research-refine/SKILL.md)
+- [`../aris-experiment-plan/SKILL.md`](../aris-experiment-plan/SKILL.md)
 
 ## Core Rule
 

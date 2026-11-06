@@ -1,6 +1,6 @@
 # Research Brief
 
-> **Template for document-based input to `/idea-discovery` or `/research-pipeline`.** Provide detailed context instead of a one-line prompt.
+> **Template for document-based input to `/aris-idea-discovery` or `/aris-research-pipeline`.** Provide detailed context instead of a one-line prompt.
 
 ## Problem Statement
 [2-3 paragraphs: What is broken/missing in current approaches?]

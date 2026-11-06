@@ -1,6 +1,6 @@
 # Paper Plan
 
-> **Template for Workflow 3 — skip planning phase.** Fill in, then run `/paper-writing "PAPER_PLAN.md"`.
+> **Template for Workflow 3 — skip planning phase.** Fill in, then run `/aris-paper-writing "PAPER_PLAN.md"`.
 
 ## Metadata
 - **Title**: [Title]

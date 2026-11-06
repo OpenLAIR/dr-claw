@@ -271,7 +271,7 @@ As experiments complete:
 ## Summary
 - [X/Y] must-run experiments completed
 - Main result: [positive/negative/inconclusive]
-- Ready for /auto-review-loop: [YES/NO]
+- Ready for /aris-auto-review-loop: [YES/NO]
 
 ## Next Step
 → /aris-auto-review-loop "[topic]"
