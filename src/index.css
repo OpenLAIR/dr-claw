@@ -1075,21 +1075,141 @@ html[data-theme-changing] *::after {
   transition: none !important;
 }
 
-/* File identity uses the full panel width; actions never steal its text column. */
+/* Right sidebar tabs: labels under icons, or icons only when the bar is too
+   narrow to show every label in full. */
+.context-sidebar-tabs { container-type: inline-size; }
+@container (max-width: 300px) {
+  .context-sidebar-tab { height: 36px; }
+  .context-sidebar-tab-label { display: none; }
+}
+
+/* Project file tree: compact single-line rows with indent guides. Row
+   actions float over the end of the row on hover or keyboard focus, so names
+   keep the full width the rest of the time. */
 .file-workspace { container-type: inline-size; }
-.file-tree-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+.ft-tree { padding-block: 4px; }
+.ft-row {
+  --ft-row-bg: transparent;
+  position: relative;
+  display: flex;
   align-items: center;
-  padding-block: 4px;
-  border-bottom: 1px solid hsl(var(--border));
+  height: 28px;
+  margin-inline: 4px;
+  border-radius: 6px;
+  background: var(--ft-row-bg);
 }
-.file-row-open { grid-column: 1 / -1; }
-.file-row-actions { grid-column: 2; justify-self: end; }
-.file-row-metadata { grid-column: 1; }
-@container (max-width: 420px) {
-  .file-row-metadata { grid-column: 1 / -1; }
+.ft-row:hover,
+.ft-row:focus-within,
+.ft-row.is-menu-open { --ft-row-bg: color-mix(in srgb, hsl(var(--accent)) 75%, hsl(var(--card))); }
+.ft-row.is-selected { --ft-row-bg: hsl(var(--accent)); }
+.ft-row.is-drop-target { box-shadow: inset 0 0 0 1px hsl(var(--ring)); }
+.ft-guide {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: hsl(var(--muted-foreground) / 0.35);
+  pointer-events: none;
 }
-@media (pointer: fine) and (min-width: 769px) {
-  .file-row-actions button { width: 32px; height: 32px; }
+.ft-tree:hover .ft-guide { background: hsl(var(--muted-foreground) / 0.6); }
+.ft-row-main {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+  min-width: 0;
+  flex: 1 1 auto;
+  padding-right: 8px;
+  border-radius: 6px;
+  text-align: left;
+  font-size: 13px;
+  line-height: 18px;
+  outline: none;
+}
+.ft-row-main:focus-visible { box-shadow: inset 0 0 0 2px hsl(var(--ring)); }
+.ft-row-detail {
+  flex-shrink: 0;
+  margin-left: 8px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: hsl(var(--muted-foreground));
+  white-space: nowrap;
+}
+.ft-row-actions {
+  position: absolute;
+  right: 2px;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  padding-left: 4px;
+  background: var(--ft-row-bg);
+  opacity: 0;
+  pointer-events: none;
+}
+.ft-row-actions::before {
+  content: '';
+  position: absolute;
+  right: 100%;
+  top: 0;
+  bottom: 0;
+  width: 16px;
+  background: linear-gradient(to right, transparent, var(--ft-row-bg));
+}
+.ft-row:hover .ft-row-actions,
+.ft-row:focus-within .ft-row-actions,
+.ft-row.is-menu-open .ft-row-actions { opacity: 1; pointer-events: auto; }
+.ft-action,
+.ft-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  color: hsl(var(--muted-foreground));
+  transition: background-color 120ms, color 120ms;
+}
+.ft-action { width: 24px; height: 24px; }
+.ft-icon-button { width: 28px; height: 28px; flex-shrink: 0; }
+.ft-action:hover,
+.ft-icon-button:hover { background: hsl(var(--foreground) / 0.08); color: hsl(var(--foreground)); }
+.ft-action:focus-visible,
+.ft-icon-button:focus-visible { outline: none; box-shadow: 0 0 0 2px hsl(var(--ring)); }
+.ft-action:disabled,
+.ft-icon-button:disabled { opacity: 0.4; pointer-events: none; }
+.ft-icon-button[aria-pressed='true'] { background: hsl(var(--accent)); color: hsl(var(--foreground)); }
+.ft-placeholder {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  margin-inline: 4px;
+  font-size: 12px;
+  color: hsl(var(--muted-foreground));
+}
+.ft-banner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border-bottom: 1px solid hsl(var(--border) / 0.6);
+  font-size: 12px;
+  line-height: 16px;
+}
+@container (max-width: 320px) {
+  .ft-row-detail { display: none; }
+}
+/* Touch screens have no hover: keep a visible "more" button on every row and
+   give rows and buttons a finger-sized target. */
+@media (pointer: coarse) {
+  .ft-row, .ft-placeholder { height: 40px; }
+  .ft-row-main { padding-right: 44px; font-size: 14px; }
+  .ft-row-actions { opacity: 1; pointer-events: auto; background: transparent; }
+  .ft-row-actions::before { display: none; }
+  .ft-quick-action { display: none; }
+  .ft-action { width: 40px; height: 40px; }
+  .ft-icon-button { width: 40px; height: 40px; }
+  .ft-search { height: 40px; font-size: 16px; }
 }

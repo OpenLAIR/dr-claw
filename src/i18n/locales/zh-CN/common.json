@@ -314,7 +314,12 @@
     "emptyFolder": "此文件夹为空。",
     "copyFailed": "无法复制路径，请重试。",
     "deleteFailed": "删除失败，此项目仍被保留，请重试。",
-    "deleting": "正在删除…"
+    "deleting": "正在删除…",
+    "showDetails": "显示大小和日期",
+    "collapseAll": "折叠所有文件夹",
+    "moreActions": "{{name}} 的更多操作",
+    "symlink": "符号链接",
+    "pathCopied": "已复制路径"
   },
   "projectWizard": {
     "title": "创建新项目",

@@ -56,6 +56,7 @@ export async function getFileTree(dirPath, maxDepth = 3, currentDepth = 0, showH
                 path: itemPath,
                 type: isDirectory ? 'directory' : 'file'
             };
+            if (isSymlink) item.isSymlink = true;
 
             if (stats) {
                 item.size = stats.size;

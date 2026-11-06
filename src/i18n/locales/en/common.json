@@ -314,7 +314,12 @@
     "emptyFolder": "This folder is empty.",
     "copyFailed": "Could not copy the path. Try again.",
     "deleteFailed": "Could not delete this item. It has been kept. Try again.",
-    "deleting": "Deleting…"
+    "deleting": "Deleting…",
+    "showDetails": "Show size and date",
+    "collapseAll": "Collapse folders",
+    "moreActions": "More actions for {{name}}",
+    "symlink": "Symbolic link",
+    "pathCopied": "Path copied"
   },
   "projectWizard": {
     "title": "Create New Project",

@@ -1,269 +1,59 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollArea } from './ui/scroll-area';
 import { Button } from './ui/button';
-import { Input } from './ui/input';
 import {
-  Folder, FolderOpen, File, FileText, FileCode, List, TableProperties, Eye, Search, X,
-  ChevronRight, UploadCloud, Loader2, Trash2, Copy, Check,
-  FileJson, FileType, FileSpreadsheet, FileArchive,
-  Hash, Braces, Terminal, Database, Globe, Palette, Music2, Video, Archive,
-  Lock, Shield, Settings, Image, BookOpen, Cpu, Box, Gem, Coffee,
-  Flame, Hexagon, FileCode2, Code2, Cog, FileWarning, Binary, SquareFunction,
-  Scroll, FlaskConical, NotebookPen, FileCheck, Workflow, Blocks, MessageSquarePlus
+  Folder, FolderOpen, FolderSymlink, Search, X, ChevronRight, UploadCloud, Loader2, Trash2, Copy, Check,
+  MessageSquarePlus, MoreHorizontal, ChevronsDownUp, RefreshCw, ListTree, Link2, AlertCircle,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import ImageViewer from './ImageViewer';
 import WorkbenchDialog from './ui/WorkbenchDialog';
+import FileRowMenu from './file-tree/FileRowMenu';
+import MiddleTruncatedName from './file-tree/MiddleTruncatedName';
+import { getFileIcon, isImageFile } from './file-tree/fileIcons';
+import {
+  collectExpandablePaths,
+  filterTree,
+  flattenTree,
+  formatFileSize,
+  formatShortTimestamp,
+  getInitialExpandedPaths,
+  isHiddenName,
+  sortTree,
+  toProjectRelativePath,
+} from './file-tree/fileTreeModel';
 import { api } from '../utils/api';
 
-// ─── File Icon Registry ──────────────────────────────────────────────
-// Maps file extensions and special filenames to one neutral icon family.
-// Uses lucide-react icons mapped semantically to file types.
+const DETAILS_STORAGE_KEY = 'file-tree-show-details';
+// Row geometry: 8px gutter, 12px per level, guides centred under the parent's chevron.
+const ROW_GUTTER = 8;
+const INDENT = 12;
+const GUIDE_OFFSET = 7;
 
-const ICON_SIZE = 'w-4 h-4 flex-shrink-0';
-
-const FILE_ICON_MAP = {
-  // ── JavaScript / TypeScript ──
-  js:   { icon: FileCode },
-  jsx:  { icon: FileCode },
-  mjs:  { icon: FileCode },
-  cjs:  { icon: FileCode },
-  ts:   { icon: FileCode2 },
-  tsx:  { icon: FileCode2 },
-  mts:  { icon: FileCode2 },
-
-  // ── Python ──
-  py:   { icon: Code2 },
-  pyw:  { icon: Code2 },
-  pyi:  { icon: Code2 },
-  ipynb:{ icon: NotebookPen },
-
-  // ── Rust ──
-  rs:   { icon: Cog },
-  toml: { icon: Settings },
-
-  // ── Go ──
-  go:   { icon: Hexagon },
-
-  // ── Ruby ──
-  rb:   { icon: Gem },
-  erb:  { icon: Gem },
-
-  // ── PHP ──
-  php:  { icon: Blocks },
-
-  // ── Java / Kotlin ──
-  java: { icon: Coffee },
-  jar:  { icon: Coffee },
-  kt:   { icon: Hexagon },
-  kts:  { icon: Hexagon },
-
-  // ── C / C++ ──
-  c:    { icon: Cpu },
-  h:    { icon: Cpu },
-  cpp:  { icon: Cpu },
-  hpp:  { icon: Cpu },
-  cc:   { icon: Cpu },
-
-  // ── C# ──
-  cs:   { icon: Hexagon },
-
-  // ── Swift ──
-  swift:{ icon: Flame },
-
-  // ── Lua ──
-  lua:  { icon: SquareFunction },
-
-  // ── R ──
-  r:    { icon: FlaskConical },
-
-  // ── Web ──
-  html: { icon: Globe },
-  htm:  { icon: Globe },
-  css:  { icon: Hash },
-  scss: { icon: Hash },
-  sass: { icon: Hash },
-  less: { icon: Hash },
-  vue:  { icon: FileCode2 },
-  svelte:{ icon: FileCode2 },
-
-  // ── Data / Config ──
-  json: { icon: Braces },
-  jsonc:{ icon: Braces },
-  json5:{ icon: Braces },
-  yaml: { icon: Settings },
-  yml:  { icon: Settings },
-  xml:  { icon: FileCode },
-  csv:  { icon: FileSpreadsheet },
-  tsv:  { icon: FileSpreadsheet },
-  sql:  { icon: Database },
-  graphql:{ icon: Workflow },
-  gql:  { icon: Workflow },
-  proto:{ icon: Box },
-  env:  { icon: Shield },
-
-  // ── Documents ──
-  md:   { icon: BookOpen },
-  mdx:  { icon: BookOpen },
-  txt:  { icon: FileText },
-  doc:  { icon: FileText },
-  docx: { icon: FileText },
-  pdf:  { icon: FileCheck },
-  rtf:  { icon: FileText },
-  tex:  { icon: Scroll },
-  rst:  { icon: FileText },
-
-  // ── Shell / Scripts ──
-  sh:   { icon: Terminal },
-  bash: { icon: Terminal },
-  zsh:  { icon: Terminal },
-  fish: { icon: Terminal },
-  ps1:  { icon: Terminal },
-  bat:  { icon: Terminal },
-  cmd:  { icon: Terminal },
-
-  // ── Images ──
-  png:  { icon: Image },
-  jpg:  { icon: Image },
-  jpeg: { icon: Image },
-  gif:  { icon: Image },
-  webp: { icon: Image },
-  ico:  { icon: Image },
-  bmp:  { icon: Image },
-  tiff: { icon: Image },
-  svg:  { icon: Palette },
-
-  // ── Audio ──
-  mp3:  { icon: Music2 },
-  wav:  { icon: Music2 },
-  ogg:  { icon: Music2 },
-  flac: { icon: Music2 },
-  aac:  { icon: Music2 },
-  m4a:  { icon: Music2 },
-
-  // ── Video ──
-  mp4:  { icon: Video },
-  mov:  { icon: Video },
-  avi:  { icon: Video },
-  webm: { icon: Video },
-  mkv:  { icon: Video },
-
-  // ── Fonts ──
-  ttf:  { icon: FileType },
-  otf:  { icon: FileType },
-  woff: { icon: FileType },
-  woff2:{ icon: FileType },
-  eot:  { icon: FileType },
-
-  // ── Archives ──
-  zip:  { icon: Archive },
-  tar:  { icon: Archive },
-  gz:   { icon: Archive },
-  bz2:  { icon: Archive },
-  rar:  { icon: Archive },
-  '7z': { icon: Archive },
-
-  // ── Lock files ──
-  lock: { icon: Lock },
-
-  // ── Binary / Executable ──
-  exe:  { icon: Binary },
-  bin:  { icon: Binary },
-  dll:  { icon: Binary },
-  so:   { icon: Binary },
-  dylib:{ icon: Binary },
-  wasm: { icon: Binary },
-
-  // ── Misc config ──
-  ini:  { icon: Settings },
-  cfg:  { icon: Settings },
-  conf: { icon: Settings },
-  log:  { icon: Scroll },
-  map:  { icon: File },
+const readShowDetails = () => {
+  try {
+    return localStorage.getItem(DETAILS_STORAGE_KEY) === '1';
+  } catch {
+    return false;
+  }
 };
 
-// Special full-filename matches (highest priority)
-const FILENAME_ICON_MAP = {
-  'Dockerfile':       { icon: Box },
-  'docker-compose.yml': { icon: Box },
-  'docker-compose.yaml': { icon: Box },
-  '.dockerignore':    { icon: Box },
-  '.gitignore':       { icon: Settings },
-  '.gitmodules':      { icon: Settings },
-  '.gitattributes':   { icon: Settings },
-  '.editorconfig':    { icon: Settings },
-  '.prettierrc':      { icon: Settings },
-  '.prettierignore':  { icon: Settings },
-  '.eslintrc':        { icon: Settings },
-  '.eslintrc.js':     { icon: Settings },
-  '.eslintrc.json':   { icon: Settings },
-  '.eslintrc.cjs':    { icon: Settings },
-  'eslint.config.js': { icon: Settings },
-  'eslint.config.mjs':{ icon: Settings },
-  '.env':             { icon: Shield },
-  '.env.local':       { icon: Shield },
-  '.env.development': { icon: Shield },
-  '.env.production':  { icon: Shield },
-  '.env.example':     { icon: Shield },
-  'package.json':     { icon: Braces },
-  'package-lock.json':{ icon: Lock },
-  'yarn.lock':        { icon: Lock },
-  'pnpm-lock.yaml':   { icon: Lock },
-  'bun.lockb':        { icon: Lock },
-  'Cargo.toml':       { icon: Cog },
-  'Cargo.lock':       { icon: Lock },
-  'Gemfile':          { icon: Gem },
-  'Gemfile.lock':     { icon: Lock },
-  'Makefile':         { icon: Terminal },
-  'CMakeLists.txt':   { icon: Cog },
-  'tsconfig.json':    { icon: Braces },
-  'jsconfig.json':    { icon: Braces },
-  'vite.config.ts':   { icon: Flame },
-  'vite.config.js':   { icon: Flame },
-  'webpack.config.js':{ icon: Cog },
-  'tailwind.config.js':{ icon: Hash },
-  'tailwind.config.ts':{ icon: Hash },
-  'postcss.config.js':{ icon: Cog },
-  'babel.config.js':  { icon: Settings },
-  '.babelrc':         { icon: Settings },
-  'README.md':        { icon: BookOpen },
-  'LICENSE':          { icon: FileCheck },
-  'LICENSE.md':       { icon: FileCheck },
-  'CHANGELOG.md':     { icon: Scroll },
-  'requirements.txt': { icon: FileText },
-  'go.mod':           { icon: Hexagon },
-  'go.sum':           { icon: Lock },
-};
-
-function getFileIconData(filename) {
-  // 1. Exact filename match
-  if (FILENAME_ICON_MAP[filename]) {
-    return FILENAME_ICON_MAP[filename];
+const mergeSubtree = (items, targetPath, children) => items.map((item) => {
+  if (item.path === targetPath) return { ...item, children };
+  if (item.type === 'directory' && Array.isArray(item.children) && item.children.length > 0) {
+    return { ...item, children: mergeSubtree(item.children, targetPath, children) };
   }
+  return item;
+});
 
-  // 2. Check for .env prefix pattern
-  if (filename.startsWith('.env')) {
-    return { icon: Shield };
-  }
-
-  // 3. Extension-based lookup
-  const ext = filename.split('.').pop()?.toLowerCase();
-  if (ext && FILE_ICON_MAP[ext]) {
-    return FILE_ICON_MAP[ext];
-  }
-
-  // 4. Fallback
-  return { icon: File };
-}
-
-
-// ─── Component ───────────────────────────────────────────────────────
+const escapeSelector = (value) => (typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(value) : value.replace(/["\\]/g, '\\$&'));
 
 function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [loadError, setLoadError] = useState(false);
   const [directoryErrors, setDirectoryErrors] = useState(new Set());
   const [searchError, setSearchError] = useState(false);
@@ -274,13 +64,18 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
   const [copyError, setCopyError] = useState(false);
   const projectScopeRef = useRef(selectedProject?.name);
   const fileRequestRef = useRef(0);
+  const initialExpandRef = useRef(null);
   const searchInputRef = useRef(null);
+  const treeRef = useRef(null);
   projectScopeRef.current = selectedProject?.name;
   const [expandedDirs, setExpandedDirs] = useState(new Set());
+  const [searchExpandedDirs, setSearchExpandedDirs] = useState(new Set());
+  const [selectedPath, setSelectedPath] = useState(null);
+  const [focusedPath, setFocusedPath] = useState(null);
+  const [menu, setMenu] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
-  const [viewMode, setViewMode] = useState('detailed');
+  const [showDetails, setShowDetails] = useState(readShowDetails);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredFiles, setFilteredFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState(null);
   const [uploadSuccess, setUploadSuccess] = useState(null);
@@ -294,6 +89,38 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
   const uploadTargetDirRef = useRef('');
   const fileInputRef = useRef(null);
 
+  const projectRoot = selectedProject?.fullPath || selectedProject?.path || '';
+  const isSearching = debouncedSearchQuery.trim().length > 0;
+
+  const fetchFiles = useCallback(async () => {
+    if (!selectedProject || projectScopeRef.current !== selectedProject.name) return;
+    const scope = selectedProject.name;
+    const request = ++fileRequestRef.current;
+    const isCurrent = () => projectScopeRef.current === scope && request === fileRequestRef.current;
+    setLoading(true);
+    setLoadError(false);
+    try {
+      const response = await api.getFiles(scope);
+      if (!response.ok) throw new Error('File load failed');
+      const data = await response.json();
+      if (!Array.isArray(data)) throw new Error('Invalid file list');
+      if (isCurrent()) {
+        const sorted = sortTree(data);
+        setFiles(sorted);
+        setFullTreeForSearch(null);
+        setHasLoaded(true);
+        if (initialExpandRef.current !== scope) {
+          initialExpandRef.current = scope;
+          setExpandedDirs(getInitialExpandedPaths(sorted));
+        }
+      }
+    } catch {
+      if (isCurrent()) setLoadError(true);
+    } finally {
+      if (isCurrent()) setLoading(false);
+    }
+  }, [selectedProject]);
+
   const handleUpload = useCallback(async (fileList, targetDir = '') => {
     if (!fileList.length || !selectedProject || uploading) return;
     const scope = selectedProject.name;
@@ -303,7 +130,7 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
     try {
       const formData = new FormData();
       formData.append('targetDir', targetDir);
-      fileList.forEach(f => formData.append('files', f));
+      fileList.forEach((f) => formData.append('files', f));
       const res = await api.uploadFiles(selectedProject.name, formData);
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -313,17 +140,17 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
       if (projectScopeRef.current !== scope) return;
       setUploadSuccess(t('fileTree.uploadSuccess', { count: data.files?.length ?? fileList.length }));
       setTimeout(() => setUploadSuccess(null), 3000);
-      fetchFiles();
-    } catch (err) {
+      void fetchFiles();
+    } catch {
       if (projectScopeRef.current === scope) setUploadError(t('fileTree.uploadError'));
     } finally {
       if (projectScopeRef.current === scope) setUploading(false);
     }
-  }, [selectedProject, uploading, t]);
+  }, [selectedProject, uploading, t, fetchFiles]);
 
   const handleFileInputChange = useCallback((e) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length) handleUpload(files, uploadTargetDirRef.current);
+    const picked = Array.from(e.target.files || []);
+    if (picked.length) handleUpload(picked, uploadTargetDirRef.current);
     e.target.value = '';
   }, [handleUpload]);
 
@@ -331,79 +158,28 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
     e.preventDefault();
     e.stopPropagation();
     setDragOverDir(null);
-    const files = Array.from(e.dataTransfer.files);
-    if (files.length) handleUpload(files, targetDir);
+    const dropped = Array.from(e.dataTransfer.files);
+    if (dropped.length) handleUpload(dropped, targetDir);
   }, [handleUpload]);
 
-  const handleCopyPath = (e, item) => {
-    e.stopPropagation();
+  const openUploadPicker = useCallback((targetDir) => {
+    uploadTargetDirRef.current = targetDir;
+    fileInputRef.current?.click();
+  }, []);
+
+  const copyPath = useCallback((item) => {
     setCopyError(false);
     navigator.clipboard.writeText(item.path).then(() => {
       setCopiedPath(item.path);
       setTimeout(() => setCopiedPath(null), 2000);
     }).catch(() => setCopyError(true));
-  };
+  }, []);
 
-  const buildWorkspaceQaPrompt = useCallback((item) => {
-    if (item.type === 'directory') {
-      return t('fileTree.askAboutDirectoryPrompt', {
-        name: item.name,
-        path: item.path,
-      });
-    }
-
-    return t('fileTree.askAboutFilePrompt', {
-      name: item.name,
-      path: item.path,
-    });
-  }, [t]);
-
-  const handleAskAboutItem = useCallback((e, item) => {
-    e.stopPropagation();
-    if (!selectedProject || !onStartWorkspaceQa) {
-      return;
-    }
-
-    onStartWorkspaceQa(selectedProject, buildWorkspaceQaPrompt(item));
-  }, [buildWorkspaceQaPrompt, onStartWorkspaceQa, selectedProject]);
-
-  const renderRowActions = (item, className = 'file-row-actions flex items-center gap-0.5 shrink-0') => (
-    <span className={className}>
-      {item.type === 'directory' && (
-        <button
-          className="inline-flex h-11 w-11 items-center justify-center rounded hover:bg-accent"
-          title={t('fileTree.uploadToFolder')}
-          onClick={(e) => { e.stopPropagation(); uploadTargetDirRef.current = item.path; fileInputRef.current?.click(); }}
-        >
-          <UploadCloud className="w-3.5 h-3.5 text-muted-foreground" />
-        </button>
-      )}
-      <button
-        className="inline-flex h-11 w-11 items-center justify-center rounded hover:bg-accent"
-        disabled={!onStartWorkspaceQa}
-        title={t(item.type === 'directory' ? 'fileTree.askAboutDirectory' : 'fileTree.askAboutFile')}
-        onClick={(e) => handleAskAboutItem(e, item)}
-      >
-        <MessageSquarePlus className="w-3.5 h-3.5 text-muted-foreground hover:text-foreground" />
-      </button>
-      <button
-        className="inline-flex h-11 w-11 items-center justify-center rounded hover:bg-accent"
-        title={t('fileTree.copyPath')}
-        onClick={(e) => handleCopyPath(e, item)}
-      >
-        {copiedPath === item.path
-          ? <Check className="w-3.5 h-3.5 text-green-500" />
-          : <Copy className="w-3.5 h-3.5 text-muted-foreground" />}
-      </button>
-      <button
-        className="inline-flex h-11 w-11 items-center justify-center rounded hover:bg-destructive/20"
-        title={t('fileTree.deleteFile')}
-        onClick={(e) => { e.stopPropagation(); setDeleteError(false); setPendingDelete(item); }}
-      >
-        <Trash2 className="w-3.5 h-3.5 text-muted-foreground hover:text-destructive" />
-      </button>
-    </span>
-  );
+  const askAboutItem = useCallback((item) => {
+    if (!selectedProject || !onStartWorkspaceQa) return;
+    const promptKey = item.type === 'directory' ? 'fileTree.askAboutDirectoryPrompt' : 'fileTree.askAboutFilePrompt';
+    onStartWorkspaceQa(selectedProject, t(promptKey, { name: item.name, path: item.path }));
+  }, [onStartWorkspaceQa, selectedProject, t]);
 
   const handleDelete = async () => {
     if (!selectedProject || !pendingDelete || deleting) return;
@@ -426,8 +202,12 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
 
   useEffect(() => {
     setFiles([]);
-    setFilteredFiles([]);
+    setHasLoaded(false);
     setExpandedDirs(new Set());
+    setSearchExpandedDirs(new Set());
+    setSelectedPath(null);
+    setFocusedPath(null);
+    setMenu(null);
     setLoadingDirs(new Set());
     setDirectoryErrors(new Set());
     setFullTreeForSearch(null);
@@ -441,192 +221,118 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
     setUploadSuccess(null);
     if (selectedProject) void fetchFiles();
     return () => { fileRequestRef.current++; };
-  }, [selectedProject?.name]);
-
-  useEffect(() => {
-    const savedViewMode = localStorage.getItem('file-tree-view-mode');
-    if (savedViewMode && ['simple', 'detailed', 'compact'].includes(savedViewMode)) {
-      setViewMode(savedViewMode);
-    }
-  }, []);
+  }, [selectedProject?.name]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Debounce search query by 200ms
   useEffect(() => {
     if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-    searchTimerRef.current = setTimeout(() => {
-      setDebouncedSearchQuery(searchQuery);
-    }, 200);
+    searchTimerRef.current = setTimeout(() => setDebouncedSearchQuery(searchQuery), 200);
     return () => { if (searchTimerRef.current) clearTimeout(searchTimerRef.current); };
   }, [searchQuery]);
 
-  // When search is active, fetch full tree to ensure deep files are searchable
+  // While searching, fetch the full tree once so deep files are searchable.
   useEffect(() => {
-    if (!debouncedSearchQuery.trim()) {
+    if (!isSearching) {
       setSearchError(false);
       setSearchLoading(false);
       setFullTreeForSearch(null);
-      setFilteredFiles(files);
-      return;
+      return undefined;
     }
-
+    if (fullTreeForSearch || !selectedProject) return undefined;
     let cancelled = false;
     setSearchError(false);
     setSearchLoading(true);
-    const fetchAndFilter = async () => {
-      let sourceTree = fullTreeForSearch || files;
-
-      // Fetch full tree if we haven't already
-      if (!fullTreeForSearch && selectedProject) {
-        try {
-          const response = await api.getFiles(selectedProject.name, { maxDepth: 10 });
-          if (!response.ok) throw new Error('Search failed');
-          const data = await response.json();
-          if (!Array.isArray(data)) throw new Error('Invalid file list');
-          if (!cancelled) {
-            setFullTreeForSearch(data);
-            sourceTree = data;
-          }
-        } catch (error) {
-          if (!cancelled) setSearchError(true);
-        }
+    (async () => {
+      try {
+        const response = await api.getFiles(selectedProject.name, { maxDepth: 10 });
+        if (!response.ok) throw new Error('Search failed');
+        const data = await response.json();
+        if (!Array.isArray(data)) throw new Error('Invalid file list');
+        if (!cancelled) setFullTreeForSearch(sortTree(data));
+      } catch {
+        if (!cancelled) setSearchError(true);
+      } finally {
+        if (!cancelled) setSearchLoading(false);
       }
-
-      if (cancelled) return;
-      setSearchLoading(false);
-
-      const filtered = filterFiles(sourceTree, debouncedSearchQuery.toLowerCase());
-      setFilteredFiles(filtered);
-
-      // Batch-collect all paths to expand, then update state once
-      const pathsToExpand = new Set();
-      const collectMatches = (items) => {
-        items.forEach(item => {
-          if (item.type === 'directory' && item.children && item.children.length > 0) {
-            pathsToExpand.add(item.path);
-            collectMatches(item.children);
-          }
-        });
-      };
-      collectMatches(filtered);
-      setExpandedDirs(prev => {
-        const next = new Set(prev);
-        pathsToExpand.forEach(p => next.add(p));
-        return next;
-      });
-    };
-
-    fetchAndFilter();
+    })();
     return () => { cancelled = true; };
-  }, [files, debouncedSearchQuery, selectedProject?.name, searchRevision]);
+  }, [isSearching, fullTreeForSearch, selectedProject?.name, searchRevision]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const filterFiles = (items, query) => {
-    return items.reduce((filtered, item) => {
-      const matchesName = item.name.toLowerCase().includes(query);
-      let filteredChildren = [];
+  const visibleFiles = useMemo(
+    () => (isSearching ? filterTree(fullTreeForSearch || files, debouncedSearchQuery) : files),
+    [isSearching, fullTreeForSearch, files, debouncedSearchQuery],
+  );
 
-      if (item.type === 'directory' && item.children) {
-        filteredChildren = filterFiles(item.children, query);
-      }
+  // Search results open every folder that leads to a match; that expansion is
+  // kept apart so clearing the search restores the folders the user had open.
+  useEffect(() => {
+    if (isSearching) setSearchExpandedDirs(collectExpandablePaths(visibleFiles));
+  }, [isSearching, visibleFiles]);
 
-      if (matchesName || filteredChildren.length > 0) {
-        filtered.push({
-          ...item,
-          children: filteredChildren
-        });
-      }
+  const activeExpanded = isSearching ? searchExpandedDirs : expandedDirs;
+  const setActiveExpanded = isSearching ? setSearchExpandedDirs : setExpandedDirs;
 
-      return filtered;
-    }, []);
-  };
-
-  const fetchFiles = async () => {
-    if (!selectedProject || projectScopeRef.current !== selectedProject.name) return;
-    const scope = selectedProject.name;
-    const request = ++fileRequestRef.current;
-    const isCurrent = () => projectScopeRef.current === scope && request === fileRequestRef.current;
-    setLoading(true);
-    setLoadError(false);
-    try {
-      const response = await api.getFiles(scope);
-      if (!response.ok) throw new Error('File load failed');
-      const data = await response.json();
-      if (!Array.isArray(data)) throw new Error('Invalid file list');
-      if (isCurrent()) {
-        setFiles(data);
-        setFullTreeForSearch(null);
-      }
-    } catch {
-      if (isCurrent()) setLoadError(true);
-    } finally {
-      if (isCurrent()) setLoading(false);
-    }
-  };
-
-  // Recursively merge loaded children into the file tree state
-  const mergeSubtree = (items, targetPath, children) => {
-    return items.map(item => {
-      if (item.path === targetPath) {
-        return { ...item, children };
-      }
-      if (item.type === 'directory' && item.children && item.children.length > 0) {
-        return { ...item, children: mergeSubtree(item.children, targetPath, children) };
-      }
-      return item;
-    });
-  };
+  const rows = useMemo(
+    () => flattenTree(visibleFiles, activeExpanded, { loading: loadingDirs, failed: directoryErrors }),
+    [visibleFiles, activeExpanded, loadingDirs, directoryErrors],
+  );
+  const itemRows = useMemo(() => rows.filter((row) => row.kind === 'item'), [rows]);
+  const rowByPath = useMemo(() => new Map(itemRows.map((row) => [row.item.path, row])), [itemRows]);
+  const tabStopPath = (focusedPath && rowByPath.has(focusedPath))
+    ? focusedPath
+    : (selectedPath && rowByPath.has(selectedPath) ? selectedPath : itemRows[0]?.item.path);
 
   const loadDirectory = async (dirPath) => {
     if (!selectedProject || loadingDirs.has(dirPath)) return;
     const scope = selectedProject.name;
     const request = fileRequestRef.current;
     const isCurrent = () => projectScopeRef.current === scope && fileRequestRef.current === request;
-    setLoadingDirs(prev => new Set(prev).add(dirPath));
-    setDirectoryErrors(prev => { const next = new Set(prev); next.delete(dirPath); return next; });
+    setLoadingDirs((prev) => new Set(prev).add(dirPath));
+    setDirectoryErrors((prev) => { const next = new Set(prev); next.delete(dirPath); return next; });
     try {
       const response = await api.getFiles(scope, { path: dirPath, maxDepth: 2 });
       if (!response.ok) throw new Error('Directory load failed');
       const children = await response.json();
       if (!Array.isArray(children)) throw new Error('Invalid directory');
-      if (isCurrent()) setFiles(prev => mergeSubtree(prev, dirPath, children));
+      if (isCurrent()) {
+        const sorted = sortTree(children);
+        setFiles((prev) => mergeSubtree(prev, dirPath, sorted));
+        setFullTreeForSearch((prev) => (prev ? mergeSubtree(prev, dirPath, sorted) : prev));
+      }
     } catch {
-      if (isCurrent()) setDirectoryErrors(prev => new Set(prev).add(dirPath));
+      if (isCurrent()) setDirectoryErrors((prev) => new Set(prev).add(dirPath));
     } finally {
       // Always release the loading flag for this project: a newer tree request
       // (after an upload or delete) makes the result stale, not the request
       // unfinished, and a stuck flag would block re-expanding the folder.
-      if (projectScopeRef.current === scope) setLoadingDirs(prev => { const next = new Set(prev); next.delete(dirPath); return next; });
+      if (projectScopeRef.current === scope) setLoadingDirs((prev) => { const next = new Set(prev); next.delete(dirPath); return next; });
     }
   };
 
-  const toggleDirectory = (dirPath, item) => {
-    if (expandedDirs.has(dirPath)) {
-      setExpandedDirs(prev => { const next = new Set(prev); next.delete(dirPath); return next; });
-      return;
-    }
-    setExpandedDirs(prev => new Set(prev).add(dirPath));
-    if (item?.children === null) void loadDirectory(dirPath);
+  const setDirectoryExpanded = (item, open) => {
+    setActiveExpanded((prev) => {
+      if (prev.has(item.path) === open) return prev;
+      const next = new Set(prev);
+      if (open) next.add(item.path); else next.delete(item.path);
+      return next;
+    });
+    if (open && item.children == null) void loadDirectory(item.path);
   };
 
-  const changeViewMode = (mode) => {
-    setViewMode(mode);
-    localStorage.setItem('file-tree-view-mode', mode);
-  };
+  const collapseAll = () => setActiveExpanded(new Set());
 
-  const formatFileSize = (bytes) => {
-    if (bytes == null) return '—';
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  const toggleShowDetails = () => {
+    setShowDetails((current) => {
+      try { localStorage.setItem(DETAILS_STORAGE_KEY, current ? '0' : '1'); } catch { /* storage unavailable */ }
+      return !current;
+    });
   };
 
   const formatRelativeTime = (date) => {
-    if (!date) return '-';
-    const now = new Date();
+    if (!date) return '—';
     const past = new Date(date);
-    const diffInSeconds = Math.floor((now - past) / 1000);
-
+    const diffInSeconds = Math.floor((Date.now() - past.getTime()) / 1000);
+    if (Number.isNaN(diffInSeconds)) return '—';
     if (diffInSeconds < 60) return t('fileTree.justNow');
     if (diffInSeconds < 3600) return t('fileTree.minAgo', { count: Math.floor(diffInSeconds / 60) });
     if (diffInSeconds < 86400) return t('fileTree.hoursAgo', { count: Math.floor(diffInSeconds / 3600) });
@@ -634,241 +340,390 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
     return past.toLocaleDateString();
   };
 
-  const isImageFile = (filename) => {
-    const ext = filename.split('.').pop()?.toLowerCase();
-    const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico', 'bmp'];
-    return imageExtensions.includes(ext);
+  const describeItem = (item) => {
+    const lines = [toProjectRelativePath(item.path, projectRoot)];
+    if (item.type === 'file') {
+      lines.push(`${t('fileTree.size')}: ${formatFileSize(item.size)} · ${t('fileTree.modified')}: ${formatRelativeTime(item.modified)}`);
+    }
+    if (item.isSymlink) lines.push(t('fileTree.symlink'));
+    return lines.join('\n');
   };
 
-  const getFileIcon = (filename) => {
-    const { icon: Icon } = getFileIconData(filename);
-    return <Icon className={cn(ICON_SIZE, 'text-muted-foreground')} aria-hidden="true" />;
-  };
-
-  // ── Click handler shared across all view modes ──
-  const handleItemClick = (item) => {
+  const handleItemActivate = (item) => {
+    setMenu(null);
+    setSelectedPath(item.path);
+    setFocusedPath(item.path);
     if (item.type === 'directory') {
-      toggleDirectory(item.path, item);
+      setDirectoryExpanded(item, !activeExpanded.has(item.path));
     } else if (isImageFile(item.name)) {
       setSelectedImage({
         name: item.name,
         path: item.path,
         projectPath: selectedProject.path,
-        projectName: selectedProject.name
+        projectName: selectedProject.name,
       });
     } else if (onFileOpen) {
       onFileOpen(item.path);
     }
   };
 
-  const renderItemIcons = (item) => {
-    const isDir = item.type === 'directory';
-    const isOpen = expandedDirs.has(item.path);
+  const focusRow = (path) => {
+    if (!path) return;
+    setFocusedPath(path);
+    requestAnimationFrame(() => {
+      treeRef.current?.querySelector(`[data-tree-path="${escapeSelector(path)}"]`)?.focus();
+    });
+  };
 
-    if (isDir) {
-      return (
-        <span className="flex items-center gap-0.5 flex-shrink-0">
-          <ChevronRight
-            className={cn(
-              'w-3.5 h-3.5 text-muted-foreground/70 transition-transform duration-150',
-              isOpen && 'rotate-90'
-            )}
-          />
-          {isOpen ? (
-            <FolderOpen className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-          ) : (
-            <Folder className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-          )}
-        </span>
-      );
+  const openMenu = (item, anchor, trigger) => {
+    setFocusedPath(item.path);
+    setMenu({ item, anchor, trigger });
+  };
+
+  const closeMenu = useCallback((restoreFocus) => {
+    setMenu((current) => {
+      if (restoreFocus && current?.trigger?.isConnected) requestAnimationFrame(() => current.trigger.focus());
+      return null;
+    });
+  }, []);
+
+  const handleTreeKeyDown = (event) => {
+    const path = event.target?.getAttribute?.('data-tree-path');
+    if (!path) return;
+    const index = itemRows.findIndex((row) => row.item.path === path);
+    const row = itemRows[index];
+    if (!row) return;
+    const isDir = row.item.type === 'directory';
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault();
+        focusRow(itemRows[Math.min(index + 1, itemRows.length - 1)]?.item.path);
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        focusRow(itemRows[Math.max(index - 1, 0)]?.item.path);
+        break;
+      case 'Home':
+        event.preventDefault();
+        focusRow(itemRows[0]?.item.path);
+        break;
+      case 'End':
+        event.preventDefault();
+        focusRow(itemRows[itemRows.length - 1]?.item.path);
+        break;
+      case 'ArrowRight':
+        event.preventDefault();
+        if (isDir && !row.expanded) setDirectoryExpanded(row.item, true);
+        else if (isDir && itemRows[index + 1]?.parentPath === row.item.path) focusRow(itemRows[index + 1].item.path);
+        break;
+      case 'ArrowLeft':
+        event.preventDefault();
+        if (isDir && row.expanded) setDirectoryExpanded(row.item, false);
+        else if (row.parentPath) focusRow(row.parentPath);
+        break;
+      case 'ContextMenu':
+      case 'F10':
+        if (event.key === 'F10' && !event.shiftKey) break;
+        event.preventDefault();
+        {
+          const rect = event.target.getBoundingClientRect();
+          openMenu(row.item, { x: rect.right, y: rect.bottom }, event.target);
+        }
+        break;
+      default:
+        break;
     }
+  };
+
+  const buildMenuItems = (item) => {
+    const isDir = item.type === 'directory';
+    return [
+      ...(isDir ? [{
+        key: 'upload',
+        label: t('fileTree.uploadToFolder'),
+        icon: <UploadCloud className="h-3.5 w-3.5" />,
+        onSelect: () => openUploadPicker(item.path),
+        disabled: uploading,
+      }] : []),
+      {
+        key: 'ask',
+        label: t(isDir ? 'fileTree.askAboutDirectory' : 'fileTree.askAboutFile'),
+        icon: <MessageSquarePlus className="h-3.5 w-3.5" />,
+        onSelect: () => askAboutItem(item),
+        disabled: !onStartWorkspaceQa,
+      },
+      {
+        key: 'copy',
+        label: t('fileTree.copyPath'),
+        icon: <Copy className="h-3.5 w-3.5" />,
+        onSelect: () => copyPath(item),
+      },
+      {
+        key: 'delete',
+        label: t('fileTree.deleteFile'),
+        icon: <Trash2 className="h-3.5 w-3.5" />,
+        destructive: true,
+        onSelect: () => { setDeleteError(false); setPendingDelete(item); },
+      },
+    ];
+  };
+
+  const renderGuides = (depth) => Array.from({ length: depth }, (_, level) => (
+    <span key={level} aria-hidden="true" className="ft-guide" style={{ left: ROW_GUTTER + level * INDENT + GUIDE_OFFSET }} />
+  ));
+
+  const renderItemRow = (row) => {
+    const { item, depth, expanded } = row;
+    const isDir = item.type === 'directory';
+    const hidden = isHiddenName(item.name);
+    const isSelected = selectedPath === item.path;
+    const isMenuOpen = menu?.item.path === item.path;
+    const { icon: TypeIcon, className: iconTone } = isDir ? { icon: null, className: '' } : getFileIcon(item.name);
+    const DirIcon = item.isSymlink ? FolderSymlink : expanded ? FolderOpen : Folder;
 
     return (
-      <span className="flex items-center flex-shrink-0 ml-[18px]">
-        {getFileIcon(item.name)}
-      </span>
+      <div
+        key={row.key}
+        role="none"
+        className={cn(
+          'ft-row group',
+          isSelected && 'is-selected',
+          isMenuOpen && 'is-menu-open',
+          isDir && dragOverDir === item.path && 'is-drop-target',
+        )}
+        onContextMenu={(e) => { e.preventDefault(); openMenu(item, { x: e.clientX + 200, y: e.clientY }, e.currentTarget.querySelector('[data-tree-path]')); }}
+        {...(isDir ? {
+          onDragOver: (e) => { e.preventDefault(); e.stopPropagation(); setDragOverDir(item.path); },
+          onDragLeave: (e) => { e.stopPropagation(); setDragOverDir(null); },
+          onDrop: (e) => handleFileDrop(e, item.path),
+        } : {})}
+      >
+        {renderGuides(depth)}
+        <button
+          type="button"
+          role="treeitem"
+          data-tree-path={item.path}
+          aria-level={depth + 1}
+          aria-expanded={isDir ? expanded : undefined}
+          aria-selected={isSelected}
+          tabIndex={tabStopPath === item.path ? 0 : -1}
+          title={describeItem(item)}
+          onClick={() => handleItemActivate(item)}
+          onFocus={() => setFocusedPath(item.path)}
+          className="ft-row-main"
+          style={{ paddingLeft: ROW_GUTTER + depth * INDENT }}
+        >
+          <span className="flex h-4 w-4 shrink-0 items-center justify-center" aria-hidden="true">
+            {isDir && <ChevronRight className={cn('h-3.5 w-3.5 text-muted-foreground transition-transform duration-150', expanded && 'rotate-90')} />}
+          </span>
+          {isDir
+            ? <DirIcon className={cn('h-4 w-4 shrink-0', hidden ? 'text-muted-foreground/70' : 'text-sky-600/80 dark:text-sky-400/80')} aria-hidden="true" />
+            : <TypeIcon className={cn('h-4 w-4 shrink-0', iconTone, hidden && 'opacity-60')} aria-hidden="true" />}
+          <MiddleTruncatedName name={item.name} className={cn(hidden ? 'text-muted-foreground' : 'text-foreground', isSelected && 'font-medium')} />
+          {item.isSymlink && <Link2 className="h-3 w-3 shrink-0 text-muted-foreground" aria-label={t('fileTree.symlink')} />}
+          {showDetails && !isDir && (
+            <span className="ft-row-detail" aria-hidden="true">{formatFileSize(item.size)} · {formatShortTimestamp(item.modified, undefined, i18n.language)}</span>
+          )}
+        </button>
+        <span className="ft-row-actions">
+          <button
+            type="button"
+            className="ft-action ft-quick-action"
+            disabled={!onStartWorkspaceQa}
+            title={t(isDir ? 'fileTree.askAboutDirectory' : 'fileTree.askAboutFile')}
+            aria-label={t(isDir ? 'fileTree.askAboutDirectory' : 'fileTree.askAboutFile')}
+            onClick={(e) => { e.stopPropagation(); askAboutItem(item); }}
+          >
+            <MessageSquarePlus className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            className="ft-action ft-quick-action"
+            title={copiedPath === item.path ? t('fileTree.pathCopied') : t('fileTree.copyPath')}
+            aria-label={t('fileTree.copyPath')}
+            onClick={(e) => { e.stopPropagation(); copyPath(item); }}
+          >
+            {copiedPath === item.path ? <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+          </button>
+          <button
+            type="button"
+            className="ft-action"
+            aria-haspopup="menu"
+            aria-expanded={isMenuOpen}
+            title={t('fileTree.moreActions', { name: item.name })}
+            aria-label={t('fileTree.moreActions', { name: item.name })}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (isMenuOpen) { closeMenu(false); return; }
+              const rect = e.currentTarget.getBoundingClientRect();
+              openMenu(item, { x: rect.right, y: rect.bottom }, e.currentTarget);
+            }}
+          >
+            <MoreHorizontal className="h-4 w-4" />
+          </button>
+        </span>
+      </div>
     );
   };
 
-  // A native primary button and sibling actions keep every view keyboard operable.
-  // Narrow panels stack metadata instead of squeezing four columns into a phone.
-  const renderFiles = (items, level = 0) => items.map(item => {
-    const isDir = item.type === 'directory';
-    const isOpen = isDir && expandedDirs.has(item.path);
-    return (
-      <div key={item.path} className="file-tree-entry" style={{ marginLeft: level ? 12 : 0 }}>
-        <div className={cn('file-tree-row rounded-md hover:bg-accent/60', isDir && dragOverDir === item.path && 'bg-muted ring-1 ring-ring')}
-          {...(isDir ? {
-            onDragOver: e => { e.preventDefault(); e.stopPropagation(); setDragOverDir(item.path); },
-            onDragLeave: e => { e.stopPropagation(); setDragOverDir(null); },
-            onDrop: e => handleFileDrop(e, item.path),
-          } : {})}>
-          <button type="button" className="file-row-open flex min-h-11 w-full min-w-0 items-center gap-2 rounded-md px-1 py-2 text-left text-sm"
-            onClick={() => handleItemClick(item)} aria-expanded={isDir ? isOpen : undefined} title={item.path}>
-            {renderItemIcons(item)}
-            <span className={cn('min-w-0 flex-1 break-words', isDir && 'font-medium')}>{item.name}</span>
-          </button>
-          {!isDir && viewMode !== 'simple' && (
-            <div className="file-row-metadata flex flex-wrap items-center gap-x-3 gap-y-1 px-1 pb-1 text-xs text-muted-foreground">
-              <span className="tabular-nums">{t('fileTree.size')}: {formatFileSize(item.size)}</span>
-              {viewMode === 'detailed' && <span>{t('fileTree.modified')}: {formatRelativeTime(item.modified)}</span>}
-              {item.permissionsRwx && <span className="font-mono" title={t('fileTree.permissions')}>{item.permissionsRwx}</span>}
-            </div>
-          )}
-          {renderRowActions(item)}
+  const renderPlaceholderRow = (row) => {
+    const style = { paddingLeft: ROW_GUTTER + row.depth * INDENT + 22 };
+    if (row.kind === 'loading') {
+      return (
+        <div key={row.key} role="status" className="ft-placeholder" style={style}>
+          {renderGuides(row.depth)}
+          <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+          <span>{t('fileTree.loading')}</span>
         </div>
-        {isOpen && (
-          <div className="ml-2 border-l border-border pl-1">
-            {loadingDirs.has(item.path) ? <div role="status" className="px-3 py-2 text-xs text-muted-foreground">{t('fileTree.loading')}</div>
-              : directoryErrors.has(item.path) ? <div role="alert" className="px-3 py-2 text-sm"><p>{t('fileTree.directoryLoadFailed')}</p><Button variant="ghost" onClick={() => loadDirectory(item.path)}>{t('buttons.retry')}</Button></div>
-              : item.children?.length ? renderFiles(item.children, level + 1)
-              : item.children && <p className="px-3 py-2 text-xs text-muted-foreground">{t('fileTree.emptyFolder')}</p>}
-          </div>
-        )}
+      );
+    }
+    if (row.kind === 'error') {
+      return (
+        <div key={row.key} role="alert" className="ft-placeholder text-destructive" style={style}>
+          {renderGuides(row.depth)}
+          <AlertCircle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+          <span className="min-w-0 truncate">{t('fileTree.directoryLoadFailed')}</span>
+          <button type="button" className="ml-1 shrink-0 rounded px-1.5 font-medium text-foreground underline-offset-2 hover:underline" onClick={() => loadDirectory(row.dirPath)}>
+            {t('buttons.retry')}
+          </button>
+        </div>
+      );
+    }
+    return (
+      <div key={row.key} className="ft-placeholder italic" style={style}>
+        {renderGuides(row.depth)}
+        <span>{t('fileTree.emptyFolder')}</span>
       </div>
     );
-  });
+  };
 
-  // ─── Main render ───────────────────────────────────────────────────
+  const headerButton = 'ft-icon-button';
+  const showSkeleton = !hasLoaded && loading && files.length === 0;
+
   return (
-    <div className="file-workspace h-full min-w-0 flex flex-col bg-background">
+    <div className="file-workspace flex h-full min-w-0 flex-col bg-card">
       {/* Header */}
-      <div className="px-4 pt-3 pb-2 border-b border-border space-y-2">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-foreground">
-            {t('fileTree.files')}
-          </h3>
-          <div className="flex gap-0.5">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-11 w-11 p-0"
-              onClick={() => { uploadTargetDirRef.current = ''; fileInputRef.current?.click(); }}
-              title={t('fileTree.uploadFiles')}
-              disabled={uploading}
-            >
-              <UploadCloud className="w-3.5 h-3.5" />
-            </Button>
-            <Button
-              aria-pressed={viewMode === 'simple'} variant={viewMode === 'simple' ? 'secondary' : 'ghost'}
-              size="sm"
-              className="h-11 w-11 p-0"
-              onClick={() => changeViewMode('simple')}
-              title={t('fileTree.simpleView')}
-            >
-              <List className="w-3.5 h-3.5" />
-            </Button>
-            <Button
-              aria-pressed={viewMode === 'compact'} variant={viewMode === 'compact' ? 'secondary' : 'ghost'}
-              size="sm"
-              className="h-11 w-11 p-0"
-              onClick={() => changeViewMode('compact')}
-              title={t('fileTree.compactView')}
-            >
-              <Eye className="w-3.5 h-3.5" />
-            </Button>
-            <Button
-              aria-pressed={viewMode === 'detailed'} variant={viewMode === 'detailed' ? 'secondary' : 'ghost'}
-              size="sm"
-              className="h-11 w-11 p-0"
-              onClick={() => changeViewMode('detailed')}
-              title={t('fileTree.detailedView')}
-            >
-              <TableProperties className="w-3.5 h-3.5" />
-            </Button>
-          </div>
-        </div>
+      <div className="flex shrink-0 items-center gap-1 border-b border-border/60 py-1.5 pl-3 pr-1.5">
+        <h3 className="min-w-0 flex-1 truncate text-xs font-semibold uppercase tracking-wide text-muted-foreground" title={projectRoot || undefined}>
+          {selectedProject?.displayName || t('fileTree.files')}
+        </h3>
+        <button type="button" className={headerButton} onClick={() => openUploadPicker('')} disabled={uploading}
+          title={t('fileTree.uploadFiles')} aria-label={t('fileTree.uploadFiles')}>
+          {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}
+        </button>
+        <button type="button" className={headerButton} onClick={toggleShowDetails} aria-pressed={showDetails}
+          title={t('fileTree.showDetails')} aria-label={t('fileTree.showDetails')}>
+          <ListTree className="h-4 w-4" />
+        </button>
+        <button type="button" className={headerButton} onClick={collapseAll} disabled={activeExpanded.size === 0}
+          title={t('fileTree.collapseAll')} aria-label={t('fileTree.collapseAll')}>
+          <ChevronsDownUp className="h-4 w-4" />
+        </button>
+        <button type="button" className={headerButton} onClick={() => void fetchFiles()} disabled={loading}
+          title={t('buttons.refresh')} aria-label={t('buttons.refresh')}>
+          <RefreshCw className={cn('h-4 w-4', loading && hasLoaded && 'animate-spin')} />
+        </button>
+      </div>
 
-        {/* Search Bar */}
+      {/* Search */}
+      <div className="shrink-0 px-2 py-2">
         <div className="relative">
-          <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-          <Input
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+          <input
             ref={searchInputRef}
             type="text"
             aria-label={t('fileTree.searchPlaceholder')}
             placeholder={t('fileTree.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-7 pr-11 h-11 text-sm"
+            onKeyDown={(e) => {
+              if (e.key === 'Escape' && searchQuery) { e.preventDefault(); setSearchQuery(''); }
+              if (e.key === 'ArrowDown' && itemRows[0]) { e.preventDefault(); focusRow(itemRows[0].item.path); }
+            }}
+            className="ft-search h-8 w-full rounded-md border border-input bg-background pl-8 pr-8 text-[13px] text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
-          {searchQuery && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="absolute right-0.5 top-1/2 transform -translate-y-1/2 h-11 w-11 p-0 hover:bg-accent"
-              onClick={() => setSearchQuery('')}
-              title={t('fileTree.clearSearch')}
-            >
-              <X className="w-3 h-3" />
-            </Button>
-          )}
+          {searchLoading ? (
+            <Loader2 className="absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 animate-spin text-muted-foreground" aria-hidden="true" />
+          ) : searchQuery ? (
+            <button type="button" className="absolute right-1 top-1/2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
+              onClick={() => { setSearchQuery(''); searchInputRef.current?.focus(); }} title={t('fileTree.clearSearch')} aria-label={t('fileTree.clearSearch')}>
+              <X className="h-3.5 w-3.5" />
+            </button>
+          ) : null}
         </div>
       </div>
 
-      {loading && <div role="status" className="px-3 py-2 text-sm text-muted-foreground">{t('fileTree.loading')}</div>}
-      {loadError && <div role="alert" className="border-b border-border px-3 py-2 text-sm"><p>{t('fileTree.loadFailed')}</p><Button variant="ghost" onClick={fetchFiles}>{t('buttons.retry')}</Button></div>}
-      {searchLoading && <div role="status" className="px-3 py-2 text-sm text-muted-foreground">{t('fileTree.searching')}</div>}
-      {searchError && <div role="alert" className="border-b border-border px-3 py-2 text-sm"><p>{t('fileTree.searchFailed')}</p><Button variant="ghost" onClick={() => setSearchRevision(value => value + 1)}>{t('buttons.retry')}</Button></div>}
-      {copyError && <div role="alert" className="px-3 py-2 text-sm">{t('fileTree.copyFailed')}</div>}
-
-      {/* Upload status bar */}
+      {/* Status messages */}
+      {loadError && (
+        <div role="alert" className="ft-banner text-destructive">
+          <AlertCircle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+          <span className="min-w-0 flex-1">{t('fileTree.loadFailed')}</span>
+          <button type="button" className="shrink-0 font-medium text-foreground hover:underline" onClick={() => void fetchFiles()}>{t('buttons.retry')}</button>
+        </div>
+      )}
+      {searchError && (
+        <div role="alert" className="ft-banner">
+          <AlertCircle className="h-3.5 w-3.5 shrink-0 text-destructive" aria-hidden="true" />
+          <span className="min-w-0 flex-1">{t('fileTree.searchFailed')}</span>
+          <button type="button" className="shrink-0 font-medium hover:underline" onClick={() => { setFullTreeForSearch(null); setSearchRevision((value) => value + 1); }}>{t('buttons.retry')}</button>
+        </div>
+      )}
+      {copyError && <div role="alert" className="ft-banner text-destructive">{t('fileTree.copyFailed')}</div>}
       {uploading && (
-        <div className="px-3 py-1.5 border-b border-border flex items-center gap-2 text-xs text-muted-foreground">
-          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+        <div role="status" className="ft-banner text-muted-foreground">
+          <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
           {t('fileTree.uploading')}
         </div>
       )}
-      {uploadError && (
-        <div role="alert" className="px-3 py-2 border-b border-border text-sm text-destructive">
-          {uploadError}
-        </div>
-      )}
-      {uploadSuccess && (
-        <div role="status" className="px-3 py-2 border-b border-border text-sm text-foreground">
-          {uploadSuccess}
-        </div>
-      )}
+      {uploadError && <div role="alert" className="ft-banner text-destructive">{uploadError}</div>}
+      {uploadSuccess && <div role="status" className="ft-banner text-foreground">{uploadSuccess}</div>}
 
-      <input
-        type="file"
-        ref={fileInputRef}
-        multiple
-        className="hidden"
-        onChange={handleFileInputChange}
-      />
+      <input type="file" ref={fileInputRef} multiple className="hidden" onChange={handleFileInputChange} />
+
       <div
-        className="flex-1 relative min-h-0 overflow-hidden"
+        className="relative min-h-0 flex-1 overflow-hidden"
         onDragOver={(e) => { e.preventDefault(); }}
         onDrop={(e) => handleFileDrop(e, '')}
       >
-        <ScrollArea className="h-full px-2 py-1">
-          {files.length === 0 && (loading || loadError) ? null : files.length === 0 ? (
-            <div className="text-center py-8">
-              <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center mx-auto mb-3">
-                <Folder className="w-6 h-6 text-muted-foreground" />
-              </div>
-              <h4 className="font-medium text-foreground mb-1">{t('fileTree.noFilesFound')}</h4>
-              <p className="text-sm text-muted-foreground">
-                {t('fileTree.checkProjectPath')}
-              </p>
+        <ScrollArea className="h-full">
+          {showSkeleton ? (
+            <div role="status" aria-label={t('fileTree.loading')} className="space-y-1 px-3 py-2">
+              {[68, 52, 74, 46, 60, 40, 56].map((width, index) => (
+                <div key={index} className="flex h-6 items-center gap-2">
+                  <span className="h-3.5 w-3.5 animate-pulse rounded bg-muted" />
+                  <span className="h-3 animate-pulse rounded bg-muted" style={{ width: `${width}%` }} />
+                </div>
+              ))}
             </div>
-          ) : filteredFiles.length === 0 && searchQuery && !searchLoading && !searchError ? (
-            <div className="text-center py-8">
-              <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center mx-auto mb-3">
-                <Search className="w-6 h-6 text-muted-foreground" />
-              </div>
-              <h4 className="font-medium text-foreground mb-1">{t('fileTree.noMatchesFound')}</h4>
-              <p className="text-sm text-muted-foreground">
-                {t('fileTree.tryDifferentSearch')}
-              </p>
+          ) : files.length === 0 && (loading || loadError) ? null : files.length === 0 ? (
+            <div className="px-6 py-10 text-center">
+              <Folder className="mx-auto mb-2 h-8 w-8 text-muted-foreground/60" aria-hidden="true" />
+              <h4 className="text-sm font-medium text-foreground">{t('fileTree.noFilesFound')}</h4>
+              <p className="mt-1 text-xs text-muted-foreground">{t('fileTree.checkProjectPath')}</p>
+            </div>
+          ) : isSearching && visibleFiles.length === 0 && !searchLoading && !searchError ? (
+            <div className="px-6 py-10 text-center">
+              <Search className="mx-auto mb-2 h-8 w-8 text-muted-foreground/60" aria-hidden="true" />
+              <h4 className="text-sm font-medium text-foreground">{t('fileTree.noMatchesFound')}</h4>
+              <p className="mt-1 text-xs text-muted-foreground">{t('fileTree.tryDifferentSearch')}</p>
             </div>
           ) : (
-            <div>
-              {renderFiles(filteredFiles)}
+            <div ref={treeRef} role="tree" aria-label={t('fileTree.files')} className="ft-tree" onKeyDown={handleTreeKeyDown}>
+              {rows.map((row) => (row.kind === 'item' ? renderItemRow(row) : renderPlaceholderRow(row)))}
             </div>
           )}
         </ScrollArea>
       </div>
+
+      {menu && (
+        <FileRowMenu
+          anchor={menu.anchor}
+          label={t('fileTree.moreActions', { name: menu.item.name })}
+          items={buildMenuItems(menu.item)}
+          trigger={menu.trigger}
+          onClose={closeMenu}
+        />
+      )}
 
       {pendingDelete && <WorkbenchDialog busy={deleting} onClose={() => { if (!deleting) setPendingDelete(null); }} title={t('fileTree.deleteFile')}>
         <p className="break-words text-sm">{t('fileTree.confirmDelete', { name: pendingDelete?.name })}</p>
@@ -879,12 +734,8 @@ function FileTree({ selectedProject, onFileOpen, onStartWorkspaceQa }) {
         </div>
       </WorkbenchDialog>}
 
-      {/* Image Viewer Modal */}
       {selectedImage && (
-        <ImageViewer
-          file={selectedImage}
-          onClose={() => setSelectedImage(null)}
-        />
+        <ImageViewer file={selectedImage} onClose={() => setSelectedImage(null)} />
       )}
     </div>
   );
