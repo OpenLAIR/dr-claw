@@ -465,6 +465,16 @@
     "loadError": "Could not load this section.",
     "tools": "Tools",
     "collapseSidebar": "Collapse sidebar",
+    "sidebar": {
+      "moreSessions_one": "{{count}} more session",
+      "moreSessions_other": "{{count}} more sessions",
+      "showFewerSessions": "Show fewer",
+      "statusRunning": "Running",
+      "statusRecent": "Active in the last 10 minutes",
+      "expandProject": "Expand {{name}}",
+      "collapseProject": "Collapse {{name}}",
+      "projectActions": "Actions for {{name}}"
+    },
     "stages": {
       "survey": "Survey",
       "ideation": "Ideation",

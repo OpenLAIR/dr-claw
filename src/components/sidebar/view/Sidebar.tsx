@@ -51,6 +51,7 @@ function Sidebar({
   onOpenCompute,
   onImportedProjectCreated,
   newSessionMode,
+  processingSessions,
 }: SidebarProps) {
   const versionReminderStorageKey = 'dr-claw.versionReminder';
   const { t } = useTranslation(['sidebar', 'common']);
@@ -222,6 +223,7 @@ function Sidebar({
     loadingSessions,
     initialSessionsLoaded,
     currentTime,
+    processingSessions,
     editingSession,
     editingSessionName,
     deletingProjects,

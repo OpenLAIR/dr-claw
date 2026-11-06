@@ -465,6 +465,15 @@
     "loadError": "이 섹션을 불러올 수 없습니다.",
     "tools": "도구",
     "collapseSidebar": "사이드바 접기",
+    "sidebar": {
+      "moreSessions_other": "세션 {{count}}개 더 보기",
+      "showFewerSessions": "접기",
+      "statusRunning": "실행 중",
+      "statusRecent": "최근 10분 내 활동",
+      "expandProject": "{{name}} 펼치기",
+      "collapseProject": "{{name}} 접기",
+      "projectActions": "{{name}} 작업"
+    },
     "stages": {
       "survey": "문헌 조사",
       "ideation": "아이디어",

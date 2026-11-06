@@ -53,6 +53,8 @@ export type SidebarProps = {
   onOpenCompute: () => void;
   onImportedProjectCreated?: (project: Project, options?: ProjectCreationOptions) => void;
   newSessionMode?: SessionMode;
+  /** Sessions with a request in flight; shown as running in the list. */
+  processingSessions?: ReadonlySet<string>;
 };
 
 export type SessionViewModel = {

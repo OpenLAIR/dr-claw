@@ -465,6 +465,15 @@
     "loadError": "此部分加载失败。",
     "tools": "工具",
     "collapseSidebar": "收起侧栏",
+    "sidebar": {
+      "moreSessions_other": "还有 {{count}} 个会话",
+      "showFewerSessions": "收起",
+      "statusRunning": "正在运行",
+      "statusRecent": "最近 10 分钟内有活动",
+      "expandProject": "展开 {{name}}",
+      "collapseProject": "收起 {{name}}",
+      "projectActions": "{{name}} 的操作"
+    },
     "stages": {
       "survey": "文献调研",
       "ideation": "研究构思",

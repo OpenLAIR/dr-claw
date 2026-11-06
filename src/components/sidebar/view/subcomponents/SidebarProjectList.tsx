@@ -22,6 +22,7 @@ export type SidebarProjectListProps = {
   loadingSessions: LoadingSessionsByProject;
   initialSessionsLoaded: Set<string>;
   currentTime: Date;
+  processingSessions?: ReadonlySet<string>;
   editingSession: string | null;
   editingSessionName: string;
   renameFeedback: { pending: boolean; error: string };
@@ -69,6 +70,7 @@ export default function SidebarProjectList({
   loadingSessions,
   initialSessionsLoaded,
   currentTime,
+  processingSessions,
   editingSession,
   editingSessionName,
   renameFeedback,
@@ -110,7 +112,7 @@ export default function SidebarProjectList({
   const showProjects = !isLoading && projects.length > 0 && filteredProjects.length > 0;
 
   return (
-    <div className="md:space-y-1 pb-safe-area-inset-bottom">
+    <div className="flex flex-col gap-px pb-safe-area-inset-bottom">
       {!showProjects
         ? state
         : filteredProjects.map((project) => (
@@ -128,6 +130,7 @@ export default function SidebarProjectList({
               initialSessionsLoaded={initialSessionsLoaded.has(project.name)}
               isLoadingSessions={Boolean(loadingSessions[project.name])}
               currentTime={currentTime}
+              processingSessions={processingSessions}
               editingSession={editingSession}
               editingSessionName={editingSessionName}
               renameFeedback={renameFeedback}
