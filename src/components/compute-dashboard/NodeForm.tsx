@@ -13,7 +13,7 @@ function formFromNode(node: ComputeNode): NodeFormData {
     host: node.host || '',
     user: node.user || '',
     port: String(node.port || 22),
-    authType: node.keyPath ? 'key' : node.hasPassword ? 'password' : 'key',
+    authType: node.keyPath ? 'key' : node.hasPassword ? 'password' : 'agent',
     key: '',
     password: '',
     workDir: node.workDir || '~',
@@ -181,6 +181,15 @@ export default function NodeForm({
           <div className="flex gap-2">
             <Button
               type="button"
+              variant={form.authType === 'agent' ? 'secondary' : 'outline'}
+              size="sm"
+              className="rounded-xl h-7 text-xs"
+              onClick={() => update('authType', 'agent')}
+            >
+              SSH Agent
+            </Button>
+            <Button
+              type="button"
               variant={form.authType === 'key' ? 'secondary' : 'outline'}
               size="sm"
               className="rounded-md h-7 text-xs"
@@ -199,7 +208,9 @@ export default function NodeForm({
             </Button>
           </div>
         </div>
-        {form.authType === 'key' ? (
+        {form.authType === 'agent' ? (
+          <p className="text-xs text-muted-foreground">Uses system SSH agent (1Password, ssh-agent, etc.) — no key or password needed.</p>
+        ) : form.authType === 'key' ? (
           <div className="space-y-1">
             <label htmlFor={`${formId}-key`} className="text-sm text-muted-foreground">{t('computeForm.key')}</label>
             <textarea
