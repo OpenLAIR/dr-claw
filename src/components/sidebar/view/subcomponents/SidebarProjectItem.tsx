@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import SidebarRenameEditor from './SidebarRenameEditor';
-import { ChevronRight, Edit3, Folder, FolderOpen, Plus, Star, Trash2 } from 'lucide-react';
+import { ChevronRight, Edit3, Folder, FolderOpen, Pin, PinOff, Plus, Trash2 } from 'lucide-react';
 import type { TFunction } from 'i18next';
 import { cn } from '../../../../lib/utils';
 import type { Project, ProjectSession, SessionMode, SessionProvider } from '../../../../types/app';
@@ -50,9 +50,17 @@ type SidebarProjectItemProps = {
   onStartEditingSession: (sessionId: string, initialName: string) => void;
   onCancelEditingSession: () => void;
   onSaveEditingSession: (projectName: string, sessionId: string, summary: string, provider: SessionProvider) => void;
+  isSessionPinned: (projectName: string, sessionId: string) => boolean;
+  onTogglePinSession: (projectName: string, session: SessionWithProvider, title: string) => void;
   touchHandlerFactory: TouchHandlerFactory;
   t: TFunction;
 };
+
+/**
+ * Pinning moves a project between sidebar sections, which remounts its row.
+ * The new row takes focus so keyboard users keep their place.
+ */
+let refocusProjectAfterMove: string | null = null;
 
 const rowActionClass =
   'flex h-9 w-9 md:h-6 md:w-6 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50';
@@ -91,6 +99,8 @@ export default function SidebarProjectItem({
   onStartEditingSession,
   onCancelEditingSession,
   onSaveEditingSession,
+  isSessionPinned,
+  onTogglePinSession,
   touchHandlerFactory,
   t,
 }: SidebarProjectItemProps) {
@@ -99,6 +109,13 @@ export default function SidebarProjectItem({
   const [menuOpen, setMenuOpen] = useState(false);
   const rowButton = useRef<HTMLButtonElement | null>(null);
   const restoreRenameFocus = useRef(false);
+  useLayoutEffect(() => {
+    if (refocusProjectAfterMove === project.name) {
+      refocusProjectAfterMove = null;
+      rowButton.current?.focus({ preventScroll: true });
+    }
+    // Mount only: a moved row is a new instance.
+  }, []);
   useLayoutEffect(() => {
     if (!isEditing && restoreRenameFocus.current) {
       rowButton.current?.focus({ preventScroll: true });
@@ -186,13 +203,6 @@ export default function SidebarProjectItem({
             >
               {project.displayName}
             </span>
-            {isStarred && (
-              <Star
-                aria-label={t('projects.starred')}
-                role="img"
-                className="h-3 w-3 shrink-0 fill-current text-amber-500 md:group-hover:hidden md:group-has-[:focus-visible]:hidden"
-              />
-            )}
           </button>
 
           {/* Touch layouts always show these; pointer layouts reveal them on
@@ -214,16 +224,20 @@ export default function SidebarProjectItem({
               onOpenChange={setMenuOpen}
               items={[
                 {
-                  key: 'star',
-                  label: isStarred ? t('tooltips.removeFromFavorites') : t('tooltips.addToFavorites'),
-                  icon: Star,
-                  iconClassName: isStarred ? 'fill-current text-amber-500' : undefined,
-                  onSelect: () => onToggleStarProject(project.name),
+                  key: 'pin',
+                  label: isStarred ? t('common:workbench.sidebar.unpin') : t('common:workbench.sidebar.pin'),
+                  icon: isStarred ? PinOff : Pin,
+                  shortcut: 'p',
+                  onSelect: () => {
+                    refocusProjectAfterMove = project.name;
+                    onToggleStarProject(project.name);
+                  },
                 },
                 {
                   key: 'rename',
                   label: t('actions.rename'),
                   icon: Edit3,
+                  shortcut: 'r',
                   disabled: renameFeedback.pending,
                   onSelect: beginRename,
                 },
@@ -231,6 +245,7 @@ export default function SidebarProjectItem({
                   key: 'delete',
                   label: t('common:workbench.sidebar.moveToTrash'),
                   icon: Trash2,
+                  shortcut: 'd',
                   destructive: true,
                   onSelect: () => onDeleteProject(project),
                 },
@@ -262,6 +277,8 @@ export default function SidebarProjectItem({
         onLoadMoreSessions={onLoadMoreSessions}
         onNewSession={onNewSession}
         newSessionMode={newSessionMode}
+        isSessionPinned={isSessionPinned}
+        onTogglePinSession={onTogglePinSession}
         touchHandlerFactory={touchHandlerFactory}
         t={t}
       />

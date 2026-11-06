@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import SidebarRenameEditor from './SidebarRenameEditor';
 import SidebarRowMenu, { revealRowActionsClass } from './SidebarRowMenu';
-import { Edit2, Trash2 } from 'lucide-react';
+import { Edit2, MessageSquare, Pin, PinOff, Trash2 } from 'lucide-react';
 import type { TFunction } from 'i18next';
 import { cn } from '../../../../lib/utils';
 import { formatTimeAgo } from '../../../../utils/dateUtils';
@@ -31,6 +31,13 @@ type SidebarSessionItemProps = {
     sessionTitle: string,
     provider: SessionProvider,
   ) => void;
+  isPinned: boolean;
+  onTogglePin: (projectName: string, session: SessionWithProvider, title: string) => void;
+  /**
+   * `tree` rows sit under their project; `pinned` rows stand alone in the
+   * Pinned section, show their project's name and open it on click.
+   */
+  variant?: 'tree' | 'pinned';
   touchHandlerFactory: TouchHandlerFactory;
   t: TFunction;
 };
@@ -60,11 +67,17 @@ export default function SidebarSessionItem({
   onProjectSelect,
   onSessionSelect,
   onDeleteSession,
+  isPinned,
+  onTogglePin,
+  variant = 'tree',
   t,
 }: SidebarSessionItemProps) {
+  const isPinnedRow = variant === 'pinned';
+  // A pinned session is listed twice; only the row that started a rename edits.
+  const editKey = isPinnedRow ? `pinned:${session.id}` : session.id;
   const sessionView = createSessionViewModel(session, currentTime, t);
   const isSelected = selectedSession?.id === session.id;
-  const isEditing = editingSession === session.id;
+  const isEditing = editingSession === editKey;
   const [menuOpen, setMenuOpen] = useState(false);
   const rowButton = useRef<HTMLButtonElement | null>(null);
   const restoreRenameFocus = useRef(false);
@@ -82,8 +95,9 @@ export default function SidebarSessionItem({
         : '';
 
   const selectSession = () => {
-    // The phone layout also selects the project so the drawer can close on it.
-    if (!isWideSidebarLayout()) onProjectSelect(project);
+    // Pinned rows may belong to another project, and the phone layout needs
+    // the project selected so the drawer can close on it.
+    if (isPinnedRow || !isWideSidebarLayout()) onProjectSelect(project);
     onSessionSelect(session, project.name);
   };
 
@@ -94,7 +108,7 @@ export default function SidebarSessionItem({
   const startRename = () => {
     if (renameFeedback.pending) return;
     restoreRenameFocus.current = true;
-    onStartEditingSession(session.id, session.summary || t('projects.newSession'));
+    onStartEditingSession(editKey, session.summary || session.name || t('projects.newSession'));
   };
 
   const requestDeleteSession = () => {
@@ -108,6 +122,7 @@ export default function SidebarSessionItem({
     : [];
   const tooltip = joinTooltipLines(
     sessionView.sessionName,
+    isPinnedRow ? project.displayName : null,
     [formatTimeAgo(sessionView.sessionTime, currentTime, t), modeLabel, session.__provider].join(' · '),
     stageLabels.join(', '),
     statusLabel,
@@ -131,7 +146,10 @@ export default function SidebarSessionItem({
     >
       <button
         type="button"
-        className="flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-md px-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:min-h-8"
+        className={cn(
+          'flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:min-h-8',
+          isPinnedRow ? 'pr-2' : 'px-2',
+        )}
         ref={rowButton}
         onClick={selectSession}
         onKeyDown={(event) => {
@@ -143,13 +161,17 @@ export default function SidebarSessionItem({
         title={tooltip}
         aria-current={isSelected ? 'true' : undefined}
       >
-        <span
-          data-session-status={status}
-          role={statusLabel ? 'img' : undefined}
-          aria-label={statusLabel || undefined}
-          aria-hidden={statusLabel ? undefined : true}
-          className={cn('h-1.5 w-1.5 shrink-0 rounded-full', STATUS_DOT_CLASS[status])}
-        />
+        {/* Pinned rows line up with project rows: the dot takes the chevron's slot. */}
+        <span className={cn('flex shrink-0 items-center justify-center', isPinnedRow && '-mr-2 w-7 md:w-6')}>
+          <span
+            data-session-status={status}
+            role={statusLabel ? 'img' : undefined}
+            aria-label={statusLabel || undefined}
+            aria-hidden={statusLabel ? undefined : true}
+            className={cn('h-1.5 w-1.5 rounded-full', STATUS_DOT_CLASS[status])}
+          />
+        </span>
+        {isPinnedRow && <MessageSquare className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />}
         <span
           className={cn(
             'min-w-0 flex-1 truncate text-[13px]',
@@ -158,40 +180,45 @@ export default function SidebarSessionItem({
         >
           {sessionView.sessionName}
         </span>
+        {isPinnedRow && (
+          <span className="max-w-[40%] shrink-0 truncate text-xs text-muted-foreground">{project.displayName}</span>
+        )}
       </button>
 
-      {(canRename || canDelete) && (
-        // Touch layouts always show the menu button; pointer layouts reveal it on
-        // hover or keyboard focus, and keep it while the menu is open.
-        <div
-          className={cn(
-            'flex shrink-0 items-center pr-1',
-            revealRowActionsClass(menuOpen),
-          )}
-        >
-          <SidebarRowMenu
-            label={t('common:workbench.sidebar.rowActions', { name: sessionView.sessionName })}
-            triggerClassName={rowActionClass}
-            onOpenChange={setMenuOpen}
-            items={[
-              ...(canRename ? [{
-                key: 'rename',
-                label: t('actions.rename'),
-                icon: Edit2,
-                disabled: renameFeedback.pending,
-                onSelect: startRename,
-              }] : []),
-              ...(canDelete ? [{
-                key: 'delete',
-                label: t('actions.delete'),
-                icon: Trash2,
-                destructive: true,
-                onSelect: requestDeleteSession,
-              }] : []),
-            ]}
-          />
-        </div>
-      )}
+      {/* Touch layouts always show the menu button; pointer layouts reveal it on
+          hover or keyboard focus, and keep it while the menu is open. */}
+      <div className={cn('flex shrink-0 items-center pr-1', revealRowActionsClass(menuOpen))}>
+        <SidebarRowMenu
+          label={t('common:workbench.sidebar.rowActions', { name: sessionView.sessionName })}
+          triggerClassName={rowActionClass}
+          onOpenChange={setMenuOpen}
+          items={[
+            {
+              key: 'pin',
+              label: isPinned ? t('common:workbench.sidebar.unpin') : t('common:workbench.sidebar.pin'),
+              icon: isPinned ? PinOff : Pin,
+              shortcut: 'p',
+              onSelect: () => onTogglePin(project.name, session, sessionView.sessionName),
+            },
+            ...(canRename ? [{
+              key: 'rename',
+              label: t('actions.rename'),
+              icon: Edit2,
+              shortcut: 'r',
+              disabled: renameFeedback.pending,
+              onSelect: startRename,
+            }] : []),
+            ...(canDelete ? [{
+              key: 'delete',
+              label: t('actions.delete'),
+              icon: Trash2,
+              shortcut: 'd',
+              destructive: true,
+              onSelect: requestDeleteSession,
+            }] : []),
+          ]}
+        />
+      </div>
     </div>
   );
 }

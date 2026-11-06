@@ -33,6 +33,8 @@ type SidebarProjectSessionsProps = {
   onLoadMoreSessions: (project: Project) => void;
   onNewSession: (project: Project, mode?: SessionMode) => void;
   newSessionMode?: SessionMode;
+  isSessionPinned: (projectName: string, sessionId: string) => boolean;
+  onTogglePinSession: (projectName: string, session: SessionWithProvider, title: string) => void;
   touchHandlerFactory: TouchHandlerFactory;
   t: TFunction;
 };
@@ -75,6 +77,8 @@ export default function SidebarProjectSessions({
   onLoadMoreSessions,
   onNewSession,
   newSessionMode = 'research',
+  isSessionPinned,
+  onTogglePinSession,
   touchHandlerFactory,
   t,
 }: SidebarProjectSessionsProps) {
@@ -134,6 +138,8 @@ export default function SidebarProjectSessions({
             onProjectSelect={onProjectSelect}
             onSessionSelect={onSessionSelect}
             onDeleteSession={onDeleteSession}
+            isPinned={isSessionPinned(project.name, session.id)}
+            onTogglePin={onTogglePinSession}
             touchHandlerFactory={touchHandlerFactory}
             t={t}
           />

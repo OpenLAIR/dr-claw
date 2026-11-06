@@ -474,7 +474,10 @@
       "expandProject": "Expand {{name}}",
       "collapseProject": "Collapse {{name}}",
       "rowActions": "More actions for {{name}}",
-      "moveToTrash": "Move to trash"
+      "moveToTrash": "Move to trash",
+      "pinned": "Pinned",
+      "pin": "Pin",
+      "unpin": "Unpin"
     },
     "stages": {
       "survey": "Survey",

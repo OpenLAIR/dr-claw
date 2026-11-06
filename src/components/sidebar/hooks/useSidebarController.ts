@@ -19,6 +19,16 @@ import {
   readProjectSortOrder,
   sortProjects,
 } from '../utils/utils';
+import {
+  isSessionPinned as isPinnedIn,
+  loadPinnedSessions,
+  partitionPinnedProjects,
+  persistPinnedSessions,
+  removePinnedSession,
+  resolvePinnedSessions,
+  togglePinnedSession,
+  type PinnedSession,
+} from '../utils/pinned';
 
 type UseSidebarControllerArgs = {
   projects: Project[];
@@ -77,7 +87,10 @@ export function useSidebarController({
   const [projectDeleteError, setProjectDeleteError] = useState('');
   const [sessionDeleteError, setSessionDeleteError] = useState('');
   const [showVersionModal, setShowVersionModal] = useState(false);
+  // Pinned projects keep the original `starredProjects` storage key so
+  // existing favourites carry over as pins.
   const [starredProjects, setStarredProjects] = useState<Set<string>>(() => loadStarredProjects());
+  const [pinnedSessions, setPinnedSessions] = useState<PinnedSession[]>(() => loadPinnedSessions());
 
   const isSidebarCollapsed = !isMobile && !sidebarVisible;
 
@@ -193,6 +206,31 @@ export function useSidebarController({
     });
   }, []);
 
+  const updatePinnedSessions = useCallback((update: (pins: PinnedSession[]) => PinnedSession[]) => {
+    setPinnedSessions((prev) => {
+      const next = update(prev);
+      persistPinnedSessions(next);
+      return next;
+    });
+  }, []);
+
+  const togglePinSession = useCallback(
+    (projectName: string, session: SessionWithProvider, title: string) => {
+      updatePinnedSessions((prev) => togglePinnedSession(prev, {
+        projectName,
+        sessionId: session.id,
+        provider: session.__provider,
+        title,
+      }));
+    },
+    [updatePinnedSessions],
+  );
+
+  const isSessionPinned = useCallback(
+    (projectName: string, sessionId: string) => isPinnedIn(pinnedSessions, projectName, sessionId),
+    [pinnedSessions],
+  );
+
   const isProjectStarred = useCallback(
     (projectName: string) => starredProjects.has(projectName),
     [starredProjects],
@@ -227,6 +265,16 @@ export function useSidebarController({
   const filteredProjects = useMemo(
     () => filterProjects(sortedProjects, searchFilter),
     [searchFilter, sortedProjects],
+  );
+
+  const { pinned: pinnedProjects, others: unpinnedProjects } = useMemo(
+    () => partitionPinnedProjects(filteredProjects, (projectName) => starredProjects.has(projectName)),
+    [filteredProjects, starredProjects],
+  );
+
+  const pinnedSessionEntries = useMemo(
+    () => resolvePinnedSessions(pinnedSessions, projectsWithSessionMeta, getProjectSessions, searchFilter),
+    [getProjectSessions, pinnedSessions, projectsWithSessionMeta, searchFilter],
   );
 
   const startEditing = useCallback((project: Project) => {
@@ -323,6 +371,7 @@ export function useSidebarController({
 
       if (response.ok) {
         setSessionDeleteConfirmation(null);
+        updatePinnedSessions((prev) => removePinnedSession(prev, projectName, sessionId));
         onSessionDelete?.(sessionId);
       } else {
         setSessionDeleteError(t('messages.deleteSessionFailed'));
@@ -334,7 +383,7 @@ export function useSidebarController({
       deletionLock.current = false;
       setDeletionPending(null);
     }
-  }, [onSessionDelete, sessionDeleteConfirmation, t]);
+  }, [onSessionDelete, sessionDeleteConfirmation, t, updatePinnedSessions]);
 
   const requestProjectDelete = useCallback(
     (project: Project) => {
@@ -486,6 +535,11 @@ export function useSidebarController({
     showVersionModal,
     starredProjects,
     filteredProjects,
+    pinnedProjects,
+    unpinnedProjects,
+    pinnedSessionEntries,
+    togglePinSession,
+    isSessionPinned,
     handleTouchClick,
     toggleProject,
     handleSessionClick,

@@ -473,7 +473,10 @@
       "expandProject": "展开 {{name}}",
       "collapseProject": "收起 {{name}}",
       "rowActions": "{{name}} 的更多操作",
-      "moveToTrash": "移到回收站"
+      "moveToTrash": "移到回收站",
+      "pinned": "已置顶",
+      "pin": "置顶",
+      "unpin": "取消置顶"
     },
     "stages": {
       "survey": "文献调研",

@@ -11,8 +11,10 @@ export type SidebarRowMenuItem = {
   onSelect: () => void;
   destructive?: boolean;
   disabled?: boolean;
-  /** Extra classes for the icon, e.g. a filled star. */
+  /** Extra classes for the icon. */
   iconClassName?: string;
+  /** Single letter that picks this item while the menu is open. */
+  shortcut?: string;
 };
 
 type SidebarRowMenuProps = {
@@ -104,6 +106,22 @@ export default function SidebarRowMenu({ label, items, triggerClassName, onOpenC
     };
   }, [changeOpen, open]);
 
+  const selectItem = (item: SidebarRowMenuItem) => {
+    // Return focus first so a rename editor or dialog can take it next.
+    changeOpen(false);
+    item.onSelect();
+  };
+
+  const selectByShortcut = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.altKey || event.ctrlKey || event.metaKey || event.key.length !== 1) return false;
+    const key = event.key.toLowerCase();
+    const item = items.find((candidate) => !candidate.disabled && candidate.shortcut?.toLowerCase() === key);
+    if (!item) return false;
+    event.preventDefault();
+    selectItem(item);
+    return true;
+  };
+
   const moveFocus = (event: KeyboardEvent<HTMLDivElement>) => {
     const enabled = Array.from(
       menu.current?.querySelectorAll<HTMLButtonElement>('[role="menuitem"]:not(:disabled)') ?? [],
@@ -167,10 +185,12 @@ export default function SidebarRowMenu({ label, items, triggerClassName, onOpenC
               changeOpen(false);
               return;
             }
-            moveFocus(event);
+            if (!selectByShortcut(event)) moveFocus(event);
           }}
         >
-          {items.map(({ key, label: itemLabel, icon: Icon, onSelect, destructive, disabled, iconClassName }) => (
+          {items.map((item) => {
+            const { key, label: itemLabel, icon: Icon, destructive, disabled, iconClassName, shortcut } = item;
+            return (
             <button
               key={key}
               type="button"
@@ -181,17 +201,22 @@ export default function SidebarRowMenu({ label, items, triggerClassName, onOpenC
                 'hover:bg-accent focus:bg-accent disabled:pointer-events-none disabled:opacity-50',
                 destructive ? 'text-destructive' : 'text-popover-foreground',
               )}
+              aria-keyshortcuts={shortcut?.toUpperCase()}
               onClick={(event) => {
                 event.stopPropagation();
-                // Return focus first so a rename editor or dialog can take it next.
-                changeOpen(false);
-                onSelect();
+                selectItem(item);
               }}
             >
               <Icon className={cn('h-4 w-4 shrink-0', !destructive && 'text-muted-foreground', iconClassName)} />
-              <span className="truncate">{itemLabel}</span>
+              <span className="min-w-0 flex-1 truncate">{itemLabel}</span>
+              {shortcut && (
+                <kbd className="ml-2 shrink-0 font-sans text-xs text-muted-foreground" aria-hidden="true">
+                  {shortcut.toUpperCase()}
+                </kbd>
+              )}
             </button>
-          ))}
+            );
+          })}
         </div>,
         document.body,
       )}

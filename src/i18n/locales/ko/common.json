@@ -473,7 +473,10 @@
       "expandProject": "{{name}} 펼치기",
       "collapseProject": "{{name}} 접기",
       "rowActions": "{{name}} 추가 작업",
-      "moveToTrash": "휴지통으로 이동"
+      "moveToTrash": "휴지통으로 이동",
+      "pinned": "고정됨",
+      "pin": "고정",
+      "unpin": "고정 해제"
     },
     "stages": {
       "survey": "문헌 조사",
