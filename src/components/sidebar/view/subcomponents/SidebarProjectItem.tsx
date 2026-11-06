@@ -1,28 +1,31 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import SidebarRenameEditor from './SidebarRenameEditor';
-import { Button } from '../../../ui/button';
-import { ChevronDown, ChevronRight, Edit3, Folder, FolderOpen, Star, Trash2 } from 'lucide-react';
+import { ChevronRight, Edit3, Folder, FolderOpen, Plus, Trash2 } from 'lucide-react';
 import type { TFunction } from 'i18next';
 import { cn } from '../../../../lib/utils';
-import TaskIndicator from '../../../TaskIndicator';
 import type { Project, ProjectSession, SessionMode, SessionProvider } from '../../../../types/app';
 import type { MCPServerStatus, SessionWithProvider, TouchHandlerFactory } from '../../types/types';
-import { getTaskIndicatorStatus } from '../../utils/utils';
+import { isWideSidebarLayout, joinTooltipLines } from '../../utils/sessionPreview';
 import SidebarProjectSessions from './SidebarProjectSessions';
+import SidebarRowMenu, { revealRowActionsClass } from './SidebarRowMenu';
 
 type SidebarProjectItemProps = {
   project: Project;
   selectedProject: Project | null;
   selectedSession: ProjectSession | null;
   isExpanded: boolean;
+  /** Show every session passed in, e.g. search results. */
+  showAllSessions?: boolean;
   isDeleting: boolean;
-  isStarred: boolean;
   editingProject: string | null;
   editingName: string;
   sessions: SessionWithProvider[];
+  /** All of the project's sessions shown under it, loaded or not. */
+  sessionTotal: number;
   initialSessionsLoaded: boolean;
   isLoadingSessions: boolean;
   currentTime: Date;
+  processingSessions?: ReadonlySet<string>;
   editingSession: string | null;
   editingSessionName: string;
   renameFeedback: { pending: boolean; error: string };
@@ -31,7 +34,6 @@ type SidebarProjectItemProps = {
   onEditingNameChange: (name: string) => void;
   onToggleProject: (projectName: string) => void;
   onProjectSelect: (project: Project) => void;
-  onToggleStarProject: (projectName: string) => void;
   onStartEditingProject: (project: Project) => void;
   onCancelEditingProject: () => void;
   onSaveProjectName: (projectName: string) => void;
@@ -50,41 +52,36 @@ type SidebarProjectItemProps = {
   onStartEditingSession: (sessionId: string, initialName: string) => void;
   onCancelEditingSession: () => void;
   onSaveEditingSession: (projectName: string, sessionId: string, summary: string, provider: SessionProvider) => void;
+  isSessionPinned: (projectName: string, sessionId: string) => boolean;
+  onTogglePinSession: (projectName: string, session: SessionWithProvider, title: string) => void;
   touchHandlerFactory: TouchHandlerFactory;
   t: TFunction;
 };
 
-const getSessionCountDisplay = (sessions: SessionWithProvider[], hasMoreSessions: boolean): string => {
-  const sessionCount = sessions.length;
-  if (hasMoreSessions && sessionCount >= 5) {
-    return `${sessionCount}+`;
-  }
-
-  return `${sessionCount}`;
-};
+const rowActionClass =
+  'flex h-9 w-9 md:h-6 md:w-6 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50';
 
 export default function SidebarProjectItem({
   project,
   selectedProject,
   selectedSession,
   isExpanded,
+  showAllSessions = false,
   isDeleting,
-  isStarred,
   editingProject,
   editingName,
   sessions,
+  sessionTotal,
   initialSessionsLoaded,
   isLoadingSessions,
   currentTime,
+  processingSessions,
   editingSession,
   editingSessionName,
   renameFeedback,
-  tasksEnabled,
-  mcpServerStatus,
   onEditingNameChange,
   onToggleProject,
   onProjectSelect,
-  onToggleStarProject,
   onStartEditingProject,
   onCancelEditingProject,
   onSaveProjectName,
@@ -98,16 +95,19 @@ export default function SidebarProjectItem({
   onStartEditingSession,
   onCancelEditingSession,
   onSaveEditingSession,
+  isSessionPinned,
+  onTogglePinSession,
   touchHandlerFactory,
   t,
 }: SidebarProjectItemProps) {
   const isSelected = selectedProject?.name === project.name;
   const isEditing = editingProject === project.name;
-  const renameTrigger = useRef<HTMLButtonElement | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const rowButton = useRef<HTMLButtonElement | null>(null);
   const restoreRenameFocus = useRef(false);
   useLayoutEffect(() => {
     if (!isEditing && restoreRenameFocus.current) {
-      renameTrigger.current?.focus({ preventScroll: true });
+      rowButton.current?.focus({ preventScroll: true });
       restoreRenameFocus.current = false;
     }
   }, [isEditing]);
@@ -116,63 +116,119 @@ export default function SidebarProjectItem({
     restoreRenameFocus.current = true;
     onStartEditingProject(project);
   };
-  const hasMoreSessions = project.sessionMeta?.hasMore === true;
-  const sessionCountDisplay = getSessionCountDisplay(sessions, hasMoreSessions);
-  const sessionCountLabel = t('sessions.count', { count: sessions.length, displayCount: sessionCountDisplay });
-  const taskStatus = getTaskIndicatorStatus(project, mcpServerStatus);
+
+  const sessionCountLabel = t('sessions.count', { count: sessionTotal, displayCount: sessionTotal });
+  const tooltip = joinTooltipLines(project.displayName, project.fullPath, sessionCountLabel);
+  // Highlight the open session instead of its project. The session may be
+  // listed under Pinned rather than here, so do not look for it in `sessions`.
+  const isRowHighlighted = isSelected && !selectedSession;
 
   const toggleProject = () => onToggleProject(project.name);
-  const toggleStarProject = () => onToggleStarProject(project.name);
 
-  const saveProjectName = () => {
-    onSaveProjectName(project.name);
-  };
-
-  const selectAndToggleProject = () => {
+  const activateRow = () => {
+    // Phones only expand the project; wider layouts also open its overview.
+    if (!isWideSidebarLayout()) {
+      toggleProject();
+      return;
+    }
     onProjectSelect(project);
     if (!isExpanded) toggleProject();
   };
 
+  const startNewSession = () => {
+    if (!isWideSidebarLayout()) onProjectSelect(project);
+    onNewSession(project, newSessionMode);
+  };
+
+  const FolderIcon = isExpanded ? FolderOpen : Folder;
+  const expandLabel = isExpanded
+    ? t('common:workbench.sidebar.collapseProject', { name: project.displayName })
+    : t('common:workbench.sidebar.expandProject', { name: project.displayName });
+
   return (
-    <div className={cn('md:space-y-1', isDeleting && 'opacity-50 pointer-events-none')}>
+    <div data-sidebar-project={project.name} className={cn(isDeleting && 'pointer-events-none opacity-50')}>
       {isEditing ? (
         <SidebarRenameEditor label={t('projects.projectNamePlaceholder')} value={editingName}
-          onChange={onEditingNameChange} onSave={saveProjectName} onCancel={onCancelEditingProject}
+          onChange={onEditingNameChange} onSave={() => onSaveProjectName(project.name)} onCancel={onCancelEditingProject}
           feedback={renameFeedback} t={t} />
       ) : (
-        <div className="group">
-          <div className={cn('mx-3 border-b border-border py-2 md:hidden', isSelected && 'bg-muted/60')}>
-            <button className="flex min-h-11 w-full items-center gap-2 rounded-md px-2 py-2 text-left hover:bg-muted"
-              onClick={toggleProject} aria-expanded={isExpanded} onKeyDown={event => { if (event.key === 'F2') { event.preventDefault(); beginRename(); } }}>
-              {isExpanded ? <FolderOpen className="h-4 w-4 shrink-0 text-muted-foreground" /> : <Folder className="h-4 w-4 shrink-0 text-muted-foreground" />}
-              <span className="min-w-0 flex-1">
-                <span className="block break-words text-sm font-medium text-foreground">{project.displayName}</span>
-                <span className="mt-1 block text-xs text-muted-foreground">{sessionCountLabel}</span>
-              </span>
-              {isExpanded ? <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />}
+        <div
+          data-sidebar-project-row
+          className={cn(
+            'group relative flex min-h-11 items-center rounded-md md:min-h-8',
+            'hover:bg-accent/50',
+            isRowHighlighted && 'bg-accent text-accent-foreground hover:bg-accent',
+          )}
+        >
+          <button
+            type="button"
+            className="flex h-11 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:h-8 md:w-6"
+            onClick={toggleProject}
+            aria-expanded={isExpanded}
+            aria-label={expandLabel}
+            title={expandLabel}
+          >
+            <ChevronRight className={cn('h-3.5 w-3.5 transition-transform duration-150', isExpanded && 'rotate-90')} />
+          </button>
+          <button
+            ref={rowButton}
+            type="button"
+            className="flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-md pr-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:min-h-8"
+            onClick={activateRow}
+            onKeyDown={(event) => {
+              if (event.key === 'F2') {
+                event.preventDefault();
+                beginRename();
+              }
+            }}
+            title={tooltip}
+            aria-current={isSelected ? 'true' : undefined}
+          >
+            <FolderIcon className={cn('h-4 w-4 shrink-0', isExpanded ? 'text-primary' : 'text-muted-foreground')} />
+            <span
+              data-sidebar-project-name
+              className={cn('min-w-0 flex-1 truncate text-sm', isSelected ? 'font-semibold text-foreground' : 'font-medium text-foreground/90')}
+            >
+              {project.displayName}
+            </span>
+          </button>
+
+          {/* Touch layouts always show these; pointer layouts reveal them on
+              hover or keyboard focus, and keep them while the menu is open. */}
+          <div
+            data-sidebar-project-actions
+            className={cn(
+              'flex shrink-0 items-center gap-0.5 pr-1',
+              revealRowActionsClass(menuOpen),
+            )}
+          >
+            <button type="button" className={rowActionClass} onClick={startNewSession}
+              title={t('sessions.newSession')} aria-label={t('sessions.newSession')}>
+              <Plus className="h-4 w-4 md:h-3.5 md:w-3.5" />
             </button>
-            <div className="mt-1 flex items-center justify-end gap-1">
-              <Button className="h-11 w-11 p-0" variant="ghost" onClick={toggleStarProject} aria-pressed={isStarred} aria-label={isStarred ? t('tooltips.removeFromFavorites') : t('tooltips.addToFavorites')}>
-                <Star className={isStarred ? 'fill-current text-foreground' : 'text-muted-foreground'} />
-              </Button>
-              <Button ref={node => { if (node?.offsetParent) renameTrigger.current = node; }} className="h-11 w-11 p-0" variant="ghost" disabled={renameFeedback.pending} onClick={beginRename} aria-label={t('tooltips.renameProject')}><Edit3 className="text-muted-foreground" /></Button>
-              <Button className="h-11 w-11 p-0" variant="ghost" onClick={() => onDeleteProject(project)} aria-label={t('tooltips.deleteProject')}><Trash2 className="text-red-600 dark:text-red-400" /></Button>
-            </div>
-          </div>
-          <div className={cn('hidden md:block w-full rounded-md hover:bg-accent/50', isSelected && 'bg-accent text-accent-foreground')}>
-            <Button variant="ghost" className="h-auto min-h-11 w-full min-w-0 justify-start gap-2 p-2 text-left font-normal" onClick={selectAndToggleProject} aria-expanded={isExpanded} onKeyDown={event => { if (event.key === 'F2') { event.preventDefault(); beginRename(); } }}>
-              {isExpanded ? <FolderOpen className="h-4 w-4 shrink-0 text-primary" /> : <Folder className="h-4 w-4 shrink-0 text-muted-foreground" />}
-              <span className="min-w-0 flex-1">
-                <span data-sidebar-project-name className="block whitespace-normal break-words text-sm font-semibold text-foreground" title={project.displayName}>{project.displayName}</span>
-              </span>
-              {isExpanded ? <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />}
-            </Button>
-            <div className="flex min-w-0 items-center gap-1 px-3 pb-1">
-              <span className="min-w-0 flex-1 text-xs text-muted-foreground"><span className="block truncate">{sessionCountLabel}</span><span className="block truncate" title={project.fullPath}>{project.fullPath}</span></span>
-              <Button className="h-8 w-8 shrink-0 p-0" variant="ghost" onClick={toggleStarProject} aria-pressed={isStarred} aria-label={isStarred ? t('tooltips.removeFromFavorites') : t('tooltips.addToFavorites')}><Star className={cn('h-3 w-3', isStarred && 'fill-current')} /></Button>
-              <Button ref={node => { if (node?.offsetParent) renameTrigger.current = node; }} className="h-8 w-8 shrink-0 p-0" variant="ghost" disabled={renameFeedback.pending} onClick={beginRename} title={t('tooltips.renameProject')} aria-label={t('tooltips.renameProject')}><Edit3 className="h-3 w-3" /></Button>
-              <Button className="h-8 w-8 shrink-0 p-0" variant="ghost" onClick={() => onDeleteProject(project)} title={t('tooltips.deleteProject')} aria-label={t('tooltips.deleteProject')}><Trash2 className="h-3 w-3 text-destructive" /></Button>
-            </div>
+            <SidebarRowMenu
+              label={t('common:workbench.sidebar.rowActions', { name: project.displayName })}
+              triggerClassName={rowActionClass}
+              onOpenChange={setMenuOpen}
+              items={[
+                {
+                  key: 'rename',
+                  label: t('actions.rename'),
+                  icon: Edit3,
+                  shortcut: 'r',
+                  disabled: renameFeedback.pending,
+                  onSelect: beginRename,
+                },
+                {
+                  key: 'delete',
+                  label: t('common:workbench.sidebar.moveToTrash'),
+                  icon: Trash2,
+                  shortcut: 'd',
+                  destructive: true,
+                  onSelect: () => onDeleteProject(project),
+                },
+              ]}
+            />
           </div>
         </div>
       )}
@@ -180,14 +236,17 @@ export default function SidebarProjectItem({
       <SidebarProjectSessions
         project={project}
         isExpanded={isExpanded}
+        showAllSessions={showAllSessions}
         sessions={sessions}
+        knownTotal={sessionTotal}
         selectedSession={selectedSession}
         initialSessionsLoaded={initialSessionsLoaded}
         isLoadingSessions={isLoadingSessions}
         currentTime={currentTime}
+        processingSessions={processingSessions}
         editingSession={editingSession}
         editingSessionName={editingSessionName}
-              renameFeedback={renameFeedback}
+        renameFeedback={renameFeedback}
         onEditingSessionNameChange={onEditingSessionNameChange}
         onStartEditingSession={onStartEditingSession}
         onCancelEditingSession={onCancelEditingSession}
@@ -198,6 +257,8 @@ export default function SidebarProjectItem({
         onLoadMoreSessions={onLoadMoreSessions}
         onNewSession={onNewSession}
         newSessionMode={newSessionMode}
+        isSessionPinned={isSessionPinned}
+        onTogglePinSession={onTogglePinSession}
         touchHandlerFactory={touchHandlerFactory}
         t={t}
       />

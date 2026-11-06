@@ -1,18 +1,23 @@
-import { ChevronDown, Plus } from 'lucide-react';
+import { useState } from 'react';
+import { Plus } from 'lucide-react';
 import type { TFunction } from 'i18next';
-import { Button } from '../../../ui/button';
 import type { Project, ProjectSession, SessionMode, SessionProvider } from '../../../../types/app';
 import type { SessionWithProvider, TouchHandlerFactory } from '../../types/types';
+import { SESSION_PREVIEW_COUNT, getSessionPreview, isWideSidebarLayout } from '../../utils/sessionPreview';
 import SidebarSessionItem from './SidebarSessionItem';
 
 type SidebarProjectSessionsProps = {
   project: Project;
   isExpanded: boolean;
+  /** Show every session passed in, e.g. search results. */
+  showAllSessions?: boolean;
   sessions: SessionWithProvider[];
+  knownTotal: number;
   selectedSession: ProjectSession | null;
   initialSessionsLoaded: boolean;
   isLoadingSessions: boolean;
   currentTime: Date;
+  processingSessions?: ReadonlySet<string>;
   editingSession: string | null;
   editingSessionName: string;
   renameFeedback: { pending: boolean; error: string };
@@ -31,22 +36,22 @@ type SidebarProjectSessionsProps = {
   onLoadMoreSessions: (project: Project) => void;
   onNewSession: (project: Project, mode?: SessionMode) => void;
   newSessionMode?: SessionMode;
+  isSessionPinned: (projectName: string, sessionId: string) => boolean;
+  onTogglePinSession: (projectName: string, session: SessionWithProvider, title: string) => void;
   touchHandlerFactory: TouchHandlerFactory;
   t: TFunction;
 };
 
+const secondaryRowClass =
+  'flex min-h-11 w-full items-center gap-2 rounded-md px-2 text-left text-xs text-muted-foreground hover:bg-accent/50 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60 md:min-h-8';
+
 function SessionListSkeleton() {
   return (
     <>
-      {Array.from({ length: 3 }).map((_, index) => (
-        <div key={index} className="p-2 rounded-md">
-          <div className="flex items-start gap-2">
-            <div className="w-3 h-3 bg-muted rounded-full animate-pulse mt-0.5" />
-            <div className="flex-1 space-y-1">
-              <div className="h-3 bg-muted rounded animate-pulse" style={{ width: `${60 + index * 15}%` }} />
-              <div className="h-2 bg-muted rounded animate-pulse w-1/2" />
-            </div>
-          </div>
+      {Array.from({ length: 2 }).map((_, index) => (
+        <div key={index} className="flex h-8 items-center gap-2 px-2">
+          <div className="h-1.5 w-1.5 rounded-full bg-muted" />
+          <div className="h-3 animate-pulse rounded bg-muted" style={{ width: `${55 + index * 20}%` }} />
         </div>
       ))}
     </>
@@ -56,11 +61,14 @@ function SessionListSkeleton() {
 export default function SidebarProjectSessions({
   project,
   isExpanded,
+  showAllSessions = false,
   sessions,
+  knownTotal,
   selectedSession,
   initialSessionsLoaded,
   isLoadingSessions,
   currentTime,
+  processingSessions,
   editingSession,
   editingSessionName,
   renameFeedback,
@@ -74,35 +82,60 @@ export default function SidebarProjectSessions({
   onLoadMoreSessions,
   onNewSession,
   newSessionMode = 'research',
+  isSessionPinned,
+  onTogglePinSession,
   touchHandlerFactory,
   t,
 }: SidebarProjectSessionsProps) {
+  const [showAll, setShowAll] = useState(false);
+
   if (!isExpanded) {
     return null;
   }
 
   const hasSessions = sessions.length > 0;
-  const hasMoreSessions = project.sessionMeta?.hasMore === true;
+  const { visible, hiddenCount } = getSessionPreview(sessions, {
+    showAll: showAll || showAllSessions,
+    selectedSessionId: selectedSession?.id ?? null,
+    knownTotal,
+  });
+  const hiddenLoadedCount = sessions.length - visible.length;
+
+  const showMore = () => {
+    if (!showAll) setShowAll(true);
+    // Everything loaded is already on screen: fetch the next page.
+    if (showAll || hiddenLoadedCount === 0) onLoadMoreSessions(project);
+  };
+
+  const startNewSession = () => {
+    if (!isWideSidebarLayout()) onProjectSelect(project);
+    onNewSession(project, newSessionMode);
+  };
 
   return (
-    <div className="ml-3 space-y-1 border-l border-border pl-3">
+    <div
+      data-sidebar-session-tree
+      className="relative ml-[17px] border-l border-border pl-1.5 md:ml-[15px]"
+    >
       {!initialSessionsLoaded ? (
         <SessionListSkeleton />
       ) : !hasSessions && !isLoadingSessions ? (
-        <div className="py-2 px-3 text-left">
-          <p className="text-xs text-muted-foreground">{t('sessions.noSessions')}</p>
-        </div>
+        <button type="button" className={secondaryRowClass} onClick={startNewSession}>
+          <Plus className="h-3.5 w-3.5 shrink-0" />
+          <span className="truncate">{t('sessions.noSessions')} · {t('sessions.newSession')}</span>
+        </button>
       ) : (
-        sessions.map((session) => (
+        visible.map((session) => (
           <SidebarSessionItem
             key={session.id}
             project={project}
             session={session}
             selectedSession={selectedSession}
             currentTime={currentTime}
+            processingSessions={processingSessions}
             editingSession={editingSession}
             editingSessionName={editingSessionName}
-              renameFeedback={renameFeedback}
+            renameFeedback={renameFeedback}
             onEditingSessionNameChange={onEditingSessionNameChange}
             onStartEditingSession={onStartEditingSession}
             onCancelEditingSession={onCancelEditingSession}
@@ -110,56 +143,43 @@ export default function SidebarProjectSessions({
             onProjectSelect={onProjectSelect}
             onSessionSelect={onSessionSelect}
             onDeleteSession={onDeleteSession}
+            isPinned={isSessionPinned(project.name, session.id)}
+            onTogglePin={onTogglePinSession}
             touchHandlerFactory={touchHandlerFactory}
             t={t}
           />
         ))
       )}
 
-      {hasSessions && hasMoreSessions && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full justify-center gap-2 mt-2 text-muted-foreground"
-          onClick={() => onLoadMoreSessions(project)}
+      {hasSessions && hiddenCount > 0 && (
+        <button
+          type="button"
+          data-sidebar-more-sessions
+          className={secondaryRowClass}
+          onClick={showMore}
           disabled={isLoadingSessions}
+          aria-busy={isLoadingSessions || undefined}
         >
           {isLoadingSessions ? (
-            <>
-              <div className="w-3 h-3 animate-spin rounded-full border border-muted-foreground border-t-transparent" />
-              {t('sessions.loading')}
-            </>
+            <div className="h-3 w-3 shrink-0 animate-spin rounded-full border border-muted-foreground border-t-transparent" />
           ) : (
-            <>
-              <ChevronDown className="w-3 h-3" />
-              {t('sessions.showMore')}
-            </>
+            // Lines the label up with session titles, which follow a status dot.
+            <span className="w-1.5 shrink-0" aria-hidden="true" />
           )}
-        </Button>
+          <span className="truncate">
+            {isLoadingSessions
+              ? t('sessions.loading')
+              : t('common:workbench.sidebar.moreSessions', { count: hiddenCount })}
+          </span>
+        </button>
       )}
 
-      <div className="md:hidden px-3 pb-2">
-        <button
-          className="w-full h-8 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md flex items-center justify-center gap-2 font-medium text-xs active:scale-[0.98] transition-all duration-150"
-          onClick={() => {
-            onProjectSelect(project);
-            onNewSession(project, newSessionMode);
-          }}
-        >
-          <Plus className="w-3 h-3" />
-          {t('sessions.newSession')}
+      {showAll && !showAllSessions && sessions.length > SESSION_PREVIEW_COUNT && (
+        <button type="button" className={secondaryRowClass} onClick={() => setShowAll(false)}>
+          <span className="w-1.5 shrink-0" aria-hidden="true" />
+          <span className="truncate">{t('common:workbench.sidebar.showFewerSessions')}</span>
         </button>
-      </div>
-
-      <Button
-        variant="default"
-        size="sm"
-        className="hidden md:flex w-full justify-start gap-2 mt-1 h-8 text-xs font-medium bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
-        onClick={() => onNewSession(project, newSessionMode)}
-      >
-        <Plus className="w-3 h-3" />
-        {t('sessions.newSession')}
-      </Button>
+      )}
     </div>
   );
 }

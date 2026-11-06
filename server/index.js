@@ -42,7 +42,7 @@ import pty from 'node-pty';
 import fetch from 'node-fetch';
 import mime from 'mime-types';
 
-import { getProjects, getTrashedProjects, getSessions, getSessionMessages, renameProject, renameSession, deleteSession, deleteProject, restoreProject, deleteTrashedProject, addProjectManually, extractProjectDirectory, resolveClaudeProjectDirs, clearProjectDirectoryCache, projectsEvents, warmClaudeProjectIndex, flushClaudeCwdCache } from './projects.js';
+import { getProjects, getTrashedProjects, getSessions, getSessionMessages, renameProject, renameSession, deleteSession, deleteProject, restoreProject, deleteTrashedProject, addProjectManually, extractProjectDirectory, resolveClaudeProjectDirs, clearProjectDirectoryCache, projectsEvents, warmClaudeProjectIndex, flushClaudeCwdCache, searchSessionContent } from './projects.js';
 import { getProjectTokenUsageSummary } from './project-token-usage.js';
 import { queryClaudeSDK, abortClaudeSDKSession, isClaudeSDKSessionActive, getClaudeSDKSessionStartTime, getActiveClaudeSDKSessions, resolveToolApproval } from './claude-sdk.js';
 import { spawnCursor, abortCursorSession, isCursorSessionActive, getCursorSessionStartTime, getActiveCursorSessions } from './cursor-cli.js';
@@ -818,6 +818,34 @@ app.post('/api/projects/token-usage-summary', authenticateToken, async (req, res
     } catch (error) {
         console.error('Error building project token usage summary:', error);
         res.status(500).json({ error: 'Failed to build project token usage summary' });
+    }
+});
+
+// Search the text of every session's messages (titles are matched client-side).
+app.get('/api/sessions/search', authenticateToken, async (req, res) => {
+    const query = typeof req.query.q === 'string' ? req.query.q.trim() : '';
+    if (query.length < 2) {
+        return res.status(400).json({ error: 'Query must be at least 2 characters' });
+    }
+
+    // Stop reading transcripts once the client has given up on this query.
+    const controller = new AbortController();
+    res.on('close', () => controller.abort());
+
+    try {
+        const result = await searchSessionContent(query, {
+            limit: req.query.limit,
+            userId: req.user?.id,
+            signal: controller.signal,
+        });
+        if (!res.headersSent && !controller.signal.aborted) {
+            res.json(result);
+        }
+    } catch (error) {
+        console.error('[ERROR] Session content search failed:', error.message);
+        if (!res.headersSent) {
+            res.status(500).json({ error: 'Session search failed' });
+        }
     }
 });
 

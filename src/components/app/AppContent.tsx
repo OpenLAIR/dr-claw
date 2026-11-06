@@ -311,7 +311,7 @@ export default function AppContent() {
           style={{ width: desktopSidebarWidth }}
         >
           <div className="h-full border-r border-border/50">
-            <Sidebar {...sidebarSharedProps} />
+            <Sidebar {...sidebarSharedProps} processingSessions={processingSessions} />
           </div>
           {sidebarVisible && (
             <div
@@ -356,7 +356,7 @@ export default function AppContent() {
             onClick={(event) => event.stopPropagation()}
             onTouchStart={(event) => event.stopPropagation()}
           >
-            <Sidebar {...sidebarSharedProps} onCloseMobile={() => setSidebarOpen(false)} />
+            <Sidebar {...sidebarSharedProps} processingSessions={processingSessions} onCloseMobile={() => setSidebarOpen(false)} />
           </div>
         </div>
       )}

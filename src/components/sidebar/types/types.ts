@@ -5,6 +5,15 @@ export type ProjectSortOrder = 'name' | 'date';
 
 export type SessionWithProvider = ProjectSession & {
   __provider: SessionProvider;
+  /** Set on rows found by searching message text. */
+  __searchMatch?: SessionSearchMatch;
+};
+
+export type SessionSearchMatch = {
+  /** Excerpt of the matching message. */
+  snippet: string;
+  /** Lower-cased query words, to highlight in the snippet. */
+  terms: string[];
 };
 
 export type AdditionalSessionsByProject = Record<string, ProjectSession[]>;
@@ -53,6 +62,8 @@ export type SidebarProps = {
   onOpenCompute: () => void;
   onImportedProjectCreated?: (project: Project, options?: ProjectCreationOptions) => void;
   newSessionMode?: SessionMode;
+  /** Sessions with a request in flight; shown as running in the list. */
+  processingSessions?: ReadonlySet<string>;
 };
 
 export type SessionViewModel = {

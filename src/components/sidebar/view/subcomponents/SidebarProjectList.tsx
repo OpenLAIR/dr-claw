@@ -6,12 +6,22 @@ import type {
   SessionWithProvider,
   TouchHandlerFactory,
 } from '../../types/types';
+import type { PinnedSessionEntry } from '../../utils/pinned';
 import SidebarProjectItem from './SidebarProjectItem';
 import SidebarProjectsState from './SidebarProjectsState';
+import SidebarSection from './SidebarSection';
+import SidebarSessionItem from './SidebarSessionItem';
 
 export type SidebarProjectListProps = {
   projects: Project[];
   filteredProjects: Project[];
+  /** Matching sessions per project while searching, otherwise `null`. */
+  sessionMatches: Map<string, SessionWithProvider[]> | null;
+  isSearching: boolean;
+  isSearchLoading: boolean;
+  pinnedSessionEntries: PinnedSessionEntry[];
+  isSessionPinned: (projectName: string, sessionId: string) => boolean;
+  onTogglePinSession: (projectName: string, session: SessionWithProvider, title: string) => void;
   selectedProject: Project | null;
   selectedSession: ProjectSession | null;
   isLoading: boolean;
@@ -22,18 +32,17 @@ export type SidebarProjectListProps = {
   loadingSessions: LoadingSessionsByProject;
   initialSessionsLoaded: Set<string>;
   currentTime: Date;
+  processingSessions?: ReadonlySet<string>;
   editingSession: string | null;
   editingSessionName: string;
   renameFeedback: { pending: boolean; error: string };
   deletingProjects: Set<string>;
   tasksEnabled: boolean;
   mcpServerStatus: MCPServerStatus;
-  getProjectSessions: (project: Project) => SessionWithProvider[];
-  isProjectStarred: (projectName: string) => boolean;
+  getProjectSessionList: (project: Project) => { sessions: SessionWithProvider[]; knownTotal: number };
   onEditingNameChange: (value: string) => void;
   onToggleProject: (projectName: string) => void;
   onProjectSelect: (project: Project) => void;
-  onToggleStarProject: (projectName: string) => void;
   onStartEditingProject: (project: Project) => void;
   onCancelEditingProject: () => void;
   onSaveProjectName: (projectName: string) => void;
@@ -59,6 +68,12 @@ export type SidebarProjectListProps = {
 export default function SidebarProjectList({
   projects,
   filteredProjects,
+  sessionMatches,
+  isSearching,
+  isSearchLoading,
+  pinnedSessionEntries,
+  isSessionPinned,
+  onTogglePinSession,
   selectedProject,
   selectedSession,
   isLoading,
@@ -69,18 +84,17 @@ export default function SidebarProjectList({
   loadingSessions,
   initialSessionsLoaded,
   currentTime,
+  processingSessions,
   editingSession,
   editingSessionName,
   renameFeedback,
   deletingProjects,
   tasksEnabled,
   mcpServerStatus,
-  getProjectSessions,
-  isProjectStarred,
+  getProjectSessionList,
   onEditingNameChange,
   onToggleProject,
   onProjectSelect,
-  onToggleStarProject,
   onStartEditingProject,
   onCancelEditingProject,
   onSaveProjectName,
@@ -102,58 +116,119 @@ export default function SidebarProjectList({
       isLoading={isLoading}
       loadingProgress={loadingProgress}
       projectsCount={projects.length}
-      filteredProjectsCount={filteredProjects.length}
+      filteredProjectsCount={filteredProjects.length + pinnedSessionEntries.length}
+      isSearching={isSearching}
+      isSearchLoading={isSearchLoading}
       t={t}
     />
   );
 
-  const showProjects = !isLoading && projects.length > 0 && filteredProjects.length > 0;
+  const showProjects =
+    !isLoading && projects.length > 0 && (filteredProjects.length > 0 || pinnedSessionEntries.length > 0);
+  const hasPinned = pinnedSessionEntries.length > 0;
+
+  const renderProject = (project: Project) => {
+    // Pinned sessions are listed in the Pinned section only. While searching,
+    // a project with matching sessions opens and lists just those.
+    const matches = sessionMatches?.get(project.name);
+    const { sessions, knownTotal } = matches
+      ? { sessions: matches, knownTotal: matches.length }
+      : getProjectSessionList(project);
+    return (
+    <SidebarProjectItem
+      key={project.name}
+      project={project}
+      selectedProject={selectedProject}
+      selectedSession={selectedSession}
+      isExpanded={Boolean(matches) || expandedProjects.has(project.name)}
+      showAllSessions={Boolean(matches)}
+      isDeleting={deletingProjects.has(project.name)}
+      editingProject={editingProject}
+      editingName={editingName}
+      sessions={sessions}
+      sessionTotal={knownTotal}
+      initialSessionsLoaded={initialSessionsLoaded.has(project.name)}
+      isLoadingSessions={Boolean(loadingSessions[project.name])}
+      currentTime={currentTime}
+      processingSessions={processingSessions}
+      editingSession={editingSession}
+      editingSessionName={editingSessionName}
+      renameFeedback={renameFeedback}
+      tasksEnabled={tasksEnabled}
+      mcpServerStatus={mcpServerStatus}
+      onEditingNameChange={onEditingNameChange}
+      onToggleProject={onToggleProject}
+      onProjectSelect={onProjectSelect}
+      onStartEditingProject={onStartEditingProject}
+      onCancelEditingProject={onCancelEditingProject}
+      onSaveProjectName={onSaveProjectName}
+      onDeleteProject={onDeleteProject}
+      onSessionSelect={onSessionSelect}
+      onDeleteSession={onDeleteSession}
+      onLoadMoreSessions={onLoadMoreSessions}
+      onNewSession={onNewSession}
+      newSessionMode={newSessionMode}
+      onEditingSessionNameChange={onEditingSessionNameChange}
+      onStartEditingSession={onStartEditingSession}
+      onCancelEditingSession={onCancelEditingSession}
+      onSaveEditingSession={onSaveEditingSession}
+      isSessionPinned={isSessionPinned}
+      onTogglePinSession={onTogglePinSession}
+      touchHandlerFactory={touchHandlerFactory}
+      t={t}
+    />
+    );
+  };
 
   return (
-    <div className="md:space-y-1 pb-safe-area-inset-bottom">
-      {!showProjects
-        ? state
-        : filteredProjects.map((project) => (
-            <SidebarProjectItem
-              key={project.name}
-              project={project}
-              selectedProject={selectedProject}
-              selectedSession={selectedSession}
-              isExpanded={expandedProjects.has(project.name)}
-              isDeleting={deletingProjects.has(project.name)}
-              isStarred={isProjectStarred(project.name)}
-              editingProject={editingProject}
-              editingName={editingName}
-              sessions={getProjectSessions(project)}
-              initialSessionsLoaded={initialSessionsLoaded.has(project.name)}
-              isLoadingSessions={Boolean(loadingSessions[project.name])}
-              currentTime={currentTime}
-              editingSession={editingSession}
-              editingSessionName={editingSessionName}
-              renameFeedback={renameFeedback}
-              tasksEnabled={tasksEnabled}
-              mcpServerStatus={mcpServerStatus}
-              onEditingNameChange={onEditingNameChange}
-              onToggleProject={onToggleProject}
-              onProjectSelect={onProjectSelect}
-              onToggleStarProject={onToggleStarProject}
-              onStartEditingProject={onStartEditingProject}
-              onCancelEditingProject={onCancelEditingProject}
-              onSaveProjectName={onSaveProjectName}
-              onDeleteProject={onDeleteProject}
-              onSessionSelect={onSessionSelect}
-              onDeleteSession={onDeleteSession}
-              onLoadMoreSessions={onLoadMoreSessions}
-              onNewSession={onNewSession}
-              newSessionMode={newSessionMode}
-              onEditingSessionNameChange={onEditingSessionNameChange}
-              onStartEditingSession={onStartEditingSession}
-              onCancelEditingSession={onCancelEditingSession}
-              onSaveEditingSession={onSaveEditingSession}
-              touchHandlerFactory={touchHandlerFactory}
-              t={t}
-            />
-          ))}
+    <div className="flex flex-col gap-px pb-safe-area-inset-bottom">
+      {!showProjects ? state : (
+        <>
+          {hasPinned && (
+            <SidebarSection id="pinned" title={t('common:workbench.sidebar.pinned')}>
+              {pinnedSessionEntries.map(({ project, session }) => (
+                <SidebarSessionItem
+                  key={`${project.name}:${session.id}`}
+                  variant="pinned"
+                  project={project}
+                  session={session}
+                  selectedSession={selectedSession}
+                  currentTime={currentTime}
+                  processingSessions={processingSessions}
+                  editingSession={editingSession}
+                  editingSessionName={editingSessionName}
+                  renameFeedback={renameFeedback}
+                  onEditingSessionNameChange={onEditingSessionNameChange}
+                  onStartEditingSession={onStartEditingSession}
+                  onCancelEditingSession={onCancelEditingSession}
+                  onSaveEditingSession={onSaveEditingSession}
+                  onProjectSelect={onProjectSelect}
+                  onSessionSelect={onSessionSelect}
+                  onDeleteSession={onDeleteSession}
+                  isPinned
+                  onTogglePin={onTogglePinSession}
+                  touchHandlerFactory={touchHandlerFactory}
+                  t={t}
+                />
+              ))}
+            </SidebarSection>
+          )}
+          {/* Always mounted so pinning the first item does not remount every row. */}
+          <SidebarSection
+            id="projects"
+            title={t('common:workbench.projects')}
+            showHeader={hasPinned && filteredProjects.length > 0}
+          >
+            {filteredProjects.map(renderProject)}
+          </SidebarSection>
+          {isSearching && isSearchLoading && (
+            <div className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground" role="status">
+              <div className="h-2.5 w-2.5 animate-spin rounded-full border border-muted-foreground border-t-transparent" />
+              {t('common:workbench.sidebar.searchingMessages')}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }

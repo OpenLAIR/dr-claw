@@ -1,21 +1,22 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import SidebarRenameEditor from './SidebarRenameEditor';
-import { Badge } from '../../../ui/badge';
-import { Button } from '../../../ui/button';
-import { Clock, Edit2, Trash2 } from 'lucide-react';
+import SidebarRowMenu, { revealRowActionsClass } from './SidebarRowMenu';
+import { Edit2, MessageSquare, Pin, PinOff, Trash2 } from 'lucide-react';
 import type { TFunction } from 'i18next';
 import { cn } from '../../../../lib/utils';
 import { formatTimeAgo } from '../../../../utils/dateUtils';
 import type { Project, ProjectSession, SessionProvider } from '../../../../types/app';
 import type { SessionWithProvider, TouchHandlerFactory } from '../../types/types';
-import { createSessionViewModel } from '../../utils/utils';
-import SessionProviderLogo from '../../../SessionProviderLogo';
+import { createSessionViewModel, getSessionDate } from '../../utils/utils';
+import { getSessionStatus, isWideSidebarLayout, joinTooltipLines, type SessionStatus } from '../../utils/sessionPreview';
+import { splitSnippet } from '../../utils/sessionSearch';
 
 type SidebarSessionItemProps = {
   project: Project;
   session: SessionWithProvider;
   selectedSession: ProjectSession | null;
   currentTime: Date;
+  processingSessions?: ReadonlySet<string>;
   editingSession: string | null;
   editingSessionName: string;
   renameFeedback: { pending: boolean; error: string };
@@ -31,15 +32,38 @@ type SidebarSessionItemProps = {
     sessionTitle: string,
     provider: SessionProvider,
   ) => void;
+  isPinned: boolean;
+  onTogglePin: (projectName: string, session: SessionWithProvider, title: string) => void;
+  /**
+   * `tree` rows sit under their project; `pinned` rows stand alone in the
+   * Pinned section, show their project's name and open it on click.
+   */
+  variant?: 'tree' | 'pinned';
   touchHandlerFactory: TouchHandlerFactory;
   t: TFunction;
 };
+
+/**
+ * Pinning moves a session between the Pinned section and its project, which
+ * replaces its row. The new row takes focus so keyboard users keep their place.
+ */
+let refocusSessionAfterMove: string | null = null;
+
+const STATUS_DOT_CLASS: Record<SessionStatus, string> = {
+  running: 'bg-blue-500 animate-pulse',
+  recent: 'bg-green-500',
+  idle: 'bg-transparent',
+};
+
+const rowActionClass =
+  'flex h-9 w-9 md:h-6 md:w-6 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
 export default function SidebarSessionItem({
   project,
   session,
   selectedSession,
   currentTime,
+  processingSessions,
   editingSession,
   editingSessionName,
   renameFeedback,
@@ -50,23 +74,47 @@ export default function SidebarSessionItem({
   onProjectSelect,
   onSessionSelect,
   onDeleteSession,
-  touchHandlerFactory,
+  isPinned,
+  onTogglePin,
+  variant = 'tree',
   t,
 }: SidebarSessionItemProps) {
+  const isPinnedRow = variant === 'pinned';
+  // A pinned session is listed twice; only the row that started a rename edits.
+  const editKey = isPinnedRow ? `pinned:${session.id}` : session.id;
   const sessionView = createSessionViewModel(session, currentTime, t);
   const isSelected = selectedSession?.id === session.id;
-  const isEditing = editingSession === session.id;
-  const renameTrigger = useRef<HTMLButtonElement | null>(null);
+  const isEditing = editingSession === editKey;
+  const [menuOpen, setMenuOpen] = useState(false);
+  const rowButton = useRef<HTMLButtonElement | null>(null);
   const restoreRenameFocus = useRef(false);
   useLayoutEffect(() => {
+    if (refocusSessionAfterMove === `${project.name}:${session.id}`) {
+      refocusSessionAfterMove = null;
+      rowButton.current?.focus({ preventScroll: true });
+    }
+    // Mount only: a moved row is a new instance.
+  }, []);
+  useLayoutEffect(() => {
     if (!isEditing && restoreRenameFocus.current) {
-      renameTrigger.current?.focus({ preventScroll: true });
+      rowButton.current?.focus({ preventScroll: true });
       restoreRenameFocus.current = false;
     }
   }, [isEditing]);
 
-  const selectMobileSession = () => {
-    onProjectSelect(project);
+  const status = getSessionStatus(session.id, getSessionDate(session), currentTime, processingSessions);
+  const statusLabel =
+    status === 'running' ? t('common:workbench.sidebar.statusRunning')
+      : status === 'recent' ? t('common:workbench.sidebar.statusRecent')
+        : '';
+
+  const searchMatch = session.__searchMatch;
+
+  const selectSession = () => {
+    // Pinned rows may belong to another project, message-search hits may not
+    // be loaded in their project yet, and the phone layout needs the project
+    // selected so the drawer can close on it.
+    if (isPinnedRow || searchMatch || !isWideSidebarLayout()) onProjectSelect(project);
     onSessionSelect(session, project.name);
   };
 
@@ -74,186 +122,138 @@ export default function SidebarSessionItem({
     onSaveEditingSession(project.name, session.id, editingSessionName, session.__provider);
   };
 
+  const startRename = () => {
+    if (renameFeedback.pending) return;
+    restoreRenameFocus.current = true;
+    onStartEditingSession(editKey, session.summary || session.name || t('projects.newSession'));
+  };
+
   const requestDeleteSession = () => {
     onDeleteSession(project.name, session.id, sessionView.sessionName, session.__provider);
   };
 
-  const modeBadgeLabel =
+  const modeLabel =
     sessionView.mode === 'workspace_qa' ? t('sessions.mode.workspaceQa') : t('sessions.mode.research');
-  const stageTags = Array.isArray(session.tags)
-    ? session.tags.filter((tag) => tag?.tagType === 'stage')
+  const stageLabels = Array.isArray(session.tags)
+    ? session.tags.filter((tag) => tag?.tagType === 'stage').map((tag) => tag.label)
     : [];
-  const visibleStageTags = stageTags.slice(0, 2);
-  const hiddenStageCount = Math.max(0, stageTags.length - visibleStageTags.length);
-
-  const stageTagBadges = stageTags.length > 0 ? (
-    <div className="mt-1 flex flex-wrap gap-1">
-      {visibleStageTags.map((tag) => (
-        <span
-          key={`${session.id}-${tag.id}`}
-          className={cn(
-            'inline-flex items-center rounded-full border px-1.5 py-0 text-[11px] font-medium',
-            'border-border bg-muted text-muted-foreground',
-          )}
-        >
-          {tag.label}
-        </span>
-      ))}
-      {hiddenStageCount > 0 ? (
-        <span className="inline-flex items-center rounded-full border border-border/70 bg-background/70 px-1.5 py-0 text-[11px] font-medium text-muted-foreground">
-          +{hiddenStageCount}
-        </span>
-      ) : null}
-    </div>
-  ) : null;
-
-  const metadataRowClassName = 'flex flex-wrap items-center gap-x-2 gap-y-1 mt-1 min-w-0';
-  const rightMetaClassName = 'flex max-w-full flex-wrap items-center gap-1.5';
+  const snippet = searchMatch?.snippet;
+  const tooltip = joinTooltipLines(
+    sessionView.sessionName,
+    snippet ? t('common:workbench.sidebar.matchedInMessages', { snippet }) : null,
+    isPinnedRow ? project.displayName : null,
+    [formatTimeAgo(sessionView.sessionTime, currentTime, t), modeLabel, session.__provider].join(' · '),
+    stageLabels.join(', '),
+    statusLabel,
+  );
 
   if (isEditing) return <SidebarRenameEditor label={t('sessions.renameSession')} value={editingSessionName}
     onChange={onEditingSessionNameChange} onSave={saveEditedSession} onCancel={onCancelEditingSession}
     feedback={renameFeedback} t={t} />;
 
+  const canRename = !sessionView.isCursorSession && !sessionView.isCodexSession;
+  const canDelete = !sessionView.isCursorSession;
+
   return (
-    <div className="group relative">
-      {sessionView.isActive && (
-        <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1">
-          <div className="w-2 h-2 bg-green-500 rounded-full" />
-        </div>
+    <div
+      data-sidebar-session
+      className={cn(
+        'group relative flex min-h-11 items-center rounded-md',
+        snippet ? 'md:min-h-11' : 'md:min-h-8',
+        'hover:bg-accent/50',
+        isSelected && 'bg-accent text-accent-foreground hover:bg-accent',
       )}
-
-      <div className="md:hidden">
-        <div
-          className={cn(
-            'p-2 mx-3 my-0.5 rounded-md bg-card border active:scale-[0.98] transition-[transform,background-color,border-color,opacity] duration-150 relative',
-            isSelected ? 'bg-primary/5 border-primary/20' : '',
-            !isSelected && sessionView.isActive
-              ? 'border-green-500/30 bg-green-50/5 dark:bg-green-900/5'
-              : 'border-border/30',
-          )}
-          onClick={selectMobileSession}
-        >
-          <div className="flex items-center gap-2">
-            <div
-              className={cn(
-                'w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0',
-                isSelected ? 'bg-primary/10' : 'bg-muted/50',
-              )}
-            >
-              <SessionProviderLogo provider={session.__provider} className="w-3 h-3" />
-            </div>
-
-            <div className="min-w-0 flex-1">
-              <div className="text-xs font-medium truncate text-foreground">{sessionView.sessionName}</div>
-              <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-1 gap-y-1">
-                <Clock className="w-2.5 h-2.5 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">
-                  {formatTimeAgo(sessionView.sessionTime, currentTime, t)}
-                </span>
-                <div className="flex min-w-0 flex-wrap items-center gap-1">
-                  <Badge variant="secondary" className="text-xs px-1 py-0 min-w-[1.5rem] justify-center">
-                    {sessionView.messageCount}
-                  </Badge>
-                  <Badge variant="outline" className="text-[11px] px-1.5 py-0">
-                    {modeBadgeLabel}
-                  </Badge>
-                  <span className="opacity-70">
-                    <SessionProviderLogo provider={session.__provider} className="w-3 h-3" />
-                  </span>
-                </div>
-              </div>
-              {stageTagBadges}
-            </div>
-
-            {!sessionView.isCursorSession && (
-              <button
-                type="button"
-                aria-label={t('tooltips.deleteSession')}
-                className="w-11 h-11 shrink-0 rounded-md text-destructive hover:bg-accent flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ml-1"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  requestDeleteSession();
-                }}
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="hidden md:block">
-        <Button
-          variant="ghost"
-          className={cn(
-            'w-full justify-start p-2 h-auto font-normal text-left hover:bg-accent/50 transition-colors duration-200',
-            isSelected && 'bg-accent text-accent-foreground',
-          )}
-          onClick={() => onSessionSelect(session, project.name)}
-        >
-          <div className="flex items-start gap-2 min-w-0 w-full">
-            <SessionProviderLogo provider={session.__provider} className="w-4 h-4 mt-0.5 flex-shrink-0" />
-            <div className="min-w-0 flex-1">
-              <div title={sessionView.sessionName} className="text-[14px] font-normal truncate text-foreground/90">{sessionView.sessionName}</div>
-              <div className={metadataRowClassName} data-session-metadata>
-                <span className="inline-flex items-center gap-1 whitespace-nowrap">
-                <Clock className="w-2.5 h-2.5 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">
-                  {formatTimeAgo(sessionView.sessionTime, currentTime, t)}
-                </span>
-                </span>
-                <div className={`${rightMetaClassName} group-hover:opacity-0 group-focus-within:opacity-0 transition-opacity`}>
-                  <Badge
-                    variant="secondary"
-                    className="text-xs px-1 py-0 min-w-[1.5rem] justify-center"
-                  >
-                    {sessionView.messageCount}
-                  </Badge>
-                  <Badge
-                    variant="outline"
-                    className="text-[11px] px-1.5 py-0"
-                  >
-                    {modeBadgeLabel}
-                  </Badge>
-                  <span className="opacity-70">
-                    <SessionProviderLogo provider={session.__provider} className="w-3 h-3" />
-                  </span>
-                </div>
-              </div>
-              {stageTagBadges}
-            </div>
-          </div>
-        </Button>
-
-        {!sessionView.isCursorSession && (
-          <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-[transform,background-color,border-color,opacity] duration-200">
-                {!sessionView.isCodexSession && (
-                  <button
-                    className="w-6 h-6 bg-gray-50 hover:bg-gray-100 dark:bg-gray-900/20 dark:hover:bg-gray-900/40 rounded flex items-center justify-center"
-                    ref={renameTrigger}
-                    disabled={renameFeedback.pending}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      restoreRenameFocus.current = true;
-                      onStartEditingSession(session.id, session.summary || t('projects.newSession'));
-                    }}
-                    title={t('tooltips.editSessionName')}
-                  >
-                    <Edit2 className="w-3 h-3 text-gray-600 dark:text-gray-400" />
-                  </button>
-                )}
-                <button
-                  className="w-6 h-6 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 rounded flex items-center justify-center"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    requestDeleteSession();
-                  }}
-                  title={t('tooltips.deleteSession')}
-                >
-                  <Trash2 className="w-3 h-3 text-red-600 dark:text-red-400" />
-                </button>
-          </div>
+    >
+      <button
+        type="button"
+        className={cn(
+          'flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+          snippet ? 'py-1 md:min-h-11' : 'md:min-h-8',
+          isPinnedRow ? 'pr-2' : 'px-2',
         )}
+        ref={rowButton}
+        onClick={selectSession}
+        onKeyDown={(event) => {
+          if (event.key === 'F2' && canRename) {
+            event.preventDefault();
+            startRename();
+          }
+        }}
+        title={tooltip}
+        aria-current={isSelected ? 'true' : undefined}
+      >
+        {/* Pinned rows line up with project rows: the dot takes the chevron's slot. */}
+        <span className={cn('flex shrink-0 items-center justify-center', isPinnedRow && '-mr-2 w-7 md:w-6')}>
+          <span
+            data-session-status={status}
+            role={statusLabel ? 'img' : undefined}
+            aria-label={statusLabel || undefined}
+            aria-hidden={statusLabel ? undefined : true}
+            className={cn('h-1.5 w-1.5 rounded-full', STATUS_DOT_CLASS[status])}
+          />
+        </span>
+        {isPinnedRow && <MessageSquare className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />}
+        <span className="flex min-w-0 flex-1 flex-col">
+          <span
+            className={cn(
+              'truncate text-[13px]',
+              isSelected ? 'font-medium text-foreground' : 'text-foreground/85',
+            )}
+          >
+            {sessionView.sessionName}
+          </span>
+          {/* Content-search hit: the matching part of a message. */}
+          {searchMatch && (
+            <span data-session-snippet className="truncate text-[11px] leading-4 text-muted-foreground">
+              {splitSnippet(searchMatch.snippet, searchMatch.terms).map((part, index) => (part.hit
+                ? <mark key={index} className="rounded-sm bg-transparent font-semibold text-foreground">{part.text}</mark>
+                : <span key={index}>{part.text}</span>))}
+            </span>
+          )}
+        </span>
+        {isPinnedRow && (
+          <span className="max-w-[40%] shrink-0 truncate text-xs text-muted-foreground">{project.displayName}</span>
+        )}
+      </button>
+
+      {/* Touch layouts always show the menu button; pointer layouts reveal it on
+          hover or keyboard focus, and keep it while the menu is open. */}
+      <div className={cn('flex shrink-0 items-center pr-1', revealRowActionsClass(menuOpen))}>
+        <SidebarRowMenu
+          label={t('common:workbench.sidebar.rowActions', { name: sessionView.sessionName })}
+          triggerClassName={rowActionClass}
+          onOpenChange={setMenuOpen}
+          items={[
+            {
+              key: 'pin',
+              label: isPinned ? t('common:workbench.sidebar.unpin') : t('common:workbench.sidebar.pin'),
+              icon: isPinned ? PinOff : Pin,
+              shortcut: 'p',
+              onSelect: () => {
+                refocusSessionAfterMove = `${project.name}:${session.id}`;
+                // The other row may not be on screen (e.g. past "N more").
+                window.setTimeout(() => { refocusSessionAfterMove = null; }, 0);
+                onTogglePin(project.name, session, sessionView.sessionName);
+              },
+            },
+            ...(canRename ? [{
+              key: 'rename',
+              label: t('actions.rename'),
+              icon: Edit2,
+              shortcut: 'r',
+              disabled: renameFeedback.pending,
+              onSelect: startRename,
+            }] : []),
+            ...(canDelete ? [{
+              key: 'delete',
+              label: t('actions.delete'),
+              icon: Trash2,
+              shortcut: 'd',
+              destructive: true,
+              onSelect: requestDeleteSession,
+            }] : []),
+          ]}
+        />
       </div>
     </div>
   );
