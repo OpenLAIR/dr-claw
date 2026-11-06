@@ -10,6 +10,7 @@ import { projectSummary, sortProjects } from '../utils/projectSummary';
 
 import { useResearchStatus } from '../utils/useResearchStatus';
 import ResearchStatusLabel from './ResearchStatusLabel';
+import SubscriptionUsage from './SubscriptionUsage';
 
 type Props = {
   projects: Project[];
@@ -50,6 +51,7 @@ export default function ProjectDashboard({ projects, processingSessions, onProje
           </div>
           <Button onClick={onCreateProject}><Plus />{t('workbench.newProject')}</Button>
         </div>
+        <SubscriptionUsage />
         <div className="mt-6 flex items-center justify-between gap-4">
           <div className="relative w-full max-w-sm">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />

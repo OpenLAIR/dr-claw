@@ -103,6 +103,8 @@ export const api = {
         body: JSON.stringify({ apiKey }),
       }),
   },
+  subscriptionUsage: (refresh = false) =>
+    authenticatedFetch(`/api/subscription-usage${refresh ? '?refresh=1' : ''}`),
   projectTokenUsageSummary: (projects) =>
     authenticatedFetch('/api/projects/token-usage-summary', {
       method: 'POST',
