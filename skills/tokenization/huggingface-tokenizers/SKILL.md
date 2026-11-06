@@ -1,6 +1,6 @@
 ---
 name: huggingface-tokenizers
-description: Fast tokenizers optimized for research and production. Rust-based implementation tokenizes 1GB in <20 seconds. Supports BPE, WordPiece, and Unigram algorithms. Train custom vocabularies, track alignments, handle padding/truncation. Integrates seamlessly with transformers. Use when you need high-performance tokenization or custom tokenizer training.
+description: Fast tokenizers optimized for research and production. Rust-based implementation tokenizes 1GB in <20 seconds. Supports BPE, WordPiece, and Unigram algorithms. Train custom vocabularies, track alignments, handle padding/truncation. Integrates seamlessly with transformers. Use when you need high-performance tokenization or custom tokenizer training. Also covers SentencePiece (guides in references/).
 version: 1.0.0
 author: Orchestra Research
 license: MIT
@@ -513,4 +513,11 @@ Browse all: https://huggingface.co/models?library=tokenizers
 - **Course**: https://huggingface.co/learn/nlp-course/chapter6/1
 - **Paper**: BPE (Sennrich et al., 2016), WordPiece (Schuster & Nakajima, 2012)
 
+## Related tools (merged into this skill)
 
+These were separate skills. Their full guides now live under `references/`;
+read the one you need when the user asks for that tool or it fits the task better.
+
+| Tool | Guide | What it covers |
+|---|---|---|
+| SentencePiece | [references/sentencepiece/overview.md](references/sentencepiece/overview.md) | Language-independent tokenizer treating text as raw Unicode. |

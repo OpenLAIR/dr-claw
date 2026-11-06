@@ -1,6 +1,6 @@
 ---
 name: mamba-architecture
-description: State-space model with O(n) complexity vs Transformers' O(n²). 5× faster inference, million-token sequences, no KV cache. Selective SSM with hardware-aware design. Mamba-1 (d_state=16) and Mamba-2 (d_state=128, multi-head). Models 130M-2.8B on HuggingFace.
+description: State-space model with O(n) complexity vs Transformers' O(n²). 5× faster inference, million-token sequences, no KV cache. Selective SSM with hardware-aware design. Mamba-1 (d_state=16) and Mamba-2 (d_state=128, multi-head). Models 130M-2.8B on HuggingFace. Also covers RWKV (guides in references/).
 version: 1.0.0
 author: Orchestra Research
 license: MIT
@@ -257,4 +257,11 @@ model = MambaLMHeadModel.from_pretrained("state-spaces/mamba-2.8b")
 - Models: https://huggingface.co/state-spaces
 - Docs: Repository README and wiki
 
+## Related tools (merged into this skill)
 
+These were separate skills. Their full guides now live under `references/`;
+read the one you need when the user asks for that tool or it fits the task better.
+
+| Tool | Guide | What it covers |
+|---|---|---|
+| RWKV | [references/rwkv/overview.md](references/rwkv/overview.md) | RNN+Transformer hybrid with O(n) inference. |

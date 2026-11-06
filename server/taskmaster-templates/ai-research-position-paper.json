@@ -169,18 +169,18 @@
             "title": "Draft taxonomy and argument structure",
             "description": "Translate thesis into sectioned narrative with clear argumentative progression.",
             "taskType": "writing",
-            "recommended_skills": ["inno-paper-writing", "inno-reference-audit"]
+            "recommended_skills": ["ml-paper-writing", "inno-reference-audit"]
           },
           {
             "id": "position_manuscript_finalization",
             "title": "Finalize position manuscript and submission package",
             "description": "Complete final revisions, checklist, and supplementary rationale artifacts.",
             "taskType": "writing",
-            "recommended_skills": ["inno-paper-writing"]
+            "recommended_skills": ["ml-paper-writing"]
           }
         ],
         "recommended_skills": [
-          "inno-paper-writing",
+          "ml-paper-writing",
           "inno-reference-audit"
         ]
       },

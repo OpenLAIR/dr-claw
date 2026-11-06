@@ -41,11 +41,6 @@
       "en": "Stage: Analysis",
       "ko": "단계: 분석"
     },
-    "inno-paper-writing": {
-      "zh": "阶段: 论文撰写",
-      "en": "Stage: Paper Writing",
-      "ko": "단계: 논문 작성"
-    },
     "inno-paper-reviewer": {
       "zh": "阶段: 论文评审",
       "en": "Stage: Paper Review",
@@ -121,27 +116,7 @@
       "en": "Category: Training & Tuning",
       "ko": "카테고리: 훈련 및 튜닝"
     },
-    "deepspeed": {
-      "zh": "类别: 训练与调优",
-      "en": "Category: Training & Tuning",
-      "ko": "카테고리: 훈련 및 튜닝"
-    },
-    "megatron-core": {
-      "zh": "类别: 训练与调优",
-      "en": "Category: Training & Tuning",
-      "ko": "카테고리: 훈련 및 튜닝"
-    },
     "pytorch-fsdp2": {
-      "zh": "类别: 训练与调优",
-      "en": "Category: Training & Tuning",
-      "ko": "카테고리: 훈련 및 튜닝"
-    },
-    "pytorch-lightning": {
-      "zh": "类别: 训练与调优",
-      "en": "Category: Training & Tuning",
-      "ko": "카테고리: 훈련 및 튜닝"
-    },
-    "ray-train": {
       "zh": "类别: 训练与调优",
       "en": "Category: Training & Tuning",
       "ko": "카테고리: 훈련 및 튜닝"
@@ -151,47 +126,12 @@
       "en": "Category: Training & Tuning",
       "ko": "카테고리: 훈련 및 튜닝"
     },
-    "llama-factory": {
-      "zh": "类别: 训练与调优",
-      "en": "Category: Training & Tuning",
-      "ko": "카테고리: 훈련 및 튜닝"
-    },
     "peft": {
       "zh": "类别: 训练与调优",
       "en": "Category: Training & Tuning",
       "ko": "카테고리: 훈련 및 튜닝"
     },
-    "unsloth": {
-      "zh": "类别: 训练与调优",
-      "en": "Category: Training & Tuning",
-      "ko": "카테고리: 훈련 및 튜닝"
-    },
-    "grpo-rl-training": {
-      "zh": "类别: 训练与调优",
-      "en": "Category: Training & Tuning",
-      "ko": "카테고리: 훈련 및 튜닝"
-    },
-    "miles": {
-      "zh": "类别: 训练与调优",
-      "en": "Category: Training & Tuning",
-      "ko": "카테고리: 훈련 및 튜닝"
-    },
     "openrlhf": {
-      "zh": "类别: 训练与调优",
-      "en": "Category: Training & Tuning",
-      "ko": "카테고리: 훈련 및 튜닝"
-    },
-    "simpo": {
-      "zh": "类别: 训练与调优",
-      "en": "Category: Training & Tuning",
-      "ko": "카테고리: 훈련 및 튜닝"
-    },
-    "slime": {
-      "zh": "类别: 训练与调优",
-      "en": "Category: Training & Tuning",
-      "ko": "카테고리: 훈련 및 튜닝"
-    },
-    "torchforge": {
       "zh": "类别: 训练与调优",
       "en": "Category: Training & Tuning",
       "ko": "카테고리: 훈련 및 튜닝"
@@ -206,27 +146,7 @@
       "en": "Category: Training & Tuning",
       "ko": "카테고리: 훈련 및 튜닝"
     },
-    "llama-cpp": {
-      "zh": "类别: 推理与优化",
-      "en": "Category: Inference & Optimization",
-      "ko": "카테고리: 추론 및 최적화"
-    },
-    "sglang": {
-      "zh": "类别: 推理与优化",
-      "en": "Category: Inference & Optimization",
-      "ko": "카테고리: 추론 및 최적화"
-    },
-    "tensorrt-llm": {
-      "zh": "类别: 推理与优化",
-      "en": "Category: Inference & Optimization",
-      "ko": "카테고리: 추론 및 최적화"
-    },
     "vllm": {
-      "zh": "类别: 推理与优化",
-      "en": "Category: Inference & Optimization",
-      "ko": "카테고리: 추론 및 최적화"
-    },
-    "awq": {
       "zh": "类别: 推理与优化",
       "en": "Category: Inference & Optimization",
       "ko": "카테고리: 추론 및 최적화"
@@ -241,21 +161,6 @@
       "en": "Category: Inference & Optimization",
       "ko": "카테고리: 추론 및 최적화"
     },
-    "gguf": {
-      "zh": "类别: 推理与优化",
-      "en": "Category: Inference & Optimization",
-      "ko": "카테고리: 추론 및 최적화"
-    },
-    "gptq": {
-      "zh": "类别: 推理与优化",
-      "en": "Category: Inference & Optimization",
-      "ko": "카테고리: 추론 및 최적화"
-    },
-    "hqq": {
-      "zh": "类别: 推理与优化",
-      "en": "Category: Inference & Optimization",
-      "ko": "카테고리: 추론 및 최적화"
-    },
     "nemo-curator": {
       "zh": "类别: 数据与应用",
       "en": "Category: Data & Applications",
@@ -266,22 +171,7 @@
       "en": "Category: Data & Applications",
       "ko": "카테고리: 데이터 및 응용"
     },
-    "chroma": {
-      "zh": "类别: 数据与应用",
-      "en": "Category: Data & Applications",
-      "ko": "카테고리: 데이터 및 응용"
-    },
     "faiss": {
-      "zh": "类别: 数据与应用",
-      "en": "Category: Data & Applications",
-      "ko": "카테고리: 데이터 및 응용"
-    },
-    "pinecone": {
-      "zh": "类别: 数据与应用",
-      "en": "Category: Data & Applications",
-      "ko": "카테고리: 데이터 및 응용"
-    },
-    "qdrant": {
       "zh": "类别: 数据与应用",
       "en": "Category: Data & Applications",
       "ko": "카테고리: 데이터 및 응용"
@@ -291,52 +181,12 @@
       "en": "Category: Data & Applications",
       "ko": "카테고리: 데이터 및 응용"
     },
-    "autogpt": {
-      "zh": "类别: 数据与应用",
-      "en": "Category: Data & Applications",
-      "ko": "카테고리: 데이터 및 응용"
-    },
-    "crewai": {
-      "zh": "类别: 数据与应用",
-      "en": "Category: Data & Applications",
-      "ko": "카테고리: 데이터 및 응용"
-    },
-    "langchain": {
-      "zh": "类别: 数据与应用",
-      "en": "Category: Data & Applications",
-      "ko": "카테고리: 데이터 및 응용"
-    },
-    "llamaindex": {
-      "zh": "类别: 数据与应用",
-      "en": "Category: Data & Applications",
-      "ko": "카테고리: 데이터 및 응용"
-    },
     "dspy": {
       "zh": "类别: 数据与应用",
       "en": "Category: Data & Applications",
       "ko": "카테고리: 데이터 및 응용"
     },
-    "guidance": {
-      "zh": "类别: 数据与应用",
-      "en": "Category: Data & Applications",
-      "ko": "카테고리: 데이터 및 응용"
-    },
-    "instructor": {
-      "zh": "类别: 数据与应用",
-      "en": "Category: Data & Applications",
-      "ko": "카테고리: 데이터 및 응용"
-    },
-    "outlines": {
-      "zh": "类别: 数据与应用",
-      "en": "Category: Data & Applications",
-      "ko": "카테고리: 데이터 및 응용"
-    },
     "huggingface-tokenizers": {
-      "zh": "类别: 数据与应用",
-      "en": "Category: Data & Applications",
-      "ko": "카테고리: 데이터 및 응용"
-    },
-    "sentencepiece": {
       "zh": "类别: 数据与应用",
       "en": "Category: Data & Applications",
       "ko": "카테고리: 데이터 및 응용"
@@ -352,16 +202,6 @@
       "ko": "카테고리: 모델 및 연구"
     },
     "nanogpt": {
-      "zh": "类别: 模型与研究",
-      "en": "Category: Model & Research",
-      "ko": "카테고리: 모델 및 연구"
-    },
-    "rwkv": {
-      "zh": "类别: 模型与研究",
-      "en": "Category: Model & Research",
-      "ko": "카테고리: 모델 및 연구"
-    },
-    "torchtitan": {
       "zh": "类别: 模型与研究",
       "en": "Category: Model & Research",
       "ko": "카테고리: 모델 및 연구"
@@ -396,16 +236,6 @@
       "en": "Category: Model & Research",
       "ko": "카테고리: 모델 및 연구"
     },
-    "audiocraft": {
-      "zh": "类别: 模型与研究",
-      "en": "Category: Model & Research",
-      "ko": "카테고리: 모델 및 연구"
-    },
-    "blip-2": {
-      "zh": "类别: 模型与研究",
-      "en": "Category: Model & Research",
-      "ko": "카테고리: 모델 및 연구"
-    },
     "clip": {
       "zh": "类别: 模型与研究",
       "en": "Category: Model & Research",
@@ -421,22 +251,7 @@
       "en": "Category: Model & Research",
       "ko": "카테고리: 모델 및 연구"
     },
-    "stable-diffusion": {
-      "zh": "类别: 模型与研究",
-      "en": "Category: Model & Research",
-      "ko": "카테고리: 모델 및 연구"
-    },
     "whisper": {
-      "zh": "类别: 模型与研究",
-      "en": "Category: Model & Research",
-      "ko": "카테고리: 모델 및 연구"
-    },
-    "brainstorming-research-ideas": {
-      "zh": "类别: 模型与研究",
-      "en": "Category: Model & Research",
-      "ko": "카테고리: 모델 및 연구"
-    },
-    "creative-thinking-for-research": {
       "zh": "类别: 模型与研究",
       "en": "Category: Model & Research",
       "ko": "카테고리: 모델 및 연구"
@@ -456,27 +271,7 @@
       "en": "Category: Evaluation & Safety",
       "ko": "카테고리: 평가 및 안전"
     },
-    "nemo-evaluator": {
-      "zh": "类别: 评估与安全",
-      "en": "Category: Evaluation & Safety",
-      "ko": "카테고리: 평가 및 안전"
-    },
     "constitutional-ai": {
-      "zh": "类别: 评估与安全",
-      "en": "Category: Evaluation & Safety",
-      "ko": "카테고리: 평가 및 안전"
-    },
-    "llamaguard": {
-      "zh": "类别: 评估与安全",
-      "en": "Category: Evaluation & Safety",
-      "ko": "카테고리: 평가 및 안전"
-    },
-    "nemo-guardrails": {
-      "zh": "类别: 评估与安全",
-      "en": "Category: Evaluation & Safety",
-      "ko": "카테고리: 평가 및 안전"
-    },
-    "prompt-guard": {
       "zh": "类别: 评估与安全",
       "en": "Category: Evaluation & Safety",
       "ko": "카테고리: 평가 및 안전"
@@ -501,16 +296,6 @@
       "en": "Category: Evaluation & Safety",
       "ko": "카테고리: 평가 및 안전"
     },
-    "lambda-labs": {
-      "zh": "类别: 基础设施与运维",
-      "en": "Category: Infra & Ops",
-      "ko": "카테고리: 인프라 및 운영"
-    },
-    "modal": {
-      "zh": "类别: 基础设施与运维",
-      "en": "Category: Infra & Ops",
-      "ko": "카테고리: 인프라 및 운영"
-    },
     "skypilot": {
       "zh": "类别: 基础设施与运维",
       "en": "Category: Infra & Ops",
@@ -531,21 +316,6 @@
       "en": "Category: Infra & Ops",
       "ko": "카테고리: 인프라 및 운영"
     },
-    "langsmith": {
-      "zh": "类别: 基础设施与运维",
-      "en": "Category: Infra & Ops",
-      "ko": "카테고리: 인프라 및 운영"
-    },
-    "phoenix": {
-      "zh": "类别: 基础设施与运维",
-      "en": "Category: Infra & Ops",
-      "ko": "카테고리: 인프라 및 운영"
-    },
-    "research-news": {
-      "zh": "阶段: 论文发现",
-      "en": "Stage: Paper Discovery",
-      "ko": "단계: 논문 탐색"
-    },
     "paper-analyzer": {
       "zh": "阶段: 论文分析",
       "en": "Stage: Paper Analysis",
@@ -555,11 +325,6 @@
       "zh": "阶段: 图片提取",
       "en": "Stage: Image Extraction",
       "ko": "단계: 이미지 추출"
-    },
-    "paper-finder": {
-      "zh": "阶段: 论文搜索",
-      "en": "Stage: Paper Search",
-      "ko": "단계: 논문 검색"
     },
     "aris-infra": {
       "zh": "类别: ARIS 基础设施",
@@ -626,11 +391,6 @@
       "en": "Stage: Idea Generation",
       "ko": "단계: 아이디어 생성"
     },
-    "aris-analyze-results": {
-      "zh": "阶段: 实验分析",
-      "en": "Stage: Analysis",
-      "ko": "단계: 분석"
-    },
     "aris-compute-guard": {
       "zh": "阶段: 实验开发",
       "en": "Stage: Experiment Dev",
@@ -721,11 +481,6 @@
       "en": "Category: ARIS Infra",
       "ko": "카테고리: ARIS 인프라"
     },
-    "aris-system-profile": {
-      "zh": "类别: ARIS 基础设施",
-      "en": "Category: ARIS Infra",
-      "ko": "카테고리: ARIS 인프라"
-    },
     "aris-training-check": {
       "zh": "阶段: 实验开发",
       "en": "Stage: Experiment Dev",
@@ -746,11 +501,6 @@
       "en": "Stage: Experiment Dev",
       "ko": "단계: 실험 개발"
     },
-    "aris-comm-lit-review": {
-      "zh": "阶段: 调研",
-      "en": "Stage: Survey",
-      "ko": "단계: 조사"
-    },
     "aris-dse-loop": {
       "zh": "阶段: 实验开发",
       "en": "Stage: Experiment Dev",
@@ -761,11 +511,6 @@
       "en": "Stage: Paper Writing",
       "ko": "단계: 논문 작성"
     },
-    "aris-grant-proposal": {
-      "zh": "阶段: 基金撰写",
-      "en": "Stage: Grant Writing",
-      "ko": "단계: 연구비 작성"
-    },
     "aris-mermaid-diagram": {
       "zh": "阶段: 论文撰写",
       "en": "Stage: Paper Writing",
@@ -775,11 +520,6 @@
       "zh": "阶段: 论文撰写",
       "en": "Stage: Paper Writing",
       "ko": "단계: 논문 작성"
-    },
-    "aris-pixel-art": {
-      "zh": "类别: ARIS 基础设施",
-      "en": "Category: ARIS Infra",
-      "ko": "카테고리: ARIS 인프라"
     },
     "autoresearch": {
       "zh": "类别: 自治迭代",
@@ -841,11 +581,6 @@
       "en": "Stage: Paper Writing",
       "ko": "단계: 논문 작성"
     },
-    "ds-decision": {
-      "zh": "类别: DeepScientist",
-      "en": "Category: DeepScientist",
-      "ko": "카테고리: DeepScientist"
-    },
     "ds-intake-audit": {
       "zh": "类别: DeepScientist",
       "en": "Category: DeepScientist",
@@ -863,57 +598,12 @@
       "en": "Domain: cs",
       "ko": "영역: cs"
     },
-    "deepspeed": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "megatron-core": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
     "pytorch-fsdp2": {
       "zh": "领域: cs",
       "en": "Domain: cs",
       "ko": "영역: cs"
     },
-    "pytorch-lightning": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "ray-train": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "llama-cpp": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "sglang": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "tensorrt-llm": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
     "vllm": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "lambda-labs": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "modal": {
       "zh": "领域: cs",
       "en": "Domain: cs",
       "ko": "영역: cs"
@@ -938,47 +628,12 @@
       "en": "Domain: cs",
       "ko": "영역: cs"
     },
-    "llama-factory": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
     "peft": {
       "zh": "领域: cs",
       "en": "Domain: cs",
       "ko": "영역: cs"
     },
-    "unsloth": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "grpo-rl-training": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "miles": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
     "openrlhf": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "simpo": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "slime": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "torchforge": {
       "zh": "领域: cs",
       "en": "Domain: cs",
       "ko": "영역: cs"
@@ -1003,37 +658,12 @@
       "en": "Domain: cs",
       "ko": "영역: cs"
     },
-    "nemo-evaluator": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "awq": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
     "bitsandbytes": {
       "zh": "领域: cs",
       "en": "Domain: cs",
       "ko": "영역: cs"
     },
     "flash-attention": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "gguf": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "gptq": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "hqq": {
       "zh": "领域: cs",
       "en": "Domain: cs",
       "ko": "영역: cs"
@@ -1083,36 +713,6 @@
       "en": "Domain: cs",
       "ko": "영역: cs"
     },
-    "rwkv": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "torchtitan": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "autogpt": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "crewai": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "langchain": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "llamaindex": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
     "nnsight": {
       "zh": "领域: cs",
       "en": "Domain: cs",
@@ -1134,31 +734,6 @@
       "ko": "영역: cs"
     },
     "constitutional-ai": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "llamaguard": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "nemo-guardrails": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "prompt-guard": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "brainstorming-research-ideas": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "creative-thinking-for-research": {
       "zh": "领域: cs",
       "en": "Domain: cs",
       "ko": "영역: cs"
@@ -1193,32 +768,7 @@
       "en": "Domain: cs",
       "ko": "영역: cs"
     },
-    "guidance": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "instructor": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "outlines": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
     "huggingface-tokenizers": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "sentencepiece": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "blip-2": {
       "zh": "领域: cs",
       "en": "Domain: cs",
       "ko": "영역: cs"
@@ -1238,37 +788,12 @@
       "en": "Domain: cs",
       "ko": "영역: cs"
     },
-    "stable-diffusion": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "audiocraft": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
     "whisper": {
       "zh": "领域: cs",
       "en": "Domain: cs",
       "ko": "영역: cs"
     },
-    "chroma": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
     "faiss": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "pinecone": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "qdrant": {
       "zh": "领域: cs",
       "en": "Domain: cs",
       "ko": "영역: cs"
@@ -1293,32 +818,12 @@
       "en": "Domain: cs",
       "ko": "영역: cs"
     },
-    "langsmith": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "phoenix": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "research-news": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
     "paper-analyzer": {
       "zh": "领域: cs",
       "en": "Domain: cs",
       "ko": "영역: cs"
     },
     "paper-image-extractor": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "paper-finder": {
       "zh": "领域: cs",
       "en": "Domain: cs",
       "ko": "영역: cs"
@@ -1388,11 +893,6 @@
       "en": "Domain: cs",
       "ko": "영역: cs"
     },
-    "aris-analyze-results": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
     "aris-compute-guard": {
       "zh": "领域: cs",
       "en": "Domain: cs",
@@ -1483,11 +983,6 @@
       "en": "Domain: cs",
       "ko": "영역: cs"
     },
-    "aris-system-profile": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
     "aris-training-check": {
       "zh": "领域: cs",
       "en": "Domain: cs",
@@ -1508,11 +1003,6 @@
       "en": "Domain: cs",
       "ko": "영역: cs"
     },
-    "aris-comm-lit-review": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
     "aris-dse-loop": {
       "zh": "领域: cs",
       "en": "Domain: cs",
@@ -1523,22 +1013,12 @@
       "en": "Domain: cs",
       "ko": "영역: cs"
     },
-    "aris-grant-proposal": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
     "aris-mermaid-diagram": {
       "zh": "领域: cs",
       "en": "Domain: cs",
       "ko": "영역: cs"
     },
     "aris-proof-writer": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
-    "aris-pixel-art": {
       "zh": "领域: cs",
       "en": "Domain: cs",
       "ko": "영역: cs"
@@ -1603,11 +1083,6 @@
       "en": "Domain: cs",
       "ko": "영역: cs"
     },
-    "ds-decision": {
-      "zh": "领域: cs",
-      "en": "Domain: cs",
-      "ko": "영역: cs"
-    },
     "ds-intake-audit": {
       "zh": "领域: cs",
       "en": "Domain: cs",
@@ -1632,11 +1107,32 @@
     "inno-idea-eval",
     "inno-idea-generation",
     "inno-paper-reviewer",
-    "inno-paper-writing",
+    "ml-paper-writing",
     "inno-prepare-resources",
     "inno-rclone-to-overleaf",
     "inno-rebuttal",
     "inno-reference-audit"
+  ],
+  "recommendedSkills": [
+    "inno-pipeline-planner",
+    "dataset-discovery",
+    "inno-deep-research",
+    "academic-researcher",
+    "inno-code-survey",
+    "inno-idea-generation",
+    "inno-idea-eval",
+    "inno-experiment-dev",
+    "aris-compute-guard",
+    "inno-experiment-analysis",
+    "ml-paper-writing",
+    "inno-reference-audit",
+    "inno-humanizer",
+    "inno-paper-reviewer",
+    "inno-rebuttal",
+    "inno-grant-proposal",
+    "making-academic-presentations",
+    "aris-novelty-check",
+    "ds-figure-polish"
   ],
   "domainCsAiExceptions": [
     "bioinformatics-init-analysis",

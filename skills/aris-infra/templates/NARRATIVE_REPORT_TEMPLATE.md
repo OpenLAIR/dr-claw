@@ -1,6 +1,6 @@
 # Narrative Report: [Your Paper Title]
 
-> **Template for Workflow 3 (`/paper-writing`).** Fill in all sections, then run `/paper-writing "NARRATIVE_REPORT.md"`.
+> **Template for Workflow 3 (`/aris-paper-writing`).** Fill in all sections, then run `/aris-paper-writing "NARRATIVE_REPORT.md"`.
 
 ## Core Story
 [2-3 paragraphs: problem, approach, key finding, contribution]

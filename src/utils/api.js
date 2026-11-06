@@ -359,9 +359,26 @@ export const api = {
     authenticatedFetch(`/api/skills/${encodeURIComponent(projectName)}/${encodeURIComponent(skillDirName)}`, {
       method: 'DELETE',
     }),
+  getSkillDefaults: (projectName) =>
+    authenticatedFetch(`/api/skills/defaults${projectName ? `?projectName=${encodeURIComponent(projectName)}` : ''}`),
+  updateSkillDefaults: (body) =>
+    authenticatedFetch('/api/skills/defaults', {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    }),
+  updateProjectSkillOverrides: (projectName, body) =>
+    authenticatedFetch(`/api/skills/project/${encodeURIComponent(projectName)}/overrides`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    }),
   deleteGlobalSkill: (dirPath) =>
     authenticatedFetch('/api/skills/global-skill', {
       method: 'DELETE',
+      body: JSON.stringify({ dirPath }),
+    }),
+  copySkillToUser: (dirPath) =>
+    authenticatedFetch('/api/skills/copy-to-user', {
+      method: 'POST',
       body: JSON.stringify({ dirPath }),
     }),
 

@@ -1,16 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronRight, ChevronLeft, Check, ExternalLink, LogIn, Loader2, Wrench, FileText, Monitor, CheckCircle2, XCircle, RefreshCw } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Check, ExternalLink, LogIn, Loader2, Wrench, FileText, Monitor, CheckCircle2, XCircle, RefreshCw, Sparkles } from 'lucide-react';
 import ClaudeLogo from './ClaudeLogo';
 import CursorLogo from './CursorLogo';
 import CodexLogo from './CodexLogo';
 import GeminiLogo from './GeminiLogo';
 import LoginModal from './LoginModal';
-import { authenticatedFetch } from '../utils/api';
+import { api, authenticatedFetch } from '../utils/api';
 import { IS_PLATFORM } from '../constants/config';
 import { isTelemetryEnabled, setTelemetryEnabled } from '../utils/telemetry';
 import { writeCliAvailability } from '../utils/cliAvailability';
 import { useDesktop } from '../hooks/useDesktop';
 import { useTranslation } from 'react-i18next';
+import OnboardingSkillsStep from './onboarding/OnboardingSkillsStep';
+import { baselineToSave, countBaselineSkills, isSkillBaseline } from './skills/skillDefaultsModel';
+
+const SKILLS_STEP_INDEX = 1;
 
 const Onboarding = ({ onComplete }) => {
   const { t } = useTranslation('common');
@@ -27,6 +31,64 @@ const Onboarding = ({ onComplete }) => {
   const [systemDepsLoading, setSystemDepsLoading] = useState(false);
   const [systemDepsChecked, setSystemDepsChecked] = useState(false);
 
+  const systemCheckStepIndex = isDesktop ? 2 : -1;
+  const depsStepIndex = isDesktop ? 3 : 2;
+
+  // Default skills: preselect the stored starting set (fresh installs get
+  // 'recommended'; installs upgraded from older versions keep 'all').
+  const [skillCounts, setSkillCounts] = useState(null);
+  const [skillDefaultsLoading, setSkillDefaultsLoading] = useState(true);
+  const [skillDefaultsLoadFailed, setSkillDefaultsLoadFailed] = useState(false);
+  const [storedBaseline, setStoredBaseline] = useState(null);
+  const [selectedBaseline, setSelectedBaseline] = useState('recommended');
+  const baselineChosenRef = useRef(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const response = await api.getSkillDefaults();
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        if (cancelled) return;
+        setSkillCounts(countBaselineSkills(Array.isArray(data.skills) ? data.skills : []));
+        if (isSkillBaseline(data.baseline)) {
+          setStoredBaseline(data.baseline);
+          setSelectedBaseline((current) => (baselineChosenRef.current ? current : data.baseline));
+        }
+      } catch (err) {
+        console.error('Error loading skill defaults:', err);
+        if (!cancelled) setSkillDefaultsLoadFailed(true);
+      } finally {
+        if (!cancelled) setSkillDefaultsLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const handleSelectBaseline = (baseline) => {
+    baselineChosenRef.current = true;
+    setSelectedBaseline(baseline);
+  };
+
+  const saveSkillBaseline = async () => {
+    const baseline = baselineToSave(selectedBaseline, storedBaseline, baselineChosenRef.current);
+    if (!baseline) return true;
+    setIsSubmitting(true);
+    try {
+      const response = await api.updateSkillDefaults({ baseline });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      setStoredBaseline(baseline);
+      return true;
+    } catch (err) {
+      console.error('Error saving skill defaults:', err);
+      setError(t('skillDefaults.saveFailed'));
+      return false;
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const runSystemCheck = async () => {
     if (!isDesktop) return;
     setSystemDepsLoading(true);
@@ -42,7 +104,7 @@ const Onboarding = ({ onComplete }) => {
   };
 
   useEffect(() => {
-    if (isDesktop && currentStep === 1 && !systemDepsChecked) {
+    if (isDesktop && currentStep === systemCheckStepIndex && !systemDepsChecked) {
       runSystemCheck();
     }
   }, [isDesktop, currentStep]);
@@ -316,6 +378,10 @@ const Onboarding = ({ onComplete }) => {
       return;
     }
 
+    if (currentStep === SKILLS_STEP_INDEX) {
+      if (!(await saveSkillBaseline())) return;
+    }
+
     setCurrentStep(currentStep + 1);
   };
 
@@ -353,6 +419,12 @@ const Onboarding = ({ onComplete }) => {
       title: t('onboarding.preferences'),
       description: t('onboarding.preferencesStep'),
       icon: FileText,
+      required: false
+    },
+    {
+      title: t('skillDefaults.onboardingStep'),
+      description: t('skillDefaults.onboardingStepDescription'),
+      icon: Sparkles,
       required: false
     },
     ...(isDesktop ? [{
@@ -448,9 +520,6 @@ const Onboarding = ({ onComplete }) => {
       icon: LogIn,
     };
   };
-
-  const depsStepIndex = isDesktop ? 2 : 1;
-  const systemCheckStepIndex = isDesktop ? 1 : -1;
 
   const renderSystemCheckStep = () => (
     <div className="space-y-6">
@@ -550,6 +619,19 @@ const Onboarding = ({ onComplete }) => {
             </label>
           </div>
         </div>
+      );
+    }
+
+    if (currentStep === SKILLS_STEP_INDEX) {
+      return (
+        <OnboardingSkillsStep
+          counts={skillCounts}
+          loading={skillDefaultsLoading}
+          loadFailed={skillDefaultsLoadFailed}
+          selected={selectedBaseline}
+          onSelect={handleSelectBaseline}
+          disabled={isSubmitting}
+        />
       );
     }
 

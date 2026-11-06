@@ -1,6 +1,12 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
+import { BUNDLED_SKILLS_DIR, getUserSkillsDir } from './skillRoots.js';
+import { collectSkillDirs } from './skillLinks.js';
+
+function defaultSkillsDirs() {
+  return [getUserSkillsDir(), BUNDLED_SKILLS_DIR];
+}
 
 /**
  * Strip leading [Context: ...] prefixes the frontend injects for new sessions.
@@ -18,9 +24,11 @@ function splitContextPrefix(text) {
 function buildSkillSearchPaths(skillName, workingDir) {
   return [
     path.join(workingDir, '.agents', 'skills', skillName),
+    path.join(workingDir, '.agents', 'skills', 'library', skillName),
     path.join(workingDir, '.claude', 'skills', skillName),
     path.join(workingDir, '.gemini', 'skills', skillName),
-    path.join(process.cwd(), 'skills', skillName),
+    path.join(getUserSkillsDir(), skillName),
+    path.join(BUNDLED_SKILLS_DIR, skillName),
     path.join(os.homedir(), '.claude', 'skills', skillName),
   ];
 }
@@ -29,18 +37,39 @@ function buildSkillSearchPaths(skillName, workingDir) {
  * Try to find the SKILL.md path for a given skill name.
  * Returns the absolute path or null if not found.
  */
-async function findSkillMdPath(skillName, workingDir) {
-  const searchPaths = buildSkillSearchPaths(skillName, workingDir);
-  for (const skillDir of searchPaths) {
+async function isFile(target) {
+  try {
+    return (await fs.stat(target)).isFile();
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Find a skill in the skill libraries (user skills first, then bundled) by
+ * directory name, including skills in nested category folders (e.g.
+ * skills/inference-serving/vllm). Skills that are not enabled for a project
+ * are not linked into it, so this is how `/name` still reaches them.
+ */
+async function findBundledSkillMdPath(skillName, skillsDirs = defaultSkillsDirs()) {
+  for (const skillsDir of skillsDirs) {
     try {
-      const skillMdPath = path.join(skillDir, 'SKILL.md');
-      const stat = await fs.stat(skillMdPath);
-      if (stat.isFile()) return skillMdPath;
+      const match = (await collectSkillDirs(skillsDir)).find((skill) => skill.name === skillName);
+      if (match) return path.join(match.absolutePath, 'SKILL.md');
     } catch {
-      // not found, try next
+      // Missing library: try the next one.
     }
   }
   return null;
+}
+
+async function findSkillMdPath(skillName, workingDir) {
+  const searchPaths = buildSkillSearchPaths(skillName, workingDir);
+  for (const skillDir of searchPaths) {
+    const skillMdPath = path.join(skillDir, 'SKILL.md');
+    if (await isFile(skillMdPath)) return skillMdPath;
+  }
+  return findBundledSkillMdPath(skillName);
 }
 
 /**
@@ -137,6 +166,44 @@ export async function expandSkillCommand(command, workingDir) {
   }
 
   return `${prefix}# Skill: ${skillCommand}\n\nFollow the procedure below exactly.\n${variantNote}\n${result.content}${userContext}${subSkillNote}`;
+}
+
+/**
+ * Claude Code resolves `/name` itself, but only for skills in the project's
+ * .claude/skills or ~/.claude/skills. For a library skill the user has not
+ * enabled for this project, point Claude at its SKILL.md instead (reads of the
+ * skill libraries are auto-allowed, see bundledSkillAccess.js). Anything else,
+ * including Claude Code's own slash commands, is returned unchanged.
+ */
+export async function rewriteUnlinkedSkillCommand(command, workingDir, { skillsDir, skillsDirs } = {}) {
+  if (!command || typeof command !== 'string' || !workingDir) return command;
+
+  const { prefix, body } = splitContextPrefix(command);
+  const match = body.match(/^\/([a-zA-Z0-9_-]+)(?::([a-zA-Z0-9_-]+))?(?:\s+([\s\S]*))?$/);
+  if (!match) return command;
+
+  const [, skillName, variant, remainder] = match;
+  const linkedPaths = [
+    path.join(workingDir, '.claude', 'skills', skillName, 'SKILL.md'),
+    path.join(os.homedir(), '.claude', 'skills', skillName, 'SKILL.md'),
+  ];
+  for (const linked of linkedPaths) {
+    if (await isFile(linked)) return command;
+  }
+
+  const skillMdPath = await findBundledSkillMdPath(
+    skillName,
+    skillsDirs || (skillsDir ? [skillsDir] : defaultSkillsDirs()),
+  );
+  if (!skillMdPath) return command;
+
+  const lines = [
+    `Use the \`${skillName}\` skill: read \`${skillMdPath}\` and follow its procedure.`,
+  ];
+  if (variant) lines.push(`Variant requested: \`${variant}\``);
+  const userContext = (remainder || '').trim();
+  if (userContext) lines.push('', userContext);
+  return `${prefix}${lines.join('\n')}`;
 }
 
 export { findSkillMdPath };

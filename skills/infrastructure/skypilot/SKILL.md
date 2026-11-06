@@ -1,6 +1,6 @@
 ---
 name: skypilot-multi-cloud-orchestration
-description: Multi-cloud orchestration for ML workloads with automatic cost optimization. Use when you need to run training or batch jobs across multiple clouds, leverage spot instances with auto-recovery, or optimize GPU costs across providers.
+description: Multi-cloud orchestration for ML workloads with automatic cost optimization. Use when you need to run training or batch jobs across multiple clouds, leverage spot instances with auto-recovery, or optimize GPU costs across providers. Also covers Lambda Labs (guides in references/).
 version: 1.0.0
 author: Orchestra Research
 license: MIT
@@ -507,3 +507,12 @@ sky jobs logs my-job
 - **GitHub**: https://github.com/skypilot-org/skypilot
 - **Slack**: https://slack.skypilot.co
 - **Examples**: https://github.com/skypilot-org/skypilot/tree/master/examples
+
+## Related tools (merged into this skill)
+
+These were separate skills. Their full guides now live under `references/`;
+read the one you need when the user asks for that tool or it fits the task better.
+
+| Tool | Guide | What it covers |
+|---|---|---|
+| Lambda Labs | [references/lambda-labs/overview.md](references/lambda-labs/overview.md) | Reserved and on-demand GPU cloud instances for ML training and inference. |

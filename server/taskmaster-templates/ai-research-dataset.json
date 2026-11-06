@@ -169,18 +169,18 @@
             "title": "Prepare dataset documentation and data card",
             "description": "Draft dataset statement, bias/safety notes, and intended-use guidance.",
             "taskType": "writing",
-            "recommended_skills": ["inno-paper-writing"]
+            "recommended_skills": ["ml-paper-writing"]
           },
           {
             "id": "dataset_release_and_submission_bundle",
             "title": "Finalize release bundle and submission package",
             "description": "Assemble benchmark tables, README/license, and supplementary artifacts.",
             "taskType": "writing",
-            "recommended_skills": ["inno-paper-writing", "inno-reference-audit"]
+            "recommended_skills": ["ml-paper-writing", "inno-reference-audit"]
           }
         ],
         "recommended_skills": [
-          "inno-paper-writing",
+          "ml-paper-writing",
           "inno-reference-audit"
         ]
       },

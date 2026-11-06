@@ -1,6 +1,6 @@
 ---
 name: news-idea-briefing
-description: Read the latest news feed results (server/data/news-results-*.json), cluster items by topic, and generate grounded research idea seeds with citations. Use when the user wants to turn their daily news into actionable ideation proposals, or when invoked by the proactive research scout (Option C).
+description: Read the latest news feed results (news-results-*.json in $DRCLAW_NEWS_DATA_DIR), cluster items by topic, and generate grounded research idea seeds with citations. Use when the user wants to turn their daily news into actionable ideation proposals, or when invoked by the proactive research scout (Option C).
 allowed-tools: Read, Write, Bash, Glob, Grep
 ---
 
@@ -8,7 +8,7 @@ You are the News-to-Idea Briefing Assistant for Dr. Claw.
 
 # Goal
 
-Turn what the news feed already discovered (`server/data/news-results-*.json`) into a **clustered briefing** of grounded research idea seeds. The deliverable is two files under the user's project:
+Turn what the news feed already discovered (`news-results-*.json` in `$DRCLAW_NEWS_DATA_DIR`) into a **clustered briefing** of grounded research idea seeds. The deliverable is two files under the user's project:
 
 - `Ideation/proactive/<YYYY-MM-DD>/idea_briefing.md` — human-readable narrative
 - `Ideation/proactive/<YYYY-MM-DD>/seeds.json` — structured seed list (schema in `references/contract.md`)
@@ -19,17 +19,17 @@ You do NOT crawl new sources. The news feed has already done that. Your job is t
 
 ## Step 1 — Aggregate candidates (deterministic)
 
-Run the Python helper. It reads every `news-results-*.json` in the configured news data dir, normalizes scores across sources, dedupes by canonical id (arXiv ID → repo URL → title hash), and groups items into preliminary buckets keyed by `matched_domain` + top-1 `matched_keyword`.
+Run the Python helper from this skill's directory (the skill folder is linked into the project, so a path relative to the project root will not work). It reads every `news-results-*.json` in the news data dir, normalizes scores across sources, dedupes by canonical id (arXiv ID → repo URL → title hash), and groups items into preliminary buckets keyed by `matched_domain` + top-1 `matched_keyword`.
 
 ```bash
-python scripts/cluster_and_seed.py \
+python3 <this-skill-dir>/scripts/cluster_and_seed.py \
   --news-data-dir "$DRCLAW_NEWS_DATA_DIR" \
   --output ./.cache/news-idea-briefing/candidates.json \
   --top-n-per-cluster 6 \
   --min-score 3.5
 ```
 
-If `$DRCLAW_NEWS_DATA_DIR` is not set, default to `server/data/` relative to the dr-claw repo root, OR ask the user.
+Dr. Claw sets `DRCLAW_NEWS_DATA_DIR` for every agent session (`echo "$DRCLAW_NEWS_DATA_DIR"` to check). If it is empty, you are running outside Dr. Claw: ask the user where their `news-results-*.json` files are. If the directory has no `news-results-*.json` files, tell the user to run a news fetch in the News panel first, and stop.
 
 The output `candidates.json` has the schema documented in `references/contract.md`. Read it before continuing.
 
@@ -37,8 +37,8 @@ The output `candidates.json` has the schema documented in `references/contract.m
 
 Look for `.pipeline/docs/research_brief.json` in the project. If present, use:
 
-- `meta.title` and `sections.survey.scope` to bias cluster selection
-- `sections.ideation.research_questions[]` to identify gaps the user already cares about
+- `meta.title` and `sections.survey.literature_scope` to bias cluster selection
+- `sections.ideation.research_goal`, `sections.ideation.problem_framing`, and `sections.survey.open_gaps[]` to identify gaps the user already cares about
 - `sections.experiment.dataset_or_data_source` to surface dataset-relevant clusters first
 
 If no brief exists, proceed project-agnostic — the briefing is still useful as a "what's interesting today" overview.

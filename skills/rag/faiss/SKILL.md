@@ -1,6 +1,6 @@
 ---
 name: faiss
-description: Facebook's library for efficient similarity search and clustering of dense vectors. Supports billions of vectors, GPU acceleration, and various index types (Flat, IVF, HNSW). Use for fast k-NN search, large-scale vector retrieval, or when you need pure similarity search without metadata. Best for high-performance applications.
+description: Facebook's library for efficient similarity search and clustering of dense vectors. Supports billions of vectors, GPU acceleration, and various index types (Flat, IVF, HNSW). Use for fast k-NN search, large-scale vector retrieval, or when you need pure similarity search without metadata. Best for high-performance applications. Also covers Chroma and Qdrant (guides in references/).
 version: 1.0.0
 author: Orchestra Research
 license: MIT
@@ -218,4 +218,12 @@ vector_store = FaissVectorStore(faiss_index=faiss_index)
 - **Wiki**: https://github.com/facebookresearch/faiss/wiki
 - **License**: MIT
 
+## Related tools (merged into this skill)
 
+These were separate skills. Their full guides now live under `references/`;
+read the one you need when the user asks for that tool or it fits the task better.
+
+| Tool | Guide | What it covers |
+|---|---|---|
+| Chroma | [references/chroma/overview.md](references/chroma/overview.md) | Open-source embedding database for AI applications. |
+| Qdrant | [references/qdrant/overview.md](references/qdrant/overview.md) | High-performance vector similarity search engine for RAG and semantic search. |

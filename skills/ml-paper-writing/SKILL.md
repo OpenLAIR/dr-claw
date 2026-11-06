@@ -1,6 +1,6 @@
 ---
 name: ml-paper-writing
-description: Write publication-ready ML/AI papers for NeurIPS, ICML, ICLR, ACL, AAAI, COLM. Use when drafting papers from research repos, structuring arguments, verifying citations, or preparing camera-ready submissions. Includes LaTeX templates, reviewer guidelines, and citation verification workflows.
+description: Write publication-ready ML/AI papers for NeurIPS, ICML, ICLR, ACL, AAAI, COLM. Use when drafting papers from research repos, structuring arguments, verifying citations, or preparing camera-ready submissions. Includes LaTeX templates, reviewer guidelines, citation verification workflows, and IEEE/ACM formatting notes.
 version: 1.0.0
 author: Orchestra Research
 license: MIT
@@ -455,6 +455,17 @@ Understanding reviewer behavior helps prioritize your effort:
 - LaTeX required for all venues
 
 **LaTeX Templates:** See [templates/](templates/) directory for all conference templates.
+
+**IEEE and ACM venues** (journals, transactions, and conferences such as INFOCOM,
+SIGCOMM, CHI, KDD in ACM format): these differ from the ML venues above in
+citation style, page counting, and author blocks. See
+[references/ieee_formatting_specs.md](references/ieee_formatting_specs.md),
+[references/acm_formatting_specs.md](references/acm_formatting_specs.md), and
+[references/writing_style_guide.md](references/writing_style_guide.md).
+
+**In a Dr. Claw project**, write the paper under `Publication/paper/` (the
+`Publication.paper` path in `instance.json`), and take results from
+`Experiment/analysis/` and the selected idea from `Ideation/ideas/selected_idea.txt`.
 
 ---
 

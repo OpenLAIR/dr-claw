@@ -1535,6 +1535,17 @@ const projectDb = {
     }
   },
 
+  // Replace the metadata JSON of one project (null clears it).
+  updateProjectMetadata: (id, metadata) => {
+    try {
+      const value = metadata && Object.keys(metadata).length > 0 ? JSON.stringify(metadata) : null;
+      db.prepare('UPDATE projects SET metadata = ? WHERE id = ?').run(value, id);
+    } catch (err) {
+      console.error('Error updating project metadata:', err.message);
+      throw err;
+    }
+  },
+
   toggleStar: (id, isStarred) => {
     try {
       db.prepare('UPDATE projects SET is_starred = ? WHERE id = ?').run(isStarred ? 1 : 0, id);

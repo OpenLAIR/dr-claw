@@ -62,7 +62,7 @@ Examples:
 | 2 | **Obsidian** (via MCP) | `obsidian` | Try calling any `mcp__obsidian-vault__*` tool — if unavailable, skip | Research notes, paper summaries, tagged references, wikilinks |
 | 3 | **Local PDFs** | `local` | `Glob: papers/**/*.pdf, literature/**/*.pdf` | Raw PDF content (first 3 pages) |
 | 4 | **Web search** | `web` | Always available (WebSearch) | arXiv, Semantic Scholar, Google Scholar |
-| 5 | **Semantic Scholar API** | `aris-semantic-scholar` | `tools/semantic_scholar_fetch.py` exists | Published venue papers (IEEE, ACM, Springer) with structured metadata: citation counts, venue info, TLDR. **Only runs when explicitly requested** via `— sources: semantic-scholar` or `— sources: web, semantic-scholar` |
+| 5 | **Semantic Scholar API** | `aris-semantic-scholar` | `$ARIS_INFRA/tools/semantic_scholar_fetch.py` exists | Published venue papers (IEEE, ACM, Springer) with structured metadata: citation counts, venue info, TLDR. **Only runs when explicitly requested** via `— sources: semantic-scholar` or `— sources: web, semantic-scholar` |
 
 > **Graceful degradation**: If no MCP servers are configured, the skill works exactly as before (local PDFs + web search). Zotero and Obsidian are pure additions.
 
@@ -134,12 +134,39 @@ Before searching online, check if the user already has relevant papers locally:
 
 **arXiv API search** (always runs, no download by default):
 
-Locate the fetch script and search arXiv directly:
+Locate the ARIS helper bundle once (reused below for Semantic Scholar and the research wiki):
+
 ```bash
-# Try to find arxiv_fetch.py
-SCRIPT=$(find tools/ -name "arxiv_fetch.py" 2>/dev/null | head -1)
-# If not found, check ARIS install
-[ -z "$SCRIPT" ] && SCRIPT=$(find ~/.claude/skills/arxiv/ -name "arxiv_fetch.py" 2>/dev/null | head -1)
+# Locate the ARIS helper bundle (skills/aris-infra in Dr. Claw; it sits next to
+# this skill's own folder). Non-fatal: the steps below fall back when it is missing.
+ARIS_INFRA="${ARIS_INFRA:-}"
+if [ ! -f "$ARIS_INFRA/tools/research_wiki.py" ]; then
+  ARIS_INFRA=""
+  for candidate in \
+    "${CLAUDE_SKILL_DIR:-/nonexistent}/../aris-infra" \
+    ".claude/skills/aris-infra" \
+    ".agents/skills/library/aris-infra" \
+    "skills/aris-infra" \
+    "${HOME:-/nonexistent}/.claude/skills/aris-infra"; do
+    if [ -f "$candidate/tools/research_wiki.py" ]; then ARIS_INFRA="$candidate"; break; fi
+  done
+fi
+if [ -z "$ARIS_INFRA" ]; then
+  # Project skill links point into the bundled skills folder, so ../aris-infra
+  # resolves through any linked aris-* skill even when aris-infra is not linked.
+  for linked in .claude/skills/aris-* .agents/skills/aris-* .agents/skills/library/aris-* .gemini/skills/aris-*; do
+    if [ -f "$linked/../aris-infra/tools/research_wiki.py" ]; then ARIS_INFRA="$linked/../aris-infra"; break; fi
+  done
+fi
+```
+
+If `ARIS_INFRA` is still empty, it is the `aris-infra` folder beside this skill's
+own folder: set it to that absolute path.
+
+Then search arXiv directly:
+```bash
+SCRIPT="$ARIS_INFRA/tools/arxiv_fetch.py"
+[ -n "$ARIS_INFRA" ] && [ -f "$SCRIPT" ] || SCRIPT=""
 
 # Search arXiv API for structured results (title, abstract, authors, categories)
 python3 "$SCRIPT" search "QUERY" --max 10
@@ -154,8 +181,7 @@ The arXiv API returns structured metadata (title, abstract, full author list, ca
 When the user explicitly requests `— sources: semantic-scholar` (or `— sources: web, semantic-scholar`), search for published venue papers beyond arXiv:
 
 ```bash
-S2_SCRIPT=$(find tools/ -name "semantic_scholar_fetch.py" 2>/dev/null | head -1)
-[ -z "$S2_SCRIPT" ] && S2_SCRIPT=$(find ~/.claude/skills/semantic-scholar/ -name "semantic_scholar_fetch.py" 2>/dev/null | head -1)
+S2_SCRIPT="$ARIS_INFRA/tools/semantic_scholar_fetch.py"
 
 # Search for published CS/Engineering papers with quality filters
 python3 "$S2_SCRIPT" search "QUERY" --max 10 \
@@ -222,17 +248,17 @@ If Zotero BibTeX was exported, include a `references.bib` snippet for direct use
 ```
 if research-wiki/ directory exists:
     for each top relevant paper found (up to 8-12):
-        1. Generate slug: python3 tools/research_wiki.py slug "<title>" --author "<last>" --year <year>
+        1. Generate slug: python3 "$ARIS_INFRA/tools/research_wiki.py" slug "<title>" --author "<last>" --year <year>
         2. Create page: research-wiki/papers/<slug>.md with structured schema
            (node_id, title, authors, year, venue, tags, one-line thesis, problem/gap,
             method, key results, limitations, reusable ingredients, open questions)
         3. Add edges to graph/edges.jsonl for relationships to existing wiki papers:
-           python3 tools/research_wiki.py add_edge research-wiki/ --from "paper:<slug>" --to "<target>" --type <type> --evidence "<text>"
+           python3 "$ARIS_INFRA/tools/research_wiki.py" add_edge research-wiki/ --from "paper:<slug>" --to "<target>" --type <type> --evidence "<text>"
         4. Update gap_map.md if new gaps are identified
     Rebuild query pack:
-        python3 tools/research_wiki.py rebuild_query_pack research-wiki/
+        python3 "$ARIS_INFRA/tools/research_wiki.py" rebuild_query_pack research-wiki/
     Log:
-        python3 tools/research_wiki.py log research-wiki/ "research-lit ingested N papers"
+        python3 "$ARIS_INFRA/tools/research_wiki.py" log research-wiki/ "research-lit ingested N papers"
 else:
     skip — no wiki, no action, no error
 ```
@@ -244,3 +270,10 @@ else:
 - Note if a paper directly competes with or supports our approach
 - **Never fail because a MCP server is not configured** — always fall back gracefully to the next data source
 - Zotero/Obsidian tools may have different names depending on how the user configured the MCP server (e.g., `mcp__zotero__search` or `mcp__zotero-mcp__search_items`). Try the most common patterns and adapt.
+
+## Communications and wireless research
+
+For communications, networking, and signal-processing topics, also follow
+[references/communications-lit-review.md](references/communications-lit-review.md)
+(formerly the `aris-comm-lit-review` skill): it lists the IEEE/ACM venues,
+databases, and search patterns specific to that field.

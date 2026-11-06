@@ -70,11 +70,12 @@ import skillsRoutes from './routes/skills.js';
 import modelsRoutes from './routes/models.js';
 import telemetryRoutes from './routes/telemetry.js';
 import computeRoutes from './routes/compute.js';
-import newsRoutes from './routes/news.js';
+import newsRoutes, { exposeNewsDataDirToAgents } from './routes/news.js';
 import autoResearchRoutes from './routes/auto-research.js';
 import referencesRoutes from './routes/references.js';
 import quickQaRoutes from './routes/quick-qa.js';
 import { initializeDatabase, sessionDb, tagDb } from './database/db.js';
+import { migrateUserSkillsOutOfBundle } from './utils/skillRoots.js';
 import { validateApiKey, authenticateToken, authenticateWebSocket } from './middleware/auth.js';
 import { IS_PLATFORM } from './constants/config.js';
 import { enqueueTelemetryEvent } from './telemetry.js';
@@ -295,6 +296,8 @@ async function setupProjectsWatcher() {
     }
 }
 
+
+exposeNewsDataDirToAgents();
 
 const app = express();
 const server = http.createServer(app);
@@ -3222,6 +3225,14 @@ async function startServer() {
     try {
         // Initialize authentication database
         await initializeDatabase();
+
+        // Move skills the user added to the bundled skills/ directory (which is
+        // replaced on app updates) into the user skills directory.
+        try {
+            await migrateUserSkillsOutOfBundle();
+        } catch (error) {
+            console.warn('[skills] User skill migration failed:', error.message);
+        }
 
         // Check if running in production mode (dist folder exists)
         const distIndexPath = path.join(__dirname, '../dist/index.html');

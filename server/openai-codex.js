@@ -17,7 +17,7 @@ import { Codex } from '@openai/codex-sdk';
 import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
-import { encodeProjectPath, reconcileCodexSessionIndex } from './projects.js';
+import { encodeProjectPath, ensureProjectSkillLinks, reconcileCodexSessionIndex } from './projects.js';
 import { sessionDb } from './database/db.js';
 import { applyStageTagsToSession, recordIndexedSession } from './utils/sessionIndex.js';
 import { classifyError, classifySDKError } from '../shared/errorClassifier.js';
@@ -376,6 +376,16 @@ export async function queryCodex(command, options = {}, ws) {
   // the request. Hand the SDK an ASCII symlink while keeping the real path for
   // dr-claw's own indexing/tags. ASCII paths are returned unchanged.
   const codexWorkingDirectory = await resolveCodexWorkingDirectory(workingDirectory);
+
+  // Keep the project's skill links in step with the enabled set before the
+  // turn, as the Claude path does. Never for the server's own cwd.
+  if (cwd || projectPath) {
+    try {
+      await ensureProjectSkillLinks(workingDirectory);
+    } catch (err) {
+      console.warn('[codex] Failed to update project skill links:', err.message);
+    }
+  }
   const { sandboxMode, approvalPolicy } = mapPermissionModeToCodexOptions(permissionMode);
 
   let codex;

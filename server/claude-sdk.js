@@ -27,6 +27,7 @@ import { buildTempAttachmentFilename } from './utils/imageAttachmentFiles.js';
 import { createRequestId, waitForToolApproval, resolveToolApproval as resolvePermApproval, matchesToolPermission } from './utils/permissions.js';
 import { buildMemoryBlock } from './utils/memoryPrompt.js';
 import { isBundledSkillRead } from './utils/bundledSkillAccess.js';
+import { rewriteUnlinkedSkillCommand } from './utils/skillExpander.js';
 import { BTW_SYSTEM_PROMPT, buildBtwUserMessage } from './utils/btw.js';
 import { COMPUTE_GUARD_BLOCK } from './utils/computeGuardPrompt.js';
 import { debugLog } from './utils/logger.js';
@@ -570,7 +571,11 @@ async function queryClaudeSDK(command, options = {}, ws) {
 
     // Handle images - save to temp files and modify prompt
     const imageResult = await handleImages(command, options.images, options.cwd);
-    const finalCommand = imageResult.modifiedCommand;
+    // A `/name` for a skill that is not enabled in this project would be an
+    // unknown command to Claude Code; point Claude at the skill file instead.
+    const finalCommand = projectDir
+      ? await rewriteUnlinkedSkillCommand(imageResult.modifiedCommand, projectDir)
+      : imageResult.modifiedCommand;
     tempImagePaths = imageResult.tempImagePaths;
     tempDir = imageResult.tempDir;
 

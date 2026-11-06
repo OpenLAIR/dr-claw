@@ -1,11 +1,11 @@
 ---
 name: inno-code-survey
-description: Acquires missing code repositories for the selected idea (Phase A) and conducts comprehensive code survey mapping academic concepts to implementations (Phase B). Outputs acquired_code_repos, updated_prepare_res, and model_survey for downstream use by inno-implementation-plan.
+description: Acquires missing code repositories for the selected idea (Phase A) and conducts comprehensive code survey mapping academic concepts to implementations (Phase B). Outputs acquired_code_repos, updated_prepare_res, and model_survey for downstream use by inno-experiment-dev.
 ---
 
 # Inno Code Survey (Repo Acquisition + Code Survey)
 
-Merges `_acquire_missing_repos`, `_update_prepare_res_with_new_repos`, and `_conduct_code_survey` from [run_infer_idea_ours.py](workspace/medical/Medical_ai_scientist_idea/research_agent/run_infer_idea_ours.py) (lines 639–828, 1038–1052) into a single two-phase skill.
+Runs in two phases: **Phase A** finds and clones the code the selected idea still needs, and **Phase B** surveys all reference code and maps each concept of the idea to concrete files, functions, and formulas. The survey report is the main input of `inno-experiment-dev`.
 
 ## Directory structure
 
@@ -40,8 +40,8 @@ These are aligned with outputs from **inno-idea-generation** and **inno-prepare-
 | Input | Source | Description |
 |-------|--------|-------------|
 | `selected_idea` | `Ideation/ideas/selected_idea.txt` or `final_selected_idea_data` | The finalized selected idea (full markdown) |
-| `download_res` | `inno-prepare-resources` output | Result log from downloading arXiv paper sources |
-| `prepare_res` | `inno-prepare-resources` output (JSON) | Contains `reference_codebases` and `reference_paths` |
+| `download_res` | `Ideation/references/logs/download_arxiv_source_by_title.json` (inno-prepare-resources) | Result log from downloading arXiv paper sources |
+| `prepare_res` | `prepare_result` in `Ideation/references/logs/prepare_agent.json` (inno-prepare-resources) | Contains `reference_codebases` and `reference_paths` |
 | `context_variables` | Shared context dict | Accumulated pipeline context |
 | `instance.json` | `<project_path>/instance.json` | Paths are **absolute** when created by Dr. Claw (`Experiment.code_references`, `Ideation.references`); use as-is or resolve with `path.join(project_path, value)` if relative. Also `date_limit` from context. |
 
@@ -60,8 +60,6 @@ These are aligned with outputs from **inno-idea-generation** and **inno-prepare-
 
 > Full template & parameter docs: [prompts/build_repo_acquisition_query.md](prompts/build_repo_acquisition_query.md)
 > Agent system prompt & tools: [references/repo_acquisition_agent.md](references/repo_acquisition_agent.md)
-
-Maps to `_acquire_missing_repos` (lines 745–792) + `_update_prepare_res_with_new_repos` (lines 639–686).
 
 ### Step A1: Analyze the selected idea and identify gaps
 
@@ -149,8 +147,6 @@ For each cloned repo:
 
 > Full template & parameter docs: [prompts/build_code_survey_query.md](prompts/build_code_survey_query.md)
 > Agent system prompt & tools: [references/code_survey_agent.md](references/code_survey_agent.md)
-
-Maps to `_conduct_code_survey` (lines 794–828).
 
 ### Step B1: Build the code survey query
 
@@ -278,7 +274,6 @@ Write `Experiment/code_references/logs/code_survey_agent.json`:
 
 ## References
 
-- `run_infer_idea_ours.py`: `_acquire_missing_repos` (745–792), `_update_prepare_res_with_new_repos` (639–686), `_conduct_code_survey` (794–828)
-- Prompts: `build_repo_acquisition_query` (prompt_templates.py:153–171), `build_code_survey_query` (prompt_templates.py:173–200)
-- Agents: `repo_agent.py` (Repo Acquisition Agent definition + tools), `survey_agent.py` (Code Survey Agent definition)
-- Cache examples: `repo_acquisition_agent.json`, `code_survey_agent.json` from reference pipeline output
+- Prompt templates: [prompts/build_repo_acquisition_query.md](prompts/build_repo_acquisition_query.md), [prompts/build_code_survey_query.md](prompts/build_code_survey_query.md)
+- Agent instructions: [references/repo_acquisition_agent.md](references/repo_acquisition_agent.md), [references/code_survey_agent.md](references/code_survey_agent.md)
+- Helper script: [scripts/github_search_clone.py](scripts/github_search_clone.py)

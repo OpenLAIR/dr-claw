@@ -1,0 +1,255 @@
+{
+  "skills": {
+    "academic-researcher": {
+      "en": {
+        "name": "Academic research assistant",
+        "summary": "Helps with literature reviews, paper analysis, and scholarly writing."
+      },
+      "zh": {
+        "name": "学术研究助手",
+        "summary": "辅助文献综述、论文分析与学术写作。"
+      }
+    },
+    "aris-compute-guard": {
+      "zh": {
+        "name": "算力预检",
+        "summary": "跑实验前确认 GPU 等算力可用，不可用就停下，避免编造结果。"
+      },
+      "en": {
+        "name": "Compute pre-check",
+        "summary": "Check that GPUs or other compute are available before experiments; stop instead of faking results."
+      }
+    },
+    "aris-novelty-check": {
+      "zh": {
+        "name": "查新",
+        "summary": "对照近期文献检查研究想法是否已有人做过。"
+      },
+      "en": {
+        "name": "Novelty check",
+        "summary": "Check a research idea against recent literature to see whether it has been done."
+      }
+    },
+    "dataset-discovery": {
+      "en": {
+        "name": "Dataset discovery",
+        "summary": "Find relevant datasets across HuggingFace Hub, OpenML, GitHub, and paper references."
+      },
+      "zh": {
+        "name": "数据集发现",
+        "summary": "从 HuggingFace、OpenML 和 GitHub 查找任务相关数据集。"
+      }
+    },
+    "ds-figure-polish": {
+      "zh": {
+        "name": "数据图打磨",
+        "summary": "用 matplotlib 制作论文级结果图，并反复渲染检查修改。"
+      },
+      "en": {
+        "name": "Figure polishing",
+        "summary": "Make publication-quality matplotlib result figures with a render-inspect-revise pass."
+      }
+    },
+    "init-analysis": {
+      "en": {
+        "name": "Single-cell initial analysis",
+        "summary": "Run QC and exploratory analysis on single-cell data and produce an analysis report."
+      },
+      "zh": {
+        "name": "单细胞初步分析",
+        "summary": "对单细胞数据进行质控、探索性分析并生成分析报告。"
+      }
+    },
+    "inno-code-survey": {
+      "en": {
+        "name": "Code survey",
+        "summary": "Acquire needed repositories and map paper concepts to their code implementations."
+      },
+      "zh": {
+        "name": "代码调研",
+        "summary": "获取所需代码仓库，并将论文概念映射到具体实现。"
+      }
+    },
+    "inno-deep-research": {
+      "en": {
+        "name": "Deep research",
+        "summary": "Synthesize multi-source research with citations into an in-depth analysis."
+      },
+      "zh": {
+        "name": "深度调研",
+        "summary": "综合多来源信息并附引用，形成深入的研究分析。"
+      }
+    },
+    "inno-experiment-analysis": {
+      "en": {
+        "name": "Experiment analysis",
+        "summary": "Analyze experimental results and produce paper-ready results sections and visualizations."
+      },
+      "zh": {
+        "name": "实验结果分析",
+        "summary": "统计分析实验结果，生成可用于论文的结果章节与图表。"
+      }
+    },
+    "inno-experiment-dev": {
+      "en": {
+        "name": "Experiment development",
+        "summary": "Plan the implementation, write code with judge feedback, and submit the final experiment run."
+      },
+      "zh": {
+        "name": "实验开发",
+        "summary": "制定实现计划，在评审反馈下编写代码并提交实验运行。"
+      }
+    },
+    "inno-figure-gen": {
+      "en": {
+        "name": "AI image generation",
+        "summary": "Generate or edit images with OpenAI gpt-image-2 or Gemini."
+      },
+      "zh": {
+        "name": "AI 生图",
+        "summary": "用 gpt-image-2 或 Gemini 生成与编辑图像。"
+      }
+    },
+    "inno-grant-proposal": {
+      "en": {
+        "name": "Grant proposal",
+        "summary": "Write, revise, and pre-review grant proposals for NSF, NIH, NSFC, and other agencies."
+      },
+      "zh": {
+        "name": "基金申请",
+        "summary": "撰写、修改与模拟评审 NSF、NIH、国自然等基金申请书。"
+      }
+    },
+    "inno-humanizer": {
+      "en": {
+        "name": "Humanize text",
+        "summary": "Remove signs of AI-generated writing so text reads naturally."
+      },
+      "zh": {
+        "name": "去 AI 腔",
+        "summary": "去除文本中的 AI 写作痕迹，使行文更自然。"
+      }
+    },
+    "inno-idea-eval": {
+      "en": {
+        "name": "Idea evaluation",
+        "summary": "Score research ideas on five dimensions with multiple reviewer personas and a quality gate."
+      },
+      "zh": {
+        "name": "想法评估",
+        "summary": "以多位评审视角从五个维度评估研究想法并把关质量。"
+      }
+    },
+    "inno-idea-generation": {
+      "zh": {
+        "name": "研究想法生成",
+        "summary": "用科研选题框架生成并筛选研究想法，交给想法评估。"
+      },
+      "en": {
+        "name": "Research idea generation",
+        "summary": "Generate and shortlist research ideas with ideation frameworks, ready for idea evaluation."
+      }
+    },
+    "inno-paper-reviewer": {
+      "en": {
+        "name": "Peer review",
+        "summary": "Write structured, checklist-based peer reviews of manuscripts or grant proposals."
+      },
+      "zh": {
+        "name": "论文评审",
+        "summary": "按清单对稿件或基金申请进行结构化同行评审。"
+      }
+    },
+    "inno-pipeline-planner": {
+      "en": {
+        "name": "Research pipeline planner",
+        "summary": "Define a research project through conversation and generate its brief and task list."
+      },
+      "zh": {
+        "name": "研究流程规划",
+        "summary": "通过对话明确研究项目，生成研究简报与任务列表。"
+      }
+    },
+    "inno-prepare-resources": {
+      "en": {
+        "name": "Resource preparation",
+        "summary": "Gather related repositories, dataset descriptions, reference codebases, and arXiv paper sources."
+      },
+      "zh": {
+        "name": "资源准备",
+        "summary": "检索相关代码库、整理数据集说明并下载参考论文源码。"
+      }
+    },
+    "inno-rclone-to-overleaf": {
+      "en": {
+        "name": "Overleaf sync",
+        "summary": "Read, write, and sync LaTeX files in Overleaf projects from the command line."
+      },
+      "zh": {
+        "name": "Overleaf 同步",
+        "summary": "通过命令行读写并同步 Overleaf 项目中的 LaTeX 文件。"
+      }
+    },
+    "inno-rebuttal": {
+      "en": {
+        "name": "Rebuttal writing",
+        "summary": "Draft and refine rebuttals to reviewers for top AI/CS conferences."
+      },
+      "zh": {
+        "name": "审稿回复",
+        "summary": "为 AI/CS 顶会撰写并打磨针对审稿意见的回复。"
+      }
+    },
+    "inno-reference-audit": {
+      "en": {
+        "name": "Citation audit",
+        "summary": "Verify citations in academic writing and avoid fabricated or inaccurate references."
+      },
+      "zh": {
+        "name": "引用核查",
+        "summary": "核验参考文献的准确性，避免虚假或错误引用。"
+      }
+    },
+    "making-academic-presentations": {
+      "en": {
+        "name": "Academic presentation slides",
+        "summary": "Create academic slide decks, and optionally demo videos, from research papers."
+      },
+      "zh": {
+        "name": "学术报告幻灯片",
+        "summary": "根据论文制作学术报告幻灯片，可选生成演示视频。"
+      }
+    },
+    "ml-paper-writing": {
+      "zh": {
+        "name": "ML 顶会论文写作",
+        "summary": "按 NeurIPS、ICML、ICLR 等会议要求写论文，含 LaTeX 模板和引用核验。"
+      },
+      "en": {
+        "name": "ML paper writing",
+        "summary": "Write NeurIPS/ICML/ICLR-style papers with LaTeX templates and citation checks."
+      }
+    },
+    "paper-analyzer": {
+      "en": {
+        "name": "Paper deep dive",
+        "summary": "Analyze a single paper in depth and produce structured notes with figures."
+      },
+      "zh": {
+        "name": "论文精读",
+        "summary": "深度分析单篇论文，生成含图表的结构化笔记。"
+      }
+    },
+    "scientific-writing": {
+      "en": {
+        "name": "Scientific writing",
+        "summary": "Write scientific manuscripts in full paragraphs, from outline to finished prose."
+      },
+      "zh": {
+        "name": "科学写作",
+        "summary": "以完整段落撰写科学论文，先列提纲再成文。"
+      }
+    }
+  },
+  "version": 1
+}

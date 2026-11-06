@@ -1,14 +1,17 @@
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { BUNDLED_SKILLS_DIR, getUserSkillsDir } from './skillRoots.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// Dr. Claw's skill libraries: the bundled skills and the user skills directory.
+// Projects reach them through symlinks (<project>/.claude/skills/<name> ->
+// <library>/<name>), so the real paths sit outside the project directory and
+// Claude Code would ask for permission every time an agent reads a skill's
+// reference files.
+export { BUNDLED_SKILLS_DIR };
 
-// Dr. Claw's own skill library. Projects reach it through symlinks
-// (<project>/.claude/skills/<name> -> <repo>/skills/<name>), so the real
-// paths sit outside the project directory and Claude Code would ask for
-// permission every time an agent reads a skill's reference files.
-export const BUNDLED_SKILLS_DIR = path.resolve(__dirname, '..', '..', 'skills');
+function defaultSkillsDirs() {
+  return [BUNDLED_SKILLS_DIR, getUserSkillsDir()];
+}
 
 const READ_ONLY_TOOLS = new Set(['Read', 'Glob', 'Grep']);
 
@@ -34,11 +37,12 @@ function targetPathFor(toolName, input) {
 }
 
 /**
- * True when a read-only tool call targets a file or directory inside the
- * bundled skill library (after resolving symlinks). Writes, shell commands
- * and anything outside the library are never matched.
+ * True when a read-only tool call targets a file or directory inside one of
+ * the skill libraries (after resolving symlinks). Writes, shell commands and
+ * anything outside the libraries are never matched. Pass `skillsDir` or
+ * `skillsDirs` to check other directories.
  */
-export function isBundledSkillRead(toolName, input, { skillsDir = BUNDLED_SKILLS_DIR, cwd } = {}) {
+export function isBundledSkillRead(toolName, input, { skillsDir, skillsDirs, cwd } = {}) {
   if (!READ_ONLY_TOOLS.has(toolName)) return false;
 
   const rawTarget = targetPathFor(toolName, input);
@@ -56,8 +60,11 @@ export function isBundledSkillRead(toolName, input, { skillsDir = BUNDLED_SKILLS
     : path.resolve(cwd || process.cwd(), rawTarget);
 
   const realTarget = realpathOrNull(absoluteTarget);
-  const realSkillsDir = realpathOrNull(skillsDir);
-  if (!realTarget || !realSkillsDir) return false;
+  if (!realTarget) return false;
 
-  return realTarget === realSkillsDir || realTarget.startsWith(realSkillsDir + path.sep);
+  const dirs = skillsDirs || (skillsDir ? [skillsDir] : defaultSkillsDirs());
+  return dirs.some((dir) => {
+    const realSkillsDir = realpathOrNull(dir);
+    return !!realSkillsDir && (realTarget === realSkillsDir || realTarget.startsWith(realSkillsDir + path.sep));
+  });
 }

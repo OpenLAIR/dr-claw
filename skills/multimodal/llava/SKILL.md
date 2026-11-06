@@ -1,6 +1,6 @@
 ---
 name: llava
-description: Large Language and Vision Assistant. Enables visual instruction tuning and image-based conversations. Combines CLIP vision encoder with Vicuna/LLaMA language models. Supports multi-turn image chat, visual question answering, and instruction following. Use for vision-language chatbots or image understanding tasks. Best for conversational image analysis.
+description: Large Language and Vision Assistant. Enables visual instruction tuning and image-based conversations. Combines CLIP vision encoder with Vicuna/LLaMA language models. Supports multi-turn image chat, visual question answering, and instruction following. Use for vision-language chatbots or image understanding tasks. Best for conversational image analysis. Also covers BLIP-2 (guides in references/).
 version: 1.0.0
 author: Orchestra Research
 license: MIT
@@ -301,4 +301,11 @@ demo.launch()
 - **Models**: https://huggingface.co/liuhaotian
 - **License**: Apache 2.0
 
+## Related tools (merged into this skill)
 
+These were separate skills. Their full guides now live under `references/`;
+read the one you need when the user asks for that tool or it fits the task better.
+
+| Tool | Guide | What it covers |
+|---|---|---|
+| BLIP-2 | [references/blip-2/overview.md](references/blip-2/overview.md) | Vision-language pre-training framework bridging frozen image encoders and LLMs. |

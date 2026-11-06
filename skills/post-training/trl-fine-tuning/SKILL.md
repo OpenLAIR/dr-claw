@@ -1,6 +1,6 @@
 ---
 name: fine-tuning-with-trl
-description: Fine-tune LLMs using reinforcement learning with TRL - SFT for instruction tuning, DPO for preference alignment, PPO/GRPO for reward optimization, and reward model training. Use when need RLHF, align model with preferences, or train from human feedback. Works with HuggingFace Transformers.
+description: Fine-tune LLMs using reinforcement learning with TRL - SFT for instruction tuning, DPO for preference alignment, PPO/GRPO for reward optimization, and reward model training. Use when need RLHF, align model with preferences, or train from human feedback. Works with HuggingFace Transformers. Also covers GRPO with TRL and SimPO (guides in references/).
 version: 1.0.0
 author: Orchestra Research
 license: MIT
@@ -451,5 +451,12 @@ config = PPOConfig(
   - "Group Relative Policy Optimization" (GRPO, 2024)
 - Examples: https://github.com/huggingface/trl/tree/main/examples/scripts
 
+## Related tools (merged into this skill)
 
+These were separate skills. Their full guides now live under `references/`;
+read the one you need when the user asks for that tool or it fits the task better.
 
+| Tool | Guide | What it covers |
+|---|---|---|
+| GRPO with TRL | [references/grpo-rl-training/overview.md](references/grpo-rl-training/overview.md) | Expert guidance for GRPO/RL fine-tuning with TRL for reasoning and task-specific model training |
+| SimPO | [references/simpo/overview.md](references/simpo/overview.md) | Simple Preference Optimization for LLM alignment. |

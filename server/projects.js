@@ -87,6 +87,9 @@ import {
 import { resolveNanoSessionAbsPath, safeNanoSessionFilename } from './nanoSessionPaths.js';
 import { readJsonlLinesFrom } from './utils/jsonlTailReader.js';
 import { EventEmitter } from 'events';
+import { syncProjectSkillLinks } from './utils/skillLinks.js';
+import { BUNDLED_SKILLS_DIR, collectAllSkillDirs, getUserSkillsDir } from './utils/skillRoots.js';
+import { readSkillManifest, resolveProjectSkillStates } from './utils/skillDefaults.js';
 
 /**
  * Emitted when a background discovery pass changes the project set, so the
@@ -96,7 +99,7 @@ import { EventEmitter } from 'events';
 const projectsEvents = new EventEmitter();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DRCLAW_SKILLS_DIR = path.join(__dirname, '..', 'skills');
+const DRCLAW_SKILLS_DIR = BUNDLED_SKILLS_DIR;
 const PROJECT_SKILL_FOLDERS = ['.claude', '.agents', '.cursor', '.gemini'];
 const PROJECT_PIPELINE_FOLDERS = ['Survey', 'Ideation', 'Experiment', 'Publication', 'Promotion'];
 const LEGACY_DEFAULT_WORKSPACES_ROOT = path.join(os.homedir(), 'vibelab');
@@ -3045,123 +3048,12 @@ async function deleteTrashedProject(projectName, mode = 'logical', userId = null
 }
 
 /**
- * Create .claude, .agents, .cursor and their skills subdirs in the project,
- * and symlink each Dr. Claw skill directory into those skills subdirs.
- * Also creates pipeline folders: Survey, Ideation, Experiment, Publication, Promotion.
+ * Create the pipeline folders, instance.json and agent templates in a project,
+ * then link the skills enabled for it into .claude, .agents, .cursor and
+ * .gemini skills subdirs (see utils/skillDefaults.js). Runs before every agent
+ * turn, so changes to the enabled set apply on the next turn.
  * Failures are logged but do not throw (project add still succeeds).
  */
-async function collectSkillDirs(baseDir) {
-  const results = []; // { name, absolutePath }
-
-  async function walk(dir) {
-    const entries = await fs.readdir(dir, { withFileTypes: true });
-    const hasSkillMd = entries.some(e => e.isFile() && e.name === 'SKILL.md');
-    if (hasSkillMd) {
-      results.push({ name: path.basename(dir), absolutePath: dir });
-      return; // Don't recurse deeper into a skill directory
-    }
-    for (const entry of entries) {
-      if (entry.isDirectory() && !entry.name.startsWith('.')) {
-        await walk(path.join(dir, entry.name));
-      }
-    }
-  }
-
-  await walk(baseDir);
-  return results;
-}
-
-/**
- * Load the set of core (platform-native) skill names from skill-tag-mapping.json.
- * Returns a Set of skill directory names that are considered "core pipeline" skills.
- */
-function getCoreSkillNames() {
-  try {
-    const mappingPath = path.join(DRCLAW_SKILLS_DIR, 'skill-tag-mapping.json');
-    const raw = fsSync.readFileSync(mappingPath, 'utf8');
-    const mapping = JSON.parse(raw);
-    const names = new Set(mapping.platformNativeSkills || []);
-    // inno-pipeline-planner is always core but not in platformNativeSkills
-    names.add('inno-pipeline-planner');
-    // bioinformatics-init-analysis resolves to dir name 'init-analysis' via collectSkillDirs
-    names.add('init-analysis');
-    return names;
-  } catch {
-    return new Set();
-  }
-}
-
-/**
- * Generate a compact skills-index.md for the .agents/skills/ directory.
- * Reads YAML frontmatter (name, description) from each SKILL.md and produces
- * a markdown table grouped by Core Pipeline Skills vs Library Skills.
- *
- * @param {Array<{name: string, absolutePath: string}>} skillDirs
- * @returns {string} Markdown content for skills-index.md
- */
-async function generateSkillsIndex(skillDirs) {
-  const matter = (await import('gray-matter')).default;
-  const coreNames = getCoreSkillNames();
-
-  const coreSkills = [];
-  const librarySkills = [];
-
-  for (const { name, absolutePath } of skillDirs) {
-    const skillMdPath = path.join(absolutePath, 'SKILL.md');
-    let skillName = name;
-    let description = '';
-    try {
-      const content = await fs.readFile(skillMdPath, 'utf8');
-      const { data } = matter(content);
-      if (data.name) skillName = data.name;
-      if (data.description) {
-        // Collapse newlines (YAML block scalars) and escape pipe chars for markdown tables
-        const cleaned = data.description.replace(/[\r\n]+/g, ' ').replace(/\|/g, '/').trim();
-        description = cleaned.length > 120
-          ? cleaned.slice(0, 117) + '...'
-          : cleaned;
-      }
-    } catch {
-      // Skip skills with unreadable SKILL.md
-      continue;
-    }
-
-    const entry = { dirName: name, skillName, description };
-    if (coreNames.has(name)) {
-      coreSkills.push(entry);
-    } else {
-      librarySkills.push(entry);
-    }
-  }
-
-  coreSkills.sort((a, b) => a.dirName.localeCompare(b.dirName));
-  librarySkills.sort((a, b) => a.dirName.localeCompare(b.dirName));
-
-  const lines = [
-    '# Skills Index',
-    '',
-    '> **Do NOT read all SKILL.md files at once.** Use this index to find the right skill, then read only that one.',
-    '',
-    '## Core Pipeline Skills',
-    '',
-    '| Skill | Path | Description |',
-    '|-------|------|-------------|',
-  ];
-  for (const s of coreSkills) {
-    lines.push(`| ${s.skillName} | \`.agents/skills/${s.dirName}/SKILL.md\` | ${s.description} |`);
-  }
-
-  lines.push('', '## Library Skills', '');
-  lines.push('| Skill | Path | Description |');
-  lines.push('|-------|------|-------------|');
-  for (const s of librarySkills) {
-    lines.push(`| ${s.skillName} | \`.agents/skills/library/${s.dirName}/SKILL.md\` | ${s.description} |`);
-  }
-
-  lines.push('');
-  return lines.join('\n');
-}
-
 async function ensureProjectSkillLinks(projectPath) {
   try {
     for (const dir of PROJECT_PIPELINE_FOLDERS) {
@@ -3254,80 +3146,36 @@ async function ensureProjectSkillLinks(projectPath) {
   }
 
   try {
-    const skillDirs = await collectSkillDirs(DRCLAW_SKILLS_DIR);
+    const userSkillsDir = getUserSkillsDir();
+    // Bundled skills and the user's own skills; a user skill wins on a name clash.
+    const skillDirs = await collectAllSkillDirs({ bundledDir: DRCLAW_SKILLS_DIR, userDir: userSkillsDir });
     if (skillDirs.length === 0) return;
 
-    // Warn about name collisions
-    const seen = new Map();
-    for (const skill of skillDirs) {
-      if (seen.has(skill.name)) {
-        console.warn(`[projects] Skill name collision: "${skill.name}" found at both ${seen.get(skill.name)} and ${skill.absolutePath}`);
-      } else {
-        seen.set(skill.name, skill.absolutePath);
-      }
+    const skillNames = skillDirs.map((skill) => skill.name);
+    let enabledNames;
+    try {
+      const { states } = await resolveProjectSkillStates({
+        skillNames,
+        skillsDir: DRCLAW_SKILLS_DIR,
+        userSkillNames: skillDirs.filter((skill) => skill.source === 'user').map((skill) => skill.name),
+        projectPath,
+      });
+      enabledNames = new Set(states.filter((state) => state.enabled).map((state) => state.name));
+    } catch (err) {
+      // Never unlink skills because the settings could not be read.
+      console.error('[projects] Failed to read skill defaults, linking every skill:', err.message);
+      enabledNames = new Set(skillNames);
     }
 
-    const coreNames = getCoreSkillNames();
-
-    for (const dir of PROJECT_SKILL_FOLDERS) {
-      const skillsSubdir = path.join(projectPath, dir, 'skills');
-      const isAgents = dir === '.agents';
-      try {
-        await fs.mkdir(skillsSubdir, { recursive: true });
-        if (isAgents) {
-          await fs.mkdir(path.join(skillsSubdir, 'library'), { recursive: true });
-        }
-      } catch (err) {
-        console.error(`[projects] Failed to create ${dir}/skills:`, err.message);
-        continue;
-      }
-
-      for (const { name, absolutePath } of skillDirs) {
-        // For .agents/: core skills at top level, library skills under library/
-        const linkPath = isAgents && !coreNames.has(name)
-          ? path.join(skillsSubdir, 'library', name)
-          : path.join(skillsSubdir, name);
-        try {
-          try {
-            await fs.unlink(linkPath);
-          } catch (_) {
-            // ignore if not exists or not a symlink
-          }
-          // Clean up stale top-level symlink when migrating library skills into library/
-          if (isAgents && !coreNames.has(name)) {
-            try { await fs.unlink(path.join(skillsSubdir, name)); } catch (_) {}
-          }
-          await fs.symlink(absolutePath, linkPath, 'dir');
-        } catch (err) {
-          console.error(`[projects] Failed to symlink ${name} in ${dir}/skills:`, err.message);
-        }
-      }
-
-      // Write the skills index for .agents/ so Codex can discover skills lazily
-      if (isAgents) {
-        try {
-          const indexContent = await generateSkillsIndex(skillDirs);
-          await fs.writeFile(path.join(skillsSubdir, 'skills-index.md'), indexContent, 'utf8');
-        } catch (err) {
-          console.error('[projects] Failed to write skills-index.md:', err.message);
-        }
-      }
-
-      // Symlink JSON config files from Dr. Claw root into each project skills folder
-      for (const jsonFile of ['skill-tag-mapping.json', 'stage-skill-map.json']) {
-        const srcJson = path.join(DRCLAW_SKILLS_DIR, jsonFile);
-        const destJson = path.join(skillsSubdir, jsonFile);
-        try {
-          await fs.access(srcJson);
-          try { await fs.unlink(destJson); } catch (_) {}
-          await fs.symlink(srcJson, destJson, 'file');
-        } catch (err) {
-          if (err.code !== 'ENOENT') {
-            console.error(`[projects] Failed to symlink ${jsonFile} in ${dir}/skills:`, err.message);
-          }
-        }
-      }
-    }
+    await syncProjectSkillLinks({
+      projectPath,
+      skillsRoot: DRCLAW_SKILLS_DIR,
+      skillsRoots: [userSkillsDir],
+      skillDirs,
+      enabledNames,
+      coreNames: readSkillManifest(DRCLAW_SKILLS_DIR).coreNames,
+      folders: PROJECT_SKILL_FOLDERS,
+    });
   } catch (err) {
     console.error('[projects] ensureProjectSkillLinks failed:', err.message);
   }
