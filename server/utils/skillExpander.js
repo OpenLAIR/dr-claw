@@ -1,8 +1,12 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
-import { BUNDLED_SKILLS_DIR } from './bundledSkillAccess.js';
+import { BUNDLED_SKILLS_DIR, getUserSkillsDir } from './skillRoots.js';
 import { collectSkillDirs } from './skillLinks.js';
+
+function defaultSkillsDirs() {
+  return [getUserSkillsDir(), BUNDLED_SKILLS_DIR];
+}
 
 /**
  * Strip leading [Context: ...] prefixes the frontend injects for new sessions.
@@ -23,7 +27,8 @@ function buildSkillSearchPaths(skillName, workingDir) {
     path.join(workingDir, '.agents', 'skills', 'library', skillName),
     path.join(workingDir, '.claude', 'skills', skillName),
     path.join(workingDir, '.gemini', 'skills', skillName),
-    path.join(process.cwd(), 'skills', skillName),
+    path.join(getUserSkillsDir(), skillName),
+    path.join(BUNDLED_SKILLS_DIR, skillName),
     path.join(os.homedir(), '.claude', 'skills', skillName),
   ];
 }
@@ -41,18 +46,21 @@ async function isFile(target) {
 }
 
 /**
- * Find a skill in the bundled library by directory name, including skills in
- * nested category folders (e.g. skills/inference-serving/vllm). Skills that
- * are not enabled for a project are not linked into it, so this is how `/name`
- * still reaches them.
+ * Find a skill in the skill libraries (user skills first, then bundled) by
+ * directory name, including skills in nested category folders (e.g.
+ * skills/inference-serving/vllm). Skills that are not enabled for a project
+ * are not linked into it, so this is how `/name` still reaches them.
  */
-async function findBundledSkillMdPath(skillName, skillsDir = BUNDLED_SKILLS_DIR) {
-  try {
-    const match = (await collectSkillDirs(skillsDir)).find((skill) => skill.name === skillName);
-    return match ? path.join(match.absolutePath, 'SKILL.md') : null;
-  } catch {
-    return null;
+async function findBundledSkillMdPath(skillName, skillsDirs = defaultSkillsDirs()) {
+  for (const skillsDir of skillsDirs) {
+    try {
+      const match = (await collectSkillDirs(skillsDir)).find((skill) => skill.name === skillName);
+      if (match) return path.join(match.absolutePath, 'SKILL.md');
+    } catch {
+      // Missing library: try the next one.
+    }
   }
+  return null;
 }
 
 async function findSkillMdPath(skillName, workingDir) {
@@ -162,12 +170,12 @@ export async function expandSkillCommand(command, workingDir) {
 
 /**
  * Claude Code resolves `/name` itself, but only for skills in the project's
- * .claude/skills or ~/.claude/skills. For a bundled skill the user has not
+ * .claude/skills or ~/.claude/skills. For a library skill the user has not
  * enabled for this project, point Claude at its SKILL.md instead (reads of the
- * bundled library are auto-allowed, see bundledSkillAccess.js). Anything else,
+ * skill libraries are auto-allowed, see bundledSkillAccess.js). Anything else,
  * including Claude Code's own slash commands, is returned unchanged.
  */
-export async function rewriteUnlinkedSkillCommand(command, workingDir, { skillsDir = BUNDLED_SKILLS_DIR } = {}) {
+export async function rewriteUnlinkedSkillCommand(command, workingDir, { skillsDir, skillsDirs } = {}) {
   if (!command || typeof command !== 'string' || !workingDir) return command;
 
   const { prefix, body } = splitContextPrefix(command);
@@ -183,7 +191,10 @@ export async function rewriteUnlinkedSkillCommand(command, workingDir, { skillsD
     if (await isFile(linked)) return command;
   }
 
-  const skillMdPath = await findBundledSkillMdPath(skillName, skillsDir);
+  const skillMdPath = await findBundledSkillMdPath(
+    skillName,
+    skillsDirs || (skillsDir ? [skillsDir] : defaultSkillsDirs()),
+  );
   if (!skillMdPath) return command;
 
   const lines = [

@@ -35,6 +35,7 @@
     "native:node": "node scripts/native-runtime.mjs node",
     "native:electron": "node scripts/native-runtime.mjs electron",
     "desktop:icons": "node scripts/build-electron-icons.mjs",
+    "skills:manifest": "node scripts/export-bundled-skills-manifest.mjs",
     "desktop:prepare": "node electron/cli.mjs prepare",
     "desktop:dev": "node electron/cli.mjs dev",
     "desktop:pack": "node electron/cli.mjs pack",

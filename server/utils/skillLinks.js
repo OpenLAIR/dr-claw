@@ -44,7 +44,7 @@ async function readSkillSummary(absolutePath, fallbackName) {
 
 /**
  * Markdown index for .agents/skills/. Enabled skills are listed by their link
- * path; disabled ones are listed by their path in the bundled library so an
+ * path; disabled ones are listed by their path in the skill library so an
  * agent can still read them when the user asks for one.
  *
  * @param {Array<{ name, absolutePath, enabled?: boolean }>} skillDirs
@@ -178,19 +178,26 @@ async function pruneDanglingLinks(dir, roots) {
 
 /**
  * Make each project skills folder match the enabled set: link enabled skills,
- * unlink disabled ones and dangling links. Only symlinks that point into
- * `skillsRoot` are ever removed.
+ * unlink disabled ones and dangling links. Only symlinks that point into one
+ * of the skill libraries (`skillsRoot` and `skillsRoots`) are ever removed.
  *
  * @param {object} options
  * @param {string} options.projectPath
- * @param {string} options.skillsRoot - bundled skill library
+ * @param {string} options.skillsRoot - bundled skill library; its
+ *   skill-tag-mapping.json and stage-skill-map.json are linked too
+ * @param {string[]} [options.skillsRoots] - other libraries skills are linked
+ *   from (e.g. the user skills directory)
  * @param {Array<{ name: string, absolutePath: string }>} options.skillDirs
  * @param {Set<string>} options.enabledNames
  * @param {Set<string>} options.coreNames
  * @param {string[]} options.folders - e.g. ['.claude', '.agents', '.cursor', '.gemini']
  */
-export async function syncProjectSkillLinks({ projectPath, skillsRoot, skillDirs, enabledNames, coreNames, folders }) {
-  const roots = [...new Set([path.resolve(skillsRoot), await realpathOrSelf(path.resolve(skillsRoot))])];
+export async function syncProjectSkillLinks({ projectPath, skillsRoot, skillsRoots = [], skillDirs, enabledNames, coreNames, folders }) {
+  const libraryRoots = [skillsRoot, ...skillsRoots].filter(Boolean).map((root) => path.resolve(root));
+  const roots = [...new Set([
+    ...libraryRoots,
+    ...(await Promise.all(libraryRoots.map((root) => realpathOrSelf(root)))),
+  ])];
 
   for (const dir of folders) {
     const skillsSubdir = path.join(projectPath, dir, 'skills');

@@ -87,7 +87,8 @@ import {
 import { resolveNanoSessionAbsPath, safeNanoSessionFilename } from './nanoSessionPaths.js';
 import { readJsonlLinesFrom } from './utils/jsonlTailReader.js';
 import { EventEmitter } from 'events';
-import { collectSkillDirs, syncProjectSkillLinks } from './utils/skillLinks.js';
+import { syncProjectSkillLinks } from './utils/skillLinks.js';
+import { BUNDLED_SKILLS_DIR, collectAllSkillDirs, getUserSkillsDir } from './utils/skillRoots.js';
 import { readSkillManifest, resolveProjectSkillStates } from './utils/skillDefaults.js';
 
 /**
@@ -98,7 +99,7 @@ import { readSkillManifest, resolveProjectSkillStates } from './utils/skillDefau
 const projectsEvents = new EventEmitter();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DRCLAW_SKILLS_DIR = path.join(__dirname, '..', 'skills');
+const DRCLAW_SKILLS_DIR = BUNDLED_SKILLS_DIR;
 const PROJECT_SKILL_FOLDERS = ['.claude', '.agents', '.cursor', '.gemini'];
 const PROJECT_PIPELINE_FOLDERS = ['Survey', 'Ideation', 'Experiment', 'Publication', 'Promotion'];
 const LEGACY_DEFAULT_WORKSPACES_ROOT = path.join(os.homedir(), 'vibelab');
@@ -3145,18 +3146,10 @@ async function ensureProjectSkillLinks(projectPath) {
   }
 
   try {
-    const skillDirs = await collectSkillDirs(DRCLAW_SKILLS_DIR);
+    const userSkillsDir = getUserSkillsDir();
+    // Bundled skills and the user's own skills; a user skill wins on a name clash.
+    const skillDirs = await collectAllSkillDirs({ bundledDir: DRCLAW_SKILLS_DIR, userDir: userSkillsDir });
     if (skillDirs.length === 0) return;
-
-    // Warn about name collisions
-    const seen = new Map();
-    for (const skill of skillDirs) {
-      if (seen.has(skill.name)) {
-        console.warn(`[projects] Skill name collision: "${skill.name}" found at both ${seen.get(skill.name)} and ${skill.absolutePath}`);
-      } else {
-        seen.set(skill.name, skill.absolutePath);
-      }
-    }
 
     const skillNames = skillDirs.map((skill) => skill.name);
     let enabledNames;
@@ -3164,6 +3157,7 @@ async function ensureProjectSkillLinks(projectPath) {
       const { states } = await resolveProjectSkillStates({
         skillNames,
         skillsDir: DRCLAW_SKILLS_DIR,
+        userSkillNames: skillDirs.filter((skill) => skill.source === 'user').map((skill) => skill.name),
         projectPath,
       });
       enabledNames = new Set(states.filter((state) => state.enabled).map((state) => state.name));
@@ -3176,6 +3170,7 @@ async function ensureProjectSkillLinks(projectPath) {
     await syncProjectSkillLinks({
       projectPath,
       skillsRoot: DRCLAW_SKILLS_DIR,
+      skillsRoots: [userSkillsDir],
       skillDirs,
       enabledNames,
       coreNames: readSkillManifest(DRCLAW_SKILLS_DIR).coreNames,

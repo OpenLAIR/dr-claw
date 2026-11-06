@@ -42,6 +42,10 @@ type SkillNode = {
   path: string;
   type: 'file' | 'directory';
   children?: SkillNode[];
+  /** Set by the server on skill directories: bundled (read-only) or the user's own. */
+  source?: 'bundled' | 'user';
+  /** Path of a skill directory for /api/skills/file and /global-skill. */
+  dirPath?: string;
 };
 
 type SkillTagType = 'intent' | 'capability' | 'domain' | 'status' | 'source' | 'stage' | 'meta';
@@ -79,11 +83,15 @@ type SkillSummary = {
   tags: SkillTag[];
   hasSkillMd: boolean;
   taxonomy: SkillTaxonomyRecord | null;
-  /** Shipped with Dr. Claw (listed in skills-catalog-v2.json); read-only in the UI. */
+  /** Shipped with Dr. Claw; read-only. Comes from the server's `source`. */
   isBundled: boolean;
   /** Friendly name and one-line summary (skills/skill-display-names.json), else the raw name and summary. */
   displayName: string;
   displaySummary: string;
+  /** A user skill that replaces a built-in skill of the same name. */
+  replacesBuiltIn: boolean;
+  /** Where the skill lives, as shown in the UI. */
+  displayPath: string;
 };
 
 type FacetOption = {
@@ -1197,6 +1205,7 @@ export default function SkillsDashboard({ onSendToChat, projects = [] }: SkillsD
   const [editContent, setEditContent] = useState('');
   const [editLoading, setEditLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [copyLoading, setCopyLoading] = useState(false);
   const [modalMessage, setModalMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [defaultsProject, setDefaultsProject] = useState<string | null>(null);
   const [enabledFilter, setEnabledFilter] = useState<'all' | 'enabled' | 'disabled'>('all');
@@ -1295,8 +1304,8 @@ export default function SkillsDashboard({ onSendToChat, projects = [] }: SkillsD
           const skillName = node.name;
           const normalizedNodePath = node.path.replace(/\\/g, '/');
 
-          let dirPath = skillName;
-          if (normalizedSkillsRoot && normalizedNodePath.startsWith(`${normalizedSkillsRoot}/`)) {
+          let dirPath = node.dirPath || skillName;
+          if (!node.dirPath && normalizedSkillsRoot && normalizedNodePath.startsWith(`${normalizedSkillsRoot}/`)) {
             dirPath = normalizedNodePath.slice(normalizedSkillsRoot.length + 1);
           }
 
@@ -1355,7 +1364,9 @@ export default function SkillsDashboard({ onSendToChat, projects = [] }: SkillsD
             tags,
             hasSkillMd,
             taxonomy,
-            isBundled: catalogRecordMap.has(dirPath),
+            isBundled: node.source ? node.source === 'bundled' : catalogRecordMap.has(dirPath),
+            replacesBuiltIn: node.source === 'user' && catalogRecordMap.has(dirPath),
+            displayPath: node.source === 'user' ? node.path : `skills/${dirPath}`,
             displayName: displayNames[skillName]?.name || skillName,
             displaySummary: displayNames[skillName]?.summary || summary,
           };
@@ -1535,6 +1546,26 @@ export default function SkillsDashboard({ onSendToChat, projects = [] }: SkillsD
       setDeleteLoading(false);
     }
   }, [focusedSkill, loadSkills, text.confirmDeleteSkill, text.skillDeleted]);
+
+  const handleCopyToMine = useCallback(async () => {
+    if (!focusedSkill) return;
+    setCopyLoading(true);
+    setModalMessage(null);
+    try {
+      const response = await api.copySkillToUser(focusedSkill.dirPath);
+      const payload = await response.json().catch(() => ({}));
+      if (response.ok) {
+        await loadSkills();
+        setModalMessage({ type: 'success', text: t('common:skillDefaults.copiedToMine', { name: focusedSkill.name }) });
+      } else {
+        setModalMessage({ type: 'error', text: payload?.error || 'Copy failed' });
+      }
+    } catch (err) {
+      setModalMessage({ type: 'error', text: err instanceof Error ? err.message : 'Copy failed' });
+    } finally {
+      setCopyLoading(false);
+    }
+  }, [focusedSkill, loadSkills, t]);
 
   useEffect(() => {
     loadSkills();
@@ -1935,7 +1966,21 @@ export default function SkillsDashboard({ onSendToChat, projects = [] }: SkillsD
                             </>
                           )}
                           {!isEditing && focusedSkill.isBundled && (
-                            <p className="w-full text-right text-xs text-muted-foreground">{t('common:skillDefaults.builtInReadOnly')}</p>
+                            <>
+                              <button
+                                type="button"
+                                onClick={handleCopyToMine}
+                                disabled={copyLoading || !focusedSkill.hasSkillMd}
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50"
+                              >
+                                {copyLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Copy className="h-3.5 w-3.5" />}
+                                {copyLoading ? t('common:skillDefaults.copyingToMine') : t('common:skillDefaults.copyToMine')}
+                              </button>
+                              <p className="w-full text-right text-xs text-muted-foreground">{t('common:skillDefaults.builtInReadOnly')}</p>
+                            </>
+                          )}
+                          {!isEditing && focusedSkill.replacesBuiltIn && (
+                            <p className="w-full text-right text-xs text-muted-foreground">{t('common:skillDefaults.userCopyOfBuiltIn')}</p>
                           )}
                           {isEditing && (
                             <>
@@ -2003,7 +2048,7 @@ export default function SkillsDashboard({ onSendToChat, projects = [] }: SkillsD
 
                       <div className="border-b border-border pb-3">
                         <p className="text-sm text-muted-foreground">{text.pathField}</p>
-                        <p className="mt-1 break-all text-sm font-medium text-foreground">{`skills/${focusedSkill.dirPath}`}</p>
+                        <p className="mt-1 break-all text-sm font-medium text-foreground">{focusedSkill.displayPath}</p>
                       </div>
 
                       <div className="border-b border-border pb-3">
