@@ -152,4 +152,4 @@ Orchestration ──► Research & Discovery ──► Ideation ──► Experi
 
 The skills in this folder ship with Dr. Claw and are read-only at runtime (in the desktop app this folder is inside the app bundle). `bundled-skills.json` lists them. After adding, moving or removing a skill here, run `npm run skills:manifest`; a test fails when the list is out of date.
 
-Skills a user imports, uploads or copies from a built-in skill are stored in `~/.dr-claw/skills` (or `DR_CLAW_USER_SKILLS_DIR`). On startup the server moves any skill found here that is not in `bundled-skills.json` to that folder.
+Skills a user imports, uploads or copies from a built-in skill are stored in `~/.dr-claw/skills` (or `DR_CLAW_USER_SKILLS_DIR`). On startup the server moves any skill found here that is not in `bundled-skills.json` to that folder. It skips this when running from a git checkout (a `.git` next to `skills/`), so a skill you just added is not moved before you regenerate the list; set `DR_CLAW_MIGRATE_BUNDLED_SKILLS=1` to run it anyway.

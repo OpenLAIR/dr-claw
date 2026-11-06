@@ -228,6 +228,11 @@ export async function readMergedSkillMetadataFile(fileName, { bundledDir = BUNDL
 // One-time migration out of the bundled dir
 // ---------------------------------------------------------------------------
 
+/** True when the app root (the parent of the bundled skills dir) holds a `.git` file or folder. */
+export function isGitCheckout(bundledDir = BUNDLED_SKILLS_DIR) {
+  return fs.existsSync(path.join(path.dirname(path.resolve(bundledDir)), '.git'));
+}
+
 async function pathExists(target) {
   try {
     await fsp.lstat(target);
@@ -244,16 +249,25 @@ async function pathExists(target) {
  * leaves the original where it was. A skill whose name already exists in the
  * user dir is left alone (the user copy wins when both exist).
  *
- * Without a bundled manifest nothing is moved.
+ * Without a bundled manifest nothing is moved. Nothing is moved either when
+ * the app runs from a git checkout (a `.git` next to skills/): there a skill
+ * missing from the manifest is usually one a developer just added, not a user
+ * import. DR_CLAW_MIGRATE_BUNDLED_SKILLS=1 turns the migration on anyway.
  *
- * @returns {Promise<{ migrated: string[], skipped: string[], failed: Array<{ name, error }>, leftInBundle: string[] }>}
+ * @returns {Promise<{ migrated: string[], skipped: string[], failed: Array<{ name, error }>, leftInBundle: string[], skippedReason?: string }>}
  */
 export async function migrateUserSkillsOutOfBundle({
   bundledDir = BUNDLED_SKILLS_DIR,
   userDir = getUserSkillsDir(),
   logger = console,
+  env = process.env,
 } = {}) {
   const result = { migrated: [], skipped: [], failed: [], leftInBundle: [] };
+  if (isGitCheckout(bundledDir) && env.DR_CLAW_MIGRATE_BUNDLED_SKILLS !== '1') {
+    result.skippedReason = 'git-checkout';
+    logger.log?.(`[skills] Running from a git checkout; not moving unlisted skills out of ${bundledDir} (set DR_CLAW_MIGRATE_BUNDLED_SKILLS=1 to move them)`);
+    return result;
+  }
   const manifest = readBundledManifest(bundledDir);
   if (!manifest) return result;
 

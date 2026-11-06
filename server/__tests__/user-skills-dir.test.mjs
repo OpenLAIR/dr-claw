@@ -161,6 +161,27 @@ describe('migrateUserSkillsOutOfBundle', () => {
     expect(await exists(path.join(userDir, 'mine', 'notes.md'))).toBe(true);
   });
 
+  it('skips a git checkout unless DR_CLAW_MIGRATE_BUNDLED_SKILLS=1', async () => {
+    await mkdir(path.join(path.dirname(bundledDir), '.git'));
+    const skipped = await migrateUserSkillsOutOfBundle({ bundledDir, userDir, logger: quiet, env: {} });
+    expect(skipped).toMatchObject({ migrated: [], skippedReason: 'git-checkout' });
+    expect(await exists(path.join(bundledDir, 'mine', 'notes.md'))).toBe(true);
+    expect(await exists(path.join(userDir, 'mine'))).toBe(false);
+
+    // A worktree has a .git file instead of a folder.
+    await rm(path.join(path.dirname(bundledDir), '.git'), { recursive: true });
+    await writeFile(path.join(path.dirname(bundledDir), '.git'), 'gitdir: /elsewhere\n');
+    expect((await migrateUserSkillsOutOfBundle({ bundledDir, userDir, logger: quiet, env: {} })).skippedReason).toBe('git-checkout');
+
+    const forced = await migrateUserSkillsOutOfBundle({
+      bundledDir, userDir, logger: quiet, env: { DR_CLAW_MIGRATE_BUNDLED_SKILLS: '1' },
+    });
+    expect(forced.migrated).toEqual(['mine']);
+    expect(forced.skippedReason).toBeUndefined();
+    expect(await exists(path.join(bundledDir, 'mine'))).toBe(false);
+    expect(await exists(path.join(userDir, 'mine', 'notes.md'))).toBe(true);
+  });
+
   it('does nothing without a release manifest', async () => {
     await rm(path.join(bundledDir, 'bundled-skills.json'));
     const result = await migrateUserSkillsOutOfBundle({ bundledDir, userDir, logger: quiet });
