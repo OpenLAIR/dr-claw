@@ -559,7 +559,7 @@
     "claudeDescription": "Anthropic 명령줄 에이전트",
     "cursorDescription": "Cursor 명령줄 에이전트",
     "codexDescription": "OpenAI 코딩 명령줄 도구",
-    "geminiDescription": "Google Gemini 터미널 에이전트"
+    "geminiDescription": "Google Antigravity CLI (Gemini 등 여러 모델)"
   },
   "skillsLibrary": {
     "loading": "스킬을 불러오는 중…",

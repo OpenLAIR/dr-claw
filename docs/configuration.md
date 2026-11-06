@@ -24,7 +24,7 @@ Dr. Claw is configured through environment variables in a `.env` file at the pro
 | `VITE_PORT` | No | `5173` | Vite dev server port (development only). |
 | `CLAUDE_CLI_PATH` | No | `claude` | Absolute or relative path to the Claude Code binary. Override if `claude` is not on your `PATH`. |
 | `CURSOR_CLI_PATH` | No | Auto-detect (`cursor-agent` then `agent`) | Override Cursor CLI command/binary. Useful when your environment only provides one alias. |
-| `GEMINI_CLI_PATH` | No | `gemini` | Override Gemini CLI command/binary. Useful when your shell resolves Gemini through a custom alias or path. |
+| `ANTIGRAVITY_CLI_PATH` | No | `agy` | Path to the Antigravity CLI used by the Gemini provider (the Gemini CLI was retired). Defaults to `~/.local/bin/agy` when present, else `agy` on `PATH`. |
 | `CODEX_CLI_PATH` | No | `codex` | Override Codex CLI command/binary. Useful when Codex is installed outside your default `PATH`. |
 
 ### Database
@@ -83,7 +83,7 @@ without waiting for a Dr. Claw release.
 |----------|--------|-------|
 | Claude | Agent SDK `supportedModels()` control request | The menu the bundled Claude Code CLI serves (e.g. `default`, `opus[1m]`, `sonnet`), so it tracks the SDK version Dr. Claw ships. The model configured in `~/.claude/settings.json` (or `CLAUDE_CONFIG_DIR`, or `ANTHROPIC_MODEL`) is added the way the CLI's own `/model` menu adds it. The CLI also accepts ids it does not list, so built-in entries are kept without a deprecated marker. No tokens are consumed and settings/hooks are not loaded during the probe. |
 | Codex | `codex app-server` → `model/list` JSON-RPC | Same catalogue the Codex CLI's own picker reads, including each model's supported reasoning efforts, which drive the reasoning-effort selector. Honours `CODEX_CLI_PATH`. |
-| Gemini | `GET https://generativelanguage.googleapis.com/v1beta/models` | The Gemini CLI has no model-listing command, so the catalogue comes from the Gemini API using the caller's API key (saved in Settings, else `GEMINI_API_KEY` / `GOOGLE_API_KEY`). Non-chat models (TTS, image, music, embeddings, …) are filtered out. Without a key the built-in list is used. Thinking-mode support for a model the table has not seen falls back to its family (Gemini 3: levels, Gemini 2.5: budgets). Note: since 2026-06-18 the Gemini CLI no longer serves individual Google (OAuth) accounts; an API key is required, and Dr. Claw selects API-key auth for the CLI whenever one is configured. |
+| Gemini | `agy models` | The Gemini provider runs the Antigravity CLI (the Gemini CLI stopped serving individual accounts on 2026-06-18). `agy models` lists the models the signed-in account can use (ids such as `gemini-3.8-flash-high`). If agy is missing or not signed in, the catalogue comes from the Gemini API (`GET https://generativelanguage.googleapis.com/v1beta/models`) with the caller's API key, else the built-in list is used. |
 | OpenRouter | `GET https://openrouter.ai/api/v1/models` | Public endpoint, no key needed. |
 | Cursor, Nano | Built-in list | These CLIs expose no model-listing command today. |
 | Local GPU | Ollama `/api/tags` | Existing behaviour, unchanged. |

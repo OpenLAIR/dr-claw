@@ -82,7 +82,7 @@ echo "${CODEX_SANDBOX_NETWORK_DISABLED:-0}"
 之后再确认各 Provider 的权限仍然已开启：
 
 - Claude Code：允许 `WebSearch` 和 `WebFetch`
-- Gemini CLI：允许 `google_web_search` 和 `web_fetch`
+- Antigravity（Gemini）：允许 `WebSearch` 和 `WebFetch`
 - Codex：需要网页访问时使用 `Bypass Permissions`
 
 ---

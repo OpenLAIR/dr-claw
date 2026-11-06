@@ -33,7 +33,8 @@ function isCursorLoginCommand(command = '') {
 }
 
 function isGeminiLoginCommand(command = '') {
-  return /^\s*gemini\s+login(?:\s|$)/.test(command);
+  // `agy` with no arguments opens the Antigravity sign-in flow.
+  return /^\s*gemini\s+login(?:\s|$)/.test(command) || /^\s*(?:\S*[\\/])?agy(?:\.exe)?\s*$/.test(command);
 }
 
 function normalizeCursorLoginCommand(command = '') {

@@ -22,26 +22,23 @@ const commonClaudeTools = [
   'WebSearch'
 ];
 
-// Common tool patterns for Gemini CLI (official native tool names)
+// Common tool patterns for the gemini provider, which runs the Antigravity CLI.
+// Antigravity tools are shown and matched under the same names as Claude's.
 const commonGeminiTools = [
-  'run_shell_command',
-  'read_file',
-  'read_many_files',
-  'write_file',
-  'replace',
-  'glob',
-  'grep_search',
-  'list_directory',
-  'write_todos',
-  'ask_user',
-  'google_web_search',
-  'web_fetch',
-  'activate_skill',
-  'save_memory',
-  'get_internal_docs',
-  'enter_plan_mode',
-  'exit_plan_mode',
-  'complete_task'
+  'Bash(git log:*)',
+  'Bash(git diff:*)',
+  'Bash(git status:*)',
+  'Bash(ls:*)',
+  'Bash(python:*)',
+  'Bash(npm run:*)',
+  'Read',
+  'Write',
+  'Edit',
+  'LS',
+  'Glob',
+  'Grep',
+  'WebSearch',
+  'WebFetch'
 ];
 
 // Common shell commands for Cursor
