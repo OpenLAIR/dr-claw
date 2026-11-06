@@ -162,17 +162,17 @@ Canonical contract for `.pipeline/docs/research_brief.json`.
             "title": "Expand outline into draft sections",
             "description": "Convert outline into structured draft sections with claim-evidence alignment.",
             "taskType": "writing",
-            "recommended_skills": ["inno-paper-writing"]
+            "recommended_skills": ["ml-paper-writing"]
           },
           {
             "id": "publication_finalize_artifacts",
             "title": "Finalize figures, tables, and artifacts",
             "description": "Prepare visuals and reproducibility artifacts required for submission.",
             "taskType": "writing",
-            "recommended_skills": ["inno-paper-writing", "inno-figure-gen"]
+            "recommended_skills": ["ml-paper-writing", "inno-figure-gen"]
           }
         ],
-        "recommended_skills": ["inno-paper-writing", "inno-reference-audit", "inno-rclone-to-overleaf"]
+        "recommended_skills": ["ml-paper-writing", "inno-reference-audit", "inno-rclone-to-overleaf"]
       },
       "promotion": {
         "required_elements": [

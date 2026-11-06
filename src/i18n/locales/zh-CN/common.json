@@ -844,7 +844,7 @@
     "loadingResearch": "正在加载研究数据…",
     "noData": "此项目暂无研究数据。",
     "missingPaper": "未找到 main.pdf。",
-    "paperHint": "运行 inno-paper-writing 并将论文保存到 Publication/paper/，即可在此查看。",
+    "paperHint": "运行 ml-paper-writing 并将论文保存到 Publication/paper/，即可在此查看。",
     "paperError": "论文加载失败。请检查 Publication/paper/main.pdf 后重试。",
     "initHint": "在对话中使用 inno-pipeline-planner 初始化五阶段研究流程与产物。",
     "selectArtifact": "从研究产物中选择文件，即可在此查看或编辑。",

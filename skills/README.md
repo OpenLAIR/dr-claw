@@ -44,7 +44,7 @@ skills/
 │
 ├─ Publication
 │  ├─ Authoring
-│  │  ├─ inno-paper-writing                 Academic paper writing (IEEE/ACM format, citations, structure)
+│  │  ├─ ml-paper-writing                   Paper writing for ML venues, with IEEE/ACM notes and LaTeX templates
 │  │  └─ inno-figure-gen                    Image generation via Nano Banana Pro (Gemini 3 Pro Image)
 │  ├─ Review & Polish
 │  │  ├─ inno-paper-reviewer                Structured peer review with checklist-based evaluation
@@ -145,5 +145,5 @@ Orchestration ──► Research & Discovery ──► Ideation ──► Experi
 
 - **Phase 1**: Skills 1–3 (prepare, idea-generation, code-survey Phase A) for "idea-only" workflows.
 - **Phase 2**: Add remaining skills for full pipeline (code survey Phase B → experiment-dev → experiment-analysis).
-- **Phase 3**: Paper writing, review, and polish (`inno-paper-writing` + `inno-paper-reviewer` + `inno-humanizer`) for publication-ready deliverables.
+- **Phase 3**: Paper writing, review, and polish (`ml-paper-writing` + `inno-paper-reviewer` + `inno-humanizer`) for publication-ready deliverables.
 - **Phase 4**: Promotion assets (`making-academic-presentations`) for homepage, slide deck, audio, and demo-video outputs.

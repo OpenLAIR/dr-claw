@@ -3,7 +3,8 @@ name: inno-grant-proposal
 source: dr-claw
 description: >
   Help professors and researchers write, revise, adapt, and polish grant proposals
-  for US agencies (NSF, NIH, DOE, DARPA, NASA) and Chinese agencies (NSFC 国自然).
+  for US agencies (NSF, NIH, DOE, DARPA, NASA), Chinese agencies (NSFC 国自然),
+  and other national agencies (JSPS KAKENHI 科研費, ERC, DFG, SNSF, ARC, NWO).
   Use this skill whenever the user mentions grants, proposals, funding applications,
   基金申请, 本子, R01, R21, CAREER, 面上, 青年基金, specific aims, 立项依据,
   broader impacts, or wants to plan, draft, review, or resubmit any research
@@ -56,6 +57,10 @@ IF user mentions NSFC / 国自然 / 青年基金 / 面上 / 地区 / 重点 / Ch
    → CN MODE
 ELIF user mentions NSF / NIH / DOE / DARPA / NASA / R01 / R21 / CAREER / US agency
    → US MODE
+ELIF user mentions KAKENHI / 科研費 / JSPS / ERC / DFG / SNSF / ARC / NWO / another national agency
+   → INTL MODE: follow the US-mode phases, but take section structure, language,
+     review criteria and drafting norms from references/intl/international_guides.md
+     and the agency's current call text
 ELSE
    → ASK: "Are you targeting a US agency (NSF, NIH, DOE, DARPA, NASA) or a
      Chinese agency (NSFC programs)? This determines the template, structure,
@@ -152,6 +157,7 @@ The skill uses supporting files in sibling directories:
 
 - `references/us/` — US agency guidelines: `nsf_guide.md`, `nih_guide.md`, `doe_guide.md`, `darpa_guide.md`, `nasa_guide.md`
 - `references/cn/` — CN agency guidelines: `nsfc_guide.md`
+- `references/intl/` — other agencies (KAKENHI, ERC, DFG, SNSF, ARC, NWO): `international_guides.md`
 - `references/common/` — shared resources: `reviewer_personas.md`, `common_mistakes.md`, `resubmission.md`
 - `references/rubrics/` — scoring rubrics: `nsf_rubric.json`, `nih_rubric.json`, `nsfc_rubric.json`
 - `templates/us/` — US templates: `nih_specific_aims.md`, `nsf_project_summary.md`, `budget_justification.md`

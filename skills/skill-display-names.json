@@ -20,16 +20,6 @@
         "summary": "Check that GPUs or other compute are available before experiments; stop instead of faking results."
       }
     },
-    "brainstorming-research-ideas": {
-      "zh": {
-        "name": "科研选题构思",
-        "summary": "用结构化框架发掘有影响力的研究方向和新切入点。"
-      },
-      "en": {
-        "name": "Research ideation",
-        "summary": "Find high-impact research directions and fresh angles with structured ideation frameworks."
-      }
-    },
     "dataset-discovery": {
       "en": {
         "name": "Dataset discovery",
@@ -150,16 +140,6 @@
         "summary": "按清单对稿件或基金申请进行结构化同行评审。"
       }
     },
-    "inno-paper-writing": {
-      "en": {
-        "name": "Paper writing (IEEE/ACM)",
-        "summary": "Draft a full academic paper in IEEE/ACM conference format."
-      },
-      "zh": {
-        "name": "论文写作（IEEE/ACM）",
-        "summary": "按 IEEE/ACM 会议格式起草完整的学术论文。"
-      }
-    },
     "inno-pipeline-planner": {
       "en": {
         "name": "Research pipeline planner",
@@ -238,26 +218,6 @@
       "zh": {
         "name": "论文精读",
         "summary": "深度分析单篇论文，生成含图表的结构化笔记。"
-      }
-    },
-    "paper-finder": {
-      "en": {
-        "name": "Paper notes search",
-        "summary": "Search existing paper notes by title, author, keyword, or research domain."
-      },
-      "zh": {
-        "name": "论文笔记检索",
-        "summary": "按标题、作者、关键词或领域查找已有论文笔记。"
-      }
-    },
-    "research-news": {
-      "en": {
-        "name": "Daily paper picks",
-        "summary": "Search arXiv and Semantic Scholar, then score and recommend papers daily."
-      },
-      "zh": {
-        "name": "每日论文推荐",
-        "summary": "检索 arXiv 与 Semantic Scholar，评分并推荐论文。"
       }
     },
     "scientific-writing": {

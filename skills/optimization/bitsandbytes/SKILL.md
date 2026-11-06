@@ -1,6 +1,6 @@
 ---
 name: quantizing-models-bitsandbytes
-description: Quantizes LLMs to 8-bit or 4-bit for 50-75% memory reduction with minimal accuracy loss. Use when GPU memory is limited, need to fit larger models, or want faster inference. Supports INT8, NF4, FP4 formats, QLoRA training, and 8-bit optimizers. Works with HuggingFace Transformers.
+description: Quantizes LLMs to 8-bit or 4-bit for 50-75% memory reduction with minimal accuracy loss. Use when GPU memory is limited, need to fit larger models, or want faster inference. Supports INT8, NF4, FP4 formats, QLoRA training, and 8-bit optimizers. Works with HuggingFace Transformers. Also covers AWQ, GGUF, GPTQ and HQQ (guides in references/).
 version: 1.0.0
 author: Orchestra Research
 license: MIT
@@ -407,5 +407,14 @@ model = AutoModelForCausalLM.from_pretrained(
 - QLoRA paper: "QLoRA: Efficient Finetuning of Quantized LLMs" (2023)
 - LLM.int8() paper: "LLM.int8(): 8-bit Matrix Multiplication for Transformers at Scale" (2022)
 
+## Related tools (merged into this skill)
 
+These were separate skills. Their full guides now live under `references/`;
+read the one you need when the user asks for that tool or it fits the task better.
 
+| Tool | Guide | What it covers |
+|---|---|---|
+| AWQ | [references/awq/overview.md](references/awq/overview.md) | Activation-aware weight quantization for 4-bit LLM compression with 3x speedup and minimal accuracy loss. |
+| GGUF | [references/gguf/overview.md](references/gguf/overview.md) | GGUF format and llama.cpp quantization for efficient CPU/GPU inference. |
+| GPTQ | [references/gptq/overview.md](references/gptq/overview.md) | Post-training 4-bit quantization for LLMs with minimal accuracy loss. |
+| HQQ | [references/hqq/overview.md](references/hqq/overview.md) | Half-Quadratic Quantization for LLMs without calibration data. |

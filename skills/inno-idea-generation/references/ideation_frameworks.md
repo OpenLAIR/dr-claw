@@ -1,8 +1,8 @@
 # Research Ideation Lenses
 
 Twelve lenses for Step 2. Each one is a different way to move from a
-limitation to a direction. Condensed from the `brainstorming-research-ideas`
-and `creative-thinking-for-research` skills (Orchestra Research, MIT) and the
+limitation to a direction. Condensed from Orchestra Research's `brainstorming-research-ideas`
+and `creative-thinking-for-research` skills (MIT; formerly bundled separately) and the
 idea playbook of DeepScientist (MIT).
 
 Use at least three lenses per run. Generate first, judge later: in Step 2,

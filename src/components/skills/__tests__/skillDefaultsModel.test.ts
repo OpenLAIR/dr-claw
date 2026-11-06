@@ -9,7 +9,7 @@ import {
 
 function state(overrides: Partial<SkillDefaultState> = {}): SkillDefaultState {
   return {
-    name: 'paper-finder',
+    name: 'paper-analyzer',
     enabled: false,
     source: 'baseline',
     globalEnabled: false,
@@ -40,7 +40,7 @@ describe('buildToggleChange', () => {
 describe('applyLocalToggle', () => {
   it('updates only the toggled skill', () => {
     const data = response([state(), state({ name: 'other', enabled: true })]);
-    const next = applyLocalToggle(data, 'paper-finder', true, 'global');
+    const next = applyLocalToggle(data, 'paper-analyzer', true, 'global');
     expect(next.skills[0]).toMatchObject({ enabled: true, globalEnabled: true, source: 'global' });
     expect(next.skills[1]).toBe(data.skills[1]);
     expect(countEnabled(next.skills)).toBe(2);
@@ -48,6 +48,6 @@ describe('applyLocalToggle', () => {
 
   it('marks a project override in project scope', () => {
     const data = response([state({ globalEnabled: true, enabled: true })]);
-    expect(applyLocalToggle(data, 'paper-finder', false, 'project').skills[0]).toMatchObject({ enabled: false, source: 'project', globalEnabled: true });
+    expect(applyLocalToggle(data, 'paper-analyzer', false, 'project').skills[0]).toMatchObject({ enabled: false, source: 'project', globalEnabled: true });
   });
 });
