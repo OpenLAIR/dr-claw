@@ -8,7 +8,7 @@ Two machine-readable artifacts plus one human-readable Markdown narrative.
 {
   "schemaVersion": "1.0",
   "generatedAt": "2026-04-30T16:00:00Z",
-  "newsDataDir": "/abs/path/to/server/data",
+  "newsDataDir": "/abs/path/to/news/data (value of $DRCLAW_NEWS_DATA_DIR)",
   "totalScanned": 124,
   "totalUnique": 87,
   "clusters": [
