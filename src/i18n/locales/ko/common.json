@@ -477,7 +477,8 @@
       "pinned": "고정됨",
       "pin": "고정",
       "unpin": "고정 해제",
-      "toolsAndSettings": "도구 및 설정"
+      "toolsAndSettings": "도구 및 설정",
+      "openProjectsOverview": "프로젝트 개요"
     },
     "stages": {
       "survey": "문헌 조사",

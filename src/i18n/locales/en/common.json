@@ -478,7 +478,8 @@
       "pinned": "Pinned",
       "pin": "Pin",
       "unpin": "Unpin",
-      "toolsAndSettings": "Tools & settings"
+      "toolsAndSettings": "Tools & settings",
+      "openProjectsOverview": "Projects overview"
     },
     "stages": {
       "survey": "Survey",
