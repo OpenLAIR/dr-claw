@@ -1,5 +1,26 @@
 # Changelog
 
+## Dr. Claw v1.3.0 - 2026-11-06
+
+### Highlights
+- **Choose your skills.** A new card-based Skills Library lets you pick which skills are on by default, globally or per project, with Recommended / All / None presets. Disabled skills are not loaded by agents but can still be called with `/name`. First-run setup asks for a preset (#241, #242).
+- **A smaller, working skill library.** 26 skills were removed and 27 merged into related ones (174 → 121), and broken inno-*, ARIS, news and init-analysis skills were fixed (#246–#249).
+- **Your skills survive updates.** Imported and uploaded skills live in `~/.dr-claw/skills` instead of the app bundle; built-in skills are read-only (#243).
+- **Compact sidebars.** One-line project and session rows, hover actions, "N more" for long session lists, and search across session messages (#251, #253). The Files panel is a compact tree with middle-truncated names, type icons and keyboard navigation (#252).
+- **Reliable first launch.** The first launch after install or upgrade no longer stalls on a cold scan of Claude history (#244), and the file tree no longer walks into symlinked skill folders (#245).
+- The npm package now includes the skill library.
+
+### Notable PRs
+- #241 default skills, project overrides and grouped skill cards
+- #242 first-run skill preset
+- #243 user skills outside the app bundle
+- #244 reliable first launch after install or upgrade
+- #245 file tree skips symlinked skill folders
+- #246–#249 skill fixes and library cleanup
+- #250 README install notes
+- #251, #253 compact left sidebar and session message search
+- #252 compact file tree and right sidebar panels
+
 ## Dr. Claw v1.1.1 - 2026-03-30
 
 ### Highlights
