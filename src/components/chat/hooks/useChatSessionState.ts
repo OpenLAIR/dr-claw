@@ -8,6 +8,8 @@ import type { ChatMessage, Provider, TokenBudget } from '../types/types';
 import type { Project, ProjectSession } from '../../../types/app';
 import { clearSessionTimerStart, readSessionTimerStart, safeLocalStorage } from '../utils/chatStorage';
 import { hydrateStoredChatMessages } from '../utils/chatMessages';
+import { decideSessionMessageLoad, isNewExternalMessageUpdate } from './chatSessionTransition';
+import type { DisplayedSession } from './chatSessionTransition';
 import {
   convertCursorSessionMessages,
   convertSessionMessages,
@@ -198,6 +200,10 @@ export function useChatSessionState({
 
     setPendingStatusValidationSessionId((previous) => (previous === sessionId ? null : previous));
   }, []);
+
+  // The session whose messages the view shows, and the socket they came over.
+  const displayedSessionRef = useRef<DisplayedSession | null>(null);
+  const handledExternalUpdateRef = useRef(externalMessageUpdate ?? 0);
 
   // The session the view currently wants messages for. Responses for any other
   // session (a slow load that finished after the user switched) are dropped.
@@ -503,23 +509,29 @@ export function useChatSessionState({
           });
         }
 
+        setCurrentSessionId(selectedSession.id);
         if (currentProvider === 'cursor') {
-          setCurrentSessionId(selectedSession.id);
           sessionStorage.setItem('cursorSessionId', selectedSession.id);
+        }
 
-          if (!isSystemSessionChange) {
+        const decision = decideSessionMessageLoad({
+          selectedSessionId: selectedSession.id,
+          isSystemSessionChange,
+          displayed: displayedSessionRef.current,
+          ws,
+        });
+
+        if (decision === 'adopt') {
+          displayedSessionRef.current = { sessionId: selectedSession.id, ws };
+          setIsSystemSessionChange(false);
+        } else if (decision === 'load') {
+          if (currentProvider === 'cursor') {
             const projectPath = selectedProject.fullPath || selectedProject.path || '';
             const converted = await loadCursorSessionMessages(projectPath, selectedSession.id);
             if (cancelled) return;
             setSessionMessages([]);
             setChatMessages(converted);
           } else {
-            setIsSystemSessionChange(false);
-          }
-        } else {
-          setCurrentSessionId(selectedSession.id);
-
-          if (!isSystemSessionChange) {
             const messages = await loadSessionMessages(
               selectedProject.name,
               selectedSession.id,
@@ -528,11 +540,11 @@ export function useChatSessionState({
             );
             if (cancelled) return;
             setSessionMessages(messages);
-          } else {
-            setIsSystemSessionChange(false);
           }
+          displayedSessionRef.current = { sessionId: selectedSession.id, ws };
         }
       } else {
+        displayedSessionRef.current = null;
         if (!isSystemSessionChange) {
           resetStreamingState();
           pendingViewSessionRef.current = null;
@@ -575,9 +587,16 @@ export function useChatSessionState({
   ]);
 
   useEffect(() => {
-    if (!externalMessageUpdate || !selectedSession || !selectedProject) {
+    // Reload only when the counter moves. This effect also re-runs whenever the
+    // selected session object changes, and reloading then would overwrite
+    // messages that are still streaming in (e.g. a brand-new session's first turn).
+    if (!isNewExternalMessageUpdate(externalMessageUpdate, handledExternalUpdateRef.current)) {
       return;
     }
+    if (!selectedSession || !selectedProject) {
+      return;
+    }
+    handledExternalUpdateRef.current = externalMessageUpdate ?? 0;
 
     const reloadExternalMessages = async () => {
       try {
