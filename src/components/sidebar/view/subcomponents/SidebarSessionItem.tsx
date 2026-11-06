@@ -1,5 +1,6 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import SidebarRenameEditor from './SidebarRenameEditor';
+import SidebarRowMenu, { revealRowActionsClass } from './SidebarRowMenu';
 import { Edit2, Trash2 } from 'lucide-react';
 import type { TFunction } from 'i18next';
 import { cn } from '../../../../lib/utils';
@@ -64,6 +65,7 @@ export default function SidebarSessionItem({
   const sessionView = createSessionViewModel(session, currentTime, t);
   const isSelected = selectedSession?.id === session.id;
   const isEditing = editingSession === session.id;
+  const [menuOpen, setMenuOpen] = useState(false);
   const rowButton = useRef<HTMLButtonElement | null>(null);
   const restoreRenameFocus = useRef(false);
   useLayoutEffect(() => {
@@ -87,6 +89,12 @@ export default function SidebarSessionItem({
 
   const saveEditedSession = () => {
     onSaveEditingSession(project.name, session.id, editingSessionName, session.__provider);
+  };
+
+  const startRename = () => {
+    if (renameFeedback.pending) return;
+    restoreRenameFocus.current = true;
+    onStartEditingSession(session.id, session.summary || t('projects.newSession'));
   };
 
   const requestDeleteSession = () => {
@@ -127,10 +135,9 @@ export default function SidebarSessionItem({
         ref={rowButton}
         onClick={selectSession}
         onKeyDown={(event) => {
-          if (event.key === 'F2' && canRename && !renameFeedback.pending) {
+          if (event.key === 'F2' && canRename) {
             event.preventDefault();
-            restoreRenameFocus.current = true;
-            onStartEditingSession(session.id, session.summary || t('projects.newSession'));
+            startRename();
           }
         }}
         title={tooltip}
@@ -154,39 +161,35 @@ export default function SidebarSessionItem({
       </button>
 
       {(canRename || canDelete) && (
-        // Touch layouts keep the actions visible; pointer layouts reveal them on
-        // hover, and on keyboard focus so Tab can reach them from the row.
-        <div className="flex shrink-0 items-center gap-0.5 pr-1 md:hidden md:group-hover:flex md:group-has-[:focus-visible]:flex">
-          {canRename && (
-            <button
-              type="button"
-              className={rowActionClass}
-              disabled={renameFeedback.pending}
-              onClick={(event) => {
-                event.stopPropagation();
-                restoreRenameFocus.current = true;
-                onStartEditingSession(session.id, session.summary || t('projects.newSession'));
-              }}
-              title={t('tooltips.editSessionName')}
-              aria-label={t('tooltips.editSessionName')}
-            >
-              <Edit2 className="h-3.5 w-3.5 md:h-3 md:w-3" />
-            </button>
+        // Touch layouts always show the menu button; pointer layouts reveal it on
+        // hover or keyboard focus, and keep it while the menu is open.
+        <div
+          className={cn(
+            'flex shrink-0 items-center pr-1',
+            revealRowActionsClass(menuOpen),
           )}
-          {canDelete && (
-            <button
-              type="button"
-              className={cn(rowActionClass, 'hover:text-destructive')}
-              onClick={(event) => {
-                event.stopPropagation();
-                requestDeleteSession();
-              }}
-              title={t('tooltips.deleteSession')}
-              aria-label={t('tooltips.deleteSession')}
-            >
-              <Trash2 className="h-3.5 w-3.5 md:h-3 md:w-3" />
-            </button>
-          )}
+        >
+          <SidebarRowMenu
+            label={t('common:workbench.sidebar.rowActions', { name: sessionView.sessionName })}
+            triggerClassName={rowActionClass}
+            onOpenChange={setMenuOpen}
+            items={[
+              ...(canRename ? [{
+                key: 'rename',
+                label: t('actions.rename'),
+                icon: Edit2,
+                disabled: renameFeedback.pending,
+                onSelect: startRename,
+              }] : []),
+              ...(canDelete ? [{
+                key: 'delete',
+                label: t('actions.delete'),
+                icon: Trash2,
+                destructive: true,
+                onSelect: requestDeleteSession,
+              }] : []),
+            ]}
+          />
         </div>
       )}
     </div>

@@ -1,12 +1,13 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import SidebarRenameEditor from './SidebarRenameEditor';
-import { ChevronRight, Edit3, Folder, FolderOpen, MoreHorizontal, Plus, Star, Trash2 } from 'lucide-react';
+import { ChevronRight, Edit3, Folder, FolderOpen, Plus, Star, Trash2 } from 'lucide-react';
 import type { TFunction } from 'i18next';
 import { cn } from '../../../../lib/utils';
 import type { Project, ProjectSession, SessionMode, SessionProvider } from '../../../../types/app';
 import type { MCPServerStatus, SessionWithProvider, TouchHandlerFactory } from '../../types/types';
 import { getKnownSessionTotal, isWideSidebarLayout, joinTooltipLines } from '../../utils/sessionPreview';
 import SidebarProjectSessions from './SidebarProjectSessions';
+import SidebarRowMenu, { revealRowActionsClass } from './SidebarRowMenu';
 
 type SidebarProjectItemProps = {
   project: Project;
@@ -95,7 +96,7 @@ export default function SidebarProjectItem({
 }: SidebarProjectItemProps) {
   const isSelected = selectedProject?.name === project.name;
   const isEditing = editingProject === project.name;
-  const [mobileActionsOpen, setMobileActionsOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const rowButton = useRef<HTMLButtonElement | null>(null);
   const restoreRenameFocus = useRef(false);
   useLayoutEffect(() => {
@@ -107,7 +108,6 @@ export default function SidebarProjectItem({
   const beginRename = () => {
     if (renameFeedback.pending) return;
     restoreRenameFocus.current = true;
-    setMobileActionsOpen(false);
     onStartEditingProject(project);
   };
 
@@ -131,7 +131,6 @@ export default function SidebarProjectItem({
   };
 
   const startNewSession = () => {
-    setMobileActionsOpen(false);
     if (!isWideSidebarLayout()) onProjectSelect(project);
     onNewSession(project, newSessionMode);
   };
@@ -196,45 +195,47 @@ export default function SidebarProjectItem({
             )}
           </button>
 
-          <button
-            type="button"
-            className={cn(rowActionClass, 'mr-1 md:hidden')}
-            onClick={() => setMobileActionsOpen((open) => !open)}
-            aria-expanded={mobileActionsOpen}
-            aria-label={t('common:workbench.sidebar.projectActions', { name: project.displayName })}
-          >
-            <MoreHorizontal className="h-4 w-4" />
-          </button>
-
-          {/* Pointer layouts reveal actions on hover, and on keyboard focus so
-              Tab reaches them from the row; phones open them with the … button. */}
+          {/* Touch layouts always show these; pointer layouts reveal them on
+              hover or keyboard focus, and keep them while the menu is open. */}
           <div
             data-sidebar-project-actions
             className={cn(
-              'shrink-0 items-center gap-0.5 pr-1',
-              mobileActionsOpen ? 'flex' : 'hidden',
-              'md:hidden md:group-hover:flex md:group-has-[:focus-visible]:flex',
+              'flex shrink-0 items-center gap-0.5 pr-1',
+              revealRowActionsClass(menuOpen),
             )}
           >
             <button type="button" className={rowActionClass} onClick={startNewSession}
               title={t('sessions.newSession')} aria-label={t('sessions.newSession')}>
               <Plus className="h-4 w-4 md:h-3.5 md:w-3.5" />
             </button>
-            <button type="button" className={rowActionClass} onClick={() => onToggleStarProject(project.name)}
-              aria-pressed={isStarred}
-              title={isStarred ? t('tooltips.removeFromFavorites') : t('tooltips.addToFavorites')}
-              aria-label={isStarred ? t('tooltips.removeFromFavorites') : t('tooltips.addToFavorites')}>
-              <Star className={cn('h-4 w-4 md:h-3.5 md:w-3.5', isStarred && 'fill-current text-amber-500')} />
-            </button>
-            <button type="button" className={rowActionClass} disabled={renameFeedback.pending} onClick={beginRename}
-              title={t('tooltips.renameProject')} aria-label={t('tooltips.renameProject')}>
-              <Edit3 className="h-4 w-4 md:h-3.5 md:w-3.5" />
-            </button>
-            <button type="button" className={cn(rowActionClass, 'hover:text-destructive')}
-              onClick={() => { setMobileActionsOpen(false); onDeleteProject(project); }}
-              title={t('tooltips.deleteProject')} aria-label={t('tooltips.deleteProject')}>
-              <Trash2 className="h-4 w-4 md:h-3.5 md:w-3.5" />
-            </button>
+            <SidebarRowMenu
+              label={t('common:workbench.sidebar.rowActions', { name: project.displayName })}
+              triggerClassName={rowActionClass}
+              onOpenChange={setMenuOpen}
+              items={[
+                {
+                  key: 'star',
+                  label: isStarred ? t('tooltips.removeFromFavorites') : t('tooltips.addToFavorites'),
+                  icon: Star,
+                  iconClassName: isStarred ? 'fill-current text-amber-500' : undefined,
+                  onSelect: () => onToggleStarProject(project.name),
+                },
+                {
+                  key: 'rename',
+                  label: t('actions.rename'),
+                  icon: Edit3,
+                  disabled: renameFeedback.pending,
+                  onSelect: beginRename,
+                },
+                {
+                  key: 'delete',
+                  label: t('common:workbench.sidebar.moveToTrash'),
+                  icon: Trash2,
+                  destructive: true,
+                  onSelect: () => onDeleteProject(project),
+                },
+              ]}
+            />
           </div>
         </div>
       )}

@@ -472,7 +472,8 @@
       "statusRecent": "最近 10 分钟内有活动",
       "expandProject": "展开 {{name}}",
       "collapseProject": "收起 {{name}}",
-      "projectActions": "{{name}} 的操作"
+      "rowActions": "{{name}} 的更多操作",
+      "moveToTrash": "移到回收站"
     },
     "stages": {
       "survey": "文献调研",

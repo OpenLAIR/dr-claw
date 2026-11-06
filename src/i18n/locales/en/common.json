@@ -473,7 +473,8 @@
       "statusRecent": "Active in the last 10 minutes",
       "expandProject": "Expand {{name}}",
       "collapseProject": "Collapse {{name}}",
-      "projectActions": "Actions for {{name}}"
+      "rowActions": "More actions for {{name}}",
+      "moveToTrash": "Move to trash"
     },
     "stages": {
       "survey": "Survey",

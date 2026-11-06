@@ -472,7 +472,8 @@
       "statusRecent": "최근 10분 내 활동",
       "expandProject": "{{name}} 펼치기",
       "collapseProject": "{{name}} 접기",
-      "projectActions": "{{name}} 작업"
+      "rowActions": "{{name}} 추가 작업",
+      "moveToTrash": "휴지통으로 이동"
     },
     "stages": {
       "survey": "문헌 조사",
