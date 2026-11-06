@@ -205,9 +205,11 @@ Dr. Claw 是一个面向不同研究方向的通用 AI 研究助手，帮助研�
    - **Windows：** 如果 SmartScreen 提示"Windows 已保护你的电脑"，点击 **更多信息** → **仍要运行**。
 3. 按首次启动向导连接至少一个智能体（Claude Code、Codex 或 Gemini），之后可在 **设置 → 智能体** 中修改。
 
-Intel Mac 和 Linux 暂无安装包，请使用下方的 npx 或源码安装。
+Intel Mac 和 Linux 暂无安装包。想用最新版本请从源码安装（方式二）；npx（方式一）也能用，但装到的可能是较旧的版本。
 
 ### 前置要求
+
+以下要求只针对下面的方式一和方式二。桌面应用自带运行环境，不需要安装 Node.js 或构建工具。
 
 - [Node.js](https://nodejs.org/) v20 或更高版本（**推荐 v22 LTS**，见 `.nvmrc`）
 - 至少安装并配置以下 CLI 工具之一：
@@ -235,6 +237,8 @@ dr-claw
 ```
 
 打开浏览器访问 `http://localhost:3001`，创建账户即可开始使用。
+
+> **注意：** npm 上的版本可能落后于桌面版。可以用 `npm view dr-claw version` 和[最新版本](https://github.com/OpenLAIR/dr-claw/releases/latest)对比；如果 npm 上的更旧，想用最新功能请改用桌面应用或源码安装。
 
 ### 方式二：从源码安装（开发者）
 
