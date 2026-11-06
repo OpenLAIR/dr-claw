@@ -96,7 +96,9 @@ export default function SidebarContent({
         t={t}
       />
 
-      <ScrollArea className={isMobile ? 'shrink-0' : 'min-h-0 flex-1 px-1.5 py-2 overflow-y-auto overscroll-contain'}>
+      {/* Phones scroll the whole drawer; growing keeps the tools and account
+          links at the bottom when the project list is short. */}
+      <ScrollArea className={isMobile ? 'shrink-0 grow' : 'min-h-0 flex-1 px-1.5 py-2 overflow-y-auto overscroll-contain'}>
         <SidebarProjectList {...projectListProps} />
       </ScrollArea>
 
