@@ -204,9 +204,11 @@ The easiest way to use Dr. Claw is the desktop app. It runs the server for you, 
    - **Windows:** if SmartScreen shows "Windows protected your PC", click **More info** → **Run anyway**.
 3. Follow the first-run setup to connect at least one agent (Claude Code, Codex or Gemini). You can change this later under **Settings → Agents**.
 
-Intel Macs and Linux are not covered by the installers yet; use `npx` or a source install below.
+Intel Macs and Linux are not covered by the installers yet. Use a source install (Option 2) for the latest version; `npx` (Option 1) also works but may install an older release.
 
 ### Prerequisites
+
+These are for Option 1 and Option 2 below. The desktop app bundles its own runtime, so it doesn't need Node.js or build tools.
 
 - [Node.js](https://nodejs.org/) v20 or higher (**v22 LTS recommended**, see `.nvmrc`)
 - At least one of the following CLI tools installed and configured:
@@ -233,6 +235,8 @@ dr-claw
 ```
 
 Then open your browser at `http://localhost:3001` to create your account and start using Dr. Claw.
+
+> **Note:** the npm package can lag behind the desktop release. Compare `npm view dr-claw version` with the [latest release](https://github.com/OpenLAIR/dr-claw/releases/latest); if npm is older, use the desktop app or a source install to get the newest features.
 
 ### Option 2: Install from Source (For Development)
 
