@@ -72,6 +72,20 @@ describe('resolvePinnedSessions', () => {
     expect(resolvePinnedSessions(pins, [alpha, beta], getSessions, 'ALPHA').map((entry) => entry.session.id)).toEqual(['s1']);
     expect(resolvePinnedSessions(pins, [alpha, beta], getSessions, 'ablation').map((entry) => entry.session.id)).toEqual(['s9']);
   });
+
+  it('keeps pins whose messages matched, with the snippet', () => {
+    const pins = [pin('alpha', 's1'), pin('beta', 's9', 'Ablation run')];
+    const match = { snippet: '…the zebrafish baseline…', terms: ['zebrafish'] };
+    const entries = resolvePinnedSessions(pins, [alpha, beta], getSessions, 'zebrafish', new Map([['beta:s9', match]]));
+    expect(entries.map((entry) => entry.session.id)).toEqual(['s9']);
+    expect(entries[0].session.__searchMatch).toEqual(match);
+  });
+
+  it('does not attach a snippet to a pin that matched by title', () => {
+    const matches = new Map([['alpha:s1', { snippet: 'x', terms: ['renamed'] }]]);
+    const entries = resolvePinnedSessions([pin('alpha', 's1')], [alpha], getSessions, 'renamed', matches);
+    expect(entries[0].session.__searchMatch).toBeUndefined();
+  });
 });
 
 describe('separatePinnedSessions', () => {

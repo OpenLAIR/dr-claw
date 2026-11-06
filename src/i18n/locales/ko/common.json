@@ -481,7 +481,9 @@
       "openProjectsOverview": "프로젝트 개요",
       "searchSessions": "세션 검색...",
       "searchingSessions": "세션 검색 중…",
-      "noMatchingSessions": "일치하는 세션이 없습니다"
+      "noMatchingSessions": "일치하는 세션이 없습니다",
+      "searchingMessages": "메시지 검색 중…",
+      "matchedInMessages": "메시지에서: {{snippet}}"
     },
     "stages": {
       "survey": "문헌 조사",

@@ -67,6 +67,7 @@ import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 import os from 'os';
 import { stripInternalContextPrefix } from './utils/sessionFormatting.js';
+import { matchMessages, scanJsonlTranscript, tokenizeSearchQuery } from './utils/sessionContentSearch.js';
 import {
   buildToolResultMessage,
   buildToolUseMessage,
@@ -4505,6 +4506,192 @@ async function deleteCodexSession(sessionId) {
   }
 }
 
+const CONTENT_SEARCH_DEFAULT_LIMIT = 30;
+const CONTENT_SEARCH_MAX_LIMIT = 100;
+const CONTENT_SEARCH_TIME_BUDGET_MS = 4000;
+const CONTENT_SEARCH_MAX_FILE_BYTES = 16 * 1024 * 1024;
+const CONTENT_SEARCH_CONCURRENCY = 4;
+
+/** The projects the sidebar lists for this user, as `{ name, path }`. */
+async function listSearchableProjects(userId = null) {
+  const { projectDb } = await import('./database/db.js');
+  const config = await loadProjectConfig();
+  const visibleWorkspaceRoots = await getVisibleWorkspaceRoots(config._workspacesRoot || null);
+  const projects = [];
+
+  for (const dbEntry of projectDb.getAllProjects(userId || null)) {
+    const projectInfo = config[dbEntry.id];
+    if (isProjectTrashed(projectInfo, dbEntry) || isProjectSuppressed(dbEntry.id, config, projectInfo)) continue;
+    const projectPath = dbEntry.path || projectInfo?.originalPath || null;
+    if (!projectPath) continue;
+    const isManuallyAdded = Boolean(dbEntry.metadata?.manuallyAdded || projectInfo?.manuallyAdded);
+    if (!isManuallyAdded && !await isPathWithinWorkspaceRoots(projectPath, visibleWorkspaceRoots)) continue;
+    projects.push({ name: dbEntry.id, path: projectPath });
+  }
+
+  return projects;
+}
+
+async function statMtime(filePath) {
+  try {
+    return (await fs.stat(filePath)).mtimeMs;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Every transcript file to search, newest first. Claude files are listed per
+ * project directory (one file may hold several sessions); the other providers
+ * are found through the session index.
+ */
+async function collectContentSearchFiles(projects) {
+  const { sessionDb } = await import('./database/db.js');
+  const files = [];
+  const seenPaths = new Set();
+  const addFile = (file) => {
+    if (file.mtime === null || seenPaths.has(file.filePath)) return;
+    seenPaths.add(file.filePath);
+    files.push(file);
+  };
+
+  const indexed = sessionDb.getSessionsByProjects(projects.map((project) => project.name));
+  const titles = new Map(indexed.map((session) => [`${session.provider}:${session.id}`, session.display_name || '']));
+
+  await mapWithConcurrency(projects, 6, async (project) => {
+    const claudeDirs = await resolveClaudeProjectDirs(project.name, project.path).catch(() => []);
+    for (const dir of claudeDirs) {
+      let names = [];
+      try {
+        names = await fs.readdir(dir);
+      } catch {
+        continue;
+      }
+      for (const name of names) {
+        if (!name.endsWith('.jsonl') || name.startsWith('agent-')) continue;
+        const filePath = path.join(dir, name);
+        addFile({ provider: 'claude', projectName: project.name, filePath, sessionId: null, mtime: await statMtime(filePath) });
+      }
+    }
+
+    const codexSessions = await getCodexSessions(project.path, { limit: 0, projectName: project.name }).catch(() => []);
+    for (const session of codexSessions) {
+      if (!session.filePath) continue;
+      addFile({ provider: 'codex', projectName: project.name, filePath: session.filePath, sessionId: session.id, mtime: await statMtime(session.filePath) });
+    }
+  });
+
+  const homeDir = os.homedir();
+  for (const session of indexed) {
+    let filePath = null;
+    const isPlainId = /^[A-Za-z0-9._-]+$/.test(session.id) && !session.id.includes('..');
+    if (!isPlainId) continue;
+    if (session.provider === 'gemini') {
+      filePath = path.join(homeDir, '.gemini', 'sessions', `${session.id}.jsonl`);
+    } else if (session.provider === 'openrouter') {
+      filePath = path.join(homeDir, '.dr-claw', 'openrouter-sessions', `${session.id}.jsonl`);
+    } else if (session.provider === 'local') {
+      filePath = path.join(homeDir, '.dr-claw', 'localgpu-sessions', `${session.id}.jsonl`);
+    } else if (session.provider === 'nano') {
+      filePath = await findNanoSessionStoragePath(session.project_name, session.id);
+    }
+    if (!filePath) continue;
+    addFile({ provider: session.provider, projectName: session.project_name, filePath, sessionId: session.id, mtime: await statMtime(filePath) });
+  }
+
+  files.sort((a, b) => b.mtime - a.mtime);
+  return { files, titles };
+}
+
+async function scanContentSearchFile(file, terms, shouldStop) {
+  const acceptText = file.provider === 'codex' ? (text) => !isCodexSystemPromptContent(text) : undefined;
+
+  if (file.provider === 'nano') {
+    // Nano keeps one JSON document per session rather than JSONL.
+    const stats = await fs.stat(file.filePath);
+    if (stats.size > CONTENT_SEARCH_MAX_FILE_BYTES) return { results: [], truncated: true };
+    const data = JSON.parse(await fs.readFile(file.filePath, 'utf8'));
+    const snippet = matchMessages('nano', Array.isArray(data?.messages) ? data.messages : [], terms);
+    return { results: snippet === null ? [] : [{ sessionId: file.sessionId, snippet }], truncated: false };
+  }
+
+  const stats = await fs.stat(file.filePath);
+  const result = await scanJsonlTranscript(file.filePath, {
+    provider: file.provider,
+    terms,
+    sessionId: file.sessionId,
+    maxBytes: CONTENT_SEARCH_MAX_FILE_BYTES,
+    shouldStop,
+    acceptText,
+  });
+  return { ...result, truncated: result.truncated || stats.size > CONTENT_SEARCH_MAX_FILE_BYTES };
+}
+
+/**
+ * Search the text of the user's and assistant's messages in every session of
+ * the user's projects. Every word of `query` has to occur somewhere in the
+ * session (case-insensitive). Results are newest first.
+ *
+ * Bounded by a result limit and a time budget; `truncated` tells the caller
+ * that some transcripts (or the tail of a huge one) were not searched.
+ */
+async function searchSessionContent(query, { limit = CONTENT_SEARCH_DEFAULT_LIMIT, userId = null, signal = null, timeBudgetMs = CONTENT_SEARCH_TIME_BUDGET_MS } = {}) {
+  const terms = tokenizeSearchQuery(query);
+  const maxResults = Math.min(Math.max(1, Number.parseInt(limit, 10) || CONTENT_SEARCH_DEFAULT_LIMIT), CONTENT_SEARCH_MAX_LIMIT);
+  if (terms.length === 0) {
+    return { results: [], truncated: false };
+  }
+
+  const deadline = Date.now() + timeBudgetMs;
+  const results = [];
+  const seen = new Set();
+  let truncated = false;
+  const isOutOfTime = () => Boolean(signal?.aborted) || Date.now() > deadline;
+  const shouldStop = () => isOutOfTime() || results.length >= maxResults;
+
+  const projects = await listSearchableProjects(userId);
+  const { files, titles } = await collectContentSearchFiles(projects);
+
+  let next = 0;
+  const worker = async () => {
+    while (next < files.length) {
+      if (shouldStop()) {
+        truncated = truncated || isOutOfTime();
+        return;
+      }
+      const file = files[next++];
+      try {
+        const scanned = await scanContentSearchFile(file, terms, shouldStop);
+        truncated = truncated || scanned.truncated;
+        for (const match of scanned.results) {
+          const key = `${file.provider}:${match.sessionId}`;
+          if (seen.has(key) || results.length >= maxResults) continue;
+          seen.add(key);
+          const indexedTitle = titles.get(key) || '';
+          results.push({
+            projectName: file.projectName,
+            sessionId: match.sessionId,
+            provider: file.provider,
+            title: (indexedTitle && !isPlaceholderSessionName(file.provider, indexedTitle) ? indexedTitle : match.title) || indexedTitle,
+            snippet: match.snippet,
+            lastActivity: new Date(file.mtime).toISOString(),
+          });
+        }
+      } catch (error) {
+        console.warn(`[session-search] Skipping ${file.filePath}: ${error.message}`);
+      }
+    }
+  };
+  await Promise.all(Array.from({ length: CONTENT_SEARCH_CONCURRENCY }, worker));
+
+  if (next < files.length && !isOutOfTime()) {
+    // Stopped because the result limit was reached.
+    truncated = true;
+  }
+  results.sort((a, b) => b.lastActivity.localeCompare(a.lastActivity));
+  return { results, truncated };
+}
+
 // Get workspace root from project config
 async function getWorkspaceRootFromConfig() {
   const config = await loadProjectConfig();
@@ -4722,5 +4909,6 @@ export {
   reconcileLocalGPUSessionIndex,
   ensureProjectSkillLinks,
   getWorkspaceRootFromConfig,
+  searchSessionContent,
   setWorkspaceRootInConfig
 };

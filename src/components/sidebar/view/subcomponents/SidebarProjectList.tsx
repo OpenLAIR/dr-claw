@@ -221,6 +221,12 @@ export default function SidebarProjectList({
           >
             {filteredProjects.map(renderProject)}
           </SidebarSection>
+          {isSearching && isSearchLoading && (
+            <div className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground" role="status">
+              <div className="h-2.5 w-2.5 animate-spin rounded-full border border-muted-foreground border-t-transparent" />
+              {t('common:workbench.sidebar.searchingMessages')}
+            </div>
+          )}
         </>
       )}
     </div>

@@ -482,7 +482,9 @@
       "openProjectsOverview": "Projects overview",
       "searchSessions": "Search sessions...",
       "searchingSessions": "Searching sessions…",
-      "noMatchingSessions": "No matching sessions"
+      "noMatchingSessions": "No matching sessions",
+      "searchingMessages": "Searching messages…",
+      "matchedInMessages": "In messages: {{snippet}}"
     },
     "stages": {
       "survey": "Survey",
