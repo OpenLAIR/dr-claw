@@ -6,25 +6,18 @@ import 'katex/dist/katex.min.css'
 
 // Initialize i18n
 import './i18n/config.js'
+import { setupServiceWorker } from './utils/serviceWorkerSetup.js'
 
-// Keep development free of stale caches while retaining offline support in production.
-if ('serviceWorker' in navigator) {
-  if (import.meta.env.PROD) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js').catch(err => {
-        console.warn('Failed to register service worker:', err);
-      });
-    }, { once: true });
-  } else {
-    navigator.serviceWorker.getRegistrations().then(registrations => {
-      registrations.forEach(registration => {
-        void registration.unregister();
-      });
-    }).catch(err => {
-      console.warn('Failed to unregister service workers:', err);
-    });
-  }
-}
+// Register the offline service worker for web production builds only; see
+// utils/serviceWorkerSetup.js for why development and the desktop app run
+// without one.
+setupServiceWorker({
+  isProduction: import.meta.env.PROD,
+  isElectron: Boolean(window.isElectron),
+  serviceWorker: 'serviceWorker' in navigator ? navigator.serviceWorker : undefined,
+  cacheStorage: typeof caches !== 'undefined' ? caches : undefined,
+  onLoad: (callback) => window.addEventListener('load', callback, { once: true }),
+})
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

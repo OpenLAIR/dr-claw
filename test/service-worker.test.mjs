@@ -42,11 +42,11 @@ function createWorker() {
       writeGate = new Promise((resolve) => { releaseWrite = resolve; });
       return () => releaseWrite();
     },
-    dispatch(url = 'https://dr-claw.test/', mode = 'navigate') {
+    dispatch(url = 'https://dr-claw.test/', mode = 'navigate', method = 'GET') {
       let response;
       const lifetime = [];
       listeners.get('fetch')({
-        request: { url, mode },
+        request: { url, mode, method },
         respondWith: (promise) => { response = promise; },
         waitUntil: (promise) => { lifetime.push(promise); },
       });
@@ -111,3 +111,23 @@ test('cache failures do not reject a successful network response or worker lifet
   await Promise.all(event.lifetime);
   assert.equal(worker.entries.size, 0);
 });
+
+// API calls and static assets must reach the network directly: on a cold
+// desktop launch they are slow, and a worker in the middle turned failures into
+// "TypeError: Failed to fetch" and served stale precached files after upgrades.
+for (const [url, mode, method] of [
+  ['https://dr-claw.test/api/projects', 'cors', 'GET'],
+  ['https://dr-claw.test/api/projects/p/sessions/s/messages?limit=50', 'cors', 'GET'],
+  ['https://dr-claw.test/icons/claude-ai-icon.svg', 'no-cors', 'GET'],
+  ['https://dr-claw.test/assets/index-abc123.js', 'cors', 'GET'],
+  ['https://dr-claw.test/manifest.json', 'cors', 'GET'],
+  ['https://dr-claw.test/api/projects', 'cors', 'POST'],
+  ['https://dr-claw.test/', 'navigate', 'POST'],
+]) {
+  test(`${method} ${new URL(url).pathname} (${mode}) is not intercepted`, () => {
+    const worker = createWorker();
+    const event = worker.dispatch(url, mode, method);
+    assert.equal(event.response, undefined);
+    assert.equal(event.lifetime.length, 0);
+  });
+}
