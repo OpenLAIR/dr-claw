@@ -464,12 +464,12 @@ function PipelineStageChip({ stage, compact = false }) {
 
   if (compact) {
     return (
-      <div className={`rounded-lg border px-2 py-1.5  ${tone}`}>
-        <div className="flex items-center justify-between gap-1">
-          <span className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-xs font-medium ${stage.meta.className}`}>
-            {t(`researchLabLabels.${stage.meta.label}`, { defaultValue: stage.meta.label })}
+      <div className={`min-w-0 rounded-lg border px-2 py-1.5 ${tone}`}>
+        <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-1.5 gap-y-1">
+          <span className={`inline-flex min-w-0 items-center rounded-full px-1.5 py-0.5 text-xs font-medium ${stage.meta.className}`}>
+            <span className="truncate">{t(`researchLabLabels.${stage.meta.label}`, { defaultValue: stage.meta.label })}</span>
           </span>
-          <span className="text-xs text-muted-foreground">{summaryLabel}</span>
+          <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">{summaryLabel}</span>
         </div>
       </div>
     );
@@ -2806,7 +2806,7 @@ function ResearchLab({ selectedProject, onNavigateToChat, compact = false, onFil
                   />
                 </div>
 
-                <div className={`grid ${compact ? 'mt-3 grid-cols-3 gap-1.5' : 'mt-4 gap-2 sm:grid-cols-2 xl:grid-cols-3'}`}>
+                <div className={`grid ${compact ? 'mt-3 grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-1.5' : 'mt-4 gap-2 sm:grid-cols-2 xl:grid-cols-3'}`}>
                   {pipelineStageOverview.map((stage) => (
                     <PipelineStageChip key={stage.key} stage={stage} compact={compact} />
                   ))}

@@ -57,6 +57,7 @@ describe('getFileTree', () => {
         name: 'skill-0',
         path: path.join(project, '.claude', 'skills', 'skill-0'),
         type: 'directory',
+        isSymlink: true,
         children: null,
       });
       // Metadata comes from the link target, as before.
@@ -81,6 +82,9 @@ describe('getFileTree', () => {
     ]);
     const references = byName(byName(tree, 'Survey').children, 'references');
     expect(references.type).toBe('directory');
+    // Only links carry the flag, so the panel can mark them.
+    expect(byName(tree, 'Survey').isSymlink).toBeUndefined();
+    expect(byName(tree, 'README.md').isSymlink).toBeUndefined();
     expect(references.children).toEqual([
       expect.objectContaining({ name: 'paper.md', type: 'file', size: 6 }),
     ]);

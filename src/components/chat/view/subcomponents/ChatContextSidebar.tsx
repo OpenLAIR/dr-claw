@@ -43,6 +43,7 @@ import {
 } from '../../utils/sessionContextSummary';
 import ChatContextFilePreview from './ChatContextFilePreview';
 import FileThumbnail from './FileThumbnail';
+import MiddleTruncatedName from '../../../file-tree/MiddleTruncatedName';
 import WorkbenchDialog from '../../../ui/WorkbenchDialog';
 import { useContextSidebarResize } from '../../hooks/useContextSidebarResize';
 import { useSessionContextReviews } from '../../hooks/useSessionContextReviews';
@@ -54,6 +55,14 @@ const SIDEBAR_COLLAPSED_STORAGE_KEY = 'chat-session-context-collapsed';
 const SIDEBAR_SECTIONS_STORAGE_KEY = 'chat-session-context-sections';
 
 type SidebarTab = 'context' | 'research' | 'files' | 'shell' | 'git';
+
+const SIDEBAR_TABS: Array<{ id: SidebarTab; icon: LucideIcon; labelKey: string }> = [
+  { id: 'context', icon: FolderSearch, labelKey: 'sessionContext.sidebarTabs.context' },
+  { id: 'research', icon: FlaskConical, labelKey: 'sessionContext.sidebarTabs.research' },
+  { id: 'files', icon: Folder, labelKey: 'sessionContext.sidebarTabs.files' },
+  { id: 'shell', icon: Terminal, labelKey: 'sessionContext.sidebarTabs.shell' },
+  { id: 'git', icon: GitBranch, labelKey: 'sessionContext.sidebarTabs.git' },
+];
 
 interface ChatContextSidebarProps {
   selectedProject: Project | null;
@@ -98,10 +107,10 @@ const ItemBadge = ({ children, tone = 'default' }: { children: ReactNode; tone?:
   </span>
 );
 
-const OpenFileButton = () => <ExternalLink className="h-4 w-4" aria-hidden="true" />;
+const OpenFileButton = () => <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />;
 
 const ContextStat = ({ label, value }: { label: string; value: ReactNode }) => (
-  <div className="flex min-w-0 items-baseline justify-between gap-3 py-1">
+  <div className="flex min-w-0 items-baseline justify-between gap-3 py-0.5">
     <dt className="text-xs text-muted-foreground">{label}</dt>
     <dd className="min-w-0 break-words text-right text-sm font-medium tabular-nums text-foreground">{value}</dd>
   </div>
@@ -118,7 +127,7 @@ const SectionHeader = ({ title, count, icon: Icon, collapsed, onToggle, actions 
   <div className="mb-1 flex flex-wrap items-center gap-x-2">
     <h2 className="min-w-[180px] flex-1">
       <button type="button" onClick={onToggle} aria-expanded={!collapsed}
-        className="flex min-h-11 w-full items-center gap-2 rounded-md text-left text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        className="flex min-h-9 [@media(pointer:coarse)]:min-h-11 w-full items-center gap-2 rounded-md px-1 text-left text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
         <Icon className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
         <span className="min-w-0 flex-1 break-words">{title}</span>
         <span className="text-xs font-medium tabular-nums text-muted-foreground">{count}</span>
@@ -129,8 +138,10 @@ const SectionHeader = ({ title, count, icon: Icon, collapsed, onToggle, actions 
   </div>
 );
 
-const ItemButton = ({ label, secondaryLabel, detail, meta, onClick, action, thumbnail, onRemove }: {
+const ItemButton = ({ label, isFileName = false, secondaryLabel, detail, meta, onClick, action, thumbnail, onRemove }: {
   label: string;
+  /** Render the label on one line, truncated in the middle so the extension stays visible. */
+  isFileName?: boolean;
   secondaryLabel?: string;
   detail?: string;
   meta?: ReactNode;
@@ -147,7 +158,9 @@ const ItemButton = ({ label, secondaryLabel, detail, meta, onClick, action, thum
     <span className="flex min-w-0 items-start gap-2">
       {thumbnail && <span aria-hidden="true" className="shrink-0">{thumbnail}</span>}
       <span className="min-w-0 flex-1">
-        <span className="block break-words text-sm font-medium leading-5 text-foreground" title={label}>{label}</span>
+        {isFileName
+          ? <span className="flex text-sm font-medium leading-5 text-foreground" title={label}><MiddleTruncatedName name={label} /></span>
+          : <span className="block break-words text-sm font-medium leading-5 text-foreground" title={label}>{label}</span>}
         {secondaryLabel && <span className="mt-0.5 block truncate text-xs text-muted-foreground" title={secondaryLabel}>{secondaryLabel}</span>}
         {detail && <span className="mt-0.5 block line-clamp-2 text-xs leading-5 text-muted-foreground">{detail}</span>}
       </span>
@@ -157,9 +170,9 @@ const ItemButton = ({ label, secondaryLabel, detail, meta, onClick, action, thum
   return (
     <div className="flex min-w-0 items-start gap-1 border-b border-border/50 last:border-0">
       {onClick ? <button ref={buttonRef} type="button" onClick={onClick}
-        className="min-h-11 min-w-0 flex-1 rounded-md px-1 py-2 text-left transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{content}</button>
-        : <div className="min-w-0 flex-1 px-1 py-2 text-left">{content}</div>}
-      {action && <div className="shrink-0 pt-2">{action}</div>}
+        className="min-h-11 min-w-0 flex-1 rounded-md px-1 py-1.5 text-left transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{content}</button>
+        : <div className="min-w-0 flex-1 px-1 py-1.5 text-left">{content}</div>}
+      {action && <div className="shrink-0 pt-1">{action}</div>}
     </div>
   );
 };
@@ -476,88 +489,74 @@ export default function ChatContextSidebar({
         }`}
         style={!isMobile && !isSidebarCollapsed ? { width: `${sidebarWidth}px` } : undefined}
       >
-      <div className="border-b border-border/60 px-4 py-3.5">
-        <div className="flex items-start justify-between gap-2">
-          {!isSidebarCollapsed && (
-            <div className="grid min-w-0 flex-1 grid-cols-5 gap-1">
-              {([
-                { id: 'context' as SidebarTab, icon: FolderSearch, labelKey: 'sessionContext.sidebarTabs.context' },
-                { id: 'research' as SidebarTab, icon: FlaskConical, labelKey: 'sessionContext.sidebarTabs.research' },
-                { id: 'files' as SidebarTab, icon: Folder, labelKey: 'sessionContext.sidebarTabs.files' },
-                { id: 'shell' as SidebarTab, icon: Terminal, labelKey: 'sessionContext.sidebarTabs.shell' },
-                { id: 'git' as SidebarTab, icon: GitBranch, labelKey: 'sessionContext.sidebarTabs.git' },
-              ]).map((tab) => {
-                const TabIcon = tab.icon;
-                const isActive = tab.id === activeSidebarTab;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    aria-pressed={isActive}
-                    onClick={() => onSidebarTabChange?.(tab.id)}
-                    className={`relative flex min-h-11 min-w-0 flex-col items-center justify-start gap-1 rounded-md px-1 py-2 text-xs font-medium transition-colors ${
-                      isActive
-                        ? 'bg-muted text-foreground '
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    <TabIcon className="w-3.5 h-3.5" strokeWidth={isActive ? 2.2 : 1.8} />
-                    <span className="w-full break-words text-center leading-4">{t(tab.labelKey)}</span>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-          <div className="flex flex-shrink-0 items-center gap-2">
-            {isLoadingTrace && activeSidebarTab === 'context' && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-            {!isMobile && (
-              <button
-                type="button"
-                onClick={toggleCollapsed}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border text-muted-foreground  transition-colors hover:text-foreground"
-                title={isSidebarCollapsed ? t('sessionContext.actions.expand') : t('sessionContext.actions.collapse')}
-              >
-                {isSidebarCollapsed ? <ChevronsLeft className="h-4 w-4" /> : <ChevronsRight className="h-4 w-4" />}
-              </button>
-            )}
-          </div>
-        </div>
-
-        {!isSidebarCollapsed && activeSidebarTab === 'context' && (
-          <>
-
-        <dl className="mt-3 grid grid-cols-2 gap-x-5 gap-y-1">
-          <ContextStat label={t('sessionContext.stats.mode')} value={modeLabel} />
-          <ContextStat label={t('sessionContext.stats.provider')} value={providerLabel} />
-          <ContextStat label={t('sessionContext.stats.contextFiles')} value={summary.contextFiles.length} />
-          <ContextStat label={t('sessionContext.stats.unreadOutputs')} value={summary.unreadCount} />
-        </dl>
-
-        {effectiveProvider === 'codex' && (
-          <div className="mt-3 rounded-lg border border-amber-200/60 bg-amber-50/80 px-3 py-2.5 text-xs leading-5 text-amber-800  dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
-            {t('sessionContext.codexNotice')}
+      <div className={cn('flex items-center gap-1 border-b border-border/60', isSidebarCollapsed ? 'justify-center px-2 py-2' : 'px-1.5 py-1.5')}>
+        {!isSidebarCollapsed && (
+          <div className="context-sidebar-tabs flex min-w-0 flex-1 gap-0.5">
+            {SIDEBAR_TABS.map((tab) => {
+              const TabIcon = tab.icon;
+              const isActive = tab.id === activeSidebarTab;
+              const label = t(tab.labelKey);
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  aria-pressed={isActive}
+                  aria-label={label}
+                  title={label}
+                  onClick={() => onSidebarTabChange?.(tab.id)}
+                  className={cn(
+                    'context-sidebar-tab flex h-12 min-w-0 flex-auto flex-col items-center justify-center gap-1 rounded-md px-1.5 text-[11px] font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    isActive ? 'bg-muted text-foreground' : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
+                  )}
+                >
+                  <TabIcon className="h-4 w-4 shrink-0" strokeWidth={isActive ? 2.2 : 1.8} aria-hidden="true" />
+                  <span className="context-sidebar-tab-label max-w-full truncate whitespace-nowrap">{label}</span>
+                </button>
+              );
+            })}
           </div>
         )}
-
-        {traceError && (
-          <div role="alert" className="mt-3 text-sm leading-5 text-destructive">
-            {t('sessionContext.traceError')}
-            <button type="button" className="mt-1 block min-h-11 rounded-md px-2 text-sm font-medium hover:bg-muted" onClick={() => setTraceRevision(value => value + 1)}>{t('error.retry')}</button>
-          </div>
-        )}
-          </>
+        {!isMobile && (
+          <button
+            type="button"
+            onClick={toggleCollapsed}
+            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            title={isSidebarCollapsed ? t('sessionContext.actions.expand') : t('sessionContext.actions.collapse')}
+            aria-label={isSidebarCollapsed ? t('sessionContext.actions.expand') : t('sessionContext.actions.collapse')}
+          >
+            {isSidebarCollapsed ? <ChevronsLeft className="h-4 w-4" /> : <ChevronsRight className="h-4 w-4" />}
+          </button>
         )}
       </div>
 
+      {!isSidebarCollapsed && activeSidebarTab === 'context' && (
+        <div className="relative border-b border-border/60 px-4 py-2.5">
+          {isLoadingTrace && <Loader2 className="absolute right-3 top-3 h-3.5 w-3.5 animate-spin text-muted-foreground" aria-hidden="true" />}
+          <dl className="grid grid-cols-2 gap-x-5">
+            <ContextStat label={t('sessionContext.stats.mode')} value={modeLabel} />
+            <ContextStat label={t('sessionContext.stats.provider')} value={providerLabel} />
+            <ContextStat label={t('sessionContext.stats.contextFiles')} value={summary.contextFiles.length} />
+            <ContextStat label={t('sessionContext.stats.unreadOutputs')} value={summary.unreadCount} />
+          </dl>
+
+          {effectiveProvider === 'codex' && (
+            <div className="mt-2 rounded-lg border border-amber-200/60 bg-amber-50/80 px-3 py-2 text-xs leading-5 text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
+              {t('sessionContext.codexNotice')}
+            </div>
+          )}
+
+          {traceError && (
+            <div role="alert" className="mt-2 text-sm leading-5 text-destructive">
+              {t('sessionContext.traceError')}
+              <button type="button" className="mt-1 block min-h-8 rounded-md px-2 text-sm font-medium hover:bg-muted [@media(pointer:coarse)]:min-h-11" onClick={() => setTraceRevision(value => value + 1)}>{t('error.retry')}</button>
+            </div>
+          )}
+        </div>
+      )}
+
       {isSidebarCollapsed ? (
         <div className="flex flex-1 flex-col items-center gap-2 p-3 pt-4">
-          {([
-            { id: 'context' as SidebarTab, icon: FolderSearch, labelKey: 'sessionContext.sidebarTabs.context' },
-            { id: 'research' as SidebarTab, icon: FlaskConical, labelKey: 'sessionContext.sidebarTabs.research' },
-            { id: 'files' as SidebarTab, icon: Folder, labelKey: 'sessionContext.sidebarTabs.files' },
-            { id: 'shell' as SidebarTab, icon: Terminal, labelKey: 'sessionContext.sidebarTabs.shell' },
-            { id: 'git' as SidebarTab, icon: GitBranch, labelKey: 'sessionContext.sidebarTabs.git' },
-          ]).map((tab) => {
+          {SIDEBAR_TABS.map((tab) => {
             const TabIcon = tab.icon;
             const isActive = tab.id === activeSidebarTab;
             return (
@@ -610,10 +609,11 @@ export default function ChatContextSidebar({
               <ItemButton
                 key={file.key}
                 label={file.name}
+                isFileName
                 secondaryLabel={file.relativePath}
                 onClick={() => handleFilePreview(file)}
                 thumbnail={<FileThumbnail projectName={projectName} absolutePath={file.absolutePath || file.relativePath} fileName={file.name} />}
-                action={<button type="button" aria-label={t('sessionContext.preview.openFile', { name: file.name })} className="inline-flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" onClick={() => openContextFile(file)}><OpenFileButton /></button>}
+                action={<button type="button" aria-label={t('sessionContext.preview.openFile', { name: file.name })} className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11" onClick={() => openContextFile(file)}><OpenFileButton /></button>}
                 meta={
                   <>
                     {file.reasons[0] ? <ItemBadge>{file.reasons[0]}</ItemBadge> : null}
@@ -624,7 +624,7 @@ export default function ChatContextSidebar({
               />
             ))}
             {summary.contextFiles.length > 3 && (
-              <button type="button" className="min-h-11 w-full rounded-md px-2 py-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors" onClick={() => toggleListExpansion('contextFiles')}>
+              <button type="button" className="min-h-8 [@media(pointer:coarse)]:min-h-11 w-full rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" onClick={() => toggleListExpansion('contextFiles')}>
                 {expandedLists.contextFiles ? t('sessionContext.showLess') : t('sessionContext.showMore', { count: summary.contextFiles.length - 3 })}
               </button>
             )}
@@ -638,7 +638,7 @@ export default function ChatContextSidebar({
               />
             ))}
             {summary.directories.length > 3 && (
-              <button type="button" className="min-h-11 w-full rounded-md px-2 py-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors" onClick={() => toggleListExpansion('directories')}>
+              <button type="button" className="min-h-8 [@media(pointer:coarse)]:min-h-11 w-full rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" onClick={() => toggleListExpansion('directories')}>
                 {expandedLists.directories ? t('sessionContext.showLess') : t('sessionContext.showMore', { count: summary.directories.length - 3 })}
               </button>
             )}
@@ -657,7 +657,7 @@ export default function ChatContextSidebar({
                     type="button"
                     key={entry.key}
                     onClick={() => handleSkillPreview(entry)}
-                    className="flex min-h-11 w-full flex-wrap items-center gap-2 rounded-md px-1 py-2 text-left transition-colors hover:bg-muted"
+                    className="flex min-h-8 [@media(pointer:coarse)]:min-h-11 w-full items-center gap-2 rounded-md px-1 py-1 text-left transition-colors hover:bg-muted"
                   >
                     <Zap className="h-3 w-3 flex-shrink-0 text-muted-foreground" />
                     <span className="min-w-0 flex-1 truncate text-[12px] font-medium text-foreground">
@@ -667,7 +667,7 @@ export default function ChatContextSidebar({
                   </button>
                 ))}
                 {summary.skills.length > 5 && (
-                  <button type="button" className="min-h-11 w-full rounded-md px-2 py-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors" onClick={() => toggleListExpansion('skills')}>
+                  <button type="button" className="min-h-8 [@media(pointer:coarse)]:min-h-11 w-full rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" onClick={() => toggleListExpansion('skills')}>
                     {expandedLists.skills ? t('sessionContext.showLess') : t('sessionContext.showMore', { count: summary.skills.length - 5 })}
                   </button>
                 )}
@@ -700,7 +700,7 @@ export default function ChatContextSidebar({
               ))
             )}
             {summary.tasks.length > 6 && (
-              <button type="button" className="min-h-11 w-full rounded-md px-2 py-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors" onClick={() => toggleListExpansion('tasks')}>
+              <button type="button" className="min-h-8 [@media(pointer:coarse)]:min-h-11 w-full rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" onClick={() => toggleListExpansion('tasks')}>
                 {expandedLists.tasks ? t('sessionContext.showLess') : t('sessionContext.showMore', { count: summary.tasks.length - 6 })}
               </button>
             )}
@@ -728,7 +728,7 @@ export default function ChatContextSidebar({
                   data-review-filter
                   aria-pressed={reviewFilter === filter.value}
                   onClick={() => setReviewFilter(filter.value)}
-                  className={`min-h-11 rounded-md px-3 py-1 text-sm font-medium transition-colors ${
+                  className={`min-h-7 [@media(pointer:coarse)]:min-h-11 rounded-md px-2 text-xs font-medium transition-colors ${
                     reviewFilter === filter.value
                       ? 'bg-muted text-foreground '
                       : 'text-muted-foreground hover:text-foreground'
@@ -757,10 +757,11 @@ export default function ChatContextSidebar({
                   key={file.key}
                   onRemove={focusReviewFilter}
                   label={file.name}
+                  isFileName
                   secondaryLabel={file.relativePath}
                   onClick={() => handleFilePreview(file)}
                   thumbnail={<FileThumbnail projectName={projectName} absolutePath={file.absolutePath || file.relativePath} fileName={file.name} />}
-                  action={<button type="button" aria-label={t('sessionContext.preview.openFile', { name: file.name })} className="inline-flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" onClick={() => { void openReviewFile(file); }}><OpenFileButton /></button>}
+                  action={<button type="button" aria-label={t('sessionContext.preview.openFile', { name: file.name })} className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11" onClick={() => { void openReviewFile(file); }}><OpenFileButton /></button>}
                   meta={
                     <>
                       {file.reasons[0] ? <ItemBadge>{file.reasons[0]}</ItemBadge> : null}
@@ -773,7 +774,7 @@ export default function ChatContextSidebar({
               ))
             )}
             {filteredOutputFiles.length > 8 && (
-              <button type="button" className="min-h-11 w-full rounded-md px-2 py-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors" onClick={() => toggleListExpansion('outputFiles')}>
+              <button type="button" className="min-h-8 [@media(pointer:coarse)]:min-h-11 w-full rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" onClick={() => toggleListExpansion('outputFiles')}>
                 {expandedLists.outputFiles ? t('sessionContext.showLess') : t('sessionContext.showMore', { count: filteredOutputFiles.length - 8 })}
               </button>
             )}

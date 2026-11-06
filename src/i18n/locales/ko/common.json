@@ -314,7 +314,12 @@
     "emptyFolder": "빈 폴더입니다.",
     "copyFailed": "경로를 복사하지 못했습니다. 다시 시도해 주세요.",
     "deleteFailed": "삭제하지 못했습니다. 항목은 유지됩니다. 다시 시도해 주세요.",
-    "deleting": "삭제 중…"
+    "deleting": "삭제 중…",
+    "showDetails": "크기와 날짜 표시",
+    "collapseAll": "폴더 모두 접기",
+    "moreActions": "{{name}} 추가 작업",
+    "symlink": "심볼릭 링크",
+    "pathCopied": "경로 복사됨"
   },
   "projectWizard": {
     "title": "새 프로젝트 생성",
