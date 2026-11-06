@@ -12,7 +12,7 @@ import type {
   SessionWithProvider,
 } from '../types/types';
 import {
-  filterProjects,
+  getSessionName,
   getAllSessions,
   readProjectSortOrder,
   sortProjects,
@@ -27,6 +27,10 @@ import {
   togglePinnedSession,
   type PinnedSession,
 } from '../utils/pinned';
+import { searchSidebar, tokenizeQuery } from '../utils/sessionSearch';
+
+/** While searching, load each project's remaining sessions in one request. */
+const SEARCH_PAGE_SIZE = 1000;
 
 type UseSidebarControllerArgs = {
   projects: Project[];
@@ -238,15 +242,23 @@ export function useSidebarController({
     [additionalSessions, projectSortOrder, projectsWithSessionMeta],
   );
 
-  const filteredProjects = useMemo(
-    () => filterProjects(sortedProjects, searchFilter),
-    [searchFilter, sortedProjects],
-  );
-
   const getProjectSessionList = useCallback(
     (project: Project) => separatePinnedSessions(project, getProjectSessions(project), pinnedSessions),
     [getProjectSessions, pinnedSessions],
   );
+
+  // The search box finds sessions by title (pinned ones are matched in the
+  // Pinned section) and projects by name.
+  const { projects: filteredProjects, sessionMatches } = useMemo(
+    () => searchSidebar(
+      sortedProjects,
+      (project) => getProjectSessionList(project).sessions,
+      (session) => getSessionName(session, t),
+      searchFilter,
+    ),
+    [getProjectSessionList, searchFilter, sortedProjects, t],
+  );
+  const isSearching = tokenizeQuery(searchFilter).length > 0;
 
   const pinnedSessionEntries = useMemo(
     () => resolvePinnedSessions(pinnedSessions, projectsWithSessionMeta, getProjectSessions, searchFilter),
@@ -412,7 +424,7 @@ export function useSidebarController({
   }, [deleteConfirmation, onProjectDelete, onRefresh, t]);
 
   const loadMoreSessions = useCallback(
-    async (project: Project) => {
+    async (project: Project, pageSize = 5) => {
       const hasMoreOverride = projectHasMoreOverrides[project.name];
       const canLoadMore =
         hasMoreOverride !== undefined ? hasMoreOverride : project.sessionMeta?.hasMore === true;
@@ -425,7 +437,7 @@ export function useSidebarController({
       try {
         const currentSessionCount =
           (project.sessions?.length || 0) + (additionalSessions[project.name]?.length || 0);
-        const response = await api.sessions(project.name, 5, currentSessionCount);
+        const response = await api.sessions(project.name, pageSize, currentSessionCount);
 
         if (!response.ok) {
           return;
@@ -453,6 +465,27 @@ export function useSidebarController({
     },
     [additionalSessions, loadingSessions, projectHasMoreOverrides],
   );
+
+  // Searching covers sessions that have not been paged in yet. Each project
+  // is fetched at most once per search so a failing request is not retried
+  // on every render.
+  const searchLoadsRequested = useRef(new Set<string>());
+  // A refresh replaces the loaded sessions, so a running search loads again.
+  useEffect(() => {
+    searchLoadsRequested.current.clear();
+  }, [projects]);
+  useEffect(() => {
+    if (!isSearching) {
+      searchLoadsRequested.current.clear();
+      return;
+    }
+    for (const project of projectsWithSessionMeta) {
+      if (project.sessionMeta?.hasMore !== true || searchLoadsRequested.current.has(project.name)) continue;
+      searchLoadsRequested.current.add(project.name);
+      void loadMoreSessions(project, SEARCH_PAGE_SIZE);
+    }
+  }, [isSearching, loadMoreSessions, projectsWithSessionMeta]);
+  const isSearchLoading = isSearching && Object.values(loadingSessions).some(Boolean);
 
   const handleProjectSelect = useCallback(
     (project: Project) => {
@@ -510,6 +543,9 @@ export function useSidebarController({
     sessionDeleteError,
     showVersionModal,
     filteredProjects,
+    sessionMatches,
+    isSearching,
+    isSearchLoading,
     pinnedSessionEntries,
     togglePinSession,
     getProjectSessionList,

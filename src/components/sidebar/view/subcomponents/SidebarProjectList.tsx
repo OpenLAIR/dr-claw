@@ -15,6 +15,10 @@ import SidebarSessionItem from './SidebarSessionItem';
 export type SidebarProjectListProps = {
   projects: Project[];
   filteredProjects: Project[];
+  /** Matching sessions per project while searching, otherwise `null`. */
+  sessionMatches: Map<string, SessionWithProvider[]> | null;
+  isSearching: boolean;
+  isSearchLoading: boolean;
   pinnedSessionEntries: PinnedSessionEntry[];
   isSessionPinned: (projectName: string, sessionId: string) => boolean;
   onTogglePinSession: (projectName: string, session: SessionWithProvider, title: string) => void;
@@ -64,6 +68,9 @@ export type SidebarProjectListProps = {
 export default function SidebarProjectList({
   projects,
   filteredProjects,
+  sessionMatches,
+  isSearching,
+  isSearchLoading,
   pinnedSessionEntries,
   isSessionPinned,
   onTogglePinSession,
@@ -110,6 +117,8 @@ export default function SidebarProjectList({
       loadingProgress={loadingProgress}
       projectsCount={projects.length}
       filteredProjectsCount={filteredProjects.length + pinnedSessionEntries.length}
+      isSearching={isSearching}
+      isSearchLoading={isSearchLoading}
       t={t}
     />
   );
@@ -119,15 +128,20 @@ export default function SidebarProjectList({
   const hasPinned = pinnedSessionEntries.length > 0;
 
   const renderProject = (project: Project) => {
-    // Pinned sessions are listed in the Pinned section only.
-    const { sessions, knownTotal } = getProjectSessionList(project);
+    // Pinned sessions are listed in the Pinned section only. While searching,
+    // a project with matching sessions opens and lists just those.
+    const matches = sessionMatches?.get(project.name);
+    const { sessions, knownTotal } = matches
+      ? { sessions: matches, knownTotal: matches.length }
+      : getProjectSessionList(project);
     return (
     <SidebarProjectItem
       key={project.name}
       project={project}
       selectedProject={selectedProject}
       selectedSession={selectedSession}
-      isExpanded={expandedProjects.has(project.name)}
+      isExpanded={Boolean(matches) || expandedProjects.has(project.name)}
+      showAllSessions={Boolean(matches)}
       isDeleting={deletingProjects.has(project.name)}
       editingProject={editingProject}
       editingName={editingName}

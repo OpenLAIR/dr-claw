@@ -9,6 +9,8 @@ import SidebarSessionItem from './SidebarSessionItem';
 type SidebarProjectSessionsProps = {
   project: Project;
   isExpanded: boolean;
+  /** Show every session passed in, e.g. search results. */
+  showAllSessions?: boolean;
   sessions: SessionWithProvider[];
   knownTotal: number;
   selectedSession: ProjectSession | null;
@@ -59,6 +61,7 @@ function SessionListSkeleton() {
 export default function SidebarProjectSessions({
   project,
   isExpanded,
+  showAllSessions = false,
   sessions,
   knownTotal,
   selectedSession,
@@ -92,7 +95,7 @@ export default function SidebarProjectSessions({
 
   const hasSessions = sessions.length > 0;
   const { visible, hiddenCount } = getSessionPreview(sessions, {
-    showAll,
+    showAll: showAll || showAllSessions,
     selectedSessionId: selectedSession?.id ?? null,
     knownTotal,
   });
@@ -171,7 +174,7 @@ export default function SidebarProjectSessions({
         </button>
       )}
 
-      {showAll && sessions.length > SESSION_PREVIEW_COUNT && (
+      {showAll && !showAllSessions && sessions.length > SESSION_PREVIEW_COUNT && (
         <button type="button" className={secondaryRowClass} onClick={() => setShowAll(false)}>
           <span className="w-1.5 shrink-0" aria-hidden="true" />
           <span className="truncate">{t('common:workbench.sidebar.showFewerSessions')}</span>

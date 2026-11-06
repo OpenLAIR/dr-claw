@@ -14,6 +14,8 @@ type SidebarProjectItemProps = {
   selectedProject: Project | null;
   selectedSession: ProjectSession | null;
   isExpanded: boolean;
+  /** Show every session passed in, e.g. search results. */
+  showAllSessions?: boolean;
   isDeleting: boolean;
   editingProject: string | null;
   editingName: string;
@@ -64,6 +66,7 @@ export default function SidebarProjectItem({
   selectedProject,
   selectedSession,
   isExpanded,
+  showAllSessions = false,
   isDeleting,
   editingProject,
   editingName,
@@ -233,6 +236,7 @@ export default function SidebarProjectItem({
       <SidebarProjectSessions
         project={project}
         isExpanded={isExpanded}
+        showAllSessions={showAllSessions}
         sessions={sessions}
         knownTotal={sessionTotal}
         selectedSession={selectedSession}

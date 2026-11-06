@@ -7,6 +7,8 @@ type SidebarProjectsStateProps = {
   loadingProgress: LoadingProgress | null;
   projectsCount: number;
   filteredProjectsCount: number;
+  isSearching?: boolean;
+  isSearchLoading?: boolean;
   t: TFunction;
 };
 
@@ -15,6 +17,8 @@ export default function SidebarProjectsState({
   loadingProgress,
   projectsCount,
   filteredProjectsCount,
+  isSearching = false,
+  isSearchLoading = false,
   t,
 }: SidebarProjectsStateProps) {
   if (isLoading) {
@@ -63,13 +67,24 @@ export default function SidebarProjectsState({
     );
   }
 
+  if (filteredProjectsCount === 0 && isSearchLoading) {
+    return (
+      <div className="flex items-center justify-center gap-2 px-4 py-8 text-sm text-muted-foreground" role="status">
+        <div className="h-3 w-3 animate-spin rounded-full border border-muted-foreground border-t-transparent" />
+        {t('common:workbench.sidebar.searchingSessions')}
+      </div>
+    );
+  }
+
   if (filteredProjectsCount === 0) {
     return (
       <div className="text-center py-12 md:py-8 px-4">
         <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center mx-auto mb-4 md:mb-3">
           <Search className="w-6 h-6 text-muted-foreground" />
         </div>
-        <h3 className="text-base font-medium text-foreground mb-2 md:mb-1">{t('projects.noMatchingProjects')}</h3>
+        <h3 className="text-base font-medium text-foreground mb-2 md:mb-1">
+          {isSearching ? t('common:workbench.sidebar.noMatchingSessions') : t('projects.noMatchingProjects')}
+        </h3>
         <p className="text-sm text-muted-foreground">{t('projects.tryDifferentSearch')}</p>
       </div>
     );

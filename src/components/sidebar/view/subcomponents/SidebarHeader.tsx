@@ -64,7 +64,7 @@ export default function SidebarHeader({
       <div className="mt-3 flex items-center gap-1">
         <div className="relative min-w-0 flex-1">
           <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input aria-label={t('projects.searchPlaceholder')} placeholder={t('projects.searchPlaceholder')} value={searchFilter} onChange={event => onSearchFilterChange(event.target.value)} className="pl-9 pr-8" />
+          <Input aria-label={t('common:workbench.sidebar.searchSessions')} placeholder={t('common:workbench.sidebar.searchSessions')} value={searchFilter} onChange={event => onSearchFilterChange(event.target.value)} className="pl-9 pr-8" />
           {searchFilter && <button className="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded hover:bg-muted" onClick={onClearSearchFilter} aria-label={t('common:buttons.clear')}><X className="h-4 w-4" /></button>}
         </div>
         <Button className="shrink-0" variant="ghost" size="icon" disabled={isRefreshing} onClick={onRefresh} title={t('tooltips.refresh')} aria-label={t('tooltips.refresh')}><RefreshCw className={isRefreshing ? 'animate-spin' : ''} /></Button>

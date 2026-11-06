@@ -198,19 +198,6 @@ export const sortProjects = (
   return byName;
 };
 
-export const filterProjects = (projects: Project[], searchFilter: string): Project[] => {
-  const normalizedSearch = searchFilter.trim().toLowerCase();
-  if (!normalizedSearch) {
-    return projects;
-  }
-
-  return projects.filter((project) => {
-    const displayName = (project.displayName || project.name).toLowerCase();
-    const projectName = project.name.toLowerCase();
-    return displayName.includes(normalizedSearch) || projectName.includes(normalizedSearch);
-  });
-};
-
 export const getTaskIndicatorStatus = (
   project: Project,
   mcpServerStatus: { hasMCPServer?: boolean; isConfigured?: boolean } | null,

@@ -479,7 +479,10 @@
       "pin": "Pin",
       "unpin": "Unpin",
       "toolsAndSettings": "Tools & settings",
-      "openProjectsOverview": "Projects overview"
+      "openProjectsOverview": "Projects overview",
+      "searchSessions": "Search sessions...",
+      "searchingSessions": "Searching sessions…",
+      "noMatchingSessions": "No matching sessions"
     },
     "stages": {
       "survey": "Survey",

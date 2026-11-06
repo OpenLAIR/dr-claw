@@ -478,7 +478,10 @@
       "pin": "置顶",
       "unpin": "取消置顶",
       "toolsAndSettings": "工具与设置",
-      "openProjectsOverview": "项目总览"
+      "openProjectsOverview": "项目总览",
+      "searchSessions": "搜索会话...",
+      "searchingSessions": "正在搜索会话…",
+      "noMatchingSessions": "没有匹配的会话"
     },
     "stages": {
       "survey": "文献调研",

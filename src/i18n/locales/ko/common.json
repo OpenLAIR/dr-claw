@@ -478,7 +478,10 @@
       "pin": "고정",
       "unpin": "고정 해제",
       "toolsAndSettings": "도구 및 설정",
-      "openProjectsOverview": "프로젝트 개요"
+      "openProjectsOverview": "프로젝트 개요",
+      "searchSessions": "세션 검색...",
+      "searchingSessions": "세션 검색 중…",
+      "noMatchingSessions": "일치하는 세션이 없습니다"
     },
     "stages": {
       "survey": "문헌 조사",
