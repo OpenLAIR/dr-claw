@@ -132,12 +132,12 @@
     },
     "inno-idea-generation": {
       "en": {
-        "name": "Brainstorming",
-        "summary": "Run structured brainstorming with proven frameworks to generate creative research ideas."
+        "name": "Idea generation",
+        "summary": "Generate literature-grounded research ideas and select one for evaluation."
       },
       "zh": {
-        "name": "头脑风暴",
-        "summary": "用结构化框架进行头脑风暴，生成创新研究想法。"
+        "name": "想法生成",
+        "summary": "基于文献生成多个候选研究想法，并择优交给评估。"
       }
     },
     "inno-paper-reviewer": {
