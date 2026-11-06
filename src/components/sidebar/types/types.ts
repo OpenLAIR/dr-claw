@@ -41,7 +41,7 @@ export type SidebarProps = {
   selectedSession: ProjectSession | null;
   onProjectSelect: (project: Project) => void;
   onSessionSelect: (session: ProjectSession) => void;
-  onNewSession: (project: Project, mode?: SessionMode) => void;
+  onNewSession: (project: Project) => void;
   onSessionDelete?: (sessionId: string) => void;
   onProjectDelete?: (projectName: string) => void;
   isLoading: boolean;
@@ -61,7 +61,6 @@ export type SidebarProps = {
   onOpenNews: () => void;
   onOpenCompute: () => void;
   onImportedProjectCreated?: (project: Project, options?: ProjectCreationOptions) => void;
-  newSessionMode?: SessionMode;
   /** Sessions with a request in flight; shown as running in the list. */
   processingSessions?: ReadonlySet<string>;
 };

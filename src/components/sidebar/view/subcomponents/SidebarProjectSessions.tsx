@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
 import type { TFunction } from 'i18next';
-import type { Project, ProjectSession, SessionMode, SessionProvider } from '../../../../types/app';
+import type { Project, ProjectSession, SessionProvider } from '../../../../types/app';
 import type { SessionWithProvider, TouchHandlerFactory } from '../../types/types';
 import { SESSION_PREVIEW_COUNT, getSessionPreview, isWideSidebarLayout } from '../../utils/sessionPreview';
 import SidebarSessionItem from './SidebarSessionItem';
@@ -34,8 +34,7 @@ type SidebarProjectSessionsProps = {
     provider: SessionProvider,
   ) => void;
   onLoadMoreSessions: (project: Project) => void;
-  onNewSession: (project: Project, mode?: SessionMode) => void;
-  newSessionMode?: SessionMode;
+  onNewSession: (project: Project) => void;
   isSessionPinned: (projectName: string, sessionId: string) => boolean;
   onTogglePinSession: (projectName: string, session: SessionWithProvider, title: string) => void;
   touchHandlerFactory: TouchHandlerFactory;
@@ -81,7 +80,6 @@ export default function SidebarProjectSessions({
   onDeleteSession,
   onLoadMoreSessions,
   onNewSession,
-  newSessionMode = 'research',
   isSessionPinned,
   onTogglePinSession,
   touchHandlerFactory,
@@ -109,7 +107,7 @@ export default function SidebarProjectSessions({
 
   const startNewSession = () => {
     if (!isWideSidebarLayout()) onProjectSelect(project);
-    onNewSession(project, newSessionMode);
+    onNewSession(project);
   };
 
   return (
