@@ -20,6 +20,16 @@
         "summary": "Check that GPUs or other compute are available before experiments; stop instead of faking results."
       }
     },
+    "aris-novelty-check": {
+      "zh": {
+        "name": "查新",
+        "summary": "对照近期文献检查研究想法是否已有人做过。"
+      },
+      "en": {
+        "name": "Novelty check",
+        "summary": "Check a research idea against recent literature to see whether it has been done."
+      }
+    },
     "dataset-discovery": {
       "en": {
         "name": "Dataset discovery",
@@ -28,6 +38,16 @@
       "zh": {
         "name": "数据集发现",
         "summary": "从 HuggingFace、OpenML 和 GitHub 查找任务相关数据集。"
+      }
+    },
+    "ds-figure-polish": {
+      "zh": {
+        "name": "数据图打磨",
+        "summary": "用 matplotlib 制作论文级结果图，并反复渲染检查修改。"
+      },
+      "en": {
+        "name": "Figure polishing",
+        "summary": "Make publication-quality matplotlib result figures with a render-inspect-revise pass."
       }
     },
     "init-analysis": {
@@ -121,13 +141,13 @@
       }
     },
     "inno-idea-generation": {
-      "en": {
-        "name": "Idea generation",
-        "summary": "Generate literature-grounded research ideas and select one for evaluation."
-      },
       "zh": {
-        "name": "想法生成",
-        "summary": "基于文献生成多个候选研究想法，并择优交给评估。"
+        "name": "研究想法生成",
+        "summary": "用科研选题框架生成并筛选研究想法，交给想法评估。"
+      },
+      "en": {
+        "name": "Research idea generation",
+        "summary": "Generate and shortlist research ideas with ideation frameworks, ready for idea evaluation."
       }
     },
     "inno-paper-reviewer": {
