@@ -3,13 +3,14 @@ import { Plus } from 'lucide-react';
 import type { TFunction } from 'i18next';
 import type { Project, ProjectSession, SessionMode, SessionProvider } from '../../../../types/app';
 import type { SessionWithProvider, TouchHandlerFactory } from '../../types/types';
-import { SESSION_PREVIEW_COUNT, getKnownSessionTotal, getSessionPreview, isWideSidebarLayout } from '../../utils/sessionPreview';
+import { SESSION_PREVIEW_COUNT, getSessionPreview, isWideSidebarLayout } from '../../utils/sessionPreview';
 import SidebarSessionItem from './SidebarSessionItem';
 
 type SidebarProjectSessionsProps = {
   project: Project;
   isExpanded: boolean;
   sessions: SessionWithProvider[];
+  knownTotal: number;
   selectedSession: ProjectSession | null;
   initialSessionsLoaded: boolean;
   isLoadingSessions: boolean;
@@ -59,6 +60,7 @@ export default function SidebarProjectSessions({
   project,
   isExpanded,
   sessions,
+  knownTotal,
   selectedSession,
   initialSessionsLoaded,
   isLoadingSessions,
@@ -92,7 +94,7 @@ export default function SidebarProjectSessions({
   const { visible, hiddenCount } = getSessionPreview(sessions, {
     showAll,
     selectedSessionId: selectedSession?.id ?? null,
-    knownTotal: getKnownSessionTotal(project, sessions),
+    knownTotal,
   });
   const hiddenLoadedCount = sessions.length - visible.length;
 

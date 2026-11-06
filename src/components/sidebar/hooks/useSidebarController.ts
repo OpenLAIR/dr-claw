@@ -14,18 +14,16 @@ import type {
 import {
   filterProjects,
   getAllSessions,
-  loadStarredProjects,
-  persistStarredProjects,
   readProjectSortOrder,
   sortProjects,
 } from '../utils/utils';
 import {
   isSessionPinned as isPinnedIn,
   loadPinnedSessions,
-  partitionPinnedProjects,
   persistPinnedSessions,
   removePinnedSession,
   resolvePinnedSessions,
+  separatePinnedSessions,
   togglePinnedSession,
   type PinnedSession,
 } from '../utils/pinned';
@@ -87,9 +85,6 @@ export function useSidebarController({
   const [projectDeleteError, setProjectDeleteError] = useState('');
   const [sessionDeleteError, setSessionDeleteError] = useState('');
   const [showVersionModal, setShowVersionModal] = useState(false);
-  // Pinned projects keep the original `starredProjects` storage key so
-  // existing favourites carry over as pins.
-  const [starredProjects, setStarredProjects] = useState<Set<string>>(() => loadStarredProjects());
   const [pinnedSessions, setPinnedSessions] = useState<PinnedSession[]>(() => loadPinnedSessions());
 
   const isSidebarCollapsed = !isMobile && !sidebarVisible;
@@ -192,20 +187,6 @@ export function useSidebarController({
     [onSessionSelect],
   );
 
-  const toggleStarProject = useCallback((projectName: string) => {
-    setStarredProjects((prev) => {
-      const next = new Set(prev);
-      if (next.has(projectName)) {
-        next.delete(projectName);
-      } else {
-        next.add(projectName);
-      }
-
-      persistStarredProjects(next);
-      return next;
-    });
-  }, []);
-
   const updatePinnedSessions = useCallback((update: (pins: PinnedSession[]) => PinnedSession[]) => {
     setPinnedSessions((prev) => {
       const next = update(prev);
@@ -231,11 +212,6 @@ export function useSidebarController({
     [pinnedSessions],
   );
 
-  const isProjectStarred = useCallback(
-    (projectName: string) => starredProjects.has(projectName),
-    [starredProjects],
-  );
-
   const getProjectSessions = useCallback(
     (project: Project) => getAllSessions(project, additionalSessions),
     [additionalSessions],
@@ -258,8 +234,8 @@ export function useSidebarController({
   );
 
   const sortedProjects = useMemo(
-    () => sortProjects(projectsWithSessionMeta, projectSortOrder, starredProjects, additionalSessions),
-    [additionalSessions, projectSortOrder, projectsWithSessionMeta, starredProjects],
+    () => sortProjects(projectsWithSessionMeta, projectSortOrder, additionalSessions),
+    [additionalSessions, projectSortOrder, projectsWithSessionMeta],
   );
 
   const filteredProjects = useMemo(
@@ -267,9 +243,9 @@ export function useSidebarController({
     [searchFilter, sortedProjects],
   );
 
-  const { pinned: pinnedProjects, others: unpinnedProjects } = useMemo(
-    () => partitionPinnedProjects(filteredProjects, (projectName) => starredProjects.has(projectName)),
-    [filteredProjects, starredProjects],
+  const getProjectSessionList = useCallback(
+    (project: Project) => separatePinnedSessions(project, getProjectSessions(project), pinnedSessions),
+    [getProjectSessions, pinnedSessions],
   );
 
   const pinnedSessionEntries = useMemo(
@@ -533,18 +509,14 @@ export function useSidebarController({
     projectDeleteError,
     sessionDeleteError,
     showVersionModal,
-    starredProjects,
     filteredProjects,
-    pinnedProjects,
-    unpinnedProjects,
     pinnedSessionEntries,
     togglePinSession,
+    getProjectSessionList,
     isSessionPinned,
     handleTouchClick,
     toggleProject,
     handleSessionClick,
-    toggleStarProject,
-    isProjectStarred,
     getProjectSessions,
     startEditing,
     startEditingSession,

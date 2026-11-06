@@ -42,6 +42,12 @@ type SidebarSessionItemProps = {
   t: TFunction;
 };
 
+/**
+ * Pinning moves a session between the Pinned section and its project, which
+ * replaces its row. The new row takes focus so keyboard users keep their place.
+ */
+let refocusSessionAfterMove: string | null = null;
+
 const STATUS_DOT_CLASS: Record<SessionStatus, string> = {
   running: 'bg-blue-500 animate-pulse',
   recent: 'bg-green-500',
@@ -81,6 +87,13 @@ export default function SidebarSessionItem({
   const [menuOpen, setMenuOpen] = useState(false);
   const rowButton = useRef<HTMLButtonElement | null>(null);
   const restoreRenameFocus = useRef(false);
+  useLayoutEffect(() => {
+    if (refocusSessionAfterMove === `${project.name}:${session.id}`) {
+      refocusSessionAfterMove = null;
+      rowButton.current?.focus({ preventScroll: true });
+    }
+    // Mount only: a moved row is a new instance.
+  }, []);
   useLayoutEffect(() => {
     if (!isEditing && restoreRenameFocus.current) {
       rowButton.current?.focus({ preventScroll: true });
@@ -198,7 +211,12 @@ export default function SidebarSessionItem({
               label: isPinned ? t('common:workbench.sidebar.unpin') : t('common:workbench.sidebar.pin'),
               icon: isPinned ? PinOff : Pin,
               shortcut: 'p',
-              onSelect: () => onTogglePin(project.name, session, sessionView.sessionName),
+              onSelect: () => {
+                refocusSessionAfterMove = `${project.name}:${session.id}`;
+                // The other row may not be on screen (e.g. past "N more").
+                window.setTimeout(() => { refocusSessionAfterMove = null; }, 0);
+                onTogglePin(project.name, session, sessionView.sessionName);
+              },
             },
             ...(canRename ? [{
               key: 'rename',

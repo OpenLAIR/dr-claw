@@ -15,8 +15,6 @@ import SidebarSessionItem from './SidebarSessionItem';
 export type SidebarProjectListProps = {
   projects: Project[];
   filteredProjects: Project[];
-  pinnedProjects: Project[];
-  unpinnedProjects: Project[];
   pinnedSessionEntries: PinnedSessionEntry[];
   isSessionPinned: (projectName: string, sessionId: string) => boolean;
   onTogglePinSession: (projectName: string, session: SessionWithProvider, title: string) => void;
@@ -37,12 +35,10 @@ export type SidebarProjectListProps = {
   deletingProjects: Set<string>;
   tasksEnabled: boolean;
   mcpServerStatus: MCPServerStatus;
-  getProjectSessions: (project: Project) => SessionWithProvider[];
-  isProjectStarred: (projectName: string) => boolean;
+  getProjectSessionList: (project: Project) => { sessions: SessionWithProvider[]; knownTotal: number };
   onEditingNameChange: (value: string) => void;
   onToggleProject: (projectName: string) => void;
   onProjectSelect: (project: Project) => void;
-  onToggleStarProject: (projectName: string) => void;
   onStartEditingProject: (project: Project) => void;
   onCancelEditingProject: () => void;
   onSaveProjectName: (projectName: string) => void;
@@ -68,8 +64,6 @@ export type SidebarProjectListProps = {
 export default function SidebarProjectList({
   projects,
   filteredProjects,
-  pinnedProjects,
-  unpinnedProjects,
   pinnedSessionEntries,
   isSessionPinned,
   onTogglePinSession,
@@ -90,12 +84,10 @@ export default function SidebarProjectList({
   deletingProjects,
   tasksEnabled,
   mcpServerStatus,
-  getProjectSessions,
-  isProjectStarred,
+  getProjectSessionList,
   onEditingNameChange,
   onToggleProject,
   onProjectSelect,
-  onToggleStarProject,
   onStartEditingProject,
   onCancelEditingProject,
   onSaveProjectName,
@@ -124,9 +116,12 @@ export default function SidebarProjectList({
 
   const showProjects =
     !isLoading && projects.length > 0 && (filteredProjects.length > 0 || pinnedSessionEntries.length > 0);
-  const hasPinned = pinnedProjects.length > 0 || pinnedSessionEntries.length > 0;
+  const hasPinned = pinnedSessionEntries.length > 0;
 
-  const renderProject = (project: Project) => (
+  const renderProject = (project: Project) => {
+    // Pinned sessions are listed in the Pinned section only.
+    const { sessions, knownTotal } = getProjectSessionList(project);
+    return (
     <SidebarProjectItem
       key={project.name}
       project={project}
@@ -134,10 +129,10 @@ export default function SidebarProjectList({
       selectedSession={selectedSession}
       isExpanded={expandedProjects.has(project.name)}
       isDeleting={deletingProjects.has(project.name)}
-      isStarred={isProjectStarred(project.name)}
       editingProject={editingProject}
       editingName={editingName}
-      sessions={getProjectSessions(project)}
+      sessions={sessions}
+      sessionTotal={knownTotal}
       initialSessionsLoaded={initialSessionsLoaded.has(project.name)}
       isLoadingSessions={Boolean(loadingSessions[project.name])}
       currentTime={currentTime}
@@ -150,7 +145,6 @@ export default function SidebarProjectList({
       onEditingNameChange={onEditingNameChange}
       onToggleProject={onToggleProject}
       onProjectSelect={onProjectSelect}
-      onToggleStarProject={onToggleStarProject}
       onStartEditingProject={onStartEditingProject}
       onCancelEditingProject={onCancelEditingProject}
       onSaveProjectName={onSaveProjectName}
@@ -169,7 +163,8 @@ export default function SidebarProjectList({
       touchHandlerFactory={touchHandlerFactory}
       t={t}
     />
-  );
+    );
+  };
 
   return (
     <div className="flex flex-col gap-px pb-safe-area-inset-bottom">
@@ -177,7 +172,6 @@ export default function SidebarProjectList({
         <>
           {hasPinned && (
             <SidebarSection id="pinned" title={t('common:workbench.sidebar.pinned')}>
-              {pinnedProjects.map(renderProject)}
               {pinnedSessionEntries.map(({ project, session }) => (
                 <SidebarSessionItem
                   key={`${project.name}:${session.id}`}
@@ -209,9 +203,9 @@ export default function SidebarProjectList({
           <SidebarSection
             id="projects"
             title={t('common:workbench.projects')}
-            showHeader={hasPinned && unpinnedProjects.length > 0}
+            showHeader={hasPinned && filteredProjects.length > 0}
           >
-            {unpinnedProjects.map(renderProject)}
+            {filteredProjects.map(renderProject)}
           </SidebarSection>
         </>
       )}

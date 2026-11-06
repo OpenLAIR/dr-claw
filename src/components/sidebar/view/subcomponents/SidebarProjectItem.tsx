@@ -1,11 +1,11 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import SidebarRenameEditor from './SidebarRenameEditor';
-import { ChevronRight, Edit3, Folder, FolderOpen, Pin, PinOff, Plus, Trash2 } from 'lucide-react';
+import { ChevronRight, Edit3, Folder, FolderOpen, Plus, Trash2 } from 'lucide-react';
 import type { TFunction } from 'i18next';
 import { cn } from '../../../../lib/utils';
 import type { Project, ProjectSession, SessionMode, SessionProvider } from '../../../../types/app';
 import type { MCPServerStatus, SessionWithProvider, TouchHandlerFactory } from '../../types/types';
-import { getKnownSessionTotal, isWideSidebarLayout, joinTooltipLines } from '../../utils/sessionPreview';
+import { isWideSidebarLayout, joinTooltipLines } from '../../utils/sessionPreview';
 import SidebarProjectSessions from './SidebarProjectSessions';
 import SidebarRowMenu, { revealRowActionsClass } from './SidebarRowMenu';
 
@@ -15,10 +15,11 @@ type SidebarProjectItemProps = {
   selectedSession: ProjectSession | null;
   isExpanded: boolean;
   isDeleting: boolean;
-  isStarred: boolean;
   editingProject: string | null;
   editingName: string;
   sessions: SessionWithProvider[];
+  /** All of the project's sessions shown under it, loaded or not. */
+  sessionTotal: number;
   initialSessionsLoaded: boolean;
   isLoadingSessions: boolean;
   currentTime: Date;
@@ -31,7 +32,6 @@ type SidebarProjectItemProps = {
   onEditingNameChange: (name: string) => void;
   onToggleProject: (projectName: string) => void;
   onProjectSelect: (project: Project) => void;
-  onToggleStarProject: (projectName: string) => void;
   onStartEditingProject: (project: Project) => void;
   onCancelEditingProject: () => void;
   onSaveProjectName: (projectName: string) => void;
@@ -56,12 +56,6 @@ type SidebarProjectItemProps = {
   t: TFunction;
 };
 
-/**
- * Pinning moves a project between sidebar sections, which remounts its row.
- * The new row takes focus so keyboard users keep their place.
- */
-let refocusProjectAfterMove: string | null = null;
-
 const rowActionClass =
   'flex h-9 w-9 md:h-6 md:w-6 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50';
 
@@ -71,10 +65,10 @@ export default function SidebarProjectItem({
   selectedSession,
   isExpanded,
   isDeleting,
-  isStarred,
   editingProject,
   editingName,
   sessions,
+  sessionTotal,
   initialSessionsLoaded,
   isLoadingSessions,
   currentTime,
@@ -85,7 +79,6 @@ export default function SidebarProjectItem({
   onEditingNameChange,
   onToggleProject,
   onProjectSelect,
-  onToggleStarProject,
   onStartEditingProject,
   onCancelEditingProject,
   onSaveProjectName,
@@ -110,13 +103,6 @@ export default function SidebarProjectItem({
   const rowButton = useRef<HTMLButtonElement | null>(null);
   const restoreRenameFocus = useRef(false);
   useLayoutEffect(() => {
-    if (refocusProjectAfterMove === project.name) {
-      refocusProjectAfterMove = null;
-      rowButton.current?.focus({ preventScroll: true });
-    }
-    // Mount only: a moved row is a new instance.
-  }, []);
-  useLayoutEffect(() => {
     if (!isEditing && restoreRenameFocus.current) {
       rowButton.current?.focus({ preventScroll: true });
       restoreRenameFocus.current = false;
@@ -128,12 +114,11 @@ export default function SidebarProjectItem({
     onStartEditingProject(project);
   };
 
-  const sessionTotal = getKnownSessionTotal(project, sessions);
   const sessionCountLabel = t('sessions.count', { count: sessionTotal, displayCount: sessionTotal });
   const tooltip = joinTooltipLines(project.displayName, project.fullPath, sessionCountLabel);
-  // Highlight the session instead of its project once one is open.
-  const hasSelectedSession = Boolean(selectedSession && sessions.some((session) => session.id === selectedSession.id));
-  const isRowHighlighted = isSelected && !hasSelectedSession;
+  // Highlight the open session instead of its project. The session may be
+  // listed under Pinned rather than here, so do not look for it in `sessions`.
+  const isRowHighlighted = isSelected && !selectedSession;
 
   const toggleProject = () => onToggleProject(project.name);
 
@@ -224,16 +209,6 @@ export default function SidebarProjectItem({
               onOpenChange={setMenuOpen}
               items={[
                 {
-                  key: 'pin',
-                  label: isStarred ? t('common:workbench.sidebar.unpin') : t('common:workbench.sidebar.pin'),
-                  icon: isStarred ? PinOff : Pin,
-                  shortcut: 'p',
-                  onSelect: () => {
-                    refocusProjectAfterMove = project.name;
-                    onToggleStarProject(project.name);
-                  },
-                },
-                {
                   key: 'rename',
                   label: t('actions.rename'),
                   icon: Edit3,
@@ -259,6 +234,7 @@ export default function SidebarProjectItem({
         project={project}
         isExpanded={isExpanded}
         sessions={sessions}
+        knownTotal={sessionTotal}
         selectedSession={selectedSession}
         initialSessionsLoaded={initialSessionsLoaded}
         isLoadingSessions={isLoadingSessions}

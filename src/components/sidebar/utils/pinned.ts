@@ -1,5 +1,6 @@
 import type { Project, SessionProvider } from '../../../types/app';
 import type { SessionWithProvider } from '../types/types';
+import { getKnownSessionTotal } from './sessionPreview';
 
 const PINNED_SESSIONS_KEY = 'dr-claw.pinnedSessions';
 
@@ -114,12 +115,30 @@ export const resolvePinnedSessions = (
   return entries;
 };
 
-/** Split the (already sorted and filtered) project list into pinned and the rest. */
-export const partitionPinnedProjects = (projects: Project[], isPinned: (projectName: string) => boolean) => {
-  const pinned: Project[] = [];
-  const others: Project[] = [];
-  for (const project of projects) {
-    (isPinned(project.name) ? pinned : others).push(project);
+/**
+ * A pinned session is listed only in the Pinned section. Returns the rest of
+ * a project's sessions and how many of those exist in total, for "N more".
+ */
+export const separatePinnedSessions = (
+  project: Project,
+  sessions: SessionWithProvider[],
+  pins: PinnedSession[],
+): { sessions: SessionWithProvider[]; knownTotal: number } => {
+  const projectPins = pins.filter((pin) => pin.projectName === project.name);
+  if (projectPins.length === 0) {
+    return { sessions, knownTotal: getKnownSessionTotal(project, sessions) };
   }
-  return { pinned, others };
+
+  const pinnedIds = new Set(projectPins.map((pin) => pin.sessionId));
+  const loadedIds = new Set(sessions.map((session) => session.id));
+  const unpinned = sessions.filter((session) => !pinnedIds.has(session.id));
+  // An unloaded pin counts towards the server total only while more pages
+  // remain; once everything is loaded it points at a session that is gone.
+  const hasMore = project.sessionMeta?.hasMore === true;
+  const pinnedInTotal = projectPins.filter((pin) => loadedIds.has(pin.sessionId) || hasMore).length;
+
+  return {
+    sessions: unpinned,
+    knownTotal: Math.max(unpinned.length, getKnownSessionTotal(project, sessions) - pinnedInTotal),
+  };
 };

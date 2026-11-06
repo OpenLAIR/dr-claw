@@ -4,9 +4,9 @@ import type { SessionWithProvider } from '../../types/types';
 import {
   isSessionPinned,
   parsePinnedSessions,
-  partitionPinnedProjects,
   removePinnedSession,
   resolvePinnedSessions,
+  separatePinnedSessions,
   togglePinnedSession,
   type PinnedSession,
 } from '../pinned';
@@ -74,11 +74,30 @@ describe('resolvePinnedSessions', () => {
   });
 });
 
-describe('partitionPinnedProjects', () => {
-  it('keeps order within each group', () => {
-    const projects = ['a', 'b', 'c', 'd'].map((name) => project(name));
-    const { pinned, others } = partitionPinnedProjects(projects, (name) => name === 'b' || name === 'd');
-    expect(pinned.map((item) => item.name)).toEqual(['b', 'd']);
-    expect(others.map((item) => item.name)).toEqual(['a', 'c']);
+describe('separatePinnedSessions', () => {
+  const sessions = (ids: string[]) =>
+    ids.map((id) => ({ id, __provider: 'claude', __projectName: 'p' }) as SessionWithProvider);
+  const withMeta = (total: number, hasMore: boolean) =>
+    ({ ...project('p'), sessionMeta: { total, hasMore } }) as Project;
+
+  it('leaves projects without pins alone', () => {
+    const result = separatePinnedSessions(withMeta(7, true), sessions(['a', 'b', 'c', 'd', 'e']), [pin('other', 'a')]);
+    expect(result.sessions).toHaveLength(5);
+    expect(result.knownTotal).toBe(7);
+  });
+
+  it('drops pinned sessions and their share of the total', () => {
+    // 7 sessions on the server, 5 loaded; two loaded ones and one unloaded one are pinned.
+    const pins = [pin('p', 'a'), pin('p', 'c'), pin('p', 'unloaded')];
+    const result = separatePinnedSessions(withMeta(7, true), sessions(['a', 'b', 'c', 'd', 'e']), pins);
+    expect(result.sessions.map((item) => item.id)).toEqual(['b', 'd', 'e']);
+    expect(result.knownTotal).toBe(4);
+  });
+
+  it('ignores an unloaded pin once every page is loaded', () => {
+    const pins = [pin('p', 'a'), pin('p', 'deleted-elsewhere')];
+    const result = separatePinnedSessions(withMeta(3, false), sessions(['a', 'b', 'c']), pins);
+    expect(result.sessions.map((item) => item.id)).toEqual(['b', 'c']);
+    expect(result.knownTotal).toBe(2);
   });
 });

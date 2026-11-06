@@ -101,19 +101,17 @@ describe('joinTooltipLines', () => {
 });
 
 describe('sortProjects', () => {
-  it('keeps starred projects above the rest, then sorts by name', () => {
-    const projects = ['beta', 'alpha', 'gamma', 'delta'].map((name) => project({ name, displayName: name }));
-    const sorted = sortProjects(projects, 'name', new Set(['gamma', 'delta']), {});
-    expect(sorted.map((item) => item.name)).toEqual(['delta', 'gamma', 'alpha', 'beta']);
+  it('sorts by display name', () => {
+    const projects = ['beta', 'alpha', 'gamma'].map((name) => project({ name, displayName: name }));
+    expect(sortProjects(projects, 'name', {}).map((item) => item.name)).toEqual(['alpha', 'beta', 'gamma']);
   });
 
-  it('sorts by latest activity within each group', () => {
+  it('sorts by latest activity', () => {
     const projects = [
       project({ name: 'old', createdAt: '2026-01-01T00:00:00Z' }),
       project({ name: 'new', createdAt: '2026-06-01T00:00:00Z' }),
-      project({ name: 'starred-old', createdAt: '2025-01-01T00:00:00Z' }),
+      project({ name: 'older', createdAt: '2025-01-01T00:00:00Z' }),
     ];
-    const sorted = sortProjects(projects, 'date', new Set(['starred-old']), {});
-    expect(sorted.map((item) => item.name)).toEqual(['starred-old', 'new', 'old']);
+    expect(sortProjects(projects, 'date', {}).map((item) => item.name)).toEqual(['new', 'old', 'older']);
   });
 });

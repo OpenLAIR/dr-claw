@@ -23,23 +23,6 @@ export const readProjectSortOrder = (): ProjectSortOrder => {
   }
 };
 
-export const loadStarredProjects = (): Set<string> => {
-  try {
-    const saved = localStorage.getItem('starredProjects');
-    return saved ? new Set<string>(JSON.parse(saved)) : new Set<string>();
-  } catch {
-    return new Set<string>();
-  }
-};
-
-export const persistStarredProjects = (starredProjects: Set<string>) => {
-  try {
-    localStorage.setItem('starredProjects', JSON.stringify([...starredProjects]));
-  } catch {
-    // Keep UI responsive even if storage fails.
-  }
-};
-
 export const getSessionDate = (session: SessionWithProvider): Date => {
   if (session.__provider === 'cursor') {
     return new Date(session.createdAt || 0);
@@ -197,23 +180,11 @@ export const getProjectLastActivity = (
 export const sortProjects = (
   projects: Project[],
   projectSortOrder: ProjectSortOrder,
-  starredProjects: Set<string>,
   additionalSessions: AdditionalSessionsByProject,
 ): Project[] => {
   const byName = [...projects];
 
   byName.sort((projectA, projectB) => {
-    const aStarred = starredProjects.has(projectA.name);
-    const bStarred = starredProjects.has(projectB.name);
-
-    if (aStarred && !bStarred) {
-      return -1;
-    }
-
-    if (!aStarred && bStarred) {
-      return 1;
-    }
-
     if (projectSortOrder === 'date') {
       return (
         getProjectLastActivity(projectB, additionalSessions).getTime() -
