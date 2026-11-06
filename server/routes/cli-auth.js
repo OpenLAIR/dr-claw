@@ -1,12 +1,14 @@
 import express from 'express';
 import { spawn } from 'child_process';
 import fs from 'fs/promises';
+import fsSync from 'fs';
 import path from 'path';
 import os from 'os';
 import fetch from 'node-fetch';
 import { resolveCursorCliCommand } from '../utils/cursorCommand.js';
 import { resolveAvailableCliCommand } from '../utils/cliResolution.js';
 import { buildCodexCliEnv, getCodexCliCommand } from '../utils/codexCli.js';
+import { resolveAntigravityBinary, runAgyModels } from '../utils/antigravityAcp.js';
 import {
   DEFAULT_OLLAMA_URL,
   detectGPUs,
@@ -64,18 +66,18 @@ const PROVIDER_INSTALLERS = {
     },
   },
   gemini: {
-    displayName: 'Gemini CLI',
-    docsUrl: 'https://github.com/google-gemini/gemini-cli',
-    fallbackDownloadUrl: 'https://github.com/google-gemini/gemini-cli',
+    displayName: 'Antigravity CLI',
+    docsUrl: 'https://antigravity.google/docs/getting-started/',
+    fallbackDownloadUrl: 'https://antigravity.google/docs/getting-started/',
     commands: {
       darwin: [
-        { bin: 'npm', args: ['install', '-g', '@google/gemini-cli@0.46.0'], label: 'npm install -g @google/gemini-cli@0.46.0' },
+        { bin: 'bash', args: ['-c', 'curl -fsSL https://antigravity.google/cli/install.sh | bash'], label: 'curl -fsSL https://antigravity.google/cli/install.sh | bash' },
       ],
       linux: [
-        { bin: 'npm', args: ['install', '-g', '@google/gemini-cli@0.46.0'], label: 'npm install -g @google/gemini-cli@0.46.0' },
+        { bin: 'bash', args: ['-c', 'curl -fsSL https://antigravity.google/cli/install.sh | bash'], label: 'curl -fsSL https://antigravity.google/cli/install.sh | bash' },
       ],
       win32: [
-        { bin: 'npm.cmd', args: ['install', '-g', '@google/gemini-cli@0.46.0'], label: 'npm install -g @google/gemini-cli@0.46.0' },
+        { bin: 'powershell', args: ['-NoProfile', '-Command', 'irm https://antigravity.google/cli/install.ps1 | iex'], label: 'irm https://antigravity.google/cli/install.ps1 | iex' },
       ],
     },
   },
@@ -123,7 +125,7 @@ function buildCliInstallHint(agent) {
     case 'codex':
       return 'Codex CLI is not installed. Install it first, then retry login.';
     case 'gemini':
-      return 'Gemini CLI is not installed. Install it first, then retry login.';
+      return 'Antigravity CLI is not installed. Install it first, then retry login.';
     case 'openrouter':
       return 'Set OPENROUTER_API_KEY in your .env file. Get a key at https://openrouter.ai/keys';
     case 'nano':
@@ -473,148 +475,82 @@ router.get('/nano/status', async (req, res) => {
   }
 });
 
+// `agy models` needs a signed-in account, so it is the login check; agy has
+// no status command. Cached briefly because Settings polls every provider.
+const ANTIGRAVITY_AUTH_CACHE_MS = 60 * 1000;
+let antigravityAuthCache = { at: 0, binary: null, result: null };
+
+async function resolveAntigravityCliCommand() {
+  const resolved = await resolveAvailableCliCommand({
+    envVarName: 'ANTIGRAVITY_CLI_PATH',
+    legacyEnvVarNames: ['AGY_CLI_PATH'],
+    defaultCommands: ['agy'],
+    appendWindowsSuffixes: true
+  });
+  if (resolved) return resolved;
+  // The installer puts agy in ~/.local/bin, which the desktop app's PATH often lacks.
+  const fallback = resolveAntigravityBinary();
+  return path.isAbsolute(fallback) && fsSync.existsSync(fallback) ? fallback : null;
+}
+
 async function checkGeminiCredentials() {
-  console.log('[DEBUG] Checking Gemini credentials...');
-  let cliCommand = process.env.GEMINI_CLI_PATH || 'gemini';
+  let cliCommand = 'agy';
   try {
     if (isCliMockedMissing('gemini')) {
       return {
         authenticated: false,
         email: null,
-        error: 'Gemini CLI not installed (mocked)',
+        error: 'Antigravity CLI not installed (mocked)',
         cliAvailable: false,
         cliCommand,
         installHint: buildCliInstallHint('gemini')
       };
     }
 
-    const resolvedCliCommand = await resolveAvailableCliCommand({
-      envVarName: 'GEMINI_CLI_PATH',
-      defaultCommands: ['gemini'],
-      appendWindowsSuffixes: true
-    });
-    cliCommand = resolvedCliCommand || cliCommand;
-
+    const resolvedCliCommand = await resolveAntigravityCliCommand();
     if (!resolvedCliCommand) {
-      if (process.env.GOOGLE_API_KEY) {
-        return {
-          authenticated: true,
-          email: 'API Key Connected',
-          method: 'custom_api',
-          cliAvailable: false,
-          cliCommand,
-          installHint: buildCliInstallHint('gemini')
-        };
-      }
       return {
         authenticated: false,
         email: null,
-        error: 'Gemini CLI not installed',
+        error: 'Antigravity CLI not installed',
         cliAvailable: false,
         cliCommand,
         installHint: buildCliInstallHint('gemini')
       };
     }
+    cliCommand = resolvedCliCommand;
 
-    if (process.env.GOOGLE_API_KEY) {
-      console.log('[DEBUG] Gemini: Found GOOGLE_API_KEY in environment');
-      return {
-        authenticated: true,
-        email: 'API Key (Env)',
-        cliAvailable: true,
-        cliCommand
-      };
+    const now = Date.now();
+    if (antigravityAuthCache.result && antigravityAuthCache.binary === cliCommand && now - antigravityAuthCache.at < ANTIGRAVITY_AUTH_CACHE_MS) {
+      return antigravityAuthCache.result;
     }
 
-    const oauthPath = path.join(os.homedir(), '.gemini', 'oauth_creds.json');
-    console.log(`[DEBUG] Gemini: Checking for OAuth file at ${oauthPath}`);
-    try {
-      const content = await fs.readFile(oauthPath, 'utf8');
-      const creds = JSON.parse(content);
-
-      if (creds.refresh_token || creds.access_token) {
-        let email = creds.email || 'OAuth (Config)';
-
-        if (!creds.email && creds.id_token) {
-          try {
-            const parts = creds.id_token.split('.');
-            if (parts.length >= 2) {
-              const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
-              email = payload.email || email;
-            }
-          } catch (jwtError) {
-            console.warn('[DEBUG] Gemini: Failed to decode id_token', jwtError.message);
-          }
-        }
-
-        // Since 2026-06-18 the Gemini CLI no longer serves individual Google
-        // accounts: with only OAuth credentials every session exits with
-        // IneligibleTierError. Report that rather than a green tick.
-        console.log(`[DEBUG] Gemini: OAuth credentials for ${email}, but individual OAuth access is retired`);
-        return {
-          authenticated: false,
-          email: email,
-          error: 'Gemini CLI stopped serving individual Google accounts on 2026-06-18. Add a Gemini API key in Settings to keep using it, or switch to Antigravity CLI.',
-          cliAvailable: true,
-          cliCommand
-        };
-      } else {
-        console.log('[DEBUG] Gemini: OAuth file found but no tokens present');
-      }
-    } catch (e) {
-      if (e.code !== 'ENOENT') {
-        console.error('[DEBUG] Gemini: Error reading oauth_creds.json', e.message);
-      } else {
-        console.log('[DEBUG] Gemini: oauth_creds.json not found');
-      }
-    }
-
-    const configPath = path.join(os.homedir(), '.gemini', 'config.json');
-    console.log(`[DEBUG] Gemini: Checking for legacy config at ${configPath}`);
-    try {
-      const content = await fs.readFile(configPath, 'utf8');
-      const config = JSON.parse(content);
-
-      if (config.apiKey || config.GOOGLE_API_KEY) {
-        console.log('[DEBUG] Gemini: Authenticated via legacy config API Key');
-        return {
-          authenticated: true,
-          email: 'API Key (Config)',
-          cliAvailable: true,
-          cliCommand
-        };
-      }
-    } catch (e) {
-      if (e.code !== 'ENOENT') {
-        console.error('[DEBUG] Gemini: Error reading config.json', e.message);
-      }
-    }
-
-    console.log('[DEBUG] Gemini: Not authenticated (no valid credentials found)');
-    return {
-      authenticated: false,
-      email: null,
-      error: 'Gemini not configured',
-      cliAvailable: true,
-      cliCommand
-    };
-  } catch (error) {
-    console.error('[DEBUG] Gemini: Unexpected error during auth check', error);
-    if (error.code === 'ENOENT') {
-      return {
+    const check = await runAgyModels({ binary: cliCommand, timeoutMs: 20000 });
+    let result;
+    if (check.ok) {
+      result = { authenticated: true, email: 'Google account', method: 'oauth', cliAvailable: true, cliCommand };
+    } else if (check.notSignedIn) {
+      result = {
         authenticated: false,
         email: null,
-        error: 'Gemini not configured',
+        error: 'Not signed in. Run `agy` in a terminal once to sign in with Google.',
         cliAvailable: true,
         cliCommand
       };
+    } else {
+      result = { authenticated: false, email: null, error: check.error || 'Antigravity CLI check failed', cliAvailable: true, cliCommand };
     }
+    antigravityAuthCache = { at: now, binary: cliCommand, result };
+    return result;
+  } catch (error) {
+    console.error('[cli-auth] Antigravity check failed:', error.message);
     return {
       authenticated: false,
       email: null,
       error: error.message,
-      cliAvailable: true,
-      cliCommand
+      cliAvailable: false,
+      cliCommand,
+      installHint: buildCliInstallHint('gemini')
     };
   }
 }

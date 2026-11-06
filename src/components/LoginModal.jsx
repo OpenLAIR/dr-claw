@@ -49,7 +49,7 @@ function LoginModal({
       case 'codex':
         return 'Codex CLI';
       case 'gemini':
-        return 'Gemini CLI';
+        return 'Antigravity CLI';
       default:
         return 'CLI';
     }
@@ -72,7 +72,7 @@ function LoginModal({
       case 'codex':
         return IS_PLATFORM ? 'codex login --device-auth' : 'codex login';
       case 'gemini':
-        return 'gemini /quit';
+        return 'agy';
       default:
         return isAuthenticated
           ? 'claude --dangerously-skip-permissions setup-token'

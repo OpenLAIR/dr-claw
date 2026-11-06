@@ -63,7 +63,7 @@ const getImportedProjectAnalysisStorageKey = (projectName: string) => `imported_
 
 const ANALYSIS_PROVIDERS: Array<{ id: Provider; label: string }> = [
   { id: 'claude', label: 'Claude Code' },
-  { id: 'gemini', label: 'Gemini CLI' },
+  { id: 'gemini', label: 'Antigravity' },
   { id: 'codex', label: 'Codex' },
   { id: 'openrouter', label: 'OpenRouter' },
 ];

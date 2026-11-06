@@ -286,7 +286,7 @@
     "modes": {
       "default": {
         "name": "기본값",
-        "description": "이 모델의 Gemini CLI 기본 동작 사용"
+        "description": "이 모델의 Antigravity 기본 동작 사용"
       },
       "minimal": {
         "name": "최소",

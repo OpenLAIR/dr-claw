@@ -18,6 +18,7 @@
 import { spawn } from 'child_process';
 import fs from 'fs';
 import os from 'os';
+import { resolveAntigravityBinary, runAgyModels } from './antigravityAcp.js';
 import path from 'path';
 import { StringDecoder } from 'string_decoder';
 import {
@@ -499,10 +500,25 @@ function geminiVersionOf(id) {
   return match ? Number(match[1]) : -1;
 }
 
+/**
+ * The gemini provider runs the Antigravity CLI, whose models (and their ids,
+ * e.g. `gemini-3.8-flash-high`) differ from the Gemini API catalogue and
+ * depend on the signed-in account. List them with `agy models`; fall back to
+ * the Gemini API catalogue when agy is unavailable.
+ */
 async function discoverGeminiModels({ timeoutMs, env = process.env } = {}) {
+  const agy = await runAgyModels({ binary: resolveAntigravityBinary({ env }), env, timeoutMs: Math.max(timeoutMs || 0, 15000) });
+  if (agy.ok) {
+    return agy.models.map((model, index) => ({ value: model.value, label: model.label, isDefault: index === 0 }));
+  }
+  const agyProblem = agy.notInstalled ? 'Antigravity CLI (agy) is not installed' : `Antigravity CLI could not list models (${agy.error})`;
+  return discoverGeminiApiModels({ timeoutMs, env, agyProblem });
+}
+
+async function discoverGeminiApiModels({ timeoutMs, env = process.env, agyProblem = 'Antigravity CLI is unavailable' } = {}) {
   const apiKey = env.GEMINI_API_KEY || env.GOOGLE_API_KEY;
   if (!apiKey) {
-    throw new Error('no Gemini API key (GEMINI_API_KEY); the Gemini CLI cannot list models itself');
+    throw new Error(`${agyProblem} and no Gemini API key (GEMINI_API_KEY) is set`);
   }
 
   const controller = new AbortController();

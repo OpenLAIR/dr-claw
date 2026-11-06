@@ -207,6 +207,9 @@ describe('gemini discovery', () => {
     ],
   };
 
+  // These cases cover the Gemini API fallback: point agy at a missing binary.
+  const NO_AGY = { ANTIGRAVITY_CLI_PATH: path.join(os.tmpdir(), 'dr-claw-test-no-agy') };
+
   function stubCatalogue(handler) {
     vi.stubGlobal('fetch', vi.fn(handler));
   }
@@ -223,7 +226,7 @@ describe('gemini discovery', () => {
     });
 
     const payload = await mod.getModelsForProvider('gemini', {
-      env: { ...process.env, GEMINI_API_KEY: 'test-key', GOOGLE_API_KEY: '' },
+      env: { ...process.env, ...NO_AGY, GEMINI_API_KEY: 'test-key', GOOGLE_API_KEY: '' },
       cacheScope: 'key',
     });
 
@@ -245,7 +248,7 @@ describe('gemini discovery', () => {
     stubCatalogue(async () => { throw new Error('fetch should not be called without a key'); });
 
     const payload = await mod.getModelsForProvider('gemini', {
-      env: { ...process.env, GEMINI_API_KEY: '', GOOGLE_API_KEY: '' },
+      env: { ...process.env, ...NO_AGY, GEMINI_API_KEY: '', GOOGLE_API_KEY: '' },
       cacheScope: 'nokey',
     });
 
@@ -259,11 +262,11 @@ describe('gemini discovery', () => {
     stubCatalogue(async () => ({ ok: true, status: 200, json: async () => CATALOGUE }));
 
     const keyless = await mod.getModelsForProvider('gemini', {
-      env: { ...process.env, GEMINI_API_KEY: '', GOOGLE_API_KEY: '' },
+      env: { ...process.env, ...NO_AGY, GEMINI_API_KEY: '', GOOGLE_API_KEY: '' },
       cacheScope: 'nokey',
     });
     const keyed = await mod.getModelsForProvider('gemini', {
-      env: { ...process.env, GEMINI_API_KEY: 'test-key' },
+      env: { ...process.env, ...NO_AGY, GEMINI_API_KEY: 'test-key' },
       cacheScope: 'key',
     });
 
@@ -272,7 +275,7 @@ describe('gemini discovery', () => {
     // And clearing the provider drops both scopes.
     mod.clearModelDiscoveryCache('gemini');
     const again = await mod.getModelsForProvider('gemini', {
-      env: { ...process.env, GEMINI_API_KEY: 'test-key' },
+      env: { ...process.env, ...NO_AGY, GEMINI_API_KEY: 'test-key' },
       cacheScope: 'key',
     });
     expect(fetch).toHaveBeenCalledTimes(2);
@@ -284,12 +287,31 @@ describe('gemini discovery', () => {
     stubCatalogue(async () => ({ ok: false, status: 403, json: async () => ({}) }));
 
     const payload = await mod.getModelsForProvider('gemini', {
-      env: { ...process.env, GEMINI_API_KEY: 'bad-key' },
+      env: { ...process.env, ...NO_AGY, GEMINI_API_KEY: 'bad-key' },
       cacheScope: 'key',
     });
 
     expect(payload.source).toBe('static');
     expect(payload.error).toContain('403');
+  });
+
+  it('lists the signed-in account\'s models from `agy models` when Antigravity is available', async () => {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'fake-agy-'));
+    const fakeAgy = path.join(dir, 'agy');
+    await fs.writeFile(fakeAgy, '#!/bin/sh\necho "Fetching available models..."\nprintf "gemini-3.8-flash-high\\tGemini 3.8 Flash (High)\\nclaude-sonnet-4-6\\tClaude Sonnet 4.6 (Thinking)\\n"\n');
+    await fs.chmod(fakeAgy, 0o755);
+    stubCatalogue(async () => { throw new Error('the Gemini API should not be called when agy answers'); });
+    try {
+      const payload = await mod.getModelsForProvider('gemini', {
+        env: { ...process.env, ANTIGRAVITY_CLI_PATH: fakeAgy, GEMINI_API_KEY: '' },
+        cacheScope: 'agy',
+      });
+      expect(payload.source).toBe('discovered');
+      const live = payload.options.filter((o) => !o.builtIn).map((o) => o.value);
+      expect(live).toEqual(['gemini-3.8-flash-high', 'claude-sonnet-4-6']);
+    } finally {
+      await fs.rm(dir, { recursive: true, force: true });
+    }
   });
 });
 

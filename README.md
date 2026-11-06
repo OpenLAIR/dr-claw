@@ -140,7 +140,7 @@ Dr. Claw is a general-purpose AI research assistant designed to help researchers
 - **⚡ Auto Research** — Start one-click sequential task execution directly from the Project Dashboard, open the generated session live, and receive an email when the run completes
 - **📚 100+ Research Skills** — A curated library spanning idea generation, code survey, experiment development & analysis, paper writing, review response, and delivery — automatically discovered by agents and applied as task-level assistance
 - **🗂️ Chat-Driven Pipeline** — Describe your research idea in Chat; the agent uses the `inno-pipeline-planner` skill to interactively generate a structured research brief and task list — no manual templates needed
-- **🤖 Multi-Agent Backend** — Seamlessly switch between Claude Code, Gemini CLI, Codex, and OpenRouter as your execution engines
+- **🤖 Multi-Agent Backend** — Seamlessly switch between Claude Code, Antigravity (Gemini), Codex, and OpenRouter as your execution engines
 
 ### What the Pipeline Produces
 
@@ -214,7 +214,7 @@ These are for Option 1 and Option 2 below. The desktop app bundles its own runti
 - [Node.js](https://nodejs.org/) v20 or higher (**v22 LTS recommended**, see `.nvmrc`)
 - At least one of the following CLI tools installed and configured:
   - [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code)
-  - [Gemini CLI](https://geminicli.com/docs/get-started/installation/)
+  - [Antigravity CLI](https://antigravity.google/docs/getting-started/) (replaces the retired Gemini CLI)
   - [Codex CLI](https://developers.openai.com/codex/cli/)
 - Some systems need native build tools for dependencies like `node-pty` and `better-sqlite3`. If `npm install` fails, see [FAQ](docs/faq.md).
 
@@ -308,7 +308,7 @@ Install at least one agent CLI (if you haven't already):
 | Agent | Install | Auth |
 |-------|---------|------|
 | Claude Code | `npm install -g @anthropic-ai/claude-code@2.1.170` | `claude` → follow OAuth prompt |
-| Gemini CLI | `npm install -g @google/gemini-cli@0.46.0` | `gemini` → Google sign-in, or `export GOOGLE_API_KEY=...` |
+| Antigravity CLI (Gemini) | `curl -fsSL https://antigravity.google/cli/install.sh \| bash` (Windows: `irm https://antigravity.google/cli/install.ps1 \| iex`) | `agy` → Google sign-in |
 | Codex CLI | `npm install -g @openai/codex` | `codex login`, or `export OPENAI_API_KEY=...` |
 | **OpenRouter** | No CLI needed | `export OPENROUTER_API_KEY=sk-or-...` (get a key at [openrouter.ai/keys](https://openrouter.ai/keys)) |
 
@@ -423,7 +423,7 @@ The integration has three layers:
 <summary><strong>Prerequisites</strong></summary>
 
 - Dr. Claw server running locally (`npm run dev` or `drclaw server on`)
-- At least one project and one execution backend (Claude Code, Gemini CLI, or Codex)
+- At least one project and one execution backend (Claude Code, Antigravity, or Codex)
 - OpenClaw with local shell / `exec` capability
 - *(Optional)* Feishu / Lark channel access for push notifications
 
@@ -737,7 +737,7 @@ Switch to **Research Lab** to review the generated tasks, progress metrics, and 
 
 </details>
 
-1. Choose a CLI backend from the **CLI selector** (Claude Code, Gemini CLI, or Codex).
+1. Choose a CLI backend from the **CLI selector** (Claude Code, Antigravity, or Codex).
 2. In **Research Lab**, click **Go to Chat** or **Use in Chat** on a pending task.
 3. The agent executes the task and writes results back to the project.
 
@@ -797,9 +797,9 @@ If the output is `1`, network requests can remain blocked even if Settings permi
   - Enable `WebSearch` and `WebFetch` in **Allowed Tools**.
   - Ensure they are not present in **Blocked Tools**.
   - Optionally enable **Skip permission prompts** if you want fewer confirmations.
-- **Gemini CLI**:
+- **Antigravity (Gemini)**:
   - Choose an appropriate **Permission Mode**.
-  - Allow `google_web_search` and `web_fetch` in **Allowed Tools** when web access is required.
+  - Allow `WebSearch` and `WebFetch` in **Allowed Tools** when web access is required.
   - Ensure they are not present in **Blocked Tools**.
 - **Codex**:
   - In **Permission Mode**, switch to **Bypass Permissions** when web access is required.
@@ -913,7 +913,7 @@ Dr. Claw is fully responsive. On mobile devices:
 #### Backend (Node.js + Express)
 - **Express Server** - RESTful API with static file serving
 - **WebSocket Server** - Communication for chats and project refresh
-- **Agent Integration (Claude Code, Gemini CLI, Codex, OpenRouter)** - Process spawning, streaming, and session management
+- **Agent Integration (Claude Code, Antigravity, Codex, OpenRouter)** - Process spawning, streaming, and session management
 - **File System API** - Exposing file browser for projects
 
 #### Frontend (React + Vite)
@@ -929,7 +929,7 @@ Dr. Claw is fully responsive. On mobile devices:
 To use web and tool-heavy workflows safely:
 
 1. **Open Settings** - Click the gear icon in the sidebar
-2. **Choose an Agent** - Claude Code, Gemini CLI, or Codex
+2. **Choose an Agent** - Claude Code, Antigravity, or Codex
 3. **Enable Selectively** - Turn on only the tools or permission mode you need
 4. **Apply Settings** - Your preferences are saved locally
 
@@ -1012,7 +1012,7 @@ Dr. Claw is described in our paper **[Dr. Claw: An AI Scientist Workspace for Vi
 
 ### Built With
 - **[Claude Code](https://docs.anthropic.com/en/docs/claude-code)** - Anthropic's official CLI
-- **[Gemini CLI](https://geminicli.com/docs/get-started/installation/)** - Google's Gemini command-line agent
+- **[Antigravity CLI](https://antigravity.google/docs/getting-started/)** - Google's agent CLI (successor to the Gemini CLI)
 - **[Codex](https://developers.openai.com/codex)** - OpenAI Codex
 - **[React](https://react.dev/)** - User interface library
 - **[Vite](https://vitejs.dev/)** - Fast build tool and dev server

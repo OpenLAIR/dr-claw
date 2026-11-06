@@ -471,7 +471,7 @@ const Onboarding = ({ onComplete }) => {
     },
     {
       id: 'gemini',
-      name: 'Gemini CLI',
+      name: 'Antigravity CLI',
       description: t('onboarding.geminiDescription'),
       logo: <GeminiLogo className="w-6 h-6" />,
       status: geminiAuthStatus,
