@@ -699,7 +699,16 @@
     "badgeImported": "가져옴",
     "openDetails": "{{name}} 자세히 보기",
     "shownCount": "{{total}}개 중 {{shown}}개 표시",
-    "noMatches": "일치하는 스킬이 없습니다. 다른 검색어를 쓰거나 필터를 지우세요."
+    "noMatches": "일치하는 스킬이 없습니다. 다른 검색어를 쓰거나 필터를 지우세요.",
+    "onboardingStep": "스킬",
+    "onboardingStepDescription": "기본 스킬 선택",
+    "onboardingTitle": "기본으로 사용할 스킬 선택",
+    "onboardingDescription": "켜진 스킬은 에이전트가 자동으로 불러옵니다. 꺼진 스킬도 /이름 으로 호출할 수 있습니다.",
+    "onboardingHint_recommended": "주요 연구 워크플로와 자주 쓰는 스킬 몇 가지. 대부분의 사용자에게 알맞습니다.",
+    "onboardingHint_all": "라이브러리의 모든 스킬. 선택지는 많아지지만 메시지마다 더 많은 스킬 설명이 포함됩니다.",
+    "onboardingHint_none": "연구 워크플로 스킬도 없이 빈 상태로 시작하고, 필요한 스킬을 스킬 라이브러리에서 켭니다.",
+    "onboardingCount_other": "스킬 {{count}}개 사용",
+    "onboardingLater": "스킬 라이브러리에서 언제든 바꾸거나 스킬을 하나씩 켜고 끌 수 있습니다."
   },
   "computeForm": {
     "hostRequired": "호스트를 입력하세요",

@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   applyLocalToggle,
+  baselineToSave,
   buildToggleChange,
+  countBaselineSkills,
   countEnabled,
   type SkillDefaultState,
   type SkillDefaultsResponse,
@@ -49,5 +51,39 @@ describe('applyLocalToggle', () => {
   it('marks a project override in project scope', () => {
     const data = response([state({ globalEnabled: true, enabled: true })]);
     expect(applyLocalToggle(data, 'paper-analyzer', false, 'project').skills[0]).toMatchObject({ enabled: false, source: 'project', globalEnabled: true });
+  });
+});
+
+describe('countBaselineSkills', () => {
+  it('counts only recommended skills for the recommended set', () => {
+    const skills = [
+      state({ name: 'a', core: true }),
+      state({ name: 'b', recommended: true }),
+      state({ name: 'c', core: true, recommended: true }),
+      state({ name: 'd' }),
+    ];
+    expect(countBaselineSkills(skills)).toEqual({ recommended: 2, all: 4, none: 0 });
+  });
+
+  it('ignores the current enabled state and overrides', () => {
+    const skills = [state({ name: 'a', enabled: true, source: 'global' }), state({ name: 'b', recommended: true, enabled: false })];
+    expect(countBaselineSkills(skills)).toEqual({ recommended: 1, all: 2, none: 0 });
+  });
+});
+
+describe('baselineToSave', () => {
+  it('writes nothing when the user did not choose', () => {
+    expect(baselineToSave('recommended', 'all', false)).toBeNull();
+    expect(baselineToSave('recommended', null, false)).toBeNull();
+  });
+
+  it('writes nothing when the choice equals the stored value', () => {
+    expect(baselineToSave('all', 'all', true)).toBeNull();
+  });
+
+  it('writes an explicit change', () => {
+    expect(baselineToSave('none', 'recommended', true)).toBe('none');
+    expect(baselineToSave('recommended', 'all', true)).toBe('recommended');
+    expect(baselineToSave('all', null, true)).toBe('all');
   });
 });

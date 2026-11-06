@@ -699,7 +699,16 @@
     "badgeImported": "导入",
     "openDetails": "查看 {{name}} 详情",
     "shownCount": "显示 {{shown}} / {{total}} 个 skill",
-    "noMatches": "没有匹配的 skill，换个关键词或清除筛选。"
+    "noMatches": "没有匹配的 skill，换个关键词或清除筛选。",
+    "onboardingStep": "Skills",
+    "onboardingStepDescription": "选择默认 skills",
+    "onboardingTitle": "选择默认启用的 skills",
+    "onboardingDescription": "启用的 skill 会被 agent 自动加载；没启用的仍可用 /名字 调用。",
+    "onboardingHint_recommended": "科研主流程和几个常用 skill。适合大多数人。",
+    "onboardingHint_all": "技能库里的全部 skills。agent 选择更多，但每条消息要带上更多 skill 说明。",
+    "onboardingHint_none": "先什么都不装（包括科研流程 skills），之后在技能库里按需打开。",
+    "onboardingCount_other": "启用 {{count}} 个 skill",
+    "onboardingLater": "之后随时可以在技能库里修改，也可以单独开关某个 skill。"
   },
   "computeForm": {
     "hostRequired": "请输入主机地址",
