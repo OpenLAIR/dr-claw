@@ -27,7 +27,7 @@ This skill is the **published venue** counterpart to `/aris-arxiv`:
 ## Constants
 
 - **MAX_RESULTS = 10** — Default number of search results.
-- **FETCH_SCRIPT** — `tools/semantic_scholar_fetch.py` relative to the project root. Fall back to inline Python if not found.
+- **FETCH_SCRIPT** — `$ARIS_INFRA/tools/semantic_scholar_fetch.py` (the ARIS helper bundle, located in Step 2). Fall back to inline Python if not found.
 - **DEFAULT_FILTERS** — For general research queries, apply these by default to reduce noise:
   - `--fields-of-study "Computer Science,Engineering"`
   - `--publication-types JournalArticle,Conference`
@@ -67,8 +67,35 @@ If the argument matches a DOI pattern (`10.XXXX/...`), a Semantic Scholar ID (40
 Locate the fetch script:
 
 ```bash
-SCRIPT=$(find tools/ -name "semantic_scholar_fetch.py" 2>/dev/null | head -1)
-[ -z "$SCRIPT" ] && SCRIPT=$(find ~/.claude/skills/semantic-scholar/ -name "semantic_scholar_fetch.py" 2>/dev/null | head -1)
+# Locate the ARIS helper bundle (skills/aris-infra in Dr. Claw; it sits next to
+# this skill's own folder). Non-fatal: the steps below fall back when it is missing.
+ARIS_INFRA="${ARIS_INFRA:-}"
+if [ ! -f "$ARIS_INFRA/tools/research_wiki.py" ]; then
+  ARIS_INFRA=""
+  for candidate in \
+    "${CLAUDE_SKILL_DIR:-/nonexistent}/../aris-infra" \
+    ".claude/skills/aris-infra" \
+    ".agents/skills/library/aris-infra" \
+    "skills/aris-infra" \
+    "${HOME:-/nonexistent}/.claude/skills/aris-infra"; do
+    if [ -f "$candidate/tools/research_wiki.py" ]; then ARIS_INFRA="$candidate"; break; fi
+  done
+fi
+if [ -z "$ARIS_INFRA" ]; then
+  # Project skill links point into the bundled skills folder, so ../aris-infra
+  # resolves through any linked aris-* skill even when aris-infra is not linked.
+  for linked in .claude/skills/aris-* .agents/skills/aris-* .agents/skills/library/aris-* .gemini/skills/aris-*; do
+    if [ -f "$linked/../aris-infra/tools/research_wiki.py" ]; then ARIS_INFRA="$linked/../aris-infra"; break; fi
+  done
+fi
+```
+
+If `ARIS_INFRA` is still empty, it is the `aris-infra` folder beside this skill's
+own folder: set it to that absolute path.
+
+```bash
+SCRIPT="$ARIS_INFRA/tools/semantic_scholar_fetch.py"
+[ -n "$ARIS_INFRA" ] && [ -f "$SCRIPT" ] || SCRIPT=""
 ```
 
 **Standard search** (default — relevance-ranked):

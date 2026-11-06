@@ -20,10 +20,12 @@ The pipeline auto-detects input data type:
 
 ## Approach 1: Full Pipeline (Recommended)
 
-Run the complete 7-step analysis:
+Run the complete 7-step analysis. The scripts live in this skill's directory
+(next to this SKILL.md), so call them by that path, not relative to the
+project:
 
 ```bash
-python3 scripts/run_pipeline.py <input_path> \
+python3 <this-skill-dir>/scripts/run_pipeline.py <input_path> \
     [--data-type auto|cytof|scrnaseq|flow] \
     [--subsample 500] \
     [--output-dir ./analysis_output] \

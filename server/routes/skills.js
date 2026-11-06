@@ -295,11 +295,13 @@ router.get('/defaults', async (req, res) => {
   }
 });
 
-// PUT /defaults — { baseline?, overrides?: { name: true|false|null }, acknowledgeNew? }
+// PUT /defaults — { baseline?, overrides?: { name: true|false|null }, resetOverrides?, acknowledgeNew? }
+// resetOverrides drops every global per-skill override (applied before
+// `overrides`), so choosing a preset gives exactly that preset.
 // Changes apply to each project on its next agent turn.
 router.put('/defaults', async (req, res) => {
   try {
-    const { baseline, overrides, acknowledgeNew } = req.body || {};
+    const { baseline, overrides, resetOverrides, acknowledgeNew } = req.body || {};
     if (baseline !== undefined && !SKILL_BASELINES.includes(baseline)) {
       return res.status(400).json({ error: `baseline must be one of ${SKILL_BASELINES.join(', ')}` });
     }
@@ -311,7 +313,7 @@ router.put('/defaults', async (req, res) => {
     const current = await loadGlobalSkillPrefs({ skillNames, db });
     const next = {
       baseline: baseline ?? current.baseline,
-      overrides: applyOverrideChanges(current.overrides, overrides, new Set(skillNames)),
+      overrides: applyOverrideChanges(resetOverrides ? {} : current.overrides, overrides, new Set(skillNames)),
       knownSkills: acknowledgeNew ? [...new Set([...current.knownSkills, ...skillNames])] : current.knownSkills,
     };
     await saveGlobalSkillPrefs(next, { db });

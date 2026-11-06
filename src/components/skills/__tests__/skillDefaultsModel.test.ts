@@ -11,7 +11,7 @@ import {
 
 function state(overrides: Partial<SkillDefaultState> = {}): SkillDefaultState {
   return {
-    name: 'paper-finder',
+    name: 'paper-analyzer',
     enabled: false,
     source: 'baseline',
     globalEnabled: false,
@@ -42,7 +42,7 @@ describe('buildToggleChange', () => {
 describe('applyLocalToggle', () => {
   it('updates only the toggled skill', () => {
     const data = response([state(), state({ name: 'other', enabled: true })]);
-    const next = applyLocalToggle(data, 'paper-finder', true, 'global');
+    const next = applyLocalToggle(data, 'paper-analyzer', true, 'global');
     expect(next.skills[0]).toMatchObject({ enabled: true, globalEnabled: true, source: 'global' });
     expect(next.skills[1]).toBe(data.skills[1]);
     expect(countEnabled(next.skills)).toBe(2);
@@ -50,23 +50,23 @@ describe('applyLocalToggle', () => {
 
   it('marks a project override in project scope', () => {
     const data = response([state({ globalEnabled: true, enabled: true })]);
-    expect(applyLocalToggle(data, 'paper-finder', false, 'project').skills[0]).toMatchObject({ enabled: false, source: 'project', globalEnabled: true });
+    expect(applyLocalToggle(data, 'paper-analyzer', false, 'project').skills[0]).toMatchObject({ enabled: false, source: 'project', globalEnabled: true });
   });
 });
 
 describe('countBaselineSkills', () => {
-  it('counts core and recommended skills for the recommended set', () => {
+  it('counts only recommended skills for the recommended set', () => {
     const skills = [
       state({ name: 'a', core: true }),
       state({ name: 'b', recommended: true }),
       state({ name: 'c', core: true, recommended: true }),
       state({ name: 'd' }),
     ];
-    expect(countBaselineSkills(skills)).toEqual({ recommended: 3, all: 4, none: 0 });
+    expect(countBaselineSkills(skills)).toEqual({ recommended: 2, all: 4, none: 0 });
   });
 
   it('ignores the current enabled state and overrides', () => {
-    const skills = [state({ name: 'a', enabled: true, source: 'global' }), state({ name: 'b', core: true, enabled: false })];
+    const skills = [state({ name: 'a', enabled: true, source: 'global' }), state({ name: 'b', recommended: true, enabled: false })];
     expect(countBaselineSkills(skills)).toEqual({ recommended: 1, all: 2, none: 0 });
   });
 });

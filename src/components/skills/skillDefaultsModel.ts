@@ -62,6 +62,20 @@ export function applyLocalToggle(
   };
 }
 
+/** Overrides to send when switching several skills at once (e.g. a whole group). */
+export function buildBulkChanges(
+  states: SkillDefaultState[],
+  nextEnabled: boolean,
+  scope: SkillDefaultsScope,
+): Record<string, boolean | null> {
+  const changes: Record<string, boolean | null> = {};
+  for (const state of states) {
+    if (state.enabled === nextEnabled) continue;
+    changes[state.name] = buildToggleChange(state, nextEnabled, scope);
+  }
+  return changes;
+}
+
 export function countEnabled(skills: SkillDefaultState[]): number {
   return skills.reduce((total, state) => total + (state.enabled ? 1 : 0), 0);
 }
@@ -74,12 +88,12 @@ export const SKILL_BASELINES: SkillBaseline[] = ['recommended', 'all', 'none'];
 
 /**
  * How many skills each starting set enables, before any per-skill overrides:
- * 'recommended' is the core pipeline skills plus the recommended list, 'none'
- * enables nothing (core skills included).
+ * 'recommended' is the `recommendedSkills` list in skill-tag-mapping.json,
+ * 'none' enables nothing (core skills included).
  */
 export function countBaselineSkills(skills: SkillDefaultState[]): Record<SkillBaseline, number> {
   return {
-    recommended: skills.reduce((total, state) => total + (state.core || state.recommended ? 1 : 0), 0),
+    recommended: skills.reduce((total, state) => total + (state.recommended ? 1 : 0), 0),
     all: skills.length,
     none: 0,
   };

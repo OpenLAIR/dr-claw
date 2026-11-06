@@ -1,6 +1,6 @@
 ---
 name: pytorch-fsdp2
-description: Adds PyTorch FSDP2 (fully_shard) to training scripts with correct init, sharding, mixed precision/offload config, and distributed checkpointing. Use when models exceed single-GPU memory or when you need DTensor-based sharding with DeviceMesh.
+description: Adds PyTorch FSDP2 (fully_shard) to training scripts with correct init, sharding, mixed precision/offload config, and distributed checkpointing. Use when models exceed single-GPU memory or when you need DTensor-based sharding with DeviceMesh. Also covers TorchTitan (guides in references/).
 version: 1.0.0
 author: Orchestra Research
 license: MIT
@@ -229,3 +229,12 @@ Concrete examples live in `references/pytorch_examples_fsdp2.md` and the officia
 - `references/pytorch_examples_fsdp2.md`
 - `references/torchtitan_fsdp_notes.md` (optional, production notes)
 - `references/ray_train_fsdp2_example.md` (optional, integration example)
+
+## Related tools (merged into this skill)
+
+These were separate skills. Their full guides now live under `references/`;
+read the one you need when the user asks for that tool or it fits the task better.
+
+| Tool | Guide | What it covers |
+|---|---|---|
+| TorchTitan | [references/torchtitan/overview.md](references/torchtitan/overview.md) | Provides PyTorch-native distributed LLM pretraining using torchtitan with 4D parallelism (FSDP2, TP, PP, CP). |

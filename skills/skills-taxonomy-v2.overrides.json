@@ -5,12 +5,6 @@
     "capabilities": ["search-retrieval"],
     "domains": ["cs-ai"]
   },
-  "brainstorming-research-ideas": {
-    "primaryIntent": "ideation",
-    "intents": ["ideation", "research"],
-    "capabilities": ["research-planning"],
-    "domains": ["cs-ai"]
-  },
   "biorxiv-database": {
     "primaryIntent": "research",
     "intents": ["research", "data"],
@@ -27,12 +21,6 @@
     "primaryIntent": "evaluation",
     "intents": ["evaluation", "deployment"],
     "capabilities": ["safety-alignment", "evaluation-benchmarking"],
-    "domains": ["cs-ai"]
-  },
-  "creative-thinking-for-research": {
-    "primaryIntent": "ideation",
-    "intents": ["ideation", "research"],
-    "capabilities": ["research-planning"],
     "domains": ["cs-ai"]
   },
   "dataset-discovery": {
@@ -113,12 +101,6 @@
     "capabilities": ["evaluation-benchmarking"],
     "domains": ["cs-ai", "vision"]
   },
-  "inno-paper-writing": {
-    "primaryIntent": "writing",
-    "intents": ["writing", "research"],
-    "capabilities": ["visualization-reporting"],
-    "domains": ["general"]
-  },
   "inno-pipeline-planner": {
     "primaryIntent": "research",
     "intents": ["research", "experiment"],
@@ -143,12 +125,6 @@
     "capabilities": ["evaluation-benchmarking", "search-retrieval"],
     "domains": ["general"]
   },
-  "llamaguard": {
-    "primaryIntent": "deployment",
-    "intents": ["deployment", "evaluation"],
-    "capabilities": ["safety-alignment"],
-    "domains": ["cs-ai"]
-  },
   "making-academic-presentations": {
     "primaryIntent": "writing",
     "intents": ["writing"],
@@ -159,18 +135,6 @@
     "primaryIntent": "writing",
     "intents": ["writing", "research"],
     "capabilities": ["visualization-reporting"],
-    "domains": ["cs-ai"]
-  },
-  "nemo-guardrails": {
-    "primaryIntent": "deployment",
-    "intents": ["deployment", "evaluation"],
-    "capabilities": ["safety-alignment"],
-    "domains": ["cs-ai"]
-  },
-  "prompt-guard": {
-    "primaryIntent": "deployment",
-    "intents": ["deployment", "evaluation"],
-    "capabilities": ["safety-alignment"],
     "domains": ["cs-ai"]
   },
   "scientific-writing": {

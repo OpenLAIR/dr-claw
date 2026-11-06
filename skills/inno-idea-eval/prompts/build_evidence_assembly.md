@@ -9,10 +9,10 @@ Compose persona-specific evidence blocks from existing pipeline artifacts. No ne
 |----------|----------|---------|
 | Source papers (LaTeX) | `Ideation/references/papers/` | Downloaded arXiv papers (.tex, .pdf) |
 | Reference codebases | `Experiment/code_references/` | Cloned GitHub repositories |
-| Paper list string | `references` parameter | Pre-formatted list of all source papers |
-| Prepare agent output | `prepare_res` parameter | Selected repositories with reasoning |
-| Task description | `data_module.TASK` | ML task description from metaprompt |
-| Download log | `download_res` parameter | arXiv download results |
+| Paper list string | `references` parameter | Source papers from `Ideation/references/logs/load_instance.json` |
+| Prepared resources | `prepare_res` parameter | `prepare_result` from `Ideation/references/logs/prepare_agent.json` |
+| Task description | `data_module.TASK` | `task_instructions` from `load_instance.json`, else the task contract in `Ideation/ideas/idea_context.md` |
+| Download log | `download_res` parameter | `Ideation/references/logs/download_arxiv_source_by_title.json` |
 
 ## Evidence Levels
 
@@ -45,7 +45,7 @@ Format:
 ### Task Context
 {data_module.TASK}
 
-### Prepare Agent Analysis
+### Prepared Resources
 {prepare_res}
 ```
 

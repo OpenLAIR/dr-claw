@@ -8,7 +8,8 @@ import path from 'path';
  *   1. the project overrides it (projects.metadata.skills.overrides), else
  *   2. the global defaults override it (app_settings 'skills.defaults'), else
  *   3. the global baseline decides: 'all', 'none', or 'recommended'
- *      (core pipeline skills + skill-tag-mapping.json `recommendedSkills`).
+ *      (skill-tag-mapping.json `recommendedSkills`; the core pipeline skills
+ *      when that list is missing).
  *
  * Disabled skills are not linked, so harnesses do not load them on their own,
  * but they stay listed in .agents/skills/skills-index.md and `/name` still
@@ -36,10 +37,13 @@ export function readSkillManifest(skillsDir) {
     mapping = {};
   }
   const listOf = (value) => (Array.isArray(value) ? value.filter((item) => typeof item === 'string') : []);
-  return {
-    coreNames: new Set([...listOf(mapping.platformNativeSkills), ...ALWAYS_CORE_SKILLS]),
-    recommendedNames: new Set(listOf(mapping.recommendedSkills)),
-  };
+  const coreNames = new Set([...listOf(mapping.platformNativeSkills), ...ALWAYS_CORE_SKILLS]);
+  // The recommended preset is its own list: some core skills (e.g. single-cell
+  // analysis, Overleaf sync) are too specialised to be on for everyone.
+  const recommendedNames = Array.isArray(mapping.recommendedSkills)
+    ? new Set(listOf(mapping.recommendedSkills))
+    : new Set(coreNames);
+  return { coreNames, recommendedNames };
 }
 
 export function normalizeOverrides(raw) {
@@ -79,7 +83,7 @@ export function applyOverrideChanges(current, changes, allowedNames) {
 export function isEnabledByBaseline(name, baseline, manifest) {
   if (baseline === 'all') return true;
   if (baseline === 'none') return false;
-  return manifest.coreNames.has(name) || manifest.recommendedNames.has(name);
+  return manifest.recommendedNames.has(name);
 }
 
 /**

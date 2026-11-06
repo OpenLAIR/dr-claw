@@ -33,11 +33,11 @@ If no PAPER_PLAN.md exists, ask the user to run `/aris-paper-plan` first or prov
 
 ## Orchestra-Guided Writing Overlay
 
-Keep the existing `insleep` workflow, file layout, and defaults. Use the shared references below only when they improve writing quality:
+Keep the existing `insleep` workflow, file layout, and defaults. Use the references below (from the `ml-paper-writing` skill, beside this one) only when they improve writing quality:
 
-- Read `../shared-references/writing-principles.md` before drafting the Abstract, Introduction, Related Work, or when prose feels generic.
-- Read `../shared-references/venue-checklists.md` during the final write-up and submission-readiness pass.
-- Read `../shared-references/citation-discipline.md` only when the built-in DBLP/CrossRef workflow is insufficient.
+- Read `../ml-paper-writing/references/writing-guide.md` before drafting the Abstract, Introduction, Related Work, or when prose feels generic.
+- Read `../ml-paper-writing/references/checklists.md` during the final write-up and submission-readiness pass.
+- Read `../ml-paper-writing/references/citation-workflow.md` only when the built-in DBLP/CrossRef workflow is insufficient.
 
 These references are support material, not extra workflow phases.
 
@@ -45,7 +45,7 @@ These references are support material, not extra workflow phases.
 
 ### Venue-Specific Setup
 
-The skill includes conference templates in `templates/`. Select based on TARGET_VENUE:
+Conference templates live in the `ml-paper-writing` skill beside this one: [`../ml-paper-writing/templates/`](../ml-paper-writing/templates/README.md) (ICLR, NeurIPS, ICML, ACL, AAAI, COLM). For IEEE, use the `IEEEtran` class that ships with TeX Live. Select based on TARGET_VENUE; the snippets below show the preamble each one needs, so match the package names to the template version you copy:
 
 **ICLR:**
 ```latex
@@ -115,7 +115,7 @@ If `paper/` already exists, back up to `paper-backup-{timestamp}/` before overwr
 ### Step 1: Initialize Project
 
 1. Create `paper/` directory
-2. Copy venue template from `templates/` — the template already includes:
+2. Copy the venue template from `../ml-paper-writing/templates/<venue>/` and add:
    - All standard packages (amsmath, hyperref, cleveref, booktabs, etc.)
    - Theorem environments with `\crefname{assumption}` fix
    - Anonymous author block
@@ -155,7 +155,7 @@ Before drafting the front matter, re-read the one-sentence contribution from `PA
 #### Section-Specific Guidelines
 
 **§0 Abstract:**
-- Use the 5-part flow from `../shared-references/writing-principles.md`: what, why hard, how, evidence, strongest result
+- Use the 5-part flow from `../ml-paper-writing/references/writing-guide.md`: what, why hard, how, evidence, strongest result
 - Must be self-contained (understandable without reading the paper)
 - Start with the paper's specific contribution, not generic field-level background
 - Include one concrete quantitative result
@@ -248,7 +248,7 @@ If both DBLP and CrossRef return nothing, mark the entry with `% [VERIFY]` comme
 
 **Why this matters:** LLM-generated BibTeX frequently hallucinates venue names, page numbers, or even co-authors. DBLP and CrossRef return publisher-verified metadata. Upstream skills (`/aris-research-lit`, `/aris-novelty-check`) may mention papers from LLM memory — this fetch chain is the gate that prevents hallucinated citations from entering the final `.bib`.
 
-If the DBLP/CrossRef flow is not enough, load `../shared-references/citation-discipline.md` for stricter fallback rules before adding placeholders.
+If the DBLP/CrossRef flow is not enough, load `../ml-paper-writing/references/citation-workflow.md` for stricter fallback rules before adding placeholders.
 
 **Automated bib cleaning** — use this Python pattern to extract only cited entries:
 
@@ -273,7 +273,7 @@ This prevents bib bloat (e.g., 948 lines → 215 lines in testing).
 
 After drafting all sections, scan for common AI writing patterns and fix them:
 
-First apply the sentence-level clarity rules from `../shared-references/writing-principles.md`:
+First apply the sentence-level clarity rules from `../ml-paper-writing/references/writing-guide.md`:
 
 - keep subject and verb close together,
 - put familiar context first and new information later,
@@ -349,7 +349,7 @@ Before declaring done:
 - [ ] references.bib contains ONLY cited entries (no bloat)
 - [ ] **No stale section files** — every .tex in `sections/` is `\input`ed by `main.tex`
 - [ ] **Section files match main.tex** — file numbering and `\input` paths are consistent
-- [ ] Venue-specific required sections/checklists satisfied (read `../shared-references/venue-checklists.md` if needed)
+- [ ] Venue-specific required sections/checklists satisfied (read `../ml-paper-writing/references/checklists.md` if needed)
 - [ ] A skim reader can recover the main claim from the title, abstract, introduction, and Figure 1/captions
 
 ## Key Rules
@@ -370,9 +370,9 @@ Before declaring done:
 
 ## Writing Quality Reference
 
-- `../shared-references/writing-principles.md` — story framing, abstract/introduction patterns, sentence-level clarity, reviewer reading order
-- `../shared-references/venue-checklists.md` — ICLR/NeurIPS/ICML/IEEE submission requirements to check before declaring done
-- `../shared-references/citation-discipline.md` — stricter fallback for ambiguous citations
+- `../ml-paper-writing/references/writing-guide.md` — story framing, abstract/introduction patterns, sentence-level clarity, reviewer reading order
+- `../ml-paper-writing/references/checklists.md` — ICLR/NeurIPS/ICML/IEEE submission requirements to check before declaring done
+- `../ml-paper-writing/references/citation-workflow.md` — stricter fallback for ambiguous citations
 
 Keep using the reverse-outline test and anti-inflation polish from the main workflow above; the shared references are there to improve quality without adding a new phase.
 

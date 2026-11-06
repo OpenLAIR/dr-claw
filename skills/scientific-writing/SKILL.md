@@ -1,6 +1,6 @@
 ---
 name: scientific-writing
-description: "Core skill for the deep research and writing tool. Write scientific manuscripts in full paragraphs (never bullet points). Use two-stage process: (1) create section outlines with key points using research-lookup, (2) convert to flowing prose. IMRAD structure, citations (APA/AMA/Vancouver), figures/tables, reporting guidelines (CONSORT/STROBE/PRISMA), for research papers and journal submissions."
+description: "Write scientific journal manuscripts in full paragraphs (never bullet points). Use a two-stage process: (1) create section outlines with key points from the literature you have gathered, (2) convert to flowing prose. IMRAD structure, citations (APA/AMA/Vancouver), figures/tables, reporting guidelines (CONSORT/STROBE/PRISMA), for research papers and journal submissions."
 allowed-tools: [Read, Write, Edit, Bash]
 ---
 
@@ -8,11 +8,11 @@ allowed-tools: [Read, Write, Edit, Bash]
 
 ## Overview
 
-**This is the core skill for the deep research and writing tool**—combining AI-driven deep research with well-formatted written outputs. Every document produced is backed by comprehensive literature search and verified citations through the research-lookup skill.
+Every claim in the manuscript should be backed by literature you have actually read. Gather it first (the project's `Survey/` files, or a literature skill such as inno-deep-research or academic-researcher), and verify citations before submission (inno-reference-audit).
 
 Scientific writing is a process for communicating research with precision and clarity. Write manuscripts using IMRAD structure, citations (APA/AMA/Vancouver), figures/tables, and reporting guidelines (CONSORT/STROBE/PRISMA). Apply this skill for research papers and journal submissions.
 
-**Critical Principle: Always write in full paragraphs with flowing prose. Never submit bullet points in the final manuscript.** Use a two-stage process: first create section outlines with key points using research-lookup, then convert those outlines into complete paragraphs.
+**Critical Principle: Always write in full paragraphs with flowing prose. Never submit bullet points in the final manuscript.** Use a two-stage process: first create section outlines with key points from the gathered literature, then convert those outlines into complete paragraphs.
 
 ## When to Use This Skill
 
@@ -28,40 +28,13 @@ This skill should be used when:
 - Ensuring proper use of field-specific terminology and nomenclature
 - Addressing reviewer comments and revising manuscripts
 
-## Visual Enhancement with Scientific Schematics
+## Figures
 
-**⚠️ MANDATORY: Every scientific paper MUST include at least 1-2 AI-generated figures using the scientific-schematics skill.**
-
-This is not optional. Scientific papers without visual elements are incomplete. Before finalizing any document:
-1. Generate at minimum ONE schematic or diagram using scientific-schematics
-2. Prefer 2-3 figures for comprehensive papers (methods flowchart, results visualization, conceptual diagram)
-
-**How to generate figures:**
-- Use the **scientific-schematics** skill to generate AI-powered publication-quality diagrams
-- Simply describe your desired diagram in natural language
-- Nano Banana Pro will automatically generate, review, and refine the schematic
-
-**How to generate schematics:**
-```bash
-python scripts/generate_schematic.py "your diagram description" -o figures/output.png
-```
-
-The AI will automatically:
-- Create publication-quality images with proper formatting
-- Review and refine through multiple iterations
-- Ensure accessibility (colorblind-friendly, high contrast)
-- Save outputs in the figures/ directory
-
-**When to add schematics:**
-- Study design and methodology flowcharts (CONSORT, PRISMA, STROBE)
-- Conceptual framework diagrams
-- Experimental workflow illustrations
-- Data analysis pipeline diagrams
-- Biological pathway or mechanism diagrams
-- System architecture visualizations
-- Any complex concept that benefits from visualization
-
-For detailed guidance on creating schematics, refer to the scientific-schematics skill documentation.
+Plan figures early: most papers need a study-design or method overview and
+one figure per main result. Use `references/figures_tables.md` for design
+rules. Make data plots from the actual results (matplotlib or similar), and
+draw diagrams with whatever diagram or figure skill is enabled in the project.
+Never invent data for a figure.
 
 ---
 
@@ -211,7 +184,7 @@ Scientific papers must be written in complete, flowing prose. Use this two-stage
 **Stage 1: Create Section Outlines with Key Points**
 
 When starting a new section:
-1. Use the research-lookup skill to gather relevant literature and data
+1. Gather relevant literature and data (the project's `Survey/` and `Ideation/references/` files, or a literature search skill)
 2. Create a structured outline with bullet points marking:
    - Main arguments or findings to present
    - Key studies to cite
@@ -291,10 +264,10 @@ Lists may appear in scientific papers only in specific contexts:
 - **Supplementary Materials**: Extended protocols, equipment lists, detailed parameters
 - **Never in**: Abstract, Introduction, Results, Discussion, Conclusions
 
-**Integration with Research Lookup:**
+**Literature for Stage 1:**
 
-The research-lookup skill is essential for Stage 1 (creating outlines):
-1. Search for relevant papers using research-lookup
+Stage 1 (creating outlines) depends on the literature you have gathered:
+1. Collect the relevant papers (project `Survey/` files, or a literature search skill)
 2. Extract key findings, methods, and data
 3. Organize findings as bullet points in your outline
 4. Then convert the outline to full paragraphs in Stage 2
@@ -435,7 +408,7 @@ Adapt language, terminology, and conventions to match the specific scientific di
 **Stage 2: Drafting** (Use two-stage writing process for each section)
 1. Start with figures and tables (the core data story)
 2. For each section below, follow the two-stage process:
-   - **First**: Create outline with bullet points using research-lookup
+   - **First**: Create outline with bullet points from the gathered literature
    - **Second**: Convert bullet points to full paragraphs with flowing prose
 3. Write Methods (often easiest to draft first)
 4. Draft Results (describing figures/tables objectively)

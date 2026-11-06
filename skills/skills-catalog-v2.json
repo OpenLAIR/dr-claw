@@ -1,7 +1,7 @@
 {
   "generatedAt": "2026-03-24T17:51:17.721Z",
   "schema": "skills-taxonomy-v2",
-  "totalSkills": 173,
+  "totalSkills": 121,
   "skills": [
     {
       "name": "academic-researcher",
@@ -42,190 +42,8 @@
       },
       "owner": "awesome-llm-apps",
       "relatedSkills": [
-        "paper-finder",
-        "research-news",
         "gemini-deep-research",
         "inno-code-survey"
-      ]
-    },
-    {
-      "name": "autogpt-agents",
-      "primaryIntent": "deployment",
-      "intents": [
-        "deployment"
-      ],
-      "capabilities": [
-        "agent-workflow"
-      ],
-      "domains": [
-        "general"
-      ],
-      "keywords": [
-        "agents",
-        "autogpt",
-        "autonomous agents",
-        "workflow automation",
-        "visual builder",
-        "ai platform",
-        "autogpt-agents",
-        "agent frameworks",
-        "agent-workflow",
-        "autonomous",
-        "ai",
-        "agent"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Autonomous AI agent platform for building and deploying continuous agents. Use when creating visual workflow agents, deploying persistent autonomous agents, or building complex multi-step AI automation systems.",
-      "legacy": {
-        "dirPath": "agents/autogpt",
-        "skillFile": "skills/agents/autogpt/SKILL.md",
-        "topLevelGroup": "Agent Frameworks",
-        "collection": "Agent Frameworks",
-        "domain": "Agent"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "crewai-multi-agent",
-        "langchain",
-        "llamaindex",
-        "gguf-quantization"
-      ]
-    },
-    {
-      "name": "crewai-multi-agent",
-      "primaryIntent": "deployment",
-      "intents": [
-        "deployment"
-      ],
-      "capabilities": [
-        "agent-workflow"
-      ],
-      "domains": [
-        "general"
-      ],
-      "keywords": [
-        "agents",
-        "crewai",
-        "multi-agent",
-        "orchestration",
-        "collaboration",
-        "role-based",
-        "autonomous",
-        "workflows",
-        "memory",
-        "production",
-        "crewai-multi-agent",
-        "agent frameworks"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Multi-agent orchestration framework for autonomous AI collaboration. Use when building teams of specialized agents working together on complex tasks, when you need role-based agent collaboration with memory, or for production workflows req...",
-      "legacy": {
-        "dirPath": "agents/crewai",
-        "skillFile": "skills/agents/crewai/SKILL.md",
-        "topLevelGroup": "Agent Frameworks",
-        "collection": "Agent Frameworks",
-        "domain": "Agent"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "autogpt-agents",
-        "langchain",
-        "llamaindex",
-        "skypilot-multi-cloud-orchestration"
-      ]
-    },
-    {
-      "name": "langchain",
-      "primaryIntent": "deployment",
-      "intents": [
-        "deployment"
-      ],
-      "capabilities": [
-        "agent-workflow",
-        "search-retrieval",
-        "data-processing"
-      ],
-      "domains": [
-        "cs-ai"
-      ],
-      "keywords": [
-        "agents",
-        "langchain",
-        "rag",
-        "tool calling",
-        "react",
-        "memory management",
-        "vector stores",
-        "llm applications",
-        "chatbots",
-        "production",
-        "data & applications",
-        "agent frameworks"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Framework for building LLM-powered applications with agents, chains, and RAG. Supports multiple providers (OpenAI, Anthropic, Google), 500+ integrations, ReAct agents, tool calling, memory management, and vector store retrieval. Use for bu...",
-      "legacy": {
-        "dirPath": "agents/langchain",
-        "skillFile": "skills/agents/langchain/SKILL.md",
-        "topLevelGroup": "Agent Frameworks",
-        "collection": "Data & Applications",
-        "domain": "cs"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "llamaindex",
-        "chroma",
-        "faiss",
-        "pinecone"
-      ]
-    },
-    {
-      "name": "llamaindex",
-      "primaryIntent": "deployment",
-      "intents": [
-        "deployment"
-      ],
-      "capabilities": [
-        "agent-workflow",
-        "search-retrieval",
-        "data-processing"
-      ],
-      "domains": [
-        "cs-ai"
-      ],
-      "keywords": [
-        "agents",
-        "llamaindex",
-        "rag",
-        "document ingestion",
-        "vector indices",
-        "query engines",
-        "knowledge retrieval",
-        "data framework",
-        "multimodal",
-        "private data",
-        "connectors",
-        "data & applications"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Data framework for building LLM applications with RAG. Specializes in document ingestion (300+ connectors), indexing, and querying. Features vector indices, query engines, agents, and multi-modal support. Use for document Q&A, chatbots, kn...",
-      "legacy": {
-        "dirPath": "agents/llamaindex",
-        "skillFile": "skills/agents/llamaindex/SKILL.md",
-        "topLevelGroup": "Agent Frameworks",
-        "collection": "Data & Applications",
-        "domain": "cs"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "langchain",
-        "chroma",
-        "faiss",
-        "pinecone"
       ]
     },
     {
@@ -363,8 +181,7 @@
       "relatedSkills": [
         "ray-data",
         "huggingface-tokenizers",
-        "sentencepiece",
-        "blip-2-vision-language"
+        "llava"
       ]
     },
     {
@@ -411,7 +228,6 @@
       "relatedSkills": [
         "nemo-curator",
         "huggingface-tokenizers",
-        "sentencepiece",
         "dataset-discovery"
       ]
     },
@@ -457,7 +273,7 @@
         "biorxiv-database",
         "inno-prepare-resources",
         "ray-data",
-        "chroma"
+        "faiss"
       ]
     },
     {
@@ -500,103 +316,6 @@
       },
       "owner": "Orchestra Research",
       "relatedSkills": [
-        "deepspeed",
-        "pytorch-lightning",
-        "pytorch-fsdp2",
-        "ray-train"
-      ]
-    },
-    {
-      "name": "deepspeed",
-      "primaryIntent": "training",
-      "intents": [
-        "training",
-        "experiment"
-      ],
-      "capabilities": [
-        "training-tuning",
-        "infrastructure-ops"
-      ],
-      "domains": [
-        "cs-ai"
-      ],
-      "keywords": [
-        "deepspeed",
-        "distributed training",
-        "zero",
-        "pipeline parallelism",
-        "mixed precision",
-        "optimization",
-        "microsoft",
-        "large-scale training",
-        "fp16",
-        "fp8",
-        "training & tuning",
-        "training-tuning"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Expert guidance for distributed training with DeepSpeed - ZeRO optimization stages, pipeline parallelism, FP16/BF16/FP8, 1-bit Adam, sparse attention",
-      "legacy": {
-        "dirPath": "distributed-training/deepspeed",
-        "skillFile": "skills/distributed-training/deepspeed/SKILL.md",
-        "topLevelGroup": "Distributed Training",
-        "collection": "Training & Tuning",
-        "domain": "cs"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "pytorch-lightning",
-        "huggingface-accelerate",
-        "pytorch-fsdp2",
-        "ray-train"
-      ]
-    },
-    {
-      "name": "training-llms-megatron",
-      "primaryIntent": "training",
-      "intents": [
-        "training",
-        "experiment"
-      ],
-      "capabilities": [
-        "training-tuning",
-        "infrastructure-ops"
-      ],
-      "domains": [
-        "cs-ai",
-        "nlp",
-        "bioinformatics"
-      ],
-      "keywords": [
-        "megatron-core",
-        "large-scale training",
-        "nvidia",
-        "tensor parallelism",
-        "pipeline parallelism",
-        "model parallelism",
-        "h100",
-        "distributed training",
-        "production",
-        "training-llms-megatron",
-        "training-tuning",
-        "infrastructure-ops"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Trains large language models (2B-462B parameters) using NVIDIA Megatron-Core with advanced parallelism strategies. Use when training models >1B parameters, need maximum GPU efficiency (47% MFU on H100), or require tensor/pipeline/sequence/...",
-      "legacy": {
-        "dirPath": "distributed-training/megatron-core",
-        "skillFile": "skills/distributed-training/megatron-core/SKILL.md",
-        "topLevelGroup": "Distributed Training",
-        "collection": "Distributed Training",
-        "domain": "NLP"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "peft-fine-tuning",
-        "deepspeed",
-        "openrlhf-training",
         "pytorch-fsdp2"
       ]
     },
@@ -641,101 +360,7 @@
       },
       "owner": "Orchestra Research",
       "relatedSkills": [
-        "deepspeed",
-        "pytorch-lightning",
-        "ray-train",
-        "peft-fine-tuning"
-      ]
-    },
-    {
-      "name": "pytorch-lightning",
-      "primaryIntent": "training",
-      "intents": [
-        "training",
-        "experiment"
-      ],
-      "capabilities": [
-        "training-tuning",
-        "infrastructure-ops"
-      ],
-      "domains": [
-        "cs-ai"
-      ],
-      "keywords": [
-        "pytorch lightning",
-        "training framework",
-        "distributed training",
-        "ddp",
-        "fsdp",
-        "deepspeed",
-        "high-level api",
-        "callbacks",
-        "best practices",
-        "scalable",
-        "pytorch-lightning",
-        "training & tuning"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "High-level PyTorch framework with Trainer class, automatic distributed training (DDP/FSDP/DeepSpeed), callbacks system, and minimal boilerplate. Scales from laptop to supercomputer with same code. Use when you want clean training loops wit...",
-      "legacy": {
-        "dirPath": "distributed-training/pytorch-lightning",
-        "skillFile": "skills/distributed-training/pytorch-lightning/SKILL.md",
-        "topLevelGroup": "Distributed Training",
-        "collection": "Training & Tuning",
-        "domain": "cs"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "deepspeed",
         "huggingface-accelerate",
-        "pytorch-fsdp2",
-        "ray-train"
-      ]
-    },
-    {
-      "name": "ray-train",
-      "primaryIntent": "training",
-      "intents": [
-        "training",
-        "experiment"
-      ],
-      "capabilities": [
-        "training-tuning",
-        "infrastructure-ops"
-      ],
-      "domains": [
-        "cs-ai"
-      ],
-      "keywords": [
-        "ray train",
-        "distributed training",
-        "orchestration",
-        "ray",
-        "hyperparameter tuning",
-        "fault tolerance",
-        "elastic scaling",
-        "multi-node",
-        "pytorch",
-        "tensorflow",
-        "ray-train",
-        "training & tuning"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Distributed training orchestration across clusters. Scales PyTorch/TensorFlow/HuggingFace from laptop to 1000s of nodes. Built-in hyperparameter tuning with Ray Tune, fault tolerance, elastic scaling. Use when training massive models acros...",
-      "legacy": {
-        "dirPath": "distributed-training/ray-train",
-        "skillFile": "skills/distributed-training/ray-train/SKILL.md",
-        "topLevelGroup": "Distributed Training",
-        "collection": "Training & Tuning",
-        "domain": "cs"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "deepspeed",
-        "pytorch-fsdp2",
-        "pytorch-lightning",
         "peft-fine-tuning"
       ]
     },
@@ -781,9 +406,9 @@
       "owner": "Orchestra Research",
       "relatedSkills": [
         "model-pruning",
-        "rwkv-architecture",
+        "mamba-architecture",
         "speculative-decoding",
-        "distributed-llm-pretraining-torchtitan"
+        "pytorch-fsdp2"
       ]
     },
     {
@@ -918,7 +543,7 @@
       "relatedSkills": [
         "knowledge-distillation",
         "speculative-decoding",
-        "rwkv-architecture",
+        "mamba-architecture",
         "long-context"
       ]
     },
@@ -1009,7 +634,7 @@
       "relatedSkills": [
         "knowledge-distillation",
         "model-pruning",
-        "rwkv-architecture",
+        "mamba-architecture",
         "long-context"
       ]
     },
@@ -1053,10 +678,7 @@
       },
       "owner": "Orchestra Research",
       "relatedSkills": [
-        "evaluating-llms-harness",
-        "nemo-evaluator-sdk",
-        "langsmith-observability",
-        "phoenix-observability"
+        "evaluating-llms-harness"
       ]
     },
     {
@@ -1100,58 +722,9 @@
       },
       "owner": "Orchestra Research",
       "relatedSkills": [
-        "nemo-evaluator-sdk",
         "evaluating-code-models",
         "tensorboard",
         "weights-and-biases"
-      ]
-    },
-    {
-      "name": "nemo-evaluator-sdk",
-      "primaryIntent": "evaluation",
-      "intents": [
-        "evaluation",
-        "experiment"
-      ],
-      "capabilities": [
-        "evaluation-benchmarking",
-        "safety-alignment",
-        "infrastructure-ops"
-      ],
-      "domains": [
-        "cs-ai",
-        "nlp"
-      ],
-      "keywords": [
-        "evaluation",
-        "nemo",
-        "nvidia",
-        "benchmarking",
-        "mmlu",
-        "humaneval",
-        "multi-backend",
-        "slurm",
-        "docker",
-        "reproducible",
-        "enterprise",
-        "nemo-evaluator-sdk"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Evaluates LLMs across 100+ benchmarks from 18+ harnesses (MMLU, HumanEval, GSM8K, safety, VLM) with multi-backend execution. Use when needing scalable evaluation on local Docker, Slurm HPC, or cloud platforms. NVIDIA's enterprise-grade pla...",
-      "legacy": {
-        "dirPath": "evaluation/nemo-evaluator",
-        "skillFile": "skills/evaluation/nemo-evaluator/SKILL.md",
-        "topLevelGroup": "Evaluation",
-        "collection": "Evaluation",
-        "domain": "NLP"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "evaluating-llms-harness",
-        "evaluating-code-models",
-        "langsmith-observability",
-        "phoenix-observability"
       ]
     },
     {
@@ -1193,55 +766,8 @@
       },
       "owner": "Orchestra Research",
       "relatedSkills": [
-        "llama-factory",
         "peft-fine-tuning",
-        "unsloth",
-        "deepspeed"
-      ]
-    },
-    {
-      "name": "llama-factory",
-      "primaryIntent": "training",
-      "intents": [
-        "training",
-        "experiment"
-      ],
-      "capabilities": [
-        "training-tuning"
-      ],
-      "domains": [
-        "cs-ai"
-      ],
-      "keywords": [
-        "fine-tuning",
-        "llama factory",
-        "llm",
-        "webui",
-        "no-code",
-        "qlora",
-        "lora",
-        "multimodal",
-        "huggingface",
-        "llama",
-        "qwen",
-        "gemma"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Expert guidance for fine-tuning LLMs with LLaMA-Factory - WebUI no-code, 100+ models, 2/3/4/5/6/8-bit QLoRA, multimodal support",
-      "legacy": {
-        "dirPath": "fine-tuning/llama-factory",
-        "skillFile": "skills/fine-tuning/llama-factory/SKILL.md",
-        "topLevelGroup": "Fine-Tuning",
-        "collection": "Training & Tuning",
-        "domain": "cs"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "axolotl",
-        "peft-fine-tuning",
-        "unsloth",
-        "deepspeed"
+        "huggingface-accelerate"
       ]
     },
     {
@@ -1285,55 +811,9 @@
       },
       "owner": "Orchestra Research",
       "relatedSkills": [
-        "training-llms-megatron",
         "axolotl",
-        "deepspeed",
+        "huggingface-accelerate",
         "openrlhf-training"
-      ]
-    },
-    {
-      "name": "unsloth",
-      "primaryIntent": "training",
-      "intents": [
-        "training",
-        "experiment"
-      ],
-      "capabilities": [
-        "training-tuning"
-      ],
-      "domains": [
-        "cs-ai"
-      ],
-      "keywords": [
-        "fine-tuning",
-        "unsloth",
-        "fast training",
-        "lora",
-        "qlora",
-        "memory-efficient",
-        "optimization",
-        "llama",
-        "mistral",
-        "gemma",
-        "qwen",
-        "training & tuning"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Expert guidance for fast fine-tuning with Unsloth - 2-5x faster training, 50-80% less memory, LoRA/QLoRA optimization",
-      "legacy": {
-        "dirPath": "fine-tuning/unsloth",
-        "skillFile": "skills/fine-tuning/unsloth/SKILL.md",
-        "topLevelGroup": "Fine-Tuning",
-        "collection": "Training & Tuning",
-        "domain": "cs"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "axolotl",
-        "peft-fine-tuning",
-        "llama-factory",
-        "deepspeed"
       ]
     },
     {
@@ -1376,146 +856,8 @@
       "owner": "clawdbot",
       "relatedSkills": [
         "inno-deep-research",
-        "research-news",
         "inno-code-survey",
         "inno-pipeline-planner"
-      ]
-    },
-    {
-      "name": "llama-cpp",
-      "primaryIntent": "deployment",
-      "intents": [
-        "deployment",
-        "evaluation"
-      ],
-      "capabilities": [
-        "inference-serving",
-        "infrastructure-ops"
-      ],
-      "domains": [
-        "cs-ai"
-      ],
-      "keywords": [
-        "inference serving",
-        "llama.cpp",
-        "cpu inference",
-        "apple silicon",
-        "edge deployment",
-        "gguf",
-        "quantization",
-        "non-nvidia",
-        "amd gpus",
-        "intel gpus",
-        "embedded",
-        "llama-cpp"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Runs LLM inference on CPU, Apple Silicon, and consumer GPUs without NVIDIA hardware. Use for edge deployment, M1/M2/M3 Macs, AMD/Intel GPUs, or when CUDA is unavailable. Supports GGUF quantization (1.5-8 bit) for reduced memory and 4-10× s...",
-      "legacy": {
-        "dirPath": "inference-serving/llama-cpp",
-        "skillFile": "skills/inference-serving/llama-cpp/SKILL.md",
-        "topLevelGroup": "Inference Serving",
-        "collection": "Inference & Optimization",
-        "domain": "cs"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "serving-llms-vllm",
-        "tensorrt-llm",
-        "gguf-quantization",
-        "awq-quantization"
-      ]
-    },
-    {
-      "name": "sglang",
-      "primaryIntent": "deployment",
-      "intents": [
-        "deployment",
-        "evaluation"
-      ],
-      "capabilities": [
-        "inference-serving"
-      ],
-      "domains": [
-        "cs-ai"
-      ],
-      "keywords": [
-        "inference serving",
-        "sglang",
-        "structured generation",
-        "radixattention",
-        "prefix caching",
-        "constrained decoding",
-        "agents",
-        "json output",
-        "fast inference",
-        "production scale",
-        "inference & optimization",
-        "inference-serving"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Fast structured generation and serving for LLMs with RadixAttention prefix caching. Use for JSON/regex outputs, constrained decoding, agentic workflows with tool calls, or when you need 5× faster inference than vLLM with prefix sharing. Po...",
-      "legacy": {
-        "dirPath": "inference-serving/sglang",
-        "skillFile": "skills/inference-serving/sglang/SKILL.md",
-        "topLevelGroup": "Inference Serving",
-        "collection": "Inference & Optimization",
-        "domain": "cs"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "llama-cpp",
-        "serving-llms-vllm",
-        "tensorrt-llm",
-        "outlines"
-      ]
-    },
-    {
-      "name": "tensorrt-llm",
-      "primaryIntent": "deployment",
-      "intents": [
-        "deployment",
-        "evaluation"
-      ],
-      "capabilities": [
-        "inference-serving",
-        "infrastructure-ops"
-      ],
-      "domains": [
-        "cs-ai"
-      ],
-      "keywords": [
-        "inference serving",
-        "tensorrt-llm",
-        "nvidia",
-        "inference optimization",
-        "high throughput",
-        "low latency",
-        "production",
-        "fp8",
-        "int4",
-        "in-flight batching",
-        "multi-gpu",
-        "inference & optimization"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Optimizes LLM inference with NVIDIA TensorRT for maximum throughput and lowest latency. Use for production deployment on NVIDIA GPUs (A100/H100), when you need 10-100x faster inference than PyTorch, or for serving models with quantization...",
-      "legacy": {
-        "dirPath": "inference-serving/tensorrt-llm",
-        "skillFile": "skills/inference-serving/tensorrt-llm/SKILL.md",
-        "topLevelGroup": "Inference Serving",
-        "collection": "Inference & Optimization",
-        "domain": "cs"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "serving-llms-vllm",
-        "llama-cpp",
-        "awq-quantization",
-        "quantizing-models-bitsandbytes"
       ]
     },
     {
@@ -1559,100 +901,7 @@
       },
       "owner": "Orchestra Research",
       "relatedSkills": [
-        "tensorrt-llm",
-        "llama-cpp",
-        "awq-quantization",
         "quantizing-models-bitsandbytes"
-      ]
-    },
-    {
-      "name": "lambda-labs-gpu-cloud",
-      "primaryIntent": "deployment",
-      "intents": [
-        "deployment"
-      ],
-      "capabilities": [
-        "infrastructure-ops",
-        "training-tuning",
-        "inference-serving"
-      ],
-      "domains": [
-        "general"
-      ],
-      "keywords": [
-        "infrastructure",
-        "gpu cloud",
-        "training",
-        "inference",
-        "lambda labs",
-        "lambda-labs-gpu-cloud",
-        "lambda-labs",
-        "infrastructure-ops",
-        "training-tuning",
-        "inference-serving",
-        "lambda",
-        "labs"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Reserved and on-demand GPU cloud instances for ML training and inference. Use when you need dedicated GPU instances with simple SSH access, persistent filesystems, or high-performance multi-node clusters for large-scale training.",
-      "legacy": {
-        "dirPath": "infrastructure/lambda-labs",
-        "skillFile": "skills/infrastructure/lambda-labs/SKILL.md",
-        "topLevelGroup": "Infrastructure",
-        "collection": "Infrastructure",
-        "domain": "General"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "optimizing-attention-flash",
-        "quantizing-models-bitsandbytes",
-        "skypilot-multi-cloud-orchestration",
-        "gguf-quantization"
-      ]
-    },
-    {
-      "name": "modal-serverless-gpu",
-      "primaryIntent": "deployment",
-      "intents": [
-        "deployment"
-      ],
-      "capabilities": [
-        "infrastructure-ops"
-      ],
-      "domains": [
-        "general"
-      ],
-      "keywords": [
-        "infrastructure",
-        "serverless",
-        "gpu",
-        "cloud",
-        "deployment",
-        "modal",
-        "modal-serverless-gpu",
-        "infrastructure-ops",
-        "platform",
-        "running",
-        "ml",
-        "workloads"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Serverless GPU cloud platform for running ML workloads. Use when you need on-demand GPU access without infrastructure management, deploying ML models as APIs, or running batch jobs with automatic scaling.",
-      "legacy": {
-        "dirPath": "infrastructure/modal",
-        "skillFile": "skills/infrastructure/modal/SKILL.md",
-        "topLevelGroup": "Infrastructure",
-        "collection": "Infrastructure",
-        "domain": "General"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "skypilot-multi-cloud-orchestration",
-        "lambda-labs-gpu-cloud",
-        "gguf-quantization",
-        "optimizing-attention-flash"
       ]
     },
     {
@@ -1694,9 +943,7 @@
       },
       "owner": "Orchestra Research",
       "relatedSkills": [
-        "lambda-labs-gpu-cloud",
         "optimizing-attention-flash",
-        "modal-serverless-gpu",
         "quantizing-models-bitsandbytes"
       ]
     },
@@ -1783,8 +1030,7 @@
       "relatedSkills": [
         "gemini-deep-research",
         "inno-code-survey",
-        "academic-researcher",
-        "research-news"
+        "academic-researcher"
       ]
     },
     {
@@ -1912,7 +1158,7 @@
       },
       "relatedSkills": [
         "inno-humanizer",
-        "inno-paper-writing",
+        "ml-paper-writing",
         "inno-grant-proposal",
         "inno-rclone-to-overleaf"
       ]
@@ -1956,7 +1202,7 @@
         "domain": "general"
       },
       "relatedSkills": [
-        "inno-paper-writing",
+        "ml-paper-writing",
         "scientific-writing",
         "inno-figure-gen",
         "inno-humanizer"
@@ -2000,7 +1246,7 @@
       },
       "relatedSkills": [
         "inno-figure-gen",
-        "inno-paper-writing",
+        "ml-paper-writing",
         "inno-grant-proposal",
         "inno-rclone-to-overleaf"
       ]
@@ -2044,8 +1290,6 @@
       },
       "relatedSkills": [
         "inno-idea-generation",
-        "brainstorming-research-ideas",
-        "creative-thinking-for-research",
         "inno-experiment-dev"
       ]
     },
@@ -2069,16 +1313,16 @@
         "inno",
         "idea",
         "generation",
-        "facilitates",
-        "structured",
-        "brainstorming",
-        "sessions",
-        "conducts",
-        "comprehensive"
+        "generates",
+        "research",
+        "ideas",
+        "defined",
+        "problem",
+        "reads"
       ],
       "source": "dr-claw",
       "status": "verified",
-      "summary": "Facilitates structured brainstorming sessions, conducts comprehensive research, and generates creative solutions using proven frameworks. Trigger keywords - brainstorm, ideate, research, SCAMPER, SWOT, mind map, creative, explore ideas, ma...",
+      "summary": "Generates research ideas for a defined research problem. Reads the project's literature and context, explores directions with research ideation lenses, writes three full candidate proposals, and selects one through an explicit gate. Writes...",
       "legacy": {
         "dirPath": "inno-idea-generation",
         "skillFile": "skills/inno-idea-generation/SKILL.md",
@@ -2088,8 +1332,6 @@
       },
       "relatedSkills": [
         "inno-idea-eval",
-        "brainstorming-research-ideas",
-        "creative-thinking-for-research",
         "inno-grant-proposal"
       ]
     },
@@ -2122,7 +1364,7 @@
       ],
       "source": "dr-claw",
       "status": "verified",
-      "summary": "Structured manuscript/grant review with checklist-based evaluation. Use when writing formal peer reviews with specific criteria methodology assessment, statistical validity, reporting standards compliance (CONSORT/STROBE), and constructive...",
+      "summary": "Structured manuscript/grant review with checklist-based evaluation. Use when writing formal peer reviews with specific criteria methodology assessment, statistical validity, reporting standards compliance (CONSORT/STROBE), ML/CS conference...",
       "legacy": {
         "dirPath": "inno-paper-reviewer",
         "skillFile": "skills/inno-paper-reviewer/SKILL.md",
@@ -2135,50 +1377,6 @@
         "inno-reference-audit",
         "inno-experiment-analysis",
         "constitutional-ai"
-      ]
-    },
-    {
-      "name": "inno-paper-writing",
-      "primaryIntent": "writing",
-      "intents": [
-        "writing",
-        "research"
-      ],
-      "capabilities": [
-        "visualization-reporting"
-      ],
-      "domains": [
-        "general"
-      ],
-      "keywords": [
-        "inno-paper-writing",
-        "paper writing",
-        "visualization-reporting",
-        "inno",
-        "paper",
-        "writing",
-        "creates",
-        "formal",
-        "academic",
-        "research",
-        "papers",
-        "following"
-      ],
-      "source": "dr-claw",
-      "status": "verified",
-      "summary": "Creates formal academic research papers following IEEE/ACM formatting standards with proper structure, citations, and scholarly writing style. Use when the user asks to write a research paper, academic paper, or conference paper on any top...",
-      "legacy": {
-        "dirPath": "inno-paper-writing",
-        "skillFile": "skills/inno-paper-writing/SKILL.md",
-        "topLevelGroup": "Standalone",
-        "collection": "Paper Writing",
-        "domain": "General"
-      },
-      "relatedSkills": [
-        "scientific-writing",
-        "inno-grant-proposal",
-        "inno-figure-gen",
-        "inno-humanizer"
       ]
     },
     {
@@ -2221,7 +1419,6 @@
       },
       "relatedSkills": [
         "gemini-deep-research",
-        "research-news",
         "inno-code-survey",
         "inno-deep-research"
       ]
@@ -2248,15 +1445,15 @@
         "inno",
         "prepare",
         "resources",
-        "loads",
-        "evaluation",
-        "instance",
-        "searches",
-        "github"
+        "prepares",
+        "research",
+        "materials",
+        "project",
+        "collects"
       ],
       "source": "dr-claw",
       "status": "verified",
-      "summary": "Loads the evaluation instance, searches GitHub for related repositories, builds a dataset description, queries the Prepare Agent for reference codebases, and downloads arXiv paper sources. Covers both Idea mode and Plan mode (the only diff...",
+      "summary": "Prepares the research materials for a project: collects the source papers, searches GitHub for their code, picks and clones reference codebases, describes the datasets, and downloads arXiv paper sources into Ideation/references/papers. Wor...",
       "legacy": {
         "dirPath": "inno-prepare-resources",
         "skillFile": "skills/inno-prepare-resources/SKILL.md",
@@ -2313,7 +1510,7 @@
         "inno-figure-gen",
         "inno-grant-proposal",
         "inno-humanizer",
-        "inno-paper-writing"
+        "ml-paper-writing"
       ]
     },
     {
@@ -2456,7 +1653,7 @@
         "inno-figure-gen",
         "inno-grant-proposal",
         "inno-humanizer",
-        "inno-paper-writing"
+        "ml-paper-writing"
       ]
     },
     {
@@ -2682,7 +1879,6 @@
       "owner": "Orchestra Research",
       "relatedSkills": [
         "inno-grant-proposal",
-        "inno-paper-writing",
         "scientific-writing",
         "inno-figure-gen"
       ]
@@ -2729,8 +1925,7 @@
       "relatedSkills": [
         "weights-and-biases",
         "tensorboard",
-        "nemo-evaluator-sdk",
-        "langsmith-observability"
+        "evaluating-llms-harness"
       ]
     },
     {
@@ -2776,8 +1971,7 @@
       "relatedSkills": [
         "weights-and-biases",
         "mlflow",
-        "evaluating-llms-harness",
-        "nemo-evaluator-sdk"
+        "evaluating-llms-harness"
       ]
     },
     {
@@ -2823,8 +2017,7 @@
       "relatedSkills": [
         "tensorboard",
         "mlflow",
-        "evaluating-llms-harness",
-        "nemo-evaluator-sdk"
+        "evaluating-llms-harness"
       ]
     },
     {
@@ -2867,8 +2060,8 @@
       },
       "owner": "Orchestra Research",
       "relatedSkills": [
-        "distributed-llm-pretraining-torchtitan",
-        "rwkv-architecture",
+        "pytorch-fsdp2",
+        "mamba-architecture",
         "knowledge-distillation",
         "nanogpt"
       ]
@@ -2914,7 +2107,6 @@
       },
       "owner": "Orchestra Research",
       "relatedSkills": [
-        "rwkv-architecture",
         "knowledge-distillation",
         "model-pruning",
         "speculative-decoding"
@@ -2959,198 +2151,10 @@
       },
       "owner": "Orchestra Research",
       "relatedSkills": [
-        "distributed-llm-pretraining-torchtitan",
+        "pytorch-fsdp2",
         "implementing-llms-litgpt",
-        "rwkv-architecture",
+        "mamba-architecture",
         "knowledge-distillation"
-      ]
-    },
-    {
-      "name": "rwkv-architecture",
-      "primaryIntent": "experiment",
-      "intents": [
-        "experiment",
-        "training"
-      ],
-      "capabilities": [
-        "training-tuning",
-        "inference-serving"
-      ],
-      "domains": [
-        "cs-ai",
-        "nlp"
-      ],
-      "keywords": [
-        "rwkv",
-        "model architecture",
-        "rnn",
-        "transformer hybrid",
-        "linear complexity",
-        "infinite context",
-        "efficient inference",
-        "linux foundation",
-        "alternative architecture",
-        "rwkv-architecture",
-        "training-tuning",
-        "inference-serving"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "RNN+Transformer hybrid with O(n) inference. Linear time, infinite context, no KV cache. Train like GPT (parallel), infer like RNN (sequential). Linux Foundation AI project. Production at Windows, Office, NeMo. RWKV-7 (March 2025). Models u...",
-      "legacy": {
-        "dirPath": "model-architecture/rwkv",
-        "skillFile": "skills/model-architecture/rwkv/SKILL.md",
-        "topLevelGroup": "Model Architecture",
-        "collection": "Model Architecture",
-        "domain": "NLP"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "knowledge-distillation",
-        "distributed-llm-pretraining-torchtitan",
-        "implementing-llms-litgpt",
-        "mamba-architecture"
-      ]
-    },
-    {
-      "name": "distributed-llm-pretraining-torchtitan",
-      "primaryIntent": "experiment",
-      "intents": [
-        "experiment",
-        "training"
-      ],
-      "capabilities": [
-        "training-tuning"
-      ],
-      "domains": [
-        "cs-ai",
-        "nlp"
-      ],
-      "keywords": [
-        "model architecture",
-        "distributed training",
-        "torchtitan",
-        "fsdp2",
-        "tensor parallel",
-        "pipeline parallel",
-        "context parallel",
-        "float8",
-        "llama",
-        "pretraining",
-        "distributed-llm-pretraining-torchtitan",
-        "training-tuning"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Provides PyTorch-native distributed LLM pretraining using torchtitan with 4D parallelism (FSDP2, TP, PP, CP). Use when pretraining Llama 3.1, DeepSeek V3, or custom models at scale from 8 to 512+ GPUs with Float8, torch.compile, and distri...",
-      "legacy": {
-        "dirPath": "model-architecture/torchtitan",
-        "skillFile": "skills/model-architecture/torchtitan/SKILL.md",
-        "topLevelGroup": "Model Architecture",
-        "collection": "Model Architecture",
-        "domain": "NLP"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "implementing-llms-litgpt",
-        "rwkv-architecture",
-        "knowledge-distillation",
-        "nanogpt"
-      ]
-    },
-    {
-      "name": "audiocraft-audio-generation",
-      "primaryIntent": "experiment",
-      "intents": [
-        "experiment",
-        "deployment"
-      ],
-      "capabilities": [
-        "multimodal"
-      ],
-      "domains": [
-        "cs-ai",
-        "nlp"
-      ],
-      "keywords": [
-        "multimodal",
-        "audio generation",
-        "text-to-music",
-        "text-to-audio",
-        "musicgen",
-        "audiocraft-audio-generation",
-        "audiocraft",
-        "cs-ai",
-        "nlp",
-        "audio",
-        "generation",
-        "pytorch"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "PyTorch library for audio generation including text-to-music (MusicGen) and text-to-sound (AudioGen). Use when you need to generate music from text descriptions, create sound effects, or perform melody-conditioned music generation.",
-      "legacy": {
-        "dirPath": "multimodal/audiocraft",
-        "skillFile": "skills/multimodal/audiocraft/SKILL.md",
-        "topLevelGroup": "Multimodal",
-        "collection": "Multimodal",
-        "domain": "NLP"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "blip-2-vision-language",
-        "clip",
-        "llava",
-        "stable-diffusion-image-generation"
-      ]
-    },
-    {
-      "name": "blip-2-vision-language",
-      "primaryIntent": "experiment",
-      "intents": [
-        "experiment",
-        "deployment"
-      ],
-      "capabilities": [
-        "multimodal",
-        "search-retrieval",
-        "training-tuning"
-      ],
-      "domains": [
-        "cs-ai",
-        "vision",
-        "nlp"
-      ],
-      "keywords": [
-        "multimodal",
-        "vision-language",
-        "image captioning",
-        "vqa",
-        "zero-shot",
-        "blip-2-vision-language",
-        "blip-2",
-        "search-retrieval",
-        "training-tuning",
-        "cs-ai",
-        "vision",
-        "nlp"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Vision-language pre-training framework bridging frozen image encoders and LLMs. Use when you need image captioning, visual question answering, image-text retrieval, or multimodal chat with state-of-the-art zero-shot performance.",
-      "legacy": {
-        "dirPath": "multimodal/blip-2",
-        "skillFile": "skills/multimodal/blip-2/SKILL.md",
-        "topLevelGroup": "Multimodal",
-        "collection": "Multimodal",
-        "domain": "Vision"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "clip",
-        "llava",
-        "stable-diffusion-image-generation",
-        "segment-anything-model"
       ]
     },
     {
@@ -3196,9 +2200,7 @@
       },
       "owner": "Orchestra Research",
       "relatedSkills": [
-        "blip-2-vision-language",
         "llava",
-        "stable-diffusion-image-generation",
         "segment-anything-model"
       ]
     },
@@ -3244,10 +2246,7 @@
       },
       "owner": "Orchestra Research",
       "relatedSkills": [
-        "blip-2-vision-language",
-        "clip",
-        "stable-diffusion-image-generation",
-        "audiocraft-audio-generation"
+        "clip"
       ]
     },
     {
@@ -3290,57 +2289,8 @@
       },
       "owner": "Orchestra Research",
       "relatedSkills": [
-        "blip-2-vision-language",
-        "clip",
-        "stable-diffusion-image-generation",
-        "llava"
-      ]
-    },
-    {
-      "name": "stable-diffusion-image-generation",
-      "primaryIntent": "experiment",
-      "intents": [
-        "experiment",
-        "deployment"
-      ],
-      "capabilities": [
-        "multimodal"
-      ],
-      "domains": [
-        "cs-ai",
-        "vision",
-        "nlp"
-      ],
-      "keywords": [
-        "image generation",
-        "stable diffusion",
-        "diffusers",
-        "text-to-image",
-        "multimodal",
-        "computer vision",
-        "stable-diffusion-image-generation",
-        "stable-diffusion",
-        "cs-ai",
-        "vision",
-        "nlp",
-        "stable"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "State-of-the-art text-to-image generation with Stable Diffusion models via HuggingFace Diffusers. Use when generating images from text prompts, performing image-to-image translation, inpainting, or building custom diffusion pipelines.",
-      "legacy": {
-        "dirPath": "multimodal/stable-diffusion",
-        "skillFile": "skills/multimodal/stable-diffusion/SKILL.md",
-        "topLevelGroup": "Multimodal",
-        "collection": "Multimodal",
-        "domain": "Vision"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "blip-2-vision-language",
-        "clip",
         "llava",
-        "segment-anything-model"
+        "clip"
       ]
     },
     {
@@ -3384,150 +2334,7 @@
       "owner": "Orchestra Research",
       "relatedSkills": [
         "clip",
-        "audiocraft-audio-generation",
-        "blip-2-vision-language",
         "llava"
-      ]
-    },
-    {
-      "name": "langsmith-observability",
-      "primaryIntent": "evaluation",
-      "intents": [
-        "evaluation",
-        "deployment"
-      ],
-      "capabilities": [
-        "evaluation-benchmarking",
-        "infrastructure-ops"
-      ],
-      "domains": [
-        "cs-ai",
-        "nlp"
-      ],
-      "keywords": [
-        "observability",
-        "langsmith",
-        "tracing",
-        "evaluation",
-        "monitoring",
-        "debugging",
-        "testing",
-        "llm ops",
-        "production",
-        "langsmith-observability",
-        "evaluation-benchmarking",
-        "infrastructure-ops"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "LLM observability platform for tracing, evaluation, and monitoring. Use when debugging LLM applications, evaluating model outputs against datasets, monitoring production systems, or building systematic testing pipelines for AI applications.",
-      "legacy": {
-        "dirPath": "observability/langsmith",
-        "skillFile": "skills/observability/langsmith/SKILL.md",
-        "topLevelGroup": "Observability",
-        "collection": "Observability",
-        "domain": "NLP"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "phoenix-observability",
-        "nemo-evaluator-sdk",
-        "evaluating-code-models",
-        "evaluating-llms-harness"
-      ]
-    },
-    {
-      "name": "phoenix-observability",
-      "primaryIntent": "evaluation",
-      "intents": [
-        "evaluation",
-        "deployment"
-      ],
-      "capabilities": [
-        "evaluation-benchmarking",
-        "infrastructure-ops"
-      ],
-      "domains": [
-        "cs-ai",
-        "nlp"
-      ],
-      "keywords": [
-        "observability",
-        "phoenix",
-        "arize",
-        "tracing",
-        "evaluation",
-        "monitoring",
-        "llm ops",
-        "opentelemetry",
-        "phoenix-observability",
-        "evaluation-benchmarking",
-        "infrastructure-ops",
-        "cs-ai"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Open-source AI observability platform for LLM tracing, evaluation, and monitoring. Use when debugging LLM applications with detailed traces, running evaluations on datasets, or monitoring production AI systems with real-time insights.",
-      "legacy": {
-        "dirPath": "observability/phoenix",
-        "skillFile": "skills/observability/phoenix/SKILL.md",
-        "topLevelGroup": "Observability",
-        "collection": "Observability",
-        "domain": "NLP"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "langsmith-observability",
-        "nemo-evaluator-sdk",
-        "evaluating-code-models",
-        "evaluating-llms-harness"
-      ]
-    },
-    {
-      "name": "awq-quantization",
-      "primaryIntent": "deployment",
-      "intents": [
-        "deployment",
-        "training"
-      ],
-      "capabilities": [
-        "inference-serving",
-        "infrastructure-ops"
-      ],
-      "domains": [
-        "cs-ai",
-        "nlp"
-      ],
-      "keywords": [
-        "optimization",
-        "awq",
-        "quantization",
-        "4-bit",
-        "activation-aware",
-        "memory optimization",
-        "fast inference",
-        "vllm integration",
-        "marlin kernels",
-        "awq-quantization",
-        "inference-serving",
-        "infrastructure-ops"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Activation-aware weight quantization for 4-bit LLM compression with 3x speedup and minimal accuracy loss. Use when deploying large models (7B-70B) on limited GPU memory, when you need faster inference than GPTQ with better accuracy preserv...",
-      "legacy": {
-        "dirPath": "optimization/awq",
-        "skillFile": "skills/optimization/awq/SKILL.md",
-        "topLevelGroup": "Optimization",
-        "collection": "Optimization",
-        "domain": "NLP"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "quantizing-models-bitsandbytes",
-        "gptq",
-        "hqq-quantization",
-        "serving-llms-vllm"
       ]
     },
     {
@@ -3572,10 +2379,7 @@
       },
       "owner": "Orchestra Research",
       "relatedSkills": [
-        "awq-quantization",
-        "gptq",
-        "optimizing-attention-flash",
-        "hqq-quantization"
+        "optimizing-attention-flash"
       ]
     },
     {
@@ -3621,148 +2425,7 @@
       "owner": "Orchestra Research",
       "relatedSkills": [
         "quantizing-models-bitsandbytes",
-        "lambda-labs-gpu-cloud",
-        "gguf-quantization",
-        "awq-quantization"
-      ]
-    },
-    {
-      "name": "gguf-quantization",
-      "primaryIntent": "deployment",
-      "intents": [
-        "deployment",
-        "training"
-      ],
-      "capabilities": [
-        "inference-serving",
-        "infrastructure-ops"
-      ],
-      "domains": [
-        "general"
-      ],
-      "keywords": [
-        "gguf",
-        "quantization",
-        "llama.cpp",
-        "cpu inference",
-        "apple silicon",
-        "model compression",
-        "optimization",
-        "gguf-quantization",
-        "inference-serving",
-        "infrastructure-ops",
-        "format",
-        "llama"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "GGUF format and llama.cpp quantization for efficient CPU/GPU inference. Use when deploying models on consumer hardware, Apple Silicon, or when needing flexible quantization from 2-8 bit without GPU requirements.",
-      "legacy": {
-        "dirPath": "optimization/gguf",
-        "skillFile": "skills/optimization/gguf/SKILL.md",
-        "topLevelGroup": "Optimization",
-        "collection": "Optimization",
-        "domain": "General"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "llama-cpp",
-        "optimizing-attention-flash",
-        "awq-quantization",
-        "quantizing-models-bitsandbytes"
-      ]
-    },
-    {
-      "name": "gptq",
-      "primaryIntent": "deployment",
-      "intents": [
-        "deployment",
-        "training"
-      ],
-      "capabilities": [
-        "inference-serving",
-        "training-tuning"
-      ],
-      "domains": [
-        "cs-ai"
-      ],
-      "keywords": [
-        "optimization",
-        "gptq",
-        "quantization",
-        "4-bit",
-        "post-training",
-        "memory optimization",
-        "consumer gpus",
-        "fast inference",
-        "qlora",
-        "group-wise quantization",
-        "inference & optimization",
-        "inference-serving"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Post-training 4-bit quantization for LLMs with minimal accuracy loss. Use for deploying large models (70B, 405B) on consumer GPUs, when you need 4× memory reduction with <2% perplexity degradation, or for faster inference (3-4× speedup) vs...",
-      "legacy": {
-        "dirPath": "optimization/gptq",
-        "skillFile": "skills/optimization/gptq/SKILL.md",
-        "topLevelGroup": "Optimization",
-        "collection": "Inference & Optimization",
-        "domain": "cs"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "quantizing-models-bitsandbytes",
-        "awq-quantization",
-        "hqq-quantization",
-        "optimizing-attention-flash"
-      ]
-    },
-    {
-      "name": "hqq-quantization",
-      "primaryIntent": "deployment",
-      "intents": [
-        "deployment",
-        "training"
-      ],
-      "capabilities": [
-        "inference-serving",
-        "data-processing"
-      ],
-      "domains": [
-        "cs-ai",
-        "nlp"
-      ],
-      "keywords": [
-        "quantization",
-        "hqq",
-        "optimization",
-        "memory efficiency",
-        "inference",
-        "model compression",
-        "hqq-quantization",
-        "inference-serving",
-        "data-processing",
-        "cs-ai",
-        "nlp",
-        "half"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Half-Quadratic Quantization for LLMs without calibration data. Use when quantizing models to 4/3/2-bit precision without needing calibration datasets, for fast quantization workflows, or when deploying with vLLM or HuggingFace Transformers.",
-      "legacy": {
-        "dirPath": "optimization/hqq",
-        "skillFile": "skills/optimization/hqq/SKILL.md",
-        "topLevelGroup": "Optimization",
-        "collection": "Optimization",
-        "domain": "NLP"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "awq-quantization",
-        "quantizing-models-bitsandbytes",
-        "outlines",
-        "gptq"
+        "skypilot-multi-cloud-orchestration"
       ]
     },
     {
@@ -3802,53 +2465,8 @@
         "domain": "cs"
       },
       "relatedSkills": [
-        "paper-finder",
         "paper-image-extractor",
-        "academic-researcher",
-        "research-news"
-      ]
-    },
-    {
-      "name": "paper-finder",
-      "primaryIntent": "research",
-      "intents": [
-        "research"
-      ],
-      "capabilities": [
-        "search-retrieval"
-      ],
-      "domains": [
-        "cs-ai"
-      ],
-      "keywords": [
-        "paper-finder",
-        "paper search",
-        "search-retrieval",
-        "cs-ai",
-        "paper",
-        "finder",
-        "search",
-        "existing",
-        "notes",
-        "by",
-        "title",
-        "author"
-      ],
-      "source": "imported",
-      "status": "verified",
-      "summary": "Search existing paper notes by title, author, keyword, or research domain",
-      "legacy": {
-        "dirPath": "paper-finder",
-        "skillFile": "skills/paper-finder/SKILL.md",
-        "topLevelGroup": "Standalone",
-        "collection": "Paper Search",
-        "domain": "cs"
-      },
-      "relatedSkills": [
-        "academic-researcher",
-        "research-news",
-        "biorxiv-database",
-        "gemini-deep-research"
+        "academic-researcher"
       ]
     },
     {
@@ -3890,100 +2508,8 @@
       },
       "relatedSkills": [
         "paper-analyzer",
-        "paper-finder",
         "sentence-transformers",
         "academic-researcher"
-      ]
-    },
-    {
-      "name": "grpo-rl-training",
-      "primaryIntent": "training",
-      "intents": [
-        "training",
-        "evaluation"
-      ],
-      "capabilities": [
-        "training-tuning"
-      ],
-      "domains": [
-        "cs-ai"
-      ],
-      "keywords": [
-        "post-training",
-        "reinforcement learning",
-        "grpo",
-        "trl",
-        "rlhf",
-        "reward modeling",
-        "reasoning",
-        "dpo",
-        "ppo",
-        "structured output",
-        "grpo-rl-training",
-        "training & tuning"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Expert guidance for GRPO/RL fine-tuning with TRL for reasoning and task-specific model training",
-      "legacy": {
-        "dirPath": "post-training/grpo-rl-training",
-        "skillFile": "skills/post-training/grpo-rl-training/SKILL.md",
-        "topLevelGroup": "Post-Training",
-        "collection": "Training & Tuning",
-        "domain": "cs"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "verl-rl-training",
-        "fine-tuning-with-trl",
-        "openrlhf-training",
-        "slime-rl-training"
-      ]
-    },
-    {
-      "name": "miles-rl-training",
-      "primaryIntent": "training",
-      "intents": [
-        "training",
-        "evaluation"
-      ],
-      "capabilities": [
-        "training-tuning",
-        "inference-serving"
-      ],
-      "domains": [
-        "general"
-      ],
-      "keywords": [
-        "reinforcement learning",
-        "moe",
-        "fp8",
-        "int4",
-        "enterprise",
-        "sglang",
-        "megatron-lm",
-        "miles-rl-training",
-        "miles",
-        "post-training",
-        "training-tuning",
-        "inference-serving"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Provides guidance for enterprise-grade RL training using miles, a production-ready fork of slime. Use when training large MoE models with FP8/INT4, needing train-inference alignment, or requiring speculative RL for maximum throughput.",
-      "legacy": {
-        "dirPath": "post-training/miles",
-        "skillFile": "skills/post-training/miles/SKILL.md",
-        "topLevelGroup": "Post-Training",
-        "collection": "Post-Training",
-        "domain": "General"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "slime-rl-training",
-        "openrlhf-training",
-        "torchforge-rl-training",
-        "fine-tuning-with-trl"
       ]
     },
     {
@@ -4028,150 +2554,7 @@
       },
       "owner": "Orchestra Research",
       "relatedSkills": [
-        "slime-rl-training",
         "verl-rl-training",
-        "fine-tuning-with-trl",
-        "grpo-rl-training"
-      ]
-    },
-    {
-      "name": "simpo-training",
-      "primaryIntent": "training",
-      "intents": [
-        "training",
-        "evaluation"
-      ],
-      "capabilities": [
-        "training-tuning",
-        "search-retrieval"
-      ],
-      "domains": [
-        "cs-ai",
-        "nlp"
-      ],
-      "keywords": [
-        "post-training",
-        "simpo",
-        "preference optimization",
-        "alignment",
-        "dpo alternative",
-        "reference-free",
-        "llm alignment",
-        "efficient training",
-        "simpo-training",
-        "training-tuning",
-        "search-retrieval",
-        "cs-ai"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Simple Preference Optimization for LLM alignment. Reference-free alternative to DPO with better performance (+6.4 points on AlpacaEval 2.0). No reference model needed, more efficient than DPO. Use for preference alignment when want simpler...",
-      "legacy": {
-        "dirPath": "post-training/simpo",
-        "skillFile": "skills/post-training/simpo/SKILL.md",
-        "topLevelGroup": "Post-Training",
-        "collection": "Post-Training",
-        "domain": "NLP"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "fine-tuning-with-trl",
-        "openrlhf-training",
-        "slime-rl-training",
-        "verl-rl-training"
-      ]
-    },
-    {
-      "name": "slime-rl-training",
-      "primaryIntent": "training",
-      "intents": [
-        "training",
-        "evaluation"
-      ],
-      "capabilities": [
-        "training-tuning",
-        "data-processing",
-        "inference-serving"
-      ],
-      "domains": [
-        "cs-ai",
-        "nlp"
-      ],
-      "keywords": [
-        "reinforcement learning",
-        "megatron-lm",
-        "sglang",
-        "grpo",
-        "post-training",
-        "glm",
-        "slime-rl-training",
-        "slime",
-        "training-tuning",
-        "data-processing",
-        "inference-serving",
-        "cs-ai"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Provides guidance for LLM post-training with RL using slime, a Megatron+SGLang framework. Use when training GLM models, implementing custom data generation workflows, or needing tight Megatron-LM integration for RL scaling.",
-      "legacy": {
-        "dirPath": "post-training/slime",
-        "skillFile": "skills/post-training/slime/SKILL.md",
-        "topLevelGroup": "Post-Training",
-        "collection": "Post-Training",
-        "domain": "NLP"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "openrlhf-training",
-        "verl-rl-training",
-        "fine-tuning-with-trl",
-        "grpo-rl-training"
-      ]
-    },
-    {
-      "name": "torchforge-rl-training",
-      "primaryIntent": "training",
-      "intents": [
-        "training",
-        "evaluation"
-      ],
-      "capabilities": [
-        "training-tuning",
-        "infrastructure-ops"
-      ],
-      "domains": [
-        "general"
-      ],
-      "keywords": [
-        "reinforcement learning",
-        "pytorch",
-        "grpo",
-        "sft",
-        "monarch",
-        "torchtitan",
-        "meta",
-        "torchforge-rl-training",
-        "torchforge",
-        "post-training",
-        "training-tuning",
-        "infrastructure-ops"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Provides guidance for PyTorch-native agentic RL using torchforge, Meta's library separating infra from algorithms. Use when you want clean RL abstractions, easy algorithm experimentation, or scalable training with Monarch and TorchTitan.",
-      "legacy": {
-        "dirPath": "post-training/torchforge",
-        "skillFile": "skills/post-training/torchforge/SKILL.md",
-        "topLevelGroup": "Post-Training",
-        "collection": "Post-Training",
-        "domain": "General"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "openrlhf-training",
-        "huggingface-accelerate",
-        "miles-rl-training",
         "fine-tuning-with-trl"
       ]
     },
@@ -4215,9 +2598,7 @@
       },
       "owner": "Orchestra Research",
       "relatedSkills": [
-        "slime-rl-training",
         "verl-rl-training",
-        "grpo-rl-training",
         "openrlhf-training"
       ]
     },
@@ -4262,9 +2643,7 @@
       "owner": "Orchestra Research",
       "relatedSkills": [
         "openrlhf-training",
-        "slime-rl-training",
-        "fine-tuning-with-trl",
-        "grpo-rl-training"
+        "fine-tuning-with-trl"
       ]
     },
     {
@@ -4307,198 +2686,7 @@
       },
       "owner": "Orchestra Research",
       "relatedSkills": [
-        "guidance",
-        "instructor",
-        "outlines",
-        "chroma"
-      ]
-    },
-    {
-      "name": "guidance",
-      "primaryIntent": "deployment",
-      "intents": [
-        "deployment"
-      ],
-      "capabilities": [
-        "prompt-structured-output",
-        "data-processing"
-      ],
-      "domains": [
-        "cs-ai",
-        "nlp"
-      ],
-      "keywords": [
-        "prompt engineering",
-        "guidance",
-        "constrained generation",
-        "structured output",
-        "json validation",
-        "grammar",
-        "microsoft research",
-        "format enforcement",
-        "multi-step workflows",
-        "data & applications",
-        "prompt-structured-output",
-        "data-processing"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Control LLM output with regex and grammars, guarantee valid JSON/XML/code generation, enforce structured formats, and build multi-step workflows with Guidance - Microsoft Research's constrained generation framework",
-      "legacy": {
-        "dirPath": "prompt-engineering/guidance",
-        "skillFile": "skills/prompt-engineering/guidance/SKILL.md",
-        "topLevelGroup": "Prompt Engineering",
-        "collection": "Data & Applications",
-        "domain": "cs"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "instructor",
-        "dspy",
-        "outlines",
-        "chroma"
-      ]
-    },
-    {
-      "name": "instructor",
-      "primaryIntent": "deployment",
-      "intents": [
-        "deployment"
-      ],
-      "capabilities": [
-        "prompt-structured-output",
-        "data-processing",
-        "safety-alignment"
-      ],
-      "domains": [
-        "cs-ai",
-        "nlp"
-      ],
-      "keywords": [
-        "prompt engineering",
-        "instructor",
-        "structured output",
-        "pydantic",
-        "data extraction",
-        "json parsing",
-        "type safety",
-        "validation",
-        "streaming",
-        "openai",
-        "anthropic",
-        "data & applications"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Extract structured data from LLM responses with Pydantic validation, retry failed extractions automatically, parse complex JSON with type safety, and stream partial results with Instructor - battle-tested structured output library",
-      "legacy": {
-        "dirPath": "prompt-engineering/instructor",
-        "skillFile": "skills/prompt-engineering/instructor/SKILL.md",
-        "topLevelGroup": "Prompt Engineering",
-        "collection": "Data & Applications",
-        "domain": "cs"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "guidance",
-        "outlines",
-        "dspy",
-        "chroma"
-      ]
-    },
-    {
-      "name": "outlines",
-      "primaryIntent": "deployment",
-      "intents": [
-        "deployment"
-      ],
-      "capabilities": [
-        "prompt-structured-output",
-        "data-processing",
-        "inference-serving"
-      ],
-      "domains": [
-        "cs-ai",
-        "nlp"
-      ],
-      "keywords": [
-        "prompt engineering",
-        "outlines",
-        "structured generation",
-        "json schema",
-        "pydantic",
-        "local models",
-        "grammar-based generation",
-        "vllm",
-        "transformers",
-        "type safety",
-        "data & applications",
-        "prompt-structured-output"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Guarantee valid JSON/XML/code structure during generation, use Pydantic models for type-safe outputs, support local models (Transformers, vLLM), and maximize inference speed with Outlines - dottxt.ai's structured generation library",
-      "legacy": {
-        "dirPath": "prompt-engineering/outlines",
-        "skillFile": "skills/prompt-engineering/outlines/SKILL.md",
-        "topLevelGroup": "Prompt Engineering",
-        "collection": "Data & Applications",
-        "domain": "cs"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "instructor",
-        "dspy",
-        "guidance",
-        "hqq-quantization"
-      ]
-    },
-    {
-      "name": "chroma",
-      "primaryIntent": "deployment",
-      "intents": [
-        "deployment",
-        "research"
-      ],
-      "capabilities": [
-        "search-retrieval",
-        "data-processing"
-      ],
-      "domains": [
-        "cs-ai",
-        "nlp",
-        "data-engineering"
-      ],
-      "keywords": [
-        "rag",
-        "chroma",
-        "vector database",
-        "embeddings",
-        "semantic search",
-        "open source",
-        "self-hosted",
-        "document retrieval",
-        "metadata filtering",
-        "data & applications",
-        "search-retrieval",
-        "data-processing"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Open-source embedding database for AI applications. Store embeddings and metadata, perform vector and full-text search, filter by metadata. Simple 4-function API. Scales from notebooks to production clusters. Use for semantic search, RAG a...",
-      "legacy": {
-        "dirPath": "rag/chroma",
-        "skillFile": "skills/rag/chroma/SKILL.md",
-        "topLevelGroup": "RAG",
-        "collection": "Data & Applications",
-        "domain": "cs"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "pinecone",
-        "sentence-transformers",
-        "faiss",
-        "qdrant-vector-search"
+        "faiss"
       ]
     },
     {
@@ -4543,103 +2731,6 @@
       },
       "owner": "Orchestra Research",
       "relatedSkills": [
-        "pinecone",
-        "chroma",
-        "sentence-transformers",
-        "qdrant-vector-search"
-      ]
-    },
-    {
-      "name": "pinecone",
-      "primaryIntent": "deployment",
-      "intents": [
-        "deployment",
-        "research"
-      ],
-      "capabilities": [
-        "search-retrieval",
-        "data-processing",
-        "infrastructure-ops"
-      ],
-      "domains": [
-        "cs-ai",
-        "data-engineering"
-      ],
-      "keywords": [
-        "rag",
-        "pinecone",
-        "vector database",
-        "managed service",
-        "serverless",
-        "hybrid search",
-        "production",
-        "auto-scaling",
-        "low latency",
-        "recommendations",
-        "data & applications",
-        "search-retrieval"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Managed vector database for production AI applications. Fully managed, auto-scaling, with hybrid search (dense + sparse), metadata filtering, and namespaces. Low latency (<100ms p95). Use for production RAG, recommendation systems, or sema...",
-      "legacy": {
-        "dirPath": "rag/pinecone",
-        "skillFile": "skills/rag/pinecone/SKILL.md",
-        "topLevelGroup": "RAG",
-        "collection": "Data & Applications",
-        "domain": "cs"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "faiss",
-        "chroma",
-        "sentence-transformers",
-        "langchain"
-      ]
-    },
-    {
-      "name": "qdrant-vector-search",
-      "primaryIntent": "deployment",
-      "intents": [
-        "deployment",
-        "research"
-      ],
-      "capabilities": [
-        "search-retrieval"
-      ],
-      "domains": [
-        "general",
-        "data-engineering"
-      ],
-      "keywords": [
-        "rag",
-        "vector search",
-        "qdrant",
-        "semantic search",
-        "embeddings",
-        "similarity search",
-        "hnsw",
-        "production",
-        "distributed",
-        "qdrant-vector-search",
-        "search-retrieval",
-        "data-engineering"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "High-performance vector similarity search engine for RAG and semantic search. Use when building production RAG systems requiring fast nearest neighbor search, hybrid search with filtering, or scalable vector storage with Rust-powered perfo...",
-      "legacy": {
-        "dirPath": "rag/qdrant",
-        "skillFile": "skills/rag/qdrant/SKILL.md",
-        "topLevelGroup": "RAG",
-        "collection": "RAG",
-        "domain": "General"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "chroma",
-        "faiss",
-        "pinecone",
         "sentence-transformers"
       ]
     },
@@ -4686,144 +2777,8 @@
       },
       "owner": "Orchestra Research",
       "relatedSkills": [
-        "chroma",
         "faiss",
-        "pinecone",
-        "blip-2-vision-language"
-      ]
-    },
-    {
-      "name": "brainstorming-research-ideas",
-      "primaryIntent": "ideation",
-      "intents": [
-        "ideation",
-        "research"
-      ],
-      "capabilities": [
-        "research-planning"
-      ],
-      "domains": [
-        "cs-ai"
-      ],
-      "keywords": [
-        "research ideation",
-        "brainstorming",
-        "problem discovery",
-        "creative thinking",
-        "research strategy",
-        "brainstorming-research-ideas",
-        "model & research",
-        "research-planning",
-        "cs-ai",
-        "research",
-        "ideas",
-        "guides"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Guides researchers through structured ideation frameworks to discover high-impact research directions. Use when exploring new problem spaces, pivoting between projects, or seeking novel angles on existing work.",
-      "legacy": {
-        "dirPath": "research-ideation/brainstorming-research-ideas",
-        "skillFile": "skills/research-ideation/brainstorming-research-ideas/SKILL.md",
-        "topLevelGroup": "Research Ideation",
-        "collection": "Model & Research",
-        "domain": "cs"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "creative-thinking-for-research",
-        "inno-idea-generation",
-        "inno-idea-eval",
-        "inno-grant-proposal"
-      ]
-    },
-    {
-      "name": "creative-thinking-for-research",
-      "primaryIntent": "ideation",
-      "intents": [
-        "ideation",
-        "research"
-      ],
-      "capabilities": [
-        "research-planning"
-      ],
-      "domains": [
-        "cs-ai"
-      ],
-      "keywords": [
-        "creative thinking",
-        "research ideation",
-        "analogical reasoning",
-        "problem reformulation",
-        "cognitive science",
-        "creative-thinking-for-research",
-        "model & research",
-        "research-planning",
-        "cs-ai",
-        "creative",
-        "thinking",
-        "research"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Applies cognitive science frameworks for creative thinking to CS and AI research ideation. Use when seeking genuinely novel research directions by leveraging combinatorial creativity, analogical reasoning, constraint manipulation, and othe...",
-      "legacy": {
-        "dirPath": "research-ideation/creative-thinking-for-research",
-        "skillFile": "skills/research-ideation/creative-thinking-for-research/SKILL.md",
-        "topLevelGroup": "Research Ideation",
-        "collection": "Model & Research",
-        "domain": "cs"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "brainstorming-research-ideas",
-        "inno-idea-generation",
-        "inno-idea-eval",
-        "inno-grant-proposal"
-      ]
-    },
-    {
-      "name": "research-news",
-      "primaryIntent": "research",
-      "intents": [
-        "research"
-      ],
-      "capabilities": [
-        "agent-workflow",
-        "search-retrieval"
-      ],
-      "domains": [
-        "cs-ai"
-      ],
-      "keywords": [
-        "research-news",
-        "paper discovery",
-        "agent-workflow",
-        "search-retrieval",
-        "cs-ai",
-        "research",
-        "news",
-        "daily",
-        "paper",
-        "recommendation",
-        "workflow",
-        "search"
-      ],
-      "source": "imported",
-      "status": "verified",
-      "summary": "Daily paper recommendation workflow — search arXiv and Semantic Scholar, score and recommend papers",
-      "legacy": {
-        "dirPath": "research-news",
-        "skillFile": "skills/research-news/SKILL.md",
-        "topLevelGroup": "Standalone",
-        "collection": "Paper Discovery",
-        "domain": "cs"
-      },
-      "relatedSkills": [
-        "gemini-deep-research",
-        "academic-researcher",
-        "paper-finder",
-        "inno-deep-research"
+        "llava"
       ]
     },
     {
@@ -4866,145 +2821,8 @@
       },
       "owner": "Orchestra Research",
       "relatedSkills": [
-        "nemo-evaluator-sdk",
-        "langsmith-observability",
-        "phoenix-observability",
+        "evaluating-llms-harness",
         "evaluating-code-models"
-      ]
-    },
-    {
-      "name": "llamaguard",
-      "primaryIntent": "deployment",
-      "intents": [
-        "deployment",
-        "evaluation"
-      ],
-      "capabilities": [
-        "safety-alignment"
-      ],
-      "domains": [
-        "cs-ai"
-      ],
-      "keywords": [
-        "safety alignment",
-        "llamaguard",
-        "content moderation",
-        "meta",
-        "guardrails",
-        "safety classification",
-        "input filtering",
-        "output filtering",
-        "ai safety",
-        "evaluation & safety",
-        "safety & alignment",
-        "safety-alignment"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Meta's 7-8B specialized moderation model for LLM input/output filtering. 6 safety categories - violence/hate, sexual content, weapons, substances, self-harm, criminal planning. 94-95% accuracy. Deploy with vLLM, HuggingFace, Sagemaker. Int...",
-      "legacy": {
-        "dirPath": "safety-alignment/llamaguard",
-        "skillFile": "skills/safety-alignment/llamaguard/SKILL.md",
-        "topLevelGroup": "Safety & Alignment",
-        "collection": "Evaluation & Safety",
-        "domain": "cs"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "nemo-guardrails",
-        "prompt-guard",
-        "instructor",
-        "constitutional-ai"
-      ]
-    },
-    {
-      "name": "nemo-guardrails",
-      "primaryIntent": "deployment",
-      "intents": [
-        "deployment",
-        "evaluation"
-      ],
-      "capabilities": [
-        "safety-alignment"
-      ],
-      "domains": [
-        "cs-ai"
-      ],
-      "keywords": [
-        "safety alignment",
-        "nemo guardrails",
-        "nvidia",
-        "jailbreak detection",
-        "guardrails",
-        "colang",
-        "runtime safety",
-        "hallucination detection",
-        "pii filtering",
-        "production",
-        "nemo-guardrails",
-        "evaluation & safety"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "NVIDIA's runtime safety framework for LLM applications. Features jailbreak detection, input/output validation, fact-checking, hallucination detection, PII filtering, toxicity detection. Uses Colang 2.0 DSL for programmable rails. Productio...",
-      "legacy": {
-        "dirPath": "safety-alignment/nemo-guardrails",
-        "skillFile": "skills/safety-alignment/nemo-guardrails/SKILL.md",
-        "topLevelGroup": "Safety & Alignment",
-        "collection": "Evaluation & Safety",
-        "domain": "cs"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "llamaguard",
-        "prompt-guard",
-        "instructor",
-        "tensorrt-llm"
-      ]
-    },
-    {
-      "name": "prompt-guard",
-      "primaryIntent": "deployment",
-      "intents": [
-        "deployment",
-        "evaluation"
-      ],
-      "capabilities": [
-        "safety-alignment"
-      ],
-      "domains": [
-        "cs-ai"
-      ],
-      "keywords": [
-        "safety alignment",
-        "prompt injection",
-        "jailbreak detection",
-        "meta",
-        "input validation",
-        "security",
-        "content filtering",
-        "multilingual",
-        "prompt-guard",
-        "evaluation & safety",
-        "safety & alignment",
-        "safety-alignment"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Meta's 86M prompt injection and jailbreak detector. Filters malicious prompts and third-party data for LLM apps. 99%+ TPR, <1% FPR. Fast (<2ms GPU). Multilingual (8 languages). Deploy with HuggingFace or batch processing for RAG security.",
-      "legacy": {
-        "dirPath": "safety-alignment/prompt-guard",
-        "skillFile": "skills/safety-alignment/prompt-guard/SKILL.md",
-        "topLevelGroup": "Safety & Alignment",
-        "collection": "Evaluation & Safety",
-        "domain": "cs"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "llamaguard",
-        "nemo-guardrails",
-        "instructor",
-        "constitutional-ai"
       ]
     },
     {
@@ -5026,17 +2844,17 @@
         "visualization-reporting",
         "scientific",
         "writing",
-        "core",
-        "deep",
-        "research",
-        "tool",
         "write",
+        "journal",
         "manuscripts",
-        "full"
+        "full",
+        "paragraphs",
+        "never",
+        "bullet"
       ],
       "source": "imported",
       "status": "verified",
-      "summary": "Core skill for the deep research and writing tool. Write scientific manuscripts in full paragraphs (never bullet points). Use two-stage process: (1) create section outlines with key points using research-lookup, (2) convert to flowing pros...",
+      "summary": "Write scientific journal manuscripts in full paragraphs (never bullet points). Use a two-stage process: (1) create section outlines with key points from the literature you have gathered, (2) convert to flowing prose. IMRAD structure, citat...",
       "legacy": {
         "dirPath": "scientific-writing",
         "skillFile": "skills/scientific-writing/SKILL.md",
@@ -5045,7 +2863,7 @@
         "domain": "cs"
       },
       "relatedSkills": [
-        "inno-paper-writing",
+        "ml-paper-writing",
         "inno-grant-proposal",
         "inno-figure-gen",
         "inno-humanizer"
@@ -5092,57 +2910,8 @@
       },
       "owner": "Orchestra Research",
       "relatedSkills": [
-        "sentencepiece",
         "nemo-curator",
-        "ray-data",
-        "slime-rl-training"
-      ]
-    },
-    {
-      "name": "sentencepiece",
-      "primaryIntent": "data",
-      "intents": [
-        "data",
-        "training"
-      ],
-      "capabilities": [
-        "data-processing",
-        "training-tuning"
-      ],
-      "domains": [
-        "cs-ai",
-        "nlp"
-      ],
-      "keywords": [
-        "tokenization",
-        "sentencepiece",
-        "language-independent",
-        "bpe",
-        "unigram",
-        "multilingual",
-        "cjk languages",
-        "unicode",
-        "deterministic",
-        "google",
-        "data & applications",
-        "data-processing"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Language-independent tokenizer treating text as raw Unicode. Supports BPE and Unigram algorithms. Fast (50k sentences/sec), lightweight (6MB memory), deterministic vocabulary. Used by T5, ALBERT, XLNet, mBART. Train on raw text without pre...",
-      "legacy": {
-        "dirPath": "tokenization/sentencepiece",
-        "skillFile": "skills/tokenization/sentencepiece/SKILL.md",
-        "topLevelGroup": "Tokenization",
-        "collection": "Data & Applications",
-        "domain": "cs"
-      },
-      "owner": "Orchestra Research",
-      "relatedSkills": [
-        "huggingface-tokenizers",
-        "nemo-curator",
-        "ray-data",
-        "slime-rl-training"
+        "ray-data"
       ]
     },
     {
@@ -5186,8 +2955,7 @@
       "relatedSkills": [
         "aris-research-pipeline",
         "aris-auto-review-loop",
-        "aris-run-experiment",
-        "aris-system-profile"
+        "aris-run-experiment"
       ]
     },
     {
@@ -5278,8 +3046,7 @@
       "relatedSkills": [
         "aris-run-experiment",
         "aris-experiment-bridge",
-        "aris-monitor-experiment",
-        "aris-system-profile"
+        "aris-monitor-experiment"
       ]
     },
     {
@@ -5323,7 +3090,7 @@
         "aris-experiment-plan",
         "aris-vast-gpu",
         "aris-serverless-modal",
-        "aris-analyze-results"
+        "inno-experiment-analysis"
       ]
     },
     {
@@ -5752,47 +3519,6 @@
       ]
     },
     {
-      "name": "aris-analyze-results",
-      "primaryIntent": "experiment",
-      "intents": [
-        "experiment",
-        "evaluation"
-      ],
-      "capabilities": [
-        "data-processing",
-        "visualization-reporting"
-      ],
-      "domains": [
-        "cs-ai"
-      ],
-      "keywords": [
-        "aris",
-        "analyze",
-        "results",
-        "statistical",
-        "testing",
-        "insights",
-        "experiment",
-        "analysis"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Experiment result analysis with statistical testing and structured insights generation.",
-      "legacy": {
-        "dirPath": "aris-analyze-results",
-        "skillFile": "skills/aris-analyze-results/SKILL.md",
-        "topLevelGroup": "ARIS",
-        "collection": "ARIS Research Pipeline"
-      },
-      "owner": "wanshuiyin/ARIS",
-      "relatedSkills": [
-        "aris-experiment-bridge",
-        "aris-run-experiment",
-        "aris-result-to-claim",
-        "aris-paper-figure"
-      ]
-    },
-    {
       "name": "aris-run-experiment",
       "primaryIntent": "experiment",
       "intents": [
@@ -5910,7 +3636,7 @@
       },
       "owner": "wanshuiyin/ARIS",
       "relatedSkills": [
-        "aris-analyze-results",
+        "inno-experiment-analysis",
         "aris-paper-plan",
         "aris-paper-writing",
         "aris-auto-review-loop"
@@ -6037,7 +3763,7 @@
         "aris-paper-writing",
         "aris-paper-write",
         "aris-paper-illustration",
-        "aris-analyze-results"
+        "inno-experiment-analysis"
       ]
     },
     {
@@ -6157,8 +3883,7 @@
       "relatedSkills": [
         "aris-paper-figure",
         "aris-paper-writing",
-        "aris-mermaid-diagram",
-        "aris-pixel-art"
+        "aris-mermaid-diagram"
       ]
     },
     {
@@ -6351,7 +4076,7 @@
       "relatedSkills": [
         "aris-research-lit",
         "aris-idea-discovery",
-        "aris-analyze-results"
+        "inno-experiment-analysis"
       ]
     },
     {
@@ -6390,8 +4115,7 @@
       "owner": "wanshuiyin/ARIS",
       "relatedSkills": [
         "aris-run-experiment",
-        "aris-training-check",
-        "aris-system-profile"
+        "aris-training-check"
       ]
     },
     {
@@ -6511,46 +4235,6 @@
       ]
     },
     {
-      "name": "aris-system-profile",
-      "primaryIntent": "experiment",
-      "intents": [
-        "experiment"
-      ],
-      "capabilities": [
-        "infrastructure-ops"
-      ],
-      "domains": [
-        "cs-ai"
-      ],
-      "keywords": [
-        "aris",
-        "system",
-        "profile",
-        "performance",
-        "cpu",
-        "memory",
-        "gpu",
-        "interconnect",
-        "analysis",
-        "profiling"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Performance profiling: CPU, memory, GPU, interconnect analysis with structured reports.",
-      "legacy": {
-        "dirPath": "aris-system-profile",
-        "skillFile": "skills/aris-system-profile/SKILL.md",
-        "topLevelGroup": "ARIS",
-        "collection": "ARIS Research Pipeline"
-      },
-      "owner": "wanshuiyin/ARIS",
-      "relatedSkills": [
-        "aris-infra",
-        "aris-run-experiment",
-        "aris-monitor-experiment"
-      ]
-    },
-    {
       "name": "aris-training-check",
       "primaryIntent": "experiment",
       "intents": [
@@ -6587,8 +4271,7 @@
       "owner": "wanshuiyin/ARIS",
       "relatedSkills": [
         "aris-monitor-experiment",
-        "aris-run-experiment",
-        "aris-system-profile"
+        "aris-run-experiment"
       ]
     },
     {
@@ -6714,45 +4397,6 @@
       ]
     },
     {
-      "name": "aris-comm-lit-review",
-      "primaryIntent": "research",
-      "intents": [
-        "research"
-      ],
-      "capabilities": [
-        "search-retrieval"
-      ],
-      "domains": [
-        "cs-ai"
-      ],
-      "keywords": [
-        "aris",
-        "communications",
-        "literature",
-        "review",
-        "venue",
-        "priority",
-        "tiers",
-        "wireless",
-        "networking"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Communications-domain literature review with venue priority tiers for wireless/networking.",
-      "legacy": {
-        "dirPath": "aris-comm-lit-review",
-        "skillFile": "skills/aris-comm-lit-review/SKILL.md",
-        "topLevelGroup": "ARIS",
-        "collection": "ARIS Research Pipeline"
-      },
-      "owner": "wanshuiyin/ARIS",
-      "relatedSkills": [
-        "aris-research-lit",
-        "aris-arxiv",
-        "aris-semantic-scholar"
-      ]
-    },
-    {
       "name": "aris-dse-loop",
       "primaryIntent": "experiment",
       "intents": [
@@ -6790,7 +4434,7 @@
       "relatedSkills": [
         "aris-experiment-bridge",
         "aris-experiment-plan",
-        "aris-analyze-results"
+        "inno-experiment-analysis"
       ]
     },
     {
@@ -6833,46 +4477,6 @@
       ]
     },
     {
-      "name": "aris-grant-proposal",
-      "primaryIntent": "writing",
-      "intents": [
-        "writing"
-      ],
-      "capabilities": [
-        "agent-workflow"
-      ],
-      "domains": [
-        "cs-ai"
-      ],
-      "keywords": [
-        "aris",
-        "grant",
-        "proposal",
-        "kakenhi",
-        "nsf",
-        "nsfc",
-        "erc",
-        "dfg",
-        "funding",
-        "generic"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Full grant proposal pipeline supporting KAKENHI, NSF, NSFC, ERC, DFG, and generic formats.",
-      "legacy": {
-        "dirPath": "aris-grant-proposal",
-        "skillFile": "skills/aris-grant-proposal/SKILL.md",
-        "topLevelGroup": "ARIS",
-        "collection": "ARIS Research Pipeline"
-      },
-      "owner": "wanshuiyin/ARIS",
-      "relatedSkills": [
-        "aris-paper-writing",
-        "aris-research-pipeline",
-        "aris-paper-plan"
-      ]
-    },
-    {
       "name": "aris-mermaid-diagram",
       "primaryIntent": "writing",
       "intents": [
@@ -6908,8 +4512,7 @@
       "owner": "wanshuiyin/ARIS",
       "relatedSkills": [
         "aris-paper-illustration",
-        "aris-paper-figure",
-        "aris-pixel-art"
+        "aris-paper-figure"
       ]
     },
     {
@@ -6949,43 +4552,6 @@
         "aris-formula-derivation",
         "aris-paper-write",
         "aris-paper-writing"
-      ]
-    },
-    {
-      "name": "aris-pixel-art",
-      "primaryIntent": "writing",
-      "intents": [
-        "writing"
-      ],
-      "capabilities": [
-        "multimodal"
-      ],
-      "domains": [
-        "cs-ai"
-      ],
-      "keywords": [
-        "aris",
-        "pixel",
-        "art",
-        "svg",
-        "illustrations",
-        "readme",
-        "documentation"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "Pixel art SVG illustrations for READMEs and documentation.",
-      "legacy": {
-        "dirPath": "aris-pixel-art",
-        "skillFile": "skills/aris-pixel-art/SKILL.md",
-        "topLevelGroup": "ARIS",
-        "collection": "ARIS Research Pipeline"
-      },
-      "owner": "wanshuiyin/ARIS",
-      "relatedSkills": [
-        "aris-paper-illustration",
-        "aris-mermaid-diagram",
-        "aris-paper-figure"
       ]
     },
     {
@@ -7429,42 +4995,6 @@
       ]
     },
     {
-      "name": "ds-decision",
-      "primaryIntent": "research",
-      "intents": [
-        "research"
-      ],
-      "capabilities": [
-        "research-planning"
-      ],
-      "domains": [
-        "cs-ai"
-      ],
-      "keywords": [
-        "deepscientist",
-        "decision",
-        "autonomous",
-        "research"
-      ],
-      "source": "imported",
-      "status": "candidate",
-      "summary": "DeepScientist: Explicit go/stop/branch/reuse/write/finalize/reset transitions with evidence.",
-      "legacy": {
-        "dirPath": "ds-decision",
-        "skillFile": "skills/ds-decision/SKILL.md",
-        "topLevelGroup": "DeepScientist",
-        "collection": "DeepScientist"
-      },
-      "owner": "ResearAI/DeepScientist",
-      "relatedSkills": [
-        "ds-scout",
-        "ds-baseline",
-        "ds-idea",
-        "ds-experiment",
-        "ds-analysis-campaign"
-      ]
-    },
-    {
       "name": "ds-intake-audit",
       "primaryIntent": "evaluation",
       "intents": [
@@ -7577,10 +5107,54 @@
       },
       "owner": "yzhao062/agent-style",
       "relatedSkills": [
-        "inno-paper-writing",
+        "ml-paper-writing",
         "scientific-writing",
         "inno-figure-gen",
         "inno-humanizer"
+      ]
+    },
+    {
+      "name": "news-idea-briefing",
+      "primaryIntent": "research",
+      "intents": [
+        "research"
+      ],
+      "capabilities": [
+        "research-planning",
+        "data-processing"
+      ],
+      "domains": [
+        "general"
+      ],
+      "keywords": [
+        "news-idea-briefing",
+        "research-planning",
+        "data-processing",
+        "news",
+        "idea",
+        "briefing",
+        "read",
+        "latest",
+        "feed",
+        "results",
+        "server",
+        "data"
+      ],
+      "source": "imported",
+      "status": "verified",
+      "summary": "Read the latest news feed results (server/data/news-results-*.json), cluster items by topic, and generate grounded research idea seeds with citations. Use when the user wants to turn their daily news into actionable ideation proposals, or...",
+      "legacy": {
+        "dirPath": "news-idea-briefing",
+        "skillFile": "skills/news-idea-briefing/SKILL.md",
+        "topLevelGroup": "Standalone",
+        "collection": "Standalone",
+        "domain": "General"
+      },
+      "relatedSkills": [
+        "autoresearch",
+        "ds-full-pipeline",
+        "inno-pipeline-planner",
+        "inno-prepare-resources"
       ]
     }
   ]

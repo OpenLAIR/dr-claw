@@ -17,7 +17,7 @@ Search topic or arXiv paper ID: $ARGUMENTS
 
 - **PAPER_DIR** - Local directory to save downloaded PDFs. Default: `papers/` in the current project directory.
 - **MAX_RESULTS = 10** - Default number of search results.
-- **FETCH_SCRIPT** - `tools/arxiv_fetch.py` relative to the ARIS install, or the same path relative to the current project. Fall back to inline Python if not found.
+- **FETCH_SCRIPT** - `$ARIS_INFRA/tools/arxiv_fetch.py` (the ARIS helper bundle, located in Step 2). Fall back to inline Python if not found.
 
 > Overrides (append to arguments):
 > - `/aris-arxiv "attention mechanism" - max: 20` - return up to 20 results
@@ -44,17 +44,35 @@ If the argument matches an arXiv ID pattern (`YYMM.NNNNN` or `category/NNNNNNN`)
 Locate the fetch script:
 
 ```bash
-SCRIPT=$(python3 -c "
-import pathlib
-candidates = [
-    pathlib.Path('tools/arxiv_fetch.py'),
-    pathlib.Path.home() / '.claude' / 'skills' / 'arxiv' / 'arxiv_fetch.py',
-]
-for p in candidates:
-    if p.exists():
-        print(p)
-        break
-" 2>/dev/null)
+# Locate the ARIS helper bundle (skills/aris-infra in Dr. Claw; it sits next to
+# this skill's own folder). Non-fatal: the steps below fall back when it is missing.
+ARIS_INFRA="${ARIS_INFRA:-}"
+if [ ! -f "$ARIS_INFRA/tools/research_wiki.py" ]; then
+  ARIS_INFRA=""
+  for candidate in \
+    "${CLAUDE_SKILL_DIR:-/nonexistent}/../aris-infra" \
+    ".claude/skills/aris-infra" \
+    ".agents/skills/library/aris-infra" \
+    "skills/aris-infra" \
+    "${HOME:-/nonexistent}/.claude/skills/aris-infra"; do
+    if [ -f "$candidate/tools/research_wiki.py" ]; then ARIS_INFRA="$candidate"; break; fi
+  done
+fi
+if [ -z "$ARIS_INFRA" ]; then
+  # Project skill links point into the bundled skills folder, so ../aris-infra
+  # resolves through any linked aris-* skill even when aris-infra is not linked.
+  for linked in .claude/skills/aris-* .agents/skills/aris-* .agents/skills/library/aris-* .gemini/skills/aris-*; do
+    if [ -f "$linked/../aris-infra/tools/research_wiki.py" ]; then ARIS_INFRA="$linked/../aris-infra"; break; fi
+  done
+fi
+```
+
+If `ARIS_INFRA` is still empty, it is the `aris-infra` folder beside this skill's
+own folder: set it to that absolute path.
+
+```bash
+SCRIPT="$ARIS_INFRA/tools/arxiv_fetch.py"
+[ -n "$ARIS_INFRA" ] && [ -f "$SCRIPT" ] || SCRIPT=""
 ```
 
 **If SCRIPT is found**, run:

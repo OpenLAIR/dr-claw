@@ -32,7 +32,9 @@ import translations from 'i18next';
 import { api } from '../utils/api';
 import WorkbenchDialog from './ui/WorkbenchDialog';
 import { useDeviceSettings } from '../hooks/useDeviceSettings';
-import { SkillDefaultBadges, SkillDefaultsBar, SkillEnableSwitch } from './skills/SkillDefaultsControls';
+import { SkillDefaultsSummary, SkillEnableSwitch } from './skills/SkillDefaultsControls';
+import SkillCardGrid from './skills/SkillCardGrid';
+import type { CardGroupKey } from './skills/skillCardGroups';
 import { useSkillDefaults } from './skills/useSkillDefaults';
 
 type SkillNode = {
@@ -79,6 +81,9 @@ type SkillSummary = {
   taxonomy: SkillTaxonomyRecord | null;
   /** Shipped with Dr. Claw (listed in skills-catalog-v2.json); read-only in the UI. */
   isBundled: boolean;
+  /** Friendly name and one-line summary (skills/skill-display-names.json), else the raw name and summary. */
+  displayName: string;
+  displaySummary: string;
 };
 
 type FacetOption = {
@@ -977,6 +982,8 @@ function buildExplorerSkills(
       relatedSkillNames: taxonomy?.relatedSkillNames ?? [],
       searchText: compactText([
         skill.name,
+        skill.displayName,
+        skill.displaySummary,
         skill.dirPath,
         skill.summary,
         intentLabel,
@@ -1192,13 +1199,19 @@ export default function SkillsDashboard({ onSendToChat, projects = [] }: SkillsD
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [modalMessage, setModalMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [defaultsProject, setDefaultsProject] = useState<string | null>(null);
-  const [onlyEnabled, setOnlyEnabled] = useState(false);
+  const [enabledFilter, setEnabledFilter] = useState<'all' | 'enabled' | 'disabled'>('all');
   const skillDefaults = useSkillDefaults(defaultsProject);
   const skillDefaultsByName = useMemo(
     () => new Map((skillDefaults.data?.skills ?? []).map((state) => [state.name, state])),
     [skillDefaults.data],
   );
   const skillDefaultsScope = defaultsProject ? 'project' : 'global';
+  const skillGroupLabel = useCallback((key: CardGroupKey) => {
+    if (key === 'core') return t('common:skillDefaults.groupCore');
+    if (key === 'imported') return t('common:skillDefaults.groupImported');
+    if (key === 'other') return t('common:skillDefaults.groupOther');
+    return localizeTaxonomyValue('intent', key.slice('intent:'.length), localeKey);
+  }, [localeKey, t]);
 
   const loadSkills = useCallback(async () => {
     setLoading(true);
@@ -1236,6 +1249,22 @@ export default function SkillsDashboard({ onSendToChat, projects = [] }: SkillsD
       } catch {
         taxonomyMap = new Map<string, SkillTaxonomyRecord>();
         catalogRecordMap = new Map<string, SkillCatalogV2Record>();
+      }
+
+      let displayNames: Record<string, { name?: string; summary?: string }> = {};
+      try {
+        const namesResponse = await api.readGlobalSkillFile('skill-display-names.json');
+        if (namesResponse.ok) {
+          const namesPayload = await namesResponse.json();
+          const parsed = JSON.parse(namesPayload?.content || '{}') as { skills?: Record<string, Record<string, { name?: string; summary?: string }>> };
+          const lang = localeKey === 'zh' ? 'zh' : 'en';
+          for (const [dirName, entry] of Object.entries(parsed.skills ?? {})) {
+            const localized = entry?.[lang] ?? entry?.en;
+            if (localized) displayNames[dirName] = localized;
+          }
+        }
+      } catch {
+        displayNames = {};
       }
 
       const treeResponse = await api.getGlobalSkills();
@@ -1327,6 +1356,8 @@ export default function SkillsDashboard({ onSendToChat, projects = [] }: SkillsD
             hasSkillMd,
             taxonomy,
             isBundled: catalogRecordMap.has(dirPath),
+            displayName: displayNames[skillName]?.name || skillName,
+            displaySummary: displayNames[skillName]?.summary || summary,
           };
         })
       );
@@ -1603,10 +1634,13 @@ export default function SkillsDashboard({ onSendToChat, projects = [] }: SkillsD
       if (activeCapability !== 'all' && !skill.capabilityKeys.includes(activeCapability)) return false;
       if (activeDomain !== 'all' && !skill.domainKeys.includes(activeDomain)) return false;
       if (activeStatus !== 'all' && skill.statusKey !== activeStatus) return false;
-      if (onlyEnabled && !skillDefaultsByName.get(skill.name)?.enabled) return false;
+      if (enabledFilter !== 'all') {
+        const enabled = Boolean(skillDefaultsByName.get(skill.name)?.enabled);
+        if (enabled !== (enabledFilter === 'enabled')) return false;
+      }
       return true;
     });
-  }, [activeCapability, activeDomain, activeIntent, activeSource, activeStatus, onlyEnabled, searchFilteredSkills, skillDefaultsByName]);
+  }, [activeCapability, activeDomain, activeIntent, activeSource, activeStatus, enabledFilter, searchFilteredSkills, skillDefaultsByName]);
 
   const verifiedCount = useMemo(
     () => explorerSkills.filter((skill) => skill.statusKey === 'verified').length,
@@ -1848,8 +1882,11 @@ export default function SkillsDashboard({ onSendToChat, projects = [] }: SkillsD
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <p className="text-xs font-medium text-muted-foreground">{text.detailTitle}</p>
-                          <h3 className="mt-2 break-all text-xl font-semibold text-foreground">{focusedSkill.name}</h3>
-                          <p className="mt-2 text-sm leading-6 text-muted-foreground">{focusedSkill.summary}</p>
+                          <h3 className="mt-2 break-all text-xl font-semibold text-foreground">{focusedSkill.displayName}</h3>
+                          {focusedSkill.displayName !== focusedSkill.name && (
+                            <code className="mt-1 block text-xs text-muted-foreground">{focusedSkill.name}</code>
+                          )}
+                          <p className="mt-2 text-sm leading-6 text-muted-foreground">{focusedSkill.displaySummary}</p>
                           <div className="mt-3 flex flex-wrap gap-1.5">
                             <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${tagStyleClass('intent', focusedSkill.primaryIntentLabel)}`}>
                               {focusedSkill.primaryIntentLabel}
@@ -2510,19 +2547,15 @@ export default function SkillsDashboard({ onSendToChat, projects = [] }: SkillsD
 
         {/* ── Platform Skills View (existing) ── */}
         {viewMode === 'platform' && (
-          <SkillDefaultsBar
+          <SkillDefaultsSummary
             data={skillDefaults.data}
             loading={skillDefaults.loading}
             saving={skillDefaults.saving}
             error={skillDefaults.error}
-            projectName={defaultsProject}
-            projects={projects}
-            onlyEnabled={onlyEnabled}
-            onScopeChange={setDefaultsProject}
+            projectLabel={defaultsProject ? (projects.find((project) => project.name === defaultsProject)?.displayName || defaultsProject) : null}
             onBaselineChange={(baseline) => { void skillDefaults.setBaseline(baseline); }}
             onResetProject={() => { void skillDefaults.resetProject(); }}
             onAcknowledgeNew={() => { void skillDefaults.acknowledgeNew(); }}
-            onOnlyEnabledChange={setOnlyEnabled}
           />
         )}
 
@@ -2545,45 +2578,77 @@ export default function SkillsDashboard({ onSendToChat, projects = [] }: SkillsD
         )}
 
         {viewMode === 'platform' && skills.length > 0 && (
-          <div className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)_420px]">
-            <aside className="space-y-4 xl:sticky xl:top-6 xl:max-h-[calc(100vh-3rem)] xl:self-start xl:overflow-y-auto xl:pr-1">
-              <div className="border-t border-border py-4">
-                <div className="relative">
-                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    aria-label={text.searchPlaceholder}
-                    placeholder={text.searchPlaceholder}
-                    className="w-full rounded-lg border border-border bg-background pl-9 pr-9 py-2.5 text-sm text-foreground outline-none transition focus:ring-2 focus:ring-sky-300/70 dark:focus:ring-sky-700/70"
-                  />
-                  {searchQuery && (
-                    <button
-                      type="button"
-                      onClick={() => setSearchQuery('')}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted-foreground hover:bg-muted"
-                      aria-label={text.clearSearch}
-                    >
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  )}
-                </div>
-
-                {hasActiveFilters && (
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative min-w-[220px] flex-1">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  aria-label={text.searchPlaceholder}
+                  placeholder={text.searchPlaceholder}
+                  className="w-full rounded-lg border border-border bg-background py-2 pl-9 pr-9 text-sm text-foreground outline-none transition focus:ring-2 focus:ring-sky-300/70 dark:focus:ring-sky-700/70"
+                />
+                {searchQuery && (
                   <button
                     type="button"
-                    onClick={clearAllFilters}
-                    className="mt-3 inline-flex items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted-foreground hover:bg-muted"
+                    aria-label={text.clearSearch}
                   >
-                    <RefreshCw className="h-3.5 w-3.5" />
-                    {text.clearFilters}
+                    <X className="h-3.5 w-3.5" />
                   </button>
                 )}
               </div>
+              <select
+                value={enabledFilter}
+                onChange={(event) => setEnabledFilter(event.target.value as 'all' | 'enabled' | 'disabled')}
+                aria-label={t('common:skillDefaults.filterAll')}
+                className="h-9 rounded-lg border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-sky-500"
+              >
+                <option value="all">{t('common:skillDefaults.filterAll')}</option>
+                <option value="enabled">{t('common:skillDefaults.filterEnabled')}</option>
+                <option value="disabled">{t('common:skillDefaults.filterDisabled')}</option>
+              </select>
+              <select
+                value={defaultsProject ?? ''}
+                onChange={(event) => setDefaultsProject(event.target.value || null)}
+                aria-label={t('common:skillDefaults.scopeLabel')}
+                className="h-9 max-w-[260px] rounded-lg border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-sky-500"
+              >
+                <option value="">{t('common:skillDefaults.scopeGlobal')}</option>
+                {projects.map((project) => (
+                  <option key={project.name} value={project.name}>
+                    {t('common:skillDefaults.scopeProject', { name: project.displayName || project.name })}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                aria-expanded={filtersOpen}
+                onClick={() => setFiltersOpen((value) => !value)}
+                className={`inline-flex h-9 items-center gap-2 rounded-lg border px-3 text-sm font-medium transition-colors ${
+                  filtersOpen || hasActiveFilters ? 'border-sky-300 text-sky-700 dark:border-sky-800 dark:text-sky-300' : 'border-border text-foreground hover:bg-muted'
+                }`}
+              >
+                <Layers className="h-4 w-4" />
+                {t('common:skillDefaults.moreFilters')}
+              </button>
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={() => { clearAllFilters(); setEnabledFilter('all'); }}
+                  className="inline-flex h-9 items-center gap-2 rounded-lg px-2 text-sm text-muted-foreground hover:text-foreground"
+                >
+                  <RefreshCw className="h-3.5 w-3.5" />
+                  {text.clearFilters}
+                </button>
+              )}
+            </div>
 
-              {isCompact && <button type="button" className="w-full rounded-md border border-border px-3 py-2 text-left text-sm" aria-expanded={filtersOpen} onClick={() => setFiltersOpen(value => !value)}>{t('common:workbench.filters')}</button>}
-              <div className={isCompact && !filtersOpen ? 'hidden' : 'space-y-4'}>
+            {filtersOpen && (
+              <div className="grid gap-x-6 rounded-xl border border-border/80 bg-card/95 px-4 md:grid-cols-2 xl:grid-cols-3">
               <div className="border-t border-border py-4">
               <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
                   <Layers className="h-4 w-4 text-muted-foreground" />
@@ -2773,113 +2838,32 @@ export default function SkillsDashboard({ onSendToChat, projects = [] }: SkillsD
                 </div>
               )}
               </div>
-            </aside>
+            )}
 
-            <section className="min-w-0 space-y-4">
-              <div className="border-t border-border py-4">
-                <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground">{text.results}</p>
-                    <h3 className="mt-1 text-xl font-semibold tabular-nums text-foreground">{headerSummary}</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {text.resultsSummary.replace('{{shown}}', String(filteredSkills.length))}
-                    </p>
-                  </div>
+            <p className="text-sm tabular-nums text-muted-foreground">
+              {t('common:skillDefaults.shownCount', { shown: filteredSkills.length, total: skills.length })}
+            </p>
 
-                  {activeFilterLabels.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {activeFilterLabels.map((label) => (
-                        <span
-                          key={label}
-                          className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-700 dark:border-sky-900/80 dark:bg-sky-950/50 dark:text-sky-200"
-                        >
-                          {label}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
+            {filteredSkills.length === 0 ? (
+              <div className="rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground">
+                {t('common:skillDefaults.noMatches')}
               </div>
+            ) : (
+              <SkillCardGrid
+                skills={filteredSkills}
+                statesByName={skillDefaultsByName}
+                scope={skillDefaultsScope}
+                groupLabel={skillGroupLabel}
+                searching={Boolean(searchQuery.trim()) || hasActiveFilters || enabledFilter !== 'all'}
+                disabled={skillDefaults.loading || !skillDefaults.data}
+                focusedDirPath={mobileDetailOpen ? focusedSkill?.dirPath ?? null : null}
+                onToggle={(name, next) => { void skillDefaults.toggleSkill(name, next); }}
+                onToggleGroup={(names, next) => { void skillDefaults.setSkillsEnabled(names, next); }}
+                onOpen={handleSelectSkill}
+              />
+            )}
 
-              {filteredSkills.length === 0 && (
-                <div className="rounded-lg border border-border bg-card p-6 text-sm text-muted-foreground ">
-                  {text.noFilterResult}
-                </div>
-              )}
-
-              {filteredSkills.length > 0 && (
-                <div className="overflow-hidden rounded-lg border border-border/80 bg-card/95 ">
-                  <div className="divide-y divide-border/60">
-                    {filteredSkills.map((skill) => {
-                      const isFocused = focusedSkill?.dirPath === skill.dirPath;
-                      const { tags: cardTags, hiddenCount } = buildSkillCardTagSummary(skill);
-                      return (
-                        <div
-                          key={skill.dirPath}
-                          className={`flex w-full items-start gap-3 px-4 py-4 transition ${
-                            isFocused
-                              ? 'bg-muted'
-                              : 'hover:bg-slate-50 dark:hover:bg-slate-900/40'
-                          }`}
-                        >
-                        <button
-                          type="button"
-                          onClick={() => handleSelectSkill(skill)}
-                          className="flex min-w-0 flex-1 items-start justify-between gap-4 text-left"
-                        >
-                          <div className="min-w-0 flex-1">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <h4 className="break-all text-sm font-semibold text-foreground">{skill.name}</h4>
-                              <SkillDefaultBadges state={skillDefaultsByName.get(skill.name)} scope={skillDefaultsScope} />
-                              {cardTags.map((tag) => (
-                                <span
-                                  key={`${skill.dirPath}-${tag.type}-${tag.label}`}
-                                  className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${tagStyleClass(tag.type, tag.label)}`}
-                                >
-                                  {tag.label}
-                                </span>
-                              ))}
-                              {hiddenCount > 0 && (
-                                <span className="inline-flex items-center rounded-full border border-border/70 bg-muted/40 px-2 py-0.5 text-xs font-medium text-muted-foreground">
-                                  +{hiddenCount}
-                                </span>
-                              )}
-                            </div>
-                            <p className="mt-1 text-xs text-muted-foreground">{`skills/${skill.dirPath}`}</p>
-                            <p
-                              className="mt-3 text-sm leading-6 text-muted-foreground"
-                              style={{
-                                display: '-webkit-box',
-                                WebkitLineClamp: 3,
-                                WebkitBoxOrient: 'vertical',
-                                overflow: 'hidden',
-                              }}
-                            >
-                              {skill.summary}
-                            </p>
-                          </div>
-                          <ChevronRight className={`mt-1 h-4 w-4 shrink-0 ${isFocused ? 'text-sky-600 dark:text-sky-300' : 'text-muted-foreground'}`} />
-                        </button>
-                        {skillDefaultsByName.has(skill.name) && (
-                          <div className="pt-0.5">
-                            <SkillEnableSwitch
-                              checked={Boolean(skillDefaultsByName.get(skill.name)?.enabled)}
-                              label={t(skillDefaultsByName.get(skill.name)?.enabled ? 'common:skillDefaults.toggleOff' : 'common:skillDefaults.toggleOn', { name: skill.name })}
-                              disabled={skillDefaults.loading}
-                              onChange={(next) => { void skillDefaults.toggleSkill(skill.name, next); }}
-                            />
-                          </div>
-                        )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </section>
-
-            {!isCompact && <aside className="min-w-0 xl:sticky xl:top-6 xl:max-h-[calc(100vh-3rem)] xl:self-start xl:overflow-y-auto">{detailPanel}</aside>}
-            {isCompact && mobileDetailOpen && focusedSkill && <WorkbenchDialog title={focusedSkill.name} size="wide" onClose={() => setMobileDetailOpen(false)}>{detailPanel}</WorkbenchDialog>}
+            {mobileDetailOpen && focusedSkill && <WorkbenchDialog title={focusedSkill.displayName} size="wide" onClose={() => setMobileDetailOpen(false)}>{detailPanel}</WorkbenchDialog>}
           </div>
         )}
       </div>

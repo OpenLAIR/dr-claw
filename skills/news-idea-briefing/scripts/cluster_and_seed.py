@@ -17,7 +17,7 @@ SKILL.md workflow. This script never invents content.
 
 Usage:
     python cluster_and_seed.py \\
-        --news-data-dir /path/to/server/data \\
+        --news-data-dir "$DRCLAW_NEWS_DATA_DIR" \\
         --output ./.cache/news-idea-briefing/candidates.json \\
         --top-n-per-cluster 6 \\
         --min-score 3.5

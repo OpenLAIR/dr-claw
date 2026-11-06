@@ -60,8 +60,8 @@ Each stage is powered by one or more [research skills](../skills/README.md). The
 
 | Stage | Skills Used | Key Outputs |
 |-------|------------|-------------|
-| **Survey** | `inno-prepare-resources`, `inno-code-survey`, `inno-deep-research`, `paper-analyzer`, `paper-finder` | Literature reports, reference notes, code survey maps |
+| **Survey** | `inno-prepare-resources`, `inno-code-survey`, `inno-deep-research`, `paper-analyzer` | Literature reports, reference notes, code survey maps |
 | **Ideation** | `inno-idea-generation`, `inno-idea-eval` | Ranked research ideas with multi-dimension scores |
 | **Experiment** | `inno-experiment-dev`, `inno-experiment-analysis` | Runnable code, results tables, statistical analysis |
-| **Publication** | `inno-paper-writing`, `inno-figure-gen`, `inno-paper-reviewer`, `inno-humanizer`, `inno-reference-audit`, `inno-rclone-to-overleaf` | Manuscript, figures, review feedback, Overleaf sync |
+| **Publication** | `ml-paper-writing`, `inno-figure-gen`, `inno-paper-reviewer`, `inno-humanizer`, `inno-reference-audit`, `inno-rclone-to-overleaf` | Manuscript, figures, review feedback, Overleaf sync |
 | **Promotion** | `making-academic-presentations` | Slides, narration audio, demo video, homepage |

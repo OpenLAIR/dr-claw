@@ -70,7 +70,7 @@ import skillsRoutes from './routes/skills.js';
 import modelsRoutes from './routes/models.js';
 import telemetryRoutes from './routes/telemetry.js';
 import computeRoutes from './routes/compute.js';
-import newsRoutes from './routes/news.js';
+import newsRoutes, { exposeNewsDataDirToAgents } from './routes/news.js';
 import autoResearchRoutes from './routes/auto-research.js';
 import referencesRoutes from './routes/references.js';
 import quickQaRoutes from './routes/quick-qa.js';
@@ -295,6 +295,8 @@ async function setupProjectsWatcher() {
     }
 }
 
+
+exposeNewsDataDirToAgents();
 
 const app = express();
 const server = http.createServer(app);

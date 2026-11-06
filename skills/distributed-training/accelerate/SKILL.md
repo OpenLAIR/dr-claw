@@ -1,6 +1,6 @@
 ---
 name: huggingface-accelerate
-description: Simplest distributed training API. 4 lines to add distributed support to any PyTorch script. Unified API for DeepSpeed/FSDP/Megatron/DDP. Automatic device placement, mixed precision (FP16/BF16/FP8). Interactive config, single launch command. HuggingFace ecosystem standard.
+description: Simplest distributed training API. 4 lines to add distributed support to any PyTorch script. Unified API for DeepSpeed/FSDP/Megatron/DDP. Automatic device placement, mixed precision (FP16/BF16/FP8). Interactive config, single launch command. HuggingFace ecosystem standard. Also covers DeepSpeed and PyTorch Lightning (guides in references/).
 version: 1.0.0
 author: Orchestra Research
 license: MIT
@@ -328,5 +328,12 @@ set_seed(42)
 - Examples: https://github.com/huggingface/accelerate/tree/main/examples
 - Used by: HuggingFace Transformers, TRL, PEFT, all HF libraries
 
+## Related tools (merged into this skill)
 
+These were separate skills. Their full guides now live under `references/`;
+read the one you need when the user asks for that tool or it fits the task better.
 
+| Tool | Guide | What it covers |
+|---|---|---|
+| DeepSpeed | [references/deepspeed/overview.md](references/deepspeed/overview.md) | Expert guidance for distributed training with DeepSpeed - ZeRO optimization stages, pipeline parallelism, FP16/BF16/FP8, 1-bit Adam, sparse attention |
+| PyTorch Lightning | [references/pytorch-lightning/overview.md](references/pytorch-lightning/overview.md) | High-level PyTorch framework with Trainer class, automatic distributed training (DDP/FSDP/DeepSpeed), callbacks system, and minimal boilerplate. |

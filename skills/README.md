@@ -29,13 +29,13 @@ Skills read paths from `instance.json` and write logs under each area’s `logs/
 skills/
 │
 ├─ Research & Discovery
-│  ├─ inno-prepare-resources                Setup: load instance, GitHub search, arXiv download
+│  ├─ inno-prepare-resources                Collect papers, clone reference code, download arXiv sources
 │  ├─ dataset-discovery                     Find and evaluate datasets for a research task
 │  ├─ inno-code-survey                      Repo acquisition (Phase A) + code survey (Phase B)
 │  └─ inno-deep-research                    Comprehensive research assistant (multi-source synthesis with citations)
 │
 ├─ Ideation
-│  ├─ inno-idea-generation                  Structured brainstorming via creative frameworks (SCAMPER, SWOT)
+│  ├─ inno-idea-generation                  Literature-grounded research ideas → selected_idea.txt
 │  └─ inno-idea-eval                        Multi-persona evaluation (5 dims) + quality gate
 │
 ├─ Experiment
@@ -44,7 +44,7 @@ skills/
 │
 ├─ Publication
 │  ├─ Authoring
-│  │  ├─ inno-paper-writing                 Academic paper writing (IEEE/ACM format, citations, structure)
+│  │  ├─ ml-paper-writing                   Paper writing for ML venues, with IEEE/ACM notes and LaTeX templates
 │  │  └─ inno-figure-gen                    Image generation via Nano Banana Pro (Gemini 3 Pro Image)
 │  ├─ Review & Polish
 │  │  ├─ inno-paper-reviewer                Structured peer review with checklist-based evaluation
@@ -145,5 +145,5 @@ Orchestration ──► Research & Discovery ──► Ideation ──► Experi
 
 - **Phase 1**: Skills 1–3 (prepare, idea-generation, code-survey Phase A) for "idea-only" workflows.
 - **Phase 2**: Add remaining skills for full pipeline (code survey Phase B → experiment-dev → experiment-analysis).
-- **Phase 3**: Paper writing, review, and polish (`inno-paper-writing` + `inno-paper-reviewer` + `inno-humanizer`) for publication-ready deliverables.
+- **Phase 3**: Paper writing, review, and polish (`ml-paper-writing` + `inno-paper-reviewer` + `inno-humanizer`) for publication-ready deliverables.
 - **Phase 4**: Promotion assets (`making-academic-presentations`) for homepage, slide deck, audio, and demo-video outputs.

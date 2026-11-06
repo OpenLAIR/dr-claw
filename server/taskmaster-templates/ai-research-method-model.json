@@ -169,18 +169,18 @@
             "title": "Draft results narrative and key comparison figures",
             "description": "Turn experiment outcomes into coherent claim-evidence storytelling.",
             "taskType": "writing",
-            "recommended_skills": ["inno-paper-writing", "inno-reference-audit"]
+            "recommended_skills": ["ml-paper-writing", "inno-reference-audit"]
           },
           {
             "id": "method_repro_appendix_and_submission_polish",
             "title": "Finalize reproducibility appendix and submission-ready manuscript",
             "description": "Complete appendix/checklists and final manuscript polish for submission.",
             "taskType": "writing",
-            "recommended_skills": ["inno-paper-writing"]
+            "recommended_skills": ["ml-paper-writing"]
           }
         ],
         "recommended_skills": [
-          "inno-paper-writing",
+          "ml-paper-writing",
           "inno-reference-audit"
         ]
       },

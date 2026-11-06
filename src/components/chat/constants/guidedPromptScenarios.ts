@@ -51,7 +51,7 @@ export const GUIDED_PROMPT_SCENARIOS: GuidedPromptScenario[] = [
     icon: '✍️',
     titleKey: 'guidedStarter.scenarios.paperWriting.title',
     descriptionKey: 'guidedStarter.scenarios.paperWriting.description',
-    skills: ['inno-paper-writing', 'ml-paper-writing', 'scientific-writing', 'inno-humanizer'],
+    skills: ['ml-paper-writing', 'scientific-writing', 'inno-humanizer'],
   },
   {
     id: 'manuscript-review',

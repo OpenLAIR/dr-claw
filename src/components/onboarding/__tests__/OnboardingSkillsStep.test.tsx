@@ -20,7 +20,7 @@ await i18n.init({
 
 function render(props: Partial<OnboardingSkillsStepProps> = {}): string {
   const full: OnboardingSkillsStepProps = {
-    counts: { recommended: 24, all: 174, none: 0 },
+    counts: { recommended: 19, all: 121, none: 0 },
     loading: false,
     loadFailed: false,
     selected: 'recommended',
@@ -41,8 +41,8 @@ function optionMarkup(html: string, baseline: string): string {
 describe('OnboardingSkillsStep', () => {
   it('shows the three starting sets with their skill counts', () => {
     const html = render();
-    expect(optionMarkup(html, 'recommended')).toContain('24 skills enabled');
-    expect(optionMarkup(html, 'all')).toContain('174 skills enabled');
+    expect(optionMarkup(html, 'recommended')).toContain('19 skills enabled');
+    expect(optionMarkup(html, 'all')).toContain('121 skills enabled');
     expect(optionMarkup(html, 'none')).toContain('0 skills enabled');
     expect(optionMarkup(html, 'recommended')).toContain(enCommon.skillDefaults.onboardingHint_recommended);
   });
