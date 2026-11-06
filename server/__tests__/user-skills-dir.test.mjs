@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import express from 'express';
 import fs from 'fs';
 import { access, lstat, mkdir, mkdtemp, readFile, readdir, readlink, rm, symlink, writeFile } from 'fs/promises';
@@ -376,7 +376,12 @@ describe('skills routes with a user skills dir', () => {
   });
 
   it('imports into the user dir, lists sources, edits, and deletes user skills', async () => {
-    const source = path.join(tempRoot, 'to-import');
+    // The import route refuses system paths such as /tmp (os.tmpdir() on Linux),
+    // so the source folder lives under node_modules/.cache instead.
+    const cacheDir = path.join(process.cwd(), 'node_modules', '.cache');
+    await mkdir(cacheDir, { recursive: true });
+    const source = await mkdtemp(path.join(cacheDir, 'skills-import-'));
+    onTestFinished(() => rm(source, { recursive: true, force: true }));
     await makeSkill(path.join(source, 'imported-one'));
     await makeSkill(path.join(source, 'shipped-a'));
 
