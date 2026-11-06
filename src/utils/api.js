@@ -113,6 +113,9 @@ export const api = {
         })),
       }),
     }),
+  // Full-text search over session messages; titles are matched client-side.
+  searchSessionContent: (query, limit = 50, options = {}) =>
+    authenticatedFetch(`/api/sessions/search?${new URLSearchParams({ q: query, limit: String(limit) })}`, options),
   sessions: (projectName, limit = 5, offset = 0) =>
     authenticatedFetch(`/api/projects/${projectName}/sessions?limit=${limit}&offset=${offset}`),
   projectTags: (projectName, tagType = null) => {

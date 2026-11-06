@@ -27,10 +27,22 @@ import {
   togglePinnedSession,
   type PinnedSession,
 } from '../utils/pinned';
-import { searchSidebar, tokenizeQuery } from '../utils/sessionSearch';
+import {
+  indexContentHits,
+  mergeContentMatches,
+  searchSidebar,
+  tokenizeQuery,
+  type ContentSearchHit,
+} from '../utils/sessionSearch';
 
 /** While searching, load each project's remaining sessions in one request. */
 const SEARCH_PAGE_SIZE = 1000;
+/** Message search waits for typing to pause and needs this many characters. */
+const CONTENT_SEARCH_DEBOUNCE_MS = 300;
+const CONTENT_SEARCH_MIN_LENGTH = 2;
+const CONTENT_SEARCH_LIMIT = 50;
+
+type ContentSearchState = { query: string; hits: ContentSearchHit[] };
 
 type UseSidebarControllerArgs = {
   projects: Project[];
@@ -90,6 +102,8 @@ export function useSidebarController({
   const [sessionDeleteError, setSessionDeleteError] = useState('');
   const [showVersionModal, setShowVersionModal] = useState(false);
   const [pinnedSessions, setPinnedSessions] = useState<PinnedSession[]>(() => loadPinnedSessions());
+  const [contentSearch, setContentSearch] = useState<ContentSearchState | null>(null);
+  const [isContentSearchLoading, setIsContentSearchLoading] = useState(false);
 
   const isSidebarCollapsed = !isMobile && !sidebarVisible;
 
@@ -247,22 +261,75 @@ export function useSidebarController({
     [getProjectSessions, pinnedSessions],
   );
 
-  // The search box finds sessions by title (pinned ones are matched in the
-  // Pinned section) and projects by name.
-  const { projects: filteredProjects, sessionMatches } = useMemo(
-    () => searchSidebar(
+  // Message text is searched on the server once typing pauses. Every new
+  // query aborts the previous request, and results are only used while they
+  // belong to the current query.
+  const contentQuery = searchFilter.trim();
+  useEffect(() => {
+    if (contentQuery.length < CONTENT_SEARCH_MIN_LENGTH) {
+      setContentSearch(null);
+      setIsContentSearchLoading(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    setIsContentSearchLoading(true);
+    const timer = window.setTimeout(async () => {
+      try {
+        const response = await api.searchSessionContent(contentQuery, CONTENT_SEARCH_LIMIT, { signal: controller.signal });
+        const data = response.ok ? ((await response.json()) as { results?: ContentSearchHit[] }) : null;
+        if (!controller.signal.aborted) {
+          setContentSearch({ query: contentQuery, hits: Array.isArray(data?.results) ? data.results : [] });
+        }
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          console.error('Error searching session messages:', error);
+          setContentSearch({ query: contentQuery, hits: [] });
+        }
+      } finally {
+        if (!controller.signal.aborted) setIsContentSearchLoading(false);
+      }
+    }, CONTENT_SEARCH_DEBOUNCE_MS);
+
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [contentQuery]);
+  const contentHits = contentSearch?.query === contentQuery ? contentSearch.hits : null;
+  const searchTerms = useMemo(() => tokenizeQuery(searchFilter), [searchFilter]);
+
+  // The search box finds sessions by title and by message text (pinned ones
+  // are matched in the Pinned section) and projects by name.
+  const { projects: filteredProjects, sessionMatches } = useMemo(() => {
+    const titleResult = searchSidebar(
       sortedProjects,
       (project) => getProjectSessionList(project).sessions,
       (session) => getSessionName(session, t),
       searchFilter,
-    ),
-    [getProjectSessionList, searchFilter, sortedProjects, t],
-  );
-  const isSearching = tokenizeQuery(searchFilter).length > 0;
+    );
+    return contentHits
+      ? mergeContentMatches(
+        titleResult,
+        sortedProjects,
+        contentHits,
+        getProjectSessions,
+        (projectName, sessionId) => isPinnedIn(pinnedSessions, projectName, sessionId),
+        searchTerms,
+      )
+      : titleResult;
+  }, [contentHits, getProjectSessionList, getProjectSessions, pinnedSessions, searchFilter, searchTerms, sortedProjects, t]);
+  const isSearching = searchTerms.length > 0;
 
   const pinnedSessionEntries = useMemo(
-    () => resolvePinnedSessions(pinnedSessions, projectsWithSessionMeta, getProjectSessions, searchFilter),
-    [getProjectSessions, pinnedSessions, projectsWithSessionMeta, searchFilter],
+    () => resolvePinnedSessions(
+      pinnedSessions,
+      projectsWithSessionMeta,
+      getProjectSessions,
+      searchFilter,
+      contentHits ? indexContentHits(contentHits, searchTerms) : undefined,
+    ),
+    [contentHits, getProjectSessions, pinnedSessions, projectsWithSessionMeta, searchFilter, searchTerms],
   );
 
   const startEditing = useCallback((project: Project) => {
@@ -485,7 +552,7 @@ export function useSidebarController({
       void loadMoreSessions(project, SEARCH_PAGE_SIZE);
     }
   }, [isSearching, loadMoreSessions, projectsWithSessionMeta]);
-  const isSearchLoading = isSearching && Object.values(loadingSessions).some(Boolean);
+  const isSearchLoading = isSearching && (isContentSearchLoading || Object.values(loadingSessions).some(Boolean));
 
   const handleProjectSelect = useCallback(
     (project: Project) => {

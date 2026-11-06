@@ -481,7 +481,9 @@
       "openProjectsOverview": "项目总览",
       "searchSessions": "搜索会话...",
       "searchingSessions": "正在搜索会话…",
-      "noMatchingSessions": "没有匹配的会话"
+      "noMatchingSessions": "没有匹配的会话",
+      "searchingMessages": "正在搜索消息内容…",
+      "matchedInMessages": "消息中：{{snippet}}"
     },
     "stages": {
       "survey": "文献调研",

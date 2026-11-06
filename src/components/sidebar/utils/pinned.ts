@@ -1,5 +1,5 @@
 import type { Project, SessionProvider } from '../../../types/app';
-import type { SessionWithProvider } from '../types/types';
+import type { SessionSearchMatch, SessionWithProvider } from '../types/types';
 import { getKnownSessionTotal } from './sessionPreview';
 
 const PINNED_SESSIONS_KEY = 'dr-claw.pinnedSessions';
@@ -80,6 +80,8 @@ export const resolvePinnedSessions = (
   projects: Project[],
   getProjectSessions: (project: Project) => SessionWithProvider[],
   searchFilter = '',
+  /** Sessions whose messages matched the search, by `project:session`. */
+  contentMatches: ReadonlyMap<string, SessionSearchMatch> = new Map(),
 ): PinnedSessionEntry[] => {
   const query = searchFilter.trim().toLowerCase();
   const projectsByName = new Map(projects.map((project) => [project.name, project]));
@@ -90,7 +92,7 @@ export const resolvePinnedSessions = (
     if (!project) continue;
 
     const loaded = getProjectSessions(project).find((session) => session.id === pin.sessionId);
-    const session: SessionWithProvider = loaded ?? ({
+    let session: SessionWithProvider = loaded ?? ({
       id: pin.sessionId,
       summary: pin.title,
       name: pin.title,
@@ -106,7 +108,11 @@ export const resolvePinnedSessions = (
         project.displayName,
         project.name,
       ].filter(Boolean).join('\n').toLowerCase();
-      if (!haystack.includes(query)) continue;
+      if (!haystack.includes(query)) {
+        const match = contentMatches.get(`${pin.projectName}:${pin.sessionId}`);
+        if (!match) continue;
+        session = { ...session, __searchMatch: match };
+      }
     }
 
     entries.push({ project, session, pin });

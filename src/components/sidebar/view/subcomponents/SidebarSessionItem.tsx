@@ -9,6 +9,7 @@ import type { Project, ProjectSession, SessionProvider } from '../../../../types
 import type { SessionWithProvider, TouchHandlerFactory } from '../../types/types';
 import { createSessionViewModel, getSessionDate } from '../../utils/utils';
 import { getSessionStatus, isWideSidebarLayout, joinTooltipLines, type SessionStatus } from '../../utils/sessionPreview';
+import { splitSnippet } from '../../utils/sessionSearch';
 
 type SidebarSessionItemProps = {
   project: Project;
@@ -107,10 +108,13 @@ export default function SidebarSessionItem({
       : status === 'recent' ? t('common:workbench.sidebar.statusRecent')
         : '';
 
+  const searchMatch = session.__searchMatch;
+
   const selectSession = () => {
-    // Pinned rows may belong to another project, and the phone layout needs
-    // the project selected so the drawer can close on it.
-    if (isPinnedRow || !isWideSidebarLayout()) onProjectSelect(project);
+    // Pinned rows may belong to another project, message-search hits may not
+    // be loaded in their project yet, and the phone layout needs the project
+    // selected so the drawer can close on it.
+    if (isPinnedRow || searchMatch || !isWideSidebarLayout()) onProjectSelect(project);
     onSessionSelect(session, project.name);
   };
 
@@ -133,8 +137,10 @@ export default function SidebarSessionItem({
   const stageLabels = Array.isArray(session.tags)
     ? session.tags.filter((tag) => tag?.tagType === 'stage').map((tag) => tag.label)
     : [];
+  const snippet = searchMatch?.snippet;
   const tooltip = joinTooltipLines(
     sessionView.sessionName,
+    snippet ? t('common:workbench.sidebar.matchedInMessages', { snippet }) : null,
     isPinnedRow ? project.displayName : null,
     [formatTimeAgo(sessionView.sessionTime, currentTime, t), modeLabel, session.__provider].join(' · '),
     stageLabels.join(', '),
@@ -152,7 +158,8 @@ export default function SidebarSessionItem({
     <div
       data-sidebar-session
       className={cn(
-        'group relative flex min-h-11 items-center rounded-md md:min-h-8',
+        'group relative flex min-h-11 items-center rounded-md',
+        snippet ? 'md:min-h-11' : 'md:min-h-8',
         'hover:bg-accent/50',
         isSelected && 'bg-accent text-accent-foreground hover:bg-accent',
       )}
@@ -160,7 +167,8 @@ export default function SidebarSessionItem({
       <button
         type="button"
         className={cn(
-          'flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:min-h-8',
+          'flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+          snippet ? 'py-1 md:min-h-11' : 'md:min-h-8',
           isPinnedRow ? 'pr-2' : 'px-2',
         )}
         ref={rowButton}
@@ -185,13 +193,23 @@ export default function SidebarSessionItem({
           />
         </span>
         {isPinnedRow && <MessageSquare className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />}
-        <span
-          className={cn(
-            'min-w-0 flex-1 truncate text-[13px]',
-            isSelected ? 'font-medium text-foreground' : 'text-foreground/85',
+        <span className="flex min-w-0 flex-1 flex-col">
+          <span
+            className={cn(
+              'truncate text-[13px]',
+              isSelected ? 'font-medium text-foreground' : 'text-foreground/85',
+            )}
+          >
+            {sessionView.sessionName}
+          </span>
+          {/* Content-search hit: the matching part of a message. */}
+          {searchMatch && (
+            <span data-session-snippet className="truncate text-[11px] leading-4 text-muted-foreground">
+              {splitSnippet(searchMatch.snippet, searchMatch.terms).map((part, index) => (part.hit
+                ? <mark key={index} className="rounded-sm bg-transparent font-semibold text-foreground">{part.text}</mark>
+                : <span key={index}>{part.text}</span>))}
+            </span>
           )}
-        >
-          {sessionView.sessionName}
         </span>
         {isPinnedRow && (
           <span className="max-w-[40%] shrink-0 truncate text-xs text-muted-foreground">{project.displayName}</span>
