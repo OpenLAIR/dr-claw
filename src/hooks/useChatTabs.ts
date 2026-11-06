@@ -55,6 +55,29 @@ export function getChatTabNavigationTarget(
   };
 }
 
+/**
+ * Remove a tab and decide what the chat view should show next. Closing the
+ * active tab moves to its neighbour; closing the last tab falls back to a
+ * blank chat. Without that, the still-selected session would immediately
+ * reopen the tab it was just closed from.
+ */
+export function closeChatTab(
+  tabs: ChatTab[],
+  tabId: string,
+): { tabs: ChatTab[]; navigateTo: ChatTabNavigationTarget } {
+  const idx = tabs.findIndex(t => t.id === tabId);
+  if (idx === -1) return { tabs, navigateTo: { kind: 'none' } };
+
+  const closing = tabs[idx];
+  const next = tabs.filter(t => t.id !== tabId);
+  if (!closing.isActive) return { tabs: next, navigateTo: { kind: 'none' } };
+  if (next.length === 0) return { tabs: next, navigateTo: { kind: 'root' } };
+
+  const newActiveIdx = Math.min(idx, next.length - 1);
+  next[newActiveIdx] = { ...next[newActiveIdx], isActive: true };
+  return { tabs: next, navigateTo: getChatTabNavigationTarget(next[newActiveIdx]) };
+}
+
 export function useChatTabs(
   selectedProject: Project | null,
   onNavigateToSession: (
@@ -102,24 +125,16 @@ export function useChatTabs(
 
   const closeTab = useCallback((tabId: string) => {
     setTabs(prev => {
-      const idx = prev.findIndex(t => t.id === tabId);
-      if (idx === -1) return prev;
-      const closing = prev[idx];
-      const next = prev.filter(t => t.id !== tabId);
-      if (closing.isActive && next.length > 0) {
-        const newActiveIdx = Math.min(idx, next.length - 1);
-        next[newActiveIdx] = { ...next[newActiveIdx], isActive: true };
-        const navigationTarget = getChatTabNavigationTarget(next[newActiveIdx]);
-        if (navigationTarget.kind === 'session') {
-          onNavigateToSession(
-            navigationTarget.sessionId,
-            navigationTarget.provider,
-            navigationTarget.projectName,
-            { source: 'user' },
-          );
-        } else if (navigationTarget.kind === 'root') {
-          onActivateBlankTab?.();
-        }
+      const { tabs: next, navigateTo } = closeChatTab(prev, tabId);
+      if (navigateTo.kind === 'session') {
+        onNavigateToSession(
+          navigateTo.sessionId,
+          navigateTo.provider,
+          navigateTo.projectName,
+          { source: 'user' },
+        );
+      } else if (navigateTo.kind === 'root') {
+        onActivateBlankTab?.();
       }
       return next;
     });
