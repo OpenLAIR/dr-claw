@@ -3,7 +3,7 @@ import SidebarRenameEditor from './SidebarRenameEditor';
 import { ChevronRight, Edit3, Folder, FolderOpen, Plus, Trash2 } from 'lucide-react';
 import type { TFunction } from 'i18next';
 import { cn } from '../../../../lib/utils';
-import type { Project, ProjectSession, SessionMode, SessionProvider } from '../../../../types/app';
+import type { Project, ProjectSession, SessionProvider } from '../../../../types/app';
 import type { MCPServerStatus, SessionWithProvider, TouchHandlerFactory } from '../../types/types';
 import { isWideSidebarLayout, joinTooltipLines } from '../../utils/sessionPreview';
 import SidebarProjectSessions from './SidebarProjectSessions';
@@ -46,8 +46,7 @@ type SidebarProjectItemProps = {
     provider: SessionProvider,
   ) => void;
   onLoadMoreSessions: (project: Project) => void;
-  onNewSession: (project: Project, mode?: SessionMode) => void;
-  newSessionMode?: SessionMode;
+  onNewSession: (project: Project) => void;
   onEditingSessionNameChange: (value: string) => void;
   onStartEditingSession: (sessionId: string, initialName: string) => void;
   onCancelEditingSession: () => void;
@@ -90,7 +89,6 @@ export default function SidebarProjectItem({
   onDeleteSession,
   onLoadMoreSessions,
   onNewSession,
-  newSessionMode,
   onEditingSessionNameChange,
   onStartEditingSession,
   onCancelEditingSession,
@@ -137,7 +135,7 @@ export default function SidebarProjectItem({
 
   const startNewSession = () => {
     if (!isWideSidebarLayout()) onProjectSelect(project);
-    onNewSession(project, newSessionMode);
+    onNewSession(project);
   };
 
   const FolderIcon = isExpanded ? FolderOpen : Folder;
@@ -256,7 +254,6 @@ export default function SidebarProjectItem({
         onDeleteSession={onDeleteSession}
         onLoadMoreSessions={onLoadMoreSessions}
         onNewSession={onNewSession}
-        newSessionMode={newSessionMode}
         isSessionPinned={isSessionPinned}
         onTogglePinSession={onTogglePinSession}
         touchHandlerFactory={touchHandlerFactory}

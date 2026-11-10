@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next';
-import type { LoadingProgress, Project, ProjectSession, SessionMode, SessionProvider } from '../../../../types/app';
+import type { LoadingProgress, Project, ProjectSession, SessionProvider } from '../../../../types/app';
 import type {
   LoadingSessionsByProject,
   MCPServerStatus,
@@ -55,8 +55,7 @@ export type SidebarProjectListProps = {
     provider: SessionProvider,
   ) => void;
   onLoadMoreSessions: (project: Project) => void;
-  onNewSession: (project: Project, mode?: SessionMode) => void;
-  newSessionMode?: SessionMode;
+  onNewSession: (project: Project) => void;
   onEditingSessionNameChange: (value: string) => void;
   onStartEditingSession: (sessionId: string, initialName: string) => void;
   onCancelEditingSession: () => void;
@@ -103,7 +102,6 @@ export default function SidebarProjectList({
   onDeleteSession,
   onLoadMoreSessions,
   onNewSession,
-  newSessionMode,
   onEditingSessionNameChange,
   onStartEditingSession,
   onCancelEditingSession,
@@ -167,7 +165,6 @@ export default function SidebarProjectList({
       onDeleteSession={onDeleteSession}
       onLoadMoreSessions={onLoadMoreSessions}
       onNewSession={onNewSession}
-      newSessionMode={newSessionMode}
       onEditingSessionNameChange={onEditingSessionNameChange}
       onStartEditingSession={onStartEditingSession}
       onCancelEditingSession={onCancelEditingSession}

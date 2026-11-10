@@ -7,6 +7,13 @@ import { queueWorkspaceQaDraft } from '../utils/workspaceQa';
 import { queueReferenceChatDraft } from '../utils/referenceChatDraft';
 import type { Reference } from '../components/references/types';
 import { formatReferenceChatPrompt } from '../components/references/types';
+import {
+  isSessionMode,
+  nextNewSessionMode,
+  persistNewSessionMode,
+  readStoredNewSessionMode,
+  type NewSessionModeEvent,
+} from '../utils/newSessionMode';
 import type {
   AppSocketMessage,
   AppTab,
@@ -31,28 +38,6 @@ declare global {
     refreshTrashProjects?: () => Promise<void>;
   }
 }
-
-const SESSION_MODE_STORAGE_KEY = 'dr-claw-new-session-mode';
-
-const isSessionMode = (value: string | null | undefined): value is SessionMode =>
-  value === 'research' || value === 'workspace_qa';
-
-const readStoredNewSessionMode = (): SessionMode => {
-  if (typeof window === 'undefined') {
-    return 'research';
-  }
-
-  const stored = window.sessionStorage.getItem(SESSION_MODE_STORAGE_KEY);
-  return isSessionMode(stored) ? stored : 'research';
-};
-
-const persistNewSessionMode = (mode: SessionMode) => {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  window.sessionStorage.setItem(SESSION_MODE_STORAGE_KEY, mode);
-};
 
 type UseProjectsStateArgs = {
   sessionId?: string;
@@ -293,7 +278,19 @@ export function useProjectsState({
   const [externalMessageUpdate, setExternalMessageUpdate] = useState(0);
   const [pendingAutoIntake, setPendingAutoIntake] = useState<PendingAutoIntake | null>(null);
   const [importedProjectAnalysisPrompt, setImportedProjectAnalysisPrompt] = useState<ImportedProjectAnalysisPrompt | null>(null);
-  const [newSessionMode, setNewSessionMode] = useState<SessionMode>(() => readStoredNewSessionMode());
+  const [newSessionMode, setNewSessionModeState] = useState<SessionMode>(() => readStoredNewSessionMode());
+  const newSessionModeRef = useRef(newSessionMode);
+  const applyNewSessionModeEvent = useCallback((event: NewSessionModeEvent) => {
+    const next = nextNewSessionMode(newSessionModeRef.current, event);
+    newSessionModeRef.current = next;
+    persistNewSessionMode(next);
+    setNewSessionModeState(next);
+  }, []);
+  // Explicit choice from the composer's mode toggle.
+  const setNewSessionMode = useCallback(
+    (mode: SessionMode) => applyNewSessionModeEvent({ type: 'choose', mode }),
+    [applyNewSessionModeEvent],
+  );
 
   const loadingProgressTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const projectsUpdateDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -756,10 +753,7 @@ export function useProjectsState({
     (session: ProjectSession) => {
       setSelectedSession(session);
 
-      if (session.mode) {
-        persistNewSessionMode(session.mode);
-        setNewSessionMode(session.mode);
-      }
+      applyNewSessionModeEvent({ type: 'open-session', mode: session.mode });
 
       if (activeTab !== 'git' && activeTab !== 'preview') {
         setActiveTab('chat');
@@ -781,24 +775,26 @@ export function useProjectsState({
 
       navigate(`/session/${session.id}`);
     },
-    [activeTab, isMobile, navigate, selectedProject?.name],
+    [activeTab, applyNewSessionModeEvent, isMobile, navigate, selectedProject?.name],
   );
 
+  // A new session always starts in research mode, whatever session was open
+  // before. Workspace Q&A has its own entry points (handleStartWorkspaceQa and
+  // the composer's mode toggle).
   const handleNewSession = useCallback(
-    (project: Project, mode: SessionMode = 'research') => {
+    (project: Project) => {
       setSessionNavigationSource('user');
       setSelectedProject(project);
       setSelectedSession(null);
       setActiveTab('chat');
-      persistNewSessionMode(mode);
-      setNewSessionMode(mode);
+      applyNewSessionModeEvent({ type: 'new-session' });
       navigate('/');
 
       if (isMobile) {
         setSidebarOpen(false);
       }
     },
-    [isMobile, navigate],
+    [applyNewSessionModeEvent, isMobile, navigate],
   );
 
   const handleStartWorkspaceQa = useCallback(
@@ -806,8 +802,7 @@ export function useProjectsState({
       setSelectedProject(project);
       setSelectedSession(null);
       setActiveTab('chat');
-      persistNewSessionMode('workspace_qa');
-      setNewSessionMode('workspace_qa');
+      applyNewSessionModeEvent({ type: 'start-workspace-qa' });
       queueWorkspaceQaDraft(project.name, prompt);
       navigate('/');
 
@@ -815,7 +810,7 @@ export function useProjectsState({
         setSidebarOpen(false);
       }
     },
-    [isMobile, navigate],
+    [applyNewSessionModeEvent, isMobile, navigate],
   );
 
   const handleChatFromReference = useCallback(
@@ -823,8 +818,7 @@ export function useProjectsState({
       setSelectedProject(project);
       setSelectedSession(null);
       setActiveTab('chat');
-      persistNewSessionMode('research');
-      setNewSessionMode('research');
+      applyNewSessionModeEvent({ type: 'chat-from-reference' });
       queueReferenceChatDraft(project.name, {
         text: formatReferenceChatPrompt(ref),
         referenceId: ref.id,
@@ -836,20 +830,23 @@ export function useProjectsState({
         setSidebarOpen(false);
       }
     },
-    [isMobile, navigate],
+    [applyNewSessionModeEvent, isMobile, navigate],
   );
 
   const handleProjectCreatedWithIntake = useCallback(
     (project: Project, options?: ProjectCreationOptions) => {
       setSelectedProject(project);
       setSelectedSession(null);
+      // A fresh project starts in research mode so auto-intake and the
+      // "Start a project" quick actions are available.
+      applyNewSessionModeEvent({ type: 'project-created' });
       setActiveTab(options?.autoIntake || options?.importedProjectAnalysisPrompt ? 'chat' : 'overview');
       setPendingAutoIntake(options?.autoIntake ?? null);
       setImportedProjectAnalysisPrompt(options?.importedProjectAnalysisPrompt ?? null);
       navigate('/');
       if (isMobile) setSidebarOpen(false);
     },
-    [isMobile, navigate],
+    [applyNewSessionModeEvent, isMobile, navigate],
   );
 
   const clearPendingAutoIntake = useCallback(() => setPendingAutoIntake(null), []);
@@ -1033,7 +1030,6 @@ export function useProjectsState({
       onImportedProjectCreated: handleProjectCreatedWithIntake,
       importedProjectAnalysisPrompt,
       onDismissImportedProjectAnalysisPrompt: clearImportedProjectAnalysisPrompt,
-      newSessionMode,
     }),
     [
       activeTab,
@@ -1056,7 +1052,6 @@ export function useProjectsState({
       isLoadingTrashProjects,
       isMobile,
       loadingProgress,
-      newSessionMode,
       projects,
       selectedProject,
       selectedSession,
