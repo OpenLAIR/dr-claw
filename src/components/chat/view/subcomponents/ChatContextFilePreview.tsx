@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
+import { normalizeLatexDelimiters } from '../../../../utils/latexNormalizer';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
@@ -309,7 +310,7 @@ export default function ChatContextFilePreview({
         <div className={`${previewHeightClass} flex-1 overflow-auto bg-background ${compact ? 'p-3' : 'p-4'}`}>
           <div className="prose prose-sm max-w-none break-words dark:prose-invert">
             <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
-              {content}
+              {normalizeLatexDelimiters(content)}
             </ReactMarkdown>
           </div>
         </div>

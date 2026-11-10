@@ -17,6 +17,7 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
+import { normalizeLatexDelimiters } from '../utils/latexNormalizer';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark as prismOneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { api, authenticatedFetch } from '../utils/api';
@@ -274,7 +275,7 @@ function MarkdownPreview({ content, onOpenLinkedFile, onDeleteLink }) {
       rehypePlugins={rehypePlugins}
       components={components}
     >
-      {content}
+      {normalizeLatexDelimiters(content ?? '')}
     </ReactMarkdown>
   );
 }
