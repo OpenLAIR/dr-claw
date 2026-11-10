@@ -106,6 +106,7 @@ Dr. Claw 是一个面向不同研究方向的通用 AI 研究助手，帮助研�
 
 ## 最新动态
 
+- 🩹 **v1.3.1：新会话修复** `2026-11-10` — 新会话的第一条消息不会再消失，并且总是从 Research 模式开始。
 - 🧩 **v1.3.0：自选 skills，侧栏更紧凑** `2026-11-06` — 新的卡片式技能库可以选择默认启用哪些 skill（全局或按项目），首次启动时也可以选预设。内置技能库精简到 121 个可用的 skill，自己导入的 skill 放在应用外面，升级不会丢。左侧栏每个项目和会话只占一行，并能搜索会话内容；Files 面板改成紧凑的文件树。安装或升级后第一次打开也能稳定加载了。
 - 🧭 **v1.2.0：研究工作台全新设计** `2026-11-05` — 以项目为中心的工作区，更简洁的对话输入框和统一的控件。桌面应用自动登录，本地模型除 Ollama 外还支持 vLLM 和 SGLang。从 [GitHub Releases](https://github.com/OpenLAIR/dr-claw/releases/latest) 下载。
 - 🎉 **论文被 EMNLP 2026 接收** `2026-08-22` — 我们的论文 [*Dr. Claw: An AI Scientist Workspace for Vibe Research*](https://arxiv.org/abs/2609.00365) 被 **[EMNLP 2026](https://2026.emnlp.org/) System Demonstrations** 接收！欢迎在匈牙利布达佩斯（2026 年 10 月 24–29 日）现场看我们的 Demo。

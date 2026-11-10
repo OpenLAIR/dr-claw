@@ -105,6 +105,7 @@ Dr. Claw is a general-purpose AI research assistant designed to help researchers
 
 ## What's New
 
+- 🩹 **v1.3.1: New Session fixes** `2026-11-10` — A new session keeps its first message on screen and always starts in Research mode.
 - 🧩 **v1.3.0: Choose Your Skills, Compact Sidebars** `2026-11-06` — Pick which skills are on by default (globally or per project) in a new card-based Skills Library, or choose a preset on first launch. The built-in library is trimmed to 121 working skills, and skills you import now live outside the app so updates keep them. The left sidebar shows one line per project and session and can search inside session messages; the Files panel is a compact tree. The first launch after installing or upgrading also loads reliably now.
 - 🧭 **v1.2.0: Redesigned Research Workbench** `2026-11-05` — A project-centered workspace with a cleaner chat composer and unified controls. The desktop app signs you in automatically, and local models can now run on vLLM and SGLang as well as Ollama. Download it from [GitHub Releases](https://github.com/OpenLAIR/dr-claw/releases/latest).
 - 🎉 **Accepted to EMNLP 2026** `2026-08-22` — Our paper [*Dr. Claw: An AI Scientist Workspace for Vibe Research*](https://arxiv.org/abs/2609.00365) has been accepted to the **[EMNLP 2026](https://2026.emnlp.org/) System Demonstrations** track! Catch the live demo in Budapest, Hungary, October 24–29, 2026.

@@ -1,5 +1,11 @@
 # Changelog
 
+## Dr. Claw v1.3.1 - 2026-11-10
+
+### Fixes
+- **New sessions keep their first message.** The first message of a new session no longer disappears for a second or two right after you send it (#257).
+- **New Session starts in Research mode.** It no longer inherits the mode of the last session you opened (for example Workspace Q&A); you switch modes yourself (#258).
+
 ## Dr. Claw v1.3.0 - 2026-11-06
 
 ### Highlights
