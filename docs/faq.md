@@ -82,5 +82,5 @@ If the command prints `1`, remove or override the variable in your shell profile
 After that, confirm the provider-specific permissions are still enabled:
 
 - Claude Code: allow `WebSearch` and `WebFetch`
-- Gemini CLI: allow `google_web_search` and `web_fetch`
+- Antigravity (Gemini): allow `WebSearch` and `WebFetch`
 - Codex: use `Bypass Permissions` when web access is required

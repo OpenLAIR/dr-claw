@@ -142,7 +142,7 @@ Dr. Claw 是一个面向不同研究方向的通用 AI 研究助手，帮助研�
 - **⚡ Auto Research** — 可直接从 Project Dashboard 一键顺序执行研究任务，实时打开对应 session，并在运行完成后发送邮件通知
 - **📚 100+ Research Skills** — 覆盖 Idea 生成、代码调研、实验开发与分析、论文写作、审阅回复与交付的技能库 — Agent 自动发现并作为任务级辅助
 - **🗂️ 对话驱动的 Pipeline** — 在 Chat 中描述你的研究想法，Agent 使用 `inno-pipeline-planner` skill 交互式生成结构化研究简报和任务列表 — 无需手动选择模板
-- **🤖 多 Agent 后端** — 可在 Claude Code、Gemini CLI、Codex 和 OpenRouter 之间切换作为执行引擎
+- **🤖 多 Agent 后端** — 可在 Claude Code、Antigravity（Gemini）、Codex 和 OpenRouter 之间切换作为执行引擎
 
 ### 流水线产出物
 
@@ -216,7 +216,7 @@ Intel Mac 和 Linux 暂无安装包。想用最新版本请从源码安装（方
 - [Node.js](https://nodejs.org/) v20 或更高版本（**推荐 v22 LTS**，见 `.nvmrc`）
 - 至少安装并配置以下 CLI 工具之一：
   - [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code)
-  - [Gemini CLI](https://geminicli.com/docs/get-started/installation/)
+  - [Antigravity CLI](https://antigravity.google/docs/getting-started/)（取代已停用的 Gemini CLI）
   - [Codex CLI](https://developers.openai.com/codex/cli/)
 - 国内用户可以配置 [OpenRouter](#配置说明)
 - 部分系统需要原生构建工具来安装 `node-pty`、`better-sqlite3` 等依赖；如果 `npm install` 失败，请查看 [FAQ](docs/faq.zh-CN.md)。
@@ -308,7 +308,7 @@ drclaw auth login --username 你的用户名 --password 你的密码
 | Agent | 安装命令 | 认证方式 |
 |-------|---------|---------|
 | Claude Code | `npm install -g @anthropic-ai/claude-code` | `claude` → 按提示完成 OAuth |
-| Gemini CLI | `npm install -g @google/gemini-cli` | `gemini` → Google 登录，或 `export GOOGLE_API_KEY=...` |
+| Antigravity CLI（Gemini） | `curl -fsSL https://antigravity.google/cli/install.sh \| bash`（Windows：`irm https://antigravity.google/cli/install.ps1 \| iex`） | `agy` → Google 登录 |
 | Codex CLI | `npm install -g @openai/codex` | `codex login`，或 `export OPENAI_API_KEY=...` |
 | **OpenRouter** | 无需安装 CLI | `export OPENROUTER_API_KEY=sk-or-...`（在 [openrouter.ai/keys](https://openrouter.ai/keys) 获取密钥）|
 
@@ -417,7 +417,7 @@ npm run desktop:dist
 <summary><strong>前置条件</strong></summary>
 
 - Dr. Claw 服务已启动（`npm run dev` 或 `drclaw server on`）
-- 至少有一个项目和一个执行后端（Claude Code、Gemini CLI 或 Codex）
+- 至少有一个项目和一个执行后端（Claude Code、Antigravity 或 Codex）
 - OpenClaw 具备本地 shell / `exec` 能力
 - *（可选）* 飞书 / Lark channel 用于推送通知
 
@@ -728,7 +728,7 @@ Dr. Claw 的核心功能是 **Research Lab**。
 
 </details>
 
-1. 通过 **CLI 选择器** 选择后端（Claude Code、Gemini CLI 或 Codex）。
+1. 通过 **CLI 选择器** 选择后端（Claude Code、Antigravity 或 Codex）。
 2. 在 **Research Lab** 中对 pending 任务点击 **Go to Chat** 或 **Use in Chat**。
 3. Agent 执行任务并将结果写回项目。
 
@@ -788,9 +788,9 @@ echo "${CODEX_SANDBOX_NETWORK_DISABLED:-0}"
   - 在 **Allowed Tools** 中允许 `WebSearch`、`WebFetch`。
   - 确认这两个工具不在 **Blocked Tools** 中。
   - 若希望减少确认弹窗，可开启 **Skip permission prompts**。
-- **Gemini CLI**：
+- **Antigravity（Gemini）**：
   - 选择合适的 **Permission Mode**。
-  - 若需要网页访问，在 **Allowed Tools** 中允许 `google_web_search` 与 `web_fetch`。
+  - 若需要网页访问，在 **Allowed Tools** 中允许 `WebSearch` 与 `WebFetch`。
   - 确认它们不在 **Blocked Tools** 中。
 - **Codex**：
   - 在 **Permission Mode** 中切换到 **Bypass Permissions**（在需要网页访问时）。
@@ -904,7 +904,7 @@ Dr. Claw 完全响应式设计。在移动设备上：
 #### 后端 (Node.js + Express)
 - **Express 服务器** - 具有静态文件服务的 RESTful API
 - **WebSocket 服务器** - 用于聊天和项目刷新的通信
-- **Agent 集成 (Claude Code、Gemini CLI、Codex、OpenRouter)** - 负责进程拉起、流式输出与会话管理
+- **Agent 集成 (Claude Code、Antigravity、Codex、OpenRouter)** - 负责进程拉起、流式输出与会话管理
 - **文件系统 API** - 为项目公开文件浏览器
 
 #### 前端 (React + Vite)
@@ -920,7 +920,7 @@ Dr. Claw 完全响应式设计。在移动设备上：
 为了安全地使用网页搜索和高权限工具：
 
 1. **打开 Settings** - 点击侧边栏中的齿轮图标
-2. **选择 Agent** - Claude Code、Gemini CLI 或 Codex
+2. **选择 Agent** - Claude Code、Antigravity 或 Codex
 3. **按需启用** - 仅开启当前任务需要的工具或权限模式
 4. **应用设置** - 您的偏好设置将保存在本地
 
@@ -992,7 +992,7 @@ Dr. Claw 的设计与评测发表于论文 **[Dr. Claw: An AI Scientist Workspac
 
 ### 构建工具
 - **[Claude Code](https://docs.anthropic.com/en/docs/claude-code)** - Anthropic 的官方 CLI
-- **[Gemini CLI](https://geminicli.com/docs/get-started/installation/)** - Google 的 Gemini 命令行智能体
+- **[Antigravity CLI](https://antigravity.google/docs/getting-started/)** - Google 的 agent 命令行工具（Gemini CLI 的后继）
 - **[Codex](https://developers.openai.com/codex)** - OpenAI Codex
 - **[React](https://react.dev/)** - 用户界面库
 - **[Vite](https://vitejs.dev/)** - 快速构建工具和开发服务器

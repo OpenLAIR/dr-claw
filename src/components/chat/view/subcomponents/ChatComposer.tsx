@@ -64,7 +64,7 @@ interface SlashCommand {
 
 const PROVIDERS: ProviderDef[] = [
   { id: 'claude', name: 'Claude Code', accent: 'border-primary', ring: 'ring-primary/15', check: 'bg-primary text-primary-foreground' },
-  { id: 'gemini', name: 'Gemini CLI', accent: 'border-blue-500 dark:border-blue-400', ring: 'ring-blue-500/15', check: 'bg-blue-500 text-white' },
+  { id: 'gemini', name: 'Antigravity', accent: 'border-blue-500 dark:border-blue-400', ring: 'ring-blue-500/15', check: 'bg-blue-500 text-white' },
   { id: 'codex', name: 'Codex', accent: 'border-emerald-600 dark:border-emerald-400', ring: 'ring-emerald-600/15', check: 'bg-emerald-600 dark:bg-emerald-500 text-white' },
   { id: 'openrouter', name: 'OpenRouter', accent: 'border-blue-500 dark:border-blue-400', ring: 'ring-blue-500/15', check: 'bg-blue-500 text-white' },
   { id: 'local', name: 'Local GPU', accent: 'border-emerald-500 dark:border-emerald-400', ring: 'ring-emerald-500/15', check: 'bg-emerald-500 text-white' },

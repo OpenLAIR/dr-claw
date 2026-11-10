@@ -559,7 +559,7 @@
     "claudeDescription": "Anthropic 命令行助手",
     "cursorDescription": "Cursor 命令行助手",
     "codexDescription": "OpenAI 编程命令行工具",
-    "geminiDescription": "Google Gemini 终端助手"
+    "geminiDescription": "Google Antigravity CLI（Gemini 等多种模型）"
   },
   "skillsLibrary": {
     "loading": "加载技能中...",

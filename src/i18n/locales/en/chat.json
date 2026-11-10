@@ -286,7 +286,7 @@
     "modes": {
       "default": {
         "name": "Default",
-        "description": "Use Gemini CLI default behavior for this model"
+        "description": "Use Antigravity's default behavior for this model"
       },
       "minimal": {
         "name": "Minimal",

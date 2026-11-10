@@ -286,7 +286,7 @@
     "modes": {
       "default": {
         "name": "默认",
-        "description": "使用该模型在 Gemini CLI 中的默认行为"
+        "description": "使用该模型在 Antigravity 中的默认行为"
       },
       "minimal": {
         "name": "极低",

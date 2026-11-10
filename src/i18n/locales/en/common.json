@@ -565,7 +565,7 @@
     "claudeDescription": "Anthropic CLI assistant",
     "cursorDescription": "Cursor agent command line",
     "codexDescription": "OpenAI coding CLI",
-    "geminiDescription": "Google Gemini terminal assistant"
+    "geminiDescription": "Google Antigravity CLI (Gemini and other models)"
   },
   "skillsLibrary": {
     "loading": "Loading skills...",

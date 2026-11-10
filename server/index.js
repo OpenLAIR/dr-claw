@@ -82,6 +82,7 @@ import { enqueueTelemetryEvent } from './telemetry.js';
 import { resolveCursorCliCommand, isCursorLoginCommand, isGeminiLoginCommand, normalizeCursorLoginCommand } from './utils/cursorCommand.js';
 import { buildCodexCliEnv, codexCommandForShell } from './utils/codexCli.js';
 import { getGeminiApiKeyForUser, withGeminiApiKeyEnv } from './utils/geminiApiKey.js';
+import { resolveAntigravityBinary } from './utils/antigravityAcp.js';
 import {
     DEFAULT_BACKEND_PORT,
     DEFAULT_FRONTEND_PORT,
@@ -2020,7 +2021,7 @@ function handleShellConnection(ws) {
                 } else {
                     const providerName = provider === 'cursor' ? 'Cursor' : 
                                       provider === 'codex' ? 'Codex' : 
-                                      provider === 'gemini' ? 'Gemini' : 
+                                      provider === 'gemini' ? 'Antigravity' : 
                                       'Claude';
                     welcomeMsg = hasSession ?
                         `\x1b[36mResuming ${providerName} session ${sessionId} in: ${projectPath}\x1b[0m\r\n` :
@@ -2092,17 +2093,20 @@ function handleShellConnection(ws) {
                             }
                         }
                     } else if (provider === 'gemini') {
-                        // Use gemini command
-                        const command = initialCommand || 'gemini';
+                        // The Gemini CLI was retired; the gemini provider runs the Antigravity CLI (agy).
+                        const agyBinary = resolveAntigravityBinary();
+                        const agyCommand = /\s/.test(agyBinary) ? `"${agyBinary}"` : agyBinary;
+                        const command = initialCommand || agyCommand;
+                        const safeSessionId = /^[A-Za-z0-9._-]+$/.test(String(sessionId || '')) ? sessionId : null;
                         if (os.platform() === 'win32') {
-                            if (hasSession && sessionId) {
-                                shellCommand = `Set-Location -Path "${projectPath}"; gemini --resume ${sessionId}; if ($LASTEXITCODE -ne 0) { gemini }`;
+                            if (hasSession && safeSessionId) {
+                                shellCommand = `Set-Location -Path "${projectPath}"; & ${agyCommand} --conversation ${safeSessionId}; if ($LASTEXITCODE -ne 0) { & ${agyCommand} }`;
                             } else {
                                 shellCommand = `Set-Location -Path "${projectPath}"; ${command}`;
                             }
                         } else {
-                            if (hasSession && sessionId) {
-                                shellCommand = `cd "${projectPath}" && gemini --resume ${sessionId} || gemini`;
+                            if (hasSession && safeSessionId) {
+                                shellCommand = `cd "${projectPath}" && ${agyCommand} --conversation ${safeSessionId} || ${agyCommand}`;
                             } else {
                                 shellCommand = `cd "${projectPath}" && ${command}`;
                             }
