@@ -271,7 +271,27 @@
     "notTrackedShort": "无",
     "lastActivity": "最近活动：{{time}}",
     "pipelineUpdated": "流水线更新于 {{time}}",
-    "noRecentActivity": "暂无最近活动"
+    "noRecentActivity": "暂无最近活动",
+    "subscriptionUsage": {
+      "title": "订阅剩余用量",
+      "description": "各已登录 Agent CLI 报告的套餐限额。",
+      "loading": "正在检查账号…",
+      "loadError": "无法读取订阅用量。",
+      "remaining": "剩余 {{percent}}%",
+      "resets": "{{when}}重置",
+      "resetSinceObserved": "上次读取后该窗口已重置",
+      "fromSessionLog": "来自最近一次 Codex 会话，记录于{{when}}",
+      "notAvailable": "不可用",
+      "reasons": {
+        "not_signed_in": "未登录。",
+        "api_key_no_plan_limits": "使用 API Key 登录，没有订阅套餐限额。",
+        "no_codex_snapshot": "Codex 尚未记录限额信息。运行一次 Codex 对话后即可读取。",
+        "gemini_no_quota_source": "Gemini CLI 和 Gemini API Key 都不会在本地提供剩余配额信息。",
+        "no_windows_reported": "Claude 返回了套餐信息，但没有用量窗口。",
+        "probe_unsupported": "当前 Claude Code SDK 版本不提供用量数据。",
+        "probe_failed": "Claude Code 没有返回用量数据，请刷新重试。"
+      }
+    }
   },
   "fileTree": {
     "loading": "正在加载文件...",
