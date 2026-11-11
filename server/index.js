@@ -2938,6 +2938,7 @@ app.get('/api/projects/:projectName/sessions/:sessionId/token-usage', authentica
 
     // Determine context window from model name
     const MODEL_CONTEXT_WINDOWS = {
+      'claude-fable-5-2':    1000000,
       'claude-fable-5-1[1m]': 1000000,
       'claude-fable-5-1':    1000000,
       'claude-fable-5[1m]':  1000000,
