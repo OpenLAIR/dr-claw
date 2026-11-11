@@ -100,10 +100,10 @@ function mapCliOptionsToSDK(options = {}) {
     sdkOptions.env = env;
   }
 
-  // Map permission mode
-  if (permissionMode && permissionMode !== 'default') {
-    sdkOptions.permissionMode = permissionMode;
-  }
+  // Map permission mode. Always pass it: since Agent SDK 0.3.322 an omitted
+  // permissionMode is left to Claude Code, so the user's settings defaultMode
+  // (or auto mode) would replace the mode chosen in dr-claw.
+  sdkOptions.permissionMode = permissionMode || 'default';
 
   // Skip the interactive trust/bypass-permissions dialogs that the CLI shows on
   // first launch in a new directory.  These Ink prompts require a TTY and will
@@ -242,8 +242,10 @@ function getContextWindowForModel(modelName) {
     'opus':                200000,
     'haiku':               200000,
     'opusplan':            200000,
+    'fable':               1000000,
     'sonnet[1m]':          1000000,
     // API format names
+    'claude-fable-5-2':            1000000,
     'claude-fable-5-1[1m]':        1000000,
     'claude-fable-5-1':            1000000,
     'claude-fable-5[1m]':          1000000,
