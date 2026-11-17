@@ -1,3 +1,5 @@
+import { normalizeLatexDelimiters } from '../../../utils/latexNormalizer';
+
 export function decodeHtmlEntities(text: string) {
   if (!text) return text;
   return text
@@ -20,11 +22,16 @@ export function normalizeInlineCodeFences(text: string) {
 export function unescapeWithMathProtection(text: string) {
   if (!text || typeof text !== 'string') return text;
 
+  // Rewrite \[..\] / \(..\) into $-delimited form before masking — the mask
+  // below only covers $-delimiters, so without this the \\t → \t replacement
+  // would corrupt \theta / \tau / \n-commands inside bracket-delimited math.
+  let processedText = normalizeLatexDelimiters(text);
+
   const mathBlocks: string[] = [];
   const placeholderPrefix = '__MATH_BLOCK_';
   const placeholderSuffix = '__';
 
-  let processedText = text.replace(/\$\$([\s\S]*?)\$\$|\$([^\$\n]+?)\$/g, (match) => {
+  processedText = processedText.replace(/\$\$([\s\S]*?)\$\$|\$([^\$\n]+?)\$/g, (match) => {
     const index = mathBlocks.length;
     mathBlocks.push(match);
     return `${placeholderPrefix}${index}${placeholderSuffix}`;
