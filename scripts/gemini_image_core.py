@@ -8,7 +8,7 @@ Two essential capabilities:
 Model tiers (all work with free GOOGLE_API_KEY from aistudio.google.com):
 
   PRESETS["free"]  — gemini-2.5-flash + gemini-2.5-flash-image (fastest, free)
-  PRESETS["pro"]   — gemini-3.1-pro-preview + gemini-3-pro-image-preview (best quality)
+  PRESETS["pro"]   — gemini-3.1-pro-preview + gemini-3-pro-image (best quality)
   PRESETS["ultra"] — gemini-3.1-pro-preview + imagen-4.0-ultra (highest res images)
   PRESETS["nano"]  — gemini-2.5-flash + nano-banana-pro-preview (academic diagrams)
 
@@ -74,7 +74,7 @@ PRESETS = {
     },
     "pro": {
         "vlm_model": "gemini-3.1-pro-preview",
-        "image_model": "gemini-3-pro-image-preview",
+        "image_model": "gemini-3-pro-image",
         "image_api": "generate_content",
     },
     "ultra": {
